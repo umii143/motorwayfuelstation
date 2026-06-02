@@ -1,0 +1,1393 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import {
+  Users,
+  ShieldAlert,
+  Coins,
+  DollarSign,
+  PlusCircle,
+  HelpCircle,
+  UserCheck,
+  Calendar,
+  Phone,
+  Trash2,
+  Lock,
+  MinusCircle,
+  Clock,
+  Briefcase,
+  FileText,
+  TrendingDown,
+  UserX,
+  X,
+  Save,
+  CheckCircle,
+  AlertCircle
+} from 'lucide-react';
+import EmptyState from '../ui/EmptyState';
+import { Staff, GlobalSettings, StaffFinanceEntry, AttendanceRecord, Shift } from '../../types';
+import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
+
+interface StaffProps {
+  settings: GlobalSettings;
+  staff: Staff[];
+  onAddStaff: (member: Staff) => void;
+  onUpdateStaff: (member: Staff) => void;
+  onDeleteStaff?: (id: string) => void;
+  staffFinance: StaffFinanceEntry[];
+  onAddStaffFinance: (newEntry: StaffFinanceEntry) => void;
+  attendance: AttendanceRecord[];
+  onAddAttendance: (records: AttendanceRecord[]) => void;
+  shifts: Shift[];
+}
+
+export default function StaffPanel({
+  settings,
+  staff,
+  onAddStaff,
+  onUpdateStaff,
+  onDeleteStaff,
+  staffFinance,
+  onAddStaffFinance,
+  attendance,
+  onAddAttendance,
+  shifts
+}: StaffProps) {
+  const isUrdu = settings.language === 'ur';
+  const t = (en: string, ur: string) => (isUrdu ? ur : en);
+
+  // Active section tab
+  const [activeTab, setActiveTab] = useState<'crew' | 'finance' | 'attendance' | 'performance' | 'attendance_reports'>('crew');
+
+  // Query and reporting states for Performance and Attendance tabs
+  const [selectedPerfStaffId, setSelectedPerfStaffId] = useState<string>('all');
+  const [attendanceReportView, setAttendanceReportView] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+  const [attendanceReportMonth, setAttendanceReportMonth] = useState(() => new Date().toISOString().substring(0, 7));
+
+  // Register state overlays/toggles
+  const [showAddStaff, setShowAddStaff] = useState(false);
+
+  // Form caches: Crew Registration
+  const [addName, setAddName] = useState('');
+  const [addUrduName, setAddUrduName] = useState('');
+  const [addRole, setAddRole] = useState<'owner' | 'manager' | 'cashier' | 'salesman'>('salesman');
+  const [addSalary, setAddSalary] = useState('');
+  const [addPin, setAddPin] = useState('');
+  const [addPhone, setAddPhone] = useState('');
+  const [addCnic, setAddCnic] = useState('');
+
+  // Form caches: Ledger Entries
+  const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
+  const [financeType, setFinanceType] = useState<'advance' | 'accrual' | 'issue'>('advance');
+  const [financeAmount, setFinanceAmount] = useState('');
+  const [financeNote, setFinanceNote] = useState('');
+  const [financeMode, setFinanceMode] = useState<'cash' | 'bank' | 'transfer'>('cash');
+  const [financeDate, setFinanceDate] = useState(() => new Date().toISOString().split('T')[0]);
+
+  // Form caches: Daily Attendance Register (Module E1)
+  const [attendanceDate, setAttendanceDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [attendanceStatuses, setAttendanceStatuses] = useState<Record<string, { status: 'present' | 'absent' | 'leave'; checkIn: string; checkOut: string }>>(() => {
+    const initial: Record<string, { status: 'present' | 'absent' | 'leave'; checkIn: string; checkOut: string }> = {};
+    staff.forEach(s => {
+      initial[s.id] = { status: 'present', checkIn: '08:00', checkOut: '17:00' };
+    });
+    return initial;
+  });
+
+  // Selected Crew name helper
+  const activeStaffToCharge = useMemo(() => {
+    if (!selectedStaffId) return null;
+    return staff.find(st => st.id === selectedStaffId) || null;
+  }, [selectedStaffId, staff]);
+
+  // Calculations for dashboard highlights
+  const totalAdvancesSum = useMemo(() => {
+    // outstanding advances = total advance issued minus deductions
+    return staff.reduce((sum, s) => {
+      const staffEntries = staffFinance.filter(f => f.staffId === s.id);
+      const totalAdv = staffEntries.filter(f => f.type === 'advance').reduce((a, e) => a + e.amount, 0);
+      const totalPaidBack = staffEntries.filter(f => f.type === 'issue').reduce((a, e) => a + (e.deductedAdvance || 0), 0);
+      return sum + Math.max(0, totalAdv - totalPaidBack);
+    }, 0);
+  }, [staff, staffFinance]);
+
+  const totalMonthlyPayrollExpect = useMemo(() => {
+    return staff.reduce((sum, s) => sum + s.salary, 0);
+  }, [staff]);
+
+  const todayAttendanceSummary = useMemo(() => {
+    const todayRecs = attendance.filter(a => a.date === attendanceDate);
+    const present = todayRecs.filter(r => r.status === 'present').length;
+    const absent = todayRecs.filter(r => r.status === 'absent').length;
+    return { present, absent, totalCount: todayRecs.length };
+  }, [attendance, attendanceDate]);
+
+  // ==========================================
+  // HANDLERS
+  // ==========================================
+
+  // Create Staff
+  const handleCreateStaffSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addName) return;
+
+    if (!addPin || addPin.length < 4 || addPin.length > 6) {
+      alert(t('Please set a valid 4 to 6 digit security login PIN!', 'برائے مہربانی درست 4 سے 6 ہندسوں کا سیکیورٹی لاگ ان پن سیٹ کریں!'));
+      return;
+    }
+
+    const newPrs: Staff = {
+      id: `st_${Date.now()}`,
+      name: addName,
+      urduName: addUrduName || addName,
+      role: addRole,
+      salary: Number(addSalary) || 25000,
+      advances: 0,
+      active: true,
+      pin: addPin,
+      phone: addPhone || undefined,
+      cnic: addCnic || undefined
+    };
+
+    onAddStaff(newPrs);
+
+    // Bootstrap initial attendance state for this user
+    setAttendanceStatuses(prev => ({
+      ...prev,
+      [newPrs.id]: { status: 'present', checkIn: '08:00', checkOut: '17:00' }
+    }));
+
+    setAddName('');
+    setAddUrduName('');
+    setAddSalary('');
+    setAddPin('');
+    setAddPhone('');
+    setAddCnic('');
+    setShowAddStaff(false);
+    alert(t('Pump crew member registered successfully!', 'پمپ ملازم کامیابی سے رجسٹر ہو گیا!'));
+  };
+
+  // Log Finance entry (Advances, Salary issued / accrual)
+  const handleLogFinanceSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStaffId) return;
+
+    const staffMember = staff.find(s => s.id === selectedStaffId);
+    if (!staffMember) return;
+
+    const amt = Number(financeAmount);
+    if (isNaN(amt) || amt <= 0) {
+      alert(t('Please enter a valid monetary amount!', 'براہ کرم درست رقم لکھیں!'));
+      return;
+    }
+
+    // Determine balance after this entry
+    const previousEntries = staffFinance.filter(f => f.staffId === selectedStaffId);
+    
+    // Earned salary balance outstanding
+    const accrued = previousEntries.filter(f => f.type === 'accrual').reduce((sum, x) => sum + x.amount, 0);
+    const paid = previousEntries.filter(f => f.type === 'issue').reduce((sum, x) => sum + x.amount + (x.deductedAdvance || 0), 0);
+    const currentPayableBalance = accrued - paid;
+
+    let balanceAfter = 0;
+    if (financeType === 'accrual') {
+      balanceAfter = currentPayableBalance + amt;
+    } else if (financeType === 'issue') {
+      balanceAfter = Math.max(0, currentPayableBalance - amt);
+    } else {
+      // standard advance balances are calculated separately but we can list active payables
+      balanceAfter = currentPayableBalance;
+    }
+
+    // Create the record
+    const refId = 'SF-' + Date.now().toString().substring(6);
+    const newFin: StaffFinanceEntry = {
+      id: 'sf_' + Date.now(),
+      staffId: selectedStaffId,
+      date: financeDate,
+      type: financeType,
+      amount: amt,
+      balanceAfter,
+      reference: refId,
+      note: financeNote || t('Manual ledger adjustment', 'دستی کھاتہ ایڈجسٹمنٹ'),
+      mode: financeType === 'accrual' ? undefined : financeMode,
+      deductedAdvance: financeType === 'issue' ? Math.min(amt, staffMember.advances) : undefined
+    };
+
+    onAddStaffFinance(newFin);
+
+    // Sync state: if advance issued, update staff.advances! If salary issue, reduce advances if deduction
+    let updatedAdvances = staffMember.advances || 0;
+    if (financeType === 'advance') {
+      updatedAdvances += amt;
+    } else if (financeType === 'issue') {
+      const deductionVal = Math.min(updatedAdvances, Math.max(0, staffMember.advances)); // automatic deduct
+      updatedAdvances = Math.max(0, updatedAdvances - deductionVal);
+    }
+
+    onUpdateStaff({
+      ...staffMember,
+      advances: updatedAdvances
+    });
+
+    setFinanceAmount('');
+    setFinanceNote('');
+    setSelectedStaffId(null);
+    alert(t('Salary ledger log successfully recorded. Downstream cashbox flows adjusted!', 'ملازم کا مالی لاگ محفوظ ہو گیا۔ نقد رقم اسٹیشن فنڈز سے کاٹ لی گئی ہے!'));
+  };
+
+  // Submit Active Attendance Register (Module E1)
+  const handleSaveAttendance = (e: React.FormEvent) => {
+    e.preventDefault();
+    const recordsToSave: AttendanceRecord[] = Object.entries(attendanceStatuses).map(([sId, val]) => {
+      const data = val as { status: 'present' | 'absent' | 'leave'; checkIn: string; checkOut: string };
+      return {
+        id: `att_${sId}_${attendanceDate}`,
+        staffId: sId,
+        date: attendanceDate,
+        status: data.status as 'present' | 'absent' | 'leave',
+        checkIn: data.status === 'present' ? data.checkIn : undefined,
+        checkOut: data.status === 'present' ? data.checkOut : undefined
+      };
+    });
+
+    onAddAttendance(recordsToSave);
+    alert(t(
+      `Daily attendance register logged successfully for date: ${attendanceDate}!`,
+      `ٹوٹل ملازمین کی حاضری شیٹ تاریخ ${attendanceDate} کیلئے کامیابی سے محفوظ ہو گئی!`
+    ));
+  };
+
+  return (
+    <div className="space-y-6 pb-20 lg:pb-5">
+
+      {/* COMPACT BILINGUAL HEADER */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-4">
+        <div>
+          <h2 className="font-sans text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+            <Users className="h-6 w-6 text-orange-600" />
+            <span>{t('Staff, Attendance & Salaried Registers', 'عملے کا حاضری اور تنخواہ رجسٹر')}</span>
+          </h2>
+          <p className="font-sans text-xs text-slate-500 mt-1">
+            {t(
+              'Audit daily operator attendance clocks, record advance credits and issue monthly payroll allocations securely.',
+              'کیشیئرز، مینیجرز اور نوزل مین کی روزانہ ڈیوٹی حاضری شیٹ، ایڈوانس کھاتہ اور تنخواہ کارروائی یہاں سے کریں۔'
+            )}
+          </p>
+        </div>
+
+        <button
+          onClick={() => setShowAddStaff(true)}
+          className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2.5 font-sans text-xs font-bold text-white shadow-md hover:bg-orange-700 transition-all cursor-pointer self-start sm:self-center"
+        >
+          <PlusCircle className="h-4 w-4" />
+          <span>{t('Register New Crew', 'نیا پمپ ملازم شامل کریں')}</span>
+        </button>
+      </div>
+
+      {/* CORE HIGHLIGHT CARDS ROW */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        {/* Payroll burden */}
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 bottom-0 left-0 w-1 bg-red-500"></div>
+          <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
+            {t('Est. Monthly Payroll Allocation', 'ماہانہ تنخواہ کا مجموعی بوجھ')}
+          </span>
+          <strong className="font-mono text-xl font-bold text-slate-800 tracking-tight mt-1.5 block">
+            {formatCurrency(totalMonthlyPayrollExpect, settings)}
+          </strong>
+        </div>
+
+        {/* Advances outstanding */}
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 bottom-0 left-0 w-1 bg-orange-500"></div>
+          <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
+            {t('Total Outstanding Advances Lent', 'مجموعی واجب الاصول ایڈوانس رقم')}
+          </span>
+          <strong className="font-mono text-xl font-bold text-orange-600 tracking-tight mt-1.5 block">
+            {formatCurrency(totalAdvancesSum, settings)}
+          </strong>
+        </div>
+
+        {/* Attendance widget */}
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 bottom-0 left-0 w-1 bg-teal-500"></div>
+          <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
+            {t('Today Attendance Roster', 'آج کے روزانہ ملازمین حاضری')}
+          </span>
+          <strong className="font-sans text-sm font-bold text-slate-800 tracking-tight mt-1.5 block">
+            {todayAttendanceSummary.present} Present / {todayAttendanceSummary.absent} Absent
+          </strong>
+        </div>
+      </div>
+
+      {/* INTERACTIVE NAVIGATION SUBTABS */}
+      <div className="flex items-center gap-1 sm:gap-2 border-b border-slate-200 pb-0.5 overflow-x-auto whitespace-nowrap no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+        <button
+          onClick={() => setActiveTab('crew')}
+          className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap ${
+            activeTab === 'crew'
+              ? 'border-orange-600 text-orange-600 font-extrabold'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          {t('👥 Active Operators Roster', '👥 ملازمین کی بنیادی لسٹ')}
+        </button>
+
+        <button
+          onClick={() => setActiveTab('attendance')}
+          className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap ${
+            activeTab === 'attendance'
+              ? 'border-orange-600 text-orange-600 font-extrabold'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          {t('📝 Daily Attendance Registers Sheet', '📝 روزانہ ڈیوٹی حاضری شیٹ')}
+        </button>
+
+        <button
+          onClick={() => setActiveTab('finance')}
+          className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap ${
+            activeTab === 'finance'
+              ? 'border-orange-600 text-orange-600 font-extrabold'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          {t('💵 Salary & Advances Account Logs', '💵 تنخواہ اور ایڈوانس لاگز')}
+        </button>
+
+        <button
+          onClick={() => setActiveTab('performance')}
+          className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap ${
+            activeTab === 'performance'
+              ? 'border-orange-600 text-orange-600 font-extrabold'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          {t('📊 Performance & Metrics History', '📊 کارکردگی اور ملازمین رپورٹ')}
+        </button>
+
+        <button
+          onClick={() => setActiveTab('attendance_reports')}
+          className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap ${
+            activeTab === 'attendance_reports'
+              ? 'border-orange-600 text-orange-600 font-extrabold'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          {t('📅 Duty Attendance Ledger Reports', '📅 حاضری کی تفصیلی رپورٹس')}
+        </button>
+      </div>
+
+      {/* SUB-PANELS WORKSPACE */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-3 space-y-6">
+
+          {/* ==========================================
+              TAB 1: STAFF CREW LIST (ROSTER)
+              ========================================== */}
+          {activeTab === 'crew' && (
+            <div className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
+              <table className="w-full text-left font-sans text-xs">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100 text-slate-650 font-bold uppercase tracking-wider text-[10px]">
+                    <th className="py-3 px-4">{t('Crew Employee Name', 'ملازم کا نام')}</th>
+                    <th className="py-3 px-4">{t('Designated Station Role', 'عہدہ')}</th>
+                    <th className="py-3 px-4 text-right">{t('Assigned Monthly Salary Rate', 'ماہانہ تنخواہ')}</th>
+                    <th className="py-3 px-4 text-right">{t('Pending Advance Balance', 'ایڈوانس زِمہ واجب')}</th>
+                    <th className="py-3 px-4 text-right">{t('Action Management', 'کھاتہ ایکشنز')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-705">
+                  {staff.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-6 bg-slate-50/10">
+                        <EmptyState
+                          icon={Users}
+                          title={t('No staff members yet.', 'کوئی ملازم موجود نہیں ہے۔')}
+                          description={t('Track salesman commissions, advances, monthly wages, and fuel shifts duty roster.', 'پمپ سیلز مین، آپریٹرز، اور دیگر عملے کا کھاتہ، ایڈوانس، اور ڈیوٹی ریکارڈ کریں۔')}
+                          actionLabel={t('+ Add Staff Member', '+ نیا ملازم شامل کریں')}
+                          onAction={() => setShowAddStaff(true)}
+                        />
+                      </td>
+                    </tr>
+                  ) : (
+                    staff.map(mem => {
+                      // Calc advances
+                      const memFinances = staffFinance.filter(f => f.staffId === mem.id);
+                      const advSum = memFinances.filter(f => f.type === 'advance').reduce((a, e) => a + e.amount, 0);
+                      const repaidSum = memFinances.filter(f => f.type === 'issue').reduce((a, e) => a + (e.deductedAdvance || 0), 0);
+                      const activeAdvanceBalance = Math.max(0, advSum - repaidSum);
+
+                      return (
+                        <tr key={mem.id} className="hover:bg-slate-50/50">
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-2">
+                              <div className="h-7 w-7 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs uppercase">
+                                {mem.name.substring(0, 2)}
+                              </div>
+                              <div>
+                                <span className="font-bold text-slate-800 text-xs block">
+                                  {t(mem.name, mem.urduName)}
+                                </span>
+                                <span className="text-[10px] text-slate-400 block font-mono">ID: {mem.id}</span>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4 font-sans">
+                            <span className="rounded bg-slate-100 px-2.5 py-0.5 text-[10px] text-slate-600 font-bold capitalize select-none">
+                              {mem.role}
+                            </span>
+                          </td>
+
+                          <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-800">
+                            {formatCurrency(mem.salary, settings)}
+                          </td>
+
+                          <td className={`py-3.5 px-4 text-right font-mono font-bold ${activeAdvanceBalance > 0 ? 'text-red-500' : 'text-slate-400'}`}>
+                            {activeAdvanceBalance > 0 ? `${formatCurrency(activeAdvanceBalance, settings)}` : '—'}
+                          </td>
+
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex justify-end gap-1.5">
+                              <button
+                                onClick={() => {
+                                  setSelectedStaffId(mem.id);
+                                  setFinanceType('advance');
+                                  setFinanceAmount('');
+                                  setFinanceNote('');
+                                }}
+                                className="px-2.5 py-1 text-[10.5px] font-sans font-semibold rounded border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 cursor-pointer"
+                              >
+                                {t('💸 Issue Advance', 'ایڈوانس دیں')}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setSelectedStaffId(mem.id);
+                                  setFinanceType('issue');
+                                  setFinanceAmount('');
+                                  setFinanceNote('');
+                                }}
+                                className="px-2.5 py-1 text-[10.5px] font-sans font-semibold rounded border border-teal-250 bg-teal-50 text-teal-700 hover:bg-teal-100 cursor-pointer"
+                              >
+                                {t('⚖️ Issue Salaries', 'تنخواہ ادا کریں')}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* ==========================================
+              TAB 2: ATTENDANCE SHEET REGISTER (MODULE E1)
+              ========================================== */}
+          {activeTab === 'attendance' && (
+            <div className="space-y-6">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
+                  <div>
+                    <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-orange-600" />
+                      <span>{t('Certified Crew Attendance Sheet', 'عملہ کی روزانہ حاضری رجسٹر')}</span>
+                    </h3>
+                    <p className="font-sans text-[11px] text-slate-400 mt-1">
+                      {t('Enter shift roster attendances, check-in timestamps and check-out logs for duty operators.', 'آپریٹرز اور محاسبین کی روزانہ چیک ان، چیک آؤٹ ٹائم حاضری نشان زد کریں۔')}
+                    </p>
+                  </div>
+
+                  {/* DATE SELECTOR WIDGET */}
+                  <div className="flex items-center gap-2">
+                    <span className="font-sans text-xs font-bold text-slate-500">{t('Duty Date:', 'حاضری تاریخ:')}</span>
+                    <input
+                      type="date"
+                      value={attendanceDate}
+                      onChange={(e) => {
+                        setAttendanceDate(e.target.value);
+                        // Pull existing data if present
+                        const existingForDay = attendance.filter(a => a.date === e.target.value);
+                        if (existingForDay.length > 0) {
+                          const fetched: typeof attendanceStatuses = {};
+                          existingForDay.forEach(r => {
+                            fetched[r.staffId] = {
+                              status: r.status,
+                              checkIn: r.checkIn || '08:00',
+                              checkOut: r.checkOut || '17:00'
+                            };
+                          });
+                          setAttendanceStatuses(prev => ({ ...prev, ...fetched }));
+                        }
+                      }}
+                      className="rounded-lg border border-slate-200 bg-slate-50 text-slate-700 font-mono text-xs px-2.5 py-1.5 outline-hidden focus:bg-white"
+                    />
+                  </div>
+                </div>
+
+                <form onSubmit={handleSaveAttendance} className="space-y-4">
+                  {/* ATTENDANCE MATRIX BOARD */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left font-sans text-xs">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                          <th className="py-2.5 px-3">{t('Staff Name', 'عملہ ممبر')}</th>
+                          <th className="py-2.5 px-2 text-center">{t('Status', 'ڈیوٹی پوزیشن')}</th>
+                          <th className="py-2.5 px-2 text-center">{t('Absence', 'غیر حاضر')}</th>
+                          <th className="py-2.5 px-2 text-center">{t('On Leave', 'رخصت')}</th>
+                          <th className="py-2.5 px-2">{t('Check-In Time', 'چیک ان وقت')}</th>
+                          <th className="py-2.5 px-2">{t('Check-Out Time', 'چیک آؤٹ وقت')}</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 text-slate-700">
+                        {staff.map(s => {
+                          const current = attendanceStatuses[s.id] || { status: 'present', checkIn: '08:00', checkOut: '17:00' };
+
+                          const setStatus = (st: typeof current['status']) => {
+                            setAttendanceStatuses({
+                              ...attendanceStatuses,
+                              [s.id]: { ...current, status: st }
+                            });
+                          };
+
+                          const setCheckIn = (val: string) => {
+                            setAttendanceStatuses({
+                              ...attendanceStatuses,
+                              [s.id]: { ...current, checkIn: val }
+                            });
+                          };
+
+                          const setCheckOut = (val: string) => {
+                            setAttendanceStatuses({
+                              ...attendanceStatuses,
+                              [s.id]: { ...current, checkOut: val }
+                            });
+                          };
+
+                          return (
+                            <tr key={s.id} className="hover:bg-slate-50/20">
+                              <td className="py-3.5 px-3">
+                                <span className="font-bold text-slate-800 text-xs block">{t(s.name, s.urduName)}</span>
+                                <span className="text-[10px] text-slate-450 block ml-0.5">{s.role.toUpperCase()}</span>
+                              </td>
+
+                              {/* PRESENT RADIO */}
+                              <td className="py-3.5 px-2 text-center">
+                                <label className="inline-flex items-center gap-1.5 cursor-pointer">
+                                  <input
+                                    type="radio"
+                                    name={`att_${s.id}`}
+                                    checked={current.status === 'present'}
+                                    onChange={() => setStatus('present')}
+                                    className="accent-teal-600 h-4 w-4"
+                                  />
+                                  <span className="text-xs font-bold text-teal-650">{t('Present', 'حاضر')}</span>
+                                </label>
+                              </td>
+
+                              {/* ABSENT RADIO */}
+                              <td className="py-3.5 px-2 text-center">
+                                <label className="inline-flex items-center gap-1.5 cursor-pointer">
+                                  <input
+                                    type="radio"
+                                    name={`att_${s.id}`}
+                                    checked={current.status === 'absent'}
+                                    onChange={() => setStatus('absent')}
+                                    className="accent-red-600 h-4 w-4"
+                                  />
+                                  <span className="text-xs font-bold text-red-650">{t('Absent', 'غیر حاضر')}</span>
+                                </label>
+                              </td>
+
+                              {/* LEAVE RADIO */}
+                              <td className="py-3.5 px-2 text-center">
+                                <label className="inline-flex items-center gap-1.5 cursor-pointer">
+                                  <input
+                                    type="radio"
+                                    name={`att_${s.id}`}
+                                    checked={current.status === 'leave'}
+                                    onChange={() => setStatus('leave')}
+                                    className="accent-amber-600 h-4 w-4"
+                                  />
+                                  <span className="text-xs font-bold text-amber-655">{t('Leave', 'رخصت')}</span>
+                                </label>
+                              </td>
+
+                              {/* CHECK IN INPUT */}
+                              <td className="py-3.5 px-2">
+                                <input
+                                  type="text"
+                                  value={current.checkIn}
+                                  onChange={(e) => setCheckIn(e.target.value)}
+                                  disabled={current.status !== 'present'}
+                                  placeholder="08:00"
+                                  className="w-20 rounded border border-slate-200 bg-white p-1 text-center font-mono text-xs focus:border-orange-500 disabled:bg-slate-100 disabled:text-slate-400"
+                                />
+                              </td>
+
+                              {/* CHECK OUT INPUT */}
+                              <td className="py-3.5 px-2">
+                                <input
+                                  type="text"
+                                  value={current.checkOut}
+                                  onChange={(e) => setCheckOut(e.target.value)}
+                                  disabled={current.status !== 'present'}
+                                  placeholder="17:00"
+                                  className="w-20 rounded border border-slate-200 bg-white p-1 text-center font-mono text-xs focus:border-orange-500 disabled:bg-slate-100 disabled:text-slate-400"
+                                />
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="flex justify-end pt-3 border-t border-slate-100">
+                    <button
+                      type="submit"
+                      className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2 font-sans text-xs font-bold text-white shadow-md hover:bg-orange-700 transition-colors cursor-pointer"
+                    >
+                      <Save className="h-3.5 w-3.5" />
+                      <span>{t('SAVE ATTENDANCE registers SHEET', 'آج کی حاضری شیٹ محفوظ کریں')}</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* STATS RECORD HISTORY */}
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+                <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-2">
+                  <Clock className="h-4 w-4 text-slate-400" />
+                  <span>{t('Duty Attendance Historical Records log', 'گزشتہ حاضری ہسٹری لاگز')}</span>
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {Array.from(new Set(attendance.map(a => a.date))).map(dtKey => {
+                    const dayRecs = attendance.filter(a => a.date === dtKey);
+                    const prs = dayRecs.filter(r => r.status === 'present').length;
+                    const abs = dayRecs.filter(r => r.status === 'absent').length;
+
+                    return (
+                      <div key={dtKey} className="rounded-lg border border-slate-100 p-3 bg-slate-50/50 flex justify-between items-center text-xs">
+                        <div className="space-y-1">
+                          <strong className="font-mono text-slate-800 text-[11.5px] block">{dtKey}</strong>
+                          <span className="text-slate-450 block font-sans text-[10px]">
+                            {prs} {t('Present', 'حاضر')} / {abs} {t('Absent', 'غیر حاضر')}
+                          </span>
+                        </div>
+                        <span className="bg-teal-50 text-teal-700 select-none px-2 py-0.5 rounded-full text-[9px] font-bold">
+                          {t('Logged', 'محفوظ شدہ')}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================
+              TAB 3: STAFF FINANCE AND PAYROLL LOG (MODULE E3)
+              ========================================== */}
+          {activeTab === 'finance' && (
+            <div className="space-y-6">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+                <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-2">
+                  <FileText className="h-4 w-4 text-slate-400" />
+                  <span>{t('Salary, Accruals & Handouts Ledger Logs', 'تنخواہ، بقایا جات اور ایڈوانس کی مکمل ہسٹری')}</span>
+                </h3>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left font-sans text-xs">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px] text-center">
+                        <th className="py-2.5 px-3 text-left">{t('Post Date', 'تاریخ')}</th>
+                        <th className="py-2.5 px-2 text-left">{t('Crew Employee', 'ملازم کا نام')}</th>
+                        <th className="py-2.5 px-2">{t('Transaction Type', 'لین دین قسم')}</th>
+                        <th className="py-2.5 px-2">{t('Posted Amount', 'رقم (روپے)')}</th>
+                        <th className="py-2.5 px-2">{t('Pay Mode', 'طریقہ کار')}</th>
+                        <th className="py-2.5 px-2">{t('Deducted Advance', 'ایڈوانس کٹوتی')}</th>
+                        <th className="py-2.5 px-3 text-right">{t('Audit Reference / Notes', 'حوالہ / نوٹس')}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-700 text-center">
+                      {staffFinance.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="py-6 text-center text-slate-400">
+                            {t('No financial payroll actions registered yet.', 'سیلری ہسٹری تاحال خالی ہے۔')}
+                          </td>
+                        </tr>
+                      ) : (
+                        staffFinance.map(sf => {
+                          const mem = staff.find(s => s.id === sf.staffId);
+                          return (
+                            <tr key={sf.id} className="hover:bg-slate-50/50">
+                              <td className="py-3 px-3 text-left font-mono text-slate-500 whitespace-nowrap">{sf.date}</td>
+                              <td className="py-3 px-2 text-left font-bold text-slate-800">
+                                {mem ? t(mem.name, mem.urduName) : sf.staffId}
+                              </td>
+                              <td className="py-3 px-2">
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase select-none inline-flex items-center gap-1 ${
+                                  sf.type === 'accrual'
+                                    ? 'bg-purple-50 text-purple-700'
+                                    : sf.type === 'advance'
+                                    ? 'bg-rose-50 text-rose-700'
+                                    : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                }`}>
+                                  {sf.type === 'issue' ? (
+                                    <>
+                                      <span>✓</span>
+                                      <span>{t('PAID', 'ادا شدہ')}</span>
+                                    </>
+                                  ) : (
+                                    sf.type
+                                  )}
+                                </span>
+                              </td>
+                              <td className="py-3 px-2 font-mono font-bold text-slate-800">{formatCurrency(sf.amount, settings)}</td>
+                              <td className="py-3 px-2 capitalize font-semibold text-slate-400">{sf.mode || '—'}</td>
+                              <td className="py-3 px-2 font-mono text-rose-600">
+                                {sf.deductedAdvance ? `${formatCurrency(sf.deductedAdvance, settings)}` : '—'}
+                              </td>
+                              <td className="py-3 px-3 text-right text-slate-500 font-sans leading-relaxed whitespace-nowrap overflow-hidden max-w-xs text-ellipsis">
+                                <span className="block font-semibold text-slate-700">{sf.note}</span>
+                                <span className="block text-[9px] font-mono text-slate-400">Ref: {sf.reference}</span>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================
+              TAB 4: STAFF PERFORMANCE & METRICS HISTORY
+              ========================================== */}
+          {activeTab === 'performance' && (
+            <div className="space-y-6">
+              {/* KPIs Header */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="bg-white p-4 rounded-xl border border-slate-200">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">{t('Total Shifts Conducted', 'کل شفٹیں برپا کی گئیں')}</span>
+                  <strong className="font-mono text-lg font-bold text-slate-800 block mt-1">{shifts.length}</strong>
+                </div>
+                <div className="bg-white p-4 rounded-xl border border-slate-200">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">{t('Team Attendance Rate', 'عملہ کی مجموعی حاضری')}</span>
+                  <strong className="font-mono text-lg font-bold text-emerald-600 block mt-1">
+                    {attendance.length > 0
+                      ? `${Math.round((attendance.filter(r => r.status === 'present').length / attendance.length) * 100)}%`
+                      : '0%'}
+                  </strong>
+                </div>
+                <div className="bg-white p-4 rounded-xl border border-slate-200">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">{t('Total Advances Remaining', 'مجموعی واجب الوصول ایڈوانس')}</span>
+                  <strong className="font-mono text-lg font-bold text-rose-600 block mt-1">
+                    {formatCurrency(staff.reduce((sum, s) => sum + (s.advanceBalance || 0), 0), settings)}
+                  </strong>
+                </div>
+                <div className="bg-white p-4 rounded-xl border border-slate-200">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">{t('Team Wage Accruals', 'مجموعی بقایا تنخواہ')}</span>
+                  <strong className="font-mono text-lg font-bold text-purple-650 block mt-1">
+                    {formatCurrency(staff.reduce((sum, s) => sum + (s.salaryBalance || 0), 0), settings)}
+                  </strong>
+                </div>
+              </div>
+
+              {/* Main Performance auditing board */}
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
+                  <div>
+                    <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                      <TrendingDown className="h-4 w-4 text-orange-600" />
+                      <span>{t('Staff Duty Performance Audits', 'عملہ کی انفرادی کارکردگی اور تصفیہ رپورٹ')}</span>
+                    </h3>
+                    <p className="font-sans text-xs text-slate-400 mt-1">
+                      {t('Analyze check-in punctuality, total volume processed, and cash compliance records shift-by-shift.', 'ہر آپریٹر کی شفٹ لاگ، نقد گنتی میں فرق، اور حاضری شیٹ کا مکمل آڈٹ۔')}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="font-sans text-xs font-bold text-slate-500">{t('Filter Employee:', 'فلٹر ملازم:')}</span>
+                    <select
+                      value={selectedPerfStaffId}
+                      onChange={(e) => setSelectedPerfStaffId(e.target.value)}
+                      className="rounded-lg border border-slate-200 bg-slate-50 text-slate-700 font-sans text-xs px-2.5 py-1.5 focus:bg-white focus:outline-hidden"
+                    >
+                      <option value="all">{t('All Active Workers', 'تمام ملازمین کا رکارڈ')}</option>
+                      {staff.map(st => (
+                        <option key={st.id} value={st.id}>{t(st.name, st.urduName)}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left font-sans text-xs">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-150 text-slate-500 uppercase font-bold tracking-wider text-[10px]">
+                        <th className="py-2.5 px-3">{t('Staff Member', 'عملہ ممبر')}</th>
+                        <th className="py-2.5 px-2 text-center">{t('Shifts Logged', 'کل شفٹیں')}</th>
+                        <th className="py-2.5 px-2 text-center">{t('Attendance Rate', 'حاضری شرح')}</th>
+                        <th className="py-2.5 px-3 text-right">{t('Salary Handed', 'بنیادی تنخواہ')}</th>
+                        <th className="py-2.5 px-3 text-right">{t('Paid Advances', 'جاری ایڈوانس')}</th>
+                        <th className="py-2.5 px-3 text-right">{t('Remaining Accruals', 'بقایا جات')}</th>
+                        <th className="py-2.5 px-3 text-center">{t('Compliance Level', 'کارکردگی رینکنگ')}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-700 font-medium font-sans">
+                      {staff
+                        .filter(s => selectedPerfStaffId === 'all' || s.id === selectedPerfStaffId)
+                        .map(s => {
+                          const staffShifts = shifts.filter(sh => sh.staffId === s.id);
+                          const staffAtt = attendance.filter(attr => attr.staffId === s.id);
+                          const presentDays = staffAtt.filter(attr => attr.status === 'present').length;
+                          const attRate = staffAtt.length > 0 ? Math.round((presentDays / staffAtt.length) * 100) : 100;
+
+                          // Evaluate warning if discrepancies are high
+                          const varianceCount = staffShifts.filter(sh => (sh.cashVariance || 0) !== 0).length;
+
+                          return (
+                            <tr key={s.id} className="hover:bg-slate-50/50">
+                              <td className="py-3 px-3">
+                                <span className="font-bold text-slate-800 text-xs block">{t(s.name, s.urduName)}</span>
+                                <span className="text-[10px] text-slate-450 block capitalize">{s.role} | {s.phone}</span>
+                              </td>
+                              <td className="py-3 px-2 text-center font-mono font-bold text-slate-800">{staffShifts.length}</td>
+                              <td className="py-3 px-2 text-center">
+                                <span className={`font-mono font-bold ${attRate < 80 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                                  {attRate}%
+                                </span>
+                              </td>
+                              <td className="py-3 px-3 text-right font-mono text-slate-600">{formatCurrency(s.salary, settings)}</td>
+                              <td className="py-3 px-3 text-right font-mono text-rose-600">{formatCurrency(s.advanceBalance || 0, settings)}</td>
+                              <td className="py-3 px-3 text-right font-mono text-purple-650">{formatCurrency(s.salaryBalance || 0, settings)}</td>
+                              <td className="py-3 px-3 text-center">
+                                {varianceCount === 0 ? (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700">
+                                    ✓ {t('Perfect Compliance', 'بہترین کارکردگی')}
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-bold text-amber-705">
+                                    ⚠ {varianceCount} {t('Variances Logged', 'حساب میں تضاد')}
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================
+              TAB 5: STAFF ATTENDANCE REPORTS REGISTER
+              ========================================== */}
+          {activeTab === 'attendance_reports' && (
+            <div className="space-y-6">
+              {/* Report Controls Options */}
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
+                  <div>
+                    <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-orange-600" />
+                      <span>{t('Comprehensive Attendance Ledger Dashboard', 'حاضری رجسٹر کا تفصیلی آڈٹ')}</span>
+                    </h3>
+                    <p className="font-sans text-xs text-slate-400 mt-1">
+                      {t('Toggle between daily sheets, weekly rosters, and monthly attendance percentage metrics.', 'روزمرہ کی رپورٹ، ہفتہ وار شیٹ یا ماہانہ حاضری کا موازنہ یہاں دیکھیں۔')}
+                    </p>
+                  </div>
+
+                  {/* Period selection */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() => setAttendanceReportView('daily')}
+                      className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
+                        attendanceReportView === 'daily' ? 'bg-orange-600 text-white shadow-xs' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                      }`}
+                    >
+                      {t('Daily Sheet', 'روزانہ')}
+                    </button>
+                    <button
+                      onClick={() => setAttendanceReportView('weekly')}
+                      className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
+                        attendanceReportView === 'weekly' ? 'bg-orange-600 text-white shadow-xs' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                      }`}
+                    >
+                      {t('Weekly Matrix', 'ہفتہ وار')}
+                    </button>
+                    <button
+                      onClick={() => setAttendanceReportView('monthly')}
+                      className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
+                        attendanceReportView === 'monthly' ? 'bg-orange-600 text-white shadow-xs' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                      }`}
+                    >
+                      {t('Monthly Grid', 'ماہانہ')}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Filter Selector Widgets */}
+                <div className="flex items-center gap-2">
+                  {attendanceReportView === 'daily' && (
+                    <div className="flex items-center gap-2">
+                      <span className="font-sans text-xs font-bold text-slate-500">{t('Date Query:', 'تاریخ منتخب کریں:')}</span>
+                      <input
+                        type="date"
+                        value={attendanceDate}
+                        onChange={(e) => setAttendanceDate(e.target.value)}
+                        className="rounded-lg border border-slate-200 bg-slate-50 text-slate-700 font-mono text-xs px-2.5 py-1.5 focus:bg-white focus:outline-hidden"
+                      />
+                    </div>
+                  )}
+
+                  {attendanceReportView === 'monthly' && (
+                    <div className="flex items-center gap-2">
+                      <span className="font-sans text-xs font-bold text-slate-500">{t('Month Query:', 'مہینہ منتخب کریں:')}</span>
+                      <input
+                        type="month"
+                        value={attendanceReportMonth}
+                        onChange={(e) => setAttendanceReportMonth(e.target.value)}
+                        className="rounded-lg border border-slate-200 bg-slate-50 text-slate-700 font-mono text-xs px-2.5 py-1.5 focus:bg-white focus:outline-hidden"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* RENDER VIEWS */}
+              {attendanceReportView === 'daily' && (
+                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+                  <h4 className="font-sans text-xs font-bold text-slate-500 uppercase tracking-wide">
+                    {t(`Attendance status on date: ${attendanceDate}`, `روز مرہ حاضری بتاریخ: ${attendanceDate}`)}
+                  </h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left font-sans text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                          <th className="py-2.5 px-3">{t('Employee', 'ملازم کا نام')}</th>
+                          <th className="py-2.5 px-3 text-center">{t('Duty Status', 'ڈیوٹی اسٹیٹس')}</th>
+                          <th className="py-2.5 px-3 text-center">{t('Check-In', 'چیک ان')}</th>
+                          <th className="py-2.5 px-3 text-center">{t('Check-Out', 'چیک آؤٹ')}</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 text-slate-700">
+                        {staff.map(st => {
+                          const todayLog = attendance.find(a => a.date === attendanceDate && a.staffId === st.id);
+
+                          return (
+                            <tr key={st.id} className="hover:bg-slate-50/25">
+                              <td className="py-3 px-3 font-bold text-slate-800">{t(st.name, st.urduName)}</td>
+                              <td className="py-3 px-3 text-center">
+                                {!todayLog ? (
+                                  <span className="rounded bg-slate-100 py-0.5 px-2 text-[10px] font-bold text-slate-400 uppercase">{t('No Log', 'غیر نشان زد')}</span>
+                                ) : todayLog.status === 'present' ? (
+                                  <span className="rounded bg-teal-50 py-0.5 px-2 text-[10px] font-bold text-teal-700 uppercase">{t('Present', 'ڈیوٹی پر حاضر')}</span>
+                                ) : todayLog.status === 'leave' ? (
+                                  <span className="rounded bg-amber-50 py-0.5 px-2 text-[10px] font-bold text-amber-700 uppercase">{t('Leave', 'رخصت')}</span>
+                                ) : (
+                                  <span className="rounded bg-rose-50 py-0.5 px-2 text-[10px] font-bold text-rose-700 uppercase">{t('Absent', 'غیر حاضر')}</span>
+                                )}
+                              </td>
+                              <td className="py-3 px-3 text-center font-mono text-slate-700">{todayLog?.checkIn || '—'}</td>
+                              <td className="py-3 px-3 text-center font-mono text-slate-700">{todayLog?.checkOut || '—'}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {attendanceReportView === 'weekly' && (
+                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+                  <h4 className="font-sans text-xs font-bold text-slate-500 uppercase tracking-wide">
+                    {t('Roster status matrix of the past 7 days', 'ہفتہ وار ملازمین حاضری گراف شیٹ')}
+                  </h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left font-sans text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                          <th className="py-2.5 px-3">{t('Staff Member', 'عملہ')}</th>
+                          {Array.from({ length: 7 }).map((_, idx) => {
+                            const date = new Date();
+                            date.setDate(date.getDate() - idx);
+                            const dtString = date.toISOString().split('T')[0].substring(5); // MM-DD
+                            return <th key={idx} className="py-2.5 px-2 text-center whitespace-nowrap">{dtString}</th>;
+                          })}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 text-slate-700">
+                        {staff.map(st => (
+                          <tr key={st.id} className="hover:bg-slate-50/25">
+                            <td className="py-3 px-3 font-bold text-slate-800 whitespace-nowrap">{t(st.name, st.urduName)}</td>
+                            {Array.from({ length: 7 }).map((_, idx) => {
+                              const date = new Date();
+                              date.setDate(date.getDate() - idx);
+                              const dtString = date.toISOString().split('T')[0];
+                              const dayLog = attendance.find(a => a.date === dtString && a.staffId === st.id);
+
+                              return (
+                                <td key={idx} className="py-3 px-2 text-center">
+                                  {!dayLog ? (
+                                    <span className="text-slate-300 font-bold">—</span>
+                                  ) : dayLog.status === 'present' ? (
+                                    <strong className="text-teal-655 font-bold">✓</strong>
+                                  ) : (
+                                    <strong className="text-rose-600 font-bold">✕</strong>
+                                  )}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {attendanceReportView === 'monthly' && (
+                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+                  <h4 className="font-sans text-xs font-bold text-slate-500 uppercase tracking-wide">
+                    {t(`Monthly aggregate metrics for: ${attendanceReportMonth}`, `ماہانہ خلاصہ حاضری شیٹ: ${attendanceReportMonth}`)}
+                  </h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left font-sans text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                          <th className="py-2.5 px-3">{t('Crew Employee', 'عملہ')}</th>
+                          <th className="py-2.5 px-2 text-center">{t('Duty Days (Present)', 'کل حاضریاں')}</th>
+                          <th className="py-2.5 px-2 text-center">{t('Absent Count', 'کل غیر حاضریاں')}</th>
+                          <th className="py-2.5 px-2 text-center">{t('Approved Leaves (Off)', 'رخصتیں')}</th>
+                          <th className="py-2.5 px-3 text-right">{t('Attendance Match Rate', 'مجموعی ٹریک شرح %')}</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 text-slate-700">
+                        {staff.map(st => {
+                          const monthLogs = attendance.filter(a => a.date.startsWith(attendanceReportMonth) && a.staffId === st.id);
+                          const presents = monthLogs.filter(a => a.status === 'present').length;
+                          const absents = monthLogs.filter(a => a.status === 'absent').length;
+                          const leaves = monthLogs.filter(a => a.status === 'leave').length;
+                          const attRate = monthLogs.length > 0 ? Math.round((presents / monthLogs.length) * 100) : 100;
+
+                          return (
+                            <tr key={st.id} className="hover:bg-slate-50/25">
+                              <td className="py-3 px-3 font-bold text-slate-800">{t(st.name, st.urduName)}</td>
+                              <td className="py-3 px-2 text-center font-mono font-bold text-slate-700">{presents}</td>
+                              <td className="py-3 px-2 text-center font-mono text-rose-600">{absents}</td>
+                              <td className="py-3 px-2 text-center font-mono text-amber-600">{leaves}</td>
+                              <td className="py-3 px-3 text-right font-mono font-extrabold text-slate-800">{attRate}%</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+        </div>
+      </div>
+
+      {/* ==========================================
+          MODAL: ACCOUNT POST MODAL FOR PAYROLL OPERATIONS
+          ========================================== */}
+      <AnimatePresence>
+        {selectedStaffId && activeStaffToCharge && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 15, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 350 }}
+              className="bg-white rounded-xl border border-slate-200 w-full max-w-md p-5 space-y-4 shadow-xl"
+            >
+              <div className="flex justify-between items-center border-b border-slate-100 pb-2.5">
+                <h4 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <Coins className="h-4 w-4 text-orange-600 animate-bounce" />
+                  <span>{t('Post Finance Register Entry:', 'ملازم مالیاتی لیجر پوسٹ کارروائی:')}</span>
+                </h4>
+                <button onClick={() => setSelectedStaffId(null)} className="text-slate-400 hover:text-slate-650 cursor-pointer">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-xs font-sans space-y-1">
+                <div>
+                  <span className="text-slate-400 mr-2">{t('Employee Name:', 'ملازم کا نام:')}</span>
+                  <strong className="text-slate-800">{isUrdu ? activeStaffToCharge.urduName : activeStaffToCharge.name}</strong>
+                </div>
+                <div className="flex justify-between text-[11px] text-slate-500 font-mono">
+                  <span>{t('Standard Base Pay:', 'ماہانہ تنخواہ:')} {formatCurrency(activeStaffToCharge.salary, settings)}</span>
+                  <span>{t('Pending Advance:', 'ایڈوانس قرض بقایا:')} <strong className="text-rose-600">{formatCurrency(activeStaffToCharge.advances, settings)}</strong></span>
+                </div>
+              </div>
+
+              <form onSubmit={handleLogFinanceSubmit} className="space-y-4 font-sans text-xs">
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-slate-505 font-bold mb-1">{t('Select Audit Aspect:', 'ٹرانزیکشن کی قسم:')}</label>
+                    <select
+                      value={financeType}
+                      onChange={(e: any) => setFinanceType(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 outline-hidden focus:border-orange-500"
+                    >
+                      <option value="advance">{t('Lent Short-term Advance (Loan)', '💵 نیا ایڈوانس پے کریں')}</option>
+                      <option value="issue">{t('Monthly Net Salary Cashout (Handout)', '⚖️ تنخواہ جاری کریں (آٹومیٹک کٹوتی پلس فلو)')}</option>
+                      <option value="accrual">{t('Accrue Monthly Earned Salary Liabilities', '📊 تنخواہ اکاؤنٹ میں جمع کریں / جمع بقایا جات')}</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-505 font-bold mb-1">{t('Transaction Date:', 'ٹیکس تاریخ:')}</label>
+                    <input
+                      type="date"
+                      required
+                      value={financeDate}
+                      onChange={(e) => setFinanceDate(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500 font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-505 font-bold mb-1">{t(`Monetary Amount (${getCurrencySymbol(settings)}):`, 'رقم (روپے):')}</label>
+                    <input
+                      type="number"
+                      required
+                      placeholder="e.g. 5000"
+                      value={financeAmount}
+                      onChange={(e) => setFinanceAmount(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500 font-mono"
+                    />
+                  </div>
+
+                  {financeType !== 'accrual' && (
+                    <div>
+                      <label className="block text-slate-505 font-bold mb-1">{t('Payment Mechanism Cash/Bank:', 'ادائیگی کا ذریعہ:')}</label>
+                      <select
+                        value={financeMode}
+                        onChange={(e: any) => setFinanceMode(e.target.value)}
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 outline-hidden focus:border-orange-500"
+                      >
+                        <option value="cash">{t('Station Daily Cash Box Outflow', 'روزانہ کیش فلو دراز')}</option>
+                        <option value="bank">{t('Certified Corporate Bank Remittance', 'سرکاری اکاؤنٹ بینک ٹرانسفر')}</option>
+                      </select>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-slate-505 font-bold mb-1">{t('Auditor Internal Notes:', 'مخصوص معلومات یا ریمارکس:')}</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder={t('e.g. Family medical emergency support advance', 'مثال: طبی وجوہات کی وجہ سے پیشگی بقایا رقم')}
+                      value={financeNote}
+                      onChange={(e) => setFinanceNote(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500"
+                    />
+                  </div>
+                </div>
+
+                {/* AUTOMATIC TAX & ADVANCE CALCULATION FOOTNOTE */}
+                {financeType === 'issue' && financeAmount && (
+                  <div className="rounded bg-teal-50 p-2.5 text-[11px] text-teal-800 leading-normal border border-teal-100">
+                     {t(
+                      `* Salary Handout: The system will automatically subtract the outstanding advance loan amount (Max deduction: ${getCurrencySymbol(settings)} ${activeStaffToCharge.advances.toLocaleString()}) first, keeping ledger books clear!`,
+                      `* تنخواہ ادائیگی: سوفٹ ویئر خودکار طور پر اس ملازم کے ذمے پچھلا بقایا ایڈوانس (زیادہ سے زیادہ کٹوتی: ${getCurrencySymbol(settings)} ${activeStaffToCharge.advances.toLocaleString()}) پہلے کاٹ لیگا!`
+                    )}
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedStaffId(null)}
+                    className="bg-slate-105 text-slate-600 font-sans text-xs font-bold py-1.5 px-3 rounded hover:bg-slate-200 cursor-pointer uppercase"
+                  >
+                    {t('Cancel', 'کینسل')}
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-orange-600 text-white font-sans text-xs font-bold py-1.5 px-4 rounded-lg hover:bg-orange-700 cursor-pointer uppercase shadow-xs"
+                  >
+                    {t('RECORD ADJUSTMENT LOG', 'اوساط لاگ درج کریں')}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ==========================================
+          MODAL: ADD NEW STAFF MEMBER OVERLAY
+          ========================================== */}
+      <AnimatePresence>
+        {showAddStaff && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs font-sans"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 15, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 350 }}
+              className="bg-white rounded-xl border border-slate-200 w-full max-w-lg p-5 space-y-4 shadow-xl"
+            >
+              <div className="flex justify-between items-center border-b border-slate-100 pb-2.5">
+                <h4 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <PlusCircle className="h-4.5 w-4.5 text-orange-600 animate-pulse" />
+                  <span>{t('Register New Crew Employee:', 'نیا پمپ ملازم بھرتی فارم:')}</span>
+                </h4>
+                <button onClick={() => setShowAddStaff(false)} className="text-slate-400 hover:text-slate-650 cursor-pointer">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateStaffSubmit} className="space-y-4 font-sans text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-slate-505 font-bold mb-1">{t('Staff Name (English):', 'اسٹاف کا نام انگریزی میں:')}</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Abdul Rehman"
+                      value={addName}
+                      onChange={(e) => setAddName(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500 font-sans text-slate-800"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-505 font-bold mb-1">{t('Staff Name (Urdu):', 'اسٹاف کا نام اردو میں:')}</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. عبد الرحمٰن"
+                      value={addUrduName}
+                      onChange={(e) => setAddUrduName(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500 font-sans text-right text-slate-800"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-505 font-bold mb-1">{t('Assigned Duty Role:', 'ڈیوٹی کا عہدہ:')}</label>
+                    <select
+                      value={addRole}
+                      onChange={(e: any) => setAddRole(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 outline-hidden focus:border-orange-500 font-sans text-slate-800"
+                    >
+                      <option value="salesman">{t('Nozzle Salesman / Operator', 'سیلزمین / نوزل آپریٹر')}</option>
+                      <option value="cashier">{t('Cashier / Accountant', 'کیشیئر / کیش گننے والا')}</option>
+                      <option value="manager">{t('Duty Station Manager', 'ڈیوٹی مینیجر')}</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-505 font-bold mb-1">{t(`Monthly Base Salary (${getCurrencySymbol(settings)}):`, 'ماہانہ बुनियादी تنخواہ:')}</label>
+                    <input
+                      type="number"
+                      required
+                      placeholder="e.g. 25000"
+                      value={addSalary}
+                      onChange={(e) => setAddSalary(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500 font-mono text-slate-800"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-505 font-bold mb-1">{t('Contact Phone Number (Optional):', 'فون نمبر (اختیاری):')}</label>
+                    <input
+                      type="tel"
+                      placeholder="e.g. 03001234567"
+                      value={addPhone}
+                      onChange={(e) => setAddPhone(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500 font-mono text-slate-800"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-505 font-bold mb-1">{t('National CNIC Number (Optional):', 'شناختی کارڈ نمبر (اختیاری):')}</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 35201-1234567-1"
+                      value={addCnic}
+                      onChange={(e) => setAddCnic(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500 font-mono text-slate-800"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2 bg-orange-50/50 p-3 rounded-lg border border-orange-100 flex flex-col gap-1.5 text-slate-605 pt-2.5">
+                    <div className="flex items-center gap-1.5 text-orange-700 font-bold">
+                      <Lock className="h-3.5 w-3.5 text-orange-600" />
+                      <span>{t('Assign Access Security PIN', 'سیکیورٹی پن کوڈ سیٹ کریں')}</span>
+                    </div>
+                    <p className="text-[10px] leading-relaxed text-slate-500">
+                      {t('Assign a unique 4 to 6 digit login PIN for this worker to switch profiles securely from the Lock Screen.', 'ملازم کو لاگ ان اسکرین سے اپنا مخصوص سیشن کھولنے کے لیے 4 سے 6 ہندسوں کا پِن کوڈ تفویض کریں۔')}
+                    </p>
+                    <div className="mt-1">
+                      <label className="block text-slate-755 font-bold mb-1 text-[10px] uppercase tracking-wider">
+                        {t('Security PIN Code (4-6 digits):', 'سیکیورٹی پن کوڈ (4-6 ہندسے):')}
+                      </label>
+                      <input
+                        type="password"
+                        maxLength={6}
+                        required
+                        placeholder="e.g. 1234"
+                        pattern="\d*"
+                        value={addPin}
+                        onChange={(e) => setAddPin(e.target.value.replace(/\D/g, ''))}
+                        className="w-32 border border-slate-200 rounded-lg p-2 text-center text-sm font-sans font-black tracking-widest outline-none focus:border-orange-500 bg-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2.5 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddStaff(false)}
+                    className="bg-slate-105 text-slate-600 font-sans text-xs font-bold py-1.5 px-3 rounded hover:bg-slate-200 cursor-pointer uppercase"
+                  >
+                    {t('Cancel', 'کینسل')}
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-orange-600 text-white font-sans text-xs font-bold py-1.5 px-4 rounded-lg hover:bg-orange-700 cursor-pointer uppercase shadow-xs font-semibold"
+                  >
+                    {t('CREATE EMPLOYEE ACCOUNT', 'ملازم کا اکاؤنٹ بنائیں')}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

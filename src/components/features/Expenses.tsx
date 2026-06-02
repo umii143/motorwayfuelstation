@@ -1,0 +1,571 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import {
+  Wallet,
+  Coins,
+  ArrowDownRight,
+  PlusCircle,
+  Search,
+  Filter,
+  Wrench,
+  Utensils,
+  Lightbulb,
+  Info,
+  Calendar,
+  X,
+  CreditCard,
+  Notebook
+} from 'lucide-react';
+import EmptyState from '../ui/EmptyState';
+import { ExpenseEntry, GlobalSettings, Shift } from '../../types';
+import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
+import { t as translate } from '../../lib/translations';
+
+interface ExpensesProps {
+  settings: GlobalSettings;
+  shifts: Shift[];
+  onAddExpenseShift?: (expense: ExpenseEntry) => void;
+  // Dynamic direct standalone expenses state persistence if shifts are not running
+  standaloneExpenses: ExpenseEntry[];
+  onAddStandaloneExpense: (expense: ExpenseEntry) => void;
+}
+
+export default function Expenses({
+  settings,
+  shifts,
+  standaloneExpenses,
+  onAddStandaloneExpense
+}: ExpensesProps) {
+  const t = (en: string, ur: string) => translate(en, ur, settings);
+  const isUrdu = settings.language === 'ur';
+
+  // States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [paymentModeFilter, setPaymentModeFilter] = useState<string>('all');
+  const [showAddExpense, setShowAddExpense] = useState(false);
+  const [timeFilter, setTimeFilter] = useState<'all' | 'weekly' | 'monthly' | 'yearly'>('all');
+
+  // Time filter checking helper
+  const isWithinTimeFilter = (dateStr: string) => {
+    if (timeFilter === 'all') return true;
+    const baseline = new Date('2026-06-01');
+    const target = new Date(dateStr);
+    if (isNaN(target.getTime())) return true;
+    const diffDays = (baseline.getTime() - target.getTime()) / (1000 * 3600 * 24);
+    if (timeFilter === 'weekly') return diffDays >= 0 && diffDays <= 7;
+    if (timeFilter === 'monthly') return diffDays >= 0 && diffDays <= 30;
+    if (timeFilter === 'yearly') return diffDays >= 0 && diffDays <= 365;
+    return true;
+  };
+
+  // Form states
+  const [formCategory, setFormCategory] = useState('meals');
+  const [formAmount, setFormAmount] = useState('');
+  const [formDescription, setFormDescription] = useState('');
+  const [formPaidFrom, setFormPaidFrom] = useState<'cash' | 'bank'>('cash');
+
+  // Detect lube business mode
+  const isLube = !shifts.some(s => {
+    // If there are no shifts at all, or if shifts exist but no fuel-type products, it's lube
+    return Object.keys(s.openingReadings || {}).length > 0;
+  }) || shifts.length === 0;
+
+  // Categories list helper — lube-appropriate labels
+  const expenseCategories = isLube ? [
+    { id: 'meals', label: 'Staff Food & Meals', urdu: 'عملے کا کھانا' },
+    { id: 'maintenance', label: 'Shop Maintenance', urdu: 'دکان کی دیکھ بھال/مرمت' },
+    { id: 'electricity', label: 'Utility Grid Bills', urdu: 'بجلی اور گیس بل' },
+    { id: 'workshop_tools', label: 'Workshop Tools & Equipment', urdu: 'ورکشاپ ٹولز اور سامان' },
+    { id: 'salary', label: 'Staff Wages/Pay', urdu: 'عملے کی تنخواہ' },
+    { id: 'stationery', label: 'Stationery & Packaging', urdu: 'اسٹیشنری و پیکنگ' },
+    { id: 'other', label: 'Miscellaneous Other', urdu: 'دیگر متفرق اخراجات' }
+  ] : [
+    { id: 'meals', label: 'Staff Food & Meals', urdu: 'عملے کا کھانا' },
+    { id: 'maintenance', label: 'Pump Maintenance', urdu: 'پمپ کی دیکھ بھال/مرمت' },
+    { id: 'electricity', label: 'Utility Grid Bills', urdu: 'بجلی اور گیس بل' },
+    { id: 'generator_fuel', label: 'Generator Fuel Oil', urdu: 'جنریٹر کا ایندھن' },
+    { id: 'salary', label: 'Operator Wages/Pay', urdu: 'عملے کی تنخواہ' },
+    { id: 'stationery', label: 'Stationery & Slips', urdu: 'اسٹیشنری و پرنٹنگ' },
+    { id: 'other', label: 'Miscellaneous Other', urdu: 'دیگر متفرق اخراجات' }
+  ];
+
+  // Compile ALL expenses dynamically (Shifts expenses + standalone expenses)
+  const allExpenses = useMemo(() => {
+    const list: ExpenseEntry[] = [...standaloneExpenses];
+
+    shifts.forEach(sh => {
+      // Find expense logged inside shift session
+      sh.expenseEntries.forEach(exp => {
+        list.push({
+          ...exp,
+          // Retain parent shift context
+          id: `shift_${sh.id}_${exp.id}`,
+          date: sh.date // overwrite or fallback to shift execution date
+        });
+      });
+    });
+
+    // Sort by Date descending
+    return list.sort((a, b) => b.date.localeCompare(a.date));
+  }, [shifts, standaloneExpenses]);
+
+  // Handle Search and category filtering
+  const filteredExpenses = useMemo(() => {
+    return allExpenses.filter(e => {
+      const matchesSearch = e.description.toLowerCase().includes(searchQuery.toLowerCase()) || e.category.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = categoryFilter === 'all' || e.category === categoryFilter;
+      const matchesPayment = paymentModeFilter === 'all' || e.paidFrom === paymentModeFilter;
+      const matchesTime = isWithinTimeFilter(e.date);
+      return matchesSearch && matchesCategory && matchesPayment && matchesTime;
+    });
+  }, [allExpenses, searchQuery, categoryFilter, paymentModeFilter, timeFilter]);
+
+  // Aggregate metrics
+  const totalAmountSpent = useMemo(() => {
+    return filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
+  }, [filteredExpenses]);
+
+  const categoryAggs = useMemo(() => {
+    const map: Record<string, number> = {};
+    expenseCategories.forEach(cat => { map[cat.id] = 0; });
+
+    allExpenses.forEach(e => {
+      if (map[e.category] !== undefined) {
+        map[e.category] += e.amount;
+      } else {
+        map['other'] = (map['other'] || 0) + e.amount;
+      }
+    });
+
+    return Object.entries(map).map(([k, v]) => ({
+      categoryId: k,
+      amount: v,
+      percentage: allExpenses.length > 0 ? Math.round((v / allExpenses.reduce((sum, x) => sum + x.amount, 0)) * 100) : 0,
+      label: expenseCategories.find(item => item.id === k)?.label || k,
+      urduLabel: expenseCategories.find(item => item.id === k)?.urdu || k
+    })).sort((a, b) => b.amount - a.amount);
+  }, [allExpenses]);
+
+
+  // ==========================================
+  // FORM SUBMIT HANDLERS
+  // ==========================================
+
+  const handleCreateExpenseSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const amt = Number(formAmount);
+    if (!amt || amt <= 0) {
+      alert(t('Please enter a valid expense amount.', 'براہ کرم درست خرچہ رقم درج کریں۔'));
+      return;
+    }
+
+    if (!formDescription) {
+      alert(t('Please describe the expenditure.', 'تفصیل لکھنا ضروری ہے۔'));
+      return;
+    }
+
+    // Capture standalone direct expense entry
+    const newExp: ExpenseEntry = {
+      id: `exp_${Date.now()}`,
+      category: formCategory,
+      amount: amt,
+      description: formDescription,
+      date: new Date().toISOString().split('T')[0],
+      paidFrom: formPaidFrom
+    };
+
+    onAddStandaloneExpense(newExp);
+
+    // Reset Form
+    setFormAmount('');
+    setFormDescription('');
+    setShowAddExpense(false);
+    alert(t('Direct station expense registered successfully!', 'اسٹیشن کا براہ راست خرچہ رجسٹر ہو گیا!'));
+  };
+
+  // Aggregate widget stats based on filtered list
+  const widgetStats = useMemo(() => {
+    let mealsSum = 0;
+    let maintenanceSum = 0;
+    let salaryAndUtilSum = 0;
+
+    filteredExpenses.forEach(e => {
+      if (e.category === 'meals') {
+        mealsSum += e.amount;
+      } else if (e.category === 'maintenance') {
+        maintenanceSum += e.amount;
+      } else if (e.category === 'salary' || e.category === 'electricity' || e.category === 'generator_fuel') {
+        salaryAndUtilSum += e.amount;
+      }
+    });
+
+    return {
+      mealsSum,
+      maintenanceSum,
+      salaryAndUtilSum
+    };
+  }, [filteredExpenses]);
+
+  return (
+    <div className="space-y-6 pb-16 lg:pb-0">
+
+      {/* HEADER ROW WITH INTEGRATED DYNAMIC TIME FILTER */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-slate-200 pb-4">
+        <div>
+          <span className="font-mono text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-0.5">OPERATIONS</span>
+          <h2 className="font-sans text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+            <Coins className="h-6 w-6 text-orange-600" />
+            <span>{t('Operational Expenses', 'اخراجات اور کاروباری بلنگ')}</span>
+          </h2>
+          <p className="font-sans text-xs text-slate-500 mt-1">
+            {t('Audit and document stationary purchases, machinery calibrations, meals and overheads.', 'اسٹیشن کے تمام آپریشنل اور ذاتی اخراجات، تنخواہیں اور مرمت کے بلوں کی مانیٹرنگ۔')}
+          </p>
+        </div>
+
+        {/* TIME FILTER & TRIGGER ROW */}
+        <div className="flex flex-wrap items-center gap-2 lg:self-center">
+          <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200 shadow-sm shrink-0">
+            {(['all', 'weekly', 'monthly', 'yearly'] as const).map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setTimeFilter(filter)}
+                className={`px-3 py-1.5 font-sans text-[11px] font-bold uppercase tracking-wider rounded-md transition-all cursor-pointer ${
+                  timeFilter === filter
+                    ? 'bg-orange-600 text-white shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                }`}
+              >
+                {filter === 'all' && t('All-Time', 'کل وقت')}
+                {filter === 'weekly' && t('Weekly', 'ہفتہ وار')}
+                {filter === 'monthly' && t('Monthly', 'ماہانہ')}
+                {filter === 'yearly' && t('Yearly', 'سالانہ')}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => setShowAddExpense(true)}
+            className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2.5 font-sans text-xs font-bold text-white shadow-md shadow-orange-500/10 hover:bg-orange-700 transition-all cursor-pointer"
+          >
+            <PlusCircle className="h-4 w-4" />
+            <span>{t('+ Log Expense', 'نیا خرچہ لکھیں')}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* DYNAMIC KPI CARDS SECTION */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* AMBER CARD - TOTAL SPEND */}
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
+          <div className="flex items-start justify-between">
+            <div>
+              <span className="font-mono text-[9px] font-black text-amber-800 uppercase tracking-widest block mb-1">TOTAL SPEND</span>
+              <h3 className="font-sans text-2xl font-black text-amber-900 mt-1 truncate animate-pulse">
+                {formatCurrency(totalAmountSpent, settings)}
+              </h3>
+            </div>
+            <div className="rounded-xl bg-amber-100 p-2 text-amber-700 animate-bounce">
+              <Coins className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="mt-3 flex items-center gap-1 text-[10px] text-amber-700 font-bold">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+            <span>{t('Summed active company expenses', 'مجموعی اخراجات کی رقم')}</span>
+          </div>
+        </div>
+
+        {/* GREEN CARD - STAFF FOOD & MEALS */}
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
+          <div className="flex items-start justify-between">
+            <div>
+              <span className="font-mono text-[9px] font-black text-emerald-800 uppercase tracking-widest block mb-1">STAFF FOOD & MEALS</span>
+              <h3 className="font-sans text-2xl font-black text-emerald-900 mt-1">
+                {formatCurrency(widgetStats.mealsSum, settings)}
+              </h3>
+            </div>
+            <div className="rounded-xl bg-emerald-100 p-2 text-emerald-700">
+              <Utensils className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="mt-3 flex items-center gap-1 text-[10px] text-emerald-700 font-bold">
+            <span>{t('Welfare & daily lunches cost', 'سٹاف فلاح و بہبود کھانا')}</span>
+          </div>
+        </div>
+
+        {/* CRIMSON CARD - PUMP MAINTENANCE */}
+        <div className="rounded-2xl border border-rose-200 bg-rose-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
+          <div className="flex items-start justify-between">
+            <div>
+              <span className="font-mono text-[9px] font-black text-rose-800 uppercase tracking-widest block mb-1">{isLube ? 'SHOP MAINTENANCE' : 'PUMP MAINTENANCE'}</span>
+              <h3 className="font-sans text-2xl font-black text-rose-900 mt-1">
+                {formatCurrency(widgetStats.maintenanceSum, settings)}
+              </h3>
+            </div>
+            <div className="rounded-xl bg-rose-100 p-2 text-rose-700">
+              <Wrench className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="mt-3 flex items-center gap-1 text-[10px] text-rose-700 font-bold">
+            <span>{isLube ? t('Shop repairs & equipment', 'مرمت اور ساز و سامان') : t('Nozzles, calibrations & repairs', 'مرمت اور دیکھ بھال کا خرچہ')}</span>
+          </div>
+        </div>
+
+        {/* BLUE CARD - OPERATOR WAGES & UTILITIES */}
+        <div className="rounded-2xl border border-blue-200 bg-blue-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
+          <div className="flex items-start justify-between">
+            <div>
+              <span className="font-mono text-[9px] font-black text-blue-800 uppercase tracking-widest block mb-1">WAGES & UTILITIES</span>
+              <h3 className="font-sans text-2xl font-black text-blue-900 mt-1">
+                {formatCurrency(widgetStats.salaryAndUtilSum, settings)}
+              </h3>
+            </div>
+            <div className="rounded-xl bg-blue-100 p-2 text-blue-700">
+              <Lightbulb className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="mt-3 flex items-center gap-1 text-[10px] text-blue-700 font-bold text-ellipsis overflow-hidden truncate">
+            <span>{t('Power, salaries & gen fuel', 'بجلی بل، تنخواہیں و جنریٹر')}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        
+        {/* LEFT COMPEX: TIMELINES & DETAIL LIST OF EXPENDITURES */}
+        <div className="lg:col-span-2 space-y-4">
+          
+          {/* SEARCH & FILTER CONTROLS CARD */}
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3.5">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              
+              <div className="relative">
+                <Search className="absolute top-2.5 left-3 h-3.5 w-3.5 text-slate-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={t('Search notes description...', 'تفصیل تلاش کریں...')}
+                  className="w-full rounded-md border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-3 font-sans text-xs outline-hidden focus:border-red-500 focus:bg-white"
+                />
+              </div>
+
+              <div>
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="w-full rounded-md border border-slate-200 bg-slate-50 py-1.5 px-2.5 font-sans text-xs focus:border-red-550 focus:outline-hidden"
+                >
+                  <option value="all">{t('All Categories', 'تمام کیٹیگریز')}</option>
+                  {expenseCategories.map(c => (
+                    <option key={c.id} value={c.id}>{isUrdu ? c.urdu : c.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <select
+                  value={paymentModeFilter}
+                  onChange={(e) => setPaymentModeFilter(e.target.value)}
+                  className="w-full rounded-md border border-slate-200 bg-slate-50 py-1.5 px-2.5 font-sans text-xs focus:border-red-550 focus:outline-hidden"
+                >
+                  <option value="all">{t('All Outflows', 'بک بقایا ادائیگی ذریعہ')}</option>
+                  <option value="cash">{t('Paid from Cash Drawer', 'صرف کیش رقم')}</option>
+                  <option value="bank">{t('Paid from Bank Current Account', 'بینک اکاؤنٹ منتقلی')}</option>
+                </select>
+              </div>
+
+            </div>
+          </div>
+
+          {/* TABLE LOG LISTING */}
+          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-xs">
+            <table className="w-full border-collapse text-left font-sans text-xs">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-150 text-slate-650 font-bold uppercase tracking-wider">
+                  <th className="py-3 px-4">{t('Session Date', 'تاریخ')}</th>
+                  <th className="py-3 px-4">{t('Expenditure details', 'خرچہ تفصیل')}</th>
+                  <th className="py-3 px-4">{t('Category', 'قسم کیٹیگری')}</th>
+                  <th className="py-3 px-4">{t('Payment Type', 'ذریعہ ادائیگی')}</th>
+                  <th className="py-3 px-4 text-right">{t('Amount Used', 'خرچہ رقم')}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-700">
+                {filteredExpenses.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-6 bg-slate-50/10">
+                      <EmptyState
+                        icon={Notebook}
+                        title={t('No expenses found for this period.', 'کوئی اخراجات درج نہیں ہیں۔')}
+                        description={t('Track stationery, meals, power utilities, and repair costs.', 'ملازمین کا کھانا، بجلی کا بل، یا جنریٹر ایندھن کا خرچہ ریکارڈ کریں۔')}
+                        actionLabel={t('Log New Expense', 'نیا خرچہ لکھیں')}
+                        onAction={() => setShowAddExpense(true)}
+                      />
+                    </td>
+                  </tr>
+                ) : (
+                  filteredExpenses.map((exp) => {
+                    const catInfo = expenseCategories.find(c => c.id === exp.category);
+                    const labelStyle = exp.paidFrom === 'cash' ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-sky-50 text-sky-700 border-sky-100';
+
+                    return (
+                      <tr key={exp.id} className="hover:bg-slate-55/40">
+                        <td className="py-3 px-4 font-mono font-medium text-slate-500 whitespace-nowrap">{exp.date}</td>
+                        <td className="py-3 px-4 font-semibold text-slate-800 pr-4">{exp.description}</td>
+                        <td className="py-3 px-4 whitespace-nowrap">
+                          <span className="rounded-md bg-stone-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
+                            {catInfo ? (isUrdu ? catInfo.urdu : catInfo.label) : exp.category}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 whitespace-nowrap">
+                          <span className={`rounded-sm border px-1.5 py-0.5 font-bold text-[9px] uppercase ${labelStyle}`}>
+                            {exp.paidFrom === 'cash' ? t('CASH BOX', 'کیش کیبن') : t('BANK ONLINE', 'بینک اکاؤنٹ')}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono font-bold text-red-600">
+                          {formatCurrency(exp.amount, settings)}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+        {/* RIGHT ANALYTICS BOARD PANEL: BURDEN CATEGORIES */}
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-4">
+          <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-2.5">
+            <Notebook className="h-4.5 w-4.5 text-slate-400" />
+            <span>{t('Categorized burden summaries', 'تفصیلی کیٹیگری موازنہ کلاسیفیکیشن')}</span>
+          </h3>
+
+          <div className="space-y-4">
+            {categoryAggs.map(agg => (
+              <div key={agg.categoryId} className="space-y-1.5">
+                <div className="flex justify-between items-center font-sans text-xs font-semibold">
+                  <span className="text-slate-700">{settings.language === 'ur' ? agg.urduLabel : agg.label}</span>
+                  <span className="font-mono text-slate-500">{agg.percentage}% ({formatCurrency(agg.amount, settings)})</span>
+                </div>
+
+                <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-red-500 transition-all duration-300"
+                    style={{ width: `${agg.percentage}%` }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+
+      {/* DETAILED LOG OVERLAY MODAL */}
+      <AnimatePresence>
+        {showAddExpense && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 15, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 350 }}
+              className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-xl"
+            >
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                <h3 className="font-sans text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <Coins className="h-5 w-5 text-red-550" />
+                  <span>{t('Register Standalone Expenditure', 'اسٹیشن کا نیا روز مرہ خرچہ درج کریں')}</span>
+                </h3>
+                <button onClick={() => setShowAddExpense(false)} className="text-slate-400 hover:text-slate-650 cursor-pointer font-bold text-xl">&times;</button>
+              </div>
+
+              <form onSubmit={handleCreateExpenseSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Select Expenditure Category:', 'خرچہ کی قسم منتخب کریں:')}</label>
+                  <select
+                    value={formCategory}
+                    onChange={(e) => setFormCategory(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 font-sans text-sm focus:border-red-500 focus:outline-hidden"
+                  >
+                    {expenseCategories.map(c => (
+                      <option key={c.id} value={c.id}>{isUrdu ? c.urdu : c.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Rupees Amount (PKR):', 'اخراجات کی رقم:')}</label>
+                  <input
+                    type="number"
+                    required
+                    value={formAmount}
+                    onChange={(e) => setFormAmount(e.target.value)}
+                    placeholder="e.g. 1500"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono text-sm focus:border-red-500 focus:outline-hidden"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Paid From Account:', 'رقم کہاں سے ادا کی گئی:')}</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setFormPaidFrom('cash')}
+                      className={`py-2 rounded-lg border font-sans text-xs font-bold cursor-pointer transition-all ${
+                        formPaidFrom === 'cash' ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-xs' : 'border-slate-200 text-slate-500'
+                      }`}
+                    >
+                      💵 {t('Cash counter drawer', 'کیش کیبن')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormPaidFrom('bank')}
+                      className={`py-2 rounded-lg border font-sans text-xs font-bold cursor-pointer transition-all ${
+                        formPaidFrom === 'bank' ? 'border-sky-500 bg-sky-50 text-sky-700 shadow-xs' : 'border-slate-200 text-slate-500'
+                      }`}
+                    >
+                      🏦 {t('Bank online transfer', 'بینک اکاؤنٹ')}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Expense Narrative description:', 'خرچہ کی تفصیل:')}</label>
+                  <input
+                    type="text"
+                    required
+                    value={formDescription}
+                    onChange={(e) => setFormDescription(e.target.value)}
+                    placeholder="e.g. Weekly tea and biscuits for shift workers"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-xs focus:border-red-500 focus:outline-hidden"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-sans text-sm font-bold tracking-wider rounded-lg shadow-md mt-4 cursor-pointer"
+                >
+                  {t('SUBMIT EXPENDITURE BILL', 'خرچہ درج کر دیں')}
+                </button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+    </div>
+  );
+}
