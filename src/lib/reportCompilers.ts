@@ -72,6 +72,69 @@ const getProductRate = (productList: Product[], productId: string, fallback: num
   return p ? p.rate : fallback;
 };
 
+/**
+ * Classifies a fuel product as petrol, diesel, cng, or null (non-fuel).
+ * Resolution order:
+ *   1. product.type must be 'fuel'
+ *   2. Match by product ID semantics (prod_f1/petrol = petrol, prod_f2/diesel = diesel)
+ *   3. Match by product name keywords
+ */
+const getFuelCategory = (productId: string, products: Product[]): 'petrol' | 'diesel' | 'cng' | null => {
+  const p = products.find(prod => prod.id === productId);
+  if (!p) return null;
+  if (p.type !== 'fuel') return null;
+
+  const idLower = p.id.toLowerCase();
+  const nameLower = p.name.toLowerCase();
+
+  if (
+    idLower === 'petrol' ||
+    idLower === 'prod_f1' ||
+    idLower === 'prod_f3' ||
+    nameLower.includes('petrol') ||
+    nameLower.includes('pmg') ||
+    nameLower.includes('hobc') ||
+    nameLower.includes('octane') ||
+    nameLower.includes('super')
+  ) {
+    return 'petrol';
+  }
+  if (
+    idLower === 'diesel' ||
+    idLower === 'prod_f2' ||
+    nameLower.includes('diesel') ||
+    nameLower.includes('hsd')
+  ) {
+    return 'diesel';
+  }
+  if (
+    idLower === 'cng' ||
+    nameLower.includes('cng') ||
+    nameLower.includes('gas')
+  ) {
+    return 'cng';
+  }
+  return null;
+};
+
+/**
+ * Returns a COGS (cost of goods sold) estimate per unit for a product.
+ * For fuel products, uses a margin band relative to the sale rate:
+ *   petrol/hobc: rate minus ~Rs.4.5
+ *   diesel:      rate minus ~Rs.4.0
+ *   cng:         rate minus ~Rs.3.0
+ *   lube/other:  92% of sale rate
+ */
+const getFuelCogsRate = (productId: string, products: Product[]): number => {
+  const p = products.find(prod => prod.id === productId);
+  if (!p) return 268;
+  const cat = getFuelCategory(productId, products);
+  if (cat === 'petrol') return Math.max(0, p.rate - 4.5);
+  if (cat === 'diesel') return Math.max(0, p.rate - 4.0);
+  if (cat === 'cng')    return Math.max(0, p.rate - 3.0);
+  return p.rate * 0.92;
+};
+
 // ==========================================
 // THE 40+ REPORT TEMPLATES MASTER CATALOGUE
 // ==========================================
@@ -215,7 +278,7 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
       Object.entries(dailyVals).forEach(([date, prodData]) => {
         Object.entries(prodData).forEach(([pId, val]) => {
           const prod = products.find(p => p.id === pId);
-          const cogsRate = pId === 'petrol' ? 268 : pId === 'diesel' ? 257 : 190;
+          const cogsRate = getFuelCogsRate(pId, products);
           const gp = val.qty * ((prod?.rate || 280) - cogsRate);
 
           rows.push({
@@ -935,7 +998,7 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
       });
 
       return products.map(p => {
-        const cogsRate = p.id === 'petrol' ? 268 : p.id === 'diesel' ? 257 : p.rate * 0.92;
+        const cogsRate = getFuelCogsRate(p.id, products);
         const margin = p.rate - cogsRate;
         const vol = vols[p.id] || 0;
         return {
@@ -1407,10 +1470,34 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
       // Simulate historical supply drops based on products configured
       const rows: ReportRow[] = [];
       suppliers.forEach(s => {
-        const fuel = s.name === 'PSO' ? 'petrol' : 'diesel';
-        const prod = products.find(p => p.id === fuel);
-        const qty = s.name === 'PSO' ? 15000 : 12000;
-        const rate = fuel === 'petrol' ? 268 : 257;
+        // STEP 1: Resolve fuel type from product records first
+        // Find all products that are classified as fuel
+        const fuelProds = products.filter(p => getFuelCategory(p.id, products) !== null);
+
+        // Infer what fuel type this supplier primarily carries based on their name
+        const supNameLower = s.name.toLowerCase();
+        const prefersPetrol =
+          supNameLower.includes('pso') ||
+          supNameLower.includes('shell') ||
+          supNameLower.includes('total') ||
+          supNameLower.includes('hascol') ||
+          supNameLower.includes('byco');
+
+        const targetCat = prefersPetrol ? 'petrol' : 'diesel';
+
+        // Match from products list by the target fuel category
+        const matchedProd =
+          fuelProds.find(p => getFuelCategory(p.id, products) === targetCat) ||
+          fuelProds[0];
+
+        // STEP 2: If no product found in records, use supplier-name inference as fallback
+        const effectiveCat = matchedProd
+          ? getFuelCategory(matchedProd.id, products)!
+          : targetCat;
+
+        const prod = matchedProd;
+        const qty = effectiveCat === 'petrol' ? 15000 : 12000;
+        const rate = prod ? getFuelCogsRate(prod.id, products) : (effectiveCat === 'petrol' ? 268 : 257);
 
         rows.push({
           id: `D2-SIM-${s.id}`,
@@ -1419,14 +1506,14 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
           staffName: 'Admin Desk',
           role: 'ADMIN',
           sourceRef: `CHAL-${s.id.slice(0, 3)}-4421`,
-          productCategory: prod?.name || fuel.toUpperCase(),
+          productCategory: prod?.name || effectiveCat.toUpperCase(),
           quantity: `${qty.toLocaleString()} Ltr`,
           rate: `Rs. ${rate.toFixed(2)}`,
           amount: qty * rate,
           approvalStatus: 'Storage Verified Stocked',
           balanceAfter: `Rs. ${s.balance.toLocaleString()}`,
           entityName: s.name,
-          productId: fuel
+          productId: prod?.id || effectiveCat
         });
       });
       return rows;

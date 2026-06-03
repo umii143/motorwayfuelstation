@@ -25,6 +25,7 @@ import EmptyState from '../ui/EmptyState';
 import { ExpenseEntry, GlobalSettings, Shift } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
+import { useStation } from '../../contexts/StationContext';
 
 interface ExpensesProps {
   settings: GlobalSettings;
@@ -41,6 +42,7 @@ export default function Expenses({
   standaloneExpenses,
   onAddStandaloneExpense
 }: ExpensesProps) {
+  const { showToast } = useStation();
   const t = (en: string, ur: string) => translate(en, ur, settings);
   const isUrdu = settings.language === 'ur';
 
@@ -161,12 +163,12 @@ export default function Expenses({
     e.preventDefault();
     const amt = Number(formAmount);
     if (!amt || amt <= 0) {
-      alert(t('Please enter a valid expense amount.', 'براہ کرم درست خرچہ رقم درج کریں۔'));
+      showToast(t('Please enter a valid expense amount.', 'براہ کرم درست خرچہ رقم درج کریں۔'), 'error');
       return;
     }
 
     if (!formDescription) {
-      alert(t('Please describe the expenditure.', 'تفصیل لکھنا ضروری ہے۔'));
+      showToast(t('Please describe the expenditure.', 'تفصیل لکھنا ضروری ہے۔'), 'error');
       return;
     }
 
@@ -186,7 +188,7 @@ export default function Expenses({
     setFormAmount('');
     setFormDescription('');
     setShowAddExpense(false);
-    alert(t('Direct station expense registered successfully!', 'اسٹیشن کا براہ راست خرچہ رجسٹر ہو گیا!'));
+    showToast(t('Direct station expense registered successfully!', 'اسٹیشن کا براہ راست خرچہ رجسٹر ہو گیا!'), 'success');
   };
 
   // Aggregate widget stats based on filtered list

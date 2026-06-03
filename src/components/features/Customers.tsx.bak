@@ -1,11 +1,10 @@
-/**
+﻿/**
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useStation } from '../../contexts/StationContext';
 import {
   Search,
   Plus,
@@ -25,7 +24,6 @@ import {
   Coins
 } from 'lucide-react';
 import EmptyState from '../ui/EmptyState';
-import PartyLedgerModal, { LedgerEntry, PartyInfo } from '../ui/PartyLedgerModal';
 import { Customer, Shift, Product, GlobalSettings, DebitEntry, RecoveryEntry, LubePosSale } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
@@ -38,10 +36,7 @@ interface CustomersProps {
   lubePosSales: LubePosSale[];
   onAddCustomer: (customer: Customer) => void;
   onUpdateCustomer: (customer: Customer) => void;
-  onDeleteCustomer: (customerId: string) => void;
   onUpdateShift: (shift: Shift) => void;
-  onDeleteDebitEntry: (shiftId: string, entryId: string) => void;
-  onDeleteRecoveryEntry: (shiftId: string, entryId: string) => void;
 }
 
 export default function Customers({
@@ -52,12 +47,8 @@ export default function Customers({
   lubePosSales,
   onAddCustomer,
   onUpdateCustomer,
-  onDeleteCustomer,
-  onUpdateShift,
-  onDeleteDebitEntry,
-  onDeleteRecoveryEntry
+  onUpdateShift
 }: CustomersProps) {
-  const { showToast, showConfirm, showAlert } = useStation();
   const t = (en: string, ur: string) => translate(en, ur, settings);
   const isLubeBusiness =
     products.some((product) => product.type === 'lube') &&
@@ -68,126 +59,6 @@ export default function Customers({
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'udhar' | 'advance' | 'regular'>('all');
   const [timeFilter, setTimeFilter] = useState<'all' | 'weekly' | 'monthly' | 'yearly'>('all');
-
-  // Ledger Modal State
-  const [ledgerParty, setLedgerParty] = useState<PartyInfo | null>(null);
-  const [modalLedgerEntries, setModalLedgerEntries] = useState<LedgerEntry[]>([]);
-  const [isLedgerOpen, setIsLedgerOpen] = useState(false);
-
-  // Open full ledger for a customer
-  const openCustomerLedger = (cust: Customer) => {
-    const rawEntries: LedgerEntry[] = [];
-
-    // From Shifts: debit sales
-    shifts.forEach(sh => {
-      sh.debitEntries.forEach(d => {
-        if (d.customerId !== cust.id) return;
-        const pName = products.find(p => p.id === d.productId)?.name || 'Product';
-        rawEntries.push({
-          id: `deb_${d.id}`,
-          date: sh.date,
-          description: `${pName} — ${d.quantity} units @ ${getCurrencySymbol(settings)} ${d.rate.toFixed(2)}${d.note ? ` | ${d.note}` : ''}`,
-          debit: d.amount,
-          credit: 0,
-          balance: 0,
-          tag: 'Credit Sale',
-        });
-      });
-
-      // From Shifts: recovery entries
-      sh.recoveryEntries.forEach(r => {
-        if (r.customerId !== cust.id) return;
-        rawEntries.push({
-          id: `rec_${r.id}`,
-          date: sh.date,
-          description: `Payment Recovery via ${r.mode.toUpperCase()}${r.reference ? ` (Ref: ${r.reference})` : ''}`,
-          debit: 0,
-          credit: r.amount,
-          balance: 0,
-          tag: 'Recovery',
-        });
-      });
-
-      // Bank cash entries linked to customer
-      sh.bankCashEntries?.forEach(bc => {
-        if (bc.customerId !== cust.id) return;
-        rawEntries.push({
-          id: `bc_${bc.id}`,
-          date: sh.date,
-          description: `Direct Bank Deposit${bc.reference ? ` (Ref: ${bc.reference})` : ''}`,
-          debit: 0,
-          credit: bc.amount,
-          balance: 0,
-          tag: 'Bank Deposit',
-        });
-      });
-    });
-
-    // From Lube POS sales
-    lubePosSales.forEach(sale => {
-      if (sale.customerId !== cust.id) return;
-      const itemsSummary = sale.items.map(i => `${i.productName} ×${i.quantity}${i.unit}`).join(', ');
-      if (sale.isReturn) {
-        rawEntries.push({
-          id: `lps_ret_${sale.id}`,
-          date: sale.date,
-          time: sale.time,
-          description: `POS Return ${sale.invoiceNo}${itemsSummary ? ` — ${itemsSummary}` : ''}`,
-          debit: 0,
-          credit: sale.total,
-          balance: 0,
-          tag: 'Return',
-        });
-      } else if (sale.paymentMode === 'credit') {
-        rawEntries.push({
-          id: `lps_${sale.id}`,
-          date: sale.date,
-          time: sale.time,
-          description: `POS Invoice ${sale.invoiceNo}${itemsSummary ? ` — ${itemsSummary}` : ''}`,
-          debit: sale.total,
-          credit: 0,
-          balance: 0,
-          tag: 'Credit Sale',
-        });
-      } else if (sale.isRecovery) {
-        rawEntries.push({
-          id: `lps_recov_${sale.id}`,
-          date: sale.date,
-          time: sale.time,
-          description: `POS Recovery ${sale.invoiceNo}`,
-          debit: 0,
-          credit: sale.total,
-          balance: 0,
-          tag: 'Recovery',
-        });
-      }
-    });
-
-    // Sort ascending, compute running balance
-    rawEntries.sort((a, b) => `${a.date}${a.time||''}`.localeCompare(`${b.date}${b.time||''}`));
-    let running = 0;
-    const withBalance = rawEntries.map(e => {
-      running += e.debit - e.credit;
-      return { ...e, balance: running };
-    });
-
-    // Reverse for latest-first display
-    withBalance.reverse();
-
-    const party: PartyInfo = {
-      id: cust.id,
-      name: cust.name,
-      contact: cust.contact,
-      address: cust.address,
-      creditLimit: cust.creditLimit,
-      balance: cust.balance,
-      type: 'customer',
-    };
-
-    setLedgerParty(party);
-    setModalLedgerEntries(withBalance);
-    setIsLedgerOpen(true);
-  };
 
   // Time filter checking helper
   const isWithinTimeFilter = (dateStr: string) => {
@@ -249,14 +120,6 @@ export default function Customers({
   const [addLimit, setAddLimit] = useState('');
   const [addOpeningBal, setAddOpeningBal] = useState('');
 
-  // Edit Customer Modal state
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editCustName, setEditCustName] = useState('');
-  const [editCustUrduName, setEditCustUrduName] = useState('');
-  const [editCustContact, setEditCustContact] = useState('');
-  const [editCustAddress, setEditCustAddress] = useState('');
-  const [editCustLimit, setEditCustLimit] = useState('');
-
   // Active Customer Detail Panel Transaction States
   const [isAddingTxn, setIsAddingTxn] = useState(false);
   const [txnType, setTxnType] = useState<'debit' | 'credit'>('debit');
@@ -312,9 +175,6 @@ export default function Customers({
       debit: number;  // Outflowing credit sale to party
       credit: number; // Inflowing collection payments received
       balance: number;
-      shiftId?: string;
-      entryId?: string;
-      type?: 'debit' | 'recovery';
     }> = [];
 
     // Append Opening Balance if configured
@@ -334,10 +194,7 @@ export default function Customers({
             description: `${pName} ${d.quantity}L @ ${getCurrencySymbol(settings)} ${d.rate} ${d.note ? `(${d.note})` : ''}`,
             debit: d.amount,
             credit: 0,
-            balance: 0,
-            shiftId: sh.id,
-            entryId: d.id,
-            type: 'debit'
+            balance: 0
           });
         }
       });
@@ -349,13 +206,10 @@ export default function Customers({
             id: `rec_${r.id}`,
             date: sh.date,
             sortKey: `${sh.date}T23:59`,
-            description: t(`Payment Recovery via ${r.mode.toUpperCase()} ${r.reference ? `(Ref: ${r.reference})` : ''}`, `${r.mode} کے ذریعے رقم کی وصولی`),
+            description: t(`Payment Recovery via ${r.mode.toUpperCase()} ${r.reference ? `(Ref: ${r.reference})` : ''}`, `${r.mode} ┌⌐█Æ ╪░╪▒█î╪╣█Æ ╪▒┘é┘à ┌⌐█î ┘ê╪╡┘ê┘ä█î`),
             debit: 0,
             credit: r.amount,
-            balance: 0,
-            shiftId: sh.id,
-            entryId: r.id,
-            type: 'recovery'
+            balance: 0
           });
         }
       });
@@ -367,7 +221,7 @@ export default function Customers({
             id: `bc_${bc.id}`,
             date: sh.date,
             sortKey: `${sh.date}T23:59`,
-            description: t(`Direct Deposit HBL Cash (Ref: ${bc.reference})`, `براہ راست ایچ بی ایل اکاؤنٹ میں کیش جمع کروایا`),
+            description: t(`Direct Deposit HBL Cash (Ref: ${bc.reference})`, `╪¿╪▒╪º█ü ╪▒╪º╪│╪¬ ╪º█î┌å ╪¿█î ╪º█î┘ä ╪º┌⌐╪º╪ñ┘å┘╣ ┘à█î┌║ ┌⌐█î╪┤ ╪¼┘à╪╣ ┌⌐╪▒┘ê╪º█î╪º`),
             debit: 0,
             credit: bc.amount,
             balance: 0
@@ -392,7 +246,7 @@ export default function Customers({
           sortKey: `${sale.date}T${sale.time || '23:59'}`,
           description: t(
             `Lube POS Return ${sale.invoiceNo}${itemsSummary ? ` - ${itemsSummary}` : ''}`,
-            `لیوب پی او ایس واپسی ${sale.invoiceNo}${itemsSummary ? ` - ${itemsSummary}` : ''}`
+            `┘ä█î┘ê╪¿ ┘╛█î ╪º┘ê ╪º█î╪│ ┘ê╪º┘╛╪│█î ${sale.invoiceNo}${itemsSummary ? ` - ${itemsSummary}` : ''}`
           ),
           debit: 0,
           credit: sale.total,
@@ -403,7 +257,7 @@ export default function Customers({
           id: `lps_rec_${sale.id}`,
           date: sale.date,
           sortKey: `${sale.date}T${sale.time || '23:59'}`,
-          description: t(`Lube POS Recovery: ${sale.invoiceNo}`, `لیوب پی او ایس وصولی: ${sale.invoiceNo}`),
+          description: t(`Lube POS Recovery: ${sale.invoiceNo}`, `┘ä█î┘ê╪¿ ┘╛█î ╪º┘ê ╪º█î╪│ ┘ê╪╡┘ê┘ä█î: ${sale.invoiceNo}`),
           debit: 0,
           credit: sale.total,
           balance: 0
@@ -415,7 +269,7 @@ export default function Customers({
           sortKey: `${sale.date}T${sale.time || '23:59'}`,
           description: t(
             `Lube POS Invoice ${sale.invoiceNo}${itemsSummary ? ` - ${itemsSummary}` : ''}`,
-            `لیوب پی او ایس بل ${sale.invoiceNo}${itemsSummary ? ` - ${itemsSummary}` : ''}`
+            `┘ä█î┘ê╪¿ ┘╛█î ╪º┘ê ╪º█î╪│ ╪¿┘ä ${sale.invoiceNo}${itemsSummary ? ` - ${itemsSummary}` : ''}`
           ),
           debit: sale.total,
           credit: 0,
@@ -450,7 +304,7 @@ export default function Customers({
   const handleAddNewCustomerSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!addName) {
-      showToast(t('Customer name is required.', 'گاہک کا نام لکھنا ضروری ہے۔'), 'error');
+      alert(t('Customer name is required.', '┌»╪º█ü┌⌐ ┌⌐╪º ┘å╪º┘à ┘ä┌⌐┌╛┘å╪º ╪╢╪▒┘ê╪▒█î █ü█Æ█ö'));
       return;
     }
 
@@ -482,7 +336,7 @@ export default function Customers({
 
     const amt = Number(txnAmount);
     if (!amt || amt <= 0) {
-      showToast(t('Please enter a valid amount.', 'براہ کرم درست رقم درج کریں۔'), 'error');
+      alert('Please enter a valid amount.');
       return;
     }
 
@@ -536,10 +390,7 @@ export default function Customers({
       }
     } else {
       // Mock log simulation directly on detail view ledger histories if no shift is currently running
-      showAlert(
-        t('Account Adjusted', 'کھاتہ ایڈجسٹمنٹ'),
-        t('Account adjusted! Direct balance updated. Note: To see this in Ledger timelines, register transactions inside a running shift.', 'کھاتہ ایڈجسٹ ہو گیا! براہ راست بیلنس اپ ڈیٹ ہو گیا ہے۔')
-      );
+      alert(t('Account adjusted! Direct balance updated. Note: To see this in Ledger timelines, register transactions inside a running shift.', '┌⌐┌╛╪º╪¬█ü ╪º█î┌ê╪¼╪│┘╣ █ü┘ê ┌»█î╪º! ╪¿╪▒╪º█ü ╪▒╪º╪│╪¬ ╪¿█î┘ä┘å╪│ ╪º┘╛ ┌ê█î┘╣ █ü┘ê ┌»█î╪º █ü█Æ█ö'));
     }
 
     // Reset inputs
@@ -555,7 +406,7 @@ export default function Customers({
     const isUrduLang = settings.language === 'ur';
 
     const msgEn = `Respected Custumer ${currentCustomer.name}, this is a reminder from *${settings.stationName}*. Your outstanding balance is *${getCurrencySymbol(settings)} ${currentCustomer.balance.toLocaleString()}*. Please clear dues. Thank you!`;
-    const msgUr = `محترم گاہک ${currentCustomer.urduName}، مطلع کیا جاتا ہے کہ *${settings.stationUrduName}* پٹرولیم کھاتے کی فائنل بقایا رقم *${getCurrencySymbol(settings)} ${currentCustomer.balance.toLocaleString()}* ہے۔ مہربانی فرما کر واجب الادا رقم ادا کیجئے ۔ شکریہ!`;
+    const msgUr = `┘à╪¡╪¬╪▒┘à ┌»╪º█ü┌⌐ ${currentCustomer.urduName}╪î ┘à╪╖┘ä╪╣ ┌⌐█î╪º ╪¼╪º╪¬╪º █ü█Æ ┌⌐█ü *${settings.stationUrduName}* ┘╛┘╣╪▒┘ê┘ä█î┘à ┌⌐┌╛╪º╪¬█Æ ┌⌐█î ┘ü╪º╪ª┘å┘ä ╪¿┘é╪º█î╪º ╪▒┘é┘à *${getCurrencySymbol(settings)} ${currentCustomer.balance.toLocaleString()}* █ü█Æ█ö ┘à█ü╪▒╪¿╪º┘å█î ┘ü╪▒┘à╪º ┌⌐╪▒ ┘ê╪º╪¼╪¿ ╪º┘ä╪º╪»╪º ╪▒┘é┘à ╪º╪»╪º ┌⌐█î╪¼╪ª█Æ █ö ╪┤┌⌐╪▒█î█ü!`;
 
     const encoded = encodeURIComponent(isUrduLang ? msgUr : msgEn);
     const link = `https://wa.me/${currentCustomer.contact.replace(/[^0-9]/g, '')}?text=${encoded}`;
@@ -573,10 +424,10 @@ export default function Customers({
           <span className="font-mono text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-0.5">OPERATIONS</span>
           <h2 className="font-sans text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
             <User className="h-6 w-6 text-orange-600" />
-            <span>{t('Accounts Receivable', 'گاہکوں کا بقایا کھاتہ')}</span>
+            <span>{t('Accounts Receivable', '┌»╪º█ü┌⌐┘ê┌║ ┌⌐╪º ╪¿┘é╪º█î╪º ┌⌐┌╛╪º╪¬█ü')}</span>
           </h2>
           <p className="font-sans text-xs text-slate-500 mt-1">
-            {t('Manage outstanding credit lines, ledger statement reconciliations, reminders and receipts.', 'صارفین کی بقایاجات، کریڈٹ لمٹس اور واٹس ایپ چالان رسیپٹس کا مکمل کنٹرول۔')}
+            {t('Manage outstanding credit lines, ledger statement reconciliations, reminders and receipts.', '╪╡╪º╪▒┘ü█î┘å ┌⌐█î ╪¿┘é╪º█î╪º╪¼╪º╪¬╪î ┌⌐╪▒█î┌ê┘╣ ┘ä┘à┘╣╪│ ╪º┘ê╪▒ ┘ê╪º┘╣╪│ ╪º█î┘╛ ┌å╪º┘ä╪º┘å ╪▒╪│█î┘╛┘╣╪│ ┌⌐╪º ┘à┌⌐┘à┘ä ┌⌐┘å┘╣╪▒┘ê┘ä█ö')}
           </p>
         </div>
 
@@ -593,10 +444,10 @@ export default function Customers({
                     : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
                 }`}
               >
-                {filter === 'all' && t('All-Time', 'کل وقت')}
-                {filter === 'weekly' && t('Weekly', 'ہفتہ وار')}
-                {filter === 'monthly' && t('Monthly', 'ماہانہ')}
-                {filter === 'yearly' && t('Yearly', 'سالانہ')}
+                {filter === 'all' && t('All-Time', '┌⌐┘ä ┘ê┘é╪¬')}
+                {filter === 'weekly' && t('Weekly', '█ü┘ü╪¬█ü ┘ê╪º╪▒')}
+                {filter === 'monthly' && t('Monthly', '┘à╪º█ü╪º┘å█ü')}
+                {filter === 'yearly' && t('Yearly', '╪│╪º┘ä╪º┘å█ü')}
               </button>
             ))}
           </div>
@@ -606,7 +457,7 @@ export default function Customers({
             className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2.5 font-sans text-xs font-bold text-white shadow-md shadow-orange-500/10 hover:bg-orange-700 transition-all cursor-pointer"
           >
             <UserPlus className="h-4 w-4" />
-            <span>{t('+ Add Customer', 'نیا گاہک اکاؤنٹ کھولیں')}</span>
+            <span>{t('+ Add Customer', '┘å█î╪º ┌»╪º█ü┌⌐ ╪º┌⌐╪º╪ñ┘å┘╣ ┌⌐┌╛┘ê┘ä█î┌║')}</span>
           </button>
         </div>
       </div>
@@ -628,7 +479,7 @@ export default function Customers({
           </div>
           <div className="mt-3 flex items-center gap-1 text-[10px] text-amber-700 font-bold">
             <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-            <span>{t('Total active loans outstanding', 'فعال ادھار بیلنس')}</span>
+            <span>{t('Total active loans outstanding', '┘ü╪╣╪º┘ä ╪º╪»┌╛╪º╪▒ ╪¿█î┘ä┘å╪│')}</span>
           </div>
         </div>
 
@@ -664,7 +515,7 @@ export default function Customers({
             </div>
           </div>
           <div className="mt-3 flex items-center gap-1 text-[10px] text-rose-700 font-bold">
-            <span>{t('New Udhar given in this period', 'اس مدت کے دوران دیا گیا نیا ادھار')}</span>
+            <span>{t('New Udhar given in this period', '╪º╪│ ┘à╪»╪¬ ┌⌐█Æ ╪»┘ê╪▒╪º┘å ╪»█î╪º ┌»█î╪º ┘å█î╪º ╪º╪»┌╛╪º╪▒')}</span>
           </div>
         </div>
 
@@ -682,7 +533,7 @@ export default function Customers({
             </div>
           </div>
           <div className="mt-3 flex items-center gap-1 text-[10px] text-blue-700 font-bold">
-            <span>{t('Total collection from debtors', 'وصول شدہ کل ادھار رقم')}</span>
+            <span>{t('Total collection from debtors', '┘ê╪╡┘ê┘ä ╪┤╪»█ü ┌⌐┘ä ╪º╪»┌╛╪º╪▒ ╪▒┘é┘à')}</span>
           </div>
         </div>
       </div>
@@ -700,7 +551,7 @@ export default function Customers({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t('Search by name/phone...', 'کھاتہ تلا ش کریں...')}
+                placeholder={t('Search by name/phone...', '┌⌐┌╛╪º╪¬█ü ╪¬┘ä╪º ╪┤ ┌⌐╪▒█î┌║...')}
                 className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 font-sans text-sm outline-hidden focus:border-orange-500 focus:bg-white"
               />
             </div>
@@ -708,10 +559,10 @@ export default function Customers({
             {/* Filter buttons track */}
             <div className="flex flex-wrap gap-1.5 border-t border-slate-100 pt-3">
               {[
-                { id: 'all', label: 'All', urdu: 'تمام' },
-                { id: 'udhar', label: 'Udhar Only', urdu: 'صرف بقایا' },
-                { id: 'advance', label: 'Advance Paid', urdu: 'ایڈوانس' },
-                { id: 'regular', label: 'Regular', urdu: 'نامل' }
+                { id: 'all', label: 'All', urdu: '╪¬┘à╪º┘à' },
+                { id: 'udhar', label: 'Udhar Only', urdu: '╪╡╪▒┘ü ╪¿┘é╪º█î╪º' },
+                { id: 'advance', label: 'Advance Paid', urdu: '╪º█î┌ê┘ê╪º┘å╪│' },
+                { id: 'regular', label: 'Regular', urdu: '┘å╪º┘à┘ä' }
               ].map(f => (
                 <button
                   key={f.id}
@@ -734,14 +585,14 @@ export default function Customers({
             {customers.length === 0 ? (
               <EmptyState
                 icon={User}
-                title={t('No customers yet.', 'کوئی کھاتہ دار موجود نہیں ہے۔')}
-                description={t('Add your first customer account to begin tracking payments.', 'کھاتہ اور ادھار فروخت ریکارڈ کرنے کے لیے پہلا گاہک شامل کریں۔')}
-                actionLabel={t('+ Add First Customer', '+ پہلا گاہک شامل کریں')}
+                title={t('No customers yet.', '┌⌐┘ê╪ª█î ┌⌐┌╛╪º╪¬█ü ╪»╪º╪▒ ┘à┘ê╪¼┘ê╪» ┘å█ü█î┌║ █ü█Æ█ö')}
+                description={t('Add your first customer account to begin tracking payments.', '┌⌐┌╛╪º╪¬█ü ╪º┘ê╪▒ ╪º╪»┌╛╪º╪▒ ┘ü╪▒┘ê╪«╪¬ ╪▒█î┌⌐╪º╪▒┌ê ┌⌐╪▒┘å█Æ ┌⌐█Æ ┘ä█î█Æ ┘╛█ü┘ä╪º ┌»╪º█ü┌⌐ ╪┤╪º┘à┘ä ┌⌐╪▒█î┌║█ö')}
+                actionLabel={t('+ Add First Customer', '+ ┘╛█ü┘ä╪º ┌»╪º█ü┌⌐ ╪┤╪º┘à┘ä ┌⌐╪▒█î┌║')}
                 onAction={() => setShowAddModal(true)}
               />
             ) : filteredCustomers.length === 0 ? (
               <div className="rounded-xl border border-dashed border-slate-200 py-12 text-center text-slate-400 font-sans text-xs bg-white">
-                {t('No customers matched filters.', 'کوئی کھاتہ میچ نہیں ہوا۔')}
+                {t('No customers matched filters.', '┌⌐┘ê╪ª█î ┌⌐┌╛╪º╪¬█ü ┘à█î┌å ┘å█ü█î┌║ █ü┘ê╪º█ö')}
               </div>
             ) : (
               filteredCustomers.map((cust, idx) => {
@@ -770,30 +621,22 @@ export default function Customers({
                     {/* Visual state color bar */}
                     <div className={`absolute top-0 bottom-0 left-0 w-1.5 rounded-l-md ${stateColorBar}`}></div>
 
-                    <div className="pl-2.5 flex-1 min-w-0">
+                    <div className="pl-2.5">
                       <h4 className="font-sans text-sm font-bold text-slate-800">
                         {t(cust.name, cust.urduName)}
                       </h4>
                       <span className="font-mono text-[10px] text-slate-400 mt-1 block tracking-tight">
-                        📞 {cust.contact}
+                        ≡ƒô₧ {cust.contact}
                       </span>
                     </div>
 
-                    <div className="flex flex-col items-end gap-1.5 shrink-0">
+                    <div className="text-right">
                       <span className={`font-mono text-xs font-bold block ${isOwed ? 'text-rose-600' : isAdv ? 'text-emerald-700' : 'text-slate-400'}`}>
                         {isOwed ? `${formatCurrency(outstanding, settings)}` : isAdv ? `- ${formatCurrency(Math.abs(outstanding), settings)}` : 'Balanced'}
                       </span>
-                      <span className="font-sans text-[9px] text-slate-400 uppercase tracking-widest block">
-                        {isOwed ? t('Receivable', 'واجب الوصول') : isAdv ? t('Advance', 'ایڈوانس بقایا') : t('Settled', 'بے باق')}
+                      <span className="font-sans text-[9px] text-slate-400 uppercase tracking-widest mt-1 block">
+                        {isOwed ? t('Receivable', '┘ê╪º╪¼╪¿ ╪º┘ä┘ê╪╡┘ê┘ä') : isAdv ? t('Advance', '╪º█î┌ê┘ê╪º┘å╪│ ╪¿┘é╪º█î╪º') : t('Settled', '╪¿█Æ ╪¿╪º┘é')}
                       </span>
-                      {/* Ledger button */}
-                      <button
-                        onClick={e => { e.stopPropagation(); openCustomerLedger(cust); }}
-                        className="flex items-center gap-1 rounded-md bg-slate-800 px-2 py-0.5 font-sans text-[10px] font-bold text-white hover:bg-slate-900 transition-colors cursor-pointer mt-1"
-                      >
-                        <FileBarChart2 className="h-3 w-3" />
-                        <span>View Ledger</span>
-                      </button>
                     </div>
 
                   </motion.button>
@@ -826,13 +669,13 @@ export default function Customers({
                 </div>
 
                 {/* WhatsApp Statement & trigger shortcuts */}
-                <div className="flex flex-wrap gap-2 self-start sm:self-center">
+                <div className="flex gap-2 self-start sm:self-center">
                   <button
                     onClick={triggerWhatsAppReminder}
                     className="flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-sans text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-colors cursor-pointer"
                   >
                     <MessageSquare className="h-3.5 w-3.5 text-emerald-600" />
-                    <span>{t('WhatsApp Statement', 'چالان واٹس ایپ')}</span>
+                    <span>{t('WhatsApp Statement', '┌å╪º┘ä╪º┘å ┘ê╪º┘╣╪│ ╪º█î┘╛')}</span>
                   </button>
 
                   <button
@@ -840,48 +683,7 @@ export default function Customers({
                     className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-sans text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
                   >
                     <FileText className="h-3.5 w-3.5" />
-                    <span>{t('Statement PDF', 'اکاؤنٹ لیجر PDF')}</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setEditCustName(currentCustomer.name);
-                      setEditCustUrduName(currentCustomer.urduName);
-                      setEditCustContact(currentCustomer.contact);
-                      setEditCustAddress(currentCustomer.address);
-                      setEditCustLimit(String(currentCustomer.creditLimit));
-                      setShowEditModal(true);
-                    }}
-                    className="flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 font-sans text-xs font-bold text-blue-700 hover:bg-blue-100 transition-colors cursor-pointer"
-                  >
-                    <span>✏️ {t('Edit', 'ترمیم')}</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      if (currentCustomer.balance !== 0) {
-                        showToast(t(
-                          `Cannot delete “${currentCustomer.name}” — balance Rs.${currentCustomer.balance.toLocaleString()} must be cleared first.`,
-                          `کھاتہ حذف نہیں ہو سکتا ہے کیونکہ بیلنس باقی ہے۔`
-                        ), 'error');
-                        return;
-                      }
-                      showConfirm(
-                        t('Confirm Customer Deletion', 'کسٹمر حذف کرنے کی تصدیق'),
-                        t(
-                          `Delete “${currentCustomer.name}”? This cannot be undone.`,
-                          `کیا آپ اس کھاتہ دار کو حذف کرنا چاہتے ہیں؟`
-                        ),
-                        () => {
-                          onDeleteCustomer(currentCustomer.id);
-                          setSelectedCustomerId(null);
-                        }
-                      );
-                    }}
-                    className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 font-sans text-xs font-bold text-red-700 hover:bg-red-100 transition-colors cursor-pointer"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    <span>{t('Delete', 'حذف')}</span>
+                    <span>{t('Statement PDF', '╪º┌⌐╪º╪ñ┘å┘╣ ┘ä█î╪¼╪▒ PDF')}</span>
                   </button>
                 </div>
               </div>
@@ -890,11 +692,11 @@ export default function Customers({
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="rounded-lg p-4 bg-slate-50 border border-slate-100 font-sans text-xs flex flex-col justify-between relative overflow-hidden">
                   <div className="absolute top-0 bottom-0 left-0 w-1 bg-red-400"></div>
-                  <span className="text-slate-400 font-bold uppercase tracking-wider">{t('Remaining Credit Space:', 'باقی گنجائش بقایا قرض:')}</span>
+                  <span className="text-slate-400 font-bold uppercase tracking-wider">{t('Remaining Credit Space:', '╪¿╪º┘é█î ┌»┘å╪¼╪º╪ª╪┤ ╪¿┘é╪º█î╪º ┘é╪▒╪╢:')}</span>
                   <div className="mt-2.5 flex items-end justify-between">
                     <div>
                       <strong className="text-sm font-bold text-slate-800">{formatCurrency(Math.max(0, currentCustomer.creditLimit - currentCustomer.balance), settings)}</strong>
-                      <span className="text-[10px] text-slate-400 block mt-0.5">{t('Allocated Limit:', 'مقررہ حد کریڈٹ:')} {formatCurrency(currentCustomer.creditLimit, settings)}</span>
+                      <span className="text-[10px] text-slate-400 block mt-0.5">{t('Allocated Limit:', '┘à┘é╪▒╪▒█ü ╪¡╪» ┌⌐╪▒█î┌ê┘╣:')} {formatCurrency(currentCustomer.creditLimit, settings)}</span>
                     </div>
                     
                     {/* Limit exhaustion gauge */}
@@ -905,12 +707,12 @@ export default function Customers({
                 </div>
 
                 <div className="rounded-lg p-4 bg-orange-55/10 border border-orange-100 flex flex-col justify-between">
-                  <span className="font-sans text-xs text-orange-600 font-bold uppercase tracking-wider">{t('Total Balance Outstanding Due:', 'حتمی واجب الادا بیلنس رقم:')}</span>
+                  <span className="font-sans text-xs text-orange-600 font-bold uppercase tracking-wider">{t('Total Balance Outstanding Due:', '╪¡╪¬┘à█î ┘ê╪º╪¼╪¿ ╪º┘ä╪º╪»╪º ╪¿█î┘ä┘å╪│ ╪▒┘é┘à:')}</span>
                   <div className="mt-2.5">
                     <strong className="font-mono text-xl font-bold text-orange-700">
                       {formatCurrency(currentCustomer.balance, settings)}
                     </strong>
-                    <span className="font-sans text-[10px] text-orange-500 tracking-tight block mt-1">{t('Receivable balance pending collection', 'قرض دھندہ کھاتہ بقایا جات')}</span>
+                    <span className="font-sans text-[10px] text-orange-500 tracking-tight block mt-1">{t('Receivable balance pending collection', '┘é╪▒╪╢ ╪»┌╛┘å╪»█ü ┌⌐┌╛╪º╪¬█ü ╪¿┘é╪º█î╪º ╪¼╪º╪¬')}</span>
                   </div>
                 </div>
               </div>
@@ -923,18 +725,18 @@ export default function Customers({
                     className="w-full py-2 bg-slate-800 text-white font-sans text-xs font-bold rounded-md hover:bg-slate-900 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <PlusCircle className="h-4 w-4" />
-                    <span>{t('ADD MANUAL ADJUSTMENT TRANSACTION', 'کھاتے میں براہ راست فیس/ادائیگی شامل کریں')}</span>
+                    <span>{t('ADD MANUAL ADJUSTMENT TRANSACTION', '┌⌐┌╛╪º╪¬█Æ ┘à█î┌║ ╪¿╪▒╪º█ü ╪▒╪º╪│╪¬ ┘ü█î╪│/╪º╪»╪º╪ª█î┌»█î ╪┤╪º┘à┘ä ┌⌐╪▒█î┌║')}</span>
                   </button>
                 ) : (
                   <form onSubmit={handleManualTransactionSubmit} className="space-y-4">
                     <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-3">
-                      <strong className="font-sans text-xs font-bold text-slate-700">{t('Direct Ledger Correction Entry:', 'کھاتیدار تصحیح فارم:')}</strong>
+                      <strong className="font-sans text-xs font-bold text-slate-700">{t('Direct Ledger Correction Entry:', '┌⌐┌╛╪º╪¬█î╪»╪º╪▒ ╪¬╪╡╪¡█î╪¡ ┘ü╪º╪▒┘à:')}</strong>
                       <button type="button" onClick={() => setIsAddingTxn(false)} className="text-xs font-bold text-slate-400 hover:text-slate-650">Cancel</button>
                     </div>
 
                     <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t('Transaction nature:', 'انٹری کی قسم:')}</label>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t('Transaction nature:', '╪º┘å┘╣╪▒█î ┌⌐█î ┘é╪│┘à:')}</label>
                         <div className="grid grid-cols-2 gap-1.5">
                           <button
                             type="button"
@@ -943,7 +745,7 @@ export default function Customers({
                               txnType === 'debit' ? 'border-red-500 bg-red-50 text-red-700 shadow-xs font-bold' : 'border-slate-200 text-slate-550'
                             }`}
                           >
-                            📈 {t('DEBIT (Credit Sale)', 'قرض / بل فیس')}
+                            ≡ƒôê {t('DEBIT (Credit Sale)', '┘é╪▒╪╢ / ╪¿┘ä ┘ü█î╪│')}
                           </button>
                           <button
                             type="button"
@@ -952,13 +754,13 @@ export default function Customers({
                               txnType === 'credit' ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-xs font-bold' : 'border-slate-200 text-slate-550'
                             }`}
                           >
-                            📉 {t('CREDIT (Payment Rcvd)', 'ادائیگی وصولی')}
+                            ≡ƒôë {t('CREDIT (Payment Rcvd)', '╪º╪»╪º╪ª█î┌»█î ┘ê╪╡┘ê┘ä█î')}
                           </button>
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t('Amount (PKR Rupees):', 'رقم (روپے):')}</label>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t('Amount (PKR Rupees):', '╪▒┘é┘à (╪▒┘ê┘╛█Æ):')}</label>
                         <input
                           type="number"
                           value={txnAmount}
@@ -972,13 +774,13 @@ export default function Customers({
                       {txnType === 'debit' ? (
                         <>
                           <div>
-                            <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t('Product:', 'پراڈکٹ:')}</label>
+                            <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t('Product:', '┘╛╪▒╪º┌ê┌⌐┘╣:')}</label>
                             <select value={txnProdId} onChange={(e) => setTxnProdId(e.target.value)} className="w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-xs">
                               {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                             </select>
                           </div>
                           <div>
-                            <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t('Litres Volume (Optional):', 'مقدار لیٹر (اختیاری):')}</label>
+                            <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t('Litres Volume (Optional):', '┘à┘é╪»╪º╪▒ ┘ä█î┘╣╪▒ (╪º╪«╪¬█î╪º╪▒█î):')}</label>
                             <input
                               type="number"
                               value={txnQty}
@@ -990,7 +792,7 @@ export default function Customers({
                         </>
                       ) : (
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t('Method:', 'طریقہ:')}</label>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t('Method:', '╪╖╪▒█î┘é█ü:')}</label>
                           <select value={txnMode} onChange={(e) => setTxnMode(e.target.value as any)} className="w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-xs">
                             <option value="cash">Cash</option>
                             <option value="cheque">Cheque</option>
@@ -1000,7 +802,7 @@ export default function Customers({
                       )}
 
                       <div className="sm:col-span-2">
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t('Narration / Comment Note:', 'تفصیل / نوٹ:')}</label>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t('Narration / Comment Note:', '╪¬┘ü╪╡█î┘ä / ┘å┘ê┘╣:')}</label>
                         <input
                           type="text"
                           value={txnNote}
@@ -1015,7 +817,7 @@ export default function Customers({
                       type="submit"
                       className="w-full py-2 bg-orange-600 text-white font-sans text-xs font-bold rounded-md hover:bg-orange-700 cursor-pointer shadow-md shadow-orange-500/10"
                     >
-                      {t('SUBMIT ADJUSTMENT INVOICE', 'تصحیح انٹری شامل کریں')}
+                      {t('SUBMIT ADJUSTMENT INVOICE', '╪¬╪╡╪¡█î╪¡ ╪º┘å┘╣╪▒█î ╪┤╪º┘à┘ä ┌⌐╪▒█î┌║')}
                     </button>
                   </form>
                 )}
@@ -1024,26 +826,25 @@ export default function Customers({
               {/* Transaction Ledger Timelines */}
               <div className="space-y-3.5 pt-1.5">
                 <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-3">
-                  {t('Comprehensive Ledger History & Ledger Cards', 'تفصیلی کھاتہ کار روزنامچہ')}
+                  {t('Comprehensive Ledger History & Ledger Cards', '╪¬┘ü╪╡█î┘ä█î ┌⌐┌╛╪º╪¬█ü ┌⌐╪º╪▒ ╪▒┘ê╪▓┘å╪º┘à┌å█ü')}
                 </h4>
 
                 <div className="overflow-x-auto rounded-lg border border-slate-105">
                   <table className="w-full border-collapse text-left font-sans text-xs">
                     <thead>
                       <tr className="bg-slate-50 border-b border-slate-150 text-slate-650 font-bold">
-                        <th className="py-2.5 px-3">{t('Session Date', 'تاریخ')}</th>
-                        <th className="py-2.5 px-3">{t('Description / Narrative', 'تفصیل')}</th>
-                        <th className="py-2.5 px-3 text-right">{t('Debit (Dr (+))', 'ڈیمانڈ / منہا (+)')}</th>
-                        <th className="py-2.5 px-3 text-right">{t('Credit (Cr (–))', 'وصول / جمع (–)')}</th>
-                        <th className="py-2.5 px-3 text-right">{t('Running Balance', 'بقایا حاصل')}</th>
-                        <th className="py-2.5 px-3 text-center w-16">{t('Actions', 'اقدامات')}</th>
+                        <th className="py-2.5 px-3">{t('Session Date', '╪¬╪º╪▒█î╪«')}</th>
+                        <th className="py-2.5 px-3">{t('Description / Narrative', '╪¬┘ü╪╡█î┘ä')}</th>
+                        <th className="py-2.5 px-3 text-right">{t('Debit (Dr (+))', '┌ê█î┘à╪º┘å┌ê / ┘à┘å█ü╪º (+)')}</th>
+                        <th className="py-2.5 px-3 text-right">{t('Credit (Cr (ΓÇô))', '┘ê╪╡┘ê┘ä / ╪¼┘à╪╣ (ΓÇô)')}</th>
+                        <th className="py-2.5 px-3 text-right">{t('Running Balance', '╪¿┘é╪º█î╪º ╪¡╪º╪╡┘ä')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-slate-700">
                       {ledgerEntries.length === 0 ? (
                         <tr>
-                          <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
-                            {t('No shift transaction ledger cards matched this debtor history.', 'اس گاہک کی پچھلی کوئی انٹری تاحال درج نہیں ہے۔')}
+                          <td colSpan={5} className="py-8 text-center text-slate-400 font-medium">
+                            {t('No shift transaction ledger cards matched this debtor history.', '╪º╪│ ┌»╪º█ü┌⌐ ┌⌐█î ┘╛┌å┌╛┘ä█î ┌⌐┘ê╪ª█î ╪º┘å┘╣╪▒█î ╪¬╪º╪¡╪º┘ä ╪»╪▒╪¼ ┘å█ü█î┌║ █ü█Æ█ö')}
                           </td>
                         </tr>
                       ) : (
@@ -1052,41 +853,13 @@ export default function Customers({
                             <td className="py-3 px-3 font-mono font-medium text-slate-500">{ent.date}</td>
                             <td className="py-3 px-3 pr-5 font-medium text-slate-800 leading-tight">{ent.description}</td>
                             <td className="py-3 px-3 text-right font-mono font-bold text-rose-550">
-                              {ent.debit > 0 ? `${formatCurrency(ent.debit, settings)}` : '—'}
+                              {ent.debit > 0 ? `${formatCurrency(ent.debit, settings)}` : 'ΓÇö'}
                             </td>
                             <td className="py-3 px-3 text-right font-mono font-bold text-emerald-600">
-                              {ent.credit > 0 ? `${formatCurrency(ent.credit, settings)}` : '—'}
+                              {ent.credit > 0 ? `${formatCurrency(ent.credit, settings)}` : 'ΓÇö'}
                             </td>
                             <td className="py-3 px-3 text-right font-mono font-bold text-slate-850">
                               {formatCurrency(ent.balance, settings)}
-                            </td>
-                            <td className="py-3 px-3 text-center">
-                              {ent.shiftId && ent.entryId && ent.type ? (
-                                <button
-                                  onClick={() => {
-                                    showConfirm(
-                                      t('Confirm Entry Deletion', 'انٹری حذف کرنے کی تصدیق'),
-                                      t(
-                                        `Delete this ledger entry? This will revert the transaction and update the customer's balance.`,
-                                        `کیا آپ واقعی اس انٹری کو حذف کرنا چاہتے ہیں؟ اس سے کسٹمر کا بیلنس بھی تبدیل ہو جائے گا۔`
-                                      ),
-                                      () => {
-                                        if (ent.type === 'debit') {
-                                          onDeleteDebitEntry(ent.shiftId!, ent.entryId!);
-                                        } else {
-                                          onDeleteRecoveryEntry(ent.shiftId!, ent.entryId!);
-                                        }
-                                      }
-                                    );
-                                  }}
-                                  className="text-red-500 hover:text-red-750 font-bold cursor-pointer text-xs p-1"
-                                  title={t('Delete Entry', 'حذف کریں')}
-                                >
-                                  🗑️
-                                </button>
-                              ) : (
-                                <span className="text-slate-300 font-sans text-[10px]">—</span>
-                              )}
                             </td>
                           </tr>
                         ))
@@ -1101,7 +874,7 @@ export default function Customers({
           ) : (
             <div className="h-full rounded-xl border border-dashed border-slate-250 py-32 text-center text-slate-400 font-sans text-sm flex flex-col justify-center items-center gap-3">
               <Coins className="h-10 w-10 text-slate-300" />
-              <span>{t('Select a customer account on the left sidebar to display credit profiles and ledger logs.', 'بائیں پینل سے کسی گاہک کا انتخاب کریں تاکہ اس کا لیجر کھاتہ کھل سکے۔')}</span>
+              <span>{t('Select a customer account on the left sidebar to display credit profiles and ledger logs.', '╪¿╪º╪ª█î┌║ ┘╛█î┘å┘ä ╪│█Æ ┌⌐╪│█î ┌»╪º█ü┌⌐ ┌⌐╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐╪▒█î┌║ ╪¬╪º┌⌐█ü ╪º╪│ ┌⌐╪º ┘ä█î╪¼╪▒ ┌⌐┌╛╪º╪¬█ü ┌⌐┌╛┘ä ╪│┌⌐█Æ█ö')}</span>
             </div>
           )}
         </div>
@@ -1127,14 +900,14 @@ export default function Customers({
               <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
                 <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-2">
                   <UserPlus className="h-5 w-5 text-orange-600" />
-                  <span>{t('Register New Customer Account', 'نیا کھاتیدار گاہک رجسٹر کریں')}</span>
+                  <span>{t('Register New Customer Account', '┘å█î╪º ┌⌐┌╛╪º╪¬█î╪»╪º╪▒ ┌»╪º█ü┌⌐ ╪▒╪¼╪│┘╣╪▒ ┌⌐╪▒█î┌║')}</span>
                 </h3>
                 <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer text-xl">&times;</button>
               </div>
 
               <form onSubmit={handleAddNewCustomerSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Customer / Company Name (English):', 'گاہک یا کمپنی کا نام (انگلش):')}</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Customer / Company Name (English):', '┌»╪º█ü┌⌐ █î╪º ┌⌐┘à┘╛┘å█î ┌⌐╪º ┘å╪º┘à (╪º┘å┌»┘ä╪┤):')}</label>
                   <input
                     type="text"
                     required
@@ -1146,18 +919,18 @@ export default function Customers({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Urdu Name Representation (Bilingual):', 'گاہک یا کمپنی کا نام (اردو):')}</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Urdu Name Representation (Bilingual):', '┌»╪º█ü┌⌐ █î╪º ┌⌐┘à┘╛┘å█î ┌⌐╪º ┘å╪º┘à (╪º╪▒╪»┘ê):')}</label>
                   <input
                     type="text"
                     value={addUrduName}
                     onChange={(e) => setAddUrduName(e.target.value)}
-                    placeholder="مثال: حسیب روڈ ملز"
+                    placeholder="┘à╪½╪º┘ä: ╪¡╪│█î╪¿ ╪▒┘ê┌ê ┘à┘ä╪▓"
                     className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('WhatsApp Mobile No (WhatsApp Reminder):', 'واٹس ایپ موبائل نمبر (چالان کیلۓ):')}</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('WhatsApp Mobile No (WhatsApp Reminder):', '┘ê╪º┘╣╪│ ╪º█î┘╛ ┘à┘ê╪¿╪º╪ª┘ä ┘å┘à╪¿╪▒ (┌å╪º┘ä╪º┘å ┌⌐█î┘ä█ô):')}</label>
                   <input
                     type="text"
                     value={addContact}
@@ -1168,7 +941,7 @@ export default function Customers({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Operational Depot Address:', 'کمپنی کا کامرس پتہ:')}</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Operational Depot Address:', '┌⌐┘à┘╛┘å█î ┌⌐╪º ┌⌐╪º┘à╪▒╪│ ┘╛╪¬█ü:')}</label>
                   <input
                     type="text"
                     value={addAddress}
@@ -1180,7 +953,7 @@ export default function Customers({
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t(`Credit Limit (${getCurrencySymbol(settings)}):`, 'قرض کی انتہائ حد:')}</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t(`Credit Limit (${getCurrencySymbol(settings)}):`, '┘é╪▒╪╢ ┌⌐█î ╪º┘å╪¬█ü╪º╪ª ╪¡╪»:')}</label>
                     <input
                       type="number"
                       value={addLimit}
@@ -1190,7 +963,7 @@ export default function Customers({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Opening Balance Dues:', 'ابتدائی بقایا رقم:')}</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Opening Balance Dues:', '╪º╪¿╪¬╪»╪º╪ª█î ╪¿┘é╪º█î╪º ╪▒┘é┘à:')}</label>
                     <input
                       type="number"
                       value={addOpeningBal}
@@ -1205,101 +978,13 @@ export default function Customers({
                   type="submit"
                   className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-sans text-sm font-bold tracking-wider rounded-lg shadow-md mt-4 cursor-pointer"
                 >
-                  {t('CREATE ACCOUNT IN LEDGER', 'کھاتہ کھولیں')}
+                  {t('CREATE ACCOUNT IN LEDGER', '┌⌐┌╛╪º╪¬█ü ┌⌐┌╛┘ê┘ä█î┌║')}
                 </button>
               </form>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* ==========================================
-          EDIT CUSTOMER MODAL
-          ========================================== */}
-      <AnimatePresence>
-        {showEditModal && currentCustomer && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.95, y: 20, opacity: 0 }}
-              animate={{ scale: 1, y: 0, opacity: 1 }}
-              exit={{ scale: 0.95, y: 20, opacity: 0 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-              className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
-            >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-5">
-                <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-2">
-                  <User className="h-5 w-5 text-blue-600" />
-                  <span>{t('Edit Customer', 'کھاتہ دار ترمیم')}</span>
-                </h3>
-                <button onClick={() => setShowEditModal(false)} className="text-slate-400 hover:text-slate-700 text-xl font-bold cursor-pointer">&times;</button>
-              </div>
-
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                if (!editCustName) return;
-                onUpdateCustomer({
-                  ...currentCustomer,
-                  name: editCustName,
-                  urduName: editCustUrduName || editCustName,
-                  contact: editCustContact,
-                  address: editCustAddress,
-                  creditLimit: Number(editCustLimit) || 0
-                });
-                setShowEditModal(false);
-                showToast(t('Customer profile updated!', 'کھاتہ دار معلومات اپڈیٹ ہو گئی!'), 'success');
-              }} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Name (English):', 'نام (انگریزی):')}</label>
-                    <input type="text" required value={editCustName} onChange={e => setEditCustName(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-blue-500 outline-none" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Name (Urdu):', 'نام (اردو):')}</label>
-                    <input type="text" value={editCustUrduName} onChange={e => setEditCustUrduName(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-blue-500 outline-none" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Contact:', 'رابطہ:')}</label>
-                    <input type="text" value={editCustContact} onChange={e => setEditCustContact(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-blue-500 outline-none" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Address:', 'پتہ:')}</label>
-                    <input type="text" value={editCustAddress} onChange={e => setEditCustAddress(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-blue-500 outline-none" />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Credit Limit (Rs):', 'ادھار حد (روپے):')}</label>
-                    <input type="number" min="0" value={editCustLimit} onChange={e => setEditCustLimit(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-blue-500 outline-none" />
-                  </div>
-                </div>
-                <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-sans text-sm font-bold tracking-wider rounded-lg shadow-md cursor-pointer">
-                  {t('SAVE CHANGES', 'تبدیلیاں محفوظ کریں')}
-                </button>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── FULL-SCREEN PARTY LEDGER MODAL ── */}
-      <PartyLedgerModal
-        isOpen={isLedgerOpen}
-        onClose={() => setIsLedgerOpen(false)}
-        party={ledgerParty}
-        entries={modalLedgerEntries}
-        settings={settings}
-        debitLabel="Credit Sale (Dr)"
-        creditLabel="Recovery (Cr)"
-        accentColor="orange"
-      />
 
     </div>
   );

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Layers, ChevronRight, ArrowLeft, Trash2, Edit, CheckCircle, Info, Database, Plus } from 'lucide-react';
+import { useStation } from '../../../contexts/StationContext';
 import { Tank, Product } from '../../../types';
 import EmptyState from '../../ui/EmptyState';
 import { t as translate } from '../../../lib/translations';
@@ -23,6 +24,7 @@ export default function TankWizard({
   onDeleteTank,
   onLogAudit
 }: TankWizardProps) {
+  const { showConfirm, showToast } = useStation();
   const t = (en: string, ur: string) => translate(en, ur, language);
 
   // States
@@ -91,7 +93,7 @@ export default function TankWizard({
     const cm = Number(tankForm.dipChartCm);
     const lit = Number(tankForm.dipChartLiters);
     if (isNaN(cm) || isNaN(lit) || cm <= 0 || lit <= 0) {
-      alert(t('Please enter valid centimeters and liters!', 'براہ کرم درست ڈِپ سینٹی میٹر اور لیٹر لکھیں!'));
+      showToast(t('Please enter valid centimeters and liters!', 'براہ کرم درست ڈِپ سینٹی میٹر اور لیٹر لکھیں!'), 'error');
       return;
     }
     const updated = [...tempDipChart, { cm, liters: lit }].sort((a, b) => a.cm - b.cm);
@@ -106,13 +108,13 @@ export default function TankWizard({
   const handleNextStep = () => {
     if (wizardStep === 1) {
       if (!tankForm.name || !tankForm.physicalLabel) {
-        alert(t('Please complete tank names and physical labels!', 'براہ کرم ٹینک کا نام اور کوڈ درج کریں!'));
+        showToast(t('Please complete tank names and physical labels!', 'براہ کرم ٹینک کا نام اور کوڈ درج کریں!'), 'error');
         return;
       }
     }
     if (wizardStep === 2) {
       if (tankForm.capacity <= 0 || tankForm.safeLevel <= 0 || tankForm.criticalLevel <= 0) {
-        alert(t('Please complete valid volumetric values!', 'براہ کرم درست مقدار کے لیٹرز درج کریں!'));
+        showToast(t('Please complete valid volumetric values!', 'براہ کرم درست مقدار کے لیٹرز درج کریں!'), 'error');
         return;
       }
     }
@@ -165,17 +167,20 @@ export default function TankWizard({
     }
 
     setShowForm(false);
-    alert(t('Tank parameters configured successfully!', 'ٹینک سیٹنگز کامیابی سے محفوظ ہو گئیں!'));
+    showToast(t('Tank parameters configured successfully!', 'ٹینک سیٹنگز کامیابی سے محفوظ ہو گئیں!'), 'success');
   };
 
   const handleDeleteTankRecord = (id: string) => {
-    const doubleCheck = window.confirm(t('Are you sure you want to delete this storage tank? Connected nozzles metadata check is highly recommended.', 'کیا آپ واقعی اس پٹرولیم ٹینک کو ڈیلیٹ کرنا چاہتے ہیں؟'));
-    if (!doubleCheck) return;
-
-    const tk = tanks.find(t => t.id === id);
-    onDeleteTank(id);
-    onLogAudit('Tank', 'Delete', `Storage Tank "${tk?.name}" (ID: ${id}) was deleted manually.`);
-    alert(t('Storage Tank deleted successfully.', 'ٹینک سسٹم سے کامیابی سے حذف کر دیا گیا ہے۔'));
+    showConfirm(
+      t('Confirm Tank Deletion', 'پٹرولیم ٹینک حذف کرنے کی تصدیق'),
+      t('Are you sure you want to delete this storage tank? Connected nozzles metadata check is highly recommended.', 'کیا آپ واقعی اس پٹرولیم ٹینک کو ڈیلیٹ کرنا چاہتے ہیں؟'),
+      () => {
+        const tk = tanks.find(t => t.id === id);
+        onDeleteTank(id);
+        onLogAudit('Tank', 'Delete', `Storage Tank "${tk?.name}" (ID: ${id}) was deleted manually.`);
+        showToast(t('Storage Tank deleted successfully.', 'ٹینک سسٹم سے کامیابی سے حذف کر دیا گیا ہے۔'), 'success');
+      }
+    );
   };
 
   return (

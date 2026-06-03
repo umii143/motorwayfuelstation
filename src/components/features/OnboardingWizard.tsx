@@ -13,6 +13,7 @@ import {
   Languages
 } from 'lucide-react';
 import { GlobalSettings, Tank, Nozzle, Product, Staff } from '../../types';
+import { useStation } from '../../contexts/StationContext';
 
 interface OnboardingWizardProps {
   onComplete: (data: {
@@ -26,6 +27,7 @@ interface OnboardingWizardProps {
 }
 
 export default function OnboardingWizard({ onComplete, currentLanguage }: OnboardingWizardProps) {
+  const { showToast } = useStation();
   const [lang, setLang] = useState<'en' | 'ur'>(currentLanguage);
   const [step, setStep] = useState<number>(1);
 
@@ -122,25 +124,25 @@ export default function OnboardingWizard({ onComplete, currentLanguage }: Onboar
   const handleNext = () => {
     if (step === 2) {
       if (!ownerName || !city || !phone || !ownerPin) {
-        alert(t('Please fill all basic info fields to continue!', 'براہ کرم آگے بڑھنے کے لیے تمام بنیادی معلومات پر کریں۔'));
+        showToast(t('Please fill all basic info fields to continue!', 'براہ کرم آگے بڑھنے کے لیے تمام بنیادی معلومات پر کریں۔'), 'error');
         return;
       }
       if (!/^\d{4,6}$/.test(ownerPin)) {
-        alert(t('Owner Login PIN must be a 4 to 6 digit numeric code!', 'مالک کا لاگ ان پن 4 سے 6 ہندسوں کا طبعی نمبر ہونا چاہئے!'));
+        showToast(t('Owner Login PIN must be a 4 to 6 digit numeric code!', 'مالک کا لاگ ان پن 4 سے 6 ہندسوں کا طبعی نمبر ہونا چاہئے!'), 'error');
         return;
       }
     }
     if (step === 6) {
       if (!staffName || !staffPin) {
-        alert(t('Please fill staff name and PIN code to continue!', 'براہ کرم آگے بڑھنے کے لیے اسٹاف کا نام اور پن لکھیں!'));
+        showToast(t('Please fill staff name and PIN code to continue!', 'براہ کرم آگے بڑھنے کے لیے اسٹاف کا نام اور پن لکھیں!'), 'error');
         return;
       }
       if (!/^\d{4,6}$/.test(staffPin)) {
-        alert(t('Staff Login PIN must be a 4 to 6 digit numeric code!', 'اسٹاف کا لاگ ان پن 4 سے 6 ہندسوں کا طبعی نمبر ہونا چاہئے!'));
+        showToast(t('Staff Login PIN must be a 4 to 6 digit numeric code!', 'اسٹاف کا لاگ ان پن 4 سے 6 ہندسوں کا طبعی نمبر ہونا چاہئے!'), 'error');
         return;
       }
       if (staffPin === ownerPin) {
-        alert(t('Staff PIN must be unique and cannot match the Owner PIN!', 'اسٹاف اور مالک کا پن الگ الگ اور منفرد ہونا چاہیے!'));
+        showToast(t('Staff PIN must be unique and cannot match the Owner PIN!', 'اسٹاف اور مالک کا پن الگ الگ اور منفرد ہونا چاہیے!'), 'error');
         return;
       }
     }

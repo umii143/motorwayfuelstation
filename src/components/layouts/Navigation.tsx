@@ -39,7 +39,8 @@ import {
   Network,
   Camera,
   Link,
-  Tag
+  Tag,
+  CreditCard
 } from 'lucide-react';
 import { GlobalSettings, Station } from '../../types';
 import { t as translate } from '../../lib/translations';
@@ -120,7 +121,8 @@ export default function Navigation({
     { id: 'api_gateway', icon: Network, label: 'API Gateway', urdu: 'اے پی آئی گیٹ وے' },
     { id: 'reports', icon: FileBarChart, label: 'Advanced Reports (104)', urdu: 'ایڈوانسڈ رپورٹس' },
     { id: 'settings', icon: Settings, label: 'Settings', urdu: 'ترتیبات' },
-    { id: 'security_hub', icon: Shield, label: 'Security & Roles', urdu: 'سیکیورٹی ہب' }
+    { id: 'security_hub', icon: Shield, label: 'Security & Roles', urdu: 'سیکیورٹی ہب' },
+    { id: 'subscription_hub', icon: CreditCard, label: 'Subscription & Billing', urdu: 'بلنگ اور پلان' }
   ];
 
   const toggleLanguage = () => {

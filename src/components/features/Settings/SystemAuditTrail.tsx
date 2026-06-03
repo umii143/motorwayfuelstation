@@ -3,6 +3,7 @@ import { Activity, Search, Shield, Trash2, Clock } from 'lucide-react';
 import { t as translate } from '../../../lib/translations';
 import { db } from '../../../data/db';
 import { AuditTrailEntry } from '../../../types';
+import { useStation } from '../../../contexts/StationContext';
 
 interface SystemAuditTrailProps {
   language: string;
@@ -10,6 +11,7 @@ interface SystemAuditTrailProps {
 }
 
 export default function SystemAuditTrail({ language, stationId }: SystemAuditTrailProps) {
+  const { showConfirm, showToast } = useStation();
   const t = (en: string, ur: string) => translate(en, ur, language);
 
   const [logs, setLogs] = useState<AuditTrailEntry[]>([]);
@@ -22,12 +24,15 @@ export default function SystemAuditTrail({ language, stationId }: SystemAuditTra
   }, [stationId]);
 
   const handleClearLogs = () => {
-    const doubleCheck = window.confirm(t('Are you sure you want to permanently clear the master configuration audit trail?', 'کیا آپ واقعی باقاعدہ دفتری آڈٹ لاگ تاریخ صاف کرنا چاہتے ہیں؟'));
-    if (!doubleCheck) return;
-
-    db.clearSettingsAuditTrail(stationId);
-    setLogs([]);
-    alert(t('Audit logs wiped.', 'آڈٹ رکارڈ صاف کر دیا گیا ہے۔'));
+    showConfirm(
+      t('Confirm Clearing Audit Logs', 'آڈٹ لاگ صاف کرنے کی تصدیق کریں'),
+      t('Are you sure you want to permanently clear the master configuration audit trail?', 'کیا آپ واقعی باقاعدہ دفتری آڈٹ لاگ تاریخ صاف کرنا چاہتے ہیں؟'),
+      () => {
+        db.clearSettingsAuditTrail(stationId);
+        setLogs([]);
+        showToast(t('Audit logs wiped.', 'آڈٹ رکارڈ صاف کر دیا گیا ہے۔'), 'success');
+      }
+    );
   };
 
   // Filter & Search

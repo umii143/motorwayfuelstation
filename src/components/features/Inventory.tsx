@@ -5,6 +5,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useStation } from '../../contexts/StationContext';
 import {
   Package,
   ArrowUpRight,
@@ -24,7 +25,9 @@ import {
   Clock,
   TrendingUp,
   X,
-  Gauge
+  Gauge,
+  Pencil,
+  Trash2
 } from 'lucide-react';
 import { Product, StockTransaction, Supplier, GlobalSettings, Tank, RateHistoryEntry } from '../../types';
 
@@ -35,6 +38,9 @@ interface InventoryProps {
   stockTransactions: StockTransaction[];
   onAddStockTransaction: (txn: StockTransaction) => void;
   onUpdateProductStock: (productId: string, newStock: number) => void;
+  onUpdateProduct: (product: Product) => void;
+  onDeleteProduct: (productId: string) => void;
+  onAddProduct: (product: Product) => void;
   tanks: Tank[];
   rateHistory: RateHistoryEntry[];
 }
@@ -46,9 +52,13 @@ export default function Inventory({
   stockTransactions,
   onAddStockTransaction,
   onUpdateProductStock,
+  onUpdateProduct,
+  onDeleteProduct,
+  onAddProduct,
   tanks = [],
   rateHistory = []
 }: InventoryProps) {
+  const { showConfirm, showToast } = useStation();
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
 
@@ -63,6 +73,77 @@ export default function Inventory({
   // Interactive Calibrator Calculator
   const [calcTankId, setCalcTankId] = useState('');
   const [calcDepthCm, setCalcDepthCm] = useState('');
+
+  // Modal state for Add/Edit Product
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  // Add/Edit Product form fields
+  const [prodName, setProdName] = useState('');
+  const [prodUrduName, setProdUrduName] = useState('');
+  const [prodRate, setProdRate] = useState('');
+  const [prodUnit, setProdUnit] = useState('Pcs');
+  const [prodType, setProdType] = useState<'lube' | 'fuel' | 'other'>('lube');
+  const [prodMinStock, setProdMinStock] = useState('');
+  const [prodOpeningStock, setProdOpeningStock] = useState('');
+
+  const openAddProduct = () => {
+    setEditingProduct(null);
+    setProdName(''); setProdUrduName(''); setProdRate(''); setProdUnit('Pcs');
+    setProdType('lube'); setProdMinStock(''); setProdOpeningStock('');
+    setShowAddProductModal(true);
+  };
+
+  const openEditProduct = (prod: Product) => {
+    setEditingProduct(prod);
+    setProdName(prod.name); setProdUrduName(prod.urduName); setProdRate(String(prod.rate));
+    setProdUnit(prod.unit); setProdType(prod.type as any); setProdMinStock(String(prod.minStock));
+    setProdOpeningStock(String(prod.currentStock));
+    setShowAddProductModal(true);
+  };
+
+  const handleProductModalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!prodName || !prodRate) return;
+    if (editingProduct) {
+      onUpdateProduct({
+        ...editingProduct,
+        name: prodName,
+        urduName: prodUrduName || prodName,
+        rate: Number(prodRate),
+        unit: prodUnit,
+        type: prodType,
+        minStock: Number(prodMinStock) || 0
+      });
+    } else {
+      onAddProduct({
+        id: `prod_${Date.now()}`,
+        name: prodName,
+        urduName: prodUrduName || prodName,
+        rate: Number(prodRate),
+        unit: prodUnit,
+        type: prodType,
+        currentStock: Number(prodOpeningStock) || 0,
+        minStock: Number(prodMinStock) || 0,
+        capacity: 0
+      });
+    }
+    setShowAddProductModal(false);
+  };
+
+  const handleDeleteProduct = (prod: Product) => {
+    const msg = t(
+      `Are you sure you want to delete "${prod.name}"? This cannot be undone.`,
+      `کیا آپ "${prod.urduName}" کو حذف کرنا چاہتے ہیں؟ یہ واپس نہیں ہو سکتا۔`
+    );
+    showConfirm(
+      t('Confirm Product Deletion', 'پروڈکٹ حذف کرنے کی تصدیق'),
+      msg,
+      () => {
+        onDeleteProduct(prod.id);
+      }
+    );
+  };
 
   // Input States
   const [showAddStockModal, setShowAddStockModal] = useState(false);
@@ -210,7 +291,7 @@ export default function Inventory({
     const cost = Number(receiptCost);
 
     if (!selectedProductId || qty <= 0) {
-       alert(t('Please fill all fields with correct numbers.', 'درست اندراج کیجئے۔'));
+       showToast(t('Please fill all fields with correct numbers.', 'درست اندراج کیجئے۔'), 'error');
        return;
     }
 
@@ -245,7 +326,7 @@ export default function Inventory({
     setFuelType('Petrol');
     setCarriageCost('');
     setShowAddStockModal(false);
-    alert(t('Stock inventory updated successfully!', 'اسٹاک بک اپ ڈیٹ ہو گئی ہے!'));
+    showToast(t('Stock inventory updated successfully!', 'اسٹاک بک اپ ڈیٹ ہو گئی ہے!'), 'success');
   };
 
   const handleReconcileSubmit = (e: React.FormEvent) => {
@@ -253,7 +334,7 @@ export default function Inventory({
     const actual = Number(reconActualQty);
 
     if (!reconProductId || isNaN(actual) || actual < 0) {
-      alert(t('Please enter a valid actual stock level.', 'براہ مہربانی درست اسٹاک مقدار درج کریں۔'));
+      showToast(t('Please enter a valid actual stock level.', 'براہ مہربانی درست اسٹاک مقدار درج کریں۔'), 'error');
       return;
     }
 
@@ -262,7 +343,7 @@ export default function Inventory({
 
     const diff = actual - prod.currentStock;
     if (diff === 0) {
-      alert(t('No difference found. No adjustments saved.', 'کوئی فرق نہیں پایا گیا۔'));
+      showToast(t('No difference found. No adjustments saved.', 'کوئی فرق نہیں پایا گیا۔'), 'info');
       return;
     }
 
@@ -283,7 +364,7 @@ export default function Inventory({
     setReconActualQty('');
     setReconReason('');
     setShowReconcileModal(false);
-    alert(t('Inventory reconciled, stock adjusted!', 'اسٹاک کی جسمانی تصدیق اور تصحیح ہو چکی ہے!'));
+    showToast(t('Inventory reconciled, stock adjusted!', 'اسٹاک کی جسمانی تصدیق اور تصحیح ہو چکی ہے!'), 'success');
   };
 
   return (
@@ -316,6 +397,14 @@ export default function Inventory({
               ? t('Physical Stock Count', 'جسمانی اسٹاک گنتی')
               : t('Reconcile Stock (Dip Check)', 'فزیکل ٹینک ڈپ پڑتال')}
             </span>
+          </button>
+
+          <button
+            onClick={openAddProduct}
+            className="flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-2 font-sans text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all cursor-pointer"
+          >
+            <PlusCircle className="h-4 w-4" />
+            <span>{t('Register Product', 'نئی پروڈکٹ شامل کریں')}</span>
           </button>
 
           <button
@@ -517,6 +606,24 @@ export default function Inventory({
                       <div className="relative z-10 mt-3 text-[10px] font-semibold text-slate-400 flex justify-between items-center bg-slate-50/50 backdrop-blur-sm p-2.5 rounded-xl border border-slate-100">
                         <span>Min Threshold: <strong className="text-slate-600">{prod.minStock.toLocaleString()} {prod.unit}</strong></span>
                         <span className="uppercase tracking-widest bg-white px-2 py-0.5 rounded-md shadow-xs">Unit: {prod.unit}</span>
+                      </div>
+
+                      {/* Edit / Delete action bar */}
+                      <div className="relative z-10 mt-3 flex gap-2">
+                        <button
+                          onClick={() => openEditProduct(prod)}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-orange-400 hover:text-orange-600 font-sans text-[11px] font-bold transition-all cursor-pointer"
+                        >
+                          <Pencil className="h-3 w-3" />
+                          {t('Edit', 'ترمیم')}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteProduct(prod)}
+                          className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-100 bg-red-50 text-red-600 hover:bg-red-100 font-sans text-[11px] font-bold transition-all cursor-pointer"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          {t('Delete', 'حذف')}
+                        </button>
                       </div>
                     </motion.div>
                   );
@@ -1020,6 +1127,111 @@ export default function Inventory({
                   className="w-full py-3 bg-slate-800 hover:bg-slate-900 text-white font-sans text-sm font-bold tracking-wider rounded-lg shadow-md mt-4 cursor-pointer"
                 >
                   {t('SUBMIT RECONCILIATION CORRECTION', 'ڈپ بک اپ ڈیٹ کریں')}
+                </button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ==========================================
+          ADD / EDIT PRODUCT MODAL
+          ========================================== */}
+      <AnimatePresence>
+        {showAddProductModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 20, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+              className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
+            >
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-5">
+                <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-2">
+                  <Package className="h-5 w-5 text-emerald-600" />
+                  <span>{editingProduct
+                    ? t('Edit Product', 'پروڈکٹ ترمیم')
+                    : t('Register New Product', 'نئی پروڈکٹ رجسٹر کریں')
+                  }</span>
+                </h3>
+                <button onClick={() => setShowAddProductModal(false)} className="text-slate-400 hover:text-slate-700 text-xl font-bold cursor-pointer">&times;</button>
+              </div>
+
+              <form onSubmit={handleProductModalSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Product Name (English):', 'نام (انگریزی):')}</label>
+                    <input type="text" required value={prodName} onChange={e => setProdName(e.target.value)}
+                      placeholder="e.g. Mobil 1 5W-30"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-emerald-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Product Name (Urdu):', 'نام (اردو):')}</label>
+                    <input type="text" value={prodUrduName} onChange={e => setProdUrduName(e.target.value)}
+                      placeholder="مثال: موبل ون"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-emerald-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Selling Rate (Rs):', 'فروخت قیمت (روپے):')}</label>
+                    <input type="number" required min="0" step="0.01" value={prodRate} onChange={e => setProdRate(e.target.value)}
+                      placeholder="e.g. 1500"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-emerald-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Unit of Measure:', 'پیمائش کی اکائی:')}</label>
+                    <select value={prodUnit} onChange={e => setProdUnit(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-emerald-500 outline-none">
+                      <option value="Pcs">Pcs (Pieces)</option>
+                      <option value="Ltr">Ltr (Litres)</option>
+                      <option value="Kg">Kg (Kilogram)</option>
+                      <option value="Box">Box</option>
+                      <option value="Pack">Pack</option>
+                      <option value="Can">Can</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Product Type:', 'پروڈکٹ کی قسم:')}</label>
+                    <div className="flex gap-2">
+                      {(['lube', 'fuel', 'other'] as const).map(pt => (
+                        <button type="button" key={pt} onClick={() => setProdType(pt)}
+                          className={`flex-1 py-1.5 rounded-lg border font-sans text-xs font-bold cursor-pointer ${
+                            prodType === pt
+                              ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                              : 'border-slate-200 text-slate-500'
+                          }`}>
+                          {pt.charAt(0).toUpperCase() + pt.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Min Stock Alert Level:', 'انتباہی اسٹاک حد:')}</label>
+                    <input type="number" min="0" value={prodMinStock} onChange={e => setProdMinStock(e.target.value)}
+                      placeholder="e.g. 10"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-emerald-500 outline-none" />
+                  </div>
+                  {!editingProduct && (
+                    <div className="sm:col-span-2">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Opening Stock Quantity:', 'ابتدائی اسٹاک مقدار:')}</label>
+                      <input type="number" min="0" value={prodOpeningStock} onChange={e => setProdOpeningStock(e.target.value)}
+                        placeholder="e.g. 50"
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-emerald-500 outline-none" />
+                    </div>
+                  )}
+                </div>
+
+                <button type="submit"
+                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-sans text-sm font-bold tracking-wider rounded-lg shadow-md mt-2 cursor-pointer">
+                  {editingProduct
+                    ? t('SAVE CHANGES', 'تبدیلیاں محفوظ کریں')
+                    : t('REGISTER PRODUCT', 'پروڈکٹ رجسٹر کریں')
+                  }
                 </button>
               </form>
             </motion.div>

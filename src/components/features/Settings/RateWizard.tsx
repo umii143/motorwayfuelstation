@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { DollarSign, ChevronRight, Activity, Trash2, CheckCircle, Info, Edit, ArrowLeft } from 'lucide-react';
+import { useStation } from '../../../contexts/StationContext';
 import { Product, Tank, RateHistoryEntry } from '../../../types';
 import { t as translate } from '../../../lib/translations';
 
@@ -28,6 +29,7 @@ export default function RateWizard({
   onLogAudit,
   onUpdateProducts
 }: RateWizardProps) {
+  const { showConfirm, showToast } = useStation();
   const t = (en: string, ur: string) => translate(en, ur, language);
 
   // States
@@ -93,12 +95,12 @@ export default function RateWizard({
 
   const handleNextStep = () => {
     if (wizardStep === 1 && !selectedProduct) {
-      alert(t('Please select a product first!', 'براہ کرم پہلے پروڈکٹ منتخب کریں!'));
+      showToast(t('Please select a product first!', 'براہ کرم پہلے پروڈکٹ منتخب کریں!'), 'error');
       return;
     }
     if (wizardStep === 2) {
       if (!targetRate || isNaN(Number(targetRate)) || Number(targetRate) <= 0) {
-        alert(t('Please enter a valid decimal rate!', 'براہ کرم درست ریٹ نمبر درج کریں!'));
+        showToast(t('Please enter a valid decimal rate!', 'براہ کرم درست ریٹ نمبر درج کریں!'), 'error');
         return;
       }
     }
@@ -133,17 +135,19 @@ export default function RateWizard({
     setSelectedProduct('');
     setTargetRate('');
     setWizardStep(1);
-    alert(t('Tariff rate updated and inventory value readjusted!', 'پٹرولیم ریٹس کامیابی سے تبدیل ہو گئے!'));
+    showToast(t('Tariff rate updated and inventory value readjusted!', 'پٹرولیم ریٹس کامیابی سے تبدیل ہو گئے!'), 'success');
   };
 
   const handleDeleteHistoryLog = (id: string) => {
-    const confirmDelete = window.confirm(t('Are you sure you want to delete this historical rate entry?', 'کیا آپ واقعی اس ریٹ ہسٹری لاگ کو ڈیلیٹ کرنا چاہتے ہیں؟'));
-    if (!confirmDelete) return;
-
-    // Remove log element and notify
-    const entry = rateHistory.find(r => r.id === id);
-    onLogAudit('Tariff', 'Delete Log', `Historical rate entry for ${entry?.productId} on ${entry?.date} was manually deleted.`);
-    alert(t('History log record deleted.', 'تاریخی لاگ ریکارڈ خارج کر دیا گیا ہے۔'));
+    showConfirm(
+      t('Confirm Deletion', 'حذف کرنے کی تصدیق کریں'),
+      t('Are you sure you want to delete this historical rate entry?', 'کیا آپ واقعی اس ریٹ ہسٹری لاگ کو ڈیلیٹ کرنا چاہتے ہیں؟'),
+      () => {
+        const entry = rateHistory.find(r => r.id === id);
+        onLogAudit('Tariff', 'Delete Log', `Historical rate entry for ${entry?.productId} on ${entry?.date} was manually deleted.`);
+        showToast(t('History log record deleted.', 'تاریخی لاگ ریکارڈ خارج کر دیا گیا ہے۔'), 'success');
+      }
+    );
   };
 
   return (

@@ -45,6 +45,44 @@ import {
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
 
+const getFuelCategory = (productId: string, products: Product[]): 'petrol' | 'diesel' | 'cng' | null => {
+  const p = products.find((prod) => prod.id === productId);
+  if (!p) return null;
+  if (p.type !== 'fuel') return null;
+
+  const idLower = p.id.toLowerCase();
+  const nameLower = p.name.toLowerCase();
+
+  if (
+    idLower === 'petrol' ||
+    idLower === 'prod_f1' ||
+    idLower === 'prod_f3' ||
+    nameLower.includes('petrol') ||
+    nameLower.includes('pmg') ||
+    nameLower.includes('hobc') ||
+    nameLower.includes('octane') ||
+    nameLower.includes('super')
+  ) {
+    return 'petrol';
+  }
+  if (
+    idLower === 'diesel' ||
+    idLower === 'prod_f2' ||
+    nameLower.includes('diesel') ||
+    nameLower.includes('hsd')
+  ) {
+    return 'diesel';
+  }
+  if (
+    idLower === 'cng' ||
+    nameLower.includes('cng') ||
+    nameLower.includes('gas')
+  ) {
+    return 'cng';
+  }
+  return null;
+};
+
 interface DashboardProps {
   settings: GlobalSettings;
   shifts: Shift[];
@@ -126,9 +164,13 @@ export default function Dashboard({
     } else {
       const shiftsOnDate = shifts.filter(s => s.date === selectedDate);
 
-      const petrolRate = products.find(p => p.id === 'petrol')?.rate || 272.50;
-      const dieselRate = products.find(p => p.id === 'diesel')?.rate || 281.20;
-      const cngRate = products.find(p => p.id === 'cng')?.rate || 210.00;
+      const petrolProduct = products.find(p => getFuelCategory(p.id, products) === 'petrol');
+      const dieselProduct = products.find(p => getFuelCategory(p.id, products) === 'diesel');
+      const cngProduct = products.find(p => getFuelCategory(p.id, products) === 'cng');
+
+      const petrolRate = petrolProduct?.rate || 272.50;
+      const dieselRate = dieselProduct?.rate || 281.20;
+      const cngRate = cngProduct?.rate || 210.00;
 
       shiftsOnDate.forEach(s => {
         let petrolSales = 0;
@@ -143,9 +185,10 @@ export default function Dashboard({
           const open = s.openingReadings?.[nz.id] || 0;
           const close = s.closingReadings?.[nz.id] || 0;
           const diff = Math.max(0, close - open);
-          if (nz.productId === 'petrol') petrolLiters += diff;
-          else if (nz.productId === 'diesel') dieselLiters += diff;
-          else if (nz.productId === 'cng') cngKgs += diff;
+          const fuelCat = getFuelCategory(nz.productId, products);
+          if (fuelCat === 'petrol') petrolLiters += diff;
+          else if (fuelCat === 'diesel') dieselLiters += diff;
+          else if (fuelCat === 'cng') cngKgs += diff;
         });
 
         petrolLiters = Math.max(0, petrolLiters - (s.testLiters?.petrol || 0));
@@ -205,9 +248,13 @@ export default function Dashboard({
         }, 0);
       });
     } else {
-      const petrolRate = products.find(p => p.id === 'petrol')?.rate || 272.50;
-      const dieselRate = products.find(p => p.id === 'diesel')?.rate || 281.20;
-      const cngRate = products.find(p => p.id === 'cng')?.rate || 210.00;
+      const petrolProduct = products.find(p => getFuelCategory(p.id, products) === 'petrol');
+      const dieselProduct = products.find(p => getFuelCategory(p.id, products) === 'diesel');
+      const cngProduct = products.find(p => getFuelCategory(p.id, products) === 'cng');
+
+      const petrolRate = petrolProduct?.rate || 272.50;
+      const dieselRate = dieselProduct?.rate || 281.20;
+      const cngRate = cngProduct?.rate || 210.00;
 
       shifts.forEach(s => {
         if (!dataByDate[s.date]) {
@@ -222,9 +269,10 @@ export default function Dashboard({
           const open = s.openingReadings?.[nz.id] || 0;
           const close = s.closingReadings?.[nz.id] || 0;
           const diff = Math.max(0, close - open);
-          if (nz.productId === 'petrol') petrolLiters += diff;
-          else if (nz.productId === 'diesel') dieselLiters += diff;
-          else if (nz.productId === 'cng') cngKgs += diff;
+          const fuelCat = getFuelCategory(nz.productId, products);
+          if (fuelCat === 'petrol') petrolLiters += diff;
+          else if (fuelCat === 'diesel') dieselLiters += diff;
+          else if (fuelCat === 'cng') cngKgs += diff;
         });
 
         petrolLiters = Math.max(0, petrolLiters - (s.testLiters?.petrol || 0));

@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { GlobalSettings, Product, Nozzle, Pump, Tank, RateHistoryEntry, AuditTrailEntry } from '../../types';
 import { db } from '../../data/db';
+import { useStation } from '../../contexts/StationContext';
 
 // Modular Child Wizards Imports
 import RateWizard from './Settings/RateWizard';
@@ -85,6 +86,7 @@ export default function SettingsPanel({
   onUpdateProducts,
   onUpdatePumps
 }: SettingsProps) {
+  const { showToast, showAlert, showConfirm } = useStation();
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
 
@@ -131,7 +133,7 @@ export default function SettingsPanel({
     });
 
     handleLogAudit('System', 'Update Profile', `Profile parameters modified: Name = ${stationName}, address = ${address}`);
-    alert(t('Business profile settings saved!', 'کاروباری معلومات کامیابی سے محفوظ ہو گئیں!'));
+    showToast(t('Business profile settings saved!', 'کاروباری معلومات کامیابی سے محفوظ ہو گئیں!'), 'success');
   };
 
   const handleLanguageToggle = (lang: 'en' | 'ur' | 'ar' | 'es' | 'zh') => {
@@ -169,8 +171,10 @@ export default function SettingsPanel({
     // PIN is correct, execute database wipe
     db.resetToDefault();
     handleLogAudit('System', 'Factory Reset', 'Database wipe was authorized using master PIN and resetting to pristine empty states.');
-    alert(t('System Database fully reset! Reloading...', 'ڈیٹا بیس کامیابی سے ری سیٹ کر دیا گیا ہے! پیج دوبارہ لوڈ ہو رہا ہے...'));
-    window.location.reload();
+    showToast(t('System Database fully reset! Reloading...', 'ڈیٹا بیس کامیابی سے ری سیٹ کر دیا گیا ہے! پیج دوبارہ لوڈ ہو رہا ہے...'), 'success');
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
   };
 
   return (

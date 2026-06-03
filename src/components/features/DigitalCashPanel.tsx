@@ -16,6 +16,7 @@ import {
 import { DigitalAccount, Shift, GlobalSettings, LubePosSale } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
+import { useStation } from '../../contexts/StationContext';
 
 interface DigitalCashPanelProps {
   settings: GlobalSettings;
@@ -34,6 +35,7 @@ export default function DigitalCashPanel({
   shifts,
   lubePosSales
 }: DigitalCashPanelProps) {
+  const { showToast } = useStation();
   const t = (en: string, ur: string) => translate(en, ur, settings);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -121,7 +123,7 @@ export default function DigitalCashPanel({
   const handleCreateAccount = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newAccountName || !newAccountNo) {
-      alert(t('Please provide account name and account/merchant number.', 'برائے مہربانی اکاؤنٹ کا نام اور مرچنٹ نمبر فراہم کریں۔'));
+      showToast(t('Please provide account name and account/merchant number.', 'برائے مہربانی اکاؤنٹ کا نام اور مرچنٹ نمبر فراہم کریں۔'), 'error');
       return;
     }
 
@@ -143,7 +145,7 @@ export default function DigitalCashPanel({
     e.preventDefault();
     const amt = Number(adjustAmount);
     if (!adjustAccountId || isNaN(amt) || amt <= 0) {
-      alert(t('Please enter a valid amount.', 'درست رقم درج کریں۔'));
+      showToast(t('Please enter a valid amount.', 'درست رقم درج کریں۔'), 'error');
       return;
     }
 
@@ -162,7 +164,7 @@ export default function DigitalCashPanel({
     setAdjustAccountId(null);
     setAdjustAmount('');
     setAdjustReason('');
-    alert(t('Digital account balance adjusted successfully!', 'ڈیجیٹل اکاؤنٹ کا بیلنس تصدیق کے ساتھ تبدیل کردیا گیا!'));
+    showToast(t('Digital account balance adjusted successfully!', 'ڈیجیٹل اکاؤنٹ کا بیلنس تصدیق کے ساتھ تبدیل کردیا گیا!'), 'success');
   };
 
   const filteredAccounts = useMemo(() => {

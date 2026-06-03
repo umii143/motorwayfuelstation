@@ -52,6 +52,44 @@ import { REPORT_TEMPLATES, ReportRow, ReportTemplate } from '../../lib/reportCom
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { db } from '../../data/db';
 
+const getFuelCategory = (productId: string, products: Product[]): 'petrol' | 'diesel' | 'cng' | null => {
+  const p = products.find((prod) => prod.id === productId);
+  if (!p) return null;
+  if (p.type !== 'fuel') return null;
+
+  const idLower = p.id.toLowerCase();
+  const nameLower = p.name.toLowerCase();
+
+  if (
+    idLower === 'petrol' ||
+    idLower === 'prod_f1' ||
+    idLower === 'prod_f3' ||
+    nameLower.includes('petrol') ||
+    nameLower.includes('pmg') ||
+    nameLower.includes('hobc') ||
+    nameLower.includes('octane') ||
+    nameLower.includes('super')
+  ) {
+    return 'petrol';
+  }
+  if (
+    idLower === 'diesel' ||
+    idLower === 'prod_f2' ||
+    nameLower.includes('diesel') ||
+    nameLower.includes('hsd')
+  ) {
+    return 'diesel';
+  }
+  if (
+    idLower === 'cng' ||
+    nameLower.includes('cng') ||
+    nameLower.includes('gas')
+  ) {
+    return 'cng';
+  }
+  return null;
+};
+
 interface ReportsProps {
   activeStationId: string;
   settings: GlobalSettings;
@@ -90,8 +128,7 @@ export default function Reports({
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
 
-  // Detect lube-only business
-  const isLube = activeStationId === 'st_lube';
+  // Fuel Station / CNG Reports (Lube business uses LubeReports component)
 
   // States
   const [activeReportTab, setActiveReportTab] = useState<'sales_pnl' | 'corporate_audit' | 'party_outstanding' | 'inventory_audit' | 'shift_sheets' | 'reconciliation'>('corporate_audit');
@@ -183,9 +220,13 @@ export default function Reports({
   // Aggregate stats per date for visual Area Chart
   const statsTimelineData = useMemo(() => {
     const dataByDate: Record<string, { date: string; Sales: number; Profit: number; Expense: number }> = {};
-    const petrolRate = products.find(p => p.id === 'petrol')?.rate || 272.50;
-    const dieselRate = products.find(p => p.id === 'diesel')?.rate || 281.20;
-    const cngRate = products.find(p => p.id === 'cng')?.rate || 205.00;
+    const petrolProduct = products.find(p => getFuelCategory(p.id, products) === 'petrol');
+    const dieselProduct = products.find(p => getFuelCategory(p.id, products) === 'diesel');
+    const cngProduct = products.find(p => getFuelCategory(p.id, products) === 'cng');
+
+    const petrolRate = petrolProduct?.rate || 272.50;
+    const dieselRate = dieselProduct?.rate || 281.20;
+    const cngRate = cngProduct?.rate || 205.00;
 
     shifts.forEach(s => {
       if (!dataByDate[s.date]) {
@@ -199,9 +240,10 @@ export default function Reports({
         const open = s.openingReadings?.[nz.id] || 0;
         const close = s.closingReadings?.[nz.id] || 0;
         const diff = Math.max(0, close - open);
-        if (nz.productId === 'petrol') pLiters += diff;
-        else if (nz.productId === 'diesel') dLiters += diff;
-        else if (nz.productId === 'cng') cKgs += diff;
+        const fuelCat = getFuelCategory(nz.productId, products);
+        if (fuelCat === 'petrol') pLiters += diff;
+        else if (fuelCat === 'diesel') dLiters += diff;
+        else if (fuelCat === 'cng') cKgs += diff;
       });
 
       pLiters = Math.max(0, pLiters - (s.testLiters?.petrol || 0));
@@ -244,9 +286,10 @@ export default function Reports({
         const open = s.openingReadings?.[nz.id] || 0;
         const close = s.closingReadings?.[nz.id] || 0;
         const diff = Math.max(0, close - open);
-        if (nz.productId === 'petrol') p += diff;
-        else if (nz.productId === 'diesel') d += diff;
-        else if (nz.productId === 'cng') c += diff;
+        const fuelCat = getFuelCategory(nz.productId, products);
+        if (fuelCat === 'petrol') p += diff;
+        else if (fuelCat === 'diesel') d += diff;
+        else if (fuelCat === 'cng') c += diff;
       });
 
       petrolLiters += Math.max(0, p - (s.testLiters?.petrol || 0));
@@ -409,10 +452,10 @@ export default function Reports({
   };
 
   const REPORT_CATEGORIES = [
-    { id: 'A', name: isLube ? t('Category A: POS Sales Reports', 'کیٹیگری A: پی او ایس سیلز رپورٹیں') : t('Category A: Fuel Sales Reports', 'کیٹیگری A: فیول سیلز رپورٹیں'), icon: Coins },
+    { id: 'A', name: t('Category A: Fuel Sales Reports', 'کیٹیگری A: فیول سیلز رپورٹیں'), icon: Coins },
     { id: 'B', name: t('Category B: Institutional Financials', 'کیٹیگری B: مالیاتی آڈٹ کھاتہ'), icon: TrendingUp },
     { id: 'C', name: t('Category C: Customer Billing Ledgers', 'کیٹیگری C: کسٹمرز بقایا لیجرز'), icon: Users },
-    { id: 'D', name: isLube ? t('Category D: Lubricant Supplier Ledger', 'کیٹیگری D: لیوبریکنٹ سپلائر کھاتہ') : t('Category D: Refinery Suppliers Ledger', 'کیٹیگری D: آئل رِفائنری سپلائر کھاتہ'), icon: Package },
+    { id: 'D', name: t('Category D: Refinery Suppliers Ledger', 'کیٹیگری D: آئل رِفائنری سپلائر کھاتہ'), icon: Package },
     { id: 'E', name: t('Category E: Operator Attendance & Payroll', 'کیٹیگری E: اسٹاف حاضری اور ایڈوانسز لاگ'), icon: Activity }
   ];
 
@@ -445,12 +488,10 @@ export default function Reports({
       <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-0.5">
         {[
           { id: 'corporate_audit', label: '📊 Corporate Audits (50+ Reports)', urdu: '📊 کارپوریٹ آڈٹ لسٹ (50+ رپورٹیں)' },
-          { id: 'sales_pnl', label: isLube ? '📈 Lube Sales Analytics' : '📈 Visual Fuel Dashboard', urdu: isLube ? '📈 لیوب سیلز تجزیہ' : '📈 گرافیکل سیلز گراف اور چارٹ' },
+          { id: 'sales_pnl', label: '📈 Visual Fuel Dashboard', urdu: '📈 گرافیکل سیلز گراف اور چارٹ' },
           { id: 'party_outstanding', label: '👥 Party Outstanding List', urdu: '👥 گاہک بقایا کھاتہ لسٹ' },
-          ...(!isLube ? [
-            { id: 'inventory_audit', label: '🛢️ Storage Tanks Status', urdu: '🛢️ ٹینکس اسٹاک موازنہ' },
-            { id: 'shift_sheets', label: '📋 Finalized Shift Receipts', urdu: '📋 شفٹ فائنل رسیدیں' },
-          ] : []),
+          { id: 'inventory_audit', label: '🛢️ Storage Tanks Status', urdu: '🛢️ ٹینکس اسٹاک موازنہ' },
+          { id: 'shift_sheets', label: '📋 Finalized Shift Receipts', urdu: '📋 شفٹ فائنل رسیدیں' },
           { id: 'reconciliation', label: '🏦 Bank Reconciliation Tool', urdu: '🏦 بینک اور ڈیجیٹل موازنہ' }
         ].map(tb => (
           <button
@@ -587,7 +628,7 @@ export default function Reports({
 
                 {/* Product Select option */}
                 <div>
-                  <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">{isLube ? t('Product / SKU', 'پروڈکٹ') : t('Fuel Product', 'پٹرولیم ایندھن')}</label>
+                  <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">{t('Fuel Product', 'پٹرولیم ایندھن')}</label>
                   <select
                     value={filterProductId}
                     onChange={(e) => setFilterProductId(e.target.value)}

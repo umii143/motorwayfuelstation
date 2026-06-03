@@ -31,6 +31,7 @@ import {
 import EmptyState from '../ui/EmptyState';
 import { Staff, GlobalSettings, StaffFinanceEntry, AttendanceRecord, Shift } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
+import { useStation } from '../../contexts/StationContext';
 
 interface StaffProps {
   settings: GlobalSettings;
@@ -57,6 +58,7 @@ export default function StaffPanel({
   onAddAttendance,
   shifts
 }: StaffProps) {
+  const { showToast, showAlert, showConfirm } = useStation();
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
 
@@ -136,7 +138,7 @@ export default function StaffPanel({
     if (!addName) return;
 
     if (!addPin || addPin.length < 4 || addPin.length > 6) {
-      alert(t('Please set a valid 4 to 6 digit security login PIN!', 'برائے مہربانی درست 4 سے 6 ہندسوں کا سیکیورٹی لاگ ان پن سیٹ کریں!'));
+      showToast(t('Please set a valid 4 to 6 digit security login PIN!', 'برائے مہربانی درست 4 سے 6 ہندسوں کا سیکیورٹی لاگ ان پن سیٹ کریں!'), 'error');
       return;
     }
 
@@ -168,7 +170,7 @@ export default function StaffPanel({
     setAddPhone('');
     setAddCnic('');
     setShowAddStaff(false);
-    alert(t('Pump crew member registered successfully!', 'پمپ ملازم کامیابی سے رجسٹر ہو گیا!'));
+    showToast(t('Pump crew member registered successfully!', 'پمپ ملازم کامیابی سے رجسٹر ہو گیا!'), 'success');
   };
 
   // Log Finance entry (Advances, Salary issued / accrual)
@@ -181,7 +183,7 @@ export default function StaffPanel({
 
     const amt = Number(financeAmount);
     if (isNaN(amt) || amt <= 0) {
-      alert(t('Please enter a valid monetary amount!', 'براہ کرم درست رقم لکھیں!'));
+      showToast(t('Please enter a valid monetary amount!', 'براہ کرم درست رقم لکھیں!'), 'error');
       return;
     }
 
@@ -237,7 +239,7 @@ export default function StaffPanel({
     setFinanceAmount('');
     setFinanceNote('');
     setSelectedStaffId(null);
-    alert(t('Salary ledger log successfully recorded. Downstream cashbox flows adjusted!', 'ملازم کا مالی لاگ محفوظ ہو گیا۔ نقد رقم اسٹیشن فنڈز سے کاٹ لی گئی ہے!'));
+    showToast(t('Salary ledger log successfully recorded. Downstream cashbox flows adjusted!', 'ملازم کا مالی لاگ محفوظ ہو گیا۔ نقد رقم اسٹیشن فنڈز سے کاٹ لی گئی ہے!'), 'success');
   };
 
   // Submit Active Attendance Register (Module E1)
@@ -256,10 +258,10 @@ export default function StaffPanel({
     });
 
     onAddAttendance(recordsToSave);
-    alert(t(
+    showToast(t(
       `Daily attendance register logged successfully for date: ${attendanceDate}!`,
       `ٹوٹل ملازمین کی حاضری شیٹ تاریخ ${attendanceDate} کیلئے کامیابی سے محفوظ ہو گئی!`
-    ));
+    ), 'success');
   };
 
   return (

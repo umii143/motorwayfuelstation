@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Edit, Trash2, CheckCircle, Info, Database, DollarSign, Wallet, FileText } from 'lucide-react';
 import { Product, BankAccount, Pump } from '../../../types';
 import { t as translate } from '../../../lib/translations';
+import { useStation } from '../../../contexts/StationContext';
 
 interface UnifiedAccountManagerProps {
   products: Product[];
@@ -24,6 +25,7 @@ export default function UnifiedAccountManager({
   onUpdatePumps,
   onLogAudit
 }: UnifiedAccountManagerProps) {
+  const { showConfirm, showToast } = useStation();
   const t = (en: string, ur: string) => translate(en, ur, language);
 
   // Active sub-tab state inside this module
@@ -73,18 +75,21 @@ export default function UnifiedAccountManager({
       onLogAudit('Product', 'Create', `New Product "${prodForm.name}" was registered under rate Rs. ${prodForm.rate}.`);
     }
     setShowProductForm(false);
-    alert(t('Product records successfully logged!', 'پراڈکٹ معلومات کامیابی سے محفوظ ہو گئیں!'));
+    showToast(t('Product records successfully logged!', 'پراڈکٹ معلومات کامیابی سے محفوظ ہو گئیں!'), 'success');
   };
 
   const handleDeleteProduct = (id: string) => {
     if (!onUpdateProducts) return;
-    const isConfirm = window.confirm(t('Are you sure you want to delete this product catalog?', 'کیا آپ واقعی اس پراڈکٹ کو حذف کرنا چاہتے ہیں؟'));
-    if (!isConfirm) return;
-
-    const p = products.find(prod => prod.id === id);
-    onUpdateProducts(products.filter(prod => prod.id !== id));
-    onLogAudit('Product', 'Delete', `Product "${p?.name}" catalog deleted manually.`);
-    alert(t('Product deleted successfully.', 'رکارڈ حذف کر دیا گیا۔'));
+    showConfirm(
+      t('Confirm Product Deletion', 'پراڈکٹ حذف کرنے کی تصدیق کریں'),
+      t('Are you sure you want to delete this product catalog?', 'کیا آپ واقعی اس پراڈکٹ کو حذف کرنا چاہتے ہیں؟'),
+      () => {
+        const p = products.find(prod => prod.id === id);
+        onUpdateProducts(products.filter(prod => prod.id !== id));
+        onLogAudit('Product', 'Delete', `Product "${p?.name}" catalog deleted manually.`);
+        showToast(t('Product deleted successfully.', 'رکارڈ حذف کر دیا گیا۔'), 'success');
+      }
+    );
   };
 
   // ==========================================
@@ -133,18 +138,21 @@ export default function UnifiedAccountManager({
       onLogAudit('Bank', 'Create', `New Bank account "${bankForm.bankName}" registered. Opening: Rs. ${bankForm.balance}.`);
     }
     setShowBankForm(false);
-    alert(t('Bank account records saved!', 'بینک اکاؤنٹ ریکارڈ محفوظ کر لیا گیا!'));
+    showToast(t('Bank account records saved!', 'بینک اکاؤنٹ ریکارڈ محفوظ کر لیا گیا!'), 'success');
   };
 
   const handleDeleteBank = (id: string) => {
     if (!onUpdateBanks) return;
-    const isConfirm = window.confirm(t('Are you sure you want to delete this bank ledger account?', 'کیا آپ واقعی اس بینک اکاؤنٹ ریکارڈ کو حذف کرنا چاہتے ہیں؟'));
-    if (!isConfirm) return;
-
-    const targetBank = banks.find(b => b.id === id);
-    onUpdateBanks(banks.filter(b => b.id !== id));
-    onLogAudit('Bank', 'Delete', `Bank Account "${targetBank?.name.split(' | ')[0]}" (A/C: ${targetBank?.accountNo}) deleted manually.`);
-    alert(t('Bank Account removed from station system.', 'بینک اکاؤنٹ ریکارڈ حذف کر دیا گیا۔'));
+    showConfirm(
+      t('Confirm Account Deletion', 'بینک اکاؤنٹ حذف کرنے کی تصدیق کریں'),
+      t('Are you sure you want to delete this bank ledger account?', 'کیا آپ واقعی اس بینک اکاؤنٹ ریکارڈ کو حذف کرنا چاہتے ہیں؟'),
+      () => {
+        const targetBank = banks.find(b => b.id === id);
+        onUpdateBanks(banks.filter(b => b.id !== id));
+        onLogAudit('Bank', 'Delete', `Bank Account "${targetBank?.name.split(' | ')[0]}" (A/C: ${targetBank?.accountNo}) deleted manually.`);
+        showToast(t('Bank Account removed from station system.', 'بینک اکاؤنٹ ریکارڈ حذف کر دیا گیا۔'), 'success');
+      }
+    );
   };
 
   // ==========================================
@@ -201,7 +209,7 @@ export default function UnifiedAccountManager({
     }
 
     setShowWalletForm(false);
-    alert(t('Digital merchant wallet settings saved successfully!', 'ڈیجیٹل والٹ کامیابی سے محفوظ ہو گیا!'));
+    showToast(t('Digital merchant wallet settings saved successfully!', 'ڈیجیٹل والٹ کامیابی سے محفوظ ہو گیا!'), 'success');
   };
 
   return (

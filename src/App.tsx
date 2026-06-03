@@ -1,10 +1,12 @@
 import { StationProvider, useStation } from './contexts/StationContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import LocalStorageMigrationWizard from './components/features/LocalStorageMigrationWizard';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import Navigation from './components/layouts/Navigation';
 import Dashboard from './components/features/Dashboard';
@@ -16,129 +18,52 @@ import Inventory from './components/features/Inventory';
 import Expenses from './components/features/Expenses';
 import LubePOS from './components/features/LubePOS';
 import Reports from './components/features/Reports';
-import AdvancedReportsHub from './components/features/AdvancedReportsHub';
+import LubeReports from './components/features/LubeReports';
 import DiscountsHub from './components/features/DiscountsHub';
 import StaffPanel from './components/features/Staff';
 import SettingsPanel from './components/features/Settings';
 import OnboardingWizard from './components/features/OnboardingWizard';
 import AuthInterface from './components/layouts/AuthInterface';
 import SecurityHub from './components/features/SecurityHub';
+import SubscriptionHub from './components/features/SubscriptionHub';
 import BankCashPanel from './components/features/BankCashPanel';
 import DigitalCashPanel from './components/features/DigitalCashPanel';
 import RateWizard from './components/features/Settings/RateWizard';
-import { 
-  FleetManagement, 
-  TankerDelivery, 
-  LossPrevention, 
+import {
+  FleetManagement,
+  TankerDelivery,
+  LossPrevention,
   MaintenanceAssets,
-  LoyaltyRewards, 
-  BIAnalytics, 
-  DemandForecast, 
-  ERPIntegration, 
-  CCTVIntegration, 
-  APIGateway 
+  LoyaltyRewards,
+  BIAnalytics,
+  DemandForecast,
+  ERPIntegration,
+  CCTVIntegration,
+  APIGateway
 } from './components/features/EnterpriseModules';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, CheckCircle2, AlertTriangle, XCircle, Info, X } from 'lucide-react';
 
 import {
-  Staff,
-  Product,
-  Nozzle,
   Pump,
-  Customer,
-  Supplier,
-  Shift,
-  BankAccount,
-  DigitalAccount,
-  StockTransaction,
-  GlobalSettings,
-  ExpenseEntry,
-  Tank,
-  RateHistoryEntry,
-  StaffFinanceEntry,
-  AttendanceRecord,
   Station
 } from './types';
-import { db } from './data/db';
 
 function MainApp() {
   // Navigation active view routing
   const [activeView, setActiveView] = useState<string>('dashboard');
 
-  // Security Context and session holders
-  const [authenticatedUser, setAuthenticatedUser] = useState<any | null>(null);
-  const [authToken, setAuthToken] = useState<string | null>(null);
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  // Centralized Auth Context connection
+  const { user: authenticatedUser, checkingAuth, logout } = useAuth();
 
-  // Validate session against database on launch
-  useEffect(() => {
-    const verifyTokenOnBoot = async () => {
-      const storedToken = localStorage.getItem('fuelpro_auth_token');
-      if (!storedToken) {
-        setCheckingAuth(false);
-        return;
-      }
-      try {
-        const res = await fetch('/api/auth/me', {
-          headers: {
-            'Authorization': `Bearer ${storedToken}`
-          }
-        });
-        if (res.ok) {
-          const contentType = res.headers.get("content-type");
-          if (contentType && contentType.indexOf("application/json") !== -1) {
-            const data = await res.json();
-            setAuthenticatedUser(data.user);
-            setAuthToken(storedToken);
-          } else {
-            console.warn("Expected JSON but received non-JSON response on login verification.");
-            throw new Error("Invalid Response Type");
-          }
-        } else {
-          // Token expired, delete from memory
-          localStorage.removeItem('fuelpro_auth_token');
-          setAuthenticatedUser(null);
-          setAuthToken(null);
-        }
-      } catch (err) {
-        console.warn("Connection timeout checking authentication on Node backend server. Keeping session in pending state.");
-      } finally {
-        setCheckingAuth(false);
-      }
-    };
-    verifyTokenOnBoot();
-  }, []);
-
-  const handleLoginSuccess = (userPayload: any, token: string) => {
-    localStorage.setItem('fuelpro_auth_token', token);
-    setAuthenticatedUser(userPayload);
-    setAuthToken(token);
-    setActiveView('dashboard');
+  const handleLoginSuccess = () => {
+    window.location.reload();
   };
 
   const handleLogout = async () => {
-    try {
-      const storedToken = localStorage.getItem('fuelpro_auth_token');
-      if (storedToken) {
-        await fetch('/api/auth/logout', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${storedToken}`
-          }
-        });
-      }
-    } catch (err) {
-      console.error("Express logout API failed.", err);
-    } finally {
-      localStorage.removeItem('fuelpro_auth_token');
-      localStorage.removeItem('fuelpro_google_access_token');
-      setAuthenticatedUser(null);
-      setAuthToken(null);
-      setActiveView('dashboard');
-    }
+    await logout();
+    setActiveView('dashboard');
   };
 
-  
   const {
     activeStationId,
     stations,
@@ -185,13 +110,18 @@ function MainApp() {
     handleUpdateStaff,
     handleAddCustomer,
     handleUpdateCustomer,
+    handleDeleteCustomer,
     handleAddSupplier,
     handleUpdateSupplier,
+    handleDeleteSupplier,
     handleAddShift,
     handleUpdateShift,
     handleAddStockReceipt,
     handleUpdateProductStock,
     handleUpdateProductRate,
+    handleUpdateProduct,
+    handleDeleteProduct,
+    handleAddProduct,
     handleAddTank,
     handleUpdateTank,
     handleDeleteTank,
@@ -207,12 +137,23 @@ function MainApp() {
     handleAddBank,
     handleUpdateBanks,
     handleAddDigitalAccount,
-    handleUpdateDigitalAccounts
+    handleUpdateDigitalAccounts,
+    handleDeleteDebitEntry,
+    handleDeleteRecoveryEntry,
+    handleDeleteSupplierPayment,
+    toast,
+    confirmDialog,
+    showToast,
+    showConfirm,
+    showAlert,
+    closeConfirm
   } = useStation();
+
   const isLubeBusiness =
     products.some((product) => product.type === 'lube') &&
     !products.some((product) => product.type === 'fuel');
-// ==========================================
+
+  // ==========================================
   // ROUTING VIEW CONTROLS
   // ==========================================
 
@@ -300,7 +241,10 @@ function MainApp() {
             lubePosSales={lubePosSales}
             onAddCustomer={handleAddCustomer}
             onUpdateCustomer={handleUpdateCustomer}
+            onDeleteCustomer={handleDeleteCustomer}
             onUpdateShift={handleUpdateShift}
+            onDeleteDebitEntry={handleDeleteDebitEntry}
+            onDeleteRecoveryEntry={handleDeleteRecoveryEntry}
           />
         );
 
@@ -313,6 +257,8 @@ function MainApp() {
             products={products}
             onAddSupplier={handleAddSupplier}
             onUpdateSupplier={handleUpdateSupplier}
+            onDeleteSupplier={handleDeleteSupplier}
+            onDeleteSupplierPayment={handleDeleteSupplierPayment}
           />
         );
 
@@ -361,6 +307,9 @@ function MainApp() {
             stockTransactions={stockTxns}
             onAddStockTransaction={handleAddStockReceipt}
             onUpdateProductStock={handleUpdateProductStock}
+            onUpdateProduct={handleUpdateProduct}
+            onDeleteProduct={handleDeleteProduct}
+            onAddProduct={handleAddProduct}
             tanks={tanks}
             rateHistory={rateHistory}
           />
@@ -377,12 +326,38 @@ function MainApp() {
         );
 
       case 'reports':
+        // Lube business → fully isolated Lube Reports ecosystem
+        if (isLubeBusiness) {
+          return (
+            <LubeReports
+              settings={settings}
+              lubePosSales={lubePosSales}
+              products={products}
+              customers={customers}
+              suppliers={suppliers}
+              staff={staff}
+              standaloneExpenses={standaloneExpenses}
+            />
+          );
+        }
+        // Fuel Station / CNG business → Fuel Station Reports
         return (
-          <AdvancedReportsHub
+          <Reports
+            activeStationId={activeStationId}
             settings={settings}
             shifts={shifts}
             products={products}
+            customers={customers}
+            suppliers={suppliers}
+            standaloneExpenses={standaloneExpenses}
+            tanks={tanks}
+            rateHistory={rateHistory}
+            staffFinance={staffFinance}
+            attendance={attendance}
             staff={staff}
+            nozzles={nozzles}
+            banks={banks}
+            digitalAccounts={digitalAccounts}
           />
         );
 
@@ -443,6 +418,9 @@ function MainApp() {
             onLogout={handleLogout}
           />
         );
+
+      case 'subscription_hub':
+        return <SubscriptionHub settings={settings} />;
 
       case 'price_management':
         return (
@@ -514,6 +492,7 @@ function MainApp() {
   // 3. Authenticated FuelPro active workspace
   return (
     <div className={`min-h-screen w-full overflow-x-hidden bg-background text-foreground selection:bg-orange-500/10 selection:text-orange-600 pb-10 transition-colors duration-500 theme-${settings.theme || 'light'}`}>
+      <LocalStorageMigrationWizard />
       {showOnboarding && (
         <OnboardingWizard
           currentLanguage={settings.language}
@@ -523,7 +502,7 @@ function MainApp() {
             setNozzles(completedData.nozzles);
             setProducts(completedData.products);
             setStaff(completedData.staff);
-            
+
             // Extract pumps that nozzles refer to and populate them automatically
             const uniquePumpIds = Array.from(new Set(completedData.nozzles.map(n => n.pumpId)));
             const generatedPumps: Pump[] = uniquePumpIds.map(pId => ({
@@ -532,7 +511,7 @@ function MainApp() {
               status: 'active'
             }));
             setPumps(generatedPumps);
-            
+
             // Re-route to dashboard to display fresh, populated layout
             setActiveView('dashboard');
           }}
@@ -594,14 +573,154 @@ function MainApp() {
           </footer>
         </div>
       </main>
+
+      {/* Premium Global Toast Popup Container */}
+      <div className="fixed top-6 left-1/2 -translate-x-1/2 sm:left-auto sm:right-6 sm:translate-x-0 w-[calc(100%-2rem)] sm:w-full sm:max-w-sm z-55 pointer-events-none">
+        <AnimatePresence>
+          {toast.visible && (
+            <motion.div
+              initial={{ opacity: 0, y: -30, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className={`pointer-events-auto relative w-full overflow-hidden rounded-xl border p-4 shadow-xl backdrop-blur-md transition-all duration-300 ${
+                toast.type === 'success' 
+                  ? 'border-emerald-500/30 bg-[var(--bg-card)]/90 shadow-emerald-500/10'
+                  : toast.type === 'error'
+                    ? 'border-rose-500/30 bg-[var(--bg-card)]/90 shadow-rose-500/10'
+                    : 'border-[var(--border-main)]/60 bg-[var(--bg-card)]/90 shadow-slate-950/10'
+              }`}
+            >
+              {/* Top border color strip */}
+              <div className={`absolute top-0 left-0 right-0 h-1 ${
+                toast.type === 'success' 
+                  ? 'bg-emerald-500'
+                  : toast.type === 'error'
+                    ? 'bg-rose-500'
+                    : 'bg-[var(--primary-accent)]'
+              }`} />
+
+              <div className="flex items-start gap-3 mt-1">
+                <div className="mt-0.5 shrink-0">
+                  {toast.type === 'success' && (
+                    <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                  )}
+                  {toast.type === 'error' && (
+                    <XCircle className="h-5 w-5 text-rose-500" />
+                  )}
+                  {toast.type === 'info' && (
+                    <Info className="h-5 w-5 text-[var(--primary-accent)]" />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="font-sans text-xs font-bold text-[var(--text-main)] leading-relaxed">
+                    {toast.message}
+                  </p>
+                  <div className="mt-2.5 flex items-center justify-between border-t border-[var(--border-main)]/40 pt-2 text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-widest">
+                    <span>{settings.language === 'ur' ? 'کامیابی سے مکمل ہوا' : 'Successfully processed'}</span>
+                    <span className="font-black text-orange-500">Powered by Umar Ali</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Premium Global Confirmation / Alert Modal */}
+      <AnimatePresence>
+        {confirmDialog.visible && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop Blur Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={confirmDialog.isAlert ? undefined : confirmDialog.onCancel}
+              className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs"
+            />
+            
+            {/* Modal Card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ type: "spring", damping: 25, stiffness: 350 }}
+              className="relative w-full max-w-md overflow-hidden rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)]/95 backdrop-blur-md p-6 shadow-2xl z-10"
+            >
+              {/* Type indicator vertical accent line */}
+              <div className={`absolute top-0 left-0 right-0 h-1 ${
+                confirmDialog.isAlert
+                  ? 'bg-[var(--primary-accent)]'
+                  : 'bg-rose-500'
+              }`} />
+
+              <div className="flex items-start gap-4 mt-2">
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                  confirmDialog.isAlert 
+                    ? 'bg-[var(--primary-accent)]/10 text-[var(--primary-accent)]' 
+                    : 'bg-rose-500/10 text-rose-500'
+                }`}>
+                  {confirmDialog.isAlert ? (
+                    <Info className="h-5 w-5" />
+                  ) : (
+                    <AlertTriangle className="h-5 w-5" />
+                  )}
+                </div>
+                
+                <div className="flex-1">
+                  <h3 className="font-sans text-sm font-black text-[var(--text-main)] uppercase tracking-wider">
+                    {confirmDialog.title}
+                  </h3>
+                  <p className="mt-2 font-sans text-xs font-semibold text-[var(--text-muted)] leading-relaxed">
+                    {confirmDialog.message}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Footer Divider & Actions */}
+              <div className="mt-6 pt-4 border-t border-[var(--border-main)]/60 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+                <span className="font-mono text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-widest">
+                  Powered by Umar Ali
+                </span>
+                
+                <div className="flex items-center justify-end gap-2 w-full sm:w-auto">
+                  {!confirmDialog.isAlert && (
+                    <button
+                      type="button"
+                      onClick={confirmDialog.onCancel}
+                      className="flex-1 sm:flex-none text-center rounded-lg border border-[var(--border-main)] bg-[var(--bg-card)] px-4 py-2 font-sans text-xs font-bold text-[var(--text-main)] hover:bg-[var(--bg-hover)] transition-colors cursor-pointer"
+                    >
+                      {confirmDialog.cancelText || (settings.language === 'ur' ? 'منسوخ کریں' : 'Cancel')}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={confirmDialog.onConfirm}
+                    className={`flex-1 sm:flex-none text-center rounded-lg px-5 py-2 font-sans text-xs font-bold text-white transition-colors cursor-pointer shadow-md ${
+                      confirmDialog.isAlert
+                        ? 'bg-[var(--primary-accent)] hover:bg-[var(--primary-hover)] shadow-[var(--primary-accent)]/10'
+                        : 'bg-rose-600 hover:bg-rose-700 shadow-rose-500/10'
+                    }`}
+                  >
+                    {confirmDialog.confirmText || (confirmDialog.isAlert ? (settings.language === 'ur' ? 'ٹھیک ہے' : 'OK') : (settings.language === 'ur' ? 'تصدیق کریں' : 'Confirm'))}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
 export default function App() {
   return (
-    <StationProvider>
-      <MainApp />
-    </StationProvider>
+    <AuthProvider>
+      <StationProvider>
+        <MainApp />
+      </StationProvider>
+    </AuthProvider>
   );
 }

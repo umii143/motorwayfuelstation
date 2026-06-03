@@ -20,6 +20,7 @@ import {
 import { BankAccount, Shift, GlobalSettings, LubePosSale } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
+import { useStation } from '../../contexts/StationContext';
 
 interface BankCashPanelProps {
   settings: GlobalSettings;
@@ -39,6 +40,7 @@ export default function BankCashPanel({
   lubePosSales
 }: BankCashPanelProps) {
   const t = (en: string, ur: string) => translate(en, ur, settings);
+  const { showToast } = useStation();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddBank, setShowAddBank] = useState(false);
@@ -130,7 +132,7 @@ export default function BankCashPanel({
   const handleCreateBank = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newBankName || !newAccountNo) {
-      alert(t('Please provide bank name and account number.', 'برائے مہربانی بینک کا نام اور اکاؤنٹ نمبر فراہم کریں۔'));
+      showToast(t('Please provide bank name and account number.', 'برائے مہربانی بینک کا نام اور اکاؤنٹ نمبر فراہم کریں۔'), 'error');
       return;
     }
 
@@ -152,7 +154,7 @@ export default function BankCashPanel({
     e.preventDefault();
     const amt = Number(adjustAmount);
     if (!adjustBankId || isNaN(amt) || amt <= 0) {
-      alert(t('Please enter a valid amount.', 'درست رقم درج کریں۔'));
+      showToast(t('Please enter a valid amount.', 'درست رقم درج کریں۔'), 'error');
       return;
     }
 
@@ -171,7 +173,7 @@ export default function BankCashPanel({
     setAdjustBankId(null);
     setAdjustAmount('');
     setAdjustReason('');
-    alert(t('Bank balance adjusted successfully!', 'بینک کا فزیکل بیلنس تبدیل کردیا گیا!'));
+    showToast(t('Bank balance adjusted successfully!', 'بینک کا فزیکل بیلنس تبدیل کردیا گیا!'), 'success');
   };
 
   const filteredBanks = useMemo(() => {

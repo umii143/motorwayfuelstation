@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { signInWithGoogle } from '../../lib/firebase';
+import { useAuth } from "../../contexts/AuthContext";
 import {
   Shield,
   Lock,
@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { QRCodeSVG } from 'qrcode.react';
 import { GlobalSettings } from "../../types";
+import { useStation } from "../../contexts/StationContext";
 
 interface AuthInterfaceProps {
   settings: GlobalSettings;
@@ -27,7 +28,18 @@ interface AuthInterfaceProps {
 }
 
 export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfaceProps) {
+  const { showAlert } = useStation();
+  const { 
+    loginWithEmail, 
+    loginWithGoogle, 
+    signUpUser, 
+    registerVerify2FA, 
+    verifyTOTPChallenge,
+    sendPasswordReset,
+    confirmPasswordReset
+  } = useAuth();
   const isUrdu = settings.language === "ur";
+
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
 
   // Layout View States: 'login' | 'signup' | 'forgot_password' | 'mfa_challenge' | 'signup_mfa_challenge' | 'reset_password'
@@ -55,31 +67,6 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
-  
-  // Simulated emails state for reset links
-  const [simulatedEmails, setSimulatedEmails] = useState<any[]>([]);
-
-  // Periodically fetch simulated email dispatch inbox to let user click reset password link directly
-  const fetchSimulatedEmails = async () => {
-    try {
-      const res = await fetch("/api/auth/simulated-emails");
-      if (res.ok) {
-        const contentType = res.headers.get("content-type");
-        if (contentType && contentType.indexOf("application/json") !== -1) {
-          const data = await res.json();
-          setSimulatedEmails(data);
-        }
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  useEffect(() => {
-    fetchSimulatedEmails();
-    const interval = setInterval(fetchSimulatedEmails, 4000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Intercept reset parameter if present in page URL on first load
   useEffect(() => {
@@ -110,17 +97,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Login fail");
-      }
-
+      const data = await loginWithEmail(email, password);
       if (data.mfaRequired) {
         // Phase 1 Credentials Approved! Transition to TOTP prompt
         setTempToken(data.tempMfaToken);
@@ -145,20 +122,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login-mfa", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          code: totpCode,
-          tempMfaToken: tempToken
-        })
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Verification failed");
-      }
-
+      const data = await verifyTOTPChallenge(totpCode, tempToken);
       // Live device login success! Trigger main application context
       onLoginSuccess(data.user, data.token);
     } catch (err: any) {
@@ -180,27 +144,20 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Signup initialization failed.");
-      }
-
+      const data = await signUpUser(email, password);
       // Capture temporary state variables for the QR challenge phase
       setTempToken(data.tempRegisterToken);
       setBase32Secret(data.base32Secret);
       setQrCodeUrl(data.qrCodeUrl);
       if (data.otpauthUrl) setOtpauthUrl(data.otpauthUrl);
       setAuthMode("signup_mfa_challenge");
-      alert(t(
-        "MFA Secret Generated! Download Google Authenticator or Microsoft Authenticator, scan the visual QR code, and enter the active 6-digit pin code.",
-        "گوگل مستند میکر کوڈ تیار ہو گیا! براہ کرم کیو آر کوڈ اسکین کریں اور کوڈ درج کریں۔"
-      ));
+      showAlert(
+        t("MFA Setup", "ایم ایف اے سیٹ اپ"),
+        t(
+          "MFA Secret Generated! Download Google Authenticator or Microsoft Authenticator, scan the visual QR code, and enter the active 6-digit pin code.",
+          "گوگل مستند میکر کوڈ تیار ہو گیا! براہ کرم کیو آر کوڈ اسکین کریں اور کوڈ درج کریں۔"
+        )
+      );
     } catch (err: any) {
       setErrorMsg(err.message || "Signup system block.");
     } finally {
@@ -220,20 +177,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/auth/register-verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          code: totpCode,
-          tempRegisterToken: tempToken
-        })
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Device activation rejected.");
-      }
-
+      const data = await registerVerify2FA(totpCode, tempToken);
       // Activated and bound!
       onLoginSuccess(data.user, data.token);
     } catch (err: any) {
@@ -255,17 +199,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email })
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Forgot password failed.");
-      }
-
+      await sendPasswordReset(email);
       setSuccessMsg(t("Security patch recovering credentials generated! Check database simulated mailbox below.", "اکاؤنٹ ٹھیک کرنے کا لنک تیار کر لیا گیا۔ نیچے میل دیکھیں!"));
     } catch (err: any) {
       setErrorMsg(err.message || "Forgot Password pipeline failed.");
@@ -291,20 +225,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/auth/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token: resetToken,
-          password
-        })
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to patch credentials.");
-      }
-
+      await confirmPasswordReset(resetToken, password);
       setSuccessMsg(t("Your master security key has been updated. Log in.", "آپ کا پاس ورڈ کامیابی سے تبدیل ہو گیا۔ لاگ ان کریں۔"));
       setAuthMode("login");
       // Clean query parameter
@@ -322,28 +243,15 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
     setIsLoading(true);
     
     try {
-      const { user, token } = await signInWithGoogle();
-      
-      // Build the user profile from Firebase user object
-      const firebaseUser = {
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-        uid: user.uid,
-        provider: 'google'
-      };
-
-      // Store Firebase token for session persistence
-      localStorage.setItem("fuelpro_firebase_token", token);
-      
-      // Login success — bypass 2FA for Google OAuth
-      onLoginSuccess(firebaseUser, token);
+      const data = await loginWithGoogle();
+      onLoginSuccess(data.user, localStorage.getItem("fuelpro_google_access_token") || "");
     } catch (err: any) {
       setErrorMsg(err.message || "Google sign-in failed.");
     } finally {
       setIsLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center py-10 px-4 relative overflow-hidden bg-slate-950">
@@ -883,58 +791,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
 
       </motion.div>
 
-      {/* DEVELOPER SIMULATED EMAIL CLIENT COMPONENT AT THE BOTTOM OF LOGIN SCREEN */}
-      <div className="w-full max-w-md mt-8 relative z-10 shrink-0">
-        <div className="rounded-2xl border border-white/5 bg-slate-900/40 backdrop-blur-md p-5 shadow-xl">
-          <div className="flex items-center justify-between border-b border-white/5 pb-2 mb-3">
-            <span className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
-              {t("Developer Outbound Email Mailbox Simulator", "ڈویلپر مقامی ای میل ڈسپیچ سسٹم")}
-            </span>
-            <span className="rounded bg-orange-950 border border-orange-900 px-1.5 py-0.5 text-[9px] font-mono font-bold text-orange-400">
-              {simulatedEmails.length} Email(s)
-            </span>
-          </div>
 
-          {simulatedEmails.length === 0 ? (
-            <p className="font-sans text-[11px] text-slate-500 text-center italic py-2">
-              {t("Inbox simulated container empty. Clicking 'Forgot Password' generates link here instantly.", "ای میل ڈسپیچ سسٹم خالی ہے۔ اوپر پاس ورڈ ٹھیک کرنے کی درخواست کریں تو لنک یہاں ملے گا۔")}
-            </p>
-          ) : (
-            <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
-              {simulatedEmails.map(mail => (
-                <div key={mail.id} className="rounded-xl bg-slate-900 p-3 border border-slate-850 text-left relative">
-                  <span className="absolute top-2.5 right-2 text-slate-600 font-mono text-[9px]">
-                    {new Date(mail.timestamp).toLocaleTimeString()}
-                  </span>
-                  <h4 className="font-sans text-[10px] font-bold text-slate-400">
-                    To: <span className="text-slate-200 font-mono">{mail.to}</span>
-                  </h4>
-                  <p className="font-sans text-xs font-extrabold text-orange-500 mt-1">
-                    {mail.subject}
-                  </p>
-                  
-                  {mail.link && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        // Extract token manually
-                        const tokenKey = new URL(mail.link).searchParams.get("token") || "";
-                        setResetToken(tokenKey);
-                        setAuthMode("reset_password");
-                        setSuccessMsg(t("Simulating recovery click. Enter fresh master security passwords.", "لنک پر کلک کرنے کی نقل کی گئی۔ نیا پاس ورڈ درج کریں۔"));
-                      }}
-                      className="mt-2.5 w-full bg-orange-600/20 hover:bg-orange-600/30 text-orange-400 rounded-lg p-2 font-sans text-[10.5px] font-bold border border-orange-900/50 block text-center"
-                    >
-                      {t("Simulate Link Click / پاس ورڈ تبدیل کرنے کا عمل کریں", "نقل کریں")} →
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
 
       {/* BRAND FOOTER CREDIT */}
       <motion.div 

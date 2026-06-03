@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Sliders, ChevronRight, ArrowLeft, Trash2, Edit, CheckCircle, Info, Fuel, Plus } from 'lucide-react';
+import { useStation } from '../../../contexts/StationContext';
 import { Nozzle, Tank, Pump, Product } from '../../../types';
 import EmptyState from '../../ui/EmptyState';
 import { t as translate } from '../../../lib/translations';
@@ -27,6 +28,7 @@ export default function NozzleWizard({
   onDeleteNozzle,
   onLogAudit
 }: NozzleWizardProps) {
+  const { showConfirm, showToast } = useStation();
   const t = (en: string, ur: string) => translate(en, ur, language);
 
   // States
@@ -75,31 +77,31 @@ export default function NozzleWizard({
   const handleNextStep = () => {
     if (wizardStep === 1) {
       if (!nozzleForm.productId) {
-        alert(t('Please select a fuel product type!', 'براہ کرم پٹرولیم پراڈکٹ منتخب کریں!'));
+        showToast(t('Please select a fuel product type!', 'براہ کرم پٹرولیم پراڈکٹ منتخب کریں!'), 'error');
         return;
       }
     }
     if (wizardStep === 2) {
       if (!nozzleForm.tankId) {
-        alert(t('Please choose a connected supply tank!', 'براہ کرم منسلک اسٹوریج ٹینک منتخب کریں!'));
+        showToast(t('Please choose a connected supply tank!', 'براہ کرم منسلک اسٹوریج ٹینک منتخب کریں!'), 'error');
         return;
       }
     }
     if (wizardStep === 3) {
       if (!nozzleForm.pumpId) {
-        alert(t('Please link a dispenser pump station!', 'براہ کرم پمپ اسٹیشن لنک کریں!'));
+        showToast(t('Please link a dispenser pump station!', 'براہ کرم پمپ اسٹیشن لنک کریں!'), 'error');
         return;
       }
     }
     if (wizardStep === 4) {
       if (!nozzleForm.name) {
-        alert(t('Please enter a nozzle name / position label!', 'براہ کرم نوزل کا مخصوص نام کوڈ لکھیں!'));
+        showToast(t('Please enter a nozzle name / position label!', 'براہ کرم نوزل کا مخصوص نام کوڈ لکھیں!'), 'error');
         return;
       }
     }
     if (wizardStep === 5) {
       if (nozzleForm.startReading < 0 || nozzleForm.currentReading < 0) {
-        alert(t('Meter readings cannot be negative values!', 'میٹر ریڈنگ صفر سے کم نہیں ہوسکتی!'));
+        showToast(t('Meter readings cannot be negative values!', 'میٹر ریڈنگ صفر سے کم نہیں ہوسکتی!'), 'error');
         return;
       }
     }
@@ -147,17 +149,20 @@ export default function NozzleWizard({
     }
 
     setShowForm(false);
-    alert(t('Nozzle hardware mapping registered successfully!', 'نوزل ترتیب کامیابی سے محفوظ ہو گئی!'));
+    showToast(t('Nozzle hardware mapping registered successfully!', 'نوزل ترتیب کامیابی سے محفوظ ہو گئی!'), 'success');
   };
 
   const handleDeleteNozzleRecord = (id: string) => {
-    const checkVerify = window.confirm(t('Are you sure you want to delete this hardware nozzle? Shifts with archived logs might get disturbed.', 'کیا آپ واقعی اس نوزل کو ڈیلیٹ کرنا چاہتے ہیں؟'));
-    if (!checkVerify) return;
-
-    const nz = nozzles.find(n => n.id === id);
-    onDeleteNozzle(id);
-    onLogAudit('Nozzle', 'Delete', `Hardware Nozzle "${nz?.name}" (ID: ${id}) was deleted manuals.`);
-    alert(t('Nozzle removed successfully.', 'نوزل کو کامیابی سے خارج کر دیا گیا ہے۔'));
+    showConfirm(
+      t('Confirm Nozzle Deletion', 'نوزل حذف کرنے کی تصدیق'),
+      t('Are you sure you want to delete this hardware nozzle? Shifts with archived logs might get disturbed.', 'کیا آپ واقعی اس نوزل کو ڈیلیٹ کرنا چاہتے ہیں؟'),
+      () => {
+        const nz = nozzles.find(n => n.id === id);
+        onDeleteNozzle(id);
+        onLogAudit('Nozzle', 'Delete', `Hardware Nozzle "${nz?.name}" (ID: ${id}) was deleted manuals.`);
+        showToast(t('Nozzle removed successfully.', 'نوزل کو کامیابی سے خارج کر دیا گیا ہے۔'), 'success');
+      }
+    );
   };
 
   // Filter tanks matching the selected fuel type

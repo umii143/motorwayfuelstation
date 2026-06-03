@@ -39,6 +39,7 @@ import {
 import { formatCurrency } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
 import EmptyState from '../ui/EmptyState';
+import { useStation } from '../../contexts/StationContext';
 
 interface LubePOSProps {
   settings: GlobalSettings;
@@ -68,6 +69,7 @@ export default function LubePOS({
   onAddLubePosSale,
   onNavigate
 }: LubePOSProps) {
+  const { showToast, showAlert, showConfirm } = useStation();
   const t = (en: string, ur: string) => translate(en, ur, settings);
   const isUrdu = settings.language === 'ur';
 
@@ -244,32 +246,32 @@ export default function LubePOS({
 
   const handleCheckout = () => {
     if (!cashierId) {
-      alert(t('Please select the cashier/operator first.', 'سب سے پہلے کیشیئر یا آپریٹر منتخب کریں۔'));
+      showToast(t('Please select the cashier/operator first.', 'سب سے پہلے کیشیئر یا آپریٹر منتخب کریں۔'), 'error');
       return;
     }
 
     if (cartItems.length === 0) {
-      alert(t('Add at least one lube or part item to the cart.', 'کم از کم ایک لیوب یا پارٹ آئٹم کارٹ میں شامل کریں۔'));
+      showToast(t('Add at least one lube or part item to the cart.', 'کم از کم ایک لیوب یا پارٹ آئٹم کارٹ میں شامل کریں۔'), 'error');
       return;
     }
 
     if (paymentMode === 'credit' && !selectedCustomerId) {
-      alert(t('Credit sales require a customer account.', 'کریڈٹ سیل کے لیے کسٹمر کھاتہ ضروری ہے۔'));
+      showToast(t('Credit sales require a customer account.', 'کریڈٹ سیل کے لیے کسٹمر کھاتہ ضروری ہے۔'), 'error');
       return;
     }
 
     if (paymentMode === 'bank' && !bankAccountId) {
-      alert(t('Choose the receiving bank account.', 'وصولی کے لیے بینک اکاؤنٹ منتخب کریں۔'));
+      showToast(t('Choose the receiving bank account.', 'وصولی کے لیے بینک اکاؤنٹ منتخب کریں۔'), 'error');
       return;
     }
 
     if (paymentMode === 'digital' && !digitalAccountId) {
-      alert(t('Choose the receiving digital account.', 'وصولی کے لیے ڈیجیٹل اکاؤنٹ منتخب کریں۔'));
+      showToast(t('Choose the receiving digital account.', 'وصولی کے لیے ڈیجیٹل اکاؤنٹ منتخب کریں۔'), 'error');
       return;
     }
 
     if (paymentMode !== 'credit' && totals.received < totals.total) {
-      alert(t('Received amount cannot be less than the bill total.', 'وصول شدہ رقم بل سے کم نہیں ہو سکتی۔'));
+      showToast(t('Received amount cannot be less than the bill total.', 'وصول شدہ رقم بل سے کم نہیں ہو سکتی۔'), 'error');
       return;
     }
 
@@ -316,18 +318,22 @@ export default function LubePOS({
   };
 
   const handleReturn = (sale: LubePosSale) => {
-    if (!window.confirm(t('Are you sure you want to refund this entire invoice?', 'کیا آپ واقعی اس مکمل بل کو واپس کرنا چاہتے ہیں؟'))) return;
-    
-    const returnSale: LubePosSale = {
-      ...sale,
-      id: `lps_ret_${Date.now()}`,
-      isReturn: true,
-      date: new Date().toISOString().split('T')[0],
-      time: new Date().toTimeString().slice(0, 5),
-      returnedSaleId: sale.id
-    };
-    onAddLubePosSale(returnSale);
-    alert(t('Return processed successfully', 'واپسی کامیابی سے مکمل ہو گئی'));
+    showConfirm(
+      t('Refund Invoice', 'بل واپس کریں'),
+      t('Are you sure you want to refund this entire invoice?', 'کیا آپ واقعی اس مکمل بل کو واپس کرنا چاہتے ہیں؟'),
+      () => {
+        const returnSale: LubePosSale = {
+          ...sale,
+          id: `lps_ret_${Date.now()}`,
+          isReturn: true,
+          date: new Date().toISOString().split('T')[0],
+          time: new Date().toTimeString().slice(0, 5),
+          returnedSaleId: sale.id
+        };
+        onAddLubePosSale(returnSale);
+        showToast(t('Return processed successfully', 'واپسی کامیابی سے مکمل ہو گئی'), 'success');
+      }
+    );
   };
 
   if (sellableProducts.length === 0) {
@@ -840,7 +846,7 @@ export default function LubePOS({
               
               <div id="print-invoice" className="flex-1 overflow-y-auto bg-white p-6 text-slate-900">
                 <div className="mb-6 text-center">
-                  <h2 className="text-xl font-black">{settings.businessName}</h2>
+                  <h2 className="text-xl font-black">{settings.stationName}</h2>
                   <p className="text-sm font-medium text-slate-500">{t('Lube POS Receipt', 'لیوب پی او ایس رسید')}</p>
                 </div>
                 

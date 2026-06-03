@@ -44,6 +44,46 @@ import {
   GlobalSettings,
 } from "../../types";
 import { db } from "../../data/db";
+import { useStation } from "../../contexts/StationContext";
+
+// Helper to classify fuel product IDs into hardcoded categories expected by the shift closeout logic
+const getFuelCategory = (productId: string, products: Product[]): "petrol" | "diesel" | "cng" | null => {
+  const p = products.find((prod) => prod.id === productId);
+  if (!p) return null;
+  if (p.type !== "fuel") return null;
+
+  const idLower = p.id.toLowerCase();
+  const nameLower = p.name.toLowerCase();
+
+  if (
+    idLower === "petrol" ||
+    idLower === "prod_f1" ||
+    idLower === "prod_f3" ||
+    nameLower.includes("petrol") ||
+    nameLower.includes("pmg") ||
+    nameLower.includes("hobc") ||
+    nameLower.includes("octane") ||
+    nameLower.includes("super")
+  ) {
+    return "petrol";
+  }
+  if (
+    idLower === "diesel" ||
+    idLower === "prod_f2" ||
+    nameLower.includes("diesel") ||
+    nameLower.includes("hsd")
+  ) {
+    return "diesel";
+  }
+  if (
+    idLower === "cng" ||
+    nameLower.includes("cng") ||
+    nameLower.includes("gas")
+  ) {
+    return "cng";
+  }
+  return null;
+};
 
 interface ShiftWizardProps {
   activeStationId: string;
@@ -93,6 +133,7 @@ export default function ShiftWizard({
   onAddShiftSalaryPayment,
   onDeleteShiftSalaryPayment,
 }: ShiftWizardProps) {
+  const { showToast, showConfirm, showAlert } = useStation();
   const isUrdu = settings.language === "ur";
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
 
@@ -275,10 +316,14 @@ export default function ShiftWizard({
 
   // Fuel Rates Mapping
   const fuelRates = useMemo(() => {
+    const getRate = (cat: "petrol" | "diesel" | "cng", fallback: number) => {
+      const prod = products.find((p) => getFuelCategory(p.id, products) === cat);
+      return prod ? prod.rate : fallback;
+    };
     return {
-      petrol: products.find((p) => p.id === "petrol")?.rate || 272.5,
-      diesel: products.find((p) => p.id === "diesel")?.rate || 281.2,
-      cng: products.find((p) => p.id === "cng")?.rate || 210.0,
+      petrol: getRate("petrol", 275.5),
+      diesel: getRate("diesel", 284.1),
+      cng: getRate("cng", 210.0),
     };
   }, [products]);
 
@@ -304,9 +349,10 @@ export default function ShiftWizard({
 
     nozzles.forEach((nz) => {
       const sale = getNozzleSale(nz.id);
-      if (nz.productId === "petrol") petLitersAccum += sale;
-      else if (nz.productId === "diesel") dieLitersAccum += sale;
-      else if (nz.productId === "cng") cngKgsAccum += sale;
+      const cat = getFuelCategory(nz.productId, products);
+      if (cat === "petrol") petLitersAccum += sale;
+      else if (cat === "diesel") dieLitersAccum += sale;
+      else if (cat === "cng") cngKgsAccum += sale;
     });
 
     const petSaleLiters = Math.max(
@@ -462,7 +508,7 @@ export default function ShiftWizard({
       const refVal =
         previousClosingReadings[
           noz.id as keyof typeof previousClosingReadings
-        ] || 0;
+        ] || noz.currentReading || noz.startReading || 0;
       initialOpenings[noz.id] = String(refVal);
     });
     setOpeningReadings(initialOpenings);
@@ -560,13 +606,14 @@ export default function ShiftWizard({
   const handleAddDebit = () => {
     if (!activeShift) return;
     if (!debCustId) {
-      alert(t("Please select a customer.", "براہ کرم گاہک کا انتخاب کریں۔"));
+      showToast(t("Please select a customer.", "براہ کرم گاہک کا انتخاب کریں۔"), "error");
       return;
     }
     const qty = Number(debQty);
     if (!qty || qty <= 0) {
-      alert(
+      showToast(
         t("Please enter a valid quantity.", "براہ کرم درست تعداد درج کریں۔"),
+        "error",
       );
       return;
     }
@@ -610,12 +657,12 @@ export default function ShiftWizard({
   const handleAddRecovery = () => {
     if (!activeShift) return;
     if (!recCustId) {
-      alert(t("Please select a customer.", "براہ کرم گاہک کا انتخاب کریں۔"));
+      showToast(t("Please select a customer.", "براہ کرم گاہک کا انتخاب کریں۔"), "error");
       return;
     }
     const amount = Number(recAmount);
     if (!amount || amount <= 0) {
-      alert(t("Please enter a valid amount.", "براہ کرم درست رقم درج کریں۔"));
+      showToast(t("Please enter a valid amount.", "براہ کرم درست رقم درج کریں۔"), "error");
       return;
     }
 
@@ -651,21 +698,23 @@ export default function ShiftWizard({
     if (!activeShift) return;
     const amount = Number(expAmount);
     if (!amount || amount <= 0) {
-      alert(
+      showToast(
         t(
           "Please enter a valid expense amount.",
           "براہ کرم درست رقم درج کریں۔",
         ),
+        "error",
       );
       return;
     }
 
     if (expCategory === "salary" && !expStaffId) {
-      alert(
+      showToast(
         t(
           "Please select a staff member for salary payment.",
           "براہ کرم تنخواہ کی ادائیگی کے لیے عملے کا ممبر منتخب کریں۔",
         ),
+        "error",
       );
       return;
     }
@@ -738,16 +787,17 @@ export default function ShiftWizard({
   const handleAddBank = () => {
     if (!activeShift) return;
     if (!bankAcctId) {
-      alert(t("Please select a bank account.", "HBL/MCB اکاؤنٹ منتخب کریں۔"));
+      showToast(t("Please select a bank account.", "HBL/MCB اکاؤنٹ منتخب کریں۔"), "error");
       return;
     }
     const amount = Number(bankAmount);
     if (!amount || amount <= 0) {
-      alert(
+      showToast(
         t(
           "Please enter a valid deposit amount.",
           "براہ کرم درست رقم درج کریں۔",
         ),
+        "error",
       );
       return;
     }
@@ -785,7 +835,7 @@ export default function ShiftWizard({
     if (!activeShift) return;
     const amount = Number(digAmount);
     if (!amount || amount <= 0) {
-      alert(t("Please enter a valid amount.", "براہ کرم درست رقم درج کریں۔"));
+      showToast(t("Please enter a valid amount.", "براہ کرم درست رقم درج کریں۔"), "error");
       return;
     }
 
@@ -813,15 +863,16 @@ export default function ShiftWizard({
     if (!activeShift) return;
     const amount = Number(discAmount);
     if (!amount || amount <= 0) {
-      alert(t("Please enter a valid amount.", "براہ کرم درست رقم درج کریں۔"));
+      showToast(t("Please enter a valid amount.", "براہ کرم درست رقم درج کریں۔"), "error");
       return;
     }
     if (!discCustomer || !discApprovedBy || !discReason) {
-      alert(
+      showToast(
         t(
           "Please fill all required inputs for discount.",
           "ڈسکاؤنٹ کے تمام خانے پر کریں۔",
         ),
+        "error",
       );
       return;
     }
@@ -877,15 +928,17 @@ export default function ShiftWizard({
   const handleAddLube = () => {
     if (!activeShift) return;
     if (!lubeItemId) {
-      alert(
+      showToast(
         t("Please select a lubricant item.", "براہ کرم پراڈکٹ کا انتخاب کریں۔"),
+        "error",
       );
       return;
     }
     const qty = Number(lubeQty);
     if (!qty || qty <= 0) {
-      alert(
+      showToast(
         t("Please enter a valid quantity.", "براہ کرم درست تعداد درج کریں۔"),
+        "error",
       );
       return;
     }
@@ -923,12 +976,12 @@ export default function ShiftWizard({
   const handleAddSupplier = () => {
     if (!activeShift) return;
     if (!supId) {
-      alert(t("Please select a supplier depot.", "سپلائر کا انتخاب کریں۔"));
+      showToast(t("Please select a supplier depot.", "سپلائر کا انتخاب کریں۔"), "error");
       return;
     }
     const amount = Number(supAmount);
     if (!amount || amount <= 0) {
-      alert(t("Please enter a valid payment sum.", "رقم درج کریں۔"));
+      showToast(t("Please enter a valid payment sum.", "رقم درج کریں۔"), "error");
       return;
     }
 
@@ -1087,29 +1140,30 @@ export default function ShiftWizard({
 
     // Redirect to Dashboard home screen
     onNavigateToView("dashboard");
-    alert(
+    showToast(
       t(
-        "Shift successfully submitted, closed, and and local ledgers synchronized!",
+        "Shift successfully submitted, closed, and local ledgers synchronized!",
         "شفٹ کامیابی سے مغلوب اور تمام لیجرز اپڈیٹ ہو چکے ہیں!",
       ),
+      "success"
     );
   };
 
   // Cancel running shift trigger
   const handleAbandoneShift = () => {
     if (!activeShift) return;
-    if (
-      confirm(
-        t(
-          "Are you sure you want to delete and reset this running shift?",
-          "کیا آپ واقعتاً جاری شفٹ کو منسوخ اور ختم کرنا چاہتے ہیں؟",
-        ),
-      )
-    ) {
-      const cleanShifts = shifts.filter((s) => s.id !== activeShift.id);
-      db.saveShifts(activeStationId, cleanShifts);
-      window.location.reload();
-    }
+    showConfirm(
+      t("Confirm Abandon Shift", "شفٹ منسوخ کرنے کی تصدیق"),
+      t(
+        "Are you sure you want to delete and reset this running shift?",
+        "کیا آپ واقعتاً جاری شفٹ کو منسوخ اور ختم کرنا چاہتے ہیں؟",
+      ),
+      () => {
+        const cleanShifts = shifts.filter((s) => s.id !== activeShift.id);
+        db.saveShifts(activeStationId, cleanShifts);
+        window.location.reload();
+      }
+    );
   };
 
   return (
@@ -1299,7 +1353,7 @@ export default function ShiftWizard({
             {/* Split nozzles per products types */}
             {["petrol", "diesel", "cng"].map((prodId) => {
               const matchedNozzles = nozzles.filter(
-                (n) => n.productId === prodId,
+                (n) => getFuelCategory(n.productId, products) === prodId,
               );
               if (matchedNozzles.length === 0) return null;
 
@@ -1358,7 +1412,7 @@ export default function ShiftWizard({
                       const prevVal =
                         previousClosingReadings[
                           noz.id as keyof typeof previousClosingReadings
-                        ] || 0;
+                        ] || noz.currentReading || noz.startReading || 0;
                       return (
                         <div
                           key={noz.id}
@@ -3080,7 +3134,7 @@ export default function ShiftWizard({
           <div className="space-y-6">
             {["petrol", "diesel", "cng"].map((prodId) => {
               const matchedNozzles = nozzles.filter(
-                (n) => n.productId === prodId,
+                (n) => getFuelCategory(n.productId, products) === prodId,
               );
               if (matchedNozzles.length === 0) return null;
 
@@ -3733,7 +3787,7 @@ export default function ShiftWizard({
                 <span>{t("Print Statement PDF", "پی ڈی ایف پرنٹ کریں")}</span>
               </button>
               <button
-                onClick={() => alert("Summary link copied to clipboard!")}
+                onClick={() => showToast(t("Summary link copied to clipboard!", "خلاصہ لنک کلپ بورڈ پر کاپی ہو گیا!"), "success")}
                 className="px-3.5 border border-slate-200 text-slate-500 rounded-lg hover:bg-slate-50 flex items-center justify-center cursor-pointer"
               >
                 <Share2 className="h-4 w-4" />

@@ -5,6 +5,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useStation } from '../../contexts/StationContext';
 import {
   Truck,
   Plus,
@@ -24,6 +25,7 @@ import {
   ArrowDownRight
 } from 'lucide-react';
 import EmptyState from '../ui/EmptyState';
+import PartyLedgerModal, { LedgerEntry, PartyInfo } from '../ui/PartyLedgerModal';
 import { Supplier, Shift, Product, GlobalSettings } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
@@ -35,6 +37,8 @@ interface SuppliersProps {
   products: Product[];
   onAddSupplier: (supplier: Supplier) => void;
   onUpdateSupplier: (supplier: Supplier) => void;
+  onDeleteSupplier: (supplierId: string) => void;
+  onDeleteSupplierPayment: (shiftId: string, entryId: string) => void;
 }
 
 export default function Suppliers({
@@ -43,14 +47,98 @@ export default function Suppliers({
   shifts,
   products,
   onAddSupplier,
-  onUpdateSupplier
+  onUpdateSupplier,
+  onDeleteSupplier,
+  onDeleteSupplierPayment
 }: SuppliersProps) {
+  const { showToast, showConfirm } = useStation();
   const t = (en: string, ur: string) => translate(en, ur, settings);
 
   // States
   const [selectedSupplierId, setSelectedSupplierId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [timeFilter, setTimeFilter] = useState<'all' | 'weekly' | 'monthly' | 'yearly'>('all');
+
+  // Ledger Modal State
+  const [ledgerParty, setLedgerParty] = useState<PartyInfo | null>(null);
+  const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([]);
+  const [isLedgerOpen, setIsLedgerOpen] = useState(false);
+
+  // Open full ledger for a supplier
+  const openSupplierLedger = (sup: Supplier) => {
+    const rawEntries: LedgerEntry[] = [];
+
+    shifts.forEach(sh => {
+      // Find payments we made to this supplier
+      sh.supplierPayments.forEach(pay => {
+        if (pay.supplierId !== sup.id) return;
+        rawEntries.push({
+          id: `pay_${pay.id}`,
+          date: sh.date,
+          description: `Cheque/Bank Payment (Ref: ${pay.reference || 'ONLINE'})`,
+          debit: pay.amount,
+          credit: 0,
+          balance: 0,
+          tag: 'Payment Made',
+        });
+      });
+    });
+
+    // Currently supplier module relies on manual adjustments or mock shift for credit (Invoice)
+    // However the existing ledgerLogs just shows payments. We'll map them.
+    
+    // Sort ascending, compute running balance (Credit increases what we owe, Debit reduces what we owe)
+    // Wait, the modal is generic. For a supplier:
+    // Debit = money we paid (reduces our debt)
+    // Credit = invoice stock we received (increases our debt)
+    rawEntries.sort((a, b) => a.date.localeCompare(b.date));
+    let running = 0;
+    const withBalance = rawEntries.map(e => {
+      running += e.credit - e.debit; // Increase debt by credit, reduce by debit
+      return { ...e, balance: running };
+    });
+
+    // Reverse for latest-first display
+    withBalance.reverse();
+
+    const party: PartyInfo = {
+      id: sup.id,
+      name: sup.name,
+      contact: sup.contact,
+      accountNo: sup.accountNo,
+      balance: sup.balance,
+      type: 'supplier',
+    };
+
+    setLedgerParty(party);
+    setLedgerEntries(withBalance);
+    setIsLedgerOpen(true);
+  };
+
+  // Edit Supplier Modal states
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editSuppName, setEditSuppName] = useState('');
+  const [editSuppUrduName, setEditSuppUrduName] = useState('');
+  const [editSuppContact, setEditSuppContact] = useState('');
+  const [editSuppAccountNo, setEditSuppAccountNo] = useState('');
+
+  const handleEditSupplierSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentSupplier) return;
+    if (!editSuppName.trim()) {
+      showToast('Supplier name is required.', 'error');
+      return;
+    }
+    const updated: Supplier = {
+      ...currentSupplier,
+      name: editSuppName,
+      urduName: editSuppUrduName,
+      contact: editSuppContact,
+      accountNo: editSuppAccountNo
+    };
+    onUpdateSupplier(updated);
+    setShowEditModal(false);
+  };
 
   // Time filter checking helper
   const isWithinTimeFilter = (dateStr: string) => {
@@ -139,6 +227,8 @@ export default function Suppliers({
       debit: number;  // Outflowing Payments we made to vendor (reduces our payable)
       credit: number; // Inflowing Invoice stock we bought (increases our payable)
       balance: number;
+      shiftId?: string;
+      entryId?: string;
     }> = [];
 
     shifts.forEach(sh => {
@@ -151,7 +241,9 @@ export default function Suppliers({
             description: t(`Cheque Payment via Bank Account (Ref: ${pay.reference || 'ONLINE'})`, `چیک کے ذریعے کھاتہ ادائیگی چالان`),
             debit: pay.amount,
             credit: 0,
-            balance: 0
+            balance: 0,
+            shiftId: sh.id,
+            entryId: pay.id
           });
         }
       });
@@ -200,7 +292,6 @@ export default function Suppliers({
     setAddAccount('');
     setAddOpeningBal('');
     setShowAddSupplierModal(false);
-    alert(t('Supplier registered successfully!', 'سپلائر کامیابی سے رجسٹر ہو گیا!'));
   };
 
   const handleAdjustSupplierSubmit = (e: React.FormEvent) => {
@@ -209,7 +300,7 @@ export default function Suppliers({
 
     const amt = Number(adjustAmount);
     if (!amt || amt <= 0) {
-      alert('Please enter a valid amount.');
+      showToast('Please enter a valid amount.', 'error');
       return;
     }
 
@@ -230,7 +321,6 @@ export default function Suppliers({
     setIsAdjusting(false);
     setAdjustAmount('');
     setAdjustComment('');
-    alert(t('Supplier ledger balance updated!', 'سپلائر بلنگ بیلنس اپ ڈیٹ کر دیا گیا!'));
   };
 
 
@@ -417,13 +507,21 @@ export default function Suppliers({
                       </span>
                     </div>
 
-                    <div className="text-right">
-                      <span className={`font-mono text-xs font-bold block ${isDue ? 'text-red-500' : 'text-slate-400'}`}>
-                        {formatCurrency(payable, settings)}
+                    <div className="flex flex-col items-end gap-1.5 shrink-0">
+                      <span className={`font-mono text-xs font-bold block ${isDue ? 'text-rose-600' : 'text-emerald-700'}`}>
+                        {formatCurrency(Math.abs(payable), settings)}
                       </span>
-                      <span className="font-sans text-[8px] text-slate-400 uppercase tracking-wider block mt-1">
-                        {t('Payable Due', 'واجب الادا رقم')}
+                      <span className="font-sans text-[9px] text-slate-400 uppercase tracking-widest block">
+                        {isDue ? t('Payable', 'واجب الادا') : t('Settled', 'بے باق')}
                       </span>
+                      {/* Ledger button */}
+                      <button
+                        onClick={e => { e.stopPropagation(); openSupplierLedger(sup); }}
+                        className="flex items-center gap-1 rounded-md bg-slate-800 px-2 py-0.5 font-sans text-[10px] font-bold text-white hover:bg-slate-900 transition-colors cursor-pointer mt-1"
+                      >
+                        <Clock className="h-3 w-3" />
+                        <span>View Ledger</span>
+                      </button>
                     </div>
                   </motion.button>
                 );
@@ -439,14 +537,55 @@ export default function Suppliers({
               
               {/* Header profile info */}
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-4">
-                <div className="flex gap-3 items-center">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+                <div className="flex gap-3 items-center flex-1">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-600 shrink-0">
                     <Truck className="h-5.5 w-5.5 text-orange-650" />
                   </div>
-                  <div>
-                    <h3 className="font-sans text-sm font-bold text-slate-900 leading-tight">
-                      {t(currentSupplier.name, currentSupplier.urduName)}
-                    </h3>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="font-sans text-sm font-bold text-slate-900 leading-tight truncate">
+                        {t(currentSupplier.name, currentSupplier.urduName)}
+                      </h3>
+                      <div className="flex gap-1.5 shrink-0">
+                        <button
+                          onClick={() => {
+                            setEditSuppName(currentSupplier.name);
+                            setEditSuppUrduName(currentSupplier.urduName);
+                            setEditSuppContact(currentSupplier.contact);
+                            setEditSuppAccountNo(currentSupplier.accountNo);
+                            setShowEditModal(true);
+                          }}
+                          className="px-2 py-0.5 font-sans text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 cursor-pointer"
+                        >
+                          ✏️ {t('Edit', 'ترمیم')}
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (currentSupplier.balance !== 0) {
+                              showToast(t(
+                                `Cannot delete “${currentSupplier.name}” — outstanding payable of Rs.${currentSupplier.balance.toLocaleString()} must be cleared first.`,
+                                `سپلائر کا کھاتہ حذف نہیں ہو سکتا ہے کیونکہ بیلنس باقی ہے۔`
+                              ), 'error');
+                              return;
+                            }
+                            showConfirm(
+                              t('Confirm Supplier Deletion', 'سپلائر حذف کرنے کی تصدیق'),
+                              t(
+                                `Delete supplier “${currentSupplier.name}”? This cannot be undone.`,
+                                `کیا آپ واقعی اس سپلائر کو حذف کرنا چاہتے ہیں؟`
+                              ),
+                              () => {
+                                onDeleteSupplier(currentSupplier.id);
+                                setSelectedSupplierId(null);
+                              }
+                            );
+                          }}
+                          className="px-2 py-0.5 font-sans text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 cursor-pointer"
+                        >
+                          🗑️ {t('Delete', 'حذف')}
+                        </button>
+                      </div>
+                    </div>
                     <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 font-sans text-[11px] text-slate-400 font-semibold">
                       <span className="flex items-center gap-1">📞 {currentSupplier.contact}</span>
                       <span className="flex items-center gap-1">🏦 Bank IBAN: {currentSupplier.accountNo}</span>
@@ -454,7 +593,7 @@ export default function Suppliers({
                   </div>
                 </div>
 
-                <div className="rounded-lg bg-orange-55/10 px-4 py-2 border border-orange-100 text-right">
+                <div className="rounded-lg bg-orange-55/10 px-4 py-2 border border-orange-100 text-right shrink-0">
                   <span className="font-sans text-[9px] text-orange-605 font-bold uppercase tracking-wider block">{t('Amount We Owe (Payable Balance):', 'کل واجب الادا دوقم (پیبل بیلنس):')}</span>
                   <strong className="font-mono text-lg font-bold text-orange-705 block mt-0.5">{formatCurrency(currentSupplier.balance, settings)}</strong>
                 </div>
@@ -552,12 +691,13 @@ export default function Suppliers({
                         <th className="py-2.5 px-3 text-right">{t('Invoice Cr (+We Owe)', 'چالان بل (+)')}</th>
                         <th className="py-2.5 px-3 text-right">{t('Payment Dr (–Made)', 'ادائیگی رقم (–)')}</th>
                         <th className="py-2.5 px-3 text-right">{t('Running Balance Owed', 'حتمی پیبل رقم')}</th>
+                        <th className="py-2.5 px-3 text-center w-16">{t('Actions', 'اقدامات')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-slate-705">
                       {vendorLedgerLogs.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="py-8 text-center text-slate-400 font-medium">
+                          <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
                             {t('No past delivery payments locked inside shifts ledger accounts. Register payment in a running shift.', 'اس سپلائر کی گذشتہ کوئی ٹرانسفر انٹری یا ادائیگی ریکارڈ نہیں ہوئی ہے۔')}
                           </td>
                         </tr>
@@ -569,6 +709,30 @@ export default function Suppliers({
                             <td className="py-3 px-3 text-right font-mono font-bold text-red-550">{v.credit > 0 ? `${formatCurrency(v.credit, settings)}` : '—'}</td>
                             <td className="py-3 px-3 text-right font-mono font-bold text-emerald-600">{v.debit > 0 ? `${formatCurrency(v.debit, settings)}` : '—'}</td>
                             <td className="py-3 px-3 text-right font-mono font-bold text-slate-900">{formatCurrency(v.balance, settings)}</td>
+                            <td className="py-3 px-3 text-center">
+                              {v.shiftId && v.entryId ? (
+                                <button
+                                  onClick={() => {
+                                    showConfirm(
+                                      t('Confirm Payment Deletion', 'ادائیگی حذف کرنے کی تصدیق'),
+                                      t(
+                                        `Delete this supplier payment entry? This will revert the transaction and update the supplier's balance.`,
+                                        `کیا آپ واقعی اس ادائیگی کی انٹری کو حذف کرنا چاہتے ہیں؟ اس سے سپلائر کا بیلنس بھی تبدیل ہو جائے گا۔`
+                                      ),
+                                      () => {
+                                        onDeleteSupplierPayment(v.shiftId!, v.entryId!);
+                                      }
+                                    );
+                                  }}
+                                  className="text-red-500 hover:text-red-750 font-bold cursor-pointer text-xs p-1"
+                                  title={t('Delete Entry', 'حذف کریں')}
+                                >
+                                  🗑️
+                                </button>
+                              ) : (
+                                <span className="text-slate-300 font-sans text-[10px]">—</span>
+                              )}
+                            </td>
                           </tr>
                         ))
                       )}
@@ -680,6 +844,100 @@ export default function Suppliers({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Edit Supplier Modal */}
+      <AnimatePresence>
+        {showEditModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 15, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 350 }}
+              className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-xl"
+            >
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-2">
+                  <Truck className="h-5 w-5 text-orange-600" />
+                  <span>{t('Edit Supplier Profile', 'سپلائر پروفائل میں ترمیم کریں')}</span>
+                </h3>
+                <button onClick={() => setShowEditModal(false)} className="text-slate-400 hover:text-slate-650 cursor-pointer font-bold text-xl">&times;</button>
+              </div>
+
+              <form onSubmit={handleEditSupplierSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Supplier Company Name:', 'سپلائر کمپنی کا نام (انگلش):')}</label>
+                  <input
+                    type="text"
+                    required
+                    value={editSuppName}
+                    onChange={(e) => setEditSuppName(e.target.value)}
+                    placeholder="e.g. Shell Petroleum Pakistan"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-orange-500 outline-hidden"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Urdu Name Representation:', 'سپلائر کمپنی کا نام (اردو):')}</label>
+                  <input
+                    type="text"
+                    value={editSuppUrduName}
+                    onChange={(e) => setEditSuppUrduName(e.target.value)}
+                    placeholder="مثال: شیل پیٹرولیم پاکستان"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-orange-500 outline-hidden"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Official Mobile / Fax No:', 'آفیس فون / موبائل نمبر:')}</label>
+                  <input
+                    type="text"
+                    value={editSuppContact}
+                    onChange={(e) => setEditSuppContact(e.target.value)}
+                    placeholder="e.g. 0213123456"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-orange-500 outline-hidden"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Deposit Bank IBAN Account No:', 'بینک اکاؤنٹ نمبر (آئی بی اے این):')}</label>
+                  <input
+                    type="text"
+                    value={editSuppAccountNo}
+                    onChange={(e) => setEditSuppAccountNo(e.target.value)}
+                    placeholder="e.g. HBL-ONLINE-9923"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-orange-500 outline-hidden"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-sans text-sm font-bold tracking-wider rounded-lg shadow-md mt-4 cursor-pointer"
+                >
+                  {t('UPDATE VENDOR PROFILE', 'سپلائر پروفائل اپ ڈیٹ کریں')}
+                </button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── FULL-SCREEN PARTY LEDGER MODAL ── */}
+      <PartyLedgerModal
+        isOpen={isLedgerOpen}
+        onClose={() => setIsLedgerOpen(false)}
+        party={ledgerParty}
+        entries={ledgerEntries}
+        settings={settings}
+        debitLabel="Payment Made (Dr)"
+        creditLabel="Stock Invoice (Cr)"
+        accentColor="emerald"
+      />
 
     </div>
   );

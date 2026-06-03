@@ -20,6 +20,27 @@ import {
   LubePosSale
 } from '../types';
 import { db } from '../data/db';
+import { useAuth } from './AuthContext';
+import { firestoreDb } from '../data/firestore';
+import { doc, getDoc } from 'firebase/firestore';
+import { dbFS } from '../lib/firebase';
+
+export interface ToastConfig {
+  message: string;
+  type: 'success' | 'error' | 'info';
+  visible: boolean;
+}
+
+export interface ConfirmConfig {
+  title: string;
+  message: string;
+  visible: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+  isAlert?: boolean;
+  confirmText?: string;
+  cancelText?: string;
+}
 
 export interface StationContextType {
   activeStationId: string;
@@ -41,6 +62,12 @@ export interface StationContextType {
   attendance: AttendanceRecord[];
   standaloneExpenses: ExpenseEntry[];
   lubePosSales: LubePosSale[];
+  toast: ToastConfig;
+  confirmDialog: ConfirmConfig;
+  showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
+  showConfirm: (title: string, message: string, onConfirm: () => void, isAlert?: boolean, confirmText?: string, cancelText?: string) => void;
+  showAlert: (title: string, message: string, onConfirm?: () => void) => void;
+  closeConfirm: () => void;
 
   setStations: React.Dispatch<React.SetStateAction<Station[]>>;
   setSettings: React.Dispatch<React.SetStateAction<GlobalSettings>>;
@@ -70,13 +97,18 @@ export interface StationContextType {
   handleUpdateStaff: (updatedMember: Staff) => void;
   handleAddCustomer: (newCustomer: Customer) => void;
   handleUpdateCustomer: (updatedCustomer: Customer) => void;
+  handleDeleteCustomer: (customerId: string) => void;
   handleAddSupplier: (newSupplier: Supplier) => void;
   handleUpdateSupplier: (updatedSupplier: Supplier) => void;
+  handleDeleteSupplier: (supplierId: string) => void;
   handleAddShift: (newShift: Shift) => void;
   handleUpdateShift: (updatedShift: Shift) => void;
   handleAddStockReceipt: (txn: StockTransaction) => void;
   handleUpdateProductStock: (productId: string, newStock: number) => void;
   handleUpdateProductRate: (productId: string, newRate: number, reason?: string, changedBy?: string, dateStr?: string) => void;
+  handleUpdateProduct: (updatedProduct: Product) => void;
+  handleDeleteProduct: (productId: string) => void;
+  handleAddProduct: (newProduct: Product) => void;
   handleAddTank: (newTank: Tank) => void;
   handleUpdateTank: (updatedTank: Tank) => void;
   handleDeleteTank: (id: string) => void;
@@ -93,16 +125,88 @@ export interface StationContextType {
   handleUpdateBanks: (updatedBanks: BankAccount[]) => void;
   handleAddDigitalAccount: (acc: DigitalAccount) => void;
   handleUpdateDigitalAccounts: (updatedAccs: DigitalAccount[]) => void;
+  handleDeleteDebitEntry: (shiftId: string, entryId: string) => void;
+  handleDeleteRecoveryEntry: (shiftId: string, entryId: string) => void;
+  handleDeleteSupplierPayment: (shiftId: string, entryId: string) => void;
 }
 
 const StationContext = createContext<StationContextType | undefined>(undefined);
 
 export const StationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-// ==========================================
+  const { user } = useAuth();
+  const orgId = user?.orgId;
+
+  // ==========================================
   // MULTI-STATION (MULTI-BRANCH) ARCHITECTURE
   // ==========================================
   const [activeStationId, setActiveStationId] = useState<string>(() => db.getActiveStationId());
   const [stations, setStations] = useState<Station[]>(() => db.getStationsList());
+
+  const [toast, setToast] = useState<ToastConfig>({ message: '', type: 'success', visible: false });
+  const [confirmDialog, setConfirmDialog] = useState<ConfirmConfig>({
+    title: '',
+    message: '',
+    visible: false,
+    onConfirm: () => {},
+    onCancel: () => {}
+  });
+
+  const toastTimeoutRef = useRef<any>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    setToast({ message, type, visible: true });
+    toastTimeoutRef.current = setTimeout(() => {
+      setToast((prev) => ({ ...prev, visible: false }));
+    }, 3000);
+  };
+
+  const showConfirm = (
+    title: string,
+    message: string,
+    onConfirm: () => void,
+    isAlert = false,
+    confirmText?: string,
+    cancelText?: string
+  ) => {
+    setConfirmDialog({
+      title,
+      message,
+      visible: true,
+      isAlert,
+      confirmText,
+      cancelText,
+      onConfirm: () => {
+        onConfirm();
+        setConfirmDialog((prev) => ({ ...prev, visible: false }));
+      },
+      onCancel: () => {
+        setConfirmDialog((prev) => ({ ...prev, visible: false }));
+      }
+    });
+  };
+
+  const showAlert = (title: string, message: string, onConfirm?: () => void) => {
+    setConfirmDialog({
+      title,
+      message,
+      visible: true,
+      isAlert: true,
+      onConfirm: () => {
+        if (onConfirm) onConfirm();
+        setConfirmDialog((prev) => ({ ...prev, visible: false }));
+      },
+      onCancel: () => {
+        setConfirmDialog((prev) => ({ ...prev, visible: false }));
+      }
+    });
+  };
+
+  const closeConfirm = () => {
+    setConfirmDialog((prev) => ({ ...prev, visible: false }));
+  };
 
   // Block saves during context-switching transitions
   const currentStationIdRef = useRef(activeStationId);
@@ -132,8 +236,9 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     db.getLubePosSales(db.getActiveStationId())
   );
 
-  // Re-load all states dynamically and atomically when activeStationId changes
+  // Re-load all states dynamically and atomically when activeStationId changes (LocalStorage Fallback)
   useEffect(() => {
+    if (orgId) return; // Skip local storage load if using Firestore SaaS
     const loadedSettings = db.getSettings(activeStationId);
     const loadedStaff = db.getStaffList(activeStationId);
     const loadedProducts = db.getProducts(activeStationId);
@@ -173,110 +278,165 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     // After updating all state, safely advance the lock reference
     currentStationIdRef.current = activeStationId;
-  }, [activeStationId]);
+  }, [activeStationId, orgId]);
+
+  // Real-time Firestore subscriptions for SaaS multitenant isolation
+  useEffect(() => {
+    if (!orgId) return;
+
+    const unsubscribes = [
+      firestoreDb.subscribeToCollection<Staff>(orgId, activeStationId, 'staff', setStaff),
+      firestoreDb.subscribeToCollection<Product>(orgId, activeStationId, 'products', setProducts),
+      firestoreDb.subscribeToCollection<Pump>(orgId, activeStationId, 'pumps', setPumps),
+      firestoreDb.subscribeToCollection<Nozzle>(orgId, activeStationId, 'nozzles', setNozzles),
+      firestoreDb.subscribeToCollection<Customer>(orgId, activeStationId, 'customers', setCustomers),
+      firestoreDb.subscribeToCollection<Supplier>(orgId, activeStationId, 'suppliers', setSuppliers),
+      firestoreDb.subscribeToCollection<Shift>(orgId, activeStationId, 'shifts', setShifts),
+      firestoreDb.subscribeToCollection<BankAccount>(orgId, activeStationId, 'banks', setBanks),
+      firestoreDb.subscribeToCollection<DigitalAccount>(orgId, activeStationId, 'digitalAccounts', setDigitalAccounts),
+      firestoreDb.subscribeToCollection<StockTransaction>(orgId, activeStationId, 'stockTxns', setStockTxns),
+      firestoreDb.subscribeToCollection<Tank>(orgId, activeStationId, 'tanks', setTanks),
+      firestoreDb.subscribeToCollection<RateHistoryEntry>(orgId, activeStationId, 'rateHistory', setRateHistory),
+      firestoreDb.subscribeToCollection<StaffFinanceEntry>(orgId, activeStationId, 'staffFinance', setStaffFinance),
+      firestoreDb.subscribeToCollection<AttendanceRecord>(orgId, activeStationId, 'attendance', setAttendance),
+      firestoreDb.subscribeToCollection<ExpenseEntry>(orgId, activeStationId, 'standaloneExpenses', setStandaloneExpenses),
+      firestoreDb.subscribeToCollection<LubePosSale>(orgId, activeStationId, 'lubePosSales', setLubePosSales)
+    ];
+
+    // Load settings from settings doc
+    const loadSettingsFS = async () => {
+      const docRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'settings', 'global');
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setSettings(docSnap.data() as GlobalSettings);
+      }
+    };
+    loadSettingsFS();
+
+    return () => {
+      unsubscribes.forEach(unsub => unsub());
+    };
+  }, [orgId, activeStationId]);
 
   // Synchronize dynamic lists to active station's local storage partition ONLY when matching lock reference
   useEffect(() => {
+    if (orgId) return;
     if (activeStationId === currentStationIdRef.current) {
       db.saveSettings(activeStationId, settings);
     }
-  }, [settings, activeStationId]);
+  }, [settings, activeStationId, orgId]);
 
   useEffect(() => {
+    if (orgId) return;
     if (activeStationId === currentStationIdRef.current) {
       db.saveStaffList(activeStationId, staff);
     }
-  }, [staff, activeStationId]);
+  }, [staff, activeStationId, orgId]);
 
   useEffect(() => {
+    if (orgId) return;
     if (activeStationId === currentStationIdRef.current) {
       db.saveProducts(activeStationId, products);
     }
-  }, [products, activeStationId]);
+  }, [products, activeStationId, orgId]);
 
   useEffect(() => {
+    if (orgId) return;
     if (activeStationId === currentStationIdRef.current) {
       db.savePumps(activeStationId, pumps);
     }
-  }, [pumps, activeStationId]);
+  }, [pumps, activeStationId, orgId]);
 
   useEffect(() => {
+    if (orgId) return;
     if (activeStationId === currentStationIdRef.current) {
       db.saveNozzles(activeStationId, nozzles);
     }
-  }, [nozzles, activeStationId]);
+  }, [nozzles, activeStationId, orgId]);
 
   useEffect(() => {
+    if (orgId) return;
     if (activeStationId === currentStationIdRef.current) {
       db.saveCustomers(activeStationId, customers);
     }
-  }, [customers, activeStationId]);
+  }, [customers, activeStationId, orgId]);
 
   useEffect(() => {
+    if (orgId) return;
     if (activeStationId === currentStationIdRef.current) {
       db.saveSuppliers(activeStationId, suppliers);
     }
-  }, [suppliers, activeStationId]);
+  }, [suppliers, activeStationId, orgId]);
 
   useEffect(() => {
+    if (orgId) return;
     if (activeStationId === currentStationIdRef.current) {
       db.saveShifts(activeStationId, shifts);
     }
-  }, [shifts, activeStationId]);
+  }, [shifts, activeStationId, orgId]);
 
   useEffect(() => {
+    if (orgId) return;
     if (activeStationId === currentStationIdRef.current) {
       db.saveBankAccounts(activeStationId, banks);
     }
-  }, [banks, activeStationId]);
+  }, [banks, activeStationId, orgId]);
 
   useEffect(() => {
+    if (orgId) return;
     if (activeStationId === currentStationIdRef.current) {
       db.saveDigitalAccounts(activeStationId, digitalAccounts);
     }
-  }, [digitalAccounts, activeStationId]);
+  }, [digitalAccounts, activeStationId, orgId]);
 
   useEffect(() => {
+    if (orgId) return;
     if (activeStationId === currentStationIdRef.current) {
       db.saveStockTransactions(activeStationId, stockTxns);
     }
-  }, [stockTxns, activeStationId]);
+  }, [stockTxns, activeStationId, orgId]);
 
   useEffect(() => {
+    if (orgId) return;
     if (activeStationId === currentStationIdRef.current) {
       db.saveTanks(activeStationId, tanks);
     }
-  }, [tanks, activeStationId]);
+  }, [tanks, activeStationId, orgId]);
 
   useEffect(() => {
+    if (orgId) return;
     if (activeStationId === currentStationIdRef.current) {
       db.saveRateHistory(activeStationId, rateHistory);
     }
-  }, [rateHistory, activeStationId]);
+  }, [rateHistory, activeStationId, orgId]);
 
   useEffect(() => {
+    if (orgId) return;
     if (activeStationId === currentStationIdRef.current) {
       db.saveStaffFinance(activeStationId, staffFinance);
     }
-  }, [staffFinance, activeStationId]);
+  }, [staffFinance, activeStationId, orgId]);
 
   useEffect(() => {
+    if (orgId) return;
     if (activeStationId === currentStationIdRef.current) {
       db.saveAttendance(activeStationId, attendance);
     }
-  }, [attendance, activeStationId]);
+  }, [attendance, activeStationId, orgId]);
 
   useEffect(() => {
+    if (orgId) return;
     if (activeStationId === currentStationIdRef.current) {
       db.saveStandaloneExpenses(activeStationId, standaloneExpenses);
     }
-  }, [standaloneExpenses, activeStationId]);
+  }, [standaloneExpenses, activeStationId, orgId]);
 
   useEffect(() => {
+    if (orgId) return;
     if (activeStationId === currentStationIdRef.current) {
       db.saveLubePosSales(activeStationId, lubePosSales);
     }
-  }, [lubePosSales, activeStationId]);
+  }, [lubePosSales, activeStationId, orgId]);
 
   // Synchronize central Stations Directory changes
   useEffect(() => {
@@ -319,19 +479,30 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const handleDeleteStation = (stationId: string) => {
     if (stationId === 'st_default') {
-      alert('The core default station cannot be deleted.');
+      showAlert(
+        settings.language === 'ur' ? 'خرابی' : 'Error',
+        settings.language === 'ur' ? 'بنیادی پہلے سے طے شدہ اسٹیشن کو حذف نہیں کیا جا سکتا۔' : 'The core default station cannot be deleted.'
+      );
       return;
     }
     
-    if (confirm(settings.language === 'ur' ? 'کیا آپ واقعی اس اسٹیشن کا سارا ڈیٹا ہمیشہ کے لیے حذف کرنا چاہتے ہیں؟' : 'Are you sure you want to permanently delete this station and all its isolated records? This cannot be undone.')) {
-      setStations((prev) => prev.filter((s) => s.id !== stationId));
-      db.clearStationData(stationId);
+    showConfirm(
+      settings.language === 'ur' ? 'کیا آپ کو یقین ہے؟' : 'Are You Sure?',
+      settings.language === 'ur' ? 'کیا آپ واقعی اس اسٹیشن کا سارا ڈیٹا ہمیشہ کے لیے حذف کرنا چاہتے ہیں؟' : 'Are you sure you want to permanently delete this station and all its isolated records? This cannot be undone.',
+      () => {
+        setStations((prev) => prev.filter((s) => s.id !== stationId));
+        db.clearStationData(stationId);
 
-      if (activeStationId === stationId) {
-        db.setActiveStationId('st_default');
-        setActiveStationId('st_default');
+        if (activeStationId === stationId) {
+          db.setActiveStationId('st_default');
+          setActiveStationId('st_default');
+        }
+        showToast(
+          settings.language === 'ur' ? 'اسٹیشن کامیابی سے حذف ہو گیا!' : 'Station deleted successfully!',
+          'success'
+        );
       }
-    }
+    );
   };
 
   const handleSwitchStation = (stationId: string) => {
@@ -344,40 +515,206 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
   // MUTATION CALLBACK WORKFLOWS
   // ==========================================
 
-  const handleUpdateSettings = (newSettings: GlobalSettings) => {
+  const getBusinessType = (stationId: string): 'fuel_station' | 'cng' | 'lube' => {
+    if (stationId === 'st_lube') return 'lube';
+    return 'fuel_station';
+  };
+
+  const handleUpdateSettings = async (newSettings: GlobalSettings) => {
     setSettings(newSettings);
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'settings', 'global', newSettings);
+    }
   };
 
-  const handleAddStaff = (newStaff: Staff) => {
+  const handleAddStaff = async (newStaff: Staff) => {
     setStaff((prev) => [...prev, newStaff]);
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'staff', newStaff.id, newStaff);
+    }
   };
 
-  const handleUpdateStaff = (updatedMember: Staff) => {
+  const handleUpdateStaff = async (updatedMember: Staff) => {
     setStaff((prev) => prev.map((s) => (s.id === updatedMember.id ? updatedMember : s)));
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'staff', updatedMember.id, updatedMember);
+    }
   };
 
-  const handleAddCustomer = (newCustomer: Customer) => {
+  const handleAddCustomer = async (newCustomer: Customer) => {
     setCustomers((prev) => [...prev, newCustomer]);
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'customers', newCustomer.id, newCustomer);
+    }
+    showToast(settings.language === 'ur' ? 'گاہک کا کھاتہ کامیابی سے شامل ہو گیا۔' : 'Customer profile successfully created.', 'success');
   };
 
-  const handleUpdateCustomer = (updatedCustomer: Customer) => {
+  const handleUpdateCustomer = async (updatedCustomer: Customer) => {
     setCustomers((prev) => prev.map((c) => (c.id === updatedCustomer.id ? updatedCustomer : c)));
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'customers', updatedCustomer.id, updatedCustomer);
+    }
+    showToast(settings.language === 'ur' ? 'گاہک کی تفصیلات کامیابی سے اپ ڈیٹ ہو گئیں۔' : 'Customer profile successfully updated.', 'success');
   };
 
-  const handleAddSupplier = (newSupplier: Supplier) => {
+  const handleDeleteCustomer = async (customerId: string) => {
+    setCustomers((prev) => prev.filter((c) => c.id !== customerId));
+    if (orgId) {
+      await firestoreDb.deleteDocument(orgId, activeStationId, 'customers', customerId);
+    }
+    showToast(settings.language === 'ur' ? 'گاہک کا کھاتہ کامیابی سے حذف ہو گیا۔' : 'Customer profile successfully deleted.', 'success');
+  };
+
+  const handleAddSupplier = async (newSupplier: Supplier) => {
     setSuppliers((prev) => [...prev, newSupplier]);
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'suppliers', newSupplier.id, newSupplier);
+    }
+    showToast(settings.language === 'ur' ? 'سپلائر کامیابی سے شامل ہو گیا۔' : 'Supplier profile successfully created.', 'success');
   };
 
-  const handleUpdateSupplier = (updatedSupplier: Supplier) => {
+  const handleUpdateSupplier = async (updatedSupplier: Supplier) => {
     setSuppliers((prev) => prev.map((s) => (s.id === updatedSupplier.id ? updatedSupplier : s)));
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'suppliers', updatedSupplier.id, updatedSupplier);
+    }
+    showToast(settings.language === 'ur' ? 'سپلائر کی تفصیلات کامیابی سے اپ ڈیٹ ہو گئیں۔' : 'Supplier profile successfully updated.', 'success');
   };
 
-  const handleAddShift = (newShift: Shift) => {
+  const handleDeleteSupplier = async (supplierId: string) => {
+    setSuppliers((prev) => prev.filter((s) => s.id !== supplierId));
+    if (orgId) {
+      await firestoreDb.deleteDocument(orgId, activeStationId, 'suppliers', supplierId);
+    }
+    showToast(settings.language === 'ur' ? 'سپلائر کامیابی سے حذف ہو گیا۔' : 'Supplier profile successfully deleted.', 'success');
+  };
+
+  const handleUpdateProduct = async (updatedProduct: Product) => {
+    setProducts((prev) => prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p)));
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'products', updatedProduct.id, updatedProduct);
+    }
+    showToast(settings.language === 'ur' ? 'پروڈکٹ کامیابی سے اپ ڈیٹ ہو گئی۔' : 'Product successfully updated.', 'success');
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    setProducts((prev) => prev.filter((p) => p.id !== productId));
+    if (orgId) {
+      await firestoreDb.deleteDocument(orgId, activeStationId, 'products', productId);
+    }
+    showToast(settings.language === 'ur' ? 'پروڈکٹ کامیابی سے حذف ہو گئی۔' : 'Product successfully deleted.', 'success');
+  };
+
+  const handleAddProduct = async (newProduct: Product) => {
+    setProducts((prev) => [...prev, newProduct]);
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'products', newProduct.id, newProduct);
+    }
+    showToast(settings.language === 'ur' ? 'پروڈکٹ کامیابی سے شامل ہو گئی۔' : 'Product successfully registered.', 'success');
+  };
+
+  const handleAddShift = async (newShift: Shift) => {
     setShifts((prev) => [newShift, ...prev]);
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'shifts', newShift.id, newShift);
+    }
   };
 
-  const handleUpdateShift = (updatedShift: Shift) => {
+  const handleUpdateShift = async (updatedShift: Shift) => {
     setShifts((prev) => prev.map((s) => (s.id === updatedShift.id ? updatedShift : s)));
+
+    if (orgId) {
+      const bType = getBusinessType(activeStationId);
+      await firestoreDb.saveDocument(orgId, activeStationId, bType, 'shifts', updatedShift.id, updatedShift);
+      
+      if (updatedShift.status === 'closed') {
+        // 1. Update customer credit book outstandings
+        customers.forEach((cust) => {
+          let balanceDiff = 0;
+          updatedShift.debitEntries.forEach((d) => {
+            if (d.customerId === cust.id) balanceDiff += d.amount;
+          });
+          updatedShift.recoveryEntries.forEach((r) => {
+            if (r.customerId === cust.id) balanceDiff -= r.amount;
+          });
+          if (balanceDiff !== 0) {
+            const updatedCust = { ...cust, balance: cust.balance + balanceDiff };
+            firestoreDb.saveDocument(orgId, activeStationId, bType, 'customers', cust.id, updatedCust);
+          }
+        });
+
+        // 2. Supplier Payments (Subtract payment from supplier payables)
+        suppliers.forEach((supp) => {
+          let paidDiff = 0;
+          updatedShift.supplierPayments.forEach((p) => {
+            if (p.supplierId === supp.id) paidDiff += p.amount;
+          });
+          if (paidDiff !== 0) {
+            const updatedSupp = { ...supp, balance: Math.max(0, supp.balance - paidDiff) };
+            firestoreDb.saveDocument(orgId, activeStationId, bType, 'suppliers', supp.id, updatedSupp);
+          }
+        });
+
+        // 3. Deduct sold product stocks
+        products.forEach((prod) => {
+          let litresSold = 0;
+          nozzles.forEach((nz) => {
+            if (nz.productId === prod.id) {
+              const openR = updatedShift.openingReadings[nz.id] || 0;
+              const closeR = updatedShift.closingReadings[nz.id] || 0;
+              if (closeR >= openR) litresSold += closeR - openR;
+            }
+          });
+          const testLit = updatedShift.testLiters[prod.id] || 0;
+          const netSoldLitres = Math.max(0, litresSold - testLit);
+          const lubeTx = updatedShift.lubeSales.reduce((acc, sale) => {
+            return sale.itemId === prod.id ? acc + sale.quantity : acc;
+          }, 0);
+          
+          if (netSoldLitres > 0 || lubeTx > 0) {
+            const updatedProd = { ...prod, currentStock: Math.max(0, Number((prod.currentStock - netSoldLitres - lubeTx).toFixed(2))) };
+            firestoreDb.saveDocument(orgId, activeStationId, bType, 'products', prod.id, updatedProd);
+          }
+        });
+
+        // 4. Update Bank Balances
+        banks.forEach((bk) => {
+          let bankDelta = 0;
+          updatedShift.bankCashEntries.forEach((bc) => {
+            if (bc.bankAccountId === bk.id) bankDelta += bc.amount;
+          });
+          updatedShift.supplierPayments.forEach((p) => {
+            if (p.bankAccountId === bk.id) bankDelta -= p.amount;
+          });
+          if (bankDelta !== 0) {
+            const updatedBk = { ...bk, balance: bk.balance + bankDelta };
+            firestoreDb.saveDocument(orgId, activeStationId, bType, 'banks', bk.id, updatedBk);
+          }
+        });
+
+        // 5. Shortage tracking assigned to payroll advances
+        if (updatedShift.shortage && updatedShift.shortage > 0) {
+          const staffMember = staff.find((st) => st.id === updatedShift.staffId);
+          if (staffMember) {
+            const refId = 'SF-SHORT-' + updatedShift.id;
+            const newFin: StaffFinanceEntry = {
+              id: 'sf_short_' + Date.now(),
+              staffId: updatedShift.staffId,
+              date: updatedShift.date,
+              type: 'advance',
+              amount: updatedShift.shortage,
+              balanceAfter: 0,
+              reference: refId,
+              note: `Shortage Cash Discrepancy assigned to Operator from Shift Check #${updatedShift.id}`
+            };
+            firestoreDb.saveDocument(orgId, activeStationId, bType, 'staffFinance', newFin.id, newFin);
+            
+            const updatedStaffMember = { ...staffMember, advances: (staffMember.advances || 0) + updatedShift.shortage };
+            firestoreDb.saveDocument(orgId, activeStationId, bType, 'staff', staffMember.id, updatedStaffMember);
+          }
+        }
+      }
+    }
 
     // On final closing of a shift, execute downstream integrations:
     // 1. Update customer credit book outstandings
@@ -515,7 +852,7 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
-  const handleAddStockReceipt = (txn: StockTransaction) => {
+  const handleAddStockReceipt = async (txn: StockTransaction) => {
     // 1. Add Stock transactions logger row
     setStockTxns((prev) => [txn, ...prev]);
 
@@ -525,15 +862,34 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
         p.id === txn.itemId ? { ...p, currentStock: p.currentStock + txn.quantity } : p
       )
     );
+
+    if (orgId) {
+      const bType = getBusinessType(activeStationId);
+      await firestoreDb.saveDocument(orgId, activeStationId, bType, 'stockTxns', txn.id, txn);
+      
+      const product = products.find(p => p.id === txn.itemId);
+      if (product) {
+        const updatedProduct = { ...product, currentStock: product.currentStock + txn.quantity };
+        await firestoreDb.saveDocument(orgId, activeStationId, bType, 'products', product.id, updatedProduct);
+      }
+    }
   };
 
-  const handleUpdateProductStock = (productId: string, newStock: number) => {
+  const handleUpdateProductStock = async (productId: string, newStock: number) => {
     setProducts((prevProducts) =>
       prevProducts.map((p) => (p.id === productId ? { ...p, currentStock: newStock } : p))
     );
+
+    if (orgId) {
+      const product = products.find(p => p.id === productId);
+      if (product) {
+        const updatedProduct = { ...product, currentStock: newStock };
+        await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'products', productId, updatedProduct);
+      }
+    }
   };
 
-  const handleUpdateProductRate = (
+  const handleUpdateProductRate = async (
     productId: string,
     newRate: number,
     reason: string = 'Market revision Adjustment',
@@ -566,6 +922,14 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
           };
           setRateHistory((prev) => [newRateHistory, ...prev]);
 
+          if (orgId) {
+            const bType = getBusinessType(activeStationId);
+            firestoreDb.saveDocument(orgId, activeStationId, bType, 'rateHistory', newRateHistory.id, newRateHistory);
+            
+            const updatedProduct = { ...p, rate: newRate };
+            firestoreDb.saveDocument(orgId, activeStationId, bType, 'products', productId, updatedProduct);
+          }
+
           return { ...p, rate: newRate };
         }
         return p;
@@ -573,32 +937,52 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     );
   };
 
-  const handleAddTank = (newTank: Tank) => {
+  const handleAddTank = async (newTank: Tank) => {
     setTanks((prev) => [...prev, newTank]);
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'tanks', newTank.id, newTank);
+    }
   };
 
-  const handleUpdateTank = (updatedTank: Tank) => {
+  const handleUpdateTank = async (updatedTank: Tank) => {
     setTanks((prev) => prev.map((t) => (t.id === updatedTank.id ? updatedTank : t)));
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'tanks', updatedTank.id, updatedTank);
+    }
   };
 
-  const handleDeleteTank = (id: string) => {
+  const handleDeleteTank = async (id: string) => {
     setTanks((prev) => prev.filter((t) => t.id !== id));
+    if (orgId) {
+      await firestoreDb.deleteDocument(orgId, activeStationId, 'tanks', id);
+    }
   };
 
-  const handleAddNozzle = (newNozzle: Nozzle) => {
+  const handleAddNozzle = async (newNozzle: Nozzle) => {
     setNozzles((prev) => [...prev, newNozzle]);
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'nozzles', newNozzle.id, newNozzle);
+    }
   };
 
-  const handleUpdateNozzle = (updatedNozzle: Nozzle) => {
+  const handleUpdateNozzle = async (updatedNozzle: Nozzle) => {
     setNozzles((prev) => prev.map((n) => (n.id === updatedNozzle.id ? updatedNozzle : n)));
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'nozzles', updatedNozzle.id, updatedNozzle);
+    }
   };
 
-  const handleDeleteNozzle = (id: string) => {
+  const handleDeleteNozzle = async (id: string) => {
     setNozzles((prev) => prev.filter((n) => n.id !== id));
+    if (orgId) {
+      await firestoreDb.deleteDocument(orgId, activeStationId, 'nozzles', id);
+    }
   };
 
-  const handleAddStaffFinance = (newEntry: StaffFinanceEntry) => {
+  const handleAddStaffFinance = async (newEntry: StaffFinanceEntry) => {
     setStaffFinance((prev) => [newEntry, ...prev]);
+
+    const bType = getBusinessType(activeStationId);
 
     // Downstream synchronization: Issue salary or advance records an outflow expense (salary category)
     if (newEntry.type === 'issue' || newEntry.type === 'advance') {
@@ -616,16 +1000,32 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
       };
       setStandaloneExpenses((prev) => [exp, ...prev]);
 
+      if (orgId) {
+        await firestoreDb.saveDocument(orgId, activeStationId, bType, 'standaloneExpenses', exp.id, exp);
+      }
+
       // Deduct from bank account balance if transfer style
       if (newEntry.mode === 'bank' || newEntry.mode === 'transfer') {
-        setBanks((prevBanks) =>
-          prevBanks.map(bk => bk.id === 'b_1' ? { ...bk, balance: bk.balance - newEntry.amount } : bk)
-        );
+        setBanks((prevBanks) => {
+          const updatedBanks = prevBanks.map(bk => bk.id === 'b_1' ? { ...bk, balance: bk.balance - newEntry.amount } : bk);
+          if (orgId) {
+            const bankRef = prevBanks.find(b => b.id === 'b_1');
+            if (bankRef) {
+              const updatedBk = { ...bankRef, balance: bankRef.balance - newEntry.amount };
+              firestoreDb.saveDocument(orgId, activeStationId, bType, 'banks', 'b_1', updatedBk);
+            }
+          }
+          return updatedBanks;
+        });
       }
+    }
+
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, activeStationId, bType, 'staffFinance', newEntry.id, newEntry);
     }
   };
 
-  const handleAddShiftSalaryPayment = (
+  const handleAddShiftSalaryPayment = async (
     staffId: string,
     amount: number,
     note: string,
@@ -659,85 +1059,139 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     setStaffFinance((prev) => [newFin, ...prev]);
 
     const reductionVal = Math.min(amount, staffMember.advances || 0);
+    let updatedStaffMember: Staff | undefined;
     setStaff((prevStaff) => {
       return prevStaff.map((s) => {
         if (s.id === staffId) {
-          return {
+          updatedStaffMember = {
             ...s,
             advances: Math.max(0, (s.advances || 0) - reductionVal)
           };
+          return updatedStaffMember;
         }
         return s;
       });
     });
+
+    if (orgId) {
+      const bType = getBusinessType(activeStationId);
+      await firestoreDb.saveDocument(orgId, activeStationId, bType, 'staffFinance', newFin.id, newFin);
+      if (updatedStaffMember) {
+        await firestoreDb.saveDocument(orgId, activeStationId, bType, 'staff', staffId, updatedStaffMember);
+      }
+    }
   };
 
-  const handleDeleteShiftSalaryPayment = (expenseId: string) => {
+  const handleDeleteShiftSalaryPayment = async (expenseId: string) => {
     const entryToRevert = staffFinance.find((f) => f.id === 'sf_' + expenseId);
     if (!entryToRevert) return;
 
     setStaffFinance((prev) => prev.filter((f) => f.id !== 'sf_' + expenseId));
 
+    let updatedStaffMember: Staff | undefined;
     if (entryToRevert.deductedAdvance && entryToRevert.deductedAdvance > 0) {
       setStaff((prevStaff) => {
         return prevStaff.map((s) => {
           if (s.id === entryToRevert.staffId) {
-            return {
+            updatedStaffMember = {
               ...s,
               advances: (s.advances || 0) + (entryToRevert.deductedAdvance || 0)
             };
+            return updatedStaffMember;
           }
           return s;
         });
       });
     }
+
+    if (orgId) {
+      const bType = getBusinessType(activeStationId);
+      await firestoreDb.deleteDocument(orgId, activeStationId, 'staffFinance', 'sf_' + expenseId);
+      if (entryToRevert.deductedAdvance && entryToRevert.deductedAdvance > 0) {
+        const staffRef = staff.find(s => s.id === entryToRevert.staffId);
+        if (staffRef) {
+          const uStaff = { ...staffRef, advances: (staffRef.advances || 0) + (entryToRevert.deductedAdvance || 0) };
+          await firestoreDb.saveDocument(orgId, activeStationId, bType, 'staff', entryToRevert.staffId, uStaff);
+        }
+      }
+    }
   };
 
-  const handleAddAttendance = (records: AttendanceRecord[]) => {
+  const handleAddAttendance = async (records: AttendanceRecord[]) => {
     setAttendance((prev) => {
       // replace existing for safety
       const filtered = prev.filter(p => !records.some(r => r.date === p.date && r.staffId === p.staffId));
       return [...filtered, ...records];
     });
+    if (orgId) {
+      const bType = getBusinessType(activeStationId);
+      for (const rec of records) {
+        const docId = `${rec.staffId}_${rec.date}`;
+        await firestoreDb.saveDocument(orgId, activeStationId, bType, 'attendance', docId, rec);
+      }
+    }
   };
 
-  const handleAddStandaloneExpense = (expense: ExpenseEntry) => {
+  const handleAddStandaloneExpense = async (expense: ExpenseEntry) => {
     setStandaloneExpenses((prev) => [expense, ...prev]);
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'standaloneExpenses', expense.id, expense);
+    }
   };
 
-  const handleAddLubePosSale = (sale: LubePosSale) => {
+  const handleAddLubePosSale = async (sale: LubePosSale) => {
     setLubePosSales((prev) => [sale, ...prev]);
+
+    const bType = getBusinessType(activeStationId);
 
     if (sale.isRecovery) {
       // It's a payment recovery! Update customer balance by subtracting the recovery amount
       if (sale.customerId) {
         setCustomers((prevCustomers) =>
-          prevCustomers.map((customer) =>
-            customer.id === sale.customerId
-              ? { ...customer, balance: Math.round((customer.balance - sale.total) * 100) / 100 }
-              : customer
-          )
+          prevCustomers.map((customer) => {
+            if (customer.id === sale.customerId) {
+              const updatedCust = { ...customer, balance: Math.round((customer.balance - sale.total) * 100) / 100 };
+              if (orgId) {
+                firestoreDb.saveDocument(orgId, activeStationId, bType, 'customers', sale.customerId, updatedCust);
+              }
+              return updatedCust;
+            }
+            return customer;
+          })
         );
       }
       
       // Update bank or digital account balance if applicable
       if (sale.paymentMode === 'bank' && sale.bankAccountId) {
         setBanks((prevBanks) =>
-          prevBanks.map((bank) =>
-            bank.id === sale.bankAccountId
-              ? { ...bank, balance: bank.balance + sale.total }
-              : bank
-          )
+          prevBanks.map((bank) => {
+            if (bank.id === sale.bankAccountId) {
+              const updatedBk = { ...bank, balance: bank.balance + sale.total };
+              if (orgId) {
+                firestoreDb.saveDocument(orgId, activeStationId, bType, 'banks', sale.bankAccountId, updatedBk);
+              }
+              return updatedBk;
+            }
+            return bank;
+          })
         );
       }
       if (sale.paymentMode === 'digital' && sale.digitalAccountId) {
         setDigitalAccounts((prevAccounts) =>
-          prevAccounts.map((account) =>
-            account.id === sale.digitalAccountId
-              ? { ...account, balance: account.balance + sale.total }
-              : account
-          )
+          prevAccounts.map((account) => {
+            if (account.id === sale.digitalAccountId) {
+              const updatedAcc = { ...account, balance: account.balance + sale.total };
+              if (orgId) {
+                firestoreDb.saveDocument(orgId, activeStationId, bType, 'digitalAccounts', sale.digitalAccountId, updatedAcc);
+              }
+              return updatedAcc;
+            }
+            return account;
+          })
         );
+      }
+      if (orgId) {
+        await firestoreDb.saveDocument(orgId, activeStationId, bType, 'lubePosSales', sale.id, sale);
       }
       return; // Skip product stock and inventory transactions for pure payment recoveries
     }
@@ -755,10 +1209,15 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
             return product;
           }
 
-          return {
+          const finalStock = Number((product.currentStock + returnedQty).toFixed(2));
+          const updatedProd = {
             ...product,
-            currentStock: Number((product.currentStock + returnedQty).toFixed(2))
+            currentStock: finalStock
           };
+          if (orgId) {
+            firestoreDb.saveDocument(orgId, activeStationId, bType, 'products', product.id, updatedProd);
+          }
+          return updatedProd;
         })
       );
 
@@ -776,35 +1235,60 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
       }));
       setStockTxns((prev) => [...returnTransactions, ...prev]);
 
+      if (orgId) {
+        for (const tx of returnTransactions) {
+          await firestoreDb.saveDocument(orgId, activeStationId, bType, 'stockTxns', tx.id, tx);
+        }
+      }
+
       // 3. Update customer or bank/digital balances (subtract refund amount from outstanding or bank)
       if (sale.paymentMode === 'credit' && sale.customerId) {
         setCustomers((prevCustomers) =>
-          prevCustomers.map((customer) =>
-            customer.id === sale.customerId
-              ? { ...customer, balance: Math.max(0, Math.round((customer.balance - sale.total) * 100) / 100) }
-              : customer
-          )
+          prevCustomers.map((customer) => {
+            if (customer.id === sale.customerId) {
+              const updatedCust = { ...customer, balance: Math.max(0, Math.round((customer.balance - sale.total) * 100) / 100) };
+              if (orgId) {
+                firestoreDb.saveDocument(orgId, activeStationId, bType, 'customers', sale.customerId, updatedCust);
+              }
+              return updatedCust;
+            }
+            return customer;
+          })
         );
       }
 
       if (sale.paymentMode === 'bank' && sale.bankAccountId) {
         setBanks((prevBanks) =>
-          prevBanks.map((bank) =>
-            bank.id === sale.bankAccountId
-              ? { ...bank, balance: Math.max(0, bank.balance - sale.total) }
-              : bank
-          )
+          prevBanks.map((bank) => {
+            if (bank.id === sale.bankAccountId) {
+              const updatedBk = { ...bank, balance: Math.max(0, bank.balance - sale.total) };
+              if (orgId) {
+                firestoreDb.saveDocument(orgId, activeStationId, bType, 'banks', sale.bankAccountId, updatedBk);
+              }
+              return updatedBk;
+            }
+            return bank;
+          })
         );
       }
 
       if (sale.paymentMode === 'digital' && sale.digitalAccountId) {
         setDigitalAccounts((prevAccounts) =>
-          prevAccounts.map((account) =>
-            account.id === sale.digitalAccountId
-              ? { ...account, balance: Math.max(0, account.balance - sale.total) }
-              : account
-          )
+          prevAccounts.map((account) => {
+            if (account.id === sale.digitalAccountId) {
+              const updatedAcc = { ...account, balance: Math.max(0, account.balance - sale.total) };
+              if (orgId) {
+                firestoreDb.saveDocument(orgId, activeStationId, bType, 'digitalAccounts', sale.digitalAccountId, updatedAcc);
+              }
+              return updatedAcc;
+            }
+            return account;
+          })
         );
+      }
+
+      if (orgId) {
+        await firestoreDb.saveDocument(orgId, activeStationId, bType, 'lubePosSales', sale.id, sale);
       }
       return;
     }
@@ -820,10 +1304,15 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
           return product;
         }
 
-        return {
+        const finalStock = Math.max(0, Number((product.currentStock - soldQty).toFixed(2)));
+        const updatedProd = {
           ...product,
-          currentStock: Math.max(0, Number((product.currentStock - soldQty).toFixed(2)))
+          currentStock: finalStock
         };
+        if (orgId) {
+          firestoreDb.saveDocument(orgId, activeStationId, bType, 'products', product.id, updatedProd);
+        }
+        return updatedProd;
       })
     );
 
@@ -840,61 +1329,224 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     }));
     setStockTxns((prev) => [...saleTransactions, ...prev]);
 
+    if (orgId) {
+      for (const tx of saleTransactions) {
+        await firestoreDb.saveDocument(orgId, activeStationId, bType, 'stockTxns', tx.id, tx);
+      }
+    }
+
     if (sale.paymentMode === 'credit' && sale.customerId) {
       setCustomers((prevCustomers) =>
-        prevCustomers.map((customer) =>
-          customer.id === sale.customerId
-            ? { ...customer, balance: Math.round((customer.balance + sale.total) * 100) / 100 }
-            : customer
-        )
+        prevCustomers.map((customer) => {
+          if (customer.id === sale.customerId) {
+            const updatedCust = { ...customer, balance: Math.round((customer.balance + sale.total) * 100) / 100 };
+            if (orgId) {
+              firestoreDb.saveDocument(orgId, activeStationId, bType, 'customers', sale.customerId, updatedCust);
+            }
+            return updatedCust;
+          }
+          return customer;
+        })
       );
     }
 
     if (sale.paymentMode === 'bank' && sale.bankAccountId) {
       setBanks((prevBanks) =>
-        prevBanks.map((bank) =>
-          bank.id === sale.bankAccountId
-            ? { ...bank, balance: bank.balance + sale.total }
-            : bank
-        )
+        prevBanks.map((bank) => {
+          if (bank.id === sale.bankAccountId) {
+            const updatedBk = { ...bank, balance: bank.balance + sale.total };
+            if (orgId) {
+              firestoreDb.saveDocument(orgId, activeStationId, bType, 'banks', sale.bankAccountId, updatedBk);
+            }
+            return updatedBk;
+          }
+          return bank;
+        })
       );
     }
 
     if (sale.paymentMode === 'digital' && sale.digitalAccountId) {
       setDigitalAccounts((prevAccounts) =>
-        prevAccounts.map((account) =>
-          account.id === sale.digitalAccountId
-            ? { ...account, balance: account.balance + sale.total }
-            : account
-        )
+        prevAccounts.map((account) => {
+          if (account.id === sale.digitalAccountId) {
+            const updatedAcc = { ...account, balance: account.balance + sale.total };
+            if (orgId) {
+              firestoreDb.saveDocument(orgId, activeStationId, bType, 'digitalAccounts', sale.digitalAccountId, updatedAcc);
+            }
+            return updatedAcc;
+          }
+          return account;
+        })
       );
+    }
+
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, activeStationId, bType, 'lubePosSales', sale.id, sale);
     }
   };
 
-  const handleAddBank = (bank: BankAccount) => {
+  const handleDeleteDebitEntry = async (shiftId: string, entryId: string) => {
+    let targetShift: Shift | undefined;
+    setShifts((prevShifts) => {
+      const updated = prevShifts.map((sh) => {
+        if (sh.id !== shiftId) return sh;
+        const entry = sh.debitEntries.find((d) => d.id === entryId);
+        if (!entry) return sh;
+
+        if (sh.status === 'closed') {
+          setCustomers((prevCustomers) =>
+            prevCustomers.map((c) => {
+              if (c.id === entry.customerId) {
+                const updatedCust = { ...c, balance: Math.round((c.balance - entry.amount) * 100) / 100 };
+                if (orgId) {
+                  firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'customers', entry.customerId, updatedCust);
+                }
+                return updatedCust;
+              }
+              return c;
+            })
+          );
+        }
+
+        const updatedShift = {
+          ...sh,
+          debitEntries: sh.debitEntries.filter((d) => d.id !== entryId)
+        };
+        targetShift = updatedShift;
+        return updatedShift;
+      });
+      db.saveShifts(activeStationId, updated);
+      showToast(settings.language === 'ur' ? 'ڈیبٹ انٹری کامیابی سے حذف ہو گئی۔' : 'Debit entry successfully deleted.', 'success');
+      return updated;
+    });
+
+    if (orgId && targetShift) {
+      await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'shifts', shiftId, targetShift);
+    }
+  };
+
+  const handleDeleteRecoveryEntry = async (shiftId: string, entryId: string) => {
+    let targetShift: Shift | undefined;
+    setShifts((prevShifts) => {
+      const updated = prevShifts.map((sh) => {
+        if (sh.id !== shiftId) return sh;
+        const entry = sh.recoveryEntries.find((r) => r.id === entryId);
+        if (!entry) return sh;
+
+        if (sh.status === 'closed') {
+          setCustomers((prevCustomers) =>
+            prevCustomers.map((c) => {
+              if (c.id === entry.customerId) {
+                const updatedCust = { ...c, balance: Math.round((c.balance + entry.amount) * 100) / 100 };
+                if (orgId) {
+                  firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'customers', entry.customerId, updatedCust);
+                }
+                return updatedCust;
+              }
+              return c;
+            })
+          );
+        }
+
+        const updatedShift = {
+          ...sh,
+          recoveryEntries: sh.recoveryEntries.filter((r) => r.id !== entryId)
+        };
+        targetShift = updatedShift;
+        return updatedShift;
+      });
+      db.saveShifts(activeStationId, updated);
+      showToast(settings.language === 'ur' ? 'وصولی انٹری کامیابی سے حذف ہو گئی۔' : 'Recovery entry successfully deleted.', 'success');
+      return updated;
+    });
+
+    if (orgId && targetShift) {
+      await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'shifts', shiftId, targetShift);
+    }
+  };
+
+  const handleDeleteSupplierPayment = async (shiftId: string, entryId: string) => {
+    let targetShift: Shift | undefined;
+    setShifts((prevShifts) => {
+      const updated = prevShifts.map((sh) => {
+        if (sh.id !== shiftId) return sh;
+        const entry = sh.supplierPayments.find((p) => p.id === entryId);
+        if (!entry) return sh;
+
+        if (sh.status === 'closed') {
+          setSuppliers((prevSuppliers) =>
+            prevSuppliers.map((s) => {
+              if (s.id === entry.supplierId) {
+                const updatedSupp = { ...s, balance: Math.round((s.balance + entry.amount) * 100) / 100 };
+                if (orgId) {
+                  firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'suppliers', entry.supplierId, updatedSupp);
+                }
+                return updatedSupp;
+              }
+              return s;
+            })
+          );
+        }
+
+        const updatedShift = {
+          ...sh,
+          supplierPayments: sh.supplierPayments.filter((p) => p.id !== entryId)
+        };
+        targetShift = updatedShift;
+        return updatedShift;
+      });
+      db.saveShifts(activeStationId, updated);
+      showToast(settings.language === 'ur' ? 'ادائیگی انٹری کامیابی سے حذف ہو گئی۔' : 'Supplier payment entry successfully deleted.', 'success');
+      return updated;
+    });
+
+    if (orgId && targetShift) {
+      await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'shifts', shiftId, targetShift);
+    }
+  };
+
+  const handleAddBank = async (bank: BankAccount) => {
     setBanks((prev) => {
       const updated = [...prev, bank];
       db.saveBankAccounts(activeStationId, updated);
       return updated;
     });
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'banks', bank.id, bank);
+    }
   };
 
-  const handleUpdateBanks = (updatedBanks: BankAccount[]) => {
+  const handleUpdateBanks = async (updatedBanks: BankAccount[]) => {
     setBanks(updatedBanks);
     db.saveBankAccounts(activeStationId, updatedBanks);
+    if (orgId) {
+      const bType = getBusinessType(activeStationId);
+      for (const bank of updatedBanks) {
+        await firestoreDb.saveDocument(orgId, activeStationId, bType, 'banks', bank.id, bank);
+      }
+    }
   };
 
-  const handleAddDigitalAccount = (acc: DigitalAccount) => {
+  const handleAddDigitalAccount = async (acc: DigitalAccount) => {
     setDigitalAccounts((prev) => {
       const updated = [...prev, acc];
       db.saveDigitalAccounts(activeStationId, updated);
       return updated;
     });
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'digitalAccounts', acc.id, acc);
+    }
   };
 
-  const handleUpdateDigitalAccounts = (updatedAccs: DigitalAccount[]) => {
+  const handleUpdateDigitalAccounts = async (updatedAccs: DigitalAccount[]) => {
     setDigitalAccounts(updatedAccs);
     db.saveDigitalAccounts(activeStationId, updatedAccs);
+    if (orgId) {
+      const bType = getBusinessType(activeStationId);
+      for (const acc of updatedAccs) {
+        await firestoreDb.saveDocument(orgId, activeStationId, bType, 'digitalAccounts', acc.id, acc);
+      }
+    }
   };
 
 
@@ -920,6 +1572,12 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     attendance,
     standaloneExpenses,
     lubePosSales,
+    toast,
+    confirmDialog,
+    showToast,
+    showConfirm,
+    showAlert,
+    closeConfirm,
     setStations,
     setSettings,
     setStaff,
@@ -947,13 +1605,18 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     handleUpdateStaff,
     handleAddCustomer,
     handleUpdateCustomer,
+    handleDeleteCustomer,
     handleAddSupplier,
     handleUpdateSupplier,
+    handleDeleteSupplier,
     handleAddShift,
     handleUpdateShift,
     handleAddStockReceipt,
     handleUpdateProductStock,
     handleUpdateProductRate,
+    handleUpdateProduct,
+    handleDeleteProduct,
+    handleAddProduct,
     handleAddTank,
     handleUpdateTank,
     handleDeleteTank,
@@ -969,7 +1632,10 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     handleAddBank,
     handleUpdateBanks,
     handleAddDigitalAccount,
-    handleUpdateDigitalAccounts
+    handleUpdateDigitalAccounts,
+    handleDeleteDebitEntry,
+    handleDeleteRecoveryEntry,
+    handleDeleteSupplierPayment
   };
 
   return (

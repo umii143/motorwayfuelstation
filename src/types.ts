@@ -3,14 +3,33 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export interface Staff {
+export interface TenantDocument {
+  orgId?: string;
+  businessId?: string;
+  businessType?: 'fuel_station' | 'cng' | 'lube';
+  stationId?: string;
+  ownerId?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  createdAt?: number;
+  updatedAt?: number;
+  isDeleted?: boolean;
+  deletedAt?: number;
+  deletedBy?: string;
+}
+
+
+export interface Staff extends TenantDocument {
   id: string;
   name: string;
   urduName: string;
-  role: 'owner' | 'manager' | 'cashier' | 'salesman';
+  role: 'owner' | 'manager' | 'cashier' | 'salesman' | string;
   salary: number;
   advances: number;
-  active: boolean;
+  active: boolean; // Legacy active flag
+  status?: 'active' | 'suspended' | 'blocked' | 'pending_verification' | 'trial_expired';
+  permissions?: string[];
+  allowedBusinessIds?: string[];
   pin: string;
   phone?: string;
   cnic?: string;
@@ -20,7 +39,7 @@ export interface Staff {
 
 export type ProductType = 'fuel' | 'lube' | 'other';
 
-export interface Product {
+export interface Product extends TenantDocument {
   id: string;
   name: string;
   urduName: string;
@@ -32,7 +51,7 @@ export interface Product {
   capacity?: number;
 }
 
-export interface Nozzle {
+export interface Nozzle extends TenantDocument {
   id: string;
   pumpId: string;
   name: string;
@@ -42,12 +61,12 @@ export interface Nozzle {
   currentReading?: number;
 }
 
-export interface Pump {
+export interface Pump extends TenantDocument {
   id: string;
   name: string;
 }
 
-export interface Customer {
+export interface Customer extends TenantDocument {
   id: string;
   name: string;
   urduName: string;
@@ -57,7 +76,7 @@ export interface Customer {
   balance: number; // Positive means customer owes us money (Dr)
 }
 
-export interface Supplier {
+export interface Supplier extends TenantDocument {
   id: string;
   name: string;
   urduName: string;
@@ -66,7 +85,7 @@ export interface Supplier {
   balance: number; // Positive means we owe the supplier money (Cr)
 }
 
-export interface DebitEntry {
+export interface DebitEntry extends TenantDocument {
   id: string;
   customerId: string;
   productId: string;
@@ -76,7 +95,7 @@ export interface DebitEntry {
   note: string;
 }
 
-export interface RecoveryEntry {
+export interface RecoveryEntry extends TenantDocument {
   id: string;
   customerId: string;
   amount: number;
@@ -84,7 +103,7 @@ export interface RecoveryEntry {
   reference: string;
 }
 
-export interface ExpenseEntry {
+export interface ExpenseEntry extends TenantDocument {
   id: string;
   category: string;
   amount: number;
@@ -94,7 +113,7 @@ export interface ExpenseEntry {
   staffId?: string;
 }
 
-export interface BankCashEntry {
+export interface BankCashEntry extends TenantDocument {
   id: string;
   bankAccountId: string;
   amount: number;
@@ -102,7 +121,7 @@ export interface BankCashEntry {
   customerId?: string;
 }
 
-export interface DigitalCashEntry {
+export interface DigitalCashEntry extends TenantDocument {
   id: string;
   method: string;
   amount: number;
@@ -110,7 +129,7 @@ export interface DigitalCashEntry {
   accountHolder?: string;
 }
 
-export interface LubeSale {
+export interface LubeSale extends TenantDocument {
   id: string;
   itemId: string;
   quantity: number;
@@ -127,7 +146,7 @@ export interface LubePosSaleLine {
   lineTotal: number;
 }
 
-export interface LubePosSale {
+export interface LubePosSale extends TenantDocument {
   id: string;
   invoiceNo: string;
   date: string;
@@ -153,7 +172,7 @@ export interface LubePosSale {
   returnedSaleId?: string;
 }
 
-export interface SupplierPayment {
+export interface SupplierPayment extends TenantDocument {
   id: string;
   supplierId: string;
   amount: number;
@@ -162,7 +181,7 @@ export interface SupplierPayment {
   reference: string;
 }
 
-export interface DiscountEntry {
+export interface DiscountEntry extends TenantDocument {
   id: string;
   amount: number;
   type: string;
@@ -174,7 +193,7 @@ export interface DiscountEntry {
   timestamp: string;
 }
 
-export interface Shift {
+export interface Shift extends TenantDocument {
   id: string;
   staffId: string;
   type: 'day' | 'night';
@@ -182,6 +201,10 @@ export interface Shift {
   startTime: string;
   endTime?: string;
   status: 'active' | 'closed';
+  
+  isLocked?: boolean;
+  lockedBy?: string;
+  lockedAt?: number;
   
   openingReadings: { [nozzleId: string]: number };
   closingReadings: { [nozzleId: string]: number };
@@ -203,21 +226,21 @@ export interface Shift {
   cashVariance?: number;
 }
 
-export interface BankAccount {
+export interface BankAccount extends TenantDocument {
   id: string;
   name: string;
   accountNo: string;
   balance: number;
 }
 
-export interface DigitalAccount {
+export interface DigitalAccount extends TenantDocument {
   id: string;
   name: string;
   accountNo: string;
   balance: number;
 }
 
-export interface StockTransaction {
+export interface StockTransaction extends TenantDocument {
   id: string;
   itemId: string;
   type: 'receipt' | 'sale' | 'adjustment';
@@ -232,7 +255,7 @@ export interface StockTransaction {
   carriageCost?: number;
 }
 
-export interface Station {
+export interface Station extends TenantDocument {
   id: string;
   name: string;
   urduName: string;
@@ -241,16 +264,16 @@ export interface Station {
   ownerContact: string;
 }
 
-export interface AuditTrailEntry {
+export interface AuditTrailEntry extends TenantDocument {
   id: string;
-  timestamp: string;
+  timestamp: string; // ISO String or unix timestamp
   category: string;
   action: string;
   details: string;
   operator: string;
 }
 
-export interface GlobalSettings {
+export interface GlobalSettings extends TenantDocument {
   stationName: string;
   stationUrduName: string;
   address: string;
@@ -276,7 +299,7 @@ export const EXPENSE_CATEGORIES = [
   { id: 'other', label: 'Other', urdu: 'دیگر اخراجات', icon: '📝' }
 ];
 
-export interface Tank {
+export interface Tank extends TenantDocument {
   id: string;
   name: string;
   productId: string; // fuel product id
@@ -289,7 +312,7 @@ export interface Tank {
   dipChart: { cm: number; liters: number }[];
 }
 
-export interface RateHistoryEntry {
+export interface RateHistoryEntry extends TenantDocument {
   id: string;
   productId: string;
   date: string;
@@ -302,7 +325,7 @@ export interface RateHistoryEntry {
   changedBy: string;
 }
 
-export interface StaffFinanceEntry {
+export interface StaffFinanceEntry extends TenantDocument {
   id: string;
   staffId: string;
   date: string;
@@ -315,11 +338,50 @@ export interface StaffFinanceEntry {
   deductedAdvance?: number;
 }
 
-export interface AttendanceRecord {
+export interface AttendanceRecord extends TenantDocument {
   id: string;
   staffId: string;
   date: string;
   status: 'present' | 'absent' | 'off' | 'late' | 'leave';
   checkIn?: string;
   checkOut?: string;
+}
+
+// Enterprise Enhancements Types
+
+export interface LedgerEntry extends TenantDocument {
+  id: string;
+  type: 'Sale' | 'Purchase' | 'Expense' | 'Credit Sale' | 'Credit Recovery' | 'Salary' | 'Inventory Adjustment' | 'Opening Balance' | 'Closing Balance';
+  amount: number;
+  date: string; // ISO String
+  referenceId?: string;
+  notes?: string;
+  isLocked: boolean;
+  lockedBy?: string;
+  lockedAt?: number;
+}
+
+export interface InventoryMovement extends TenantDocument {
+  id: string;
+  productId: string;
+  type: 'Purchase' | 'Sale' | 'Adjustment' | 'Transfer' | 'Return' | 'Wastage' | 'Tank Refill' | 'Tank Loss';
+  quantity: number;
+  date: string; // ISO String
+  referenceId?: string;
+  notes?: string;
+}
+
+export interface Organization {
+  id: string;
+  name: string;
+  schemaVersion: number;
+  ownerId: string;
+  trialStartDate: number;
+  trialEndDate?: number;
+  subscriptionStatus: 'active' | 'past_due' | 'canceled' | 'trialing';
+  subscriptionPlan: string;
+  subscriptionStartDate?: number;
+  subscriptionEndDate?: number;
+  createdAt: number;
+  updatedAt: number;
 }

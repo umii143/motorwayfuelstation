@@ -15,6 +15,7 @@ import {
   signOut,
   type User
 } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 
 // Firebase project configuration
 const firebaseConfig = {
@@ -29,6 +30,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const dbFS = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
 // Add scopes for additional user information
@@ -74,5 +76,6 @@ export function onFirebaseAuthChange(callback: (user: User | null) => void) {
   return onAuthStateChanged(auth, callback);
 }
 
-export { auth, app };
+export { auth, app, dbFS };
 export type { User as FirebaseUser };
+
