@@ -947,11 +947,15 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     // 1. Add Stock transactions logger row
     setStockTxns((prev) => [txn, ...prev]);
 
-    // 2. Replenish product currentStock quantity
+    // 2. Replenish product currentStock quantity and optionally update rate
     setProducts((prevProducts) =>
-      prevProducts.map((p) =>
-        p.id === txn.itemId ? { ...p, currentStock: p.currentStock + txn.quantity } : p
-      )
+      prevProducts.map((p) => {
+        if (p.id === txn.itemId) {
+          const newRate = txn.sellingPrice && txn.sellingPrice > 0 ? txn.sellingPrice : p.rate;
+          return { ...p, currentStock: p.currentStock + txn.quantity, rate: newRate };
+        }
+        return p;
+      })
     );
 
     // 3. Replenish tank stock if tankId is present
@@ -988,7 +992,8 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
       
       const product = products.find(p => p.id === txn.itemId);
       if (product) {
-        const updatedProduct = { ...product, currentStock: product.currentStock + txn.quantity };
+        const newRate = txn.sellingPrice && txn.sellingPrice > 0 ? txn.sellingPrice : product.rate;
+        const updatedProduct = { ...product, currentStock: product.currentStock + txn.quantity, rate: newRate };
         await firestoreDb.saveDocument(orgId, activeStationId, bType, 'products', product.id, updatedProduct);
       }
 

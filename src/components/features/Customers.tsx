@@ -1140,7 +1140,7 @@ export default function Customers({
                     required
                     value={addName}
                     onChange={(e) => setAddName(e.target.value)}
-                    placeholder="e.g. Haseeb Road Lines"
+                    placeholder="e.g. Umar Ali"
                     className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
@@ -1162,7 +1162,7 @@ export default function Customers({
                     type="text"
                     value={addContact}
                     onChange={(e) => setAddContact(e.target.value)}
-                    placeholder="e.g. 03001234567"
+                    placeholder="e.g. 03168432329"
                     className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>

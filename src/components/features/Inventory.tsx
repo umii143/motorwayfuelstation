@@ -155,6 +155,7 @@ export default function Inventory({
   const [receiptQty, setReceiptQty] = useState('');
   const [receiptCost, setReceiptCost] = useState('');
   const [invoiceRef, setInvoiceRef] = useState('');
+  const [selectedTankId, setSelectedTankId] = useState('');
 
   // Expanded stock fields state
   const [purchasePrice, setPurchasePrice] = useState('');
@@ -298,6 +299,11 @@ export default function Inventory({
     const prod = products.find(p => p.id === selectedProductId);
     if (!prod) return;
 
+    if (!isLube && prod.type === 'fuel' && !selectedTankId) {
+       showToast(t('Please select a storage tank for fuel delivery.', 'براہ کرم فیول کے لیے ٹینک منتخب کریں۔'), 'error');
+       return;
+    }
+
     // Create stockTransaction
     const newTxn: StockTransaction = {
       id: `stk_${Date.now()}`,
@@ -311,11 +317,11 @@ export default function Inventory({
       sellingPrice: Number(sellingPrice) || undefined,
       fuelType: fuelType,
       supplierId: supplierId,
-      carriageCost: Number(carriageCost) || undefined
+      carriageCost: Number(carriageCost) || undefined,
+      tankId: (!isLube && prod.type === 'fuel') ? selectedTankId : undefined
     };
 
     onAddStockTransaction(newTxn);
-    onUpdateProductStock(selectedProductId, prod.currentStock + qty);
 
     // Reset Form
     setReceiptQty('');
@@ -325,6 +331,7 @@ export default function Inventory({
     setSellingPrice('');
     setFuelType('Petrol');
     setCarriageCost('');
+    setSelectedTankId('');
     setShowAddStockModal(false);
     showToast(t('Stock inventory updated successfully!', 'اسٹاک بک اپ ڈیٹ ہو گئی ہے!'), 'success');
   };
@@ -950,21 +957,36 @@ export default function Inventory({
 
                   <div className="grid grid-cols-2 gap-3">
                     {!isLube && (
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-555 uppercase tracking-wider mb-1">{t('Fuel Stock Grade Type:', 'فیول گریڈ قسم:')}</label>
-                      <select
-                        value={fuelType}
-                        onChange={(e) => setFuelType(e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
-                      >
-                        {productSubtypes.map(sub => (
-                          <option key={sub.value} value={sub.value}>{sub.label}</option>
-                        ))}
-                      </select>
-                    </div>
+                      <>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-555 uppercase tracking-wider mb-1">{t('Select Storage Tank:', 'سٹوریج ٹینک منتخب کریں:')}</label>
+                          <select
+                            value={selectedTankId}
+                            onChange={(e) => setSelectedTankId(e.target.value)}
+                            className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
+                          >
+                            <option value="">{t('-- Choose Tank --', '-- منتخب ٹینک کریں --')}</option>
+                            {tanks.filter(t => t.productId === selectedProductId).map(t => (
+                              <option key={t.id} value={t.id}>{t.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-555 uppercase tracking-wider mb-1">{t('Fuel Stock Grade Type:', 'فیول گریڈ قسم:')}</label>
+                          <select
+                            value={fuelType}
+                            onChange={(e) => setFuelType(e.target.value)}
+                            className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
+                          >
+                            {productSubtypes.map(sub => (
+                              <option key={sub.value} value={sub.value}>{sub.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </>
                     )}
 
-                    <div className={isLube ? 'col-span-2' : ''}>
+                    <div className={isLube ? 'col-span-2' : 'col-span-2'}>
                       <label className="block text-[10px] font-bold text-slate-555 uppercase tracking-wider mb-1">{isLube ? t('Received Qty (Units):', 'موصول مقدار (یونٹس):') : t('Delivered Qty (Ltr):', 'سپلائی مقدار (لیٹرز):')}</label>
                       <input
                         type="number"

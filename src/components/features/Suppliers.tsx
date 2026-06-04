@@ -784,7 +784,7 @@ export default function Suppliers({
                     required
                     value={addName}
                     onChange={(e) => setAddName(e.target.value)}
-                    placeholder="e.g. Shell Petroleum Pakistan"
+                    placeholder="e.g. Umar Ali"
                     className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
@@ -806,7 +806,7 @@ export default function Suppliers({
                     type="text"
                     value={addContact}
                     onChange={(e) => setAddContact(e.target.value)}
-                    placeholder="e.g. 0213123456"
+                    placeholder="e.g. 03168432329"
                     className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
@@ -877,7 +877,7 @@ export default function Suppliers({
                     required
                     value={editSuppName}
                     onChange={(e) => setEditSuppName(e.target.value)}
-                    placeholder="e.g. Shell Petroleum Pakistan"
+                    placeholder="e.g. Umar Ali"
                     className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
@@ -899,7 +899,7 @@ export default function Suppliers({
                     type="text"
                     value={editSuppContact}
                     onChange={(e) => setEditSuppContact(e.target.value)}
-                    placeholder="e.g. 0213123456"
+                    placeholder="e.g. 03168432329"
                     className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>

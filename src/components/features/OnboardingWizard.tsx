@@ -433,7 +433,7 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
                   <label className="block text-slate-650 font-bold mb-1">{t('Station Owner / Admin Name:', 'مالک یا مینیجر کا نام')}</label>
                   <input
                     type="text"
-                    placeholder="e.g. Sajid Mahmood"
+                    placeholder="e.g. Umar Ali"
                     value={ownerName}
                     onChange={(e) => setOwnerName(e.target.value)}
                     className="w-full border border-slate-200 rounded-lg p-2.5 outline-none focus:border-orange-500"
@@ -456,7 +456,7 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
                     <label className="block text-slate-650 font-bold mb-1">{t('Primary Contact / Cell No:', 'رابطہ نمبر یا موبائل نمبر')}</label>
                     <input
                       type="text"
-                      placeholder="e.g. 0300-1234567"
+                      placeholder="e.g. 03168432329"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       className="w-full border border-slate-200 rounded-lg p-2.5 outline-none focus:border-orange-500 font-mono"

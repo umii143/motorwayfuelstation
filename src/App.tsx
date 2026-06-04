@@ -22,7 +22,9 @@ import Expenses from './components/features/Expenses';
 import LubePOS from './components/features/LubePOS';
 import Reports from './components/features/Reports';
 import LubeReports from './components/features/LubeReports';
+import LoadingScreen from './components/ui/LoadingScreen';
 import DiscountsHub from './components/features/DiscountsHub';
+
 import StaffPanel from './components/features/Staff';
 import SettingsPanel from './components/features/Settings';
 import OnboardingWizard from './components/features/OnboardingWizard';
@@ -473,14 +475,7 @@ function MainApp() {
 
   // 1. Session verification loading splash screen
   if (checkingAuth) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex flex-col justify-center items-center font-sans text-xs text-orange-500 gap-4">
-        <RefreshCw className="h-10 w-10 animate-spin text-orange-500" />
-        <span className="font-mono uppercase font-extrabold tracking-widest text-[9px] text-slate-400">
-          Decrypting Security Vault...
-        </span>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   // 2. Authentication lock wall

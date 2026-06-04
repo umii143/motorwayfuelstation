@@ -40,10 +40,17 @@ import {
   Camera,
   Link,
   Tag,
-  CreditCard
+  CreditCard,
+  Sun,
+  Moon,
+  Bell,
+  HelpCircle,
+  Search
 } from 'lucide-react';
 import { GlobalSettings, Station } from '../../types';
 import { t as translate } from '../../lib/translations';
+import NavigationBrand from './NavigationBrand';
+import HelpGuideModal from '../ui/HelpGuideModal';
 
 interface NavigationProps {
   activeView: string;
@@ -134,9 +141,16 @@ export default function Navigation({
     onSettingsUpdate(updated);
   };
 
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+
   const handleItemClick = (id: string) => {
     onViewChange(id);
     setMobileMenuOpen(false);
+  };
+
+  const toggleTheme = () => {
+    const newTheme = settings.theme === 'dark' ? 'light' : 'dark';
+    onSettingsUpdate({ ...settings, theme: newTheme });
   };
 
   // Open add Modal
@@ -398,6 +412,32 @@ export default function Navigation({
                settings.language === 'es' ? 'ES' :
                settings.language === 'zh' ? '中文' : 'EN'}
             </span>
+          </button>
+          
+          <button
+            onClick={toggleTheme}
+            className="rounded-lg border border-slate-200 bg-white p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors cursor-pointer shadow-xs"
+            title={settings.theme === 'dark' ? t('Switch to Light Mode', 'لائٹ موڈ') : t('Switch to Dark Mode', 'ڈارک موڈ')}
+          >
+            {settings.theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
+
+          <button
+            className="relative rounded-lg border border-slate-200 bg-white p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors cursor-pointer shadow-xs"
+            title={t('Notifications', 'اطلاعات')}
+          >
+            <Bell className="h-4 w-4" />
+            <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-[8px] font-bold text-white">
+              3
+            </span>
+          </button>
+
+          <button
+            onClick={() => setIsHelpOpen(true)}
+            className="rounded-lg border border-slate-200 bg-white p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors cursor-pointer shadow-xs"
+            title={t('Help Guide', 'یوزر گائیڈ')}
+          >
+            <HelpCircle className="h-4 w-4" />
           </button>
           
           {user ? (
@@ -818,6 +858,12 @@ export default function Navigation({
           </div>
         </div>
       )}
+
+      <HelpGuideModal
+        isOpen={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
+        settings={settings}
+      />
     </>
   );
 }

@@ -2636,7 +2636,7 @@ export default function ShiftWizard({
                         type="text"
                         value={digAccountHolder}
                         onChange={(e) => setDigAccountHolder(e.target.value)}
-                        placeholder="e.g. Muhammad Ali"
+                        placeholder="e.g. Umar Ali"
                         className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-sans text-sm focus:border-orange-500"
                       />
                     </div>
@@ -2748,7 +2748,7 @@ export default function ShiftWizard({
                         type="text"
                         value={discCustomer}
                         onChange={(e) => setDiscCustomer(e.target.value)}
-                        placeholder="e.g. Asad Transport"
+                        placeholder="e.g. Umar Ali"
                         className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-sans text-sm focus:border-orange-500"
                       />
                     </div>
@@ -2760,7 +2760,7 @@ export default function ShiftWizard({
                         type="text"
                         value={discApprovedBy}
                         onChange={(e) => setDiscApprovedBy(e.target.value)}
-                        placeholder="e.g. Manager Ali"
+                        placeholder="e.g. Umar Ali"
                         className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-sans text-sm focus:border-orange-500"
                       />
                     </div>

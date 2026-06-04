@@ -112,6 +112,8 @@ export default function Dashboard({
   onStartShiftQuick,
   rateHistory = []
 }: DashboardProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  
   // Translation helpers
   const t = (en: string, ur: string) => translate(en, ur, settings);
 
@@ -435,6 +437,17 @@ export default function Dashboard({
     return staff.find(st => st.id === activeShift.staffId)?.name || 'Operator';
   }, [activeShift, staff]);
 
+  // Global Search logic
+  const searchResults = useMemo(() => {
+    if (!searchQuery || searchQuery.length < 2) return null;
+    const query = searchQuery.toLowerCase();
+    return {
+      customers: customers.filter(c => c.name.toLowerCase().includes(query) || c.phone.includes(query)).slice(0, 3),
+      products: products.filter(p => p.name.toLowerCase().includes(query) || (p.urduName && p.urduName.includes(query))).slice(0, 3),
+      staff: staff.filter(s => s.name.toLowerCase().includes(query) || (s.urduName && s.urduName.includes(query))).slice(0, 3)
+    };
+  }, [searchQuery, customers, products, staff]);
+
   return (
     <div id="fuelpro_dashboard_view" className="space-y-6 pb-16 lg:pb-0">
       
@@ -456,13 +469,65 @@ export default function Dashboard({
           </p>
         </div>
 
-        {/* Date Filter Dropdown */}
-        <div className="flex items-center gap-2 self-start sm:self-center">
-          <span className="font-sans text-xs font-semibold text-slate-500">
-            {isLube
-              ? t('Select POS Date:', 'پی او ایس تاریخ منتخب کریں:')
-              : t('Select Session Date:', 'تاریخ منتخب کریں:')}
-          </span>
+        {/* Global Search and Date Filter */}
+        <div className="flex flex-col sm:flex-row items-center gap-3 self-start sm:self-center w-full sm:w-auto">
+          {/* Search Bar */}
+          <div className="relative w-full sm:w-64 z-50">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t("Search...", "تلاش کریں...")}
+              className="w-full rounded-lg border border-slate-200 bg-white py-1.5 pl-9 pr-3 font-sans text-sm font-semibold text-slate-800 shadow-xs focus:border-orange-500 focus:outline-hidden placeholder:text-slate-400 transition-all"
+            />
+            <Search className="absolute left-3 top-2 h-4 w-4 text-slate-400" />
+            
+            {/* Search Dropdown */}
+            {searchResults && (
+              <div className="absolute top-full left-0 mt-2 w-full bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                {searchResults.customers.length > 0 && (
+                  <div className="p-2 border-b border-slate-50">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase mb-1 px-1">{t('Customers', 'گاہک')}</div>
+                    {searchResults.customers.map(c => (
+                      <button key={c.id} onClick={() => { setSearchQuery(''); onNavigate('customers'); }} className="w-full text-left px-2 py-1.5 text-xs hover:bg-orange-50 rounded-lg text-slate-700 font-semibold cursor-pointer">
+                        {c.name} - {c.phone}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {searchResults.products.length > 0 && (
+                  <div className="p-2 border-b border-slate-50">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase mb-1 px-1">{t('Products', 'پروڈکٹس')}</div>
+                    {searchResults.products.map(p => (
+                      <button key={p.id} onClick={() => { setSearchQuery(''); onNavigate('inventory'); }} className="w-full text-left px-2 py-1.5 text-xs hover:bg-orange-50 rounded-lg text-slate-700 font-semibold cursor-pointer">
+                        {t(p.name, p.urduName)} - {p.currentStock} {p.unit}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {searchResults.staff.length > 0 && (
+                  <div className="p-2">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase mb-1 px-1">{t('Staff', 'عملہ')}</div>
+                    {searchResults.staff.map(s => (
+                      <button key={s.id} onClick={() => { setSearchQuery(''); onNavigate('staff'); }} className="w-full text-left px-2 py-1.5 text-xs hover:bg-orange-50 rounded-lg text-slate-700 font-semibold cursor-pointer">
+                        {t(s.name, s.urduName)} - {t(s.role, s.role)}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {searchResults.customers.length === 0 && searchResults.products.length === 0 && searchResults.staff.length === 0 && (
+                  <div className="p-4 text-center text-xs text-slate-500 font-sans">{t('No results found.', 'کوئی نتیجہ نہیں ملا')}</div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <span className="font-sans text-xs font-semibold text-slate-500 shrink-0">
+              {isLube
+                ? t('Select POS Date:', 'پی او ایس تاریخ منتخب کریں:')
+                : t('Select Session Date:', 'تاریخ منتخب کریں:')}
+            </span>
           <select
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
