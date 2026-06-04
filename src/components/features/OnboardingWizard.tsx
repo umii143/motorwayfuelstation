@@ -34,7 +34,6 @@ interface TankInput {
   name: string;
   fuelType: FuelType;
   capacity: number;
-  openingStock: number;
   safeLevel: number;    // percentage 0–100
   criticalLevel: number; // percentage 0–100
 }
@@ -46,7 +45,6 @@ interface PumpInput {
 
 interface NozzleInput {
   name: string;
-  fuelType: FuelType;
   tankIndex: number; // explicit tank index
   startReading: number;
 }
@@ -81,7 +79,7 @@ const FUEL_LABELS: Record<FuelType, { en: string; ur: string; color: string; emo
   cng:    { en: 'CNG (Gas)', ur: 'سی این جی (گیس)', color: 'text-green-600 bg-green-50 border-green-200', emoji: '💚' },
 };
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 9;
 
 // ─────────────────────────────────────────────────────────────
 // MAIN COMPONENT
@@ -106,11 +104,20 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
   const [supplierName, setSupplierName] = useState('');
   const [ownerPin, setOwnerPin] = useState('');
 
-  // ── STEP 2: Tanks ──────────────────────────────────────────
+  // ── STEP 2: Products ─────────────────────────────────────────
+  const [selectedProducts, setSelectedProducts] = useState<FuelType[]>(['petrol', 'diesel']);
+
+  // ── STEP 3: Tanks ──────────────────────────────────────────
   const [tankInputs, setTankInputs] = useState<TankInput[]>([
-    { name: 'Tank 1 — Petrol', fuelType: 'petrol', capacity: 25000, openingStock: 12000, safeLevel: 12, criticalLevel: 5 },
-    { name: 'Tank 2 — Diesel', fuelType: 'diesel', capacity: 25000, openingStock: 10000, safeLevel: 12, criticalLevel: 5 },
+    { name: 'Tank 1 — Petrol', fuelType: 'petrol', capacity: 25000, safeLevel: 12, criticalLevel: 5 },
+    { name: 'Tank 2 — Diesel', fuelType: 'diesel', capacity: 25000, safeLevel: 12, criticalLevel: 5 },
   ]);
+
+  // ── STEP 6: Opening Stock (stored here temporarily during wizard) ──
+  const [openingStocks, setOpeningStocks] = useState<Record<number, number>>({
+    0: 12000,
+    1: 10000,
+  });
 
   // ── STEP 3: Pump Machines ──────────────────────────────────
   const [pumpInputs, setPumpInputs] = useState<PumpInput[]>([
@@ -120,10 +127,10 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
 
   // ── STEP 4: Nozzles ────────────────────────────────────────
   const [nozzleInputs, setNozzleInputs] = useState<NozzleInput[]>([
-    { name: 'Pump 1A', fuelType: 'petrol', tankIndex: 0, startReading: 125000 },
-    { name: 'Pump 1B', fuelType: 'petrol', tankIndex: 0, startReading: 132000 },
-    { name: 'Pump 2A', fuelType: 'diesel', tankIndex: 1, startReading: 85000 },
-    { name: 'Pump 2B', fuelType: 'diesel', tankIndex: 1, startReading: 91000 },
+    { name: 'Pump 1A', tankIndex: 0, startReading: 125000 },
+    { name: 'Pump 1B', tankIndex: 0, startReading: 132000 },
+    { name: 'Pump 2A', tankIndex: 1, startReading: 85000 },
+    { name: 'Pump 2B', tankIndex: 1, startReading: 91000 },
   ]);
 
   // ── STEP 5: Fuel Rates ─────────────────────────────────────
@@ -154,7 +161,7 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
   const validateStep = (s: number): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (s === 1) {
+    if (s === 1) { // Station Info
       if (!stationName.trim()) newErrors['stationName'] = t('Station name is required', 'اسٹیشن کا نام ضروری ہے');
       if (!ownerName.trim()) newErrors['ownerName'] = t('Owner name is required', 'مالک کا نام ضروری ہے');
       if (!city.trim()) newErrors['city'] = t('City is required', 'شہر کا نام ضروری ہے');
@@ -164,45 +171,53 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
       else if (!/^\d{4,6}$/.test(ownerPin)) newErrors['ownerPin'] = t('PIN must be 4–6 digits', 'پن 4 سے 6 ہندسوں کا ہونا چاہیے');
     }
 
-    if (s === 2) {
+    if (s === 2) { // Products
+      if (selectedProducts.length === 0) newErrors['products'] = t('Select at least one fuel product', 'کم از کم ایک ایندھن منتخب کریں');
+    }
+
+    if (s === 3) { // Tanks
       const names = new Set<string>();
       tankInputs.forEach((tk, i) => {
         if (!tk.name.trim()) newErrors[`tank_name_${i}`] = t('Tank name required', 'ٹینک کا نام ضروری ہے');
         if (names.has(tk.name.toLowerCase())) newErrors[`tank_name_${i}`] = t('Duplicate tank name', 'ٹینک کا نام دہرایا گیا');
         names.add(tk.name.toLowerCase());
-        if (tk.capacity < 1000) newErrors[`tank_cap_${i}`] = t('Capacity must be at least 1,000 L', 'گنجائش کم از کم 1,000 لیٹر ہونی چاہیے');
-        if (tk.openingStock < 0) newErrors[`tank_stock_${i}`] = t('Stock cannot be negative', 'اسٹاک منفی نہیں ہو سکتا');
-        if (tk.openingStock > tk.capacity) newErrors[`tank_stock_${i}`] = t('Stock cannot exceed capacity', 'اسٹاک گنجائش سے زیادہ نہیں ہو سکتا');
-        if (tk.safeLevel <= tk.criticalLevel) newErrors[`tank_levels_${i}`] = t('Safe level must be above critical level', 'محفوظ سطح تنقیدی سطح سے اوپر ہونی چاہیے');
+        if (!tk.fuelType) newErrors[`tank_ft_${i}`] = t('Fuel type required', 'ایندھن کی قسم ضروری ہے');
+        if (tk.capacity <= 0) newErrors[`tank_cap_${i}`] = t('Capacity must be greater than 0', 'گنجائش 0 سے زیادہ ہونی چاہیے');
+        if (tk.safeLevel >= tk.capacity) newErrors[`tank_levels_${i}`] = t('Safe level must be less than capacity', 'محفوظ سطح گنجائش سے کم ہونی چاہیے');
+        if (tk.criticalLevel >= tk.safeLevel) newErrors[`tank_levels_${i}`] = t('Critical level must be less than safe level', 'تنقیدی سطح محفوظ سطح سے کم ہونی چاہیے');
       });
     }
 
-    if (s === 3) {
+    if (s === 4) { // Pumps & Nozzles
       const names = new Set<string>();
       pumpInputs.forEach((pm, i) => {
         if (!pm.name.trim()) newErrors[`pump_name_${i}`] = t('Pump name required', 'پمپ کا نام ضروری ہے');
         if (names.has(pm.name.toLowerCase())) newErrors[`pump_name_${i}`] = t('Duplicate pump name', 'پمپ کا نام دہرایا گیا');
         names.add(pm.name.toLowerCase());
       });
-    }
-
-    if (s === 4) {
       nozzleInputs.forEach((nz, i) => {
         if (!nz.name.trim()) newErrors[`nozzle_name_${i}`] = t('Nozzle name required', 'نوزل کا نام ضروری ہے');
         if (nz.tankIndex < 0 || nz.tankIndex >= tankInputs.length) newErrors[`nozzle_tank_${i}`] = t('Select a tank for this nozzle', 'اس نوزل کے لیے ٹینک منتخب کریں');
-        else if (tankInputs[nz.tankIndex]?.fuelType !== nz.fuelType) newErrors[`nozzle_tank_${i}`] = t('Tank fuel type must match nozzle fuel type', 'ٹینک اور نوزل کا ایندھن یکساں ہونا چاہیے');
         if (nz.startReading < 0) newErrors[`nozzle_reading_${i}`] = t('Reading cannot be negative', 'ریڈنگ منفی نہیں ہو سکتی');
       });
     }
 
-    if (s === 5) {
-      activeFuelTypes.forEach(ft => {
+    if (s === 5) { // Rates
+      selectedProducts.forEach(ft => {
         if (rates[ft] <= 0) newErrors[`rate_${ft}`] = t('Rate must be greater than 0', 'ریٹ صفر سے زیادہ ہونا چاہیے');
         if (purchasePrices[ft] < 0) newErrors[`pp_${ft}`] = t('Purchase price cannot be negative', 'خریداری قیمت منفی نہیں ہو سکتی');
       });
     }
 
-    if (s === 6) {
+    if (s === 6) { // Opening Stock
+      tankInputs.forEach((tk, i) => {
+        const stock = openingStocks[i] || 0;
+        if (stock < 0) newErrors[`stock_${i}`] = t('Stock cannot be negative', 'اسٹاک منفی نہیں ہو سکتا');
+        if (stock > tk.capacity) newErrors[`stock_${i}`] = t('Stock cannot exceed capacity', 'اسٹاک گنجائش سے زیادہ نہیں ہو سکتا');
+      });
+    }
+
+    if (s === 7) { // Staff
       const allPins = [ownerPin];
       staffList.forEach((st, i) => {
         if (!st.name.trim()) newErrors[`staff_name_${i}`] = t('Staff name required', 'اسٹاف کا نام ضروری ہے');
@@ -220,7 +235,7 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
   // ─────────────────────────────────────────────────────────
   // DERIVED STATE
   // ─────────────────────────────────────────────────────────
-  const activeFuelTypes: FuelType[] = Array.from(new Set(tankInputs.map(t => t.fuelType)));
+  const activeFuelTypes: FuelType[] = selectedProducts;
 
   // Auto-sync nozzles when pump config changes
   const syncNozzlesFromPumps = useCallback((pumps: PumpInput[], tanks: TankInput[]) => {
@@ -233,7 +248,6 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
         const defaultTankIdx = 0;
         newNozzles.push({
           name: `P${pi + 1}${side}`,
-          fuelType: defaultFuel,
           tankIndex: defaultTankIdx,
           startReading: 100000
         });
@@ -267,9 +281,8 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
     if (tankInputs.length >= 12) return;
     setTankInputs(prev => [...prev, {
       name: `Tank ${prev.length + 1}`,
-      fuelType: 'petrol',
+      fuelType: selectedProducts[0] || 'petrol',
       capacity: 25000,
-      openingStock: 10000,
       safeLevel: 12,
       criticalLevel: 5
     }]);
@@ -339,10 +352,10 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
   // FINAL SAVE
   // ─────────────────────────────────────────────────────────
   const handleSaveAll = () => {
-    // Build products ONLY for fuel types that have tanks
+    // Build products ONLY for selected fuel types
     const defaultProducts: Product[] = activeFuelTypes.map(ft => {
       const tanksForType = tankInputs.filter(tk => tk.fuelType === ft);
-      const totalStock = tanksForType.reduce((sum, tk) => sum + tk.openingStock, 0);
+      const totalStock = tanksForType.reduce((sum, tk, idx) => sum + (openingStocks[tankInputs.indexOf(tk)] || 0), 0);
       const totalCapacity = tanksForType.reduce((sum, tk) => sum + tk.capacity, 0);
       const fuelInfo = FUEL_LABELS[ft];
       return {
@@ -360,15 +373,17 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
     });
 
     // Build tanks
-    const convertedTanks: Tank[] = tankInputs.map((tk, idx) => ({
+    const convertedTanks: Tank[] = tankInputs.map((tk, idx) => {
+      const tkStock = openingStocks[idx] || 0;
+      return {
       id: `tank_${Date.now()}_${idx}`,
       name: tk.name,
       productId: tk.fuelType,
       capacity: tk.capacity,
-      safeLevel: Math.round(tk.capacity * (tk.safeLevel / 100)),
-      criticalLevel: Math.round(tk.capacity * (tk.criticalLevel / 100)),
-      currentStock: tk.openingStock,
-      openingStock: tk.openingStock,
+      safeLevel: tk.safeLevel,
+      criticalLevel: tk.criticalLevel,
+      currentStock: tkStock,
+      openingStock: tkStock,
       physicalLabel: `T-${idx + 1}`,
       dipChart: [
         { cm: 10, liters: Math.round(tk.capacity * 0.02) },
@@ -378,7 +393,8 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
         { cm: 200, liters: Math.round(tk.capacity * 0.80) },
         { cm: 250, liters: tk.capacity }
       ]
-    }));
+    };
+  });
 
     // Build nozzles with EXPLICIT tank linkage (no heuristic)
     const nozzlesByPump: Record<string, number> = {};
@@ -400,7 +416,7 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
         id: `nz_${Date.now()}_${idx}`,
         pumpId,
         name: nz.name,
-        productId: nz.fuelType,
+        productId: linkedTank?.productId || 'petrol',
         tankId: linkedTank?.id,
         startReading: nz.startReading,
         currentReading: nz.startReading
@@ -460,10 +476,11 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
   // ─────────────────────────────────────────────────────────
   const stepLabels = [
     t('Station', 'اسٹیشن'),
+    t('Products', 'مصنوعات'),
     t('Tanks', 'ٹینکس'),
-    t('Pumps', 'پمپس'),
-    t('Nozzles', 'نوزلز'),
+    t('Pumps & Nozzles', 'پمپس و نوزلز'),
     t('Rates', 'ریٹس'),
+    t('Stock', 'اسٹاک'),
     t('Staff', 'عملہ'),
     t('Review', 'جائزہ'),
     t('Done', 'مکمل'),
@@ -759,7 +776,7 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
           )}
 
           {/* ╔══ STEP 2: TANKS ══╗ */}
-          {step === 2 && (
+          {false && (
             <div className="space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
@@ -830,21 +847,6 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
                         <Err id={`tank_cap_${idx}`} />
                       </div>
 
-                      <div>
-                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
-                          {t(`Opening Stock (${tk.fuelType === 'cng' ? 'KG' : 'Litres'}) *`, `موجودہ اسٹاک (${tk.fuelType === 'cng' ? 'کلوگرام' : 'لیٹر'}) *`)}
-                        </label>
-                        <input type="number" min="0" max={tk.capacity} value={tk.openingStock}
-                          onChange={e => updateTank(idx, 'openingStock', Number(e.target.value))}
-                          className={`${inputCls(`tank_stock_${idx}`)} font-mono`} />
-                        {tk.capacity > 0 && (
-                          <div className="mt-1.5 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-orange-400 rounded-full transition-all"
-                              style={{ width: `${Math.min(100, (tk.openingStock / tk.capacity) * 100)}%` }} />
-                          </div>
-                        )}
-                        <Err id={`tank_stock_${idx}`} />
-                      </div>
                     </div>
 
                     {/* Safe/Critical Level Sliders */}
@@ -873,14 +875,14 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
             </div>
           )}
 
-          {/* ╔══ STEP 3: PUMP MACHINES ══╗ */}
-          {step === 3 && (
+                    {/* ╔══ STEP 4: PUMPS & NOZZLES ══╗ */}
+          {step === 4 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
                   <Gauge className="h-5 w-5 text-orange-600" />
                   <h3 className="font-sans text-sm font-black text-slate-900 uppercase tracking-wider">
-                    {t('Physical Pump Machines', 'فزیکل پمپ مشینیں')}
+                    {t('Pumps & Nozzles', 'پمپس و نوزلز')}
                   </h3>
                 </div>
                 <button onClick={addPump} disabled={pumpInputs.length >= 12}
@@ -890,156 +892,101 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
                 </button>
               </div>
               <p className="text-[10px] text-slate-400 font-sans bg-blue-50 border border-blue-100 rounded-lg p-3">
-                💡 {t('A "Pump Machine" is the physical dispenser unit installed at your forecourt. Each machine can have 2 or 4 nozzle positions (sides A/B or A/B/C/D).', '"پمپ مشین" وہ فزیکل ڈسپنسر یونٹ ہے جو آپ کے فورکورٹ پر نصب ہے۔ ہر مشین میں 2 یا 4 نوزل پوزیشنز ہو سکتی ہیں۔')}
+                💡 {t('A "Pump Machine" is the physical dispenser unit. Each machine can have 2 or 4 nozzles.', 'پمپ مشین وہ فزیکل ڈسپنسر یونٹ ہے۔ ہر مشین میں 2 یا 4 نوزل ہو سکتی ہیں۔')}
               </p>
 
-              <div className="space-y-3">
-                {pumpInputs.map((pm, idx) => (
-                  <div key={idx} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="bg-blue-50 text-blue-600 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-blue-100">
-                        {t(`Pump #${idx + 1}`, `پمپ #${idx + 1}`)}
-                      </span>
-                      {pumpInputs.length > 1 && (
-                        <button onClick={() => removePump(idx)}
-                          className="text-slate-400 hover:text-red-500 cursor-pointer p-1 rounded-lg hover:bg-red-50 transition-colors">
-                          <X className="h-4 w-4" />
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
-                          {t('Pump Machine Name', 'پمپ مشین کا نام')}
-                        </label>
-                        <input type="text" value={pm.name}
-                          onChange={e => updatePump(idx, 'name', e.target.value)}
-                          placeholder={t('e.g. Pump Machine 1', 'مثلاً پمپ مشین 1')}
-                          className={inputCls(`pump_name_${idx}`)} />
-                        <Err id={`pump_name_${idx}`} />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
-                          {t('Number of Nozzle Positions', 'نوزل پوزیشنز کی تعداد')}
-                        </label>
-                        <div className="grid grid-cols-2 gap-2">
-                          {[2, 4].map(n => (
-                            <button key={n} type="button" onClick={() => updatePump(idx, 'nozzleCount', n)}
-                              className={`py-2.5 rounded-xl border-2 font-black text-sm cursor-pointer transition-all ${pm.nozzleCount === n ? 'bg-orange-600 border-orange-600 text-white' : 'border-slate-200 text-slate-600 hover:border-orange-300'}`}>
-                              {n} {t('Nozzles', 'نوزلز')}
-                              <span className="block text-[9px] font-normal opacity-70">
-                                {n === 2 ? 'Side A, B' : 'Side A, B, C, D'}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                <p className="text-[11px] text-slate-600 font-bold">
-                  📊 {t(`Total nozzles from pump config: ${pumpInputs.reduce((s, p) => s + p.nozzleCount, 0)}`, `پمپ کنفیگریشن سے کل نوزلز: ${pumpInputs.reduce((s, p) => s + p.nozzleCount, 0)}`)}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* ╔══ STEP 4: NOZZLES ══╗ */}
-          {step === 4 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                <Zap className="h-5 w-5 text-orange-600" />
-                <h3 className="font-sans text-sm font-black text-slate-900 uppercase tracking-wider">
-                  {t('Nozzle Assignment & Opening Readings', 'نوزل اسائنمنٹ اور ابتدائی ریڈنگز')}
-                </h3>
-              </div>
-
-              <p className="text-[10px] text-slate-400 font-sans bg-amber-50 border border-amber-100 rounded-lg p-3">
-                💡 {t('Select which tank each nozzle is connected to. The tank fuel type must match the nozzle fuel type. Opening meter reading is the number currently shown on the physical pump display.', 'ہر نوزل کے لیے منسلک ٹینک منتخب کریں۔ ٹینک اور نوزل کا ایندھن یکساں ہونا چاہیے۔ ابتدائی میٹر ریڈنگ وہ نمبر ہے جو ابھی پمپ ڈسپلے پر دکھائی دے رہا ہے۔')}
-              </p>
-
-              <div className="space-y-3">
-                {nozzleInputs.map((nz, idx) => {
-                  // Determine which pump this nozzle belongs to
+              <div className="space-y-6">
+                {pumpInputs.map((pm, pmIdx) => {
+                  // Find nozzles for this pump
                   let cumulative = 0;
-                  let pumpIdx = 0;
-                  for (let pi = 0; pi < pumpInputs.length; pi++) {
-                    cumulative += pumpInputs[pi].nozzleCount;
-                    if (idx < cumulative) { pumpIdx = pi; break; }
+                  let startIndex = 0;
+                  for (let i = 0; i < pmIdx; i++) {
+                    startIndex += pumpInputs[i].nozzleCount;
                   }
-
+                  
                   return (
-                    <div key={idx} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="bg-orange-50 text-orange-600 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-orange-100">
-                          {t(`Nozzle #${idx + 1}`, `نوزل #${idx + 1}`)}
-                        </span>
-                        <span className="text-slate-400 text-[10px] font-mono">
-                          → {pumpInputs[pumpIdx]?.name || `Pump ${pumpIdx + 1}`}
-                        </span>
-                        {nz.fuelType && <FuelChip ft={nz.fuelType} />}
+                    <div key={pmIdx} className="bg-white border-2 border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                      {/* Pump Header */}
+                      <div className="bg-slate-50 p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <span className="bg-blue-600 text-white text-[10px] font-black px-2.5 py-1 rounded-full">
+                            {t(`PUMP #${pmIdx + 1}`, `پمپ #${pmIdx + 1}`)}
+                          </span>
+                          <div>
+                            <input type="text" value={pm.name}
+                              onChange={e => updatePump(pmIdx, 'name', e.target.value)}
+                              placeholder={t('Pump Name', 'پمپ کا نام')}
+                              className={`bg-white border rounded px-2 py-1 text-sm font-bold w-40 focus:ring-2 focus:ring-blue-500 outline-none ${errors['pump_name_'+pmIdx] ? 'border-red-500' : 'border-slate-300'}`} />
+                            {errors['pump_name_'+pmIdx] && <p className="text-red-500 text-[10px] mt-1">{errors['pump_name_'+pmIdx]}</p>}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center bg-white rounded-lg border border-slate-200 p-1">
+                            {[2, 4].map(n => (
+                              <button key={n} type="button" onClick={() => updatePump(pmIdx, 'nozzleCount', n)}
+                                className={`px-3 py-1 rounded text-xs font-bold transition-all ${pm.nozzleCount === n ? 'bg-blue-100 text-blue-700' : 'text-slate-500 hover:bg-slate-50'}`}>
+                                {n} {t('Nozzles', 'نوزلز')}
+                              </button>
+                            ))}
+                          </div>
+                          {pumpInputs.length > 1 && (
+                            <button onClick={() => removePump(pmIdx)} className="text-red-400 hover:text-red-600 p-1">
+                              <X className="h-5 w-5" />
+                            </button>
+                          )}
+                        </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                          <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
-                            {t('Nozzle Label', 'نوزل کا نام')}
-                          </label>
-                          <input type="text" value={nz.name}
-                            onChange={e => updateNozzle(idx, 'name', e.target.value)}
-                            placeholder="e.g. P1A"
-                            className={inputCls(`nozzle_name_${idx}`)} />
-                          <Err id={`nozzle_name_${idx}`} />
-                        </div>
+                      {/* Nozzles Section */}
+                      <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {Array.from({ length: pm.nozzleCount }).map((_, nIdx) => {
+                          const globalNzIdx = startIndex + nIdx;
+                          const nz = nozzleInputs[globalNzIdx];
+                          if (!nz) return null;
+                          const linkedTank = tankInputs[nz.tankIndex];
 
-                        <div>
-                          <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
-                            {t('Fuel Type', 'ایندھن کی قسم')}
-                          </label>
-                          <select value={nz.fuelType} onChange={e => updateNozzle(idx, 'fuelType', e.target.value as FuelType)}
-                            className={inputCls('')}>
-                            {Object.entries(FUEL_LABELS).map(([ft, info]) => (
-                              <option key={ft} value={ft}>{info.emoji} {lang === 'ur' ? info.ur : info.en}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">
-                            {t('Connected Tank *', 'منسلک ٹینک *')}
-                          </label>
-                          <select value={nz.tankIndex}
-                            onChange={e => updateNozzle(idx, 'tankIndex', Number(e.target.value))}
-                            className={inputCls(`nozzle_tank_${idx}`)}>
-                            <option value={-1}>{t('— Select Tank —', '— ٹینک منتخب کریں —')}</option>
-                            {tankInputs.map((tk, ti) => (
-                              <option key={ti} value={ti}
-                                disabled={tk.fuelType !== nz.fuelType}>
-                                {FUEL_LABELS[tk.fuelType].emoji} {tk.name} {tk.fuelType !== nz.fuelType ? `(${t('wrong fuel type', 'غلط ایندھن')})` : ''}
-                              </option>
-                            ))}
-                          </select>
-                          <Err id={`nozzle_tank_${idx}`} />
-                        </div>
-
-                        <div className="sm:col-span-3">
-                          <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1">
-                            {t('Opening Meter Reading *', 'ابتدائی میٹر ریڈنگ *')}
-                            <span className="text-slate-400 font-normal normal-case">
-                              {t('(number shown on pump display right now)', '(ابھی پمپ ڈسپلے پر دکھائی دینے والا نمبر)')}
-                            </span>
-                          </label>
-                          <input type="number" min="0" value={nz.startReading}
-                            onChange={e => updateNozzle(idx, 'startReading', Number(e.target.value))}
-                            placeholder="125000"
-                            className={`${inputCls(`nozzle_reading_${idx}`)} font-mono`} />
-                          <Err id={`nozzle_reading_${idx}`} />
-                        </div>
+                          return (
+                            <div key={globalNzIdx} className={`p-3 rounded-xl border ${linkedTank ? FUEL_LABELS[linkedTank.fuelType].color : 'border-slate-200 bg-slate-50'}`}>
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono font-black text-xs px-2 py-0.5 rounded bg-white/50 border border-black/10">
+                                    Side {['A','B','C','D'][nIdx]}
+                                  </span>
+                                </div>
+                              </div>
+                              
+                              <div className="space-y-3">
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div>
+                                    <label className="block text-[10px] font-black opacity-70 uppercase mb-1">{t('Nozzle Name', 'نوزل کا نام')}</label>
+                                    <input type="text" value={nz.name} onChange={e => updateNozzle(globalNzIdx, 'name', e.target.value)}
+                                      className="w-full bg-white/80 border-0 rounded p-1.5 text-xs font-bold outline-none focus:ring-1 focus:ring-black/20" />
+                                  </div>
+                                  <div>
+                                    <label className="block text-[10px] font-black opacity-70 uppercase mb-1">{t('Tank Link', 'ٹینک لنک')}</label>
+                                    <select value={nz.tankIndex} onChange={e => updateNozzle(globalNzIdx, 'tankIndex', Number(e.target.value))}
+                                      className={`w-full bg-white/80 border-0 rounded p-1.5 text-xs font-bold outline-none focus:ring-1 focus:ring-black/20 ${errors['nozzle_tank_'+globalNzIdx] ? 'ring-2 ring-red-500' : ''}`}>
+                                      <option value={-1}>— {t('Select', 'منتخب کریں')} —</option>
+                                      {tankInputs.map((tk, ti) => (
+                                        <option key={ti} value={ti}>{FUEL_LABELS[tk.fuelType].emoji} {tk.name}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                </div>
+                                
+                                <div>
+                                  <label className="block text-[10px] font-black opacity-70 uppercase mb-1 flex items-center justify-between">
+                                    <span>{t('Opening Reading', 'ابتدائی ریڈنگ')}</span>
+                                    {errors['nozzle_reading_'+globalNzIdx] && <span className="text-red-500">{errors['nozzle_reading_'+globalNzIdx]}</span>}
+                                  </label>
+                                  <input type="number" min="0" value={nz.startReading} onChange={e => updateNozzle(globalNzIdx, 'startReading', Number(e.target.value))}
+                                    className="w-full bg-white/90 border border-black/5 rounded p-2 text-sm font-mono focus:ring-1 focus:ring-black/20 outline-none" />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   );
@@ -1109,8 +1056,57 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
             </div>
           )}
 
-          {/* ╔══ STEP 6: STAFF ══╗ */}
+                    {/* ╔══ STEP 6: OPENING STOCK ══╗ */}
           {step === 6 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                <Database className="h-5 w-5 text-orange-600" />
+                <h3 className="font-sans text-sm font-black text-slate-900 uppercase tracking-wider">
+                  {t('Opening Stock', 'ابتدائی اسٹاک')}
+                </h3>
+              </div>
+              <p className="text-[10px] text-slate-400 font-sans">
+                {t('Enter the current stock level for each tank.', 'ہر ٹینک کا موجودہ اسٹاک درج کریں۔')}
+              </p>
+
+              <div className="space-y-3">
+                {tankInputs.map((tk, idx) => {
+                  const stock = openingStocks[idx] || 0;
+                  return (
+                    <div key={idx} className={`p-4 rounded-xl border ${FUEL_LABELS[tk.fuelType].color}`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-sans font-bold text-sm flex items-center gap-2">
+                          {FUEL_LABELS[tk.fuelType].emoji} {tk.name}
+                        </span>
+                        <span className="text-[10px] font-black opacity-70 uppercase">
+                          {t('Capacity: ', 'گنجائش: ')} {tk.capacity}
+                        </span>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-[10px] font-black opacity-70 uppercase mb-1">
+                          {t('Opening Stock *', 'ابتدائی اسٹاک *')}
+                        </label>
+                        <input type="number" min="0" max={tk.capacity} value={stock}
+                          onChange={e => setOpeningStocks(prev => ({ ...prev, [idx]: Number(e.target.value) }))}
+                          className={`w-full bg-white border rounded p-2 text-sm font-mono focus:ring-1 focus:ring-black/20 outline-none ${errors['stock_'+idx] ? 'border-red-500' : 'border-black/5'}`} />
+                        {errors['stock_'+idx] && <p className="text-red-500 text-[10px] mt-1">{errors['stock_'+idx]}</p>}
+                        {tk.capacity > 0 && (
+                          <div className="mt-2 h-2 w-full bg-white/50 rounded-full overflow-hidden border border-black/5">
+                            <div className="h-full bg-current rounded-full transition-all"
+                              style={{ width: `${Math.min(100, (stock / tk.capacity) * 100)}%` }} />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ╔══ STEP 7: STAFF ══╗ */}
+          {step === 9 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
@@ -1207,8 +1203,8 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
             </div>
           )}
 
-          {/* ╔══ STEP 7: REVIEW & CONFIRM ══╗ */}
-          {step === 7 && (
+          {/* ╔══ STEP 8: REVIEW & CONFIRM ══╗ */}
+          {step === 9 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
                 <ShieldCheck className="h-5 w-5 text-orange-600" />
@@ -1248,7 +1244,7 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
                           <span>{FUEL_LABELS[tk.fuelType].emoji}</span>
                           <span className="text-slate-600 font-semibold">{tk.name}</span>
                         </div>
-                        <span className="font-mono text-slate-500">{tk.openingStock.toLocaleString()} / {tk.capacity.toLocaleString()}</span>
+                        <span className="font-mono text-slate-500">{(openingStocks[i] || 0).toLocaleString()} / {tk.capacity.toLocaleString()}</span>
                       </div>
                     ))}
                   </div>
@@ -1316,8 +1312,8 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
             </div>
           )}
 
-          {/* ╔══ STEP 8: LAUNCH ══╗ */}
-          {step === 8 && (
+          {/* ╔══ STEP 9: LAUNCH ══╗ */}
+          {step === 9 && (
             <div className="text-center space-y-6 py-6">
               <motion.div
                 initial={{ scale: 0.5, opacity: 0 }}
@@ -1392,3 +1388,4 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
     </motion.div>
   );
 }
+
