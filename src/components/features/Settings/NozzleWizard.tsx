@@ -46,17 +46,17 @@ export default function NozzleWizard({
     currentReading: 100000
   });
 
-  const handleOpenAdd = () => {
+  const handleOpenAdd = (productId?: string) => {
     setEditingNozzle(null);
     setNozzleForm({
       name: 'Nozzle ' + (nozzles.length + 1),
       pumpId: pumps[0]?.id || '',
-      productId: products[0]?.id || '',
-      tankId: tanks[0]?.id || '',
+      productId: productId || products[0]?.id || '',
+      tankId: productId ? (tanks.find(t => t.productId === productId)?.id || '') : (tanks[0]?.id || ''),
       startReading: 150000,
       currentReading: 150000
     });
-    setWizardStep(1);
+    setWizardStep(productId ? 2 : 1);
     setShowForm(true);
   };
 
@@ -176,13 +176,33 @@ export default function NozzleWizard({
           {t('Configure physical dispensers, match with storage tanks and initialize starting meter wheels.', 'پٹرول نوزلز، پمپ پوزیشن اور ابتدائی ڈیجیٹل میٹر تضادات یہاں ترتیب دیں۔')}
         </span>
         {!showForm && (
-          <button
-            onClick={handleOpenAdd}
-            className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-sans text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs whitespace-nowrap"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span>{t('Link Hardware Nozzle', 'نیا نوزل شامل کریں')}</span>
-          </button>
+          <div className="flex flex-wrap gap-2">
+            {products.length > 0 ? (
+              products.map(p => {
+                const isPetrol = p.name.toLowerCase().includes('petrol');
+                const isDiesel = p.name.toLowerCase().includes('diesel');
+                const btnColor = isPetrol ? 'bg-emerald-600 hover:bg-emerald-700' : isDiesel ? 'bg-blue-600 hover:bg-blue-700' : 'bg-orange-600 hover:bg-orange-700';
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => handleOpenAdd(p.id)}
+                    className={`px-3 py-1.5 ${btnColor} text-white font-sans text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs whitespace-nowrap`}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>{t(`Add ${p.name} Nozzle`, `نیا ${p.urduName} نوزل شامل کریں`)}</span>
+                  </button>
+                );
+              })
+            ) : (
+              <button
+                onClick={() => handleOpenAdd()}
+                className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-sans text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs whitespace-nowrap"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>{t('Link Hardware Nozzle', 'نیا نوزل شامل کریں')}</span>
+              </button>
+            )}
+          </div>
         )}
       </div>
 

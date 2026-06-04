@@ -47,11 +47,11 @@ export default function TankWizard({
 
   const [tempDipChart, setTempDipChart] = useState<{ cm: number; liters: number }[]>([]);
 
-  const handleOpenAdd = () => {
+  const handleOpenAdd = (productId?: string) => {
     setEditingTank(null);
     setTankForm({
       name: '',
-      productId: products[0]?.id || '',
+      productId: productId || products[0]?.id || '',
       capacity: 20000,
       safeLevel: 3000,
       criticalLevel: 1000,
@@ -191,13 +191,33 @@ export default function TankWizard({
           {t('Manage and configure physical storage tank units below.', 'اندرونِ زمین پٹرولیم ٹینک اور ڈِپ چارٹ کنفیگریشن یہاں مینیج کریں۔')}
         </span>
         {!showForm && (
-          <button
-            onClick={handleOpenAdd}
-            className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-sans text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs whitespace-nowrap"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span>{t('Add New Tank Unit', 'نیا ٹینک سیٹ اپ کریں')}</span>
-          </button>
+          <div className="flex flex-wrap gap-2">
+            {products.length > 0 ? (
+              products.map(p => {
+                const isPetrol = p.name.toLowerCase().includes('petrol');
+                const isDiesel = p.name.toLowerCase().includes('diesel');
+                const btnColor = isPetrol ? 'bg-emerald-600 hover:bg-emerald-700' : isDiesel ? 'bg-blue-600 hover:bg-blue-700' : 'bg-orange-600 hover:bg-orange-700';
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => handleOpenAdd(p.id)}
+                    className={`px-3 py-1.5 ${btnColor} text-white font-sans text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs whitespace-nowrap`}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>{t(`Add ${p.name} Tank`, `نیا ${p.urduName} ٹینک`)}</span>
+                  </button>
+                );
+              })
+            ) : (
+              <button
+                onClick={() => handleOpenAdd()}
+                className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-sans text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs whitespace-nowrap"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>{t('Add New Tank Unit', 'نیا ٹینک سیٹ اپ کریں')}</span>
+              </button>
+            )}
+          </div>
         )}
       </div>
 
@@ -517,8 +537,8 @@ export default function TankWizard({
                 icon={Database}
                 title={t('No tanks added yet.', 'کوئی ٹینک موجود نہیں ہے۔')}
                 description={t('Add your first tank to get started.', 'کام شروع کرنے کے لیے اپنا پہلا ٹینک شامل کریں۔')}
-                actionLabel={t('+ Add First Tank', '+ پہلا ٹینک شامل کریں')}
-                onAction={handleOpenAdd}
+                actionLabel={products.length > 0 ? t(`+ Add ${products[0].name} Tank`, `+ پہلا ٹینک شامل کریں`) : t('+ Add First Tank', '+ پہلا ٹینک شامل کریں')}
+                onAction={() => handleOpenAdd(products[0]?.id)}
               />
             </div>
           ) : (
