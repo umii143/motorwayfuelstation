@@ -90,6 +90,8 @@ export default function SettingsPanel({
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
 
+  const isLube = activeStationId === 'st_lube';
+
   // Unified outer page Tabs state
   const [activeTab, setActiveTab] = useState<'profile' | 'tariff' | 'tanks' | 'nozzles' | 'accounts' | 'audit'>('profile');
 
@@ -184,13 +186,12 @@ export default function SettingsPanel({
         <div>
           <h2 className="font-sans text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
             <Settings className="h-6 w-6 text-orange-600" />
-            <span>{t('Central Settings & Station Hardware', 'سیٹنگز اور اسٹیشن ہارڈویئر')}</span>
+            <span>{isLube ? t('Lube Business Settings', 'لیوب کاروبار کی ترتیبات') : t('Central Settings & Station Hardware', 'سیٹنگز اور اسٹیشن ہارڈویئر')}</span>
           </h2>
           <p className="font-sans text-xs text-slate-500 mt-1">
-            {t(
-              'Configure fuel storage tanks, establish nozzle mappings, record certified rate changes and adjust station profile variables.',
-              'اسٹوریج ٹینک، نوزل میٹرز، پٹرول ڈیزل کے دفتری ریٹ اور بنیادی سیٹنگز یہاں سے تبدیل کریں۔'
-            )}
+            {isLube
+              ? t('Configure your lube shop profile, manage bank accounts, staff roles, and business preferences.', 'لیوب دکان کی پروفائل، بینک اکاؤنٹس، اسٹاف کردار اور کاروباری ترجیحات یہاں سے تبدیل کریں۔')
+              : t('Configure fuel storage tanks, establish nozzle mappings, record certified rate changes and adjust station profile variables.', 'اسٹوریج ٹینک، نوزل میٹرز، پٹرول ڈیزل کے دفتری ریٹ اور بنیادی سیٹنگز یہاں سے تبدیل کریں۔')}
           </p>
         </div>
       </div>
@@ -198,13 +199,13 @@ export default function SettingsPanel({
       {/* HORIZONTAL TABS NAVIGATION BAR */}
       <div className="flex flex-wrap items-center gap-1 border-b border-slate-200 pb-0.5 select-none">
         {[
-          { id: 'profile', label: t('🔑 Central Profile', '🔑 دفتری معلومات') },
-          { id: 'tariff', label: t('⛽ Pricing Manager', '⛽ فیول ریٹ لاگ') },
-          { id: 'tanks', label: t('🛢️ Storage Tanks', '🛢️ اسٹوریج ٹینکس') },
-          { id: 'nozzles', label: t('🔌 Nozzles Setup', '🔌 نوزل میٹرز') },
-          { id: 'accounts', label: t('🏦 Ledger Accounts', '🏦 پے منٹ اکاؤنٹس') },
-          { id: 'audit', label: t('🛡️ System Audit Logs', '🛡️ مرکزی آڈٹ لاگ') }
-        ].map(tab => (
+          { id: 'profile', label: t('🔑 Central Profile', '🔑 دفتری معلومات'), show: true },
+          { id: 'tariff', label: t('⛽ Pricing Manager', '⛽ فیول ریٹ لاگ'), show: !isLube },
+          { id: 'tanks', label: t('🛢️ Storage Tanks', '🛢️ اسٹوریج ٹینکس'), show: !isLube },
+          { id: 'nozzles', label: t('🔌 Nozzles Setup', '🔌 نوزل میٹرز'), show: !isLube },
+          { id: 'accounts', label: t('🏦 Ledger Accounts', '🏦 پے منٹ اکاؤنٹس'), show: true },
+          { id: 'audit', label: t('🛡️ System Audit Logs', '🛡️ مرکزی آڈٹ لاگ'), show: true }
+        ].filter(tab => tab.show).map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}

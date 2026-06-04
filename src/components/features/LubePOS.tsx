@@ -522,7 +522,7 @@ export default function LubePOS({
                           {formatCurrency(product.rate, settings)}
                         </span>
                       </div>
-                      <span className={`w-fit rounded-lg sm:rounded-xl px-2 py-1 sm:px-3 sm:py-1.5 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.16em] shadow-sm backdrop-blur-md ${
+                      <span className={`w-fit whitespace-nowrap rounded-lg sm:rounded-xl px-2 py-1 sm:px-3 sm:py-1.5 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.16em] shadow-sm backdrop-blur-md ${
                         product.currentStock > 10 ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' :
                         product.currentStock > 0 ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20' :
                         'bg-rose-500/10 text-rose-500 border border-rose-500/20'
@@ -539,8 +539,8 @@ export default function LubePOS({
         </div>
 
         {/* Right Panel - Cart */}
-        <div className="space-y-6">
-          <div className="sticky top-6 rounded-[2.5rem] border border-white/80 bg-white/60 p-8 shadow-[0_8px_40px_rgb(0,0,0,0.06)] backdrop-blur-3xl relative overflow-hidden">
+        <div className="space-y-4">
+          <div className="sticky top-4 rounded-[2rem] sm:rounded-[2.5rem] border border-white/80 bg-white/60 p-4 sm:p-6 shadow-[0_8px_40px_rgb(0,0,0,0.06)] backdrop-blur-3xl relative overflow-hidden">
             <div className="absolute top-0 right-0 h-40 w-40 -translate-y-1/2 translate-x-1/2 rounded-full bg-blue-400/10 blur-3xl" />
             
             <div className="relative z-10 mb-8 flex items-center gap-4 border-b border-white pb-6">
@@ -580,7 +580,7 @@ export default function LubePOS({
                     <input
                       value={vehicleNo}
                       onChange={(e) => setVehicleNo(e.target.value)}
-                      placeholder={t('Optional', 'اختیاری')}
+                      placeholder={t('e.g. LEB-1234', 'مثال: LEB-1234')}
                       className="w-full rounded-2xl border border-white bg-white/70 px-4 py-3 text-sm font-bold text-slate-700 placeholder-slate-400 shadow-inner backdrop-blur-md focus:border-blue-400 focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-blue-500/10 transition-all"
                     />
                   </div>
@@ -611,7 +611,7 @@ export default function LubePOS({
                     <input
                       value={walkInName}
                       onChange={(e) => setWalkInName(e.target.value)}
-                      placeholder={t('Optional', 'اختیاری')}
+                      placeholder="Umar Ali"
                       className="w-full rounded-2xl border border-white bg-white/70 px-4 py-3 text-sm font-bold text-slate-700 placeholder-slate-400 shadow-inner backdrop-blur-md focus:border-blue-400 focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-blue-500/10 transition-all"
                     />
                   </div>
@@ -696,21 +696,21 @@ export default function LubePOS({
 
               {/* Payment Details */}
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                  <div className="col-span-2 sm:col-span-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
                     <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">
                       {t('Payment Mode', 'ادائیگی کا طریقہ')}
                     </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 h-full">
-                      <button type="button" onClick={() => setPaymentMode('cash')} className={`py-1.5 px-1 text-[10px] sm:text-[11px] font-bold rounded-xl border transition-all ${paymentMode === 'cash' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white/70 text-slate-600 border-slate-200 hover:border-blue-200 hover:bg-white'}`}>{t('Cash', 'نقد')}</button>
-                      <button type="button" onClick={() => setPaymentMode('bank')} className={`py-1.5 px-1 text-[10px] sm:text-[11px] font-bold rounded-xl border transition-all ${paymentMode === 'bank' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white/70 text-slate-600 border-slate-200 hover:border-blue-200 hover:bg-white'}`}>{t('Bank', 'بینک')}</button>
-                      <button type="button" onClick={() => setPaymentMode('digital')} className={`py-1.5 px-1 text-[10px] sm:text-[11px] font-bold rounded-xl border transition-all ${paymentMode === 'digital' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white/70 text-slate-600 border-slate-200 hover:border-blue-200 hover:bg-white'}`}>{t('Digital', 'ڈیجیٹل')}</button>
-                      <button type="button" onClick={() => setPaymentMode('credit')} className={`py-1.5 px-1 text-[10px] sm:text-[11px] font-bold rounded-xl border transition-all ${paymentMode === 'credit' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white/70 text-slate-600 border-slate-200 hover:border-blue-200 hover:bg-white'}`}>{t('Credit', 'ادھار')}</button>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      <button type="button" onClick={() => setPaymentMode('cash')} className={`py-2 px-1 text-[11px] font-bold rounded-xl border transition-all ${paymentMode === 'cash' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white/70 text-slate-600 border-slate-200 hover:border-blue-200 hover:bg-white'}`}>{t('Cash', 'نقد')}</button>
+                      <button type="button" onClick={() => setPaymentMode('bank')} className={`py-2 px-1 text-[11px] font-bold rounded-xl border transition-all ${paymentMode === 'bank' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white/70 text-slate-600 border-slate-200 hover:border-blue-200 hover:bg-white'}`}>{t('Bank', 'بینک')}</button>
+                      <button type="button" onClick={() => setPaymentMode('digital')} className={`py-2 px-1 text-[11px] font-bold rounded-xl border transition-all ${paymentMode === 'digital' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white/70 text-slate-600 border-slate-200 hover:border-blue-200 hover:bg-white'}`}>{t('Digital', 'ڈیجیٹل')}</button>
+                      <button type="button" onClick={() => setPaymentMode('credit')} className={`py-2 px-1 text-[11px] font-bold rounded-xl border transition-all ${paymentMode === 'credit' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white/70 text-slate-600 border-slate-200 hover:border-blue-200 hover:bg-white'}`}>{t('Credit', 'ادھار')}</button>
                     </div>
                   </div>
                   <div>
                     <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">
-                      {t('Received', 'وصول شدہ رقم')}
+                      {t('Received Amount', 'وصول شدہ رقم')}
                     </label>
                     <input
                       value={amountReceived}
@@ -748,30 +748,38 @@ export default function LubePOS({
                   </div>
                 )}
                 
-                <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                  <div className="flex gap-2">
-                    <div className="flex-1">
-                      <input
-                        value={discount}
-                        onChange={(e) => setDiscount(e.target.value)}
-                        placeholder={t('Discount amt', 'ڈسکاؤنٹ')}
-                        className="w-full rounded-2xl border border-white bg-white/70 px-4 py-3 text-sm font-bold text-slate-700 placeholder-slate-400 shadow-inner backdrop-blur-md focus:border-blue-400 focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-blue-500/10 transition-all"
-                      />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">
+                      {t('Discount', 'ڈسکاؤنٹ')}
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <input
+                          value={discount}
+                          onChange={(e) => setDiscount(e.target.value)}
+                          placeholder="0.00"
+                          className="w-full rounded-2xl border border-white bg-white/70 px-3 py-3 text-sm font-bold text-slate-700 placeholder-slate-400 shadow-inner backdrop-blur-md focus:border-blue-400 focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-blue-500/10 transition-all"
+                        />
+                      </div>
+                      <select
+                        value={discountType}
+                        onChange={(e) => setDiscountType(e.target.value as 'amount' | 'percentage')}
+                        className="w-[4.5rem] appearance-none rounded-2xl border border-white bg-white/70 px-2 py-3 text-sm font-bold text-slate-700 shadow-inner backdrop-blur-md focus:border-blue-400 focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-blue-500/10 transition-all text-center"
+                      >
+                        <option value="amount">Rs</option>
+                        <option value="percentage">%</option>
+                      </select>
                     </div>
-                    <select
-                      value={discountType}
-                      onChange={(e) => setDiscountType(e.target.value as 'amount' | 'percentage')}
-                      className="w-[4.5rem] appearance-none rounded-2xl border border-white bg-white/70 px-2 py-3 text-sm font-bold text-slate-700 shadow-inner backdrop-blur-md focus:border-blue-400 focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-blue-500/10 transition-all text-center"
-                    >
-                      <option value="amount">Rs</option>
-                      <option value="percentage">%</option>
-                    </select>
                   </div>
                   <div>
+                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">
+                      {t('Tax Amount', 'ٹیکس')}
+                    </label>
                     <input
                       value={tax}
                       onChange={(e) => setTax(e.target.value)}
-                      placeholder={t('Tax / Service', 'ٹیکس')}
+                      placeholder="0.00"
                       className="w-full rounded-2xl border border-white bg-white/70 px-4 py-3 text-sm font-bold text-slate-700 placeholder-slate-400 shadow-inner backdrop-blur-md focus:border-blue-400 focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-blue-500/10 transition-all"
                     />
                   </div>

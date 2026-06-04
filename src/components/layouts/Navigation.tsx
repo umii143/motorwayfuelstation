@@ -45,12 +45,17 @@ import {
   Moon,
   Bell,
   HelpCircle,
-  Search
+  Search,
+  Package,
+  AlertTriangle,
+  Clock,
+  CheckCircle2
 } from 'lucide-react';
 import { GlobalSettings, Station } from '../../types';
 import { t as translate } from '../../lib/translations';
 import NavigationBrand from './NavigationBrand';
 import HelpGuideModal from '../ui/HelpGuideModal';
+import { useStation } from '../../contexts/StationContext';
 
 interface NavigationProps {
   activeView: string;
@@ -103,34 +108,39 @@ export default function Navigation({
 
   const isLube = activeStationId === 'st_lube';
 
-  const menuItems = [
-    { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', urdu: 'ڈیش بورڈ' },
-    { id: isLube ? 'lube_pos' : 'shift_wizard', icon: RefreshCw, label: isLube ? 'Lube POS Terminal' : 'Shift Wizard', urdu: isLube ? 'لیوب پی او ایس' : 'شفٹ وزرڈ' },
-    { id: 'price_management', icon: DollarSign, label: 'Price Management', urdu: 'قیمتیں اور نرخ' },
-    { id: 'ledger', icon: BookOpen, label: 'Accounts & Billing', urdu: 'کھاتہ اور بلنگ' },
-    { id: 'loyalty', icon: Gift, label: 'Loyalty & Rewards', urdu: 'لائلٹی پروگرام' },
-    { id: 'customers', icon: Users, label: 'Customers Khata', urdu: 'گاہکوں کا کھاتہ' },
-    { id: 'suppliers', icon: Factory, label: isLube ? 'Suppliers' : 'Suppliers Depot', urdu: isLube ? 'سپلائرز' : 'سپلائرز ڈپو' },
-    { id: 'fleet', icon: Truck, label: 'Fleet Accounts', urdu: 'فلیٹ منیجمنٹ' },
-    { id: 'tanker_delivery', icon: ArrowRightLeft, label: isLube ? 'Supplier Deliveries' : 'Tankers & Delivery', urdu: isLube ? 'سپلائر ڈیلیوری' : 'ٹینکر شیڈول' },
-    { id: 'inventory', icon: isLube ? Wrench : Fuel, label: isLube ? 'Product & Parts Stock' : 'Fuel Stock', urdu: isLube ? 'پروڈکٹ اسٹاک' : 'فیول اسٹاک' },
-    { id: 'loss_prevention', icon: ShieldAlert, label: 'Loss Prevention', urdu: 'نقصان کی روک تھام' },
-    { id: 'maintenance', icon: Wrench, label: 'Maintenance & Assets', urdu: 'مرمت' },
-    { id: 'bank_cash', icon: Landmark, label: 'Bank Cash', urdu: 'بینک کیش' },
-    { id: 'digital_cash', icon: Smartphone, label: 'Digital Cash', urdu: 'ڈیجیٹل کیش' },
-    { id: 'discounts', icon: Tag, label: 'Discounts', urdu: 'ڈسکاؤنٹس' },
-    { id: 'expenses', icon: TrendingDown, label: 'Expenses', urdu: 'اخراجات' },
-    { id: 'staff', icon: Users2, label: 'Staff & Payroll', urdu: 'اسٹاف اور تنخواہ' },
-    { id: 'bi_analytics', icon: LineChart, label: 'BI Analytics', urdu: 'بی آئی اینالٹکس' },
-    { id: 'demand_forecast', icon: BarChart3, label: 'Demand Forecast', urdu: 'ڈیمانڈ' },
-    { id: 'erp_integration', icon: Link, label: 'ERP Connect', urdu: 'ای آر پی کنیکٹ' },
-    { id: 'cctv', icon: Camera, label: 'CCTV Security', urdu: 'سی سی ٹی وی' },
-    { id: 'api_gateway', icon: Network, label: 'API Gateway', urdu: 'اے پی آئی گیٹ وے' },
-    { id: 'reports', icon: FileBarChart, label: 'Advanced Reports (104)', urdu: 'ایڈوانسڈ رپورٹس' },
-    { id: 'settings', icon: Settings, label: 'Settings', urdu: 'ترتیبات' },
-    { id: 'security_hub', icon: Shield, label: 'Security & Roles', urdu: 'سیکیورٹی ہب' },
-    { id: 'subscription_hub', icon: CreditCard, label: 'Subscription & Billing', urdu: 'بلنگ اور پلان' }
+  const allMenuItems = [
+    { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', urdu: 'ڈیش بورڈ', showInLube: true },
+    { id: isLube ? 'lube_pos' : 'shift_wizard', icon: RefreshCw, label: isLube ? 'Lube POS Terminal' : 'Shift Wizard', urdu: isLube ? 'لیوب پی او ایس' : 'شفٹ وزرڈ', showInLube: true },
+    { id: 'price_management', icon: DollarSign, label: 'Price Management', urdu: 'قیمتیں اور نرخ', showInLube: false },
+    { id: 'ledger', icon: BookOpen, label: 'Accounts & Billing', urdu: 'کھاتہ اور بلنگ', showInLube: true },
+    { id: 'loyalty', icon: Gift, label: 'Loyalty & Rewards', urdu: 'لائلٹی پروگرام', showInLube: true },
+    { id: 'customers', icon: Users, label: 'Customers Khata', urdu: 'گاہکوں کا کھاتہ', showInLube: true },
+    { id: 'suppliers', icon: Factory, label: isLube ? 'Suppliers' : 'Suppliers Depot', urdu: isLube ? 'سپلائرز' : 'سپلائرز ڈپو', showInLube: true },
+    { id: 'fleet', icon: Truck, label: 'Fleet Accounts', urdu: 'فلیٹ منیجمنٹ', showInLube: false },
+    { id: 'tanker_delivery', icon: ArrowRightLeft, label: isLube ? 'Supplier Deliveries' : 'Tankers & Delivery', urdu: isLube ? 'سپلائر ڈیلیوری' : 'ٹینکر شیڈول', showInLube: false },
+    { id: 'inventory', icon: isLube ? Wrench : Fuel, label: isLube ? 'Product & Parts Stock' : 'Fuel Stock', urdu: isLube ? 'پروڈکٹ اسٹاک' : 'فیول اسٹاک', showInLube: true },
+    { id: 'loss_prevention', icon: ShieldAlert, label: 'Loss Prevention', urdu: 'نقصان کی روک تھام', showInLube: false },
+    { id: 'maintenance', icon: Wrench, label: 'Maintenance & Assets', urdu: 'مرمت', showInLube: true },
+    { id: 'bank_cash', icon: Landmark, label: 'Bank Cash', urdu: 'بینک کیش', showInLube: true },
+    { id: 'digital_cash', icon: Smartphone, label: 'Digital Cash', urdu: 'ڈیجیٹل کیش', showInLube: true },
+    { id: 'discounts', icon: Tag, label: 'Discounts', urdu: 'ڈسکاؤنٹس', showInLube: true },
+    { id: 'expenses', icon: TrendingDown, label: 'Expenses', urdu: 'اخراجات', showInLube: true },
+    { id: 'staff', icon: Users2, label: 'Staff & Payroll', urdu: 'اسٹاف اور تنخواہ', showInLube: true },
+    { id: 'bi_analytics', icon: LineChart, label: 'BI Analytics', urdu: 'بی آئی اینالٹکس', showInLube: true },
+    { id: 'demand_forecast', icon: BarChart3, label: 'Demand Forecast', urdu: 'ڈیمانڈ', showInLube: true },
+    { id: 'erp_integration', icon: Link, label: 'ERP Connect', urdu: 'ای آر پی کنیکٹ', showInLube: true },
+    { id: 'cctv', icon: Camera, label: 'CCTV Security', urdu: 'سی سی ٹی وی', showInLube: true },
+    { id: 'api_gateway', icon: Network, label: 'API Gateway', urdu: 'اے پی آئی گیٹ وے', showInLube: true },
+    { id: 'reports', icon: FileBarChart, label: isLube ? 'Lube Reports' : 'Advanced Reports (104)', urdu: isLube ? 'لیوب رپورٹس' : 'ایڈوانسڈ رپورٹس', showInLube: true },
+    { id: 'settings', icon: Settings, label: 'Settings', urdu: 'ترتیبات', showInLube: true },
+    { id: 'security_hub', icon: Shield, label: 'Security & Roles', urdu: 'سیکیورٹی ہب', showInLube: true },
+    { id: 'subscription_hub', icon: CreditCard, label: 'Subscription & Billing', urdu: 'بلنگ اور پلان', showInLube: true }
   ];
+
+  // Filter menu items based on business type
+  const menuItems = isLube
+    ? allMenuItems.filter(item => item.showInLube)
+    : allMenuItems;
 
   const toggleLanguage = () => {
     const languages: ('en' | 'ur' | 'ar' | 'es' | 'zh')[] = ['en', 'ur', 'ar', 'es', 'zh'];
@@ -143,14 +153,76 @@ export default function Navigation({
 
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
+  // NEW CONTEXT & STATES
+  const { products, customers, staff } = useStation();
+  const [isThemeOpen, setIsThemeOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [globalSearch, setGlobalSearch] = useState('');
+
+  // 1. Theme Logic
+  const availableThemes = [
+    { id: 'light', icon: Sun, label: 'Light', urdu: 'لائٹ' },
+    { id: 'dark', icon: Moon, label: 'Dark', urdu: 'ڈارک' },
+    { id: 'blue', icon: LayoutDashboard, label: 'Ocean Blue', urdu: 'نیلا' },
+    { id: 'emerald', icon: Factory, label: 'Emerald', urdu: 'سبز' },
+    { id: 'orange', icon: TrendingDown, label: 'Sunset Orange', urdu: 'نارنجی' },
+  ];
+
+  const handleSelectTheme = (themeId: string) => {
+    onSettingsUpdate({ ...settings, theme: themeId as any });
+    setIsThemeOpen(false);
+  };
+
+  // 2. Notification Logic
+  const notifications = React.useMemo(() => {
+    const alerts: any[] = [];
+    const lowStockProducts = products.filter(p => p.currentStock <= p.minStock);
+    const highBalanceCustomers = customers.filter(c => c.balance > (c.creditLimit || 50000));
+    
+    lowStockProducts.forEach(p => {
+      alerts.push({
+        id: `stock_${p.id}`,
+        type: 'warning',
+        title: t('Low Stock Alert', 'اسٹاک کم ہے'),
+        message: `${t(p.name, p.urduName)}: ${p.currentStock} ${p.unit} ${t('remaining', 'باقی')}`,
+        icon: Package
+      });
+    });
+
+    highBalanceCustomers.forEach(c => {
+      alerts.push({
+        id: `credit_${c.id}`,
+        type: 'danger',
+        title: t('High Credit Balance', 'زیادہ ادھار'),
+        message: `${t(c.name, c.urduName)}: ${c.balance.toLocaleString()}`,
+        icon: AlertTriangle
+      });
+    });
+
+    return alerts;
+  }, [products, customers, settings.language]);
+
+  // 3. Search Logic
+  const searchResults = React.useMemo(() => {
+    if (!globalSearch || globalSearch.length < 2) return null;
+    const query = globalSearch.toLowerCase();
+    return {
+      customers: customers.filter(c => c.name.toLowerCase().includes(query) || c.phone.includes(query)).slice(0, 4),
+      products: products.filter(p => p.name.toLowerCase().includes(query) || (p.urduName && p.urduName.includes(query))).slice(0, 4),
+      staff: staff.filter(s => s.name.toLowerCase().includes(query) || (s.urduName && s.urduName.includes(query))).slice(0, 4)
+    };
+  }, [globalSearch, customers, products, staff]);
+
+  const handleSearchSelect = (view: string) => {
+    onViewChange(view);
+    setGlobalSearch('');
+    setIsSearchOpen(false);
+  };
+
   const handleItemClick = (id: string) => {
     onViewChange(id);
     setMobileMenuOpen(false);
-  };
-
-  const toggleTheme = () => {
-    const newTheme = settings.theme === 'dark' ? 'light' : 'dark';
-    onSettingsUpdate({ ...settings, theme: newTheme });
   };
 
   // Open add Modal
@@ -414,23 +486,172 @@ export default function Navigation({
             </span>
           </button>
           
-          <button
-            onClick={toggleTheme}
-            className="rounded-lg border border-slate-200 bg-white p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors cursor-pointer shadow-xs"
-            title={settings.theme === 'dark' ? t('Switch to Light Mode', 'لائٹ موڈ') : t('Switch to Dark Mode', 'ڈارک موڈ')}
-          >
-            {settings.theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </button>
+          {/* Search Dropdown Trigger */}
+          <div className="relative hidden md:block z-[60]">
+            <button
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/50 px-3 py-1.5 sm:p-2 text-slate-500 hover:bg-white hover:text-orange-600 hover:border-orange-200 transition-all cursor-pointer shadow-xs w-48 xl:w-64"
+            >
+              <Search className="h-4 w-4" />
+              <span className="text-xs font-semibold">{t("Search global...", "تلاش کریں...")}</span>
+              <kbd className="ml-auto hidden rounded border border-slate-200 bg-white px-1.5 font-mono text-[10px] font-bold text-slate-400 sm:inline-block">Ctrl K</kbd>
+            </button>
 
-          <button
-            className="relative rounded-lg border border-slate-200 bg-white p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors cursor-pointer shadow-xs"
-            title={t('Notifications', 'اطلاعات')}
-          >
-            <Bell className="h-4 w-4" />
-            <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-[8px] font-bold text-white">
-              3
-            </span>
-          </button>
+            {isSearchOpen && (
+              <div className="absolute top-full right-0 mt-2 w-80 lg:w-96 rounded-2xl bg-white p-3 shadow-2xl border border-slate-100 z-50 animate-in fade-in slide-in-from-top-2">
+                <div className="relative mb-3">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <input
+                    autoFocus
+                    type="text"
+                    value={globalSearch}
+                    onChange={(e) => setGlobalSearch(e.target.value)}
+                    placeholder={t("Type to search...", "تلاش کے لیے ٹائپ کریں...")}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm font-semibold text-slate-800 focus:border-orange-500 focus:bg-white focus:outline-hidden"
+                  />
+                </div>
+                <div className="max-h-72 overflow-y-auto">
+                  {searchResults ? (
+                    <div className="space-y-3">
+                      {searchResults.customers.length > 0 && (
+                        <div>
+                          <div className="px-2 mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">{t('Customers', 'گاہک')}</div>
+                          {searchResults.customers.map(c => (
+                            <button key={c.id} onClick={() => handleSearchSelect('customers')} className="flex w-full items-center justify-between rounded-lg px-3 py-2 hover:bg-orange-50 transition-colors cursor-pointer">
+                              <span className="text-sm font-bold text-slate-700">{c.name}</span>
+                              <span className="text-xs font-semibold text-slate-500">{c.phone}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {searchResults.products.length > 0 && (
+                        <div>
+                          <div className="px-2 mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">{t('Products', 'پروڈکٹس')}</div>
+                          {searchResults.products.map(p => (
+                            <button key={p.id} onClick={() => handleSearchSelect('inventory')} className="flex w-full items-center justify-between rounded-lg px-3 py-2 hover:bg-orange-50 transition-colors cursor-pointer">
+                              <span className="text-sm font-bold text-slate-700">{t(p.name, p.urduName)}</span>
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${p.currentStock > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                                {p.currentStock} {p.unit}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {searchResults.staff.length > 0 && (
+                        <div>
+                          <div className="px-2 mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">{t('Staff', 'عملہ')}</div>
+                          {searchResults.staff.map(s => (
+                            <button key={s.id} onClick={() => handleSearchSelect('staff')} className="flex w-full items-center justify-between rounded-lg px-3 py-2 hover:bg-orange-50 transition-colors cursor-pointer">
+                              <span className="text-sm font-bold text-slate-700">{t(s.name, s.urduName)}</span>
+                              <span className="text-xs font-semibold text-slate-500">{t(s.role, s.role)}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {searchResults.customers.length === 0 && searchResults.products.length === 0 && searchResults.staff.length === 0 && (
+                        <div className="py-8 text-center text-sm font-semibold text-slate-400">
+                          {t("No results found.", "کوئی نتیجہ نہیں ملا۔")}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="py-8 text-center text-sm font-semibold text-slate-400">
+                      {t("Type at least 2 characters...", "تلاش کے لیے کم از کم 2 حروف ٹائپ کریں۔")}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Theme Selector Dropdown */}
+          <div className="relative z-[60]">
+            <button
+              onClick={() => setIsThemeOpen(!isThemeOpen)}
+              className="rounded-lg border border-slate-200 bg-white p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors cursor-pointer shadow-xs"
+              title={t('Switch Theme', 'تھیم تبدیل کریں')}
+            >
+              {settings.theme === 'light' ? <Sun className="h-4 w-4" /> : 
+               settings.theme === 'dark' ? <Moon className="h-4 w-4" /> : 
+               <LayoutDashboard className="h-4 w-4" />}
+            </button>
+
+            {isThemeOpen && (
+              <div className="absolute right-0 top-full mt-2 w-48 rounded-2xl bg-white p-2 shadow-2xl border border-slate-100 z-50 animate-in fade-in slide-in-from-top-2">
+                <div className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  {t('Select Theme', 'تھیم منتخب کریں')}
+                </div>
+                {availableThemes.map(theme => (
+                  <button
+                    key={theme.id}
+                    onClick={() => handleSelectTheme(theme.id)}
+                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition-colors cursor-pointer ${
+                      settings.theme === theme.id ? 'bg-orange-50 text-orange-600' : 'text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <theme.icon className="h-4 w-4" />
+                    <span>{t(theme.label, theme.urdu)}</span>
+                    {settings.theme === theme.id && <CheckCircle2 className="h-4 w-4 ml-auto" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Notifications Dropdown */}
+          <div className="relative z-[60]">
+            <button
+              onClick={() => setIsNotifOpen(!isNotifOpen)}
+              className="relative rounded-lg border border-slate-200 bg-white p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors cursor-pointer shadow-xs"
+              title={t('Notifications', 'اطلاعات')}
+            >
+              <Bell className="h-4 w-4" />
+              {notifications.length > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 sm:h-4 sm:w-4 items-center justify-center rounded-full bg-red-500 text-[9px] sm:text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
+                  {notifications.length > 9 ? '9+' : notifications.length}
+                </span>
+              )}
+            </button>
+
+            {isNotifOpen && (
+              <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 lg:w-96 rounded-2xl bg-white shadow-2xl border border-slate-100 z-50 animate-in fade-in slide-in-from-top-2 overflow-hidden flex flex-col">
+                <div className="flex items-center justify-between bg-slate-50 px-4 py-3 border-b border-slate-100">
+                  <span className="font-sans text-sm font-black text-slate-900">{t('Notifications', 'اطلاعات')}</span>
+                  <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-600">
+                    {notifications.length} {t('New', 'نئی')}
+                  </span>
+                </div>
+                <div className="max-h-80 overflow-y-auto p-2">
+                  {notifications.length > 0 ? (
+                    <div className="space-y-1">
+                      {notifications.map(notif => (
+                        <div key={notif.id} className="flex gap-3 rounded-xl p-3 hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+                          <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${notif.type === 'danger' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}`}>
+                            <notif.icon className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-bold text-slate-800">{notif.title}</div>
+                            <div className="text-xs font-semibold text-slate-500 mt-0.5 leading-snug">{notif.message}</div>
+                            <div className="text-[10px] font-bold text-slate-400 mt-1 flex items-center gap-1">
+                              <Clock className="h-3 w-3" /> {t('Just now', 'ابھی ابھی')}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-500 mb-3">
+                        <CheckCircle2 className="h-6 w-6" />
+                      </div>
+                      <h4 className="text-sm font-bold text-slate-900">{t("All caught up!", "سب کچھ ٹھیک ہے!")}</h4>
+                      <p className="text-xs font-semibold text-slate-500 mt-1">{t("You don't have any pending alerts or notifications.", "آپ کے پاس کوئی زیر التواء انتباہات یا اطلاعات نہیں ہیں۔")}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
 
           <button
             onClick={() => setIsHelpOpen(true)}

@@ -29,6 +29,7 @@ import { useStation } from '../../contexts/StationContext';
 
 interface ExpensesProps {
   settings: GlobalSettings;
+  activeStationId: string;
   shifts: Shift[];
   onAddExpenseShift?: (expense: ExpenseEntry) => void;
   // Dynamic direct standalone expenses state persistence if shifts are not running
@@ -38,6 +39,7 @@ interface ExpensesProps {
 
 export default function Expenses({
   settings,
+  activeStationId,
   shifts,
   standaloneExpenses,
   onAddStandaloneExpense
@@ -72,11 +74,8 @@ export default function Expenses({
   const [formDescription, setFormDescription] = useState('');
   const [formPaidFrom, setFormPaidFrom] = useState<'cash' | 'bank'>('cash');
 
-  // Detect lube business mode
-  const isLube = !shifts.some(s => {
-    // If there are no shifts at all, or if shifts exist but no fuel-type products, it's lube
-    return Object.keys(s.openingReadings || {}).length > 0;
-  }) || shifts.length === 0;
+  // Single source of truth: use activeStationId, not shift-existence heuristic
+  const isLube = activeStationId === 'st_lube';
 
   // Categories list helper — lube-appropriate labels
   const expenseCategories = isLube ? [

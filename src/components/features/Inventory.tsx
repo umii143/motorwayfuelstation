@@ -33,6 +33,7 @@ import { Product, StockTransaction, Supplier, GlobalSettings, Tank, RateHistoryE
 
 interface InventoryProps {
   settings: GlobalSettings;
+  activeStationId: string;
   products: Product[];
   suppliers: Supplier[];
   stockTransactions: StockTransaction[];
@@ -47,6 +48,7 @@ interface InventoryProps {
 
 export default function Inventory({
   settings,
+  activeStationId,
   products,
   suppliers,
   stockTransactions,
@@ -62,8 +64,8 @@ export default function Inventory({
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
 
-  // Detect if this is a Lube-only business (no fuel products)
-  const isLube = products.some(p => p.type === 'lube') && !products.some(p => p.type === 'fuel');
+  // Single source of truth: use activeStationId, not product-type heuristic
+  const isLube = activeStationId === 'st_lube';
 
   // Filter States
   const [activeTab, setActiveTab] = useState<'inventory' | 'tanks_calibration' | 'pricing_logs'>('inventory');

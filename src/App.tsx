@@ -154,9 +154,14 @@ function MainApp() {
     closeConfirm
   } = useStation();
 
-  const isLubeBusiness =
-    products.some((product) => product.type === 'lube') &&
-    !products.some((product) => product.type === 'fuel');
+  // Single source of truth — always use activeStationId, never product sniffing
+  const isLubeBusiness = activeStationId === 'st_lube';
+
+  // Reset navigation to dashboard whenever the user switches stations
+  // This prevents stale views (e.g. 'lube_pos') appearing on the wrong business
+  React.useEffect(() => {
+    setActiveView('dashboard');
+  }, [activeStationId]);
 
   // ==========================================
   // ROUTING VIEW CONTROLS
@@ -168,6 +173,7 @@ function MainApp() {
         return (
           <Dashboard
             settings={settings}
+            activeStationId={activeStationId}
             shifts={shifts}
             products={products}
             customers={customers}
@@ -223,6 +229,11 @@ function MainApp() {
         );
 
       case 'lube_pos':
+        // Guard: Only Lube stations can access LubePOS — redirect Fuel stations to dashboard
+        if (!isLubeBusiness) {
+          setActiveView('dashboard');
+          return null;
+        }
         return (
           <LubePOS
             settings={settings}
@@ -241,6 +252,7 @@ function MainApp() {
         return (
           <Customers
             settings={settings}
+            activeStationId={activeStationId}
             customers={customers}
             shifts={shifts}
             products={products}
@@ -308,6 +320,7 @@ function MainApp() {
         return (
           <Inventory
             settings={settings}
+            activeStationId={activeStationId}
             products={products}
             suppliers={suppliers}
             stockTransactions={stockTxns}
@@ -325,6 +338,7 @@ function MainApp() {
         return (
           <Expenses
             settings={settings}
+            activeStationId={activeStationId}
             shifts={shifts}
             standaloneExpenses={standaloneExpenses}
             onAddStandaloneExpense={handleAddStandaloneExpense}

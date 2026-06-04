@@ -32,6 +32,7 @@ import { t as translate } from '../../lib/translations';
 
 interface CustomersProps {
   settings: GlobalSettings;
+  activeStationId: string;
   customers: Customer[];
   shifts: Shift[];
   products: Product[];
@@ -46,6 +47,7 @@ interface CustomersProps {
 
 export default function Customers({
   settings,
+  activeStationId,
   customers,
   shifts,
   products,
@@ -59,9 +61,8 @@ export default function Customers({
 }: CustomersProps) {
   const { showToast, showConfirm, showAlert } = useStation();
   const t = (en: string, ur: string) => translate(en, ur, settings);
-  const isLubeBusiness =
-    products.some((product) => product.type === 'lube') &&
-    !products.some((product) => product.type === 'fuel');
+  // Single source of truth: use activeStationId, not product-type heuristic
+  const isLubeBusiness = activeStationId === 'st_lube';
 
   // States
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);

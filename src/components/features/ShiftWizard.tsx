@@ -141,6 +141,22 @@ export default function ShiftWizard({
   const activeShift = useMemo(() => {
     return shifts.find((s) => s.status === "active");
   }, [shifts]);
+
+  // Calculate effective customer balances including current active shift entries
+  const effectiveCustomers = useMemo(() => {
+    return customers.map((c) => {
+      let activeBal = c.balance || 0;
+      if (activeShift) {
+        activeShift.debitEntries.forEach((d) => {
+          if (d.customerId === c.id) activeBal += d.amount;
+        });
+        activeShift.recoveryEntries.forEach((r) => {
+          if (r.customerId === c.id) activeBal -= r.amount;
+        });
+      }
+      return { ...c, effectiveBalance: activeBal };
+    });
+  }, [customers, activeShift]);
   const isLubeBusiness = useMemo(
     () =>
       products.some((p) => p.type === "lube") &&
@@ -1788,13 +1804,13 @@ export default function ShiftWizard({
                           <option value="">
                             {t("-- Search Customer --", "-- گاہک کا نام --")}
                           </option>
-                          {customers.map((c) => (
+                          {effectiveCustomers.map((c) => (
                             <option key={c.id} value={c.id}>
                               {settings.language === "en" ? c.name : c.urduName}{" "}
                               (
                               {t(
-                                `Bal: Rs. ${c.balance}`,
-                                `بقایا: ${c.balance} روپے`,
+                                `Bal: Rs. ${c.effectiveBalance}`,
+                                `بقایا: ${c.effectiveBalance} روپے`,
                               )}
                               )
                             </option>
@@ -2026,8 +2042,8 @@ export default function ShiftWizard({
                               "-- بقایا گاہک منتخب کریں --",
                             )}
                           </option>
-                          {customers
-                            .filter((c) => c.balance > 0)
+                          {effectiveCustomers
+                            .filter((c) => c.effectiveBalance > 0)
                             .map((c) => (
                               <option key={c.id} value={c.id}>
                                 {settings.language === "en"
@@ -2035,8 +2051,8 @@ export default function ShiftWizard({
                                   : c.urduName}{" "}
                                 (
                                 {t(
-                                  `Debt: Rs. ${c.balance}`,
-                                  `قرض: ${c.balance} روپے`,
+                                  `Debt: Rs. ${c.effectiveBalance}`,
+                                  `قرض: ${c.effectiveBalance} روپے`,
                                 )}
                                 )
                               </option>
