@@ -63,6 +63,7 @@ interface SettingsProps {
   onUpdateBanks?: any;
   onUpdateProducts?: any;
   onUpdatePumps?: any;
+  initialTab?: 'profile' | 'tariff' | 'tanks' | 'nozzles' | 'accounts' | 'audit';
 }
 
 export default function SettingsPanel({
@@ -84,7 +85,8 @@ export default function SettingsPanel({
   banks,
   onUpdateBanks,
   onUpdateProducts,
-  onUpdatePumps
+  onUpdatePumps,
+  initialTab = 'profile'
 }: SettingsProps) {
   const { showToast, showAlert, showConfirm } = useStation();
   const isUrdu = settings.language === 'ur';
@@ -93,7 +95,13 @@ export default function SettingsPanel({
   const isLube = activeStationId === 'st_lube';
 
   // Unified outer page Tabs state
-  const [activeTab, setActiveTab] = useState<'profile' | 'tariff' | 'tanks' | 'nozzles' | 'accounts' | 'audit'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'tariff' | 'tanks' | 'nozzles' | 'accounts' | 'audit'>(initialTab);
+
+  React.useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
 
   // Business profile inputs
   const [stationName, setStationName] = useState(settings.stationName);

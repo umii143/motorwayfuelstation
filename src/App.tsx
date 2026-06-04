@@ -423,6 +423,11 @@ function MainApp() {
         );
 
       case 'settings':
+      case 'setup_nozzles':
+      case 'setup_tanks':
+      case 'setup_rates':
+      case 'setup_accounts':
+      case 'setup_profile':
         return (
           <SettingsPanel
             activeStationId={activeStationId}
@@ -444,6 +449,14 @@ function MainApp() {
             onUpdateBanks={setBanks}
             onUpdateProducts={setProducts}
             onUpdatePumps={setPumps}
+            initialTab={
+              activeView === 'setup_nozzles' ? 'nozzles' :
+              activeView === 'setup_tanks' ? 'tanks' :
+              activeView === 'setup_rates' ? 'tariff' :
+              activeView === 'setup_accounts' ? 'accounts' :
+              activeView === 'setup_profile' ? 'profile' :
+              'profile'
+            }
           />
         );
 

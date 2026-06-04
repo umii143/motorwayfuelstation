@@ -50,7 +50,9 @@ import {
   Package,
   AlertTriangle,
   Clock,
-  CheckCircle2
+  CheckCircle2,
+  Sliders,
+  Database
 } from 'lucide-react';
 import { GlobalSettings, Station } from '../../types';
 import { t as translate } from '../../lib/translations';
@@ -157,6 +159,7 @@ export default function Navigation({
   // NEW CONTEXT & STATES
   const { products, customers, staff } = useStation();
   const [isThemeOpen, setIsThemeOpen] = useState(false);
+  const [isSetupOpen, setIsSetupOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState('');
@@ -565,6 +568,61 @@ export default function Navigation({
             )}
           </div>
           
+          {/* Setup Wizard Dropdown */}
+          <div className="relative z-[60] shrink-0">
+            <button
+              onClick={() => setIsSetupOpen(!isSetupOpen)}
+              className="rounded-lg border border-slate-200 bg-white p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors cursor-pointer shadow-xs flex items-center justify-center"
+              title={t('Setup Wizards', 'سیٹ اپ وزرڈز')}
+            >
+              <Sliders className="h-4 w-4" />
+            </button>
+
+            {isSetupOpen && (
+              <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white p-2 shadow-2xl border border-slate-100 z-50 animate-in fade-in slide-in-from-top-2">
+                <div className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  {t('Quick Setup', 'سیٹ اپ')}
+                </div>
+                
+                <button
+                  onClick={() => { onViewChange('setup_nozzles'); setIsSetupOpen(false); setMobileMenuOpen(false); }}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer"
+                >
+                  <Fuel className="h-4 w-4" />
+                  <span>{t('Nozzles Setup', 'نوزلز سیٹ اپ')}</span>
+                </button>
+                <button
+                  onClick={() => { onViewChange('setup_tanks'); setIsSetupOpen(false); setMobileMenuOpen(false); }}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer"
+                >
+                  <Database className="h-4 w-4" />
+                  <span>{t('Tanks Setup', 'ٹینکس سیٹ اپ')}</span>
+                </button>
+                <button
+                  onClick={() => { onViewChange('setup_rates'); setIsSetupOpen(false); setMobileMenuOpen(false); }}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer"
+                >
+                  <DollarSign className="h-4 w-4" />
+                  <span>{t('Rates Change', 'ریٹس تبدیل کریں')}</span>
+                </button>
+                <button
+                  onClick={() => { onViewChange('setup_accounts'); setIsSetupOpen(false); setMobileMenuOpen(false); }}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer"
+                >
+                  <Building className="h-4 w-4" />
+                  <span>{t('Chart of Accounts', 'اکاؤنٹس چارٹ')}</span>
+                </button>
+                <button
+                  onClick={() => { onViewChange('setup_profile'); setIsSetupOpen(false); setMobileMenuOpen(false); }}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer border-t border-slate-100 mt-1 pt-2"
+                >
+                  <Settings className="h-4 w-4" />
+                  <span>{t('Station Profile', 'اسٹیشن پروفائل')}</span>
+                </button>
+              </div>
+            )}
+          </div>
+          
           {/* Theme Selector Dropdown */}
           <div className="relative z-[60] shrink-0">
             <button
@@ -738,7 +796,7 @@ export default function Navigation({
           <nav className="space-y-1 px-3 flex-1 overflow-y-auto">
             {menuItems.map((item) => {
               const Icon = item.icon;
-              const isActive = activeView === item.id;
+              const isActive = activeView === item.id || (item.id === 'settings' && activeView.startsWith('setup_'));
               return (
                 <button
                   key={item.id}
@@ -810,7 +868,7 @@ export default function Navigation({
             <nav className="space-y-1 px-3 flex-1 overflow-y-auto">
               {menuItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = activeView === item.id;
+                const isActive = activeView === item.id || (item.id === 'settings' && activeView.startsWith('setup_'));
                 return (
                   <button
                     key={item.id}

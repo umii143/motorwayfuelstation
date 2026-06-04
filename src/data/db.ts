@@ -81,7 +81,7 @@ const SEED_FUEL_SETTINGS: GlobalSettings = {
   theme: 'orange',
   language: 'en',
   currency: 'PKR',
-  setupCompleted: true,
+  setupCompleted: false,
   setupVersion: 1
 };
 
@@ -106,7 +106,7 @@ const SEED_LUBE_SETTINGS: GlobalSettings = {
   theme: 'blue',
   language: 'en',
   currency: 'PKR',
-  setupCompleted: true,
+  setupCompleted: false,
   setupVersion: 1
 };
 
