@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import {
   LayoutDashboard,
   RefreshCw,
+  History,
   Users,
   Factory,
   BookOpen,
@@ -53,7 +54,6 @@ import {
 } from 'lucide-react';
 import { GlobalSettings, Station } from '../../types';
 import { t as translate } from '../../lib/translations';
-import NavigationBrand from './NavigationBrand';
 import HelpGuideModal from '../ui/HelpGuideModal';
 import { useStation } from '../../contexts/StationContext';
 
@@ -111,6 +111,7 @@ export default function Navigation({
   const allMenuItems = [
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', urdu: 'ڈیش بورڈ', showInLube: true },
     { id: isLube ? 'lube_pos' : 'shift_wizard', icon: RefreshCw, label: isLube ? 'Lube POS Terminal' : 'Shift Wizard', urdu: isLube ? 'لیوب پی او ایس' : 'شفٹ وزرڈ', showInLube: true },
+    { id: 'shift_logs', icon: History, label: 'Shift Logs & Audit', urdu: 'شفٹ لاگز', showInLube: false },
     { id: 'price_management', icon: DollarSign, label: 'Price Management', urdu: 'قیمتیں اور نرخ', showInLube: false },
     { id: 'ledger', icon: BookOpen, label: 'Accounts & Billing', urdu: 'کھاتہ اور بلنگ', showInLube: true },
     { id: 'loyalty', icon: Gift, label: 'Loyalty & Rewards', urdu: 'لائلٹی پروگرام', showInLube: true },

@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import Navigation from './components/layouts/Navigation';
 import Dashboard from './components/features/Dashboard';
 import ShiftWizard from './components/features/ShiftWizard';
+import ShiftLogs from './components/features/ShiftLogs';
 import Customers from './components/features/Customers';
 import Suppliers from './components/features/Suppliers';
 import Ledger from './components/features/Ledger';
@@ -225,6 +226,22 @@ function MainApp() {
             onAddBank={handleAddBank}
             onAddShiftSalaryPayment={handleAddShiftSalaryPayment}
             onDeleteShiftSalaryPayment={handleDeleteShiftSalaryPayment}
+          />
+        );
+
+      case 'shift_logs':
+        return (
+          <ShiftLogs
+            shifts={shifts}
+            staff={staff}
+            customers={customers}
+            suppliers={suppliers}
+            banks={banks}
+            digitalAccounts={digitalAccounts}
+            products={products}
+            tanks={tanks}
+            nozzles={nozzles}
+            settings={settings}
           />
         );
 

@@ -40,7 +40,8 @@ import {
   Shift,
   BankAccount,
   GlobalSettings,
-  LubePosSale
+  LubePosSale,
+  RateHistoryEntry
 } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
