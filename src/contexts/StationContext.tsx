@@ -17,12 +17,13 @@ import {
   StaffFinanceEntry,
   AttendanceRecord,
   Station,
-  LubePosSale
+  LubePosSale,
+  InventoryMovement
 } from '../types';
 import { db } from '../data/db';
 import { useAuth } from './AuthContext';
 import { firestoreDb } from '../data/firestore';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, writeBatch } from 'firebase/firestore';
 import { dbFS } from '../lib/firebase';
 
 export interface ToastConfig {
@@ -133,8 +134,18 @@ export interface StationContextType {
 const StationContext = createContext<StationContextType | undefined>(undefined);
 
 export const StationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, hasPermission } = useAuth();
   const orgId = user?.orgId;
+
+  const checkPerm = (permission: string, actionNameEn: string, actionNameUr: string) => {
+    if (!hasPermission(permission)) {
+      const msg = settings.language === 'ur'
+        ? `آپ کو ${actionNameUr} کی اجازت نہیں ہے۔`
+        : `Unauthorized. You do not have permission to ${actionNameEn}.`;
+      showToast(msg, 'error');
+      throw new Error(msg);
+    }
+  };
 
   // ==========================================
   // MULTI-STATION (MULTI-BRANCH) ARCHITECTURE
@@ -621,238 +632,318 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const handleUpdateShift = async (updatedShift: Shift) => {
-    setShifts((prev) => prev.map((s) => (s.id === updatedShift.id ? updatedShift : s)));
-
-    if (orgId) {
-      const bType = getBusinessType(activeStationId);
-      await firestoreDb.saveDocument(orgId, activeStationId, bType, 'shifts', updatedShift.id, updatedShift);
+    if (updatedShift.status === 'closed') {
+      checkPerm('shift.close', 'close shift', 'شفٹ بند کرنے');
       
-      if (updatedShift.status === 'closed') {
-        // 1. Update customer credit book outstandings
-        customers.forEach((cust) => {
-          let balanceDiff = 0;
-          updatedShift.debitEntries.forEach((d) => {
-            if (d.customerId === cust.id) balanceDiff += d.amount;
-          });
-          updatedShift.recoveryEntries.forEach((r) => {
-            if (r.customerId === cust.id) balanceDiff -= r.amount;
-          });
-          if (balanceDiff !== 0) {
-            const updatedCust = { ...cust, balance: cust.balance + balanceDiff };
-            firestoreDb.saveDocument(orgId, activeStationId, bType, 'customers', cust.id, updatedCust);
-          }
-        });
+      const bType = getBusinessType(activeStationId);
 
-        // 2. Supplier Payments (Subtract payment from supplier payables)
-        suppliers.forEach((supp) => {
-          let paidDiff = 0;
-          updatedShift.supplierPayments.forEach((p) => {
-            if (p.supplierId === supp.id) paidDiff += p.amount;
-          });
-          if (paidDiff !== 0) {
-            const updatedSupp = { ...supp, balance: Math.max(0, supp.balance - paidDiff) };
-            firestoreDb.saveDocument(orgId, activeStationId, bType, 'suppliers', supp.id, updatedSupp);
-          }
-        });
+      // 1. Group nozzle discharges by tankId and productId
+      const tankDischarges: { [tankId: string]: number } = {};
+      const productDischarges: { [productId: string]: number } = {};
+      
+      nozzles.forEach((nz) => {
+        const openR = updatedShift.openingReadings[nz.id] || 0;
+        const closeR = updatedShift.closingReadings[nz.id] || 0;
+        const discharge = Math.max(0, closeR - openR);
+        
+        if (nz.tankId) {
+          tankDischarges[nz.tankId] = (tankDischarges[nz.tankId] || 0) + discharge;
+        }
+        productDischarges[nz.productId] = (productDischarges[nz.productId] || 0) + discharge;
+      });
 
-        // 3. Deduct sold product stocks
-        products.forEach((prod) => {
-          let litresSold = 0;
-          nozzles.forEach((nz) => {
-            if (nz.productId === prod.id) {
-              const openR = updatedShift.openingReadings[nz.id] || 0;
-              const closeR = updatedShift.closingReadings[nz.id] || 0;
-              if (closeR >= openR) litresSold += closeR - openR;
-            }
-          });
-          const testLit = updatedShift.testLiters[prod.id] || 0;
-          const netSoldLitres = Math.max(0, litresSold - testLit);
-          const lubeTx = updatedShift.lubeSales.reduce((acc, sale) => {
-            return sale.itemId === prod.id ? acc + sale.quantity : acc;
-          }, 0);
-          
-          if (netSoldLitres > 0 || lubeTx > 0) {
-            const updatedProd = { ...prod, currentStock: Math.max(0, Number((prod.currentStock - netSoldLitres - lubeTx).toFixed(2))) };
-            firestoreDb.saveDocument(orgId, activeStationId, bType, 'products', prod.id, updatedProd);
-          }
-        });
-
-        // 4. Update Bank Balances
-        banks.forEach((bk) => {
-          let bankDelta = 0;
-          updatedShift.bankCashEntries.forEach((bc) => {
-            if (bc.bankAccountId === bk.id) bankDelta += bc.amount;
-          });
-          updatedShift.supplierPayments.forEach((p) => {
-            if (p.bankAccountId === bk.id) bankDelta -= p.amount;
-          });
-          if (bankDelta !== 0) {
-            const updatedBk = { ...bk, balance: bk.balance + bankDelta };
-            firestoreDb.saveDocument(orgId, activeStationId, bType, 'banks', bk.id, updatedBk);
-          }
-        });
-
-        // 5. Shortage tracking assigned to payroll advances
-        if (updatedShift.shortage && updatedShift.shortage > 0) {
-          const staffMember = staff.find((st) => st.id === updatedShift.staffId);
-          if (staffMember) {
-            const refId = 'SF-SHORT-' + updatedShift.id;
-            const newFin: StaffFinanceEntry = {
-              id: 'sf_short_' + Date.now(),
-              staffId: updatedShift.staffId,
-              date: updatedShift.date,
-              type: 'advance',
-              amount: updatedShift.shortage,
-              balanceAfter: 0,
-              reference: refId,
-              note: `Shortage Cash Discrepancy assigned to Operator from Shift Check #${updatedShift.id}`
-            };
-            firestoreDb.saveDocument(orgId, activeStationId, bType, 'staffFinance', newFin.id, newFin);
-            
-            const updatedStaffMember = { ...staffMember, advances: (staffMember.advances || 0) + updatedShift.shortage };
-            firestoreDb.saveDocument(orgId, activeStationId, bType, 'staff', staffMember.id, updatedStaffMember);
+      // 2. Validate tank stocks before closing the shift
+      for (const tankId in tankDischarges) {
+        const tank = tanks.find((t) => t.id === tankId);
+        if (tank) {
+          const discharge = tankDischarges[tankId];
+          if (discharge > tank.currentStock) {
+            const msg = settings.language === 'ur'
+              ? `ٹینک "${tank.name}" میں اسٹاک کم ہے۔ دستیاب اسٹاک: ${tank.currentStock} لیٹر۔ مطلوبہ فروخت: ${discharge} لیٹر۔`
+              : `Insufficient tank stock for ${tank.name}. Available: ${tank.currentStock} L. Requested sale: ${discharge} L.`;
+            showToast(msg, 'error');
+            throw new Error(msg);
           }
         }
       }
-    }
 
-    // On final closing of a shift, execute downstream integrations:
-    // 1. Update customer credit book outstandings
-    // 2. Adjust physical stock levels
-    // 3. Update bank account sums based on bank deposit cash entries
-    if (updatedShift.status === 'closed') {
-      // Direct Customer Balances (Credits add to balance, recoveries subtract)
-      setCustomers((prevCustomers) => {
-        return prevCustomers.map((cust) => {
-          let balanceDiff = 0;
-          updatedShift.debitEntries.forEach((d) => {
-            if (d.customerId === cust.id) {
-              balanceDiff += d.amount;
-            }
-          });
-          updatedShift.recoveryEntries.forEach((r) => {
-            if (r.customerId === cust.id) {
-              balanceDiff -= r.amount;
-            }
-          });
+      // Also validate lube product stocks
+      for (const lubeSale of updatedShift.lubeSales) {
+        const product = products.find((p) => p.id === lubeSale.itemId);
+        if (product) {
+          if (lubeSale.quantity > product.currentStock) {
+            const msg = settings.language === 'ur'
+              ? `پراڈکٹ "${product.name}" کا اسٹاک کم ہے۔ دستیاب اسٹاک: ${product.currentStock}۔ مطلوبہ فروخت: ${lubeSale.quantity}۔`
+              : `Insufficient product stock for ${product.name}. Available: ${product.currentStock}. Requested: ${lubeSale.quantity}.`;
+            showToast(msg, 'error');
+            throw new Error(msg);
+          }
+        }
+      }
 
-          return {
-            ...cust,
-            balance: cust.balance + balanceDiff
-          };
+      // 3. Compute new customer balances
+      const nextCustomers = customers.map((cust) => {
+        let balanceDiff = 0;
+        updatedShift.debitEntries.forEach((d) => {
+          if (d.customerId === cust.id) balanceDiff += d.amount;
         });
+        updatedShift.recoveryEntries.forEach((r) => {
+          if (r.customerId === cust.id) balanceDiff -= r.amount;
+        });
+        return balanceDiff !== 0 ? { ...cust, balance: cust.balance + balanceDiff } : cust;
       });
 
-      // Supplier Payments (Subtract payment amounts from supplier payables)
-      setSuppliers((prevSuppliers) => {
-        return prevSuppliers.map((supp) => {
-          let paidDiff = 0;
-          updatedShift.supplierPayments.forEach((p) => {
-            if (p.supplierId === supp.id) {
-              paidDiff += p.amount;
-            }
-          });
-          return {
-            ...supp,
-            balance: Math.max(0, supp.balance - paidDiff)
-          };
+      // 4. Compute new supplier balances
+      const nextSuppliers = suppliers.map((supp) => {
+        let paidDiff = 0;
+        updatedShift.supplierPayments.forEach((p) => {
+          if (p.supplierId === supp.id) paidDiff += p.amount;
         });
+        return paidDiff !== 0 ? { ...supp, balance: Math.max(0, supp.balance - paidDiff) } : supp;
       });
 
-      // Deduct sold fuel/lube stocks
-      setProducts((prevProducts) => {
-        return prevProducts.map((prod) => {
-          let litresSold = 0;
+      // 5. Compute new tank stocks and generate stock transactions + inventory movements
+      const generatedStockTxns: StockTransaction[] = [];
+      const generatedMovements: InventoryMovement[] = [];
 
-          // For nozzles related to this product, audit reading difference
-          nozzles.forEach((nz) => {
-            if (nz.productId === prod.id) {
-              const openR = updatedShift.openingReadings[nz.id] || 0;
-              const closeR = updatedShift.closingReadings[nz.id] || 0;
-              if (closeR >= openR) {
-                litresSold += closeR - openR;
-              }
-            }
+      const nextTanks = tanks.map((tk) => {
+        const tankDisch = tankDischarges[tk.id] || 0;
+        if (tankDisch > 0) {
+          const testLiters = updatedShift.testLiters[tk.productId] || 0;
+          const productTanks = tanks.filter((t) => t.productId === tk.productId);
+          const totalDischarge = productTanks.reduce((sum, t) => sum + (tankDischarges[t.id] || 0), 0);
+          const propTest = totalDischarge > 0 ? (tankDisch / totalDischarge) * testLiters : 0;
+          const netDisch = Math.max(0, tankDisch - propTest);
+          const newStock = Math.max(0, Number((tk.currentStock - netDisch).toFixed(2)));
+          
+          // Generate transaction & movement
+          const txnId = `stk_sale_shift_${updatedShift.id}_tank_${tk.id}`;
+          const sellingPrice = products.find(p => p.id === tk.productId)?.rate || 0;
+          generatedStockTxns.push({
+            id: txnId,
+            itemId: tk.productId,
+            type: 'sale',
+            quantity: netDisch,
+            by: updatedShift.staffId,
+            date: updatedShift.date,
+            amount: netDisch * sellingPrice,
+            sellingPrice,
+            fuelType: 'Fuel Sale',
+            tankId: tk.id,
+            orgId: orgId || undefined,
+            stationId: activeStationId,
+            businessType: bType,
+            createdAt: Date.now(),
+            updatedAt: Date.now()
           });
 
-          // Test delivery offset (subtract meter tests from true commercial sales)
+          generatedMovements.push({
+            id: `mov_sale_shift_${updatedShift.id}_tank_${tk.id}`,
+            productId: tk.productId,
+            type: 'Sale',
+            quantity: netDisch,
+            date: new Date().toISOString(),
+            referenceId: updatedShift.id,
+            notes: `Shift Sale from Tank ${tk.name}`,
+            tankId: tk.id,
+            orgId: orgId || undefined,
+            stationId: activeStationId,
+            businessType: bType,
+            createdAt: Date.now(),
+            updatedAt: Date.now()
+          });
+
+          return { ...tk, currentStock: newStock };
+        }
+        return tk;
+      });
+
+      // 6. Compute new product stocks and generate transactions/movements for lubes
+      const nextProducts = products.map((prod) => {
+        if (prod.type === 'fuel') {
+          const totalDisch = productDischarges[prod.id] || 0;
           const testLit = updatedShift.testLiters[prod.id] || 0;
-          const netSoldLitres = Math.max(0, litresSold - testLit);
-
-          // For lubes
+          const netSoldLitres = Math.max(0, totalDisch - testLit);
+          if (netSoldLitres > 0) {
+            return { ...prod, currentStock: Math.max(0, Number((prod.currentStock - netSoldLitres).toFixed(2))) };
+          }
+        } else if (prod.type === 'lube') {
           const lubeTx = updatedShift.lubeSales.reduce((acc, sale) => {
             return sale.itemId === prod.id ? acc + sale.quantity : acc;
           }, 0);
+          if (lubeTx > 0) {
+            const txnId = `stk_lube_sale_shift_${updatedShift.id}_prod_${prod.id}`;
+            generatedStockTxns.push({
+              id: txnId,
+              itemId: prod.id,
+              type: 'sale',
+              quantity: lubeTx,
+              by: updatedShift.staffId,
+              date: updatedShift.date,
+              amount: lubeTx * prod.rate,
+              sellingPrice: prod.rate,
+              fuelType: 'Lube Sale',
+              orgId: orgId || undefined,
+              stationId: activeStationId,
+              businessType: bType,
+              createdAt: Date.now(),
+              updatedAt: Date.now()
+            });
 
-          const finalStock = Math.max(0, prod.currentStock - netSoldLitres - lubeTx);
+            generatedMovements.push({
+              id: `mov_lube_sale_shift_${updatedShift.id}_prod_${prod.id}`,
+              productId: prod.id,
+              type: 'Sale',
+              quantity: lubeTx,
+              date: new Date().toISOString(),
+              referenceId: updatedShift.id,
+              notes: `Shift Sale for Lube Product ${prod.name}`,
+              orgId: orgId || undefined,
+              stationId: activeStationId,
+              businessType: bType,
+              createdAt: Date.now(),
+              updatedAt: Date.now()
+            });
 
-          return {
-            ...prod,
-            currentStock: Number(finalStock.toFixed(2))
-          };
-        });
+            return { ...prod, currentStock: Math.max(0, Number((prod.currentStock - lubeTx).toFixed(2))) };
+          }
+        }
+        return prod;
       });
 
-      // Update Bank Balances
-      setBanks((prevBanks) => {
-        return prevBanks.map((bk) => {
-          let bankDelta = 0;
-
-          // Deposits made into this bank inside shift
-          updatedShift.bankCashEntries.forEach((bc) => {
-            if (bc.bankAccountId === bk.id) {
-              bankDelta += bc.amount;
-            }
-          });
-
-          // Checks/drawings paid to supplier from this bank
-          updatedShift.supplierPayments.forEach((p) => {
-            if (p.bankAccountId === bk.id) {
-              bankDelta -= p.amount;
-            }
-          });
-
-          return {
-            ...bk,
-            balance: bk.balance + bankDelta
-          };
+      // 7. Compute new bank balances
+      const nextBanks = banks.map((bk) => {
+        let bankDelta = 0;
+        updatedShift.bankCashEntries.forEach((bc) => {
+          if (bc.bankAccountId === bk.id) bankDelta += bc.amount;
         });
+        updatedShift.supplierPayments.forEach((p) => {
+          if (p.bankAccountId === bk.id) bankDelta -= p.amount;
+        });
+        return bankDelta !== 0 ? { ...bk, balance: bk.balance + bankDelta } : bk;
       });
 
-      // Downstream integration for salesman discrepancy (Shortage tracking assigned to payroll advances)
+      // 8. Handle payroll shortage advances
+      let nextStaff = staff;
+      let newStaffFinanceEntry: StaffFinanceEntry | null = null;
+      let staffMemberToUpdate: Staff | null = null;
+
       if (updatedShift.shortage && updatedShift.shortage > 0) {
         const staffMember = staff.find((st) => st.id === updatedShift.staffId);
         if (staffMember) {
           const refId = 'SF-SHORT-' + updatedShift.id;
-          const newFin: StaffFinanceEntry = {
+          newStaffFinanceEntry = {
             id: 'sf_short_' + Date.now(),
             staffId: updatedShift.staffId,
             date: updatedShift.date,
             type: 'advance',
             amount: updatedShift.shortage,
-            balanceAfter: 0, // decouples running salary payable balances
+            balanceAfter: 0,
             reference: refId,
-            note: `Shortage Cash Discrepancy assigned to Operator from Shift Check #${updatedShift.id}`
+            note: `Shortage Cash Discrepancy assigned to Operator from Shift Check #${updatedShift.id}`,
+            orgId: orgId || undefined,
+            stationId: activeStationId,
+            businessType: bType,
+            createdAt: Date.now(),
+            updatedAt: Date.now()
           };
-          setStaffFinance((prev) => [newFin, ...prev]);
-
-          setStaff((prevStaff) => {
-            return prevStaff.map((st) => {
-              if (st.id === updatedShift.staffId) {
-                return {
-                  ...st,
-                  advances: (st.advances || 0) + updatedShift.shortage
-                };
-              }
-              return st;
-            });
-          });
+          
+          staffMemberToUpdate = { ...staffMember, advances: (staffMember.advances || 0) + updatedShift.shortage };
+          nextStaff = staff.map(st => st.id === staffMember.id ? staffMemberToUpdate! : st);
         }
+      }
+
+      if (orgId) {
+        // SaaS Firestore Atomic writeBatch
+        const batch = writeBatch(dbFS);
+        
+        // 1. Shift
+        const shiftRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'shifts', updatedShift.id);
+        batch.set(shiftRef, updatedShift, { merge: true });
+
+        // 2. Customers
+        nextCustomers.forEach((c) => {
+          const cRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'customers', c.id);
+          batch.set(cRef, c, { merge: true });
+        });
+
+        // 3. Suppliers
+        nextSuppliers.forEach((s) => {
+          const sRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'suppliers', s.id);
+          batch.set(sRef, s, { merge: true });
+        });
+
+        // 4. Tanks
+        nextTanks.forEach((t) => {
+          const tRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'tanks', t.id);
+          batch.set(tRef, t, { merge: true });
+        });
+
+        // 5. Products
+        nextProducts.forEach((p) => {
+          const pRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'products', p.id);
+          batch.set(pRef, p, { merge: true });
+        });
+
+        // 6. Banks
+        nextBanks.forEach((b) => {
+          const bRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'banks', b.id);
+          batch.set(bRef, b, { merge: true });
+        });
+
+        // 7. Staff & Staff Finance
+        if (staffMemberToUpdate && newStaffFinanceEntry) {
+          const sRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'staff', staffMemberToUpdate.id);
+          batch.set(sRef, staffMemberToUpdate, { merge: true });
+
+          const sfRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'staffFinance', newStaffFinanceEntry.id);
+          batch.set(sfRef, newStaffFinanceEntry);
+        }
+
+        // 8. Stock Transactions & Inventory Movements
+        generatedStockTxns.forEach((tx) => {
+          const txRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'stockTxns', tx.id);
+          batch.set(txRef, tx);
+        });
+
+        generatedMovements.forEach((mov) => {
+          const movRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'inventoryMovements', mov.id);
+          batch.set(movRef, mov);
+        });
+
+        await batch.commit();
+      } else {
+        // Local mode: save generated transactions and movements to local states/DB
+        if (generatedStockTxns.length > 0) {
+          setStockTxns((prev) => [...generatedStockTxns, ...prev]);
+        }
+        if (newStaffFinanceEntry) {
+          setStaffFinance((prev) => [newStaffFinanceEntry!, ...prev]);
+        }
+        // Save the updated shift
+        setShifts((prev) => prev.map((s) => (s.id === updatedShift.id ? updatedShift : s)));
+      }
+
+      // Sync React state variables
+      setCustomers(nextCustomers);
+      setSuppliers(nextSuppliers);
+      setTanks(nextTanks);
+      setProducts(nextProducts);
+      setBanks(nextBanks);
+      setStaff(nextStaff);
+    } else {
+      // Shift is being updated but not closed (e.g. adding single entries during step 3)
+      setShifts((prev) => prev.map((s) => (s.id === updatedShift.id ? updatedShift : s)));
+      if (orgId) {
+        const bType = getBusinessType(activeStationId);
+        await firestoreDb.saveDocument(orgId, activeStationId, bType, 'shifts', updatedShift.id, updatedShift);
       }
     }
   };
 
   const handleAddStockReceipt = async (txn: StockTransaction) => {
+    checkPerm('inventory.manage', 'add stock receipt', 'اسٹاک وصول کرنے');
+    
     // 1. Add Stock transactions logger row
     setStockTxns((prev) => [txn, ...prev]);
 
@@ -863,19 +954,56 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
       )
     );
 
+    // 3. Replenish tank stock if tankId is present
+    if (txn.tankId) {
+      setTanks((prevTanks) =>
+        prevTanks.map((t) =>
+          t.id === txn.tankId ? { ...t, currentStock: t.currentStock + txn.quantity } : t
+        )
+      );
+    }
+
+    // 4. Create InventoryMovement for Tank Refill
+    const movementId = `mov_refill_${txn.id}`;
+    const movement: InventoryMovement = {
+      id: movementId,
+      productId: txn.itemId,
+      type: 'Tank Refill',
+      quantity: txn.quantity,
+      date: new Date().toISOString(),
+      referenceId: txn.id,
+      notes: `Stock Receipt Refill. Supplier: ${txn.supplierId || 'Direct'}`,
+      tankId: txn.tankId || undefined,
+      orgId: orgId || undefined,
+      stationId: activeStationId,
+      businessType: getBusinessType(activeStationId),
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+
     if (orgId) {
       const bType = getBusinessType(activeStationId);
       await firestoreDb.saveDocument(orgId, activeStationId, bType, 'stockTxns', txn.id, txn);
+      await firestoreDb.saveDocument(orgId, activeStationId, bType, 'inventoryMovements', movementId, movement);
       
       const product = products.find(p => p.id === txn.itemId);
       if (product) {
         const updatedProduct = { ...product, currentStock: product.currentStock + txn.quantity };
         await firestoreDb.saveDocument(orgId, activeStationId, bType, 'products', product.id, updatedProduct);
       }
+
+      if (txn.tankId) {
+        const tank = tanks.find(t => t.id === txn.tankId);
+        if (tank) {
+          const updatedTank = { ...tank, currentStock: tank.currentStock + txn.quantity };
+          await firestoreDb.saveDocument(orgId, activeStationId, bType, 'tanks', tank.id, updatedTank);
+        }
+      }
     }
   };
 
   const handleUpdateProductStock = async (productId: string, newStock: number) => {
+    checkPerm('inventory.manage', 'update product stock', 'پراڈکٹ کا اسٹاک تبدیل کرنے');
     setProducts((prevProducts) =>
       prevProducts.map((p) => (p.id === productId ? { ...p, currentStock: newStock } : p))
     );
@@ -896,6 +1024,7 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     changedBy: string = 'Admin (Owner)',
     dateStr: string = new Date().toISOString().replace('T', ' ').substring(0, 16)
   ) => {
+    checkPerm('pricing.manage', 'manage pricing', 'قیمتوں کا انتظام کرنے');
     setProducts((prevProducts) =>
       prevProducts.map((p) => {
         if (p.id === productId) {
@@ -918,7 +1047,11 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
             stockAtTime: totalStock,
             impactAmount: Number(impact.toFixed(2)),
             reason,
-            changedBy
+            changedBy,
+            difference: change,
+            stockAtChange: totalStock,
+            gainLoss: Number(impact.toFixed(2)),
+            changedAt: Date.now()
           };
           setRateHistory((prev) => [newRateHistory, ...prev]);
 
@@ -938,6 +1071,7 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const handleAddTank = async (newTank: Tank) => {
+    checkPerm('tank.manage', 'add tank', 'ٹینک شامل کرنے');
     setTanks((prev) => [...prev, newTank]);
     if (orgId) {
       await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'tanks', newTank.id, newTank);
@@ -945,6 +1079,7 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const handleUpdateTank = async (updatedTank: Tank) => {
+    checkPerm('tank.manage', 'update tank', 'ٹینک تبدیل کرنے');
     setTanks((prev) => prev.map((t) => (t.id === updatedTank.id ? updatedTank : t)));
     if (orgId) {
       await firestoreDb.saveDocument(orgId, activeStationId, getBusinessType(activeStationId), 'tanks', updatedTank.id, updatedTank);
@@ -952,6 +1087,7 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const handleDeleteTank = async (id: string) => {
+    checkPerm('tank.manage', 'delete tank', 'ٹینک حذف کرنے');
     setTanks((prev) => prev.filter((t) => t.id !== id));
     if (orgId) {
       await firestoreDb.deleteDocument(orgId, activeStationId, 'tanks', id);

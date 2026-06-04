@@ -133,7 +133,7 @@ export default function ShiftWizard({
   onAddShiftSalaryPayment,
   onDeleteShiftSalaryPayment,
 }: ShiftWizardProps) {
-  const { showToast, showConfirm, showAlert } = useStation();
+  const { showToast, showConfirm, showAlert, tanks } = useStation();
   const isUrdu = settings.language === "ur";
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
 
@@ -495,6 +495,27 @@ export default function ShiftWizard({
     }
     setWizardError("");
 
+    // Validate tank stock (block opening shift if any nozzle's tank stock is <= 0)
+    let lowStockNozzle = null;
+    for (const noz of nozzles) {
+      if (noz.tankId) {
+        const tank = tanks.find(t => t.id === noz.tankId);
+        if (tank && tank.currentStock <= 0) {
+          lowStockNozzle = { noz, tank };
+          break;
+        }
+      }
+    }
+    if (lowStockNozzle) {
+      setWizardError(
+        t(
+          `Cannot open shift. Tank "${lowStockNozzle.tank.name}" connected to nozzle "${lowStockNozzle.noz.name}" has 0 or negative available stock.`,
+          `شفٹ شروع نہیں کی جا سکتی۔ نوزل "${lowStockNozzle.noz.name}" سے منسلک ٹینک "${lowStockNozzle.tank.name}" میں ایندھن کا اسٹاک 0 یا اس سے کم ہے۔`
+        )
+      );
+      return;
+    }
+
     if (isLubeBusiness) {
       onAddShift(buildNewShift({}));
       setWizardStep(3);
@@ -518,6 +539,28 @@ export default function ShiftWizard({
   // Step 2 Trigger -> Commit openings, create shifts record
   const handleConfirmOpenings = () => {
     setWizardError("");
+
+    // Validate tank stock (block opening shift if any nozzle's tank stock is <= 0)
+    let lowStockNozzle = null;
+    for (const noz of nozzles) {
+      if (noz.tankId) {
+        const tank = tanks.find(t => t.id === noz.tankId);
+        if (tank && tank.currentStock <= 0) {
+          lowStockNozzle = { noz, tank };
+          break;
+        }
+      }
+    }
+    if (lowStockNozzle) {
+      setWizardError(
+        t(
+          `Cannot open shift. Tank "${lowStockNozzle.tank.name}" connected to nozzle "${lowStockNozzle.noz.name}" has 0 or negative available stock.`,
+          `شفٹ شروع نہیں کی جا سکتی۔ نوزل "${lowStockNozzle.noz.name}" سے منسلک ٹینک "${lowStockNozzle.tank.name}" میں ایندھن کا اسٹاک 0 یا اس سے کم ہے۔`
+        )
+      );
+      return;
+    }
+
     const openingNum: { [nozzleId: string]: number } = {};
     let hasError = false;
 
@@ -616,6 +659,35 @@ export default function ShiftWizard({
         "error",
       );
       return;
+    }
+
+    const product = products.find((p) => p.id === debProdId);
+    if (product) {
+      if (product.type === "fuel") {
+        const productTanks = tanks.filter((tk) => tk.productId === product.id);
+        const totalTankStock = productTanks.reduce((sum, tk) => sum + tk.currentStock, 0);
+        if (qty > totalTankStock) {
+          showToast(
+            t(
+              `Insufficient tank stock. Available stock: ${totalTankStock} L. Requested: ${qty} L.`,
+              `ٹینک میں اسٹاک کم ہے۔ دستیاب اسٹاک: ${totalTankStock} لیٹر۔ مطلوبہ: ${qty} لیٹر۔`
+            ),
+            "error"
+          );
+          return;
+        }
+      } else {
+        if (qty > product.currentStock) {
+          showToast(
+            t(
+              `Insufficient product inventory. Available stock: ${product.currentStock}. Requested: ${qty}.`,
+              `پراڈکٹ کا اسٹاک کم ہے۔ دستیاب اسٹاک: ${product.currentStock}۔ مطلوبہ: ${qty}۔`
+            ),
+            "error"
+          );
+          return;
+        }
+      }
     }
 
     const isGeneralDebit = debProdId === "general_debit";
@@ -943,7 +1015,25 @@ export default function ShiftWizard({
       return;
     }
 
-    const price = products.find((p) => p.id === lubeItemId)?.rate || 1000;
+    const product = products.find((p) => p.id === lubeItemId);
+    if (product) {
+      const alreadyAdded = activeShift.lubeSales
+        .filter((l) => l.itemId === lubeItemId)
+        .reduce((sum, l) => sum + l.quantity, 0);
+      const totalRequested = qty + alreadyAdded;
+      if (totalRequested > product.currentStock) {
+        showToast(
+          t(
+            `Insufficient lubricant inventory. Available stock: ${product.currentStock}. Already added: ${alreadyAdded}. Requested: ${qty}.`,
+            `لیوب کا اسٹاک کم ہے۔ دستیاب اسٹاک: ${product.currentStock}۔ پہلے سے شامل: ${alreadyAdded}۔ مطلوبہ: ${qty}۔`
+          ),
+          "error"
+        );
+        return;
+      }
+    }
+
+    const price = product?.rate || 1000;
     const amount = qty * price;
 
     const newLube: LubeSale = {
@@ -1057,6 +1147,33 @@ export default function ShiftWizard({
     }
 
     if (hasError) return;
+
+    // Validate tank-level discharges against tank stock
+    const tankDischarges: { [tankId: string]: number } = {};
+    for (const noz of nozzles) {
+      if (noz.tankId) {
+        const open = activeShift.openingReadings[noz.id] || 0;
+        const close = closingNum[noz.id] || 0;
+        const discharge = Math.max(0, close - open);
+        tankDischarges[noz.tankId] = (tankDischarges[noz.tankId] || 0) + discharge;
+      }
+    }
+
+    for (const tankId in tankDischarges) {
+      const tank = tanks.find((t) => t.id === tankId);
+      if (tank) {
+        const discharge = tankDischarges[tankId];
+        if (discharge > tank.currentStock) {
+          setWizardError(
+            t(
+              `Insufficient tank stock for ${tank.name}. Available stock: ${tank.currentStock} L. Requested sale: ${discharge} L.`,
+              `ٹینک "${tank.name}" میں اسٹاک کم ہے۔ دستیاب اسٹاک: ${tank.currentStock} لیٹر۔ مطلوبہ فروخت: ${discharge} لیٹر۔`
+            )
+          );
+          return;
+        }
+      }
+    }
 
     // Commit closing readings to the active activeShift state
     const updated = {

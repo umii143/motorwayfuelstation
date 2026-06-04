@@ -1083,6 +1083,47 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
       ];
     }
   },
+  {
+    id: 'B11',
+    category: 'B',
+    name: 'B11. Fuel Price Change Impact Report',
+    urduName: 'B11. فیول قیمت تبدیلی کا انوینٹری اثر رپورٹ',
+    description: 'Calculates the financial gain or loss on current stockpiles when petroleum rates are revised.',
+    urduDescription: 'پٹرول اور ڈیزل کی قیمتوں میں تبدیلی کی صورت میں ٹینکس میں موجود اسٹاک پر ہونیوالے نفع اور نقصان کی تفصیلی رپورٹ۔',
+    headers: [
+      { key: 'date', label: 'Date', urduLabel: 'تاریخ' },
+      { key: 'productCategory', label: 'Product', urduLabel: 'پراڈکٹ' },
+      { key: 'quantity', label: 'Old Rate (PKR)', urduLabel: 'پرانا ریٹ' },
+      { key: 'rate', label: 'New Rate (PKR)', urduLabel: 'نیا ریٹ' },
+      { key: 'sourceRef', label: 'Difference', urduLabel: 'فرق' },
+      { key: 'approvalStatus', label: 'Stock Quantity', urduLabel: 'اسٹاک حجم' },
+      { key: 'amount', label: 'Inventory Gain/Loss', urduLabel: 'انوینٹری نفع/نقصان', isNumeric: true },
+      { key: 'staffName', label: 'Changed By', urduLabel: 'تبدیل کنندہ' }
+    ],
+    compile: ({ rateHistory, products }) => {
+      return rateHistory.map(h => {
+        const prod = products.find(p => p.id === h.productId);
+        const diff = h.difference !== undefined ? h.difference : (h.newRate - h.oldRate);
+        const diffStr = `${diff >= 0 ? '+' : ''}Rs. ${diff.toFixed(2)}`;
+        const stockVal = h.stockAtChange !== undefined ? h.stockAtChange : h.stockAtTime;
+        const gainLossVal = h.gainLoss !== undefined ? h.gainLoss : h.impactAmount;
+        return {
+          id: `B11-${h.id}`,
+          date: h.date,
+          time: 'Reval Sync',
+          staffName: h.changedBy,
+          role: 'OWNER',
+          sourceRef: diffStr,
+          productCategory: prod ? `${prod.name}` : h.productId,
+          quantity: `Rs. ${h.oldRate.toFixed(2)}`,
+          rate: `Rs. ${h.newRate.toFixed(2)}`,
+          amount: gainLossVal,
+          approvalStatus: `${stockVal.toLocaleString()} Ltr`,
+          balanceAfter: `${h.reason}`
+        };
+      });
+    }
+  },
 
   // ----------------------------------------
   // CATEGORY C: CUSTOMER REPORTS

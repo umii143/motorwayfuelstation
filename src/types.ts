@@ -253,6 +253,7 @@ export interface StockTransaction extends TenantDocument {
   fuelType?: string;
   supplierId?: string;
   carriageCost?: number;
+  tankId?: string;
 }
 
 export interface Station extends TenantDocument {
@@ -282,6 +283,8 @@ export interface GlobalSettings extends TenantDocument {
   theme: 'light' | 'dark' | 'blue' | 'emerald' | 'orange';
   language: 'en' | 'ur' | 'ar' | 'es' | 'zh';
   currency?: string;
+  setupCompleted?: boolean;
+  setupVersion?: number;
 }
 
 export const EXPENSE_CATEGORIES = [
@@ -323,6 +326,10 @@ export interface RateHistoryEntry extends TenantDocument {
   impactAmount: number; // old vs new stock gain/loss
   reason: string;
   changedBy: string;
+  difference?: number;
+  stockAtChange?: number;
+  gainLoss?: number;
+  changedAt?: number;
 }
 
 export interface StaffFinanceEntry extends TenantDocument {
@@ -369,6 +376,7 @@ export interface InventoryMovement extends TenantDocument {
   date: string; // ISO String
   referenceId?: string;
   notes?: string;
+  tankId?: string;
 }
 
 export interface Organization {

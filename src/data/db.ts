@@ -80,7 +80,9 @@ const SEED_FUEL_SETTINGS: GlobalSettings = {
   ownerContact: '0300-8884422',
   theme: 'orange',
   language: 'en',
-  currency: 'PKR'
+  currency: 'PKR',
+  setupCompleted: true,
+  setupVersion: 1
 };
 
 // ==========================================
@@ -103,7 +105,9 @@ const SEED_LUBE_SETTINGS: GlobalSettings = {
   ownerContact: '0316-8432329',
   theme: 'blue',
   language: 'en',
-  currency: 'PKR'
+  currency: 'PKR',
+  setupCompleted: true,
+  setupVersion: 1
 };
 
 const SEED_LUBE_STAFF: any = [

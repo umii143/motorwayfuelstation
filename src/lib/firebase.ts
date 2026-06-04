@@ -1,9 +1,9 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
- * 
+ *
  * Firebase Configuration & Authentication Services
- * Provides Google Sign-In via Firebase Auth
+ * Uses signInWithRedirect (not popup) to avoid COOP browser blocking.
  */
 
 import { initializeApp } from 'firebase/app';
@@ -15,7 +15,7 @@ import {
   signOut,
   type User
 } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, initializeFirestore } from 'firebase/firestore';
 
 // Firebase project configuration
 const firebaseConfig = {
@@ -30,35 +30,65 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const dbFS = getFirestore(app);
+
+// Force long-polling to avoid strict firewall/websocket blocking issues
+// which often manifest as "Failed to get document because the client is offline"
+const dbFS = initializeFirestore(app, {
+  experimentalForceLongPolling: true
+});
 const googleProvider = new GoogleAuthProvider();
 
-// Add scopes for additional user information
+// Request email and profile scopes
 googleProvider.addScope('email');
 googleProvider.addScope('profile');
 
 /**
- * Sign in with Google using Firebase popup flow.
- * Returns the Firebase user object and ID token.
+ * Initiates Google Sign-In using a popup.
+ * Ensure server sends Cross-Origin-Opener-Policy: unsafe-none
  */
-export async function signInWithGoogle(): Promise<{ user: User; token: string }> {
+export async function signInWithGoogle(): Promise<{ user: User, token: string }> {
   try {
     const result = await signInWithPopup(auth, googleProvider);
-    const token = await result.user.getIdToken();
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    const token = credential?.accessToken || "";
     return { user: result.user, token };
   } catch (error: any) {
-    // Handle specific Firebase auth errors
-    if (error.code === 'auth/popup-closed-by-user') {
-      throw new Error('Sign-in popup was closed before completing.');
-    }
-    if (error.code === 'auth/popup-blocked') {
-      throw new Error('Sign-in popup was blocked by the browser. Please allow popups.');
-    }
-    if (error.code === 'auth/cancelled-popup-request') {
-      throw new Error('Sign-in was cancelled.');
-    }
-    throw new Error(error.message || 'Google sign-in failed.');
+    console.error("[Google Auth] Error during popup sign in:", error);
+    throw error;
   }
+}
+
+/**
+ * Retries a Firestore operation with simple exponential backoff.
+ * Only retries on genuine offline/network errors, NOT on persistence conflicts.
+ */
+export async function withFirestoreRetry<T>(
+  operation: () => Promise<T>,
+  maxRetries = 3,
+  delayMs = 800
+): Promise<T> {
+  let lastError: any;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      if (attempt > 0) {
+        await new Promise(resolve => setTimeout(resolve, delayMs * attempt));
+      }
+      return await operation();
+    } catch (err: any) {
+      lastError = err;
+      const isRetryable =
+        err?.message?.includes('client is offline') ||
+        err?.message?.includes('Failed to get document') ||
+        err?.code === 'unavailable';
+
+      // Do NOT retry on persistence/precondition errors
+      if (!isRetryable || attempt === maxRetries - 1) {
+        throw err;
+      }
+      console.warn(`[Firestore] Offline retry ${attempt + 1}/${maxRetries}…`);
+    }
+  }
+  throw lastError;
 }
 
 /**
@@ -70,7 +100,6 @@ export async function firebaseSignOut(): Promise<void> {
 
 /**
  * Subscribe to Firebase auth state changes.
- * Returns an unsubscribe function.
  */
 export function onFirebaseAuthChange(callback: (user: User | null) => void) {
   return onAuthStateChanged(auth, callback);
@@ -78,4 +107,3 @@ export function onFirebaseAuthChange(callback: (user: User | null) => void) {
 
 export { auth, app, dbFS };
 export type { User as FirebaseUser };
-

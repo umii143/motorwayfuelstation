@@ -95,6 +95,7 @@ interface DashboardProps {
   lubePosSales: LubePosSale[];
   onNavigate: (view: string) => void;
   onStartShiftQuick?: () => void;
+  rateHistory?: RateHistoryEntry[];
 }
 
 export default function Dashboard({
@@ -108,7 +109,8 @@ export default function Dashboard({
   nozzles,
   lubePosSales,
   onNavigate,
-  onStartShiftQuick
+  onStartShiftQuick,
+  rateHistory = []
 }: DashboardProps) {
   // Translation helpers
   const t = (en: string, ur: string) => translate(en, ur, settings);
@@ -117,6 +119,24 @@ export default function Dashboard({
     products.some((p) => p.type === 'lube') &&
     !products.some((p) => p.type === 'fuel');
   const salesEntryView = isLube ? 'lube_pos' : 'shift_wizard';
+
+  const pricingStats = useMemo(() => {
+    let totalGain = 0;
+    let totalLoss = 0;
+    rateHistory.forEach((entry) => {
+      const val = entry.gainLoss !== undefined ? entry.gainLoss : (entry.impactAmount || 0);
+      if (val > 0) {
+        totalGain += val;
+      } else {
+        totalLoss += Math.abs(val);
+      }
+    });
+    return {
+      gain: totalGain,
+      loss: totalLoss,
+      net: totalGain - totalLoss
+    };
+  }, [rateHistory]);
 
   // ==========================================
   // METRICS & AGGREGATIONS
@@ -674,6 +694,65 @@ export default function Dashboard({
           </div>
         </div>
       </div>
+
+      {/* FUEL PRICE IMPACT/REVALUATION CARDS */}
+      {!isLube && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {/* Valuation Gain */}
+          <div className="relative overflow-hidden rounded-2xl glass p-4 pb-5 shadow-lg border border-border/50 flex flex-col justify-between hover:scale-[1.02] hover:shadow-xl hover:border-emerald-500/50 transition-all duration-300 group">
+            <div className="absolute left-0 top-3 bottom-3 w-1.5 rounded-r-lg bg-emerald-500"></div>
+            <div className="pl-2">
+              <div className="mb-4">
+                <span className="text-3xl filter drop-shadow-xs inline-block transform group-hover:rotate-6 transition-transform duration-200" role="img" aria-label="gain">📈</span>
+              </div>
+              <div className="space-y-1 overflow-hidden">
+                <h3 className="font-sans text-base sm:text-lg lg:text-xl font-extrabold text-emerald-600 tracking-tight leading-none truncate">
+                  + {formatCurrency(pricingStats.gain, settings)}
+                </h3>
+                <p className="font-sans text-[11px] font-bold text-slate-400 mt-1 tracking-normal truncate">
+                  {t("Inventory Valuation Gain", "انوینٹری قیمت میں اضافہ منافع")}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Valuation Loss */}
+          <div className="relative overflow-hidden rounded-2xl glass p-4 pb-5 shadow-lg border border-border/50 flex flex-col justify-between hover:scale-[1.02] hover:shadow-xl hover:border-rose-500/50 transition-all duration-300 group">
+            <div className="absolute left-0 top-3 bottom-3 w-1.5 rounded-r-lg bg-rose-500"></div>
+            <div className="pl-2">
+              <div className="mb-4">
+                <span className="text-3xl filter drop-shadow-xs inline-block transform group-hover:rotate-6 transition-transform duration-200" role="img" aria-label="loss">📉</span>
+              </div>
+              <div className="space-y-1 overflow-hidden">
+                <h3 className="font-sans text-base sm:text-lg lg:text-xl font-extrabold text-rose-600 tracking-tight leading-none truncate">
+                  - {formatCurrency(pricingStats.loss, settings)}
+                </h3>
+                <p className="font-sans text-[11px] font-bold text-slate-400 mt-1 tracking-normal truncate">
+                  {t("Inventory Valuation Loss", "انوینٹری قیمت میں کمی نقصان")}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Net Valuation Change */}
+          <div className="relative overflow-hidden rounded-2xl glass p-4 pb-5 shadow-lg border border-border/50 flex flex-col justify-between hover:scale-[1.02] hover:shadow-xl hover:border-orange-500/50 transition-all duration-300 group">
+            <div className="absolute left-0 top-3 bottom-3 w-1.5 rounded-r-lg bg-orange-500"></div>
+            <div className="pl-2">
+              <div className="mb-4">
+                <span className="text-3xl filter drop-shadow-xs inline-block transform group-hover:rotate-6 transition-transform duration-200" role="img" aria-label="net">📊</span>
+              </div>
+              <div className="space-y-1 overflow-hidden">
+                <h3 className={`font-sans text-base sm:text-lg lg:text-xl font-extrabold tracking-tight leading-none truncate ${pricingStats.net >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                  {pricingStats.net >= 0 ? '+' : ''}{formatCurrency(pricingStats.net, settings)}
+                </h3>
+                <p className="font-sans text-[11px] font-bold text-slate-400 mt-1 tracking-normal truncate">
+                  {t("Net Valuation Change", "نیٹ قیمت تبدیلی اثر")}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* QUICK ACTIONS ROW */}
       <div className="rounded-xl border border-border/50 glass p-5 shadow-md hover:shadow-lg transition-shadow">

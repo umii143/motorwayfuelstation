@@ -1,6 +1,9 @@
 import { StationProvider, useStation } from './contexts/StationContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LocalStorageMigrationWizard from './components/features/LocalStorageMigrationWizard';
+import { firestoreDb } from './data/firestore';
+import { writeBatch, doc, setDoc } from 'firebase/firestore';
+import { dbFS } from './lib/firebase';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -173,6 +176,7 @@ function MainApp() {
             onNavigate={setActiveView}
             lubePosSales={lubePosSales}
             onStartShiftQuick={() => setActiveView(isLubeBusiness ? 'lube_pos' : 'shift_wizard')}
+            rateHistory={rateHistory}
           />
         );
 
@@ -465,7 +469,7 @@ function MainApp() {
     }
   };
 
-  const showOnboarding = tanks.length === 0 || nozzles.length === 0 || staff.length === 0 || products.length === 0;
+  const showOnboarding = !settings.setupCompleted;
 
   // 1. Session verification loading splash screen
   if (checkingAuth) {
@@ -496,7 +500,20 @@ function MainApp() {
       {showOnboarding && (
         <OnboardingWizard
           currentLanguage={settings.language}
-          onComplete={(completedData) => {
+          onCancel={async () => {
+            const newSettings = { ...settings, setupCompleted: true };
+            setSettings(newSettings);
+            const orgId = authenticatedUser?.orgId;
+            if (orgId && activeStationId) {
+              try {
+                const settingsRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'settings', 'global');
+                await setDoc(settingsRef, newSettings, { merge: true });
+              } catch (err) {
+                console.error("Failed to skip setup", err);
+              }
+            }
+          }}
+          onComplete={async (completedData) => {
             setSettings(completedData.settings);
             setTanks(completedData.tanks);
             setNozzles(completedData.nozzles);
@@ -511,6 +528,53 @@ function MainApp() {
               status: 'active'
             }));
             setPumps(generatedPumps);
+
+            const orgId = authenticatedUser?.orgId;
+            if (orgId) {
+              const bType = 'fuel_station';
+              try {
+                const batch = writeBatch(dbFS);
+                
+                // settings
+                const settingsRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'settings', 'global');
+                batch.set(settingsRef, completedData.settings, { merge: true });
+                
+                // tanks
+                completedData.tanks.forEach(tk => {
+                  const tRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'tanks', tk.id);
+                  batch.set(tRef, tk, { merge: true });
+                });
+                
+                // nozzles
+                completedData.nozzles.forEach(nz => {
+                  const nRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'nozzles', nz.id);
+                  batch.set(nRef, nz, { merge: true });
+                });
+                
+                // products
+                completedData.products.forEach(prod => {
+                  const pRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'products', prod.id);
+                  batch.set(pRef, prod, { merge: true });
+                });
+                
+                // staff
+                completedData.staff.forEach(st => {
+                  const sRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'staff', st.id);
+                  batch.set(sRef, st, { merge: true });
+                });
+                
+                // pumps
+                generatedPumps.forEach(pump => {
+                  const puRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'pumps', pump.id);
+                  batch.set(puRef, pump, { merge: true });
+                });
+                
+                await batch.commit();
+              } catch (err) {
+                console.error("Failed to commit onboarding data to Firestore:", err);
+                throw err;
+              }
+            }
 
             // Re-route to dashboard to display fresh, populated layout
             setActiveView('dashboard');

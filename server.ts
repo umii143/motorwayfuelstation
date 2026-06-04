@@ -6,6 +6,50 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import speakeasy from "speakeasy";
 import { createServer as createViteServer } from "vite";
+import * as admin from "firebase-admin";
+import { getApps, initializeApp as initAdminApp, cert } from "firebase-admin/app";
+import { getAuth as getAdminAuth } from "firebase-admin/auth";
+
+// ==========================================
+// FIREBASE ADMIN SDK INITIALIZATION
+// Uses the service account JSON for server-side Firebase operations
+// ==========================================
+const SERVICE_ACCOUNT_PATH = path.join(
+  process.cwd(),
+  "..",
+  "vyaparfuelstation-50a00-firebase-adminsdk-fbsvc-67ff5ff480.json"
+);
+
+let adminAuthInstance: ReturnType<typeof getAdminAuth> | null = null;
+
+try {
+  if (getApps().length === 0) {
+    if (fs.existsSync(SERVICE_ACCOUNT_PATH)) {
+      const serviceAccount = JSON.parse(fs.readFileSync(SERVICE_ACCOUNT_PATH, "utf8"));
+      initAdminApp({
+        credential: cert(serviceAccount),
+        projectId: "vyaparfuelstation-50a00"
+      });
+      console.log("[Firebase Admin] Initialized with service account key.");
+    } else {
+      initAdminApp({ projectId: "vyaparfuelstation-50a00" });
+      console.warn("[Firebase Admin] Service account file not found — using default credentials.");
+    }
+  }
+  adminAuthInstance = getAdminAuth();
+} catch (adminErr: any) {
+  console.error("[Firebase Admin] Initialization error:", adminErr?.message);
+}
+
+/**
+ * Verifies a Firebase ID token server-side.
+ * Returns the decoded token payload or throws if invalid.
+ */
+async function verifyFirebaseToken(idToken: string): Promise<admin.auth.DecodedIdToken> {
+  if (!adminAuthInstance) throw new Error("Firebase Admin not initialized.");
+  return adminAuthInstance.verifyIdToken(idToken);
+}
+
 
 // Initialize express app
 const app = express();
@@ -13,6 +57,18 @@ const PORT = 3000;
 
 // Enable JSON parser
 app.use(express.json());
+
+// ==========================================
+// CROSS-ORIGIN HEADERS FOR FIREBASE AUTH
+// Firebase signInWithRedirect requires Cross-Origin-Opener-Policy to be
+// "unsafe-none" (not "same-origin") so that Firebase can communicate the
+// redirect result back to the page after returning from Google's auth domain.
+// ==========================================
+app.use((_req, res, next) => {
+  res.setHeader("Cross-Origin-Opener-Policy", "unsafe-none");
+  res.setHeader("Cross-Origin-Embedder-Policy", "unsafe-none");
+  next();
+});
 
 // Load or generate JWT Secret
 const JWT_SECRET = process.env.JWT_SECRET || "default_fuelpro_super_security_secret_phrase_2026";

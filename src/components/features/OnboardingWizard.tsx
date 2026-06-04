@@ -23,10 +23,11 @@ interface OnboardingWizardProps {
     products: Product[];
     staff: Staff[];
   }) => void;
+  onCancel?: () => void;
   currentLanguage: 'en' | 'ur';
 }
 
-export default function OnboardingWizard({ onComplete, currentLanguage }: OnboardingWizardProps) {
+export default function OnboardingWizard({ onComplete, onCancel, currentLanguage }: OnboardingWizardProps) {
   const { showToast } = useStation();
   const [lang, setLang] = useState<'en' | 'ur'>(currentLanguage);
   const [step, setStep] = useState<number>(1);
@@ -267,7 +268,9 @@ export default function OnboardingWizard({ onComplete, currentLanguage }: Onboar
       ntn: `NTN-GST-${Math.floor(1000000 + Math.random() * 9000000)}`,
       ownerContact: phone,
       theme: 'light',
-      language: lang
+      language: lang,
+      setupCompleted: true,
+      setupVersion: 1
     };
 
     onComplete({
@@ -286,14 +289,23 @@ export default function OnboardingWizard({ onComplete, currentLanguage }: Onboar
       className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4"
     >
       <motion.div
-        initial={{ scale: 0.95, y: 30, opacity: 0 }}
-        animate={{ scale: 1, y: 0, opacity: 1 }}
-        transition={{ type: "spring", damping: 25, stiffness: 350 }}
-        className="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-2xl overflow-hidden flex flex-col my-8"
+        initial={{ y: 50, scale: 0.95 }}
+        animate={{ y: 0, scale: 1 }}
+        className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] relative"
       >
         
         {/* TOP STATUS BAR: LANG TOGGLE + PROGRESS */}
-        <div className="bg-slate-50 border-b border-slate-100 px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="bg-slate-50 border-b border-slate-100 px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 relative">
+          
+          {onCancel && (
+            <button
+              onClick={onCancel}
+              className="absolute top-4 right-4 px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-600 text-[10px] uppercase tracking-wider font-bold rounded-lg transition-colors"
+            >
+              {t('Skip for Now', 'ابھی چھوڑ دیں')}
+            </button>
+          )}
+
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-600 font-sans font-extrabold text-white text-sm">
               FP
@@ -308,7 +320,7 @@ export default function OnboardingWizard({ onComplete, currentLanguage }: Onboar
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 pr-24 sm:pr-0">
             <button
               onClick={() => setLang(lang === 'en' ? 'ur' : 'en')}
               className="flex items-center gap-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 px-2.5 py-1 text-xs rounded-lg transition-colors cursor-pointer"

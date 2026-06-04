@@ -29,7 +29,9 @@ import {
   ChevronDown,
   ChevronRight,
   Download,
-  Filter
+  Filter,
+  Shield,
+  Sliders
 } from 'lucide-react';
 import EmptyState from '../ui/EmptyState';
 import {
@@ -456,7 +458,11 @@ export default function Reports({
     { id: 'B', name: t('Category B: Institutional Financials', 'کیٹیگری B: مالیاتی آڈٹ کھاتہ'), icon: TrendingUp },
     { id: 'C', name: t('Category C: Customer Billing Ledgers', 'کیٹیگری C: کسٹمرز بقایا لیجرز'), icon: Users },
     { id: 'D', name: t('Category D: Refinery Suppliers Ledger', 'کیٹیگری D: آئل رِفائنری سپلائر کھاتہ'), icon: Package },
-    { id: 'E', name: t('Category E: Operator Attendance & Payroll', 'کیٹیگری E: اسٹاف حاضری اور ایڈوانسز لاگ'), icon: Activity }
+    { id: 'E', name: t('Category E: Operator Attendance & Payroll', 'کیٹیگری E: اسٹاف حاضری اور ایڈوانسز لاگ'), icon: Activity },
+    { id: 'F', name: t('Category F: Wet Inventory Stock Audit', 'کیٹیگری F: انوینٹری اور ٹینک آڈٹ رپورٹیں'), icon: Layers },
+    { id: 'G', name: t('Category G: Business Operating Expenses', 'کیٹیگری G: کاروباری اخراجات اور بجٹ خلاصہ'), icon: DollarSign },
+    { id: 'H', name: t('Category H: System Audits & Trace Overrides', 'کیٹیگری H: سیکیورٹی آڈٹ ٹریل لاگ'), icon: Shield },
+    { id: 'I', name: t('Category I: Operational Performance Analysis', 'کیٹیگری I: آپریشنل کارکردگی اور بجٹ'), icon: Sliders }
   ];
 
   return (

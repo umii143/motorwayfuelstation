@@ -255,6 +255,20 @@ export default function LubePOS({
       return;
     }
 
+    // Check inventory stock limits
+    for (const item of cartItems) {
+      if (item.quantity > item.product.currentStock) {
+        showToast(
+          t(
+            `Insufficient inventory for ${item.product.name}. Available stock: ${item.product.currentStock} ${item.product.unit}. Requested: ${item.quantity}.`,
+            `${item.product.name} کا اسٹاک ناکافی ہے۔ دستیاب اسٹاک: ${item.product.currentStock} ${item.product.unit}۔ مطلوبہ: ${item.quantity}۔`
+          ),
+          'error'
+        );
+        return;
+      }
+    }
+
     if (paymentMode === 'credit' && !selectedCustomerId) {
       showToast(t('Credit sales require a customer account.', 'کریڈٹ سیل کے لیے کسٹمر کھاتہ ضروری ہے۔'), 'error');
       return;
