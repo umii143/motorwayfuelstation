@@ -35,6 +35,7 @@ import SubscriptionHub from './components/features/SubscriptionHub';
 import BankCashPanel from './components/features/BankCashPanel';
 import DigitalCashPanel from './components/features/DigitalCashPanel';
 import RateWizard from './components/features/Settings/RateWizard';
+import EnterpriseHub from './components/features/EnterpriseHub';
 import {
   FleetManagement,
   TankerDelivery,
@@ -486,25 +487,17 @@ function MainApp() {
         );
 
       case 'fleet':
-        return <FleetManagement settings={settings} />;
       case 'tanker_delivery':
-        return <TankerDelivery settings={settings} />;
       case 'loss_prevention':
-        return <LossPrevention settings={settings} />;
       case 'loyalty':
-        return <LoyaltyRewards settings={settings} />;
       case 'maintenance':
-        return <MaintenanceAssets settings={settings} />;
       case 'bi_analytics':
-        return <BIAnalytics settings={settings} />;
       case 'demand_forecast':
-        return <DemandForecast settings={settings} />;
       case 'erp_integration':
-        return <ERPIntegration settings={settings} />;
       case 'cctv':
-        return <CCTVIntegration settings={settings} />;
       case 'api_gateway':
-        return <APIGateway settings={settings} />;
+        // Let EnterpriseHub handle the internal tab selection using the activeView
+        return <EnterpriseHub settings={settings} activeModule={activeView} />;
 
       default:
         return (

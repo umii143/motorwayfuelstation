@@ -64,6 +64,7 @@ export interface Nozzle extends TenantDocument {
 export interface Pump extends TenantDocument {
   id: string;
   name: string;
+  nozzleCount?: number;
 }
 
 export interface Customer extends TenantDocument {
@@ -392,4 +393,155 @@ export interface Organization {
   subscriptionEndDate?: number;
   createdAt: number;
   updatedAt: number;
+}
+
+// Phase 1 - Fleet Management Types
+
+export interface FleetAccount extends TenantDocument {
+  id: string;
+  companyName: string;
+  contactPerson: string;
+  phone: string;
+  email: string;
+  address: string;
+  creditLimit: number;
+  balance: number; // Positive means they owe us
+  status: 'active' | 'suspended' | 'closed';
+  contractStartDate?: string;
+  contractEndDate?: string;
+}
+
+export interface FleetVehicle extends TenantDocument {
+  id: string;
+  accountId: string;
+  registrationNumber: string;
+  make: string;
+  model: string;
+  category: 'car' | 'truck' | 'bus' | 'van' | 'heavy_machinery';
+  rfidTag?: string;
+  status: 'active' | 'inactive' | 'maintenance';
+  monthlyFuelLimit: number; // in Liters
+  currentMonthConsumption: number; // in Liters
+}
+
+export interface Driver extends TenantDocument {
+  id: string;
+  accountId: string;
+  name: string;
+  licenseNumber: string;
+  phone: string;
+  assignedVehicleId?: string;
+  status: 'active' | 'suspended';
+}
+
+export interface FleetTransaction extends TenantDocument {
+  id: string;
+  accountId: string;
+  vehicleId?: string;
+  driverId?: string;
+  productId: string; // Type of fuel
+  date: string;
+  quantity: number;
+  rate: number;
+  amount: number;
+  type: 'consumption' | 'payment' | 'adjustment';
+  paymentMode?: 'cash' | 'cheque' | 'bank_transfer' | 'credit';
+  referenceNumber?: string;
+  invoiceId?: string;
+}
+
+// Phase 2 - Logistics & Tanker Operations Types
+
+export interface TankerSchedule extends TenantDocument {
+  id: string;
+  supplierId: string;
+  poNumber: string; // Purchase Order Number
+  productId: string;
+  orderedQuantity: number;
+  expectedDeliveryDate: string; // ISO date or datetime
+  eta?: string; // Estimated Time of Arrival
+  driverName?: string;
+  driverPhone?: string;
+  vehicleRegNo?: string;
+  status: 'pending' | 'in_transit' | 'delivered' | 'cancelled';
+}
+
+export interface TankerDelivery extends TenantDocument {
+  id: string;
+  scheduleId: string;
+  tankId: string;
+  actualDeliveryDate: string;
+  invoiceQuantity: number;
+  actualDipQuantity: number; // Dip difference after decanting
+  shortageQuantity: number; // Invoice - Actual Dip
+  shortageAmount: number; // Value of lost fuel
+  status: 'verified' | 'disputed';
+  decantedBy: string; // Staff ID
+  notes?: string;
+}
+
+// Phase 3 - Loss Prevention & Compliance Types
+
+export interface VarianceIncident extends TenantDocument {
+  id: string;
+  date: string;
+  type: 'tank_shrinkage' | 'cash_variance' | 'thermal_expansion' | 'suspected_theft';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  sourceId: string; // Tank ID, Shift ID, or Delivery ID
+  expectedAmount: number; // Volume or Cash
+  actualAmount: number; // Volume or Cash
+  varianceAmount: number; // The difference
+  financialLoss: number; // Monetary value of the variance
+  status: 'open' | 'investigating' | 'resolved';
+  investigatorId?: string; // Staff ID
+  resolutionNotes?: string;
+}
+
+// Phase 4 - Maintenance & Asset Management Types
+
+export interface Asset extends TenantDocument {
+  id: string;
+  name: string; // e.g., Pump 1, Generator A
+  type: 'pump' | 'nozzle' | 'generator' | 'compressor' | 'other';
+  serialNumber?: string;
+  installationDate: string;
+  warrantyExpiryDate?: string;
+  status: 'active' | 'under_maintenance' | 'retired';
+}
+
+export interface MaintenanceRecord extends TenantDocument {
+  id: string;
+  assetId: string;
+  type: 'preventive' | 'corrective';
+  description: string;
+  scheduledDate: string;
+  completedDate?: string;
+  cost: number;
+  provider: string; // Internal staff or external vendor
+  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+  notes?: string;
+}
+
+// Phase 5 - Loyalty & Corporate Rewards Types
+
+export interface LoyaltyMember extends TenantDocument {
+  id: string;
+  name: string;
+  phone: string;
+  cardNumber?: string;
+  email?: string;
+  tier: 'bronze' | 'silver' | 'gold' | 'platinum';
+  pointsBalance: number;
+  status: 'active' | 'suspended';
+  joinDate: string;
+}
+
+export interface RewardTransaction extends TenantDocument {
+  id: string;
+  memberId: string;
+  type: 'earn' | 'redeem' | 'adjustment';
+  points: number; // Positive for earn/adjustment, negative for redeem
+  sourceTransactionId?: string; // Optional link to a POS receipt
+  description: string;
+  date: string;
 }

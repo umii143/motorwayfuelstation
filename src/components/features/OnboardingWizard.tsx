@@ -775,8 +775,47 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
             </div>
           )}
 
-          {/* ╔══ STEP 2: TANKS ══╗ */}
-          {false && (
+          {/* ╔══ STEP 2: PRODUCTS ══╗ */}
+          {step === 2 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                <Fuel className="h-5 w-5 text-orange-600" />
+                <h3 className="font-sans text-sm font-black text-slate-900 uppercase tracking-wider">
+                  {t('Select Fuel Products', 'ایندھن کی اقسام منتخب کریں')}
+                </h3>
+              </div>
+              <p className="text-[10px] text-slate-400 font-sans">
+                {t('Select all fuel types sold at this station. You can change this later.', 'اس اسٹیشن پر فروخت ہونے والے تمام ایندھن کی اقسام منتخب کریں۔')}
+              </p>
+              {errors['products'] && <p className="text-red-500 text-[11px] font-bold">⚠ {errors['products']}</p>}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {(Object.entries(FUEL_LABELS) as [FuelType, typeof FUEL_LABELS[FuelType]][]).map(([ft, info]) => {
+                  const isSelected = selectedProducts.includes(ft);
+                  return (
+                    <button key={ft} type="button"
+                      onClick={() => {
+                        setSelectedProducts(prev =>
+                          isSelected ? prev.filter(p => p !== ft) : [...prev, ft]
+                        );
+                        setErrors(prev => { const n = {...prev}; delete n['products']; return n; });
+                      }}
+                      className={`p-4 rounded-xl border-2 text-left transition-all cursor-pointer ${
+                        isSelected ? 'border-orange-500 bg-orange-50 shadow-md' : 'border-slate-200 hover:border-slate-300 bg-white'
+                      }`}>
+                      <span className="text-2xl block mb-2">{info.emoji}</span>
+                      <strong className={`block font-sans text-sm font-black ${isSelected ? 'text-orange-700' : 'text-slate-700'}`}>
+                        {lang === 'ur' ? info.ur : info.en}
+                      </strong>
+                      {isSelected && <CheckCircle className="absolute top-3 right-3 h-4 w-4 text-orange-600" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ╔══ STEP 3: TANKS ══╗ */}
+          {step === 3 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
@@ -875,7 +914,7 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
             </div>
           )}
 
-                    {/* ╔══ STEP 4: PUMPS & NOZZLES ══╗ */}
+          {/* ╔══ STEP 4: PUMPS & NOZZLES ══╗ */}
           {step === 4 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -892,7 +931,7 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
                 </button>
               </div>
               <p className="text-[10px] text-slate-400 font-sans bg-blue-50 border border-blue-100 rounded-lg p-3">
-                💡 {t('A "Pump Machine" is the physical dispenser unit. Each machine can have 2 or 4 nozzles.', 'پمپ مشین وہ فزیکل ڈسپنسر یونٹ ہے۔ ہر مشین میں 2 یا 4 نوزل ہو سکتی ہیں۔')}
+                💡 {t('A "Pump Machine" is the physical dispenser unit. Each machine can have 2 or 4 nozzles.', 'پمپ مشین وہ فزیکل ڈسپنسر یونٹ ہے۔ ہر مشین میں 2 یا 4 نوزل ہو سکتی ہیں.')}
               </p>
 
               <div className="space-y-6">
@@ -1056,7 +1095,7 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
             </div>
           )}
 
-                    {/* ╔══ STEP 6: OPENING STOCK ══╗ */}
+          {/* ╔══ STEP 6: OPENING STOCK ══╗ */}
           {step === 6 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
@@ -1106,7 +1145,7 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
           )}
 
           {/* ╔══ STEP 7: STAFF ══╗ */}
-          {step === 9 && (
+          {step === 7 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
@@ -1204,7 +1243,7 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
           )}
 
           {/* ╔══ STEP 8: REVIEW & CONFIRM ══╗ */}
-          {step === 9 && (
+          {step === 8 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
                 <ShieldCheck className="h-5 w-5 text-orange-600" />
@@ -1213,100 +1252,146 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
                 </h3>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-sans">
-                {/* Station Summary */}
-                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 space-y-2">
-                  <h4 className="font-black text-slate-700 text-[10px] uppercase tracking-wider flex items-center gap-1">
-                    <Building className="h-3.5 w-3.5 text-orange-600" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-sans">
+
+                {/* ── Station Info ── */}
+                <div className="rounded-xl border-2 border-slate-200 bg-white p-4 space-y-3 shadow-sm">
+                  <h4 className="font-black text-slate-800 text-[11px] uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
+                    <Building className="h-3.5 w-3.5 text-orange-600 shrink-0" />
                     {t('Station Info', 'اسٹیشن معلومات')}
                   </h4>
-                  <div className="space-y-1 text-[11px]">
-                    <div className="flex justify-between"><span className="text-slate-500">{t('Name:', 'نام:')}</span><span className="font-bold">{stationName}</span></div>
-                    <div className="flex justify-between"><span className="text-slate-500">{t('Owner:', 'مالک:')}</span><span className="font-bold">{ownerName}</span></div>
-                    <div className="flex justify-between"><span className="text-slate-500">{t('City:', 'شہر:')}</span><span className="font-bold">{city}</span></div>
-                    <div className="flex justify-between"><span className="text-slate-500">{t('Phone:', 'فون:')}</span><span className="font-bold font-mono">{phone}</span></div>
-                    {ntn && <div className="flex justify-between"><span className="text-slate-500">NTN:</span><span className="font-bold font-mono">{ntn}</span></div>}
-                    {ograNo && <div className="flex justify-between"><span className="text-slate-500">OGRA:</span><span className="font-bold font-mono">{ograNo}</span></div>}
-                    {supplierName && <div className="flex justify-between"><span className="text-slate-500">{t('Supplier:', 'سپلائر:')}</span><span className="font-bold">{supplierName}</span></div>}
+                  <div className="space-y-2">
+                    {[
+                      { label: t('Name', 'نام'), value: stationName },
+                      { label: t('Owner', 'مالک'), value: ownerName },
+                      { label: t('City', 'شہر'), value: city },
+                      { label: t('Phone', 'فون'), value: phone, mono: true },
+                      ...(ntn ? [{ label: 'NTN', value: ntn, mono: true }] : []),
+                      ...(ograNo ? [{ label: 'OGRA', value: ograNo, mono: true }] : []),
+                      ...(supplierName ? [{ label: t('Supplier', 'سپلائر'), value: supplierName }] : []),
+                    ].map(row => (
+                      <div key={row.label} className="flex items-center justify-between gap-2 text-xs">
+                        <span className="text-slate-500 font-semibold shrink-0">{row.label}:</span>
+                        <span className={`font-bold text-slate-900 text-right truncate ${row.mono ? 'font-mono' : ''}`}>{row.value || '—'}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                {/* Tanks Summary */}
-                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 space-y-2">
-                  <h4 className="font-black text-slate-700 text-[10px] uppercase tracking-wider flex items-center gap-1">
-                    <Database className="h-3.5 w-3.5 text-orange-600" />
+                {/* ── Tanks ── */}
+                <div className="rounded-xl border-2 border-slate-200 bg-white p-4 space-y-3 shadow-sm">
+                  <h4 className="font-black text-slate-800 text-[11px] uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
+                    <Database className="h-3.5 w-3.5 text-orange-600 shrink-0" />
                     {t(`${tankInputs.length} Storage Tanks`, `${tankInputs.length} اسٹوریج ٹینکس`)}
                   </h4>
-                  <div className="space-y-1">
-                    {tankInputs.map((tk, i) => (
-                      <div key={i} className="flex items-center justify-between text-[10px]">
-                        <div className="flex items-center gap-1">
-                          <span>{FUEL_LABELS[tk.fuelType].emoji}</span>
-                          <span className="text-slate-600 font-semibold">{tk.name}</span>
+                  <div className="space-y-2.5">
+                    {tankInputs.map((tk, i) => {
+                      const stock = openingStocks[i] || 0;
+                      const pct = tk.capacity > 0 ? Math.min(100, (stock / tk.capacity) * 100) : 0;
+                      return (
+                        <div key={i} className="space-y-1">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="flex items-center gap-1 font-bold text-slate-800">
+                              <span>{FUEL_LABELS[tk.fuelType].emoji}</span>
+                              <span>{tk.name}</span>
+                            </span>
+                            <span className="font-mono text-slate-600 font-semibold text-[10px]">
+                              {stock.toLocaleString()} / {tk.capacity.toLocaleString()} L
+                            </span>
+                          </div>
+                          <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-full rounded-full bg-orange-400 transition-all" style={{ width: `${pct}%` }} />
+                          </div>
                         </div>
-                        <span className="font-mono text-slate-500">{(openingStocks[i] || 0).toLocaleString()} / {tk.capacity.toLocaleString()}</span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* Pumps & Nozzles */}
-                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 space-y-2">
-                  <h4 className="font-black text-slate-700 text-[10px] uppercase tracking-wider flex items-center gap-1">
-                    <Gauge className="h-3.5 w-3.5 text-orange-600" />
-                    {t(`${pumpInputs.length} Pump Machines, ${nozzleInputs.length} Nozzles`, `${pumpInputs.length} پمپ مشینیں، ${nozzleInputs.length} نوزلز`)}
+                {/* ── Pumps & Nozzles ── */}
+                <div className="rounded-xl border-2 border-slate-200 bg-white p-4 space-y-3 shadow-sm">
+                  <h4 className="font-black text-slate-800 text-[11px] uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
+                    <Gauge className="h-3.5 w-3.5 text-orange-600 shrink-0" />
+                    {t(`${pumpInputs.length} Pumps · ${nozzleInputs.length} Nozzles`, `${pumpInputs.length} پمپس · ${nozzleInputs.length} نوزلز`)}
                   </h4>
-                  <div className="space-y-1">
-                    {pumpInputs.map((pm, i) => (
-                      <div key={i} className="text-[10px] text-slate-600">
-                        ⚙️ <span className="font-semibold">{pm.name}</span> — {pm.nozzleCount} {t('nozzles', 'نوزلز')}
-                      </div>
-                    ))}
+                  <div className="space-y-2">
+                    {pumpInputs.map((pm, i) => {
+                      let start = 0;
+                      for (let j = 0; j < i; j++) start += pumpInputs[j].nozzleCount;
+                      const myNozzles = nozzleInputs.slice(start, start + pm.nozzleCount);
+                      return (
+                        <div key={i} className="rounded-lg bg-slate-50 border border-slate-200 p-2.5">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="font-bold text-slate-800 text-xs">⚙️ {pm.name}</span>
+                            <span className="text-[10px] text-slate-500 font-semibold">{pm.nozzleCount} {t('nozzles', 'نوزلز')}</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {myNozzles.map((nz, ni) => (
+                              <span key={ni} className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${FUEL_LABELS[tankInputs[nz.tankIndex]?.fuelType || 'petrol'].color}`}>
+                                {nz.name}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* Rates Summary */}
-                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 space-y-2">
-                  <h4 className="font-black text-slate-700 text-[10px] uppercase tracking-wider flex items-center gap-1">
-                    <TrendingUp className="h-3.5 w-3.5 text-orange-600" />
+                {/* ── Fuel Rates ── */}
+                <div className="rounded-xl border-2 border-slate-200 bg-white p-4 space-y-3 shadow-sm">
+                  <h4 className="font-black text-slate-800 text-[11px] uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
+                    <TrendingUp className="h-3.5 w-3.5 text-orange-600 shrink-0" />
                     {t('Fuel Rates', 'ایندھن ریٹس')}
                   </h4>
-                  <div className="space-y-1">
-                    {activeFuelTypes.map(ft => (
-                      <div key={ft} className="flex items-center justify-between text-[10px]">
-                        <FuelChip ft={ft} />
-                        <div className="text-right">
-                          <div className="font-mono font-black text-slate-800">Rs. {rates[ft].toFixed(2)}</div>
-                          <div className="text-[9px] text-emerald-600">+Rs. {(rates[ft] - purchasePrices[ft]).toFixed(2)} {t('margin', 'منافع')}</div>
+                  <div className="space-y-2.5">
+                    {activeFuelTypes.map(ft => {
+                      const margin = rates[ft] - purchasePrices[ft];
+                      return (
+                        <div key={ft} className="flex items-center justify-between gap-2">
+                          <FuelChip ft={ft} />
+                          <div className="text-right">
+                            <div className="font-mono font-black text-slate-900 text-xs">Rs. {rates[ft].toFixed(2)}</div>
+                            <div className={`text-[10px] font-bold ${margin >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                              {margin >= 0 ? '+' : ''}Rs. {margin.toFixed(2)} {t('margin', 'مارجن')}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* Staff Summary */}
-                <div className="sm:col-span-2 rounded-xl border border-slate-200 bg-slate-50/50 p-4 space-y-2">
-                  <h4 className="font-black text-slate-700 text-[10px] uppercase tracking-wider flex items-center gap-1">
-                    <Users2 className="h-3.5 w-3.5 text-orange-600" />
-                    {t(`${staffList.length + 1} Accounts Created`, `${staffList.length + 1} اکاؤنٹس بنائے گئے`)}
+                {/* ── Staff Summary ── */}
+                <div className="sm:col-span-2 rounded-xl border-2 border-slate-200 bg-white p-4 space-y-3 shadow-sm">
+                  <h4 className="font-black text-slate-800 text-[11px] uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
+                    <Users2 className="h-3.5 w-3.5 text-orange-600 shrink-0" />
+                    {t(`${staffList.length + 1} Staff Accounts`, `${staffList.length + 1} اسٹاف اکاؤنٹس`)}
                   </h4>
                   <div className="flex flex-wrap gap-2">
-                    <span className="bg-orange-50 border border-orange-100 text-orange-700 text-[10px] font-bold px-2.5 py-1 rounded-lg">
-                      👑 {ownerName} (Owner)
+                    <span className="bg-orange-50 border-2 border-orange-200 text-orange-800 text-xs font-bold px-3 py-1.5 rounded-lg inline-flex items-center gap-1">
+                      👑 {ownerName || t('Owner', 'مالک')}
+                      <span className="text-[10px] opacity-70 font-medium ml-0.5">(Owner)</span>
                     </span>
                     {staffList.map((st, i) => (
-                      <span key={i} className="bg-slate-100 border border-slate-200 text-slate-700 text-[10px] font-bold px-2.5 py-1 rounded-lg">
-                        👤 {st.name} ({st.role})
+                      <span key={i} className="bg-slate-100 border-2 border-slate-200 text-slate-800 text-xs font-bold px-3 py-1.5 rounded-lg inline-flex items-center gap-1">
+                        👤 {st.name || '—'}
+                        <span className="text-[10px] opacity-60 font-medium ml-0.5">({st.role})</span>
                       </span>
                     ))}
                   </div>
                 </div>
+
               </div>
 
-              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-                <p className="text-[11px] text-emerald-700 font-bold flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 shrink-0" />
-                  {t('Everything looks correct? Click "Launch Station" below to save all configuration and go to your live dashboard.', 'سب کچھ درست لگتا ہے؟ نیچے "اسٹیشن شروع کریں" پر کلک کریں تاکہ تمام ترتیبات محفوظ ہو جائیں اور آپ کا لائیو ڈیش بورڈ کھل جائے۔')}
+              {/* Confirm Banner */}
+              <div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4 flex items-start gap-3">
+                <CheckCircle className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                <p className="text-sm text-emerald-800 font-semibold leading-snug">
+                  {t(
+                    'Everything looks correct? Click "Confirm & Launch" below to save all configuration and open your live dashboard.',
+                    'سب کچھ درست لگتا ہے؟ نیچے "تصدیق کریں" پر کلک کریں تاکہ تمام ترتیبات محفوظ ہو جائیں اور آپ کا لائیو ڈیش بورڈ کھل جائے۔'
+                  )}
                 </p>
               </div>
             </div>
@@ -1361,7 +1446,7 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
         </div>
 
         {/* ── BOTTOM NAV ── */}
-        {step > 0 && step < 8 && (
+        {step > 0 && step < 9 && (
           <div className="bg-slate-50 border-t border-slate-100 px-5 py-3 flex justify-between items-center">
             <button onClick={handleBack}
               className="flex items-center gap-1.5 px-4 py-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 text-xs font-bold cursor-pointer min-h-[44px] min-w-[80px] transition-all">
@@ -1378,7 +1463,7 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
               )}
               <button onClick={handleNext}
                 className="flex items-center gap-1.5 px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-xl cursor-pointer min-h-[44px] shadow-sm transition-all active:scale-95">
-                {step === 7 ? t('Confirm & Proceed', 'تصدیق کریں') : t('Next →', 'اگلا')}
+                {step === 8 ? t('Confirm & Launch', 'تصدیق کریں') : t('Next →', 'اگلا')}
               </button>
             </div>
           </div>

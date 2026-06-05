@@ -92,7 +92,9 @@ export default function Inventory({
   const openAddProduct = () => {
     setEditingProduct(null);
     setProdName(''); setProdUrduName(''); setProdRate(''); setProdUnit('Pcs');
-    setProdType('lube'); setProdMinStock(''); setProdOpeningStock('');
+    // Default type is 'fuel' for fuel stations, 'lube' for lube businesses
+    setProdType(isLube ? 'lube' : 'fuel');
+    setProdMinStock(''); setProdOpeningStock('');
     setShowAddProductModal(true);
   };
 
@@ -409,25 +411,28 @@ export default function Inventory({
           </button>
 
           <button
-            onClick={openAddProduct}
-            className="flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-2 font-sans text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all cursor-pointer"
-          >
-            <PlusCircle className="h-4 w-4" />
-            <span>{t('Register Product', 'نئی پروڈکٹ شامل کریں')}</span>
-          </button>
-
-          <button
             onClick={() => setShowAddStockModal(true)}
             className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2 font-sans text-xs font-bold text-white shadow-md hover:bg-orange-700 transition-all cursor-pointer"
           >
             <PlusCircle className="h-4 w-4" />
             <span>{t('Supplier Stock Receipt', 'نیا اسٹاک وصول کریں')}</span>
           </button>
+
+          {/* Register Product — only shown for Lube businesses */}
+          {isLube && (
+          <button
+            onClick={openAddProduct}
+            className="flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-2 font-sans text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all cursor-pointer"
+          >
+            <PlusCircle className="h-4 w-4" />
+            <span>{t('Register Product', 'نئی پروڈکٹ شامل کریں')}</span>
+          </button>
+          )}
         </div>
       </div>
 
       {/* BEN-TO ROW INVENTORY STATS OVERVIEWS */}
-      <div className={`grid grid-cols-1 gap-4 ${isLube ? 'sm:grid-cols-2' : 'sm:grid-cols-3'}`}>
+      <div className={`grid grid-cols-1 gap-4 ${isLube ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
         {/* Total Fuels — hidden for lube businesses */}
         {!isLube && (
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs flex items-center gap-3">
@@ -443,7 +448,8 @@ export default function Inventory({
         </div>
         )}
 
-        {/* Total Lubes */}
+        {/* Total Lubes — ONLY shown for lube businesses */}
+        {isLube && (
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs flex items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
             <Package className="h-5 w-5" />
@@ -455,6 +461,7 @@ export default function Inventory({
             </strong>
           </div>
         </div>
+        )}
 
         {/* Low warning stock items */}
         <div className={`rounded-xl border p-4 shadow-xs flex items-center gap-3 transition-colors ${lowStockCount > 0 ? 'border-red-250 bg-red-50/20' : 'border-slate-200 bg-white'}`}>
@@ -517,11 +524,12 @@ export default function Inventory({
               {/* Categorization controls */}
               <div className="flex flex-wrap gap-1.5">
                 {[
-                  { id: 'all', label: 'All Stock', urdu: 'کل اسٹاک' },
-                  { id: 'fuel', label: 'Fuels Only', urdu: 'صرح پیٹرولیم' },
-                  { id: 'lube', label: 'Lubes & Oils', urdu: 'انجن آئل' },
-                  { id: 'low', label: 'Low Alert', urdu: 'انتباہی اسٹاک' }
-                ].map(f => (
+                  { id: 'all', label: 'All Stock', urdu: 'کل اسٹاک', show: true },
+                  { id: 'fuel', label: 'Fuels Only', urdu: 'صرف پیٹرولیم', show: true },
+                  // Lubes & Oils filter only visible in Lube business
+                  { id: 'lube', label: 'Lubes & Oils', urdu: 'انجن آئل', show: isLube },
+                  { id: 'low', label: 'Low Alert', urdu: 'انتباہی اسٹاک', show: true }
+                ].filter(f => f.show).map(f => (
                   <button
                     key={f.id}
                     onClick={() => setFilterType(f.id as any)}
@@ -571,7 +579,9 @@ export default function Inventory({
                         <div className="flex justify-between items-start">
                           <div>
                             <strong className="font-sans text-sm font-black text-slate-800 block group-hover:text-orange-600 transition-colors">{t(prod.name, prod.urduName)}</strong>
-                            <span className="font-sans text-[10px] uppercase font-bold tracking-wider text-slate-400 mt-1 block">{prod.type} Item</span>
+                            <span className="font-sans text-[10px] uppercase font-bold tracking-wider text-slate-400 mt-1 block">
+                              {prod.type === 'fuel' ? t('Fuel Product', 'پٹرولیم پراڈکٹ') : prod.type === 'lube' ? t('Lubricant / Oil', 'لیوب آئل') : t('Other Item', 'دیگر آئٹم')}
+                            </span>
                           </div>
                           {isLow ? (
                             <span className="rounded-full bg-red-50 text-red-700 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider select-none animate-pulse border border-red-100 shadow-xs shadow-red-500/20">
@@ -1222,14 +1232,17 @@ export default function Inventory({
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Product Type:', 'پروڈکٹ کی قسم:')}</label>
                     <div className="flex gap-2">
-                      {(['lube', 'fuel', 'other'] as const).map(pt => (
+                      {/* For Fuel Station: only fuel & other. For Lube: all types */}
+                      {(['lube', 'fuel', 'other'] as const)
+                        .filter(pt => isLube || pt !== 'lube')
+                        .map(pt => (
                         <button type="button" key={pt} onClick={() => setProdType(pt)}
                           className={`flex-1 py-1.5 rounded-lg border font-sans text-xs font-bold cursor-pointer ${
                             prodType === pt
                               ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
                               : 'border-slate-200 text-slate-500'
                           }`}>
-                          {pt.charAt(0).toUpperCase() + pt.slice(1)}
+                          {pt === 'fuel' ? '⛽ Fuel' : pt === 'lube' ? '🛢️ Lube' : '📦 Other'}
                         </button>
                       ))}
                     </div>

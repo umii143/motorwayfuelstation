@@ -107,6 +107,7 @@ export interface StationContextType {
   handleAddStockReceipt: (txn: StockTransaction) => void;
   handleUpdateProductStock: (productId: string, newStock: number) => void;
   handleUpdateProductRate: (productId: string, newRate: number, reason?: string, changedBy?: string, dateStr?: string) => void;
+  handleDeleteRateHistory: (id: string) => void;
   handleUpdateProduct: (updatedProduct: Product) => void;
   handleDeleteProduct: (productId: string) => void;
   handleAddProduct: (newProduct: Product) => void;
@@ -1075,6 +1076,14 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     );
   };
 
+  const handleDeleteRateHistory = async (id: string) => {
+    checkPerm('pricing.manage', 'delete rate history entry', 'ریٹ ہسٹری حذف کرنے');
+    setRateHistory((prev) => prev.filter((rh) => rh.id !== id));
+    if (orgId) {
+      await firestoreDb.deleteDocument(orgId, activeStationId, 'rateHistory', id);
+    }
+  };
+
   const handleAddTank = async (newTank: Tank) => {
     checkPerm('tank.manage', 'add tank', 'ٹینک شامل کرنے');
     setTanks((prev) => [...prev, newTank]);
@@ -1755,6 +1764,7 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     handleAddStockReceipt,
     handleUpdateProductStock,
     handleUpdateProductRate,
+    handleDeleteRateHistory,
     handleUpdateProduct,
     handleDeleteProduct,
     handleAddProduct,

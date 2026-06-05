@@ -22,7 +22,18 @@ import {
   AttendanceRecord,
   Station,
   AuditTrailEntry,
-  LubePosSale
+  LubePosSale,
+  FleetAccount,
+  FleetVehicle,
+  Driver,
+  FleetTransaction,
+  TankerSchedule,
+  TankerDelivery,
+  VarianceIncident,
+  Asset,
+  MaintenanceRecord,
+  LoyaltyMember,
+  RewardTransaction
 } from '../types';
 
 const STORAGE_KEYS = {
@@ -47,7 +58,18 @@ const SPECIAL_STORAGE_KEYS = {
   STANDALONE_EXPENSES: 'fuelpro_standalone_expenses',
   RECONCILED_SHIFTS: 'fuelpro_reconciled_shifts',
   SETTINGS_AUDIT_TRAIL: 'fuelpro_settings_audit_trail',
-  LUBE_POS_SALES: 'fuelpro_lube_pos_sales'
+  LUBE_POS_SALES: 'fuelpro_lube_pos_sales',
+  FLEET_ACCOUNTS: 'fuelpro_fleet_accounts',
+  FLEET_VEHICLES: 'fuelpro_fleet_vehicles',
+  FLEET_DRIVERS: 'fuelpro_fleet_drivers',
+  FLEET_TRANSACTIONS: 'fuelpro_fleet_transactions',
+  TANKER_SCHEDULES: 'fuelpro_tanker_schedules',
+  TANKER_DELIVERIES: 'fuelpro_tanker_deliveries',
+  VARIANCE_INCIDENTS: 'fuelpro_variance_incidents',
+  ASSETS: 'fuelpro_assets',
+  MAINTENANCE_RECORDS: 'fuelpro_maintenance_records',
+  LOYALTY_MEMBERS: 'fuelpro_loyalty_members',
+  REWARD_TRANSACTIONS: 'fuelpro_reward_transactions'
 };
 
 // Clear trigger for clean slate if needed
@@ -479,6 +501,128 @@ export const db = {
       db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.LUBE_POS_SALES),
       sales
     ),
+
+  getFleetAccounts: (stationId: string): FleetAccount[] =>
+    getStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.FLEET_ACCOUNTS),
+      [] as FleetAccount[]
+    ),
+  saveFleetAccounts: (stationId: string, accounts: FleetAccount[]) =>
+    setStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.FLEET_ACCOUNTS),
+      accounts
+    ),
+
+  getFleetVehicles: (stationId: string): FleetVehicle[] =>
+    getStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.FLEET_VEHICLES),
+      [] as FleetVehicle[]
+    ),
+  saveFleetVehicles: (stationId: string, vehicles: FleetVehicle[]) =>
+    setStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.FLEET_VEHICLES),
+      vehicles
+    ),
+
+  getFleetDrivers: (stationId: string): Driver[] =>
+    getStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.FLEET_DRIVERS),
+      [] as Driver[]
+    ),
+  saveFleetDrivers: (stationId: string, drivers: Driver[]) =>
+    setStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.FLEET_DRIVERS),
+      drivers
+    ),
+
+  getFleetTransactions: (stationId: string): FleetTransaction[] =>
+    getStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.FLEET_TRANSACTIONS),
+      [] as FleetTransaction[]
+    ),
+  saveFleetTransactions: (stationId: string, txns: FleetTransaction[]) =>
+    setStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.FLEET_TRANSACTIONS),
+      txns
+    ),
+
+  getTankerSchedules: (stationId: string): TankerSchedule[] =>
+    getStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.TANKER_SCHEDULES),
+      [] as TankerSchedule[]
+    ),
+  saveTankerSchedules: (stationId: string, schedules: TankerSchedule[]) =>
+    setStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.TANKER_SCHEDULES),
+      schedules
+    ),
+
+  getTankerDeliveries: (stationId: string): TankerDelivery[] =>
+    getStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.TANKER_DELIVERIES),
+      [] as TankerDelivery[]
+    ),
+  saveTankerDeliveries: (stationId: string, deliveries: TankerDelivery[]) =>
+    setStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.TANKER_DELIVERIES),
+      deliveries
+    ),
+
+  getVarianceIncidents: (stationId: string): VarianceIncident[] =>
+    getStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.VARIANCE_INCIDENTS),
+      [] as VarianceIncident[]
+    ),
+  saveVarianceIncidents: (stationId: string, incidents: VarianceIncident[]) =>
+    setStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.VARIANCE_INCIDENTS),
+      incidents
+    ),
+
+  getAssets: (stationId: string): Asset[] =>
+    getStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.ASSETS),
+      [] as Asset[]
+    ),
+  saveAssets: (stationId: string, assets: Asset[]) =>
+    setStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.ASSETS),
+      assets
+    ),
+
+  getMaintenanceRecords: (stationId: string): MaintenanceRecord[] =>
+    getStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.MAINTENANCE_RECORDS),
+      [] as MaintenanceRecord[]
+    ),
+  saveMaintenanceRecords: (stationId: string, records: MaintenanceRecord[]) =>
+    setStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.MAINTENANCE_RECORDS),
+      records
+    ),
+
+  getLoyaltyMembers: (stationId: string): LoyaltyMember[] =>
+    getStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.LOYALTY_MEMBERS),
+      [] as LoyaltyMember[]
+    ),
+  saveLoyaltyMembers: (stationId: string, members: LoyaltyMember[]) =>
+    setStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.LOYALTY_MEMBERS),
+      members
+    ),
+
+  getRewardTransactions: (stationId: string): RewardTransaction[] =>
+    getStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.REWARD_TRANSACTIONS),
+      [] as RewardTransaction[]
+    ),
+  saveRewardTransactions: (stationId: string, transactions: RewardTransaction[]) =>
+    setStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.REWARD_TRANSACTIONS),
+      transactions
+    ),
+
   clearSettingsAuditTrail: (stationId: string) => {
     const scopedKey = db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL);
     const legacyKey = buildLegacyStorageKey(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL);

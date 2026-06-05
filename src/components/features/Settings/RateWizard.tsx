@@ -29,7 +29,7 @@ export default function RateWizard({
   onLogAudit,
   onUpdateProducts
 }: RateWizardProps) {
-  const { showConfirm, showToast } = useStation();
+  const { showConfirm, showToast, handleDeleteRateHistory } = useStation();
   const t = (en: string, ur: string) => translate(en, ur, language);
 
   // States
@@ -141,9 +141,11 @@ export default function RateWizard({
   const handleDeleteHistoryLog = (id: string) => {
     showConfirm(
       t('Confirm Deletion', 'حذف کرنے کی تصدیق کریں'),
-      t('Are you sure you want to delete this historical rate entry?', 'کیا آپ واقعی اس ریٹ ہسٹری لاگ کو ڈیلیٹ کرنا چاہتے ہیں؟'),
+      t('Are you sure you want to delete this historical rate entry? This cannot be undone.', 'کیا آپ واقعی اس ریٹ ہسٹری لاگ کو ڈیلیٹ کرنا چاہتے ہیں؟'),
       () => {
         const entry = rateHistory.find(r => r.id === id);
+        // Actually remove from state + Firestore
+        handleDeleteRateHistory(id);
         onLogAudit('Tariff', 'Delete Log', `Historical rate entry for ${entry?.productId} on ${entry?.date} was manually deleted.`);
         showToast(t('History log record deleted.', 'تاریخی لاگ ریکارڈ خارج کر دیا گیا ہے۔'), 'success');
       }
@@ -507,6 +509,7 @@ export default function RateWizard({
                 <th className="py-2.5 px-2 text-left">{t('Product', 'پراڈکٹ')}</th>
                 <th className="py-2.5 px-2">{t('Old Rate', 'پرانا ریٹ')}</th>
                 <th className="py-2.5 px-2">{t('New Rate', 'نیا ریٹ')}</th>
+                <th className="py-2.5 px-2">{t('Variance %', 'فرق %')}</th>
                 <th className="py-2.5 px-2">{t('Stock Balance', 'موجودہ اسٹاک')}</th>
                 <th className="py-2.5 px-2">{t('Total Impact', 'نفع / نقصان')}</th>
                 <th className="py-2.5 px-2 text-right">{t('Operator / Action', 'وجہ / تبدیل کنندہ')}</th>
@@ -515,7 +518,7 @@ export default function RateWizard({
             <tbody className="divide-y divide-slate-100">
               {filteredRateHistory.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-6 text-center text-slate-400 text-xs">
+                  <td colSpan={8} className="py-6 text-center text-slate-400 text-xs">
                     {t('No price revision logs registered yet in this period.', 'اس مدت کے دوران پٹرول ریٹ تبدیلی کی ہسٹری خالی ہے۔')}
                   </td>
                 </tr>
@@ -530,6 +533,16 @@ export default function RateWizard({
                       </td>
                       <td className="py-2.5 px-2 font-mono text-slate-500">Rs. {rh.oldRate?.toFixed(2)}</td>
                       <td className="py-2.5 px-2 font-mono font-bold text-slate-800">Rs. {rh.newRate?.toFixed(2)}</td>
+                      <td className="py-2.5 px-2 font-mono font-bold">
+                        {(() => {
+                          const varPct = rh.oldRate && rh.oldRate > 0 ? ((rh.newRate - rh.oldRate) / rh.oldRate) * 100 : 0;
+                          return (
+                            <span className={varPct >= 0 ? 'text-emerald-600' : 'text-red-500'}>
+                              {varPct >= 0 ? '+' : ''}{varPct.toFixed(2)}%
+                            </span>
+                          );
+                        })()}
+                      </td>
                       <td className="py-2.5 px-2 font-mono text-slate-500">{(rh.stockAtTime || 0).toLocaleString()}</td>
                       <td className={`py-2.5 px-2 font-mono font-bold ${rh.impactAmount >= 0 ? 'text-teal-600' : 'text-red-500'}`}>
                         {rh.impactAmount >= 0 ? '+' : ''}Rs. {Number(rh.impactAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
