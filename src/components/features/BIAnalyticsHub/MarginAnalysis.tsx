@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GlobalSettings, Shift, Tank } from '../../../types';
+import { GlobalSettings, Shift, Tank, Nozzle, Product } from '../../../types';
 import { db } from '../../../data/db';
 import { TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 
@@ -8,13 +8,28 @@ interface MarginAnalysisProps {
   stationId: string;
 }
 
+const getFuelTypeFromProductName = (name: string) => {
+  const lower = name.toLowerCase();
+  if (lower.includes('octane') || lower.includes('hobc') || lower.includes('v-power') || lower.includes('high')) {
+    return 'V-Power';
+  }
+  if (lower.includes('diesel') || lower.includes('hsd') || lower.includes('euro')) {
+    return 'Diesel';
+  }
+  return 'Super'; // default to Super / PMG / Petrol
+};
+
 export default function MarginAnalysis({ settings, stationId }: MarginAnalysisProps) {
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [tanks, setTanks] = useState<Tank[]>([]);
+  const [nozzles, setNozzles] = useState<Nozzle[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     setShifts(db.getShifts(stationId));
     setTanks(db.getTanks(stationId));
+    setNozzles(db.getNozzles(stationId));
+    setProducts(db.getProducts(stationId));
   }, [stationId]);
 
   // We will mock cost prices to demonstrate margin analysis if actual costs aren't available per sale.
@@ -26,13 +41,26 @@ export default function MarginAnalysis({ settings, stationId }: MarginAnalysisPr
   };
 
   const getFuelTypeStats = (type: string) => {
-    const typeSales = shifts.flatMap(s => s.sales.filter(sale => {
-      const tank = tanks.find(t => t.id === sale.tankId);
-      return tank?.fuelType === type;
-    }));
+    let volume = 0;
+    let revenue = 0;
 
-    const volume = typeSales.reduce((sum, s) => sum + s.volume, 0);
-    const revenue = typeSales.reduce((sum, s) => sum + (s.volume * s.price), 0);
+    shifts.forEach(s => {
+      if (!s.closingReadings || !s.openingReadings) return;
+      Object.keys(s.closingReadings).forEach(nozzleId => {
+        const nozzle = nozzles.find(n => n.id === nozzleId);
+        if (!nozzle) return;
+        const product = products.find(p => p.id === nozzle.productId);
+        if (!product) return;
+        const fuelType = getFuelTypeFromProductName(product.name);
+        if (fuelType !== type) return;
+
+        const nozzleVol = Math.max(0, (s.closingReadings[nozzleId] || 0) - (s.openingReadings[nozzleId] || 0));
+        const nozzleRate = (s as any).rates?.[product.id] || product.rate || 0;
+        volume += nozzleVol;
+        revenue += (nozzleVol * nozzleRate);
+      });
+    });
+
     const avgSellingPrice = volume > 0 ? revenue / volume : 0;
     
     const estCost = mockCosts[type] || 0;
@@ -43,7 +71,7 @@ export default function MarginAnalysis({ settings, stationId }: MarginAnalysisPr
     return { volume, revenue, avgSellingPrice, estCost, marginPerLiter, totalProfit, marginPercent };
   };
 
-  const fuelTypes = Array.from(new Set<string>(tanks.map(t => t.fuelType)));
+  const fuelTypes = ['Super', 'Diesel', 'V-Power'];
 
   return (
     <div className="space-y-4">

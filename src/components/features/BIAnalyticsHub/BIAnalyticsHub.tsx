@@ -13,11 +13,16 @@ import {
 
 interface BIAnalyticsHubProps {
   settings: GlobalSettings;
+  initialTab?: 'executive' | 'forecast' | 'margins';
 }
 
-export default function BIAnalyticsHub({ settings }: BIAnalyticsHubProps) {
-  const [activeTab, setActiveTab] = useState<'executive' | 'forecast' | 'margins'>('executive');
+export default function BIAnalyticsHub({ settings, initialTab = 'executive' }: BIAnalyticsHubProps) {
+  const [activeTab, setActiveTab] = useState<'executive' | 'forecast' | 'margins'>(initialTab);
   const stationId = db.getActiveStationId();
+
+  React.useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   const tabs = [
     { id: 'executive', label: 'Executive Dashboard', icon: LayoutDashboard },

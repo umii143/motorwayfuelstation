@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GlobalSettings, Shift, Tank } from '../../../types';
+import { GlobalSettings, Shift, Tank, Nozzle, Product } from '../../../types';
 import { db } from '../../../data/db';
 import { LineChart, TrendingUp, DollarSign, Activity, ChevronRight } from 'lucide-react';
 
@@ -11,27 +11,41 @@ interface ExecutiveDashboardProps {
 export default function ExecutiveDashboard({ settings, stationId }: ExecutiveDashboardProps) {
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [tanks, setTanks] = useState<Tank[]>([]);
+  const [nozzles, setNozzles] = useState<Nozzle[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     setShifts(db.getShifts(stationId));
     setTanks(db.getTanks(stationId));
+    setNozzles(db.getNozzles(stationId));
+    setProducts(db.getProducts(stationId));
   }, [stationId]);
 
   // Aggregate Sales Data
   const currentMonthShifts = shifts.filter(s => {
-    const dt = new Date(s.startTime);
+    if (!s.date) return false;
+    const dt = new Date(s.date);
     const now = new Date();
     return dt.getMonth() === now.getMonth() && dt.getFullYear() === now.getFullYear();
   });
 
-  const totalRevenue = currentMonthShifts.reduce((sum, s) => {
-    const salesTotal = s.sales.reduce((salesSum, sale) => salesSum + (sale.volume * sale.price), 0);
-    return sum + salesTotal;
-  }, 0);
+  let totalVolume = 0;
+  let totalRevenue = 0;
 
-  const totalVolume = currentMonthShifts.reduce((sum, s) => {
-    return sum + s.sales.reduce((salesSum, sale) => salesSum + sale.volume, 0);
-  }, 0);
+  currentMonthShifts.forEach(s => {
+    if (!s.closingReadings || !s.openingReadings) return;
+    Object.keys(s.closingReadings).forEach(nozzleId => {
+      const nozzle = nozzles.find(n => n.id === nozzleId);
+      if (!nozzle) return;
+      const product = products.find(p => p.id === nozzle.productId);
+      if (!product) return;
+      
+      const vol = Math.max(0, (s.closingReadings[nozzleId] || 0) - (s.openingReadings[nozzleId] || 0));
+      const rate = (s as any).rates?.[product.id] || product.rate || 0;
+      totalVolume += vol;
+      totalRevenue += (vol * rate);
+    });
+  });
 
   const mockTargetRevenue = totalRevenue > 0 ? totalRevenue * 1.2 : 50000;
   const targetAchievedPercent = totalRevenue > 0 ? (totalRevenue / mockTargetRevenue) * 100 : 0;

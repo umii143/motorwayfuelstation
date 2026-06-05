@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GlobalSettings, Shift, Tank } from '../../../types';
+import { GlobalSettings, Shift, Tank, Nozzle, Product } from '../../../types';
 import { db } from '../../../data/db';
 import { BarChart3, TrendingUp, Sparkles, AlertTriangle } from 'lucide-react';
 
@@ -8,28 +8,58 @@ interface DemandForecastProps {
   stationId: string;
 }
 
+const getFuelTypeFromProductName = (name: string) => {
+  const lower = name.toLowerCase();
+  if (lower.includes('octane') || lower.includes('hobc') || lower.includes('v-power') || lower.includes('high')) {
+    return 'V-Power';
+  }
+  if (lower.includes('diesel') || lower.includes('hsd') || lower.includes('euro')) {
+    return 'Diesel';
+  }
+  return 'Super'; // default to Super / PMG / Petrol
+};
+
 export default function DemandForecast({ settings, stationId }: DemandForecastProps) {
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [tanks, setTanks] = useState<Tank[]>([]);
+  const [nozzles, setNozzles] = useState<Nozzle[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     setShifts(db.getShifts(stationId));
     setTanks(db.getTanks(stationId));
+    setNozzles(db.getNozzles(stationId));
+    setProducts(db.getProducts(stationId));
   }, [stationId]);
 
-  const fuelTypes = Array.from(new Set<string>(tanks.map(t => t.fuelType)));
+  const fuelTypes = ['Super', 'Diesel', 'V-Power'];
 
   // Mock Forecast Logic: Look at past 7 days average and project next 7 days with a +5% growth trend
   const generateMockForecast = (type: string) => {
-    const typeSales = shifts.flatMap(s => s.sales.filter(sale => {
-      const tank = tanks.find(t => t.id === sale.tankId);
-      return tank?.fuelType === type;
-    }));
+    let totalVol = 0;
+    let count = 0;
 
-    const totalVol = typeSales.reduce((sum, s) => sum + s.volume, 0);
-    const avgDailyVol = typeSales.length > 0 ? totalVol / 7 : 0; // Assuming the data represents a week for mock purposes
+    shifts.forEach(s => {
+      if (!s.closingReadings || !s.openingReadings) return;
+      let shiftVol = 0;
+      Object.keys(s.closingReadings).forEach(nozzleId => {
+        const nozzle = nozzles.find(n => n.id === nozzleId);
+        if (!nozzle) return;
+        const product = products.find(p => p.id === nozzle.productId);
+        if (!product) return;
+        const fuelType = getFuelTypeFromProductName(product.name);
+        if (fuelType !== type) return;
 
-    // If no sales, provide a baseline
+        const nozzleVol = Math.max(0, (s.closingReadings[nozzleId] || 0) - (s.openingReadings[nozzleId] || 0));
+        shiftVol += nozzleVol;
+      });
+      if (shiftVol > 0) {
+        totalVol += shiftVol;
+        count++;
+      }
+    });
+
+    const avgDailyVol = count > 0 ? totalVol / count : 0;
     const baseline = avgDailyVol > 0 ? avgDailyVol : 1500;
     
     return {
