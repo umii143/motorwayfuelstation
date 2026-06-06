@@ -47,6 +47,8 @@ import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
 import { DashboardAIInsights } from './DashboardAIInsights';
 import { DashboardRealtimeGauges } from './DashboardRealtimeGauges';
+import { DashboardWeeklyGraph } from './DashboardWeeklyGraph';
+import { DashboardLiquidAssetsGraph } from './DashboardLiquidAssetsGraph';
 
 const getFuelCategory = (productId: string, products: Product[]): 'petrol' | 'diesel' | 'cng' | null => {
   const p = products.find((prod) => prod.id === productId);
@@ -700,6 +702,12 @@ export default function Dashboard({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* DASHBOARD GRAPHS: Weekly Sales/Profit & Liquid Assets */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
+        <DashboardWeeklyGraph data={salesMarginTrendData} />
+        <DashboardLiquidAssetsGraph cashOnHand={stats.cashOnHand} banks={banks} dueRecovery={stats.dueRecovery} />
       </div>
 
       <DashboardAIInsights settings={settings} shifts={shifts} />
