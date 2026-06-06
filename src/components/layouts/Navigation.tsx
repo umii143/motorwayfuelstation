@@ -119,28 +119,37 @@ export default function Navigation({
     { id: 'shift_logs', icon: History, label: 'Shift Logs & Audit', urdu: 'شفٹ لاگز', showInLube: false },
     { id: 'price_management', icon: DollarSign, label: 'Price Management', urdu: 'قیمتیں اور نرخ', showInLube: false },
     { id: 'ledger', icon: BookOpen, label: 'Accounts & Billing', urdu: 'کھاتہ اور بلنگ', showInLube: true },
-    { id: 'loyalty', icon: Gift, label: 'Loyalty & Rewards', urdu: 'لائلٹی پروگرام', showInLube: true },
     { id: 'customers', icon: Users, label: 'Customers Khata', urdu: 'گاہکوں کا کھاتہ', showInLube: true },
     { id: 'suppliers', icon: Factory, label: isLube ? 'Suppliers' : 'Suppliers Depot', urdu: isLube ? 'سپلائرز' : 'سپلائرز ڈپو', showInLube: true },
-    { id: 'fleet', icon: Truck, label: 'Fleet Accounts', urdu: 'فلیٹ منیجمنٹ', showInLube: false },
-    { id: 'tanker_delivery', icon: ArrowRightLeft, label: isLube ? 'Supplier Deliveries' : 'Tankers & Delivery', urdu: isLube ? 'سپلائر ڈیلیوری' : 'ٹینکر شیڈول', showInLube: false },
     { id: 'inventory', icon: isLube ? Wrench : Fuel, label: isLube ? 'Product & Parts Stock' : 'Fuel Stock', urdu: isLube ? 'پروڈکٹ اسٹاک' : 'فیول اسٹاک', showInLube: true },
-    { id: 'loss_prevention', icon: ShieldAlert, label: 'Loss Prevention', urdu: 'نقصان کی روک تھام', showInLube: false },
-    { id: 'maintenance', icon: Wrench, label: 'Maintenance & Assets', urdu: 'مرمت', showInLube: true },
     { id: 'bank_cash', icon: Landmark, label: 'Bank Cash', urdu: 'بینک کیش', showInLube: true },
     { id: 'digital_cash', icon: Smartphone, label: 'Digital Cash', urdu: 'ڈیجیٹل کیش', showInLube: true },
     { id: 'discounts', icon: Tag, label: 'Discounts', urdu: 'ڈسکاؤنٹس', showInLube: true },
     { id: 'expenses', icon: TrendingDown, label: 'Expenses', urdu: 'اخراجات', showInLube: true },
     { id: 'staff', icon: Users2, label: 'Staff & Payroll', urdu: 'اسٹاف اور تنخواہ', showInLube: true },
-    { id: 'bi_analytics', icon: LineChart, label: 'BI Analytics', urdu: 'بی آئی اینالٹکس', showInLube: true },
-    { id: 'demand_forecast', icon: BarChart3, label: 'Demand Forecast', urdu: 'ڈیمانڈ', showInLube: true },
-    { id: 'erp_integration', icon: Link, label: 'ERP Connect', urdu: 'ای آر پی کنیکٹ', showInLube: true },
-    { id: 'cctv', icon: Camera, label: 'CCTV Security', urdu: 'سی سی ٹی وی', showInLube: true },
-    { id: 'api_gateway', icon: Network, label: 'API Gateway', urdu: 'اے پی آئی گیٹ وے', showInLube: true },
     { id: 'reports', icon: FileBarChart, label: isLube ? 'Lube Reports' : 'Advanced Reports (104)', urdu: isLube ? 'لیوب رپورٹس' : 'ایڈوانسڈ رپورٹس', showInLube: true },
     { id: 'dip_calculator', icon: Droplets, label: 'Dip Chart Calculator', urdu: 'دپ چارٹ کیلکولیٹر', showInLube: false },
     { id: 'ogra_sync', icon: ShieldCheck, label: 'OGRA Price Sync', urdu: 'OGRA قیمت سنک', showInLube: false },
     { id: 'whatsapp_alerts', icon: MessageCircle, label: 'WhatsApp Alerts', urdu: 'واٹس ایپ الرٹس', showInLube: true },
+    { 
+      id: 'enterprise_hub', 
+      icon: Building, 
+      label: 'Enterprise Modules', 
+      urdu: 'انٹرپرائز ماڈیولز', 
+      showInLube: true,
+      children: [
+        { id: 'fleet', icon: Truck, label: 'Fleet Accounts', urdu: 'فلیٹ منیجمنٹ', showInLube: false },
+        { id: 'tanker_delivery', icon: ArrowRightLeft, label: isLube ? 'Supplier Deliveries' : 'Tankers & Delivery', urdu: isLube ? 'سپلائر ڈیلیوری' : 'ٹینکر شیڈول', showInLube: false },
+        { id: 'loss_prevention', icon: ShieldAlert, label: 'Loss Prevention', urdu: 'نقصان کی روک تھام', showInLube: false },
+        { id: 'loyalty', icon: Gift, label: 'Loyalty & Rewards', urdu: 'لائلٹی پروگرام', showInLube: true },
+        { id: 'maintenance', icon: Wrench, label: 'Maintenance & Assets', urdu: 'مرمت', showInLube: true },
+        { id: 'bi_analytics', icon: LineChart, label: 'BI Analytics', urdu: 'بی آئی اینالٹکس', showInLube: true },
+        { id: 'demand_forecast', icon: BarChart3, label: 'Demand Forecast', urdu: 'ڈیمانڈ', showInLube: true },
+        { id: 'erp_integration', icon: Link, label: 'ERP Connect', urdu: 'ای آر پی کنیکٹ', showInLube: true },
+        { id: 'cctv', icon: Camera, label: 'CCTV Security', urdu: 'سی سی ٹی وی', showInLube: true },
+        { id: 'api_gateway', icon: Network, label: 'API Gateway', urdu: 'اے پی آئی گیٹ وے', showInLube: true },
+      ]
+    },
     { id: 'settings', icon: Settings, label: 'Settings', urdu: 'ترتیبات', showInLube: true },
     { id: 'security_hub', icon: Shield, label: 'Security & Roles', urdu: 'سیکیورٹی ہب', showInLube: true },
     { id: 'subscription_hub', icon: CreditCard, label: 'Subscription & Billing', urdu: 'بلنگ اور پلان', showInLube: true }
@@ -802,6 +811,60 @@ export default function Navigation({
           <nav className="space-y-1 px-3 flex-1 overflow-y-auto">
             {menuItems.map((item) => {
               const Icon = item.icon;
+              
+              if (item.children) {
+                // Determine if any child is active to keep accordion open by default
+                const isChildActive = item.children.some(child => activeView === child.id);
+                // We use a local state for accordion OR we can just keep it open if active
+                const [expanded, setExpanded] = React.useState(isChildActive);
+                
+                return (
+                  <div key={item.id} className="space-y-1">
+                    <button
+                      onClick={() => setExpanded(!expanded)}
+                      className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
+                        isChildActive
+                          ? isLube
+                            ? 'bg-blue-50 text-blue-600 font-bold border-l-4 border-blue-600 shadow-xs'
+                            : 'bg-orange-50 text-orange-600 font-bold border-l-4 border-orange-600 shadow-xs'
+                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon className={`h-5 w-5 ${isChildActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                        <span className="flex-1 text-left">{t(item.label, item.urdu)}</span>
+                      </div>
+                      <ChevronDown className={`h-4 w-4 transition-transform ${expanded ? 'rotate-180' : ''} ${isChildActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                    </button>
+                    
+                    {expanded && (
+                      <div className="pl-9 pr-2 space-y-1 mt-1 mb-2 animate-in slide-in-from-top-2 duration-200">
+                        {item.children.filter(child => isLube ? child.showInLube : true).map(child => {
+                          const ChildIcon = child.icon;
+                          const isChildItemActive = activeView === child.id;
+                          return (
+                            <button
+                              key={child.id}
+                              onClick={() => handleItemClick(child.id)}
+                              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 font-sans text-xs font-semibold transition-all cursor-pointer ${
+                                isChildItemActive
+                                  ? isLube
+                                    ? 'bg-blue-50 text-blue-700 font-bold'
+                                    : 'bg-orange-50 text-orange-700 font-bold'
+                                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                              }`}
+                            >
+                              <ChildIcon className={`h-4 w-4 ${isChildItemActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                              <span className="flex-1 text-left">{t(child.label, child.urdu)}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
               const isActive = activeView === item.id || (item.id === 'settings' && activeView.startsWith('setup_'));
               return (
                 <button
@@ -874,6 +937,60 @@ export default function Navigation({
             <nav className="space-y-1 px-3 flex-1 overflow-y-auto">
               {menuItems.map((item) => {
                 const Icon = item.icon;
+                
+                if (item.children) {
+                  // Determine if any child is active to keep accordion open by default
+                  const isChildActive = item.children.some(child => activeView === child.id);
+                  // We use a local state for accordion OR we can just keep it open if active
+                  const [expanded, setExpanded] = React.useState(isChildActive);
+                  
+                  return (
+                    <div key={item.id} className="space-y-1">
+                      <button
+                        onClick={() => setExpanded(!expanded)}
+                        className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
+                          isChildActive
+                            ? isLube
+                              ? 'bg-blue-50 text-blue-600 font-bold border-l-4 border-blue-600'
+                              : 'bg-orange-50 text-orange-600 font-bold border-l-4 border-orange-600'
+                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon className={`h-5 w-5 ${isChildActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                          <span className="flex-1 text-left">{t(item.label, item.urdu)}</span>
+                        </div>
+                        <ChevronDown className={`h-4 w-4 transition-transform ${expanded ? 'rotate-180' : ''} ${isChildActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                      </button>
+                      
+                      {expanded && (
+                        <div className="pl-9 pr-2 space-y-1 mt-1 mb-2 animate-in slide-in-from-top-2 duration-200">
+                          {item.children.filter(child => isLube ? child.showInLube : true).map(child => {
+                            const ChildIcon = child.icon;
+                            const isChildItemActive = activeView === child.id;
+                            return (
+                              <button
+                                key={child.id}
+                                onClick={() => handleItemClick(child.id)}
+                                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 font-sans text-xs font-semibold transition-all cursor-pointer ${
+                                  isChildItemActive
+                                    ? isLube
+                                      ? 'bg-blue-50 text-blue-700 font-bold'
+                                      : 'bg-orange-50 text-orange-700 font-bold'
+                                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                                }`}
+                              >
+                                <ChildIcon className={`h-4 w-4 ${isChildItemActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                                <span className="flex-1 text-left">{t(child.label, child.urdu)}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
                 const isActive = activeView === item.id || (item.id === 'settings' && activeView.startsWith('setup_'));
                 return (
                   <button

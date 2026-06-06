@@ -58,28 +58,7 @@ export default function EnterpriseHub({ settings, activeModule = "fleet" }: Ente
 
   return (
     <div className="space-y-6">
-      {/* Enterprise Tabs Nav */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide border-b border-slate-200">
-        {tabs.map((tab) => {
-          const isActive = currentTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setCurrentTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-t-xl font-sans text-xs font-bold whitespace-nowrap transition-all border-b-2 ${
-                isActive
-                  ? "border-orange-500 text-orange-600 bg-orange-50/50"
-                  : "border-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-700"
-              }`}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Render active module */}
+      {/* Render active module directly, navigation is handled by Sidebar Enterprise Modules accordion */}
       <div className="pt-2">
         {activeTabContent}
       </div>
