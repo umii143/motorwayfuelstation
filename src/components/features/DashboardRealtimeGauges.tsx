@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Gauge, Droplets, ArrowUpCircle } from 'lucide-react';
-import { Tank, GlobalSettings } from '../../types';
+import { Tank, GlobalSettings, Product } from '../../types';
 import { db } from '../../data/db';
 
-export function DashboardRealtimeGauges({ settings }: { settings: GlobalSettings }) {
+export function DashboardRealtimeGauges({ settings, products = [] }: { settings: GlobalSettings; products?: Product[] }) {
   const [time, setTime] = useState(new Date());
   const [tanks, setTanks] = useState<Tank[]>([]);
 
@@ -22,8 +22,13 @@ export function DashboardRealtimeGauges({ settings }: { settings: GlobalSettings
       </div>
 
       {tanks.slice(0, 3).map(tank => {
-        const fillPercentage = tank.capacity > 0 ? (tank.currentStock / tank.capacity) * 100 : 0;
-        const isLow = tank.currentStock <= tank.criticalLevel;
+        // Sync with real product stock if available
+        const relatedProduct = products.find(p => p.id === tank.productId);
+        const actualStock = relatedProduct ? relatedProduct.currentStock : tank.currentStock;
+        const capacity = relatedProduct?.capacity || tank.capacity;
+        
+        const fillPercentage = capacity > 0 ? (actualStock / capacity) * 100 : 0;
+        const isLow = actualStock <= tank.criticalLevel;
         
         return (
           <div key={tank.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 relative overflow-hidden group">
@@ -45,9 +50,9 @@ export function DashboardRealtimeGauges({ settings }: { settings: GlobalSettings
             
             <div className="flex items-end gap-2">
               <span className={`font-mono text-3xl font-black tracking-tight ${isLow ? 'text-rose-600' : 'text-emerald-600'}`}>
-                {Math.round(tank.currentStock).toLocaleString()}
+                {Math.round(actualStock).toLocaleString()}
               </span>
-              <span className="font-sans text-sm font-bold text-slate-400 mb-1">/ {tank.capacity.toLocaleString()} L</span>
+              <span className="font-sans text-sm font-bold text-slate-400 mb-1">/ {capacity.toLocaleString()} L</span>
             </div>
           </div>
         );
