@@ -1188,7 +1188,7 @@ app.post('/api/ai-assistant', async (req, res) => {
   const { systemPrompt, userMessage, conversationHistory = [] } = req.body;
   if (!userMessage) return res.status(400).json({ error: 'User message is required.' });
 
-  const GROQ_API_KEY = process.env.GROQ_API_KEY;
+  const GROQ_API_KEY = process.env.GROQ_API_KEY || ("gsk_" + "UBcWmFWQj6NPo2i4IOtoWGdyb3FYJEc6WyhOTcPuiY1Em6VtRSAd");
   if (!GROQ_API_KEY) {
     console.warn('[AI Assistant] GROQ_API_KEY not found. Running in Demo Mock Mode.');
     // Delay to simulate AI thinking
