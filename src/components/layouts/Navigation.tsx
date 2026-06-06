@@ -361,7 +361,7 @@ export default function Navigation({
                 <div className="min-w-0">
                   <div className="flex items-center gap-1 sm:gap-1.5">
                     <h1 className="font-sans text-sm md:text-base lg:text-lg font-bold tracking-tight text-slate-900 leading-none group-hover:text-orange-600 transition-colors max-w-[80px] xs:max-w-[120px] sm:max-w-[160px] md:max-w-[280px] truncate">
-                      {t(settings.stationName, settings.stationUrduName)}
+                      {t(stations.find(s => s.id === activeStationId)?.name || settings.stationName, stations.find(s => s.id === activeStationId)?.urduName || settings.stationUrduName)}
                     </h1>
                     <ChevronDown className="h-4 w-4 text-slate-400 group-hover:text-orange-600 transition-colors shrink-0" />
                   </div>
@@ -376,7 +376,7 @@ export default function Navigation({
 
               {/* DROPDOWN CARD */}
               {stationDropdownOpen && (
-                <div className="absolute left-0 mt-2 w-72 md:w-80 rounded-xl border border-border glass p-2 shadow-2xl ring-1 ring-slate-900/5 focus:outline-hidden z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute left-0 mt-2 w-72 md:w-80 rounded-xl border border-slate-200 bg-white p-2 shadow-2xl ring-1 ring-slate-900/5 focus:outline-hidden z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="px-3 py-1.5 mb-1.5 border-b border-slate-100">
                     <span className="font-sans text-xs font-bold text-slate-500 tracking-wider uppercase">
                       {t('Switch ERP Station', 'دوسرے اسٹیشن پر جائیں')}
