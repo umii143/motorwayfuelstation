@@ -52,7 +52,10 @@ import {
   Clock,
   CheckCircle2,
   Sliders,
-  Database
+  Database,
+  Droplets,
+  ShieldCheck,
+  MessageCircle
 } from 'lucide-react';
 import { GlobalSettings, Station } from '../../types';
 import { t as translate } from '../../lib/translations';
@@ -135,6 +138,9 @@ export default function Navigation({
     { id: 'cctv', icon: Camera, label: 'CCTV Security', urdu: 'سی سی ٹی وی', showInLube: true },
     { id: 'api_gateway', icon: Network, label: 'API Gateway', urdu: 'اے پی آئی گیٹ وے', showInLube: true },
     { id: 'reports', icon: FileBarChart, label: isLube ? 'Lube Reports' : 'Advanced Reports (104)', urdu: isLube ? 'لیوب رپورٹس' : 'ایڈوانسڈ رپورٹس', showInLube: true },
+    { id: 'dip_calculator', icon: Droplets, label: 'Dip Chart Calculator', urdu: 'دپ چارٹ کیلکولیٹر', showInLube: false },
+    { id: 'ogra_sync', icon: ShieldCheck, label: 'OGRA Price Sync', urdu: 'OGRA قیمت سنک', showInLube: false },
+    { id: 'whatsapp_alerts', icon: MessageCircle, label: 'WhatsApp Alerts', urdu: 'واٹس ایپ الرٹس', showInLube: true },
     { id: 'settings', icon: Settings, label: 'Settings', urdu: 'ترتیبات', showInLube: true },
     { id: 'security_hub', icon: Shield, label: 'Security & Roles', urdu: 'سیکیورٹی ہب', showInLube: true },
     { id: 'subscription_hub', icon: CreditCard, label: 'Subscription & Billing', urdu: 'بلنگ اور پلان', showInLube: true }

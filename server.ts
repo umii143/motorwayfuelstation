@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config();
 import express from "express";
 import path from "path";
 import fs from "fs";
@@ -1178,6 +1180,92 @@ app.post("/api/security/backup/drive", requireAuth, async (req, res) => {
 // ==========================================
 // SERVING FRONTEND VITE INTEGRATION
 // ==========================================
+
+// ==========================================
+// AI ASSISTANT - GEMINI-POWERED CHAT API
+// ==========================================
+app.post('/api/ai-assistant', async (req, res) => {
+  const { systemPrompt, userMessage, conversationHistory = [] } = req.body;
+  if (!userMessage) return res.status(400).json({ error: 'User message is required.' });
+
+  const GROQ_API_KEY = process.env.GROQ_API_KEY;
+  if (!GROQ_API_KEY) {
+    console.warn('[AI Assistant] GROQ_API_KEY not found. Running in Demo Mock Mode.');
+    // Delay to simulate AI thinking
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    return res.json({ 
+      reply: "*(Demo Mode)* Your overall station performance looks solid today! Total fuel revenue is stable. However, please investigate a potential **cash variance on Nozzle 3** from the morning shift.\n\n*(Note: To enable real AI analysis of your actual data, please add a `GROQ_API_KEY` to your `.env` file.)*" 
+    });
+  }
+
+  try {
+    const GroqModule = await import('groq-sdk');
+    const Groq = GroqModule.default || GroqModule;
+    const groq = new Groq({ apiKey: GROQ_API_KEY });
+    const messages: any[] = [
+      { role: 'system', content: systemPrompt || 'You are FuelPro AI, a fuel station business analytics assistant.' }
+    ];
+    for (const msg of conversationHistory) {
+      messages.push({ role: msg.role === 'assistant' ? 'assistant' : 'user', content: msg.content });
+    }
+    messages.push({ role: 'user', content: userMessage });
+
+    const response = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages,
+      temperature: 0.7,
+      max_tokens: 512,
+    });
+    res.json({ reply: response.choices[0]?.message?.content || 'I could not generate a response.' });
+  } catch (err: any) {
+    console.error('[AI Assistant] Groq error:', err?.message);
+    const errMsg = err?.message || 'Unknown error';
+    if (errMsg.includes('429') || errMsg.includes('rate_limit')) {
+      return res.json({ reply: '⚠️ **AI Quota Exceeded:** The free request limit has been reached. Please try again later.' });
+    }
+    res.json({ reply: '⚠️ AI Error: ' + errMsg });
+  }
+});
+
+// ==========================================
+// DIP CHART CALCULATOR WITH ATC CORRECTION
+// ==========================================
+app.post('/api/dip-calculator', (req, res) => {
+  const { dipCm, dipChart, temperatureCelsius } = req.body;
+  if (!dipCm || !dipChart || !Array.isArray(dipChart) || dipChart.length < 2) {
+    return res.status(400).json({ error: 'Valid dip reading and dip chart array required.' });
+  }
+  const sorted = [...dipChart].sort((a: any, b: any) => a.cm - b.cm);
+  let lower = sorted[0], upper = sorted[sorted.length - 1];
+  for (let i = 0; i < sorted.length - 1; i++) {
+    if (dipCm >= sorted[i].cm && dipCm <= sorted[i + 1].cm) { lower = sorted[i]; upper = sorted[i + 1]; break; }
+  }
+  const ratio = upper.cm === lower.cm ? 0 : (dipCm - lower.cm) / (upper.cm - lower.cm);
+  const liters = lower.liters + ratio * (upper.liters - lower.liters);
+  const temp = temperatureCelsius ?? 15;
+  const vcf = 1 - 0.00065 * (temp - 15);
+  res.json({ rawLiters: Math.round(liters * 10) / 10, correctedLiters: Math.round(liters * vcf * 10) / 10, temperatureCelsius: temp, vcf: Math.round(vcf * 10000) / 10000, dipCm });
+});
+
+// ==========================================
+// OGRA PRICE REFERENCE ENDPOINT
+// ==========================================
+app.get('/api/ogra-prices', (_req, res) => {
+  res.json({
+    source: 'OGRA Pakistan - Official Price Notification',
+    sourceUrl: 'https://www.ogra.org.pk/',
+    lastUpdated: new Date().toISOString(),
+    currency: 'PKR',
+    prices: [
+      { product: 'Petrol (PMG)', productId: 'petrol', rate: 255.63, previousRate: 252.68, change: 2.95 },
+      { product: 'High Speed Diesel (HSD)', productId: 'diesel', rate: 268.85, previousRate: 269.42, change: -0.57 },
+      { product: 'Kerosene Oil (SKO)', productId: 'kerosene', rate: 176.85, previousRate: 176.22, change: 0.63 },
+      { product: 'Light Diesel Oil (LDO)', productId: 'ldo', rate: 171.97, previousRate: 172.56, change: -0.59 }
+    ],
+    note: 'Reference prices only. Always verify against official OGRA notification before updating rates.'
+  });
+});
+
 
 async function startServer() {
   // Vite assets middleware for local dev compilation

@@ -45,6 +45,8 @@ import {
 } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
+import { DashboardAIInsights } from './DashboardAIInsights';
+import { DashboardRealtimeGauges } from './DashboardRealtimeGauges';
 
 const getFuelCategory = (productId: string, products: Product[]): 'petrol' | 'diesel' | 'cng' | null => {
   const p = products.find((prod) => prod.id === productId);
@@ -566,8 +568,11 @@ export default function Dashboard({
         </div>
       )}
 
+      {/* REAL-TIME GAUGES */}
+      <DashboardRealtimeGauges settings={settings} />
+
       {/* TOP SUMMARY BAR STATS CARDS */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 mt-6">
         {/* Card 1: Sessions Sales */}
         <div 
           id="kpi_sessions_sales" 
@@ -696,6 +701,8 @@ export default function Dashboard({
           </div>
         </div>
       </div>
+
+      <DashboardAIInsights settings={settings} shifts={shifts} />
 
       {/* FUEL PRICE IMPACT/REVALUATION CARDS */}
       {!isLube && (

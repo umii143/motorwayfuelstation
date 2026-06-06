@@ -12,42 +12,35 @@ import { dbFS } from './lib/firebase';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import Navigation from './components/layouts/Navigation';
-import Dashboard from './components/features/Dashboard';
-import ShiftWizard from './components/features/ShiftWizard';
-import ShiftLogs from './components/features/ShiftLogs';
-import Customers from './components/features/Customers';
-import Suppliers from './components/features/Suppliers';
-import Ledger from './components/features/Ledger';
-import Inventory from './components/features/Inventory';
-import Expenses from './components/features/Expenses';
-import LubePOS from './components/features/LubePOS';
-import Reports from './components/features/Reports';
-import LubeReports from './components/features/LubeReports';
-import LoadingScreen from './components/ui/LoadingScreen';
-import DiscountsHub from './components/features/DiscountsHub';
+const Dashboard = React.lazy(() => import('./components/features/Dashboard'));
+const ShiftWizard = React.lazy(() => import('./components/features/ShiftWizard'));
+const ShiftLogs = React.lazy(() => import('./components/features/ShiftLogs'));
+const Customers = React.lazy(() => import('./components/features/Customers'));
+const Suppliers = React.lazy(() => import('./components/features/Suppliers'));
+const Ledger = React.lazy(() => import('./components/features/Ledger'));
+const Inventory = React.lazy(() => import('./components/features/Inventory'));
+const Expenses = React.lazy(() => import('./components/features/Expenses'));
+const LubePOS = React.lazy(() => import('./components/features/LubePOS'));
+const Reports = React.lazy(() => import('./components/features/Reports'));
+const LubeReports = React.lazy(() => import('./components/features/LubeReports'));
+const LoadingScreen = React.lazy(() => import('./components/ui/LoadingScreen'));
+const DiscountsHub = React.lazy(() => import('./components/features/DiscountsHub'));
 
-import StaffPanel from './components/features/Staff';
-import SettingsPanel from './components/features/Settings';
-import OnboardingWizard from './components/features/OnboardingWizard';
-import AuthInterface from './components/layouts/AuthInterface';
-import SecurityHub from './components/features/SecurityHub';
-import SubscriptionHub from './components/features/SubscriptionHub';
-import BankCashPanel from './components/features/BankCashPanel';
-import DigitalCashPanel from './components/features/DigitalCashPanel';
-import RateWizard from './components/features/Settings/RateWizard';
-import EnterpriseHub from './components/features/EnterpriseHub';
-import {
-  FleetManagement,
-  TankerDelivery,
-  LossPrevention,
-  MaintenanceAssets,
-  LoyaltyRewards,
-  BIAnalytics,
-  DemandForecast,
-  ERPIntegration,
-  CCTVIntegration,
-  APIGateway
-} from './components/features/EnterpriseModules';
+const StaffPanel = React.lazy(() => import('./components/features/Staff'));
+const SettingsPanel = React.lazy(() => import('./components/features/Settings'));
+const OnboardingWizard = React.lazy(() => import('./components/features/OnboardingWizard'));
+import AuthInterface from './components/layouts/AuthInterface'; // Kept static for immediate auth render
+const SecurityHub = React.lazy(() => import('./components/features/SecurityHub'));
+const SubscriptionHub = React.lazy(() => import('./components/features/SubscriptionHub'));
+const BankCashPanel = React.lazy(() => import('./components/features/BankCashPanel'));
+const DigitalCashPanel = React.lazy(() => import('./components/features/DigitalCashPanel'));
+const RateWizard = React.lazy(() => import('./components/features/Settings/RateWizard'));
+const EnterpriseHub = React.lazy(() => import('./components/features/EnterpriseHub'));
+const DipCalculator = React.lazy(() => import('./components/features/DipCalculator/DipCalculator'));
+const OGRAPriceSync = React.lazy(() => import('./components/features/OGRAPriceSync/OGRAPriceSync'));
+const AIAssistant = React.lazy(() => import('./components/features/AIAssistant/AIAssistant'));
+const WhatsAppAlerts = React.lazy(() => import('./components/features/WhatsAppAlerts'));
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { RefreshCw, CheckCircle2, AlertTriangle, XCircle, Info, X } from 'lucide-react';
 
 import {
@@ -497,7 +490,30 @@ function MainApp() {
       case 'cctv':
       case 'api_gateway':
         // Let EnterpriseHub handle the internal tab selection using the activeView
-        return <EnterpriseHub settings={settings} activeModule={activeView} />;
+        return <EnterpriseHub settings={settings} activeModule={activeView} onNavigate={setActiveView} stationId={activeStationId} />;
+
+      case 'dip_calculator':
+        return (
+          <DipCalculator
+            settings={settings}
+            tanks={tanks}
+          />
+        );
+
+      case 'ogra_sync':
+        return (
+          <OGRAPriceSync
+            settings={settings}
+            products={products}
+            onApplyRates={(updates) => {
+              updates.forEach(u => handleUpdateProductRate(u.productId, u.newRate));
+              showToast('OGRA rates applied successfully!', 'success');
+              setActiveView('inventory');
+            }}
+          />
+        );
+      case 'whatsapp_alerts':
+        return <WhatsAppAlerts settings={settings} />;
 
       default:
         return (
@@ -642,7 +658,11 @@ function MainApp() {
                 exit={{ opacity: 0, y: -15 }}
                 transition={{ duration: 0.18, ease: "easeOut" }}
               >
-                {renderActiveComponent()}
+                <ErrorBoundary>
+                  <React.Suspense fallback={<LoadingScreen />}>
+                    {renderActiveComponent()}
+                  </React.Suspense>
+                </ErrorBoundary>
               </motion.div>
             </AnimatePresence>
           </div>
@@ -807,6 +827,18 @@ function MainApp() {
           </div>
         )}
       </AnimatePresence>
+      {/* Global AI Assistant — floats on all pages */}
+      <React.Suspense fallback={null}>
+        <AIAssistant
+          settings={settings}
+          shifts={shifts}
+          products={products}
+          customers={customers}
+          tanks={tanks}
+          nozzles={nozzles}
+          staff={staff}
+        />
+      </React.Suspense>
     </div>
   );
 }

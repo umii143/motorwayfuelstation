@@ -10,7 +10,7 @@ import ERPHub from "./ERPHub/ERPHub";
 import {
   CCTVIntegration,
   APIGateway
-} from "./EnterpriseModules";
+} from "./MiscEnterprise";
 import {
   Truck,
   ArrowRightLeft,
@@ -27,6 +27,8 @@ import {
 interface EnterpriseHubProps {
   settings: GlobalSettings;
   activeModule?: string;
+  onNavigate?: (view: string) => void;
+  stationId?: string;
 }
 
 export default function EnterpriseHub({ settings, activeModule = "fleet" }: EnterpriseHubProps) {
