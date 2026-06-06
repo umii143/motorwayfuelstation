@@ -569,7 +569,7 @@ export default function Dashboard({
       )}
 
       {/* REAL-TIME GAUGES */}
-      <DashboardRealtimeGauges settings={settings} products={products} />
+      <DashboardRealtimeGauges settings={settings} products={products} activeStationId={activeStationId} />
 
       {/* TOP SUMMARY BAR STATS CARDS */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 mt-6">

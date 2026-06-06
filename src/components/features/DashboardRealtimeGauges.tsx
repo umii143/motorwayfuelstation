@@ -3,15 +3,15 @@ import { Clock, Gauge, Droplets, ArrowUpCircle } from 'lucide-react';
 import { Tank, GlobalSettings, Product } from '../../types';
 import { db } from '../../data/db';
 
-export function DashboardRealtimeGauges({ settings, products = [] }: { settings: GlobalSettings; products?: Product[] }) {
+export function DashboardRealtimeGauges({ settings, products = [], activeStationId }: { settings: GlobalSettings; products?: Product[]; activeStationId: string }) {
   const [time, setTime] = useState(new Date());
   const [tanks, setTanks] = useState<Tank[]>([]);
 
   useEffect(() => {
-    setTanks(db.getTanks(db.getActiveStationId()));
+    setTanks(db.getTanks(activeStationId));
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [activeStationId]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
