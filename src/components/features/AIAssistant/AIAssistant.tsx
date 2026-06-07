@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, X, Send, Bot, User, Loader2, ChevronDown, Zap } from 'lucide-react';
 import { GlobalSettings, Shift, Product, Customer, Tank, Nozzle, Staff } from '../../../types';
 import { formatCurrency } from '../../../lib/currency';
+import { fetchWithAuth } from '../../../lib/api';
 
 interface Message {
   id: string;
@@ -178,7 +179,7 @@ INSTRUCTIONS:
 - Highlight urgent issues (low tanks, high cash variance, over-limit customers) proactively
 - Keep responses under 200 words unless a detailed breakdown is needed`;
 
-      const response = await fetch('/api/ai-assistant', {
+      const response = await fetchWithAuth('/api/ai-assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

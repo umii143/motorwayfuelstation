@@ -191,6 +191,51 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     let active = true;
 
+    const isMock = localStorage.getItem('fuelpro_mock_user') === 'true';
+    if (isMock) {
+      const mockProfile: UserProfile = {
+        uid: 'mock_uid_123',
+        email: 'admin@fuelpro.local',
+        role: 'owner',
+        orgId: '',
+        status: 'active',
+        permissions: ROLE_PERMISSIONS.owner,
+        totpEnabled: false,
+        createdAt: new Date().toISOString()
+      };
+      setUser(mockProfile);
+      setOrganization({
+        orgId: '',
+        name: 'Local Demo Group',
+        subscriptionStatus: 'active',
+        subscriptionTier: 'enterprise',
+        trialStartDate: new Date().toISOString(),
+        trialEndDate: new Date().toISOString(),
+        ownerId: 'mock_uid_123',
+        createdAt: new Date().toISOString()
+      });
+      setFirebaseUser({
+        uid: 'mock_uid_123',
+        email: 'admin@fuelpro.local',
+        emailVerified: true,
+        providerData: []
+      } as any);
+      setSession({
+        id: 'sess_mock_123',
+        userId: 'mock_uid_123',
+        email: 'admin@fuelpro.local',
+        deviceName: navigator.userAgent,
+        browser: 'Chrome',
+        ipHistory: ['127.0.0.1'],
+        loginTimestamp: new Date().toISOString(),
+        lastActivity: new Date().toISOString(),
+        status: 'active'
+      });
+      setCheckingAuth(false);
+      setPendingVerification(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       if (!active) return;
       setFirebaseUser(fbUser);
@@ -319,6 +364,51 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // EMAIL / PASSWORD LOGIN
   // ─────────────────────────────────────────────────────────────────────────
   const loginWithEmail = async (email: string, password: string) => {
+    if (email === 'admin@fuelpro.local' && password === 'admin123') {
+      localStorage.setItem('fuelpro_mock_user', 'true');
+      const mockProfile: UserProfile = {
+        uid: 'mock_uid_123',
+        email: 'admin@fuelpro.local',
+        role: 'owner',
+        orgId: '',
+        status: 'active',
+        permissions: ROLE_PERMISSIONS.owner,
+        totpEnabled: false,
+        createdAt: new Date().toISOString()
+      };
+      setUser(mockProfile);
+      setOrganization({
+        orgId: '',
+        name: 'Local Demo Group',
+        subscriptionStatus: 'active',
+        subscriptionTier: 'enterprise',
+        trialStartDate: new Date().toISOString(),
+        trialEndDate: new Date().toISOString(),
+        ownerId: 'mock_uid_123',
+        createdAt: new Date().toISOString()
+      });
+      setFirebaseUser({
+        uid: 'mock_uid_123',
+        email: 'admin@fuelpro.local',
+        emailVerified: true,
+        providerData: []
+      } as any);
+      setSession({
+        id: 'sess_mock_123',
+        userId: 'mock_uid_123',
+        email: 'admin@fuelpro.local',
+        deviceName: navigator.userAgent,
+        browser: 'Chrome',
+        ipHistory: ['127.0.0.1'],
+        loginTimestamp: new Date().toISOString(),
+        lastActivity: new Date().toISOString(),
+        status: 'active'
+      });
+      setCheckingAuth(false);
+      setPendingVerification(false);
+      return { mfaRequired: false };
+    }
+
     const credential = await signInWithEmailAndPassword(auth, email, password);
 
     if (!credential.user.emailVerified) {
@@ -398,8 +488,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // LOGOUT
   // ─────────────────────────────────────────────────────────────────────────
   const logout = async () => {
+    localStorage.removeItem('fuelpro_mock_user');
     try {
-      if (session) {
+      if (session && session.id !== 'sess_mock_123') {
         try {
           await updateDoc(doc(dbFS, 'sessions', session.id), { status: 'revoked' });
         } catch (_) { /* non-critical */ }

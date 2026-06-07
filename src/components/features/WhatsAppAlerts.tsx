@@ -1,27 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GlobalSettings } from '../../types';
-import { MessageCircle, Settings2, BellRing, Save, CheckCircle2 } from 'lucide-react';
+import { fetchWithAuth } from '../../lib/api';
+import { MessageCircle, Settings2, BellRing, Save, CheckCircle2, Smartphone, QrCode, Loader2, LogOut } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { t as translate } from '../../lib/translations';
 
 interface Props {
   settings: GlobalSettings;
+  onUpdateSettings: (settings: GlobalSettings) => void;
 }
 
-export default function WhatsAppAlerts({ settings }: Props) {
-  const [phoneNumber, setPhoneNumber] = useState('+92 ');
+export default function WhatsAppAlerts({ settings, onUpdateSettings }: Props) {
+  const ws = settings.whatsappSettings;
+  const [phoneNumber, setPhoneNumber] = useState(ws?.number || '+92 ');
   const [alerts, setAlerts] = useState({
-    shiftClose: true,
-    priceChange: true,
-    tankLow: true,
-    cashVariance: true
+    shiftClose: ws?.alerts?.shiftClose ?? true,
+    priceChange: ws?.alerts?.priceChange ?? true,
+    tankLow: ws?.alerts?.tankLow ?? true,
+    cashVariance: ws?.alerts?.cashVariance ?? true
   });
   const [saved, setSaved] = useState(false);
 
   const t = (en: string, ur: string) => translate(en, ur, settings);
 
   const handleSave = () => {
+    onUpdateSettings({
+      ...settings,
+      whatsappSettings: {
+        enabled: true,
+        number: phoneNumber,
+        alerts
+      }
+    });
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
+  };
+
+  const [waStatus, setWaStatus] = useState({ ready: false, qr: '', initializing: false });
+  
+  useEffect(() => {
+    const fetchStatus = () => fetchWithAuth('/api/wa/status').then(r => r.json()).then(setWaStatus).catch(() => {});
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleInitWA = async () => {
+    setWaStatus(prev => ({ ...prev, initializing: true }));
+    try {
+      await fetchWithAuth('/api/wa/init', { method: 'POST' });
+    } catch(e) {}
+  };
+
+  const handleLogoutWA = async () => {
+    try {
+      await fetchWithAuth('/api/wa/logout', { method: 'POST' });
+      setWaStatus({ ready: false, qr: '', initializing: false });
+    } catch(e) {}
   };
 
   return (
@@ -45,6 +80,74 @@ export default function WhatsAppAlerts({ settings }: Props) {
       </div>
 
       <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
+        <div className="flex items-center gap-3 mb-8 border-b border-slate-100 pb-5">
+          <div className="p-2.5 bg-slate-100 rounded-xl">
+            <Smartphone className="h-6 w-6 text-slate-600" />
+          </div>
+          <h3 className="font-sans text-2xl font-black text-slate-800 tracking-tight">
+            {t('Device Linking', 'ڈیوائس لنکنگ')}
+          </h3>
+        </div>
+
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 mb-8 flex flex-col md:flex-row items-center gap-8">
+          <div className="flex-1 space-y-4">
+            <h4 className="font-sans font-black text-slate-800 text-lg">
+              {t('Link Your WhatsApp', 'اپنا واٹس ایپ لنک کریں')}
+            </h4>
+            <p className="font-sans text-sm text-slate-600 leading-relaxed font-semibold">
+              {t('FuelPro requires a linked WhatsApp Web session to send free automated alerts. Click "Generate QR Code", then scan it using your phone.', 'فیول پرو کو مفت آٹو الرٹس بھیجنے کے لیے ایک واٹس ایپ ویب سیشن درکار ہے۔ "کیو آر کوڈ بنائیں" پر کلک کریں، اور پھر اسے اپنے فون سے اسکین کریں۔')}
+            </p>
+            <ol className="list-decimal pl-4 text-xs font-semibold text-slate-500 space-y-2 font-sans">
+              <li>Open WhatsApp on your phone</li>
+              <li>Tap <strong>Menu</strong> or <strong>Settings</strong> and select <strong>Linked Devices</strong></li>
+              <li>Tap on <strong>Link a Device</strong> and scan the code</li>
+            </ol>
+            
+            {waStatus.ready ? (
+              <button onClick={handleLogoutWA} className="mt-4 px-6 py-2.5 bg-red-50 text-red-600 rounded-lg font-bold text-sm border border-red-200 hover:bg-red-100 transition flex items-center gap-2">
+                <LogOut className="h-4 w-4" /> Disconnect Device
+              </button>
+            ) : !waStatus.qr && !waStatus.initializing && (
+              <button onClick={handleInitWA} className="mt-4 px-6 py-2.5 bg-emerald-600 text-white rounded-lg font-bold text-sm shadow hover:bg-emerald-700 transition flex items-center gap-2">
+                <QrCode className="h-4 w-4" /> Generate QR Code
+              </button>
+            )}
+          </div>
+          
+          <div className="w-64 h-64 bg-slate-100 rounded-2xl border border-slate-200 flex items-center justify-center relative overflow-hidden">
+            {waStatus.ready ? (
+              <div className="flex flex-col items-center gap-3 text-center">
+                <div className="h-16 w-16 bg-emerald-100 rounded-full flex items-center justify-center">
+                  <CheckCircle2 className="h-8 w-8 text-emerald-600" />
+                </div>
+                <p className="font-sans font-bold text-emerald-700">Client Ready</p>
+                <p className="text-xs text-slate-500 mt-1">Ready to send alerts.</p>
+              </div>
+            ) : waStatus.qr ? (
+              <div className="bg-white p-2 rounded-xl border border-slate-100 shadow-sm inline-block">
+                <QRCodeSVG 
+                  value={waStatus.qr} 
+                  size={200} 
+                  bgColor="#ffffff" 
+                  fgColor="#000000" 
+                  level="L" 
+                  includeMargin={true} 
+                />
+              </div>
+            ) : waStatus.initializing ? (
+              <div className="flex flex-col items-center gap-3">
+                <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+                <p className="text-xs font-bold text-slate-500">Loading Client...</p>
+              </div>
+            ) : (
+              <div className="text-center p-4">
+                <QrCode className="h-10 w-10 text-slate-300 mx-auto mb-2" />
+                <p className="text-xs font-semibold text-slate-400">Click generate to view QR</p>
+              </div>
+            )}
+          </div>
+        </div>
+
         <div className="flex items-center gap-3 mb-8 border-b border-slate-100 pb-5">
           <div className="p-2.5 bg-slate-100 rounded-xl">
             <Settings2 className="h-6 w-6 text-slate-600" />

@@ -23,6 +23,7 @@ import {
   Building,
   ChevronRight,
   Coins,
+  Sparkles
 } from "lucide-react";
 import {
   Staff,
@@ -44,7 +45,9 @@ import {
   GlobalSettings,
 } from "../../types";
 import { db } from "../../data/db";
+import { fetchWithAuth } from "../../lib/api";
 import { useStation } from "../../contexts/StationContext";
+import AIDocumentScanner from "../ui/AIDocumentScanner";
 
 // Helper to classify fuel product IDs into hardcoded categories expected by the shift closeout logic
 const getFuelCategory = (productId: string, products: Product[]): "petrol" | "diesel" | "cng" | null => {
@@ -165,6 +168,40 @@ export default function ShiftWizard({
   );
   const defaultProductId = products[0]?.id || "general_debit";
 
+  // AI Scanner States
+  const [isOpeningScannerOpen, setIsOpeningScannerOpen] = useState(false);
+  const [isClosingScannerOpen, setIsClosingScannerOpen] = useState(false);
+
+  const handleOpeningAutoFill = (data: any) => {
+    const newOpenings = { ...openingReadings };
+    for (const noz of nozzles) {
+      const match = data[noz.name] || data[`Nozzle ${noz.name}`] || data[noz.name.replace(/ /g, '')];
+      if (match) {
+        newOpenings[noz.id] = String(match).replace(/[^0-9.]/g, '');
+      }
+    }
+    setOpeningReadings(newOpenings);
+    setTimeout(() => {
+      setIsOpeningScannerOpen(false);
+      showToast('Opening readings auto-filled!', 'success');
+    }, 1500);
+  };
+
+  const handleClosingAutoFill = (data: any) => {
+    const newClosings = { ...closingReadings };
+    for (const noz of nozzles) {
+      const match = data[noz.name] || data[`Nozzle ${noz.name}`] || data[noz.name.replace(/ /g, '')];
+      if (match) {
+        newClosings[noz.id] = String(match).replace(/[^0-9.]/g, '');
+      }
+    }
+    setClosingReadings(newClosings);
+    setTimeout(() => {
+      setIsClosingScannerOpen(false);
+      showToast('Closing readings auto-filled!', 'success');
+    }, 1500);
+  };
+
   // Wizard flow steps:
   // 1: Setup, 2: Opening Readings, 3: Active Shift Home, 4: Closing Readings, 5: Test Liters, 6: expected Cash matching, 7: Final Summary Receipt
   const [wizardStep, setWizardStep] = useState<number>(() => {
@@ -184,6 +221,9 @@ export default function ShiftWizard({
     const d = new Date();
     return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
   });
+
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [isGeneratingAiSummary, setIsGeneratingAiSummary] = useState(false);
 
   // ==========================================
   // STEP 2 FORM STATE: OPENING READINGS
@@ -215,9 +255,8 @@ export default function ShiftWizard({
   // STEP 3 OPERATIONAL TABS DRAWERS
   // ==========================================
   const [activeTab, setActiveTab] = useState<
-    "debit" | "recovery" | "expense" | "bank" | "digital" | "lube" | "supplier"
+    "debit" | "recovery" | "expense" | "bank" | "digital" | "lube" | "supplier" | "discount"
   >(() => (isLubeBusiness ? "lube" : "debit"));
-
   // Quick Add forms state
   const [showQuickCustomer, setShowQuickCustomer] = useState(false);
   const [quickCustomerName, setQuickCustomerName] = useState("");
@@ -1299,6 +1338,44 @@ export default function ShiftWizard({
     );
   };
 
+  const generateAISummary = async () => {
+    if (!activeShift || !expectedTotals) return;
+    setIsGeneratingAiSummary(true);
+    setAiSummary(null);
+    try {
+      const summaryContext = {
+        shiftType: activeShift.type,
+        date: activeShift.date,
+        time: activeShift.startTime,
+        operator: staff.find((s) => s.id === activeShift.staffId)?.name || 'Unknown',
+        totals: expectedTotals,
+        shortage: activeShift.shortage,
+        overage: activeShift.overage,
+        submittedCash: activeShift.submittedCash
+      };
+
+      const response = await fetchWithAuth('/api/ai-assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemPrompt: 'You are an AI financial auditor for a fuel station. Analyze the following shift data. Detect any cash shortages or overages, explain potential variances, and highlight financial risks. Provide a structured, concise executive summary of the performance.',
+          userMessage: JSON.stringify(summaryContext),
+          language: settings.language,
+          conversationHistory: []
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to generate AI summary');
+      const data = await response.json();
+      setAiSummary(data.reply);
+    } catch (error) {
+      console.error(error);
+      setAiSummary("⚠️ Could not generate AI summary at this time.");
+    } finally {
+      setIsGeneratingAiSummary(false);
+    }
+  };
+
   return (
     <div className="space-y-6 pb-16 lg:pb-0">
       {/* HEADER ROW BAR */}
@@ -1483,6 +1560,13 @@ export default function ShiftWizard({
           </div>
 
           <div className="space-y-6">
+            <button
+              onClick={() => setIsOpeningScannerOpen(true)}
+              className="w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 font-sans text-xs font-bold py-2.5 hover:bg-indigo-100 transition-colors cursor-pointer shadow-xs"
+            >
+              <Sparkles className="h-4 w-4" />
+              {t('Auto-Fill with Meter Scanner', 'میٹر سکین کر کے آٹو فل کریں')}
+            </button>
             {/* Split nozzles per products types */}
             {["petrol", "diesel", "cng"].map((prodId) => {
               const matchedNozzles = nozzles.filter(
@@ -3265,6 +3349,13 @@ export default function ShiftWizard({
           </div>
 
           <div className="space-y-6">
+            <button
+              onClick={() => setIsClosingScannerOpen(true)}
+              className="w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 font-sans text-xs font-bold py-2.5 hover:bg-indigo-100 transition-colors cursor-pointer shadow-xs"
+            >
+              <Sparkles className="h-4 w-4" />
+              {t('Auto-Fill with Meter Scanner', 'میٹر سکین کر کے آٹو فل کریں')}
+            </button>
             {["petrol", "diesel", "cng"].map((prodId) => {
               const matchedNozzles = nozzles.filter(
                 (n) => getFuelCategory(n.productId, products) === prodId,
@@ -3925,7 +4016,27 @@ export default function ShiftWizard({
               >
                 <Share2 className="h-4 w-4" />
               </button>
+              <button
+                onClick={generateAISummary}
+                disabled={isGeneratingAiSummary}
+                className={`px-4 border border-indigo-200 text-indigo-600 rounded-lg hover:bg-indigo-50 flex items-center justify-center gap-1.5 font-bold text-xs transition-colors cursor-pointer ${isGeneratingAiSummary ? 'opacity-50' : ''}`}
+              >
+                <Sparkles className={`h-4 w-4 ${isGeneratingAiSummary ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">✨ AI Summary</span>
+              </button>
             </div>
+
+            {aiSummary && (
+              <div className="bg-indigo-50/50 border border-indigo-100 rounded-lg p-4 font-sans text-sm text-indigo-900 shadow-inner">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="h-4 w-4 text-indigo-500" />
+                  <span className="font-bold text-indigo-700">Gemini AI Shift Analysis</span>
+                </div>
+                <div className="whitespace-pre-wrap leading-relaxed text-xs">
+                  {aiSummary}
+                </div>
+              </div>
+            )}
 
             <button
               onClick={handleFinalShiftSubmission}
@@ -3940,8 +4051,25 @@ export default function ShiftWizard({
               </span>
             </button>
           </div>
+          </div>
         </div>
       )}
+
+      <AIDocumentScanner
+        isOpen={isOpeningScannerOpen}
+        onClose={() => setIsOpeningScannerOpen(false)}
+        settings={settings}
+        extractionPrompt='You are an expert fuel station assistant. Extract the physical meter readings (e.g. 12345.6) for each nozzle shown in the image. Return STRICT JSON where keys are the Nozzle names (e.g. "Nozzle 1", "Nozzle 2") and values are the numeric readings as numbers. Do NOT include markdown backticks.'
+        onDataExtracted={handleOpeningAutoFill}
+      />
+
+      <AIDocumentScanner
+        isOpen={isClosingScannerOpen}
+        onClose={() => setIsClosingScannerOpen(false)}
+        settings={settings}
+        extractionPrompt='You are an expert fuel station assistant. Extract the physical meter readings (e.g. 12345.6) for each nozzle shown in the image. Return STRICT JSON where keys are the Nozzle names (e.g. "Nozzle 1", "Nozzle 2") and values are the numeric readings as numbers. Do NOT include markdown backticks.'
+        onDataExtracted={handleClosingAutoFill}
+      />
     </div>
   );
 }

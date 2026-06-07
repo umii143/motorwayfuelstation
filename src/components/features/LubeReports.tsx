@@ -40,6 +40,7 @@ import {
   Activity,
   CreditCard,
   PieChart as PieIcon,
+  Sparkles
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -67,6 +68,7 @@ import {
 } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { LUBE_REPORT_TEMPLATES, LubeReportRow, LubeReportTemplate } from '../../lib/lubeReportCompilers';
+import { fetchWithAuth } from '../../lib/api';
 import EmptyState from '../ui/EmptyState';
 
 // ==========================================
@@ -123,6 +125,45 @@ export default function LubeReports({
   // Sorting
   const [sortField, setSortField] = useState('');
   const [sortAscending, setSortAscending] = useState(true);
+
+  // AI Analysis
+  const [isGeneratingAiAnalysis, setIsGeneratingAiAnalysis] = useState(false);
+  const [aiAnalysisResult, setAiAnalysisResult] = useState<string | null>(null);
+
+  const generateAIReportAnalysis = async () => {
+    if (sortedRows.length === 0) return;
+    setIsGeneratingAiAnalysis(true);
+    setAiAnalysisResult(null);
+    try {
+      const contextRows = sortedRows.slice(0, 50);
+      const reportContext = {
+        reportName: activeTemplate.name,
+        totalAmount: tableAggregates.sumAmount,
+        totalRecords: tableAggregates.recordsCount,
+        data: contextRows
+      };
+
+      const response = await fetchWithAuth('/api/ai-assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemPrompt: 'You are an AI financial auditor. Analyze the provided Lube report data. Highlight key trends, anomalies, top performers, or risk areas. Provide a concise professional summary in 3-4 sentences.',
+          userMessage: JSON.stringify(reportContext),
+          language: settings.language,
+          conversationHistory: []
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to generate AI analysis');
+      const data = await response.json();
+      setAiAnalysisResult(data.reply);
+    } catch (error) {
+      console.error(error);
+      setAiAnalysisResult(t("⚠️ Could not generate AI analysis.", "⚠️ AI تجزیہ تیار نہیں ہو سکا۔"));
+    } finally {
+      setIsGeneratingAiAnalysis(false);
+    }
+  };
 
   // ========================================
   // KPI SUMMARY CARDS
@@ -628,12 +669,34 @@ export default function LubeReports({
                   </div>
                 )}
               </div>
-              <button onClick={triggerCSVExport}
-                className="flex items-center justify-center gap-1.5 rounded-lg bg-violet-600 px-4 py-2 font-sans text-xs font-bold text-white shadow-sm hover:bg-violet-700 transition-colors cursor-pointer">
-                <Download className="h-4 w-4" />
-                <span>{copiedCSV ? t('Downloaded!', 'ڈاؤنلوڈ مکمل!') : t('Export CSV', 'ایکسل ڈاؤنلوڈ')}</span>
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={generateAIReportAnalysis}
+                  disabled={isGeneratingAiAnalysis || sortedRows.length === 0}
+                  className={`flex items-center justify-center gap-1.5 rounded-lg bg-violet-600 px-4 py-2 font-sans text-xs font-bold text-white shadow-sm hover:bg-violet-700 transition-colors cursor-pointer ${isGeneratingAiAnalysis ? 'opacity-50' : ''}`}
+                >
+                  <Sparkles className={`h-4 w-4 ${isGeneratingAiAnalysis ? 'animate-spin' : ''}`} />
+                  <span>{t('AI Analysis', 'اے آئی تجزیہ')}</span>
+                </button>
+                <button onClick={triggerCSVExport}
+                  className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2 font-sans text-xs font-bold text-white shadow-sm hover:bg-orange-700 transition-colors cursor-pointer">
+                  <Download className="h-4 w-4" />
+                  <span>{copiedCSV ? t('Downloaded!', 'ڈاؤنلوڈ مکمل!') : t('Export CSV', 'ایکسل ڈاؤنلوڈ')}</span>
+                </button>
+              </div>
             </div>
+
+            {aiAnalysisResult && (
+              <div className="rounded-xl border border-violet-200 bg-violet-50 p-4 shadow-sm relative">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="h-4 w-4 text-violet-500" />
+                  <span className="font-bold text-violet-800 text-sm">{t('AI Report Analysis', 'اے آئی رپورٹ کا تجزیہ')}</span>
+                </div>
+                <div className="prose prose-sm max-w-none text-violet-900 whitespace-pre-wrap leading-relaxed text-xs">
+                  {aiAnalysisResult}
+                </div>
+              </div>
+            )}
 
             {/* Data Table */}
             <div className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] shadow-xs overflow-hidden">

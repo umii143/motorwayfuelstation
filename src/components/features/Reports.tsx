@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { List } from 'react-window';
 import {
   FileBarChart2,
   Calendar,
@@ -31,7 +32,8 @@ import {
   Download,
   Filter,
   Shield,
-  Sliders
+  Sliders,
+  Sparkles
 } from 'lucide-react';
 import EmptyState from '../ui/EmptyState';
 import {
@@ -53,6 +55,7 @@ import { Shift, Product, Customer, Supplier, ExpenseEntry, GlobalSettings, Tank,
 import { REPORT_TEMPLATES, ReportRow, ReportTemplate } from '../../lib/reportCompilers';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { db } from '../../data/db';
+import { fetchWithAuth } from '../../lib/api';
 
 const getFuelCategory = (productId: string, products: Product[]): 'petrol' | 'diesel' | 'cng' | null => {
   const p = products.find((prod) => prod.id === productId);
@@ -176,6 +179,46 @@ export default function Reports({
   // Sorting State
   const [sortField, setSortField] = useState<string>('');
   const [sortAscending, setSortAscending] = useState<boolean>(true);
+
+  // AI Analysis State
+  const [isGeneratingAiAnalysis, setIsGeneratingAiAnalysis] = useState(false);
+  const [aiAnalysisResult, setAiAnalysisResult] = useState<string | null>(null);
+
+  const generateAIReportAnalysis = async () => {
+    if (sortedRows.length === 0) return;
+    setIsGeneratingAiAnalysis(true);
+    setAiAnalysisResult(null);
+    try {
+      // Limit to max 50 rows to avoid token limit
+      const contextRows = sortedRows.slice(0, 50);
+      const reportContext = {
+        reportName: activeTemplate.name,
+        totalAmount: tableAggregates.sumAmount,
+        totalRecords: tableAggregates.recordsCount,
+        data: contextRows
+      };
+
+      const response = await fetchWithAuth('/api/ai-assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemPrompt: 'You are an AI financial auditor. Analyze the provided report data. Highlight key trends, anomalies, top performers, or risk areas. Provide a concise professional summary in 3-4 sentences.',
+          userMessage: JSON.stringify(reportContext),
+          language: settings.language,
+          conversationHistory: []
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to generate AI analysis');
+      const data = await response.json();
+      setAiAnalysisResult(data.reply);
+    } catch (error) {
+      console.error(error);
+      setAiAnalysisResult(t("⚠️ Could not generate AI analysis.", "⚠️ AI تجزیہ تیار نہیں ہو سکا۔"));
+    } finally {
+      setIsGeneratingAiAnalysis(false);
+    }
+  };
 
   // Color palette for charts
   const FUEL_COLORS = ['#FF6B00', '#00C49A', '#1A1A2E'];
@@ -423,6 +466,75 @@ export default function Reports({
       recordsCount
     };
   }, [sortedRows]);
+
+  const RenderReportRow = ({ index, style }: { index: number; style: React.CSSProperties }) => {
+    const row = sortedRows[index];
+    const isEven = index % 2 === 0;
+    const colCount = activeTemplate.headers.length;
+    const colWidth = `${100 / colCount}%`;
+
+    return (
+      <div
+        style={{
+          ...style,
+          display: 'flex',
+          alignItems: 'center',
+          borderBottom: '1px solid #f1f5f9',
+          fontSize: '11px'
+        }}
+        className={`hover:bg-slate-50/70 transition-colors ${isEven ? 'bg-white' : 'bg-slate-50/15'}`}
+      >
+        {activeTemplate.headers.map(h => {
+          const cellValue = row[h.key as keyof ReportRow];
+          const isNumeric = h.isNumeric;
+          
+          if (h.key === 'amount') {
+            const numericAmount = Number(cellValue || 0);
+            const isPositive = numericAmount >= 0;
+            return (
+              <div
+                key={h.key}
+                style={{ width: colWidth, padding: '8px 16px', textAlign: 'right' }}
+                className="font-mono font-bold text-slate-900"
+              >
+                <span className={isPositive ? 'text-slate-900' : 'text-red-500'}>
+                  {formatCurrency(numericAmount, settings)}
+                </span>
+              </div>
+            );
+          }
+
+          let formattedValue = '';
+          if (cellValue !== null && cellValue !== undefined) {
+            const strValue = String(cellValue);
+            if (strValue.includes('Rs.')) {
+              formattedValue = strValue.replace(/Rs\./g, getCurrencySymbol(settings));
+            } else {
+              formattedValue = strValue;
+            }
+          }
+
+          return (
+            <div
+              key={h.key}
+              style={{
+                width: colWidth,
+                padding: '8px 16px',
+                textAlign: isNumeric ? 'right' : 'left',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}
+              className={`font-sans text-slate-800 ${isNumeric ? 'font-mono' : ''}`}
+            >
+              {formattedValue}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
 
   // Export CSV generator
   const triggerCSVExport = () => {
@@ -740,24 +852,47 @@ export default function Reports({
                 )}
               </div>
 
-              {/* CSV downloads simulation */}
-              <button
-                onClick={triggerCSVExport}
-                className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2 font-sans text-xs font-bold text-white shadow-sm hover:bg-orange-700 transition-colors cursor-pointer"
-              >
-                <Download className="h-4 w-4" />
-                <span>{copiedCSV ? t('Downloaded! (CSV)', 'ڈاؤنلوڈ مکمل!') : t('Export CSV / Excel File', 'ایکسل شیٹ ڈاؤنلوڈ')}</span>
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={generateAIReportAnalysis}
+                  disabled={isGeneratingAiAnalysis || sortedRows.length === 0}
+                  className={`flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 font-sans text-xs font-bold text-white shadow-sm hover:bg-indigo-700 transition-colors cursor-pointer ${isGeneratingAiAnalysis ? 'opacity-50' : ''}`}
+                >
+                  <Sparkles className={`h-4 w-4 ${isGeneratingAiAnalysis ? 'animate-spin' : ''}`} />
+                  <span>{t('AI Analysis', 'اے آئی تجزیہ')}</span>
+                </button>
+                {/* CSV downloads simulation */}
+                <button
+                  onClick={triggerCSVExport}
+                  className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2 font-sans text-xs font-bold text-white shadow-sm hover:bg-orange-700 transition-colors cursor-pointer"
+                >
+                  <Download className="h-4 w-4" />
+                  <span>{copiedCSV ? t('Downloaded! (CSV)', 'ڈاؤنلوڈ مکمل!') : t('Export CSV', 'ایکسل ڈاؤنلوڈ')}</span>
+                </button>
+              </div>
             </div>
 
-            {/* 5. DYNAMIC TRACEABLE GRID TABLE */}
+            {aiAnalysisResult && (
+              <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 shadow-sm relative">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="h-4 w-4 text-indigo-500" />
+                  <span className="font-bold text-indigo-800 text-sm">{t('AI Report Analysis', 'اے آئی رپورٹ کا تجزیہ')}</span>
+                </div>
+                <div className="prose prose-sm max-w-none text-indigo-900 whitespace-pre-wrap leading-relaxed text-xs">
+                  {aiAnalysisResult}
+                </div>
+              </div>
+            )}
+
             <div className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-left font-sans text-xs">
-                  <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold select-none whitespace-nowrap">
-                      {activeTemplate.headers.map(h => (
-                        <th
+                <div className="min-w-[800px]">
+                  <div className="flex bg-slate-50 border-b border-slate-200 text-slate-700 font-bold py-3 text-[11px] uppercase tracking-wider select-none">
+                    {activeTemplate.headers.map(h => {
+                      const colCount = activeTemplate.headers.length;
+                      const colWidth = `${100 / colCount}%`;
+                      return (
+                        <div
                           key={h.key}
                           onClick={() => {
                             if (sortField === h.key) {
@@ -767,72 +902,31 @@ export default function Reports({
                               setSortAscending(true);
                             }
                           }}
-                          className={`py-3 px-4 text-[11px] uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
-                            h.isNumeric ? 'text-right' : ''
-                          }`}
+                          style={{ width: colWidth, padding: '0 16px', textAlign: h.isNumeric ? 'right' : 'left', cursor: 'pointer' }}
+                          className="hover:bg-slate-100/50 flex items-center gap-1.5 transition-colors"
                         >
-                          <div className={`flex items-center gap-1.5 ${h.isNumeric ? 'justify-end' : ''}`}>
+                          <div className={`flex items-center gap-1.5 ${h.isNumeric ? 'justify-end w-full' : ''}`}>
                             <span>{isUrdu ? h.urduLabel : h.label}</span>
                             <ArrowUpDown className="h-3 w-3 text-slate-400" />
                           </div>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 text-slate-655 font-medium">
-                    {sortedRows.length === 0 ? (
-                      <tr>
-                        <td colSpan={activeTemplate.headers.length} className="py-24 text-center text-slate-400 font-sans italic">
-                          {t('No ledger records match the query filter selections.', 'آڈٹ فلٹرز یا تلاش کے معیار کے مطابق کوئی ڈیٹا نہیں ملا۔')}
-                        </td>
-                      </tr>
-                    ) : (
-                      sortedRows.map((row, idx) => {
-                        const isEven = idx % 2 === 0;
-                        return (
-                          <tr key={row.id} className={`hover:bg-slate-50/70 transition-colors ${isEven ? 'bg-white' : 'bg-slate-50/15'}`}>
-                            {activeTemplate.headers.map(h => {
-                              const cellValue = row[h.key as keyof ReportRow];
-                              const isNumeric = h.isNumeric;
-                              
-                              if (h.key === 'amount') {
-                                const numericAmount = Number(cellValue || 0);
-                                const isPositive = numericAmount >= 0;
-                                return (
-                                  <td key={h.key} className="py-2.5 px-4 text-right font-mono font-bold text-slate-900">
-                                    <span className={isPositive ? 'text-slate-900' : 'text-red-655'}>
-                                      {formatCurrency(numericAmount, settings)}
-                                    </span>
-                                  </td>
-                                );
-                              }
-
-                              // Format textual values with "Rs." dynamically based on settings
-                              let formattedValue = '';
-                              if (cellValue !== null && cellValue !== undefined) {
-                                const strValue = String(cellValue);
-                                if (strValue.includes('Rs.')) {
-                                  formattedValue = strValue.replace(/Rs\./g, getCurrencySymbol(settings));
-                                } else {
-                                  formattedValue = strValue;
-                                }
-                              }
-
-                              return (
-                                <td
-                                  key={h.key}
-                                  className={`py-2.5 px-4 font-sans text-slate-800 ${isNumeric ? 'text-right font-mono' : ''}`}
-                                >
-                                  {formattedValue}
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {sortedRows.length === 0 ? (
+                    <div className="py-24 text-center text-slate-400 font-sans italic text-xs bg-white">
+                      {t('No ledger records match the query filter selections.', 'آڈٹ فلٹرز یا تلاش کے معیار کے مطابق کوئی ڈیٹا نہیں ملا۔')}
+                    </div>
+                  ) : (
+                    <List<any>
+                      rowCount={sortedRows.length}
+                      rowHeight={42}
+                      rowComponent={RenderReportRow}
+                      rowProps={{}}
+                      style={{ height: 500, width: '100%' }}
+                    />
+                  )}
+                </div>
               </div>
             </div>
           </div>

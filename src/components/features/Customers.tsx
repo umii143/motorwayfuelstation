@@ -22,13 +22,15 @@ import {
   FileBarChart2,
   Trash2,
   PlusCircle,
-  Coins
+  Coins,
+  Sparkles
 } from 'lucide-react';
 import EmptyState from '../ui/EmptyState';
 import PartyLedgerModal, { LedgerEntry, PartyInfo } from '../ui/PartyLedgerModal';
 import { Customer, Shift, Product, GlobalSettings, DebitEntry, RecoveryEntry, LubePosSale } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
+import { fetchWithAuth } from '../../lib/api';
 
 interface CustomersProps {
   settings: GlobalSettings;
@@ -266,6 +268,46 @@ export default function Customers({
   const [txnAmount, setTxnAmount] = useState('');
   const [txnNote, setTxnNote] = useState('');
   const [txnMode, setTxnMode] = useState<'cash' | 'cheque' | 'transfer'>('cash');
+
+  // AI Credit Insights State
+  const [isGeneratingAiInsights, setIsGeneratingAiInsights] = useState(false);
+  const [aiInsightsResult, setAiInsightsResult] = useState<string | null>(null);
+
+  const generateAICreditInsights = async () => {
+    setIsGeneratingAiInsights(true);
+    setAiInsightsResult(null);
+    try {
+      // Limit to max 50 top debtors to avoid token limit
+      const topDebtors = [...customers].sort((a, b) => b.balance - a.balance).slice(0, 50);
+      const creditContext = {
+        totalReceivables: kpiStats.totalReceivables,
+        activeDebtors: kpiStats.activeDebtorsCount,
+        creditExtendedSum: kpiStats.creditExtendedSum,
+        totalRecoverySum: kpiStats.totalRecoverySum,
+        topDebtors: topDebtors.map(c => ({ name: c.name, balance: c.balance, limit: c.creditLimit }))
+      };
+
+      const response = await fetchWithAuth('/api/ai-assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemPrompt: 'You are an AI financial auditor for a fuel station. Analyze the provided credit customer data. Highlight key risks, top debtors, recovery performance, and provide strategic recommendations in 3-4 concise sentences.',
+          userMessage: JSON.stringify(creditContext),
+          language: settings.language,
+          conversationHistory: []
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to generate AI insights');
+      const data = await response.json();
+      setAiInsightsResult(data.reply);
+    } catch (error) {
+      console.error(error);
+      setAiInsightsResult(t("⚠️ Could not generate AI insights.", "⚠️ AI تجزیہ تیار نہیں ہو سکا۔"));
+    } finally {
+      setIsGeneratingAiInsights(false);
+    }
+  };
 
   // Selected customer object lookup
   const currentCustomer = useMemo(() => {
@@ -603,6 +645,15 @@ export default function Customers({
           </div>
 
           <button
+            onClick={generateAICreditInsights}
+            disabled={isGeneratingAiInsights || customers.length === 0}
+            className={`flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2.5 font-sans text-xs font-bold text-white shadow-md shadow-indigo-500/10 hover:bg-indigo-700 transition-all cursor-pointer ${isGeneratingAiInsights ? 'opacity-50' : ''}`}
+          >
+            <Sparkles className={`h-4 w-4 ${isGeneratingAiInsights ? 'animate-spin' : ''}`} />
+            <span>{t('AI Insights', 'اے آئی تجزیہ')}</span>
+          </button>
+
+          <button
             onClick={() => setShowAddModal(true)}
             className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2.5 font-sans text-xs font-bold text-white shadow-md shadow-orange-500/10 hover:bg-orange-700 transition-all cursor-pointer"
           >
@@ -611,6 +662,18 @@ export default function Customers({
           </button>
         </div>
       </div>
+
+      {aiInsightsResult && (
+        <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 shadow-sm relative">
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="h-4 w-4 text-indigo-500" />
+            <span className="font-bold text-indigo-800 text-sm">{t('AI Credit Insights', 'اے آئی کریڈٹ تجزیہ')}</span>
+          </div>
+          <div className="prose prose-sm max-w-none text-indigo-900 whitespace-pre-wrap leading-relaxed text-xs">
+            {aiInsightsResult}
+          </div>
+        </div>
+      )}
 
       {/* DYNAMIC KPI CARDS SECTION */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

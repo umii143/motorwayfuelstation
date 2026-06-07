@@ -33,7 +33,9 @@ import {
   Asset,
   MaintenanceRecord,
   LoyaltyMember,
-  RewardTransaction
+  RewardTransaction,
+  InventoryMovement,
+  JournalEntry
 } from '../types';
 
 const STORAGE_KEYS = {
@@ -69,7 +71,9 @@ const SPECIAL_STORAGE_KEYS = {
   ASSETS: 'fuelpro_assets',
   MAINTENANCE_RECORDS: 'fuelpro_maintenance_records',
   LOYALTY_MEMBERS: 'fuelpro_loyalty_members',
-  REWARD_TRANSACTIONS: 'fuelpro_reward_transactions'
+  REWARD_TRANSACTIONS: 'fuelpro_reward_transactions',
+  INVENTORY_MOVEMENTS: 'fuelpro_inventory_movements',
+  JOURNAL_ENTRIES: 'fuelpro_journal_entries'
 };
 
 // Clear trigger for clean slate if needed
@@ -621,6 +625,28 @@ export const db = {
     setStorageItem(
       db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.REWARD_TRANSACTIONS),
       transactions
+    ),
+
+  getInventoryMovements: (stationId: string): InventoryMovement[] =>
+    getStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_MOVEMENTS),
+      [] as InventoryMovement[]
+    ),
+  saveInventoryMovements: (stationId: string, movements: InventoryMovement[]) =>
+    setStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_MOVEMENTS),
+      movements
+    ),
+
+  getJournalEntries: (stationId: string): JournalEntry[] =>
+    getStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.JOURNAL_ENTRIES),
+      [] as JournalEntry[]
+    ),
+  saveJournalEntries: (stationId: string, entries: JournalEntry[]) =>
+    setStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.JOURNAL_ENTRIES),
+      entries
     ),
 
   clearSettingsAuditTrail: (stationId: string) => {

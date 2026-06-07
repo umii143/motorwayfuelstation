@@ -5,6 +5,7 @@ import {
   AlertTriangle, ExternalLink, Zap, Clock
 } from 'lucide-react';
 import { GlobalSettings, Product } from '../../../types';
+import { fetchWithAuth } from '../../../lib/api';
 
 interface OGRAPriceEntry {
   product: string;
@@ -35,6 +36,7 @@ export default function OGRAPriceSync({ settings, products, onApplyRates }: OGRA
   const [error, setError] = useState('');
   const [appliedProductIds, setAppliedProductIds] = useState<string[]>([]);
   const [selectedMatches, setSelectedMatches] = useState<Record<string, string>>({});
+  const [customAdjustments, setCustomAdjustments] = useState<Record<string, number>>({});
 
   const isUrdu = settings.language === 'ur';
 
@@ -43,8 +45,17 @@ export default function OGRAPriceSync({ settings, products, onApplyRates }: OGRA
     setError('');
     setAppliedProductIds([]);
     try {
-      const resp = await fetch('/api/ogra-prices');
-      if (!resp.ok) throw new Error('Failed to fetch');
+      const resp = await fetchWithAuth('/api/ogra-prices');
+      if (!resp.ok) {
+        let errText = 'Failed to fetch';
+        try {
+          const errData = await resp.json();
+          errText = errData.error || `Error ${resp.status}: ${resp.statusText}`;
+        } catch {
+          errText = `HTTP Error ${resp.status}: ${resp.statusText}`;
+        }
+        throw new Error(errText);
+      }
       const data: OGRAResponse = await resp.json();
       setOgra(data);
 
@@ -65,10 +76,11 @@ export default function OGRAPriceSync({ settings, products, onApplyRates }: OGRA
         if (match) matches[ogprice.productId] = match.id;
       });
       setSelectedMatches(matches);
-    } catch {
+    } catch (err: any) {
+      console.error('OGRA Fetch Error:', err);
       setError(isUrdu
-        ? 'OGRA قیمتیں حاصل کرنے میں خرابی۔ انٹرنیٹ کنکشن چیک کریں۔'
-        : 'Failed to fetch OGRA prices. Check your internet connection.');
+        ? 'OGRA قیمتیں حاصل کرنے میں خرابی۔ ' + (err.message || '')
+        : 'Failed to fetch OGRA prices. ' + (err.message || 'Check your internet connection.'));
     } finally {
       setLoading(false);
     }
@@ -80,7 +92,8 @@ export default function OGRAPriceSync({ settings, products, onApplyRates }: OGRA
     ogra.prices.forEach(ogprice => {
       const stationProductId = selectedMatches[ogprice.productId];
       if (stationProductId) {
-        updates.push({ productId: stationProductId, newRate: ogprice.rate });
+        const finalRate = ogprice.rate + (customAdjustments[ogprice.productId] || 0);
+        updates.push({ productId: stationProductId, newRate: finalRate });
       }
     });
     onApplyRates(updates);
@@ -212,12 +225,39 @@ export default function OGRAPriceSync({ settings, products, onApplyRates }: OGRA
                         ))}
                       </select>
 
-                      {matchedProduct && (
-                        <p className={`font-sans text-xs mt-1.5 font-medium ${price.rate > matchedProduct.rate ? 'text-rose-600' : price.rate < matchedProduct.rate ? 'text-emerald-600' : 'text-slate-500'}`}>
-                          Your rate vs OGRA: {settings.currency} {matchedProduct.rate} → {settings.currency} {price.rate.toFixed(2)}
-                          {' '}({price.rate > matchedProduct.rate ? '+' : ''}{(price.rate - matchedProduct.rate).toFixed(2)})
-                        </p>
-                      )}
+                      {(() => {
+                        const adjustment = customAdjustments[price.productId] || 0;
+                        const finalRate = price.rate + adjustment;
+                        return (
+                          <div className="mt-3">
+                            <div className="flex items-center justify-between gap-2 mb-2 bg-[var(--bg-main)] rounded-lg p-2 border border-[var(--border-main)] shadow-sm">
+                              <label className="font-sans text-[11px] font-bold text-[var(--text-main)]">
+                                Union / Carriage Rate (+Rs):
+                              </label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                placeholder="0.00"
+                                value={customAdjustments[price.productId] === undefined ? '' : customAdjustments[price.productId]}
+                                onChange={e => setCustomAdjustments(prev => ({ ...prev, [price.productId]: e.target.value ? parseFloat(e.target.value) : 0 }))}
+                                className="w-24 text-right rounded-md border border-[var(--border-main)] bg-[var(--bg-card)] px-2 py-1 font-mono text-sm font-bold text-[var(--text-main)] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                              />
+                            </div>
+                            
+                            {matchedProduct && (
+                              <p className={`font-sans text-xs font-medium ${finalRate > matchedProduct.rate ? 'text-rose-600' : finalRate < matchedProduct.rate ? 'text-emerald-600' : 'text-slate-500'}`}>
+                                Final Rate vs Current: {settings.currency} {matchedProduct.rate} → {settings.currency} {finalRate.toFixed(2)}
+                                {' '}({finalRate > matchedProduct.rate ? '+' : ''}{(finalRate - matchedProduct.rate).toFixed(2)})
+                              </p>
+                            )}
+                            {!matchedProduct && (
+                              <p className="font-sans text-xs font-medium text-slate-500">
+                                Final Rate: {settings.currency} {finalRate.toFixed(2)} (Select a match to apply)
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })()}
 
                       {isApplied && (
                         <div className="flex items-center gap-1.5 mt-2">
@@ -232,12 +272,12 @@ export default function OGRAPriceSync({ settings, products, onApplyRates }: OGRA
             </div>
 
             {/* Apply Button */}
-            {onApplyRates && Object.values(selectedMatches).some(Boolean) && (
+            {onApplyRates && (
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-2xl bg-amber-50 border border-amber-200">
                 <div className="flex items-start gap-3 flex-1">
                   <Clock className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-sans text-sm font-bold text-amber-800">Ready to Apply New Rates</p>
+                    <p className="font-sans text-sm font-bold text-amber-800">Ready to Save Final Rates</p>
                     <p className="font-sans text-xs text-amber-700 mt-0.5">
                       {ogra.note}
                     </p>
@@ -248,7 +288,7 @@ export default function OGRAPriceSync({ settings, products, onApplyRates }: OGRA
                   className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-sans text-sm font-bold shadow-md hover:bg-emerald-700 transition-colors whitespace-nowrap"
                 >
                   <CheckCircle2 className="h-4 w-4" />
-                  {isUrdu ? 'نئی قیمتیں لاگو کریں' : 'Apply New Rates'}
+                  {isUrdu ? 'قیمتیں محفوظ کریں' : 'Save Rates'}
                 </button>
               </div>
             )}

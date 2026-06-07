@@ -49,6 +49,7 @@ export interface Product extends TenantDocument {
   currentStock: number;
   minStock: number;
   capacity?: number;
+  category?: string;
 }
 
 export interface Nozzle extends TenantDocument {
@@ -227,6 +228,35 @@ export interface Shift extends TenantDocument {
   cashVariance?: number;
 }
 
+export interface ReceiptLine {
+  productId: string;
+  productName: string;
+  quantity: number;
+  rate: number;
+  amount: number;
+  nozzleId?: string;
+  tankId?: string;
+}
+
+export interface Receipt extends TenantDocument {
+  id: string;
+  receiptNo: string;
+  date: string; // ISO date
+  time: string; // HH:mm format
+  shiftId?: string;
+  cashierId: string;
+  customerId?: string; 
+  customerName?: string;
+  vehicleNo?: string;
+  paymentMode: 'cash' | 'card' | 'digital' | 'credit';
+  subtotal: number;
+  discount: number;
+  tax: number;
+  total: number;
+  items: ReceiptLine[];
+  notes?: string;
+}
+
 export interface BankAccount extends TenantDocument {
   id: string;
   name: string;
@@ -286,6 +316,16 @@ export interface GlobalSettings extends TenantDocument {
   currency?: string;
   setupCompleted?: boolean;
   setupVersion?: number;
+  whatsappSettings?: {
+    enabled: boolean;
+    number: string;
+    alerts: {
+      shiftClose: boolean;
+      priceChange: boolean;
+      tankLow: boolean;
+      cashVariance: boolean;
+    };
+  };
 }
 
 export const EXPENSE_CATEGORIES = [
@@ -544,4 +584,34 @@ export interface RewardTransaction extends TenantDocument {
   sourceTransactionId?: string; // Optional link to a POS receipt
   description: string;
   date: string;
+}
+
+export interface JournalEntry extends TenantDocument {
+  id: string;
+  date: string; // ISO DateTime string
+  partyId?: string; // customerId, supplierId, bankId, digitalId, or staffId
+  partyType?: 'customer' | 'supplier' | 'bank' | 'digital' | 'staff' | 'expense' | 'revenue';
+  partyName?: string;
+  type: 'debit' | 'credit';
+  amount: number;
+  description: string;
+  referenceId: string; // shiftId, lubePosSaleId, standaloneExpenseId
+  runningBalanceAfter?: number;
+}
+
+export interface ToastConfig {
+  message: string;
+  type: 'success' | 'error' | 'info';
+  visible: boolean;
+}
+
+export interface ConfirmConfig {
+  title: string;
+  message: string;
+  visible: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+  isAlert?: boolean;
+  confirmText?: string;
+  cancelText?: string;
 }

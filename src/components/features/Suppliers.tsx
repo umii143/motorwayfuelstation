@@ -22,13 +22,16 @@ import {
   TrendingUp,
   Clock,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Sparkles
 } from 'lucide-react';
 import EmptyState from '../ui/EmptyState';
+import AIDocumentScanner from '../ui/AIDocumentScanner';
 import PartyLedgerModal, { LedgerEntry, PartyInfo } from '../ui/PartyLedgerModal';
 import { Supplier, Shift, Product, GlobalSettings } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
+import { fetchWithAuth } from '../../lib/api';
 
 interface SuppliersProps {
   settings: GlobalSettings;
@@ -185,6 +188,46 @@ export default function Suppliers({
     };
   }, [suppliers, shifts, timeFilter]);
   
+  // AI Supplier Insights State
+  const [isGeneratingAiInsights, setIsGeneratingAiInsights] = useState(false);
+  const [aiInsightsResult, setAiInsightsResult] = useState<string | null>(null);
+
+  const generateAISupplierInsights = async () => {
+    setIsGeneratingAiInsights(true);
+    setAiInsightsResult(null);
+    try {
+      // Limit to max 50 top suppliers to avoid token limit
+      const topSuppliers = [...suppliers].sort((a, b) => b.balance - a.balance).slice(0, 50);
+      const supplierContext = {
+        totalPayables: kpiStats.totalPayables,
+        activeSuppliers: kpiStats.activeCount,
+        overdueCount: kpiStats.overdueCount,
+        totalPaymentsMade: kpiStats.paymentAmountSum,
+        topSuppliers: topSuppliers.map(s => ({ name: s.name, balance: s.balance }))
+      };
+
+      const response = await fetchWithAuth('/api/ai-assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemPrompt: 'You are an AI financial auditor for a fuel station. Analyze the provided supplier and accounts payable data. Highlight key risks, top payables, payment performance, and provide strategic recommendations in 3-4 concise sentences.',
+          userMessage: JSON.stringify(supplierContext),
+          language: settings.language,
+          conversationHistory: []
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to generate AI insights');
+      const data = await response.json();
+      setAiInsightsResult(data.reply);
+    } catch (error) {
+      console.error(error);
+      setAiInsightsResult(t("⚠️ Could not generate AI insights.", "⚠️ AI تجزیہ تیار نہیں ہو سکا۔"));
+    } finally {
+      setIsGeneratingAiInsights(false);
+    }
+  };
+
   // Modal toggle & form states
   const [showAddSupplierModal, setShowAddSupplierModal] = useState(false);
   const [addName, setAddName] = useState('');
@@ -198,6 +241,38 @@ export default function Suppliers({
   const [adjustNature, setAdjustNature] = useState<'invoice' | 'payment'>('invoice');
   const [adjustAmount, setAdjustAmount] = useState('');
   const [adjustComment, setAdjustComment] = useState('');
+  
+  // AI Scanner state for Supplier adjustment
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+
+  const handleSupplierAutoFill = (data: any) => {
+    if (data.Amount) {
+      const amtMatch = String(data.Amount).replace(/[^0-9.]/g, '');
+      if (amtMatch) setAdjustAmount(amtMatch);
+    }
+    
+    let desc = '';
+    if (data['Invoice/Receipt Number'] && data['Invoice/Receipt Number'] !== 'N/A') desc += `Inv #${data['Invoice/Receipt Number']} - `;
+    if (data['Supplier/Customer Name'] && data['Supplier/Customer Name'] !== 'N/A') desc += `${data['Supplier/Customer Name']} `;
+    if (data['Product Details'] && data['Product Details'] !== 'N/A') desc += `(${data['Product Details']})`;
+    
+    if (desc.trim()) setAdjustComment(desc.trim());
+    else if (data.Remarks) setAdjustComment(data.Remarks);
+
+    // Auto-detect nature (payment receipt vs stock invoice)
+    if (data.Type) {
+      const t = String(data.Type).toLowerCase();
+      if (t.includes('payment') || t.includes('receipt')) setAdjustNature('payment');
+      else setAdjustNature('invoice');
+    } else {
+      setAdjustNature('invoice'); // default to invoice
+    }
+
+    setTimeout(() => {
+      setIsScannerOpen(false);
+      showToast('Form auto-filled from document!', 'success');
+    }, 1500);
+  };
 
   // Selected supplier object lookup
   const currentSupplier = useMemo(() => {
@@ -362,6 +437,15 @@ export default function Suppliers({
           </div>
 
           <button
+            onClick={generateAISupplierInsights}
+            disabled={isGeneratingAiInsights || suppliers.length === 0}
+            className={`flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2.5 font-sans text-xs font-bold text-white shadow-md shadow-indigo-500/10 hover:bg-indigo-700 transition-all cursor-pointer ${isGeneratingAiInsights ? 'opacity-50' : ''}`}
+          >
+            <Sparkles className={`h-4 w-4 ${isGeneratingAiInsights ? 'animate-spin' : ''}`} />
+            <span>{t('AI Insights', 'اے آئی تجزیہ')}</span>
+          </button>
+
+          <button
             onClick={() => setShowAddSupplierModal(true)}
             className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2.5 font-sans text-xs font-bold text-white shadow-md shadow-orange-500/10 hover:bg-orange-700 transition-all cursor-pointer"
           >
@@ -370,6 +454,18 @@ export default function Suppliers({
           </button>
         </div>
       </div>
+
+      {aiInsightsResult && (
+        <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 shadow-sm relative">
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="h-4 w-4 text-indigo-500" />
+            <span className="font-bold text-indigo-800 text-sm">{t('AI Supplier Insights', 'اے آئی سپلائر تجزیہ')}</span>
+          </div>
+          <div className="prose prose-sm max-w-none text-indigo-900 whitespace-pre-wrap leading-relaxed text-xs">
+            {aiInsightsResult}
+          </div>
+        </div>
+      )}
 
       {/* DYNAMIC KPI CARDS SECTION */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -615,6 +711,15 @@ export default function Suppliers({
                       <strong className="font-sans text-xs font-bold text-slate-700">{t('Direct Vendor Adjustment Invoice:', 'سپلائر تصحیح فارم:')}</strong>
                       <button type="button" onClick={() => setIsAdjusting(false)} className="text-xs font-bold text-slate-400">Cancel</button>
                     </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsScannerOpen(true)}
+                      className="w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 font-sans text-xs font-bold py-2 hover:bg-indigo-100 transition-colors cursor-pointer mb-3 shadow-xs"
+                    >
+                      <Sparkles className="h-4 w-4" />
+                      {t('Auto-Fill with Invoice Scanner', 'بل سکین کر کے آٹو فل کریں')}
+                    </button>
 
                     <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                       <div>
@@ -937,6 +1042,14 @@ export default function Suppliers({
         debitLabel="Payment Made (Dr)"
         creditLabel="Stock Invoice (Cr)"
         accentColor="emerald"
+      />
+
+      <AIDocumentScanner
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        settings={settings}
+        extractionPrompt='You are an expert accounting assistant. Extract data from this supplier invoice or payment receipt and return it strictly as JSON with exactly these keys: "Amount" (number or string with number), "Type" (either "invoice" for stock purchase, or "payment" for payment made), "Supplier/Customer Name", "Invoice/Receipt Number", "Product Details" (items purchased or payment method). Do not use markdown backticks, just the raw JSON object.'
+        onDataExtracted={handleSupplierAutoFill}
       />
 
     </div>

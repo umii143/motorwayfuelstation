@@ -92,8 +92,8 @@ export default function StaffPanel({
 
   // Form caches: Daily Attendance Register (Module E1)
   const [attendanceDate, setAttendanceDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [attendanceStatuses, setAttendanceStatuses] = useState<Record<string, { status: 'present' | 'absent' | 'leave'; checkIn: string; checkOut: string }>>(() => {
-    const initial: Record<string, { status: 'present' | 'absent' | 'leave'; checkIn: string; checkOut: string }> = {};
+  const [attendanceStatuses, setAttendanceStatuses] = useState<Record<string, { status: 'present' | 'absent' | 'leave' | 'off' | 'late'; checkIn: string; checkOut: string }>>(() => {
+    const initial: Record<string, { status: 'present' | 'absent' | 'leave' | 'off' | 'late'; checkIn: string; checkOut: string }> = {};
     staff.forEach(s => {
       initial[s.id] = { status: 'present', checkIn: '08:00', checkOut: '17:00' };
     });
@@ -246,12 +246,12 @@ export default function StaffPanel({
   const handleSaveAttendance = (e: React.FormEvent) => {
     e.preventDefault();
     const recordsToSave: AttendanceRecord[] = Object.entries(attendanceStatuses).map(([sId, val]) => {
-      const data = val as { status: 'present' | 'absent' | 'leave'; checkIn: string; checkOut: string };
+      const data = val as { status: 'present' | 'absent' | 'leave' | 'off' | 'late'; checkIn: string; checkOut: string };
       return {
         id: `att_${sId}_${attendanceDate}`,
         staffId: sId,
         date: attendanceDate,
-        status: data.status as 'present' | 'absent' | 'leave',
+        status: data.status,
         checkIn: data.status === 'present' ? data.checkIn : undefined,
         checkOut: data.status === 'present' ? data.checkOut : undefined
       };

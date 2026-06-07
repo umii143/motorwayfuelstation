@@ -46,6 +46,7 @@ import {
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
 import { DashboardAIInsights } from './DashboardAIInsights';
+import { DashboardAIAssistant } from './DashboardAIAssistant';
 import { DashboardRealtimeGauges } from './DashboardRealtimeGauges';
 import { DashboardWeeklyGraph } from './DashboardWeeklyGraph';
 import { DashboardLiquidAssetsGraph } from './DashboardLiquidAssetsGraph';
@@ -711,6 +712,15 @@ export default function Dashboard({
       </div>
 
       <DashboardAIInsights settings={settings} shifts={shifts} />
+
+      {/* DASHBOARD AI ASSISTANT WIDGET */}
+      <DashboardAIAssistant 
+        settings={settings}
+        shifts={shifts}
+        customers={customers}
+        products={products}
+        banks={banks}
+      />
 
       {/* FUEL PRICE IMPACT/REVALUATION CARDS */}
       {!isLube && (

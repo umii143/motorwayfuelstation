@@ -4,6 +4,8 @@ import LocalStorageMigrationWizard from './components/features/LocalStorageMigra
 import { firestoreDb } from './data/firestore';
 import { writeBatch, doc, setDoc } from 'firebase/firestore';
 import { dbFS } from './lib/firebase';
+import { fetchWithAuth } from './lib/api';
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -39,6 +41,7 @@ const EnterpriseHub = React.lazy(() => import('./components/features/EnterpriseH
 const DipCalculator = React.lazy(() => import('./components/features/DipCalculator/DipCalculator'));
 const OGRAPriceSync = React.lazy(() => import('./components/features/OGRAPriceSync/OGRAPriceSync'));
 const AIAssistant = React.lazy(() => import('./components/features/AIAssistant/AIAssistant'));
+const AIAnalyticsHub = React.lazy(() => import('./components/features/AIAnalyticsHub/AIAnalyticsHub'));
 const WhatsAppAlerts = React.lazy(() => import('./components/features/WhatsAppAlerts'));
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { RefreshCw, CheckCircle2, AlertTriangle, XCircle, Info, X } from 'lucide-react';
@@ -509,11 +512,41 @@ function MainApp() {
               updates.forEach(u => handleUpdateProductRate(u.productId, u.newRate));
               showToast('OGRA rates applied successfully!', 'success');
               setActiveView('inventory');
+
+              if (settings.whatsappSettings?.enabled && settings.whatsappSettings?.alerts?.priceChange) {
+                try {
+                   let msg = "*🚨 Official Rate Change Alert*\n\nNew rates have been applied to the station:\n";
+                   updates.forEach(u => {
+                      const p = products.find(prod => prod.id === u.productId);
+                      if (p) msg += `- ${p.name}: Rs ${u.newRate.toFixed(2)}\n`;
+                   });
+                   msg += `\n_Generated automatically by FuelPro ERP_`;
+                   fetchWithAuth('/api/wa/send', {
+                     method: 'POST',
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify({ number: settings.whatsappSettings.number, message: msg })
+                   }).catch(() => {});
+                } catch(e) {}
+              }
             }}
           />
         );
       case 'whatsapp_alerts':
-        return <WhatsAppAlerts settings={settings} />;
+        return <WhatsAppAlerts settings={settings} onUpdateSettings={handleUpdateSettings} />;
+
+      case 'ai_analytics':
+        return (
+          <AIAnalyticsHub 
+            settings={settings}
+            dataContext={{
+              products,
+              tanks,
+              shifts: shifts.slice(-10),
+              staff,
+              nozzles
+            }}
+          />
+        );
 
       default:
         return (
@@ -569,7 +602,7 @@ function MainApp() {
             setStaff(completedData.staff);
 
             // Extract pumps that nozzles refer to and populate them automatically
-            const uniquePumpIds = Array.from(new Set(completedData.nozzles.map(n => n.pumpId)));
+            const uniquePumpIds = Array.from(new Set(completedData.nozzles.map(n => n.pumpId))) as string[];
             const generatedPumps: Pump[] = uniquePumpIds.map(pId => ({
               id: pId,
               name: `Dispenser ${pId.replace('pump_', '#')}`,

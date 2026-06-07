@@ -55,12 +55,16 @@ import {
   Database,
   Droplets,
   ShieldCheck,
-  MessageCircle
+  MessageCircle,
+  Sparkles,
+  ScanLine
 } from 'lucide-react';
 import { GlobalSettings, Station } from '../../types';
 import { t as translate } from '../../lib/translations';
 import HelpGuideModal from '../ui/HelpGuideModal';
+import AIDocumentScanner from '../ui/AIDocumentScanner';
 import { useStation } from '../../contexts/StationContext';
+import { fetchWithAuth } from '../../lib/api';
 
 interface NavigationProps {
   activeView: string;
@@ -75,6 +79,8 @@ interface NavigationProps {
   onAddStation?: (station: Station) => void;
   onEditStation?: (station: Station) => void;
   onDeleteStation?: (stationId: string) => void;
+  isSidebarCollapsed?: boolean;
+  onToggleSidebar?: (collapsed: boolean) => void;
 }
 
 export default function Navigation({
@@ -89,10 +95,13 @@ export default function Navigation({
   onSwitchStation,
   onAddStation,
   onEditStation,
-  onDeleteStation
+  onDeleteStation,
+  isSidebarCollapsed = false,
+  onToggleSidebar
 }: NavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [stationDropdownOpen, setStationDropdownOpen] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
   
   // Modal controllers
   const [showAddModal, setShowAddModal] = useState(false);
@@ -130,6 +139,7 @@ export default function Navigation({
     { id: 'reports', icon: FileBarChart, label: isLube ? 'Lube Reports' : 'Advanced Reports (104)', urdu: isLube ? 'لیوب رپورٹس' : 'ایڈوانسڈ رپورٹس', showInLube: true },
     { id: 'dip_calculator', icon: Droplets, label: 'Dip Chart Calculator', urdu: 'دپ چارٹ کیلکولیٹر', showInLube: false },
     { id: 'ogra_sync', icon: ShieldCheck, label: 'OGRA Price Sync', urdu: 'OGRA قیمت سنک', showInLube: false },
+    { id: 'ai_analytics', icon: Sparkles, label: 'AI Analytics Hub', urdu: 'اے آئی اینالٹکس', showInLube: true },
     { id: 'whatsapp_alerts', icon: MessageCircle, label: 'WhatsApp Alerts', urdu: 'واٹس ایپ الرٹس', showInLube: true },
     { 
       id: 'enterprise_hub', 
@@ -172,12 +182,21 @@ export default function Navigation({
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   // NEW CONTEXT & STATES
-  const { products, customers, staff } = useStation();
+  const { products, customers, staff, shifts, banks, standaloneExpenses, stockTxns, tanks, suppliers } = useStation();
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [isSetupOpen, setIsSetupOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState('');
+  
+  // AI Search states
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [isAiSearching, setIsAiSearching] = useState(false);
+  const [aiSearchResult, setAiSearchResult] = useState<string | null>(null);
+  const [aiSearchQuery, setAiSearchQuery] = useState('');
+  
+  // Document Scanner state
+  const [isDocScannerOpen, setIsDocScannerOpen] = useState(false);
 
   // 1. Theme Logic
   const availableThemes = [
@@ -227,7 +246,7 @@ export default function Navigation({
     if (!globalSearch || globalSearch.length < 2) return null;
     const query = globalSearch.toLowerCase();
     return {
-      customers: customers.filter(c => c.name.toLowerCase().includes(query) || c.phone.includes(query)).slice(0, 4),
+      customers: customers.filter(c => c.name.toLowerCase().includes(query) || c.contact.includes(query)).slice(0, 4),
       products: products.filter(p => p.name.toLowerCase().includes(query) || (p.urduName && p.urduName.includes(query))).slice(0, 4),
       staff: staff.filter(s => s.name.toLowerCase().includes(query) || (s.urduName && s.urduName.includes(query))).slice(0, 4)
     };
@@ -239,9 +258,58 @@ export default function Navigation({
     setIsSearchOpen(false);
   };
 
+  const handleAskAI = async () => {
+    if (!globalSearch.trim()) return;
+    
+    setAiSearchQuery(globalSearch);
+    setIsSearchOpen(false);
+    setIsAiModalOpen(true);
+    setIsAiSearching(true);
+    setAiSearchResult(null);
+    setGlobalSearch('');
+
+    try {
+      // Prepare compact data context to avoid overwhelming the payload size
+      // Take only the most relevant fields or a subset for extremely large arrays.
+      const aiContext = {
+        customers: customers.map(c => ({ name: c.name, balance: c.balance, limit: c.creditLimit })),
+        suppliers: suppliers.map(s => ({ name: s.name, balance: s.balance })),
+        products: products.map(p => ({ name: p.name, stock: p.currentStock, price: p.rate })),
+        banks: banks.map(b => ({ name: b.bankName, balance: b.balance })),
+        recentShifts: shifts.slice(0, 10).map(s => ({ date: s.date, status: s.status, overage: s.overage, shortage: s.shortage })),
+        staff: staff.map(s => ({ name: s.name, role: s.role, status: s.status })),
+        recentStockTxns: stockTxns.slice(0, 15).map(t => ({ itemId: t.itemId, type: t.type, qty: t.quantity, date: t.date })),
+        recentExpenses: standaloneExpenses.slice(0, 15).map(e => ({ category: e.category, amount: e.amount, date: e.date }))
+      };
+
+      const response = await fetchWithAuth('/api/ai-assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemPrompt: 'You are an AI enterprise assistant for a fuel station. Answer the user\'s query based ONLY on the provided JSON data context representing the current state of the enterprise (customers, stock, banks, shifts, etc). If the data is not in the context, say you do not know.',
+          userMessage: `Context: ${JSON.stringify(aiContext)}\n\nQuery: ${globalSearch}`,
+          conversationHistory: [],
+          language: settings.language
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to generate AI response');
+      const data = await response.json();
+      setAiSearchResult(data.reply);
+    } catch (error) {
+      console.error(error);
+      setAiSearchResult("⚠️ Failed to reach AI services or data context too large.");
+    } finally {
+      setIsAiSearching(false);
+    }
+  };
+
   const handleItemClick = (id: string) => {
     onViewChange(id);
     setMobileMenuOpen(false);
+    if (onToggleSidebar) {
+      onToggleSidebar(true);
+    }
   };
 
   // Open add Modal
@@ -335,7 +403,7 @@ export default function Navigation({
   return (
     <>
       {/* HEADER BAR */}
-      <header className="sticky top-0 z-50 flex items-center justify-between border-b border-border glass px-4 py-3 shadow-md transition-all duration-300">
+      <header className="fixed top-0 left-0 right-0 h-[65px] z-50 flex items-center justify-between border-b border-border glass px-4 py-3 shadow-md transition-all duration-300">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -487,6 +555,15 @@ export default function Navigation({
         {/* CONTROLS */}
         <div className="flex items-center gap-1 sm:gap-3 shrink-0 ml-auto">
           <button
+            onClick={() => setIsDocScannerOpen(true)}
+            className="flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-2 sm:px-3 py-1.5 font-sans text-[10px] sm:text-xs font-bold text-indigo-700 shadow-xs hover:bg-indigo-100 hover:border-indigo-300 transition-colors shrink-0"
+            title={t("Scan Receipt", "رسید سکین کریں")}
+          >
+            <ScanLine className="h-4 w-4" />
+            <span className="hidden sm:inline">{t('Scan', 'سکین')}</span>
+          </button>
+          
+          <button
             onClick={toggleLanguage}
             className="flex items-center gap-1 sm:gap-1.5 rounded-lg border border-slate-200 bg-white px-1.5 sm:px-3 py-1.5 font-sans text-[10px] sm:text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 transition-colors shrink-0"
           >
@@ -526,8 +603,17 @@ export default function Navigation({
                     value={globalSearch}
                     onChange={(e) => setGlobalSearch(e.target.value)}
                     placeholder={t("Type to search...", "تلاش کے لیے ٹائپ کریں...")}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm font-semibold text-slate-800 focus:border-orange-500 focus:bg-white focus:outline-hidden"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-[88px] text-sm font-semibold text-slate-800 focus:border-orange-500 focus:bg-white focus:outline-hidden"
                   />
+                  {globalSearch.trim().length > 2 && (
+                    <button 
+                      onClick={handleAskAI}
+                      className="absolute right-1.5 top-1.5 bottom-1.5 px-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                    >
+                      <Sparkles className="h-3 w-3" />
+                      Ask AI
+                    </button>
+                  )}
                 </div>
                 <div className="max-h-72 overflow-y-auto">
                   {searchResults ? (
@@ -538,7 +624,7 @@ export default function Navigation({
                           {searchResults.customers.map(c => (
                             <button key={c.id} onClick={() => handleSearchSelect('customers')} className="flex w-full items-center justify-between rounded-lg px-3 py-2 hover:bg-orange-50 transition-colors cursor-pointer">
                               <span className="text-sm font-bold text-slate-700">{c.name}</span>
-                              <span className="text-xs font-semibold text-slate-500">{c.phone}</span>
+                              <span className="text-xs font-semibold text-slate-500">{c.contact}</span>
                             </button>
                           ))}
                         </div>
@@ -775,8 +861,20 @@ export default function Navigation({
       </header>
 
       {/* DESKTOP SIDEBAR */}
-      <aside className="fixed bottom-0 top-[65px] left-0 z-40 hidden w-64 border-r border-border glass py-4 lg:block animate-fade-in shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)]">
-        <div className="flex flex-col h-full justify-between">
+      <aside 
+        className={`fixed bottom-0 top-[65px] left-0 z-40 hidden border-r border-border glass py-4 lg:block animate-fade-in shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)] transition-all duration-300 ${
+          isSidebarCollapsed ? 'w-[72px]' : 'w-64'
+        }`}
+      >
+        <div className="flex flex-col h-full justify-between overflow-x-hidden">
+          
+          {/* TOGGLE BUTTON */}
+          <button 
+            onClick={() => onToggleSidebar && onToggleSidebar(!isSidebarCollapsed)}
+            className="absolute -right-3 top-6 bg-white border border-slate-200 text-slate-400 hover:text-orange-600 rounded-full p-1 z-50 shadow-sm cursor-pointer"
+          >
+            <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${isSidebarCollapsed ? '-rotate-90' : 'rotate-90'}`} />
+          </button>
           
           {/* PRIMARY SEGMENTED SWITCH IN SIDEBAR */}
           <div className="px-3 mb-4 shrink-0 select-none">
@@ -789,9 +887,10 @@ export default function Navigation({
                     ? 'bg-orange-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
+                title={isSidebarCollapsed ? t('Fuel Station', 'فیول') : undefined}
               >
                 <Fuel className="h-3.5 w-3.5 shrink-0" />
-                <span>{t('Fuel Station', 'فیول')}</span>
+                {!isSidebarCollapsed && <span>{t('Fuel Station', 'فیول')}</span>}
               </button>
               <button
                 type="button"
@@ -801,9 +900,10 @@ export default function Navigation({
                     ? 'bg-blue-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
+                title={isSidebarCollapsed ? t('Lube Biz', 'لیوب') : undefined}
               >
                 <Wrench className="h-3.5 w-3.5 shrink-0" />
-                <span>{t('Lube Biz', 'لیوب')}</span>
+                {!isSidebarCollapsed && <span>{t('Lube Biz', 'لیوب')}</span>}
               </button>
             </div>
           </div>
@@ -816,25 +916,31 @@ export default function Navigation({
                 // Determine if any child is active to keep accordion open by default
                 const isChildActive = item.children.some(child => activeView === child.id);
                 // We use a local state for accordion OR we can just keep it open if active
-                const [expanded, setExpanded] = React.useState(isChildActive);
+                const expanded = expandedMenus[item.id] !== undefined ? expandedMenus[item.id] : isChildActive;
                 
                 return (
                   <div key={item.id} className="space-y-1">
                     <button
-                      onClick={() => setExpanded(!expanded)}
-                      className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
+                      onClick={() => {
+                        setExpandedMenus(prev => ({ ...prev, [item.id]: !expanded }));
+                        if (isSidebarCollapsed && onToggleSidebar) onToggleSidebar(false);
+                      }}
+                      className={`flex w-full items-center justify-between gap-3 rounded-lg py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
+                        isSidebarCollapsed ? 'px-2 justify-center' : 'px-3'
+                      } ${
                         isChildActive
                           ? isLube
                             ? 'bg-blue-50 text-blue-600 font-bold border-l-4 border-blue-600 shadow-xs'
                             : 'bg-orange-50 text-orange-600 font-bold border-l-4 border-orange-600 shadow-xs'
-                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent'
                       }`}
+                      title={isSidebarCollapsed ? t(item.label, item.urdu) : undefined}
                     >
                       <div className="flex items-center gap-3">
-                        <Icon className={`h-5 w-5 ${isChildActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
-                        <span className="flex-1 text-left">{t(item.label, item.urdu)}</span>
+                        <Icon className={`h-5 w-5 shrink-0 ${isChildActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                        {!isSidebarCollapsed && <span className="flex-1 text-left whitespace-nowrap">{t(item.label, item.urdu)}</span>}
                       </div>
-                      <ChevronDown className={`h-4 w-4 transition-transform ${expanded ? 'rotate-180' : ''} ${isChildActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                      {!isSidebarCollapsed && <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${expanded ? 'rotate-180' : ''} ${isChildActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />}
                     </button>
                     
                     {expanded && (
@@ -846,16 +952,19 @@ export default function Navigation({
                             <button
                               key={child.id}
                               onClick={() => handleItemClick(child.id)}
-                              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 font-sans text-xs font-semibold transition-all cursor-pointer ${
+                              className={`flex w-full items-center gap-3 rounded-lg py-2 font-sans text-xs font-semibold transition-all cursor-pointer ${
+                                isSidebarCollapsed ? 'px-2 justify-center' : 'px-3'
+                              } ${
                                 isChildItemActive
                                   ? isLube
-                                    ? 'bg-blue-50 text-blue-700 font-bold'
-                                    : 'bg-orange-50 text-orange-700 font-bold'
-                                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                                    ? 'bg-blue-50 text-blue-700 shadow-xs border-l-2 border-blue-600'
+                                    : 'bg-orange-50 text-orange-700 shadow-xs border-l-2 border-orange-600'
+                                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800 border-l-2 border-transparent'
                               }`}
+                              title={isSidebarCollapsed ? t(child.label, child.urdu) : undefined}
                             >
-                              <ChildIcon className={`h-4 w-4 ${isChildItemActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
-                              <span className="flex-1 text-left">{t(child.label, child.urdu)}</span>
+                              <ChildIcon className={`h-4 w-4 shrink-0 ${isChildItemActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                              {!isSidebarCollapsed && <span className="whitespace-nowrap">{t(child.label, child.urdu)}</span>}
                             </button>
                           );
                         })}
@@ -870,16 +979,19 @@ export default function Navigation({
                 <button
                   key={item.id}
                   onClick={() => handleItemClick(item.id)}
-                  className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
+                  className={`flex w-full items-center gap-3 rounded-lg py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
+                    isSidebarCollapsed ? 'px-2 justify-center' : 'px-3'
+                  } ${
                     isActive
                       ? isLube
                         ? 'bg-blue-50 text-blue-600 font-bold border-l-4 border-blue-600 shadow-xs'
                         : 'bg-orange-50 text-orange-600 font-bold border-l-4 border-orange-600 shadow-xs'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent'
                   }`}
+                  title={isSidebarCollapsed ? t(item.label, item.urdu) : undefined}
                 >
-                  <Icon className={`h-5 w-5 ${isActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
-                  <span className="flex-1 text-left">{t(item.label, item.urdu)}</span>
+                  <Icon className={`h-5 w-5 shrink-0 ${isActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                  {!isSidebarCollapsed && <span className="whitespace-nowrap">{t(item.label, item.urdu)}</span>}
                 </button>
               );
             })}
@@ -942,12 +1054,12 @@ export default function Navigation({
                   // Determine if any child is active to keep accordion open by default
                   const isChildActive = item.children.some(child => activeView === child.id);
                   // We use a local state for accordion OR we can just keep it open if active
-                  const [expanded, setExpanded] = React.useState(isChildActive);
+                  const expanded = expandedMenus[item.id] !== undefined ? expandedMenus[item.id] : isChildActive;
                   
                   return (
                     <div key={item.id} className="space-y-1">
                       <button
-                        onClick={() => setExpanded(!expanded)}
+                        onClick={() => setExpandedMenus(prev => ({ ...prev, [item.id]: !expanded }))}
                         className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
                           isChildActive
                             ? isLube
@@ -1262,9 +1374,65 @@ export default function Navigation({
         </div>
       )}
 
+      {/* AI Search Result Modal */}
+      {isAiModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div className="bg-indigo-600 px-5 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-indigo-100" />
+                <h3 className="font-sans text-base font-bold text-white">Gemini AI Search Analysis</h3>
+              </div>
+              <button 
+                onClick={() => setIsAiModalOpen(false)}
+                className="rounded-lg p-1.5 hover:bg-white/20 text-white transition-colors cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto bg-slate-50 flex-1">
+              <div className="mb-4">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Your Query</p>
+                <p className="text-sm font-semibold text-slate-800 bg-white p-3 rounded-lg border border-slate-200 mt-1">"{aiSearchQuery}"</p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-2">AI Response</p>
+                {isAiSearching ? (
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <Sparkles className="h-8 w-8 text-indigo-400 animate-spin" />
+                    <p className="text-sm text-indigo-600 mt-3 font-semibold">Analyzing enterprise data...</p>
+                  </div>
+                ) : (
+                  <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap bg-white p-4 rounded-xl border border-indigo-100 shadow-xs">
+                    {aiSearchResult}
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="px-6 py-4 bg-white border-t border-slate-100 flex justify-end">
+              <button 
+                onClick={() => setIsAiModalOpen(false)}
+                className="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm rounded-lg transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <HelpGuideModal
         isOpen={isHelpOpen}
         onClose={() => setIsHelpOpen(false)}
+        settings={settings}
+      />
+
+      <AIDocumentScanner
+        isOpen={isDocScannerOpen}
+        onClose={() => setIsDocScannerOpen(false)}
         settings={settings}
       />
     </>

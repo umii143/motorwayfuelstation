@@ -19,9 +19,12 @@ import {
   Calendar,
   X,
   CreditCard,
-  Notebook
+  CreditCard,
+  Notebook,
+  Sparkles
 } from 'lucide-react';
 import EmptyState from '../ui/EmptyState';
+import AIDocumentScanner from '../ui/AIDocumentScanner';
 import { ExpenseEntry, GlobalSettings, Shift } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
@@ -53,6 +56,7 @@ export default function Expenses({
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [paymentModeFilter, setPaymentModeFilter] = useState<string>('all');
   const [showAddExpense, setShowAddExpense] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [timeFilter, setTimeFilter] = useState<'all' | 'weekly' | 'monthly' | 'yearly'>('all');
 
   // Time filter checking helper
@@ -183,11 +187,46 @@ export default function Expenses({
 
     onAddStandaloneExpense(newExp);
 
-    // Reset Form
     setFormAmount('');
     setFormDescription('');
     setShowAddExpense(false);
     showToast(t('Direct station expense registered successfully!', 'اسٹیشن کا براہ راست خرچہ رجسٹر ہو گیا!'), 'success');
+  };
+
+  const handleExpenseAutoFill = (data: any) => {
+    if (data.Amount) {
+      const amtMatch = String(data.Amount).replace(/[^0-9.]/g, '');
+      if (amtMatch) setFormAmount(amtMatch);
+    }
+    
+    if (data.Category || data['Product Details']) {
+      const text = String(data.Category || data['Product Details']).toLowerCase();
+      if (text.includes('meal') || text.includes('food')) setFormCategory('meals');
+      else if (text.includes('mainten') || text.includes('repair')) setFormCategory('maintenance');
+      else if (text.includes('elect') || text.includes('util') || text.includes('bill')) setFormCategory('electricity');
+      else if (text.includes('gen') || text.includes('fuel')) setFormCategory('generator_fuel');
+      else if (text.includes('sal') || text.includes('wage')) setFormCategory('salary');
+      else if (text.includes('stat') || text.includes('print') || text.includes('paper')) setFormCategory('stationery');
+      else setFormCategory('other');
+    }
+    
+    let desc = '';
+    if (data['Supplier/Customer Name'] && data['Supplier/Customer Name'] !== 'N/A') desc += `${data['Supplier/Customer Name']} - `;
+    if (data['Product Details'] && data['Product Details'] !== 'N/A') desc += data['Product Details'];
+    
+    if (desc) setFormDescription(desc);
+    else if (data.Remarks) setFormDescription(data.Remarks);
+    
+    if (data['Payment Method']) {
+      const pMode = String(data['Payment Method']).toLowerCase();
+      if (pMode.includes('bank') || pMode.includes('card') || pMode.includes('transfer')) setFormPaidFrom('bank');
+      else setFormPaidFrom('cash');
+    }
+
+    setTimeout(() => {
+      setIsScannerOpen(false);
+      showToast('Form auto-filled from receipt!', 'success');
+    }, 1500);
   };
 
   // Aggregate widget stats based on filtered list
@@ -493,6 +532,15 @@ export default function Expenses({
                 <button onClick={() => setShowAddExpense(false)} className="text-slate-400 hover:text-slate-650 cursor-pointer font-bold text-xl">&times;</button>
               </div>
 
+              <button
+                type="button"
+                onClick={() => setIsScannerOpen(true)}
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 font-sans text-sm font-bold py-2.5 hover:bg-indigo-100 transition-colors cursor-pointer mb-5 shadow-xs"
+              >
+                <Sparkles className="h-4.5 w-4.5" />
+                {t('Auto-Fill with Receipt Scanner', 'رسید سکین کر کے آٹو فل کریں')}
+              </button>
+
               <form onSubmit={handleCreateExpenseSubmit} className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Select Expenditure Category:', 'خرچہ کی قسم منتخب کریں:')}</label>
@@ -566,6 +614,14 @@ export default function Expenses({
           </motion.div>
         )}
       </AnimatePresence>
+
+      <AIDocumentScanner
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        settings={settings}
+        extractionPrompt='You are an expert fuel station accounting assistant. Extract data from this expense receipt and return it strictly as JSON with exactly these keys: "Amount" (number or string with number), "Category" (e.g. meals, maintenance, electricity, generator_fuel, salary, stationery, other), "Supplier/Customer Name", "Product Details" (what was bought), "Payment Method". Do not use markdown backticks, just the raw JSON object.'
+        onDataExtracted={handleExpenseAutoFill}
+      />
 
     </div>
   );

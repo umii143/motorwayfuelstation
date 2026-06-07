@@ -66,7 +66,7 @@ interface OnboardingWizardProps {
     staff: Staff[];
   }) => void;
   onCancel?: () => void;
-  currentLanguage: 'en' | 'ur';
+  currentLanguage: 'en' | 'ur' | 'ar' | 'es' | 'zh';
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -86,7 +86,7 @@ const TOTAL_STEPS = 9;
 // ─────────────────────────────────────────────────────────────
 export default function OnboardingWizard({ onComplete, onCancel, currentLanguage }: OnboardingWizardProps) {
   const { showToast } = useStation();
-  const [lang, setLang] = useState<'en' | 'ur'>(currentLanguage);
+  const [lang, setLang] = useState<'en' | 'ur'>(currentLanguage === 'ur' ? 'ur' : 'en');
   const [step, setStep] = useState<number>(0); // 0 = splash screen
   const [errors, setErrors] = useState<Record<string, string>>({});
 

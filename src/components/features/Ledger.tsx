@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { List } from 'react-window';
 import {
   BookOpen,
   ArrowUpRight,
@@ -18,7 +19,11 @@ import {
   TrendingUp,
   FileSpreadsheet
 } from 'lucide-react';
-import { Customer, Supplier, Shift, Product, GlobalSettings, LubePosSale } from '../../types';
+import { Customer, Supplier, Shift, Product, GlobalSettings, LubePosSale, JournalEntry } from '../../types';
+import { useFinancialStore } from '../../stores/useFinancialStore';
+import { useStaffStore } from '../../stores/useStaffStore';
+import { useStationStore } from '../../stores/useStationStore';
+
 
 interface LedgerProps {
   settings: GlobalSettings;
@@ -144,6 +149,175 @@ export default function Ledger({
     });
   }, [customers, suppliers, searchQuery, partyTypeFilter]);
 
+  const journalEntries = useFinancialStore((state) => state.journalEntries);
+  const staff = useStaffStore((state) => state.staff);
+  const activeStationId = useStationStore((state) => state.activeStationId);
+  const activeBType = activeStationId === 'st_lube' ? 'lube' : 'fuel_station';
+
+  // Bootstrapping auto-seeding for legacy data
+  useEffect(() => {
+    if (journalEntries.length === 0 && (shifts.length > 0 || lubePosSales.length > 0)) {
+      const seeded: JournalEntry[] = [];
+      
+      shifts.forEach(sh => {
+        if (sh.status === 'closed') {
+          const dateStr = sh.date + 'T' + (sh.endTime || '16:00:00') + '.000Z';
+          
+          sh.debitEntries.forEach(d => {
+            const pName = products.find(p => p.id === d.productId)?.name || 'Fuel';
+            seeded.push({
+              id: `jr_deb_${d.id}`,
+              date: dateStr,
+              partyId: d.customerId,
+              partyType: 'customer',
+              type: 'debit',
+              amount: d.amount,
+              description: `Credit Sale: ${pName} ${d.quantity}L @ Rs. ${d.rate} (Shift #${sh.id})`,
+              referenceId: sh.id,
+              stationId: activeStationId,
+              businessType: activeBType,
+              createdAt: Date.now(),
+              updatedAt: Date.now()
+            });
+          });
+
+          sh.recoveryEntries.forEach(r => {
+            seeded.push({
+              id: `jr_rec_${r.id}`,
+              date: dateStr,
+              partyId: r.customerId,
+              partyType: 'customer',
+              type: 'credit',
+              amount: r.amount,
+              description: `Payment Recovery via ${r.mode.toUpperCase()} (Shift #${sh.id})`,
+              referenceId: sh.id,
+              stationId: activeStationId,
+              businessType: activeBType,
+              createdAt: Date.now(),
+              updatedAt: Date.now()
+            });
+          });
+
+          sh.supplierPayments.forEach(sp => {
+            seeded.push({
+              id: `jr_supp_${sp.id}`,
+              date: dateStr,
+              partyId: sp.supplierId,
+              partyType: 'supplier',
+              type: 'debit',
+              amount: sp.amount,
+              description: `Supplier payment (${sp.mode.toUpperCase()}) (Shift #${sh.id})`,
+              referenceId: sh.id,
+              stationId: activeStationId,
+              businessType: activeBType,
+              createdAt: Date.now(),
+              updatedAt: Date.now()
+            });
+          });
+
+          sh.expenseEntries.forEach(exp => {
+            seeded.push({
+              id: `jr_exp_${exp.id}`,
+              date: dateStr,
+              partyType: 'expense',
+              type: 'debit',
+              amount: exp.amount,
+              description: `Expense - ${exp.category}: ${exp.description} (Shift #${sh.id})`,
+              referenceId: sh.id,
+              stationId: activeStationId,
+              businessType: activeBType,
+              createdAt: Date.now(),
+              updatedAt: Date.now()
+            });
+          });
+
+          if (sh.shortage && sh.shortage > 0) {
+            const staffObj = staff.find(s => s.id === sh.staffId);
+            const sName = staffObj ? staffObj.name : 'Crew';
+            seeded.push({
+              id: `jr_short_${sh.id}`,
+              date: dateStr,
+              partyId: sh.staffId,
+              partyType: 'staff',
+              partyName: sName,
+              type: 'debit',
+              amount: sh.shortage,
+              description: `Salary Advance via Shift Cash Shortage (Shift #${sh.id})`,
+              referenceId: sh.id,
+              stationId: activeStationId,
+              businessType: activeBType,
+              createdAt: Date.now(),
+              updatedAt: Date.now()
+            });
+          }
+        }
+      });
+
+      lubePosSales.forEach(sale => {
+        const dateStr = sale.date + 'T' + (sale.time || '12:00:00') + '.000Z';
+        if (sale.isRecovery) {
+          if (sale.customerId) {
+            seeded.push({
+              id: `jr_rec_${sale.id}_cust`,
+              date: dateStr,
+              partyId: sale.customerId,
+              partyType: 'customer',
+              partyName: sale.customerName,
+              type: 'credit',
+              amount: sale.total,
+              description: `Lube POS Recovery Payment (Inv: ${sale.invoiceNo})`,
+              referenceId: sale.id,
+              stationId: activeStationId,
+              businessType: activeBType,
+              createdAt: Date.now(),
+              updatedAt: Date.now()
+            });
+          }
+        } else if (sale.isReturn) {
+          if (sale.paymentMode === 'credit' && sale.customerId) {
+            seeded.push({
+              id: `jr_ret_${sale.id}_cust`,
+              date: dateStr,
+              partyId: sale.customerId,
+              partyType: 'customer',
+              partyName: sale.customerName,
+              type: 'credit',
+              amount: sale.total,
+              description: `Lube POS Return (Inv: ${sale.invoiceNo})`,
+              referenceId: sale.id,
+              stationId: activeStationId,
+              businessType: activeBType,
+              createdAt: Date.now(),
+              updatedAt: Date.now()
+            });
+          }
+        } else {
+          if (sale.paymentMode === 'credit' && sale.customerId) {
+            seeded.push({
+              id: `jr_sale_${sale.id}_cust`,
+              date: dateStr,
+              partyId: sale.customerId,
+              partyType: 'customer',
+              partyName: sale.customerName,
+              type: 'debit',
+              amount: sale.total,
+              description: `Lube POS Credit Sale (Inv: ${sale.invoiceNo})`,
+              referenceId: sale.id,
+              stationId: activeStationId,
+              businessType: activeBType,
+              createdAt: Date.now(),
+              updatedAt: Date.now()
+            });
+          }
+        }
+      });
+
+      if (seeded.length > 0) {
+        useFinancialStore.getState().setJournalEntries(seeded);
+      }
+    }
+  }, [journalEntries, shifts, lubePosSales]);
+
   // Selected party full details
   const activePartyDetails = useMemo(() => {
     if (!selectedParty) return null;
@@ -158,96 +332,18 @@ export default function Ledger({
   const activePartyLedgerTimeline = useMemo(() => {
     if (!selectedParty || !activePartyDetails) return [];
 
-    const entries: Array<{
-      id: string;
-      date: string;
-      description: string;
-      debit: number;   // Outflow from perspective
-      credit: number;  // Inflow to perspective
-      balance: number;
-    }> = [];
+    const partyJournals = journalEntries.filter(
+      (j) => j.partyId === selectedParty.id && j.partyType === selectedParty.type
+    );
 
-    shifts.forEach(sh => {
-      if (selectedParty.type === 'customer') {
-        // Debits (credit sales)
-        sh.debitEntries.forEach(d => {
-          if (d.customerId === selectedParty.id) {
-            const pName = products.find(p => p.id === d.productId)?.name || 'Fuel';
-            entries.push({
-              id: `deb_${d.id}`,
-              date: sh.date,
-              description: `${pName} ${d.quantity}L @ Rs. ${d.rate}`,
-              debit: d.amount,
-              credit: 0,
-              balance: 0
-            });
-          }
-        });
-
-        // Credits (recoveries)
-        sh.recoveryEntries.forEach(r => {
-          if (r.customerId === selectedParty.id) {
-            entries.push({
-              id: `rec_${r.id}`,
-              date: sh.date,
-              description: t(`Payment Recovery via ${r.mode.toUpperCase()}`, `کیش وصول چالان`),
-              debit: 0,
-              credit: r.amount,
-              balance: 0
-            });
-          }
-        });
-      } else {
-        // Suppliers ledger
-        sh.supplierPayments.forEach(pay => {
-          if (pay.supplierId === selectedParty.id) {
-            entries.push({
-              id: `pay_${pay.id}`,
-              date: sh.date,
-              description: t(`Payment Paid to Suppler (${pay.mode.toUpperCase()})`, `سپلائر ادائیگی انٹری`),
-              debit: pay.amount,
-              credit: 0,
-              balance: 0
-            });
-          }
-        });
-      }
-    });
-
-    if (selectedParty.type === 'customer') {
-      lubePosSales.forEach(sale => {
-        if (sale.customerId === selectedParty.id) {
-          if (sale.isReturn) {
-            entries.push({
-              id: `lps_ret_${sale.id}`,
-              date: sale.date,
-              description: t(`Lube POS Return: ${sale.invoiceNo}`, `لیوب پی او ایس واپسی: ${sale.invoiceNo}`),
-              debit: 0,
-              credit: sale.total,
-              balance: 0
-            });
-          } else if (sale.isRecovery) {
-            entries.push({
-              id: `lps_rec_${sale.id}`,
-              date: sale.date,
-              description: t(`Lube POS Recovery: ${sale.invoiceNo}`, `لیوب پی او ایس وصولی: ${sale.invoiceNo}`),
-              debit: 0,
-              credit: sale.total,
-              balance: 0
-            });
-          } else if (sale.paymentMode === 'credit') {
-            entries.push({
-              id: `lps_sale_${sale.id}`,
-              date: sale.date,
-              description: t(`Lube POS Credit Sale: ${sale.invoiceNo}`, `لیوب پی او ایس ادھار سیل: ${sale.invoiceNo}`),
-              debit: sale.total,
-              credit: 0,
-              balance: 0
-            });
-          }
-        }
-      });
-    }
+    const entries = partyJournals.map((j) => ({
+      id: j.id,
+      date: j.date.substring(0, 10),
+      description: j.description,
+      debit: j.type === 'debit' ? j.amount : 0,
+      credit: j.type === 'credit' ? j.amount : 0,
+      balance: 0
+    }));
 
     entries.sort((a, b) => a.date.localeCompare(b.date));
 
@@ -256,7 +352,6 @@ export default function Ledger({
       if (selectedParty.type === 'customer') {
         runningAmt += item.debit - item.credit;
       } else {
-        // suppliers
         runningAmt += item.credit - item.debit;
       }
       return {
@@ -266,7 +361,42 @@ export default function Ledger({
     });
 
     return computed.reverse();
-  }, [selectedParty, activePartyDetails, shifts, products]);
+  }, [selectedParty, activePartyDetails, journalEntries]);
+
+  const RenderRow = ({ index, style }: { index: number; style: React.CSSProperties }) => {
+    const log = activePartyLedgerTimeline[index];
+    return (
+      <div
+        style={{
+          ...style,
+          display: 'flex',
+          alignItems: 'center',
+          borderBottom: '1px solid #f1f5f9',
+          fontSize: '11px',
+          color: '#334155'
+        }}
+        className="hover:bg-slate-50/70"
+      >
+        <div style={{ width: '15%', padding: '8px 12px', fontFamily: 'monospace', color: '#94a3b8' }}>
+          {log.date}
+        </div>
+        <div style={{ width: '45%', padding: '8px 12px', fontWeight: 600, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {log.description}
+        </div>
+        <div style={{ width: '13%', padding: '8px 12px', textAlign: 'right', fontFamily: 'monospace', fontWeight: 'bold', color: '#ef4444' }}>
+          {log.debit > 0 ? `Rs. ${log.debit.toLocaleString()}` : '—'}
+        </div>
+        <div style={{ width: '13%', padding: '8px 12px', textAlign: 'right', fontFamily: 'monospace', fontWeight: 'bold', color: '#10b981' }}>
+          {log.credit > 0 ? `Rs. ${log.credit.toLocaleString()}` : '—'}
+        </div>
+        <div style={{ width: '14%', padding: '8px 12px', textAlign: 'right', fontFamily: 'monospace', fontWeight: 'bold', color: '#0f172a' }}>
+          Rs. {log.balance.toLocaleString()}
+        </div>
+      </div>
+    );
+  };
+
+
 
 
   return (
@@ -509,37 +639,29 @@ export default function Ledger({
                   {t('Chronological Ledger Transactions History', 'تاریخ برقی کاروباری لیجر')}
                 </h4>
 
-                <div className="overflow-x-auto rounded-lg border border-slate-105">
-                  <table className="w-full border-collapse text-left font-sans text-xs">
-                    <thead>
-                      <tr className="bg-slate-50 border-b border-slate-150 text-slate-650 font-bold">
-                        <th className="py-2.5 px-3">{t('Date', 'تاریخ')}</th>
-                        <th className="py-2.5 px-3">{t('Narrative Description', 'تفصیل')}</th>
-                        <th className="py-2.5 px-3 text-right">{t('Debit Amount (+)', 'ڈیمانڈ بل (+)')}</th>
-                        <th className="py-2.5 px-3 text-right">{t('Credit Amount (–)', 'رقم ادائیگی (–)')}</th>
-                        <th className="py-2.5 px-3 text-right">{t('Running Balance', 'بقایا حاصل')}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 text-slate-700">
-                      {activePartyLedgerTimeline.length === 0 ? (
-                        <tr>
-                          <td colSpan={5} className="py-8 text-center text-slate-400 font-semibold">
-                            {t('No registered transactions in finalized shifts.', 'سیشنز کے دوران تاحال کوئی انٹری درج نہیں کی گئی ہے۔')}
-                          </td>
-                        </tr>
-                      ) : (
-                        activePartyLedgerTimeline.map(log => (
-                          <tr key={log.id} className="hover:bg-slate-55/40">
-                            <td className="py-3 px-3 font-mono font-medium text-slate-400">{log.date}</td>
-                            <td className="py-3 px-3 font-semibold text-slate-800 pr-5 leading-tight">{log.description}</td>
-                            <td className="py-3 px-3 text-right font-mono font-bold text-rose-550">{log.debit > 0 ? `Rs. ${log.debit.toLocaleString()}` : '—'}</td>
-                            <td className="py-3 px-3 text-right font-mono font-bold text-emerald-600">{log.credit > 0 ? `Rs. ${log.credit.toLocaleString()}` : '—'}</td>
-                            <td className="py-3 px-3 text-right font-mono font-bold text-slate-800">Rs. {log.balance.toLocaleString()}</td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+                <div className="overflow-x-auto rounded-lg border border-slate-200">
+                  <div className="min-w-[600px]">
+                    <div className="flex bg-slate-50 border-b border-slate-200 text-slate-500 font-bold py-2.5 text-[11px] uppercase tracking-wider select-none">
+                      <div style={{ width: '15%', padding: '0 12px' }}>{t('Date', 'تاریخ')}</div>
+                      <div style={{ width: '45%', padding: '0 12px' }}>{t('Narrative Description', 'تفصیل')}</div>
+                      <div style={{ width: '13%', padding: '0 12px', textAlign: 'right' }}>{t('Debit Amount (+)', 'ڈیمانڈ بل (+)')}</div>
+                      <div style={{ width: '13%', padding: '0 12px', textAlign: 'right' }}>{t('Credit Amount (–)', 'رقم ادائیگی (–)')}</div>
+                      <div style={{ width: '14%', padding: '0 12px', textAlign: 'right' }}>{t('Running Balance', 'بقایا حاصل')}</div>
+                    </div>
+                    {activePartyLedgerTimeline.length === 0 ? (
+                      <div className="py-8 text-center text-slate-400 font-semibold text-xs">
+                        {t('No registered transactions in finalized shifts.', 'سیشنز کے دوران تاحال کوئی انٹری درج نہیں کی گئی ہے۔')}
+                      </div>
+                    ) : (
+                      <List<any>
+                        rowCount={activePartyLedgerTimeline.length}
+                        rowHeight={42}
+                        rowComponent={RenderRow}
+                        rowProps={{}}
+                        style={{ height: 400, width: '100%' }}
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
 

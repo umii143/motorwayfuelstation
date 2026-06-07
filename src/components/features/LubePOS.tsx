@@ -118,21 +118,36 @@ export default function LubePOS({
     }
   }, [paymentMode]);
 
-  const filteredProducts = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
-    if (!query) {
-      return sellableProducts;
-    }
+    const [activeCategory, setActiveCategory] = useState<string>('All');
+  const [rateCardType, setRateCardType] = useState<'retail' | 'wholesale'>('retail');
 
-    return sellableProducts.filter((product) => {
-      return (
-        product.name.toLowerCase().includes(query) ||
-        product.urduName.includes(searchQuery)
-      );
+  const categories = useMemo(() => {
+    const cats = new Set<string>();
+    sellableProducts.forEach(p => {
+      if (p.category) cats.add(p.category);
+      else if (p.type) cats.add(p.type);
     });
-  }, [searchQuery, sellableProducts]);
+    return ['All', ...Array.from(cats)];
+  }, [sellableProducts]);
 
-  const cartItems = useMemo(() => {
+  const filteredProducts = useMemo(() => {
+    let result = sellableProducts;
+    if (activeCategory !== 'All') {
+      result = result.filter(p => p.type === activeCategory || p.category === activeCategory);
+    }
+    const query = searchQuery.trim().toLowerCase();
+    if (query) {
+      result = result.filter((product) => {
+        return (
+          product.name.toLowerCase().includes(query) ||
+          product.urduName.includes(searchQuery)
+        );
+      });
+    }
+    return result;
+  }, [searchQuery, sellableProducts, activeCategory]);
+
+const cartItems = useMemo(() => {
     return cart
       .map((line) => {
         const product = sellableProducts.find((item) => item.id === line.productId);
@@ -450,524 +465,293 @@ export default function LubePOS({
           </div>
         </div>
       ) : (
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.3fr_0.7fr]">
-        <div className="space-y-4">
-          <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }} className="rounded-[1.5rem] sm:rounded-[2rem] border border-white/80 bg-white/50 p-4 sm:p-6 shadow-[0_8px_40px_rgb(0,0,0,0.04)] backdrop-blur-2xl">
-            <div className="mb-4 sm:mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-white pb-4 sm:pb-6">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-white text-blue-600 shadow-[0_4px_20px_rgb(0,0,0,0.05)]">
-                  <ScanLine className="h-5 w-5 sm:h-6 sm:w-6" />
-                </div>
-                <div>
-                  <h3 className="font-sans text-lg sm:text-xl font-black text-slate-900 tracking-tight leading-tight">
-                    {t('Product Catalog', 'پروڈکٹ کیٹلاگ')}
-                  </h3>
-                  <span className="text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.15em] text-slate-400">
-                    {filteredProducts.length} items available
-                  </span>
-                </div>
-              </div>
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 sm:left-4 top-1/2 h-4 w-4 sm:h-5 sm:w-5 -translate-y-1/2 text-slate-400" />
-                <input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={t('Search products...', 'تلاش کریں...')}
-                  className="w-full rounded-xl sm:rounded-2xl border border-white bg-white/60 py-2 sm:py-3 pl-9 sm:pl-11 pr-4 text-xs sm:text-sm font-medium text-slate-800 placeholder-slate-400 shadow-inner backdrop-blur-md transition-all focus:border-blue-400 focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-blue-500/10"
-                />
-              </div>
+      <div className="flex flex-col lg:flex-row gap-4 xl:gap-6 min-h-[calc(100vh-14rem)]">
+        {/* Left Panel - Product Catalog */}
+        <div className="flex-1 flex flex-col min-w-0 bg-slate-50/50 rounded-[2rem] border border-slate-200/80 shadow-sm p-4 sm:p-6 overflow-hidden">
+          
+          {/* Top Search Bar */}
+          <div className="relative w-full mb-6">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-slate-400" />
             </div>
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t('Search by product name, grade (0W-20), brand...', 'پروڈکٹ کا نام یا برانڈ سے تلاش کریں...')}
+              className="block w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm shadow-[0_2px_10px_rgb(0,0,0,0.02)] placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-400 transition-all font-medium"
+            />
+          </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-2 2xl:grid-cols-3">
+          {/* Top Fast-Moving Lubricants */}
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-yellow-500 text-lg">💡</span>
+              <h4 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">{t('Top Fast-Moving Lubricants', 'تیزی سے بکنے والے لیوبریکنٹس')}</h4>
+            </div>
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+              {sellableProducts.slice().sort((a, b) => b.currentStock - a.currentStock).slice(0, 4).map(product => (
+                <div key={'fast_'+product.id} className="flex-shrink-0 flex items-center justify-between w-[220px] bg-white border border-slate-200/80 rounded-2xl p-3 shadow-sm hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group" onClick={() => addToCart(product.id)}>
+                  <div className="pr-2">
+                    <h5 className="text-[11px] font-bold text-slate-700 leading-snug line-clamp-2">{isUrdu ? product.urduName : product.name}</h5>
+                    <span className="text-xs font-black text-emerald-600 mt-1 block">Rs {formatCurrency(product.rate, settings)}</span>
+                  </div>
+                  <button className="h-8 w-8 shrink-0 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Category Tabs */}
+          <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide mb-4 border-b border-slate-100/60">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`flex-shrink-0 px-5 py-2.5 rounded-full text-[11px] font-black uppercase tracking-wider transition-all ${
+                  activeCategory === cat
+                    ? 'bg-slate-800 text-white shadow-md'
+                    : 'bg-white border border-slate-200/80 text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                }`}
+              >
+                {cat === 'All' ? t('All Lubricants & Filters', 'تمام لیوبریکنٹس اور فلٹرز') : cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Product Grid */}
+          <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 pb-10">
               <AnimatePresence>
-                {filteredProducts.map((product, index) => {
-                  const isHiddenOnMobile = !searchQuery.trim() && index >= 4;
-                  return (
-                  <motion.button
+                {filteredProducts.map((product) => (
+                  <motion.div
                     layout
-                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                    whileHover={product.currentStock > 0 ? { y: -2, scale: 1.02 } : {}}
-                    whileTap={product.currentStock > 0 ? { scale: 0.98 } : {}}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
                     key={product.id}
-                    type="button"
-                    onClick={() => addToCart(product.id)}
-                    disabled={product.currentStock <= 0}
-                    className={`group relative overflow-hidden rounded-[1rem] sm:rounded-[1.5rem] border p-3 sm:p-5 text-left transition-all duration-300 ${isHiddenOnMobile ? 'hidden sm:block' : ''} ${
+                    className={`relative flex flex-col bg-white border rounded-3xl p-4 shadow-sm transition-all duration-300 group ${
                       product.currentStock <= 0
-                        ? 'cursor-not-allowed border-slate-100 bg-slate-50/50 text-slate-400 grayscale'
-                        : 'border-white/80 bg-white/70 shadow-[0_8px_30px_rgb(0,0,0,0.03)] backdrop-blur-md hover:border-blue-200 hover:bg-white hover:shadow-[0_15px_40px_rgb(59,130,246,0.12)]'
+                        ? 'border-slate-100 bg-slate-50/50 opacity-60 grayscale cursor-not-allowed'
+                        : 'border-slate-200/80 hover:border-blue-300 hover:shadow-[0_8px_30px_rgb(59,130,246,0.12)] cursor-pointer'
                     }`}
+                    onClick={() => { if (product.currentStock > 0) addToCart(product.id) }}
                   >
-                    <div className="flex items-start justify-between gap-2 sm:gap-3">
-                      <div className="min-w-0 flex-1">
-                        <strong className={`block text-[11px] sm:text-base font-black tracking-tight truncate transition-colors ${product.currentStock > 0 ? 'text-slate-900 group-hover:text-blue-600' : 'text-slate-400'}`}>
-                          {isUrdu ? product.urduName : product.name}
-                        </strong>
-                        <span className="mt-0.5 sm:mt-1 block text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-slate-400 truncate">
-                          {product.type} • {product.unit}
-                        </span>
+                    {/* Top tags row */}
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="bg-slate-100 text-slate-500 px-2.5 py-1 rounded-md text-[9px] font-black tracking-widest uppercase truncate max-w-[120px]">
+                        {product.category || product.type}
                       </div>
-                      <div className={`flex h-6 w-6 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg sm:rounded-xl transition-all duration-300 ${product.currentStock > 0 ? 'bg-white text-slate-400 shadow-[0_2px_10px_rgb(0,0,0,0.04)] group-hover:bg-blue-600 group-hover:text-white group-hover:shadow-[0_4px_15px_rgb(59,130,246,0.4)]' : 'bg-slate-100 text-slate-300'}`}>
-                        <PlusCircle className="h-3 w-3 sm:h-5 sm:w-5" />
-                      </div>
+                      {product.currentStock > 0 && product.currentStock <= 5 && (
+                        <div className="bg-rose-100 text-rose-600 px-2.5 py-1 rounded-md text-[9px] font-black tracking-widest uppercase">
+                          LOW STOCK
+                        </div>
+                      )}
                     </div>
-                    <div className="mt-3 sm:mt-6 flex flex-col sm:flex-row sm:items-end justify-between gap-2 sm:gap-0">
+                    
+                    {/* Product Name */}
+                    <h3 className="font-bold text-slate-800 text-sm leading-snug mb-5 min-h-[2.5rem] line-clamp-2">
+                      {isUrdu ? product.urduName : product.name}
+                    </h3>
+
+                    {/* Price and Add button */}
+                    <div className="mt-auto flex items-end justify-between border-t border-slate-50 pt-3">
                       <div>
-                        <span className="block text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5 sm:mb-1">
-                          {t('Rate', 'ریٹ')}
-                        </span>
-                        <span className={`font-mono text-sm sm:text-xl font-black ${product.currentStock > 0 ? 'bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent' : 'text-slate-400'}`}>
-                          {formatCurrency(product.rate, settings)}
-                        </span>
+                        <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest block mb-0.5">{t('Retail Price', 'ریٹیل قیمت')}</span>
+                        <span className="text-base font-black text-emerald-600 tracking-tight">PKR {formatCurrency(product.rate, settings)}</span>
                       </div>
-                      <span className={`w-fit whitespace-nowrap rounded-lg sm:rounded-xl px-2 py-1 sm:px-3 sm:py-1.5 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.16em] shadow-sm backdrop-blur-md ${
-                        product.currentStock > 10 ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' :
-                        product.currentStock > 0 ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20' :
-                        'bg-rose-500/10 text-rose-500 border border-rose-500/20'
-                      }`}>
-                        {t('Stock', 'اسٹاک')} {product.currentStock}
-                      </span>
+                      <button 
+                        disabled={product.currentStock <= 0}
+                        className="h-10 w-10 shrink-0 rounded-[14px] bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 group-hover:border-blue-200 transition-colors disabled:opacity-50"
+                      >
+                        <ShoppingCart className="h-4 w-4" strokeWidth={2.5} />
+                      </button>
                     </div>
-                  </motion.button>
-                )})}
+                  </motion.div>
+                ))}
               </AnimatePresence>
             </div>
-          </motion.div>
-
+          </div>
         </div>
 
-        {/* Right Panel - Cart */}
-        <div className="space-y-4">
-          <div className="sticky top-4 rounded-[2rem] sm:rounded-[2.5rem] border border-white/80 bg-white/60 p-4 sm:p-6 shadow-[0_8px_40px_rgb(0,0,0,0.06)] backdrop-blur-3xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 h-40 w-40 -translate-y-1/2 translate-x-1/2 rounded-full bg-blue-400/10 blur-3xl" />
+        {/* Right Panel - Billing Cart */}
+        <div className="w-full lg:w-[400px] xl:w-[440px] flex flex-col bg-white rounded-[2rem] border border-slate-200/80 shadow-[0_8px_40px_rgb(0,0,0,0.06)] overflow-hidden shrink-0">
+          
+          {/* Header */}
+          <div className="px-6 py-5 flex items-center justify-between border-b border-slate-100/80">
+            <div className="flex items-center gap-3">
+              <span className="text-xl">🛒</span>
+              <h3 className="text-lg font-black text-slate-800 tracking-tight">{t('Itemized Billing Cart', 'آئٹمائزڈ بلنگ کارٹ')}</h3>
+            </div>
+            <div className="bg-blue-100 text-blue-700 font-black px-3 py-1 rounded-full text-xs shadow-sm">
+              {cartItems.reduce((acc, item) => acc + item.quantity, 0)}
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-6 custom-scrollbar flex flex-col bg-slate-50/30">
             
-            <div className="relative z-10 mb-8 flex items-center gap-4 border-b border-white pb-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-800 shadow-[0_4px_20px_rgb(0,0,0,0.05)]">
-                <ShoppingCart className="h-5 w-5" />
+            {/* Customer & Rate Type */}
+            <div className="mb-6 space-y-5">
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">{t('Tag Customer Account', 'کسٹمر اکاؤنٹ ٹیگ کریں')}</label>
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <select
+                    value={selectedCustomerId}
+                    onChange={(e) => setSelectedCustomerId(e.target.value)}
+                    className="w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-3.5 pl-11 text-sm font-bold text-slate-700 shadow-sm focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-400 transition-all"
+                  >
+                    <option value="">Walk-In Grahak (Cash Customer) (Retail)</option>
+                    {customers.map((customer) => (
+                      <option key={customer.id} value={customer.id}>
+                        {isUrdu ? customer.urduName : customer.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
-              <h3 className="text-xl font-black tracking-tight text-slate-900">
-                {t('Current Order', 'موجودہ آرڈر')}
-              </h3>
+
+              <div className="flex items-center justify-between p-1.5 bg-slate-100/80 rounded-[1.25rem] border border-slate-200/60">
+                <div className="px-4 py-2 text-[10px] font-black text-slate-500 uppercase tracking-widest flex-1">{t('Product Rate card type', 'ریٹ کارڈ کی قسم')}</div>
+                <div className="flex bg-white rounded-xl shadow-[0_2px_8px_rgb(0,0,0,0.04)] p-1">
+                  <button 
+                    onClick={() => setRateCardType('retail')}
+                    className={`px-4 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${rateCardType === 'retail' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                  >
+                    RETAIL
+                  </button>
+                  <button 
+                    onClick={() => setRateCardType('wholesale')}
+                    className={`px-4 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${rateCardType === 'wholesale' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                  >
+                    WHOLESALE (تھوک)
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <div className="relative z-10 space-y-6">
-              {/* Form Elements */}
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                  <div>
-                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">
-                      {t('Cashier', 'کیشیئر')}
-                    </label>
-                    <select
-                      value={cashierId}
-                      onChange={(e) => setCashierId(e.target.value)}
-                      className="w-full appearance-none rounded-2xl border border-white bg-white/70 px-4 py-3 text-sm font-bold text-slate-700 shadow-inner backdrop-blur-md focus:border-blue-400 focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-blue-500/10 transition-all"
-                    >
-                      <option value="">{t('Select cashier', 'کیشیئر منتخب کریں')}</option>
-                      {cashierOptions.map((member) => (
-                        <option key={member.id} value={member.id}>
-                          {isUrdu ? member.urduName : member.name}
-                        </option>
-                      ))}
-                    </select>
+            {/* Cart Items */}
+            <div className="flex-1 flex flex-col">
+              {cartItems.length === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-center">
+                  <div className="w-24 h-24 mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+                    <ShoppingCart className="h-10 w-10 text-slate-300" strokeWidth={1.5} />
                   </div>
-                  <div>
-                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">
-                      {t('Vehicle', 'گاڑی')}
-                    </label>
-                    <input
-                      value={vehicleNo}
-                      onChange={(e) => setVehicleNo(e.target.value)}
-                      placeholder={t('e.g. LEB-1234', 'مثال: LEB-1234')}
-                      className="w-full rounded-2xl border border-white bg-white/70 px-4 py-3 text-sm font-bold text-slate-700 placeholder-slate-400 shadow-inner backdrop-blur-md focus:border-blue-400 focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-blue-500/10 transition-all"
-                    />
-                  </div>
+                  <p className="text-sm font-bold text-slate-400 max-w-[200px] leading-relaxed">{t('Cart is empty. Tap products left.', 'کارٹ خالی ہے۔ بائیں طرف سے پروڈکٹس منتخب کریں۔')}</p>
                 </div>
-
-                <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                  <div>
-                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">
-                      {t('Account', 'کسٹمر کھاتہ')}
-                    </label>
-                    <select
-                      value={selectedCustomerId}
-                      onChange={(e) => setSelectedCustomerId(e.target.value)}
-                      className="w-full appearance-none rounded-2xl border border-white bg-white/70 px-4 py-3 text-sm font-bold text-slate-700 shadow-inner backdrop-blur-md focus:border-blue-400 focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-blue-500/10 transition-all"
-                    >
-                      <option value="">{t('Walk-in', 'وا ک اِن')}</option>
-                      {customers.map((customer) => (
-                        <option key={customer.id} value={customer.id}>
-                          {isUrdu ? customer.urduName : customer.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">
-                      {t('Name', 'نام')}
-                    </label>
-                    <input
-                      value={walkInName}
-                      onChange={(e) => setWalkInName(e.target.value)}
-                      placeholder="Umar Ali"
-                      className="w-full rounded-2xl border border-white bg-white/70 px-4 py-3 text-sm font-bold text-slate-700 placeholder-slate-400 shadow-inner backdrop-blur-md focus:border-blue-400 focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-blue-500/10 transition-all"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Cart Items Area */}
-              <div className="rounded-[2rem] border border-white bg-slate-50/50 p-5 shadow-inner">
-                <div className="mb-4 flex items-center justify-between px-1">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                    {t('Items', 'آئٹمز')}
-                  </span>
-                  {cartItems.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setCart([])}
-                      className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[10px] font-bold text-rose-500 hover:bg-rose-100 hover:text-rose-600 transition-colors"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      {t('Clear All', 'سب صاف کریں')}
-                    </button>
-                  )}
-                </div>
-                
-                <div className="grid grid-cols-2 sm:grid-cols-1 gap-2 max-h-[300px] overflow-y-auto px-1">
+              ) : (
+                <div className="space-y-4">
                   <AnimatePresence>
-                    {cartItems.map((item) => (
+                    {cartItems.map(item => (
                       <motion.div 
-                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, height: 0, marginBottom: 0 }}
-                        key={item.productId} 
-                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white p-2 sm:p-3 shadow-sm transition-all hover:border-blue-200"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        key={item.productId}
+                        className="flex flex-col gap-3 pb-4 border-b border-slate-100 last:border-0"
                       >
-                        <div className="flex flex-col flex-1 min-w-0">
-                          <strong className="block text-[11px] sm:text-sm font-black text-slate-900 leading-tight truncate">
-                            {isUrdu ? item.product.urduName : item.product.name}
-                          </strong>
-                          <span className="block text-[9px] sm:text-[11px] font-semibold text-slate-400 mt-0.5">
-                            {formatCurrency(item.product.rate, settings)} / {item.product.unit}
-                          </span>
+                        <div className="flex justify-between items-start gap-4">
+                          <span className="text-[13px] font-bold text-slate-800 leading-snug pr-2">{isUrdu ? item.product.urduName : item.product.name}</span>
+                          <span className="text-sm font-black text-slate-900 shrink-0">Rs {formatCurrency(item.lineTotal, settings)}</span>
                         </div>
-                        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
-                          <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-0.5 shadow-inner">
-                            <button
-                              type="button"
-                              onClick={() => updateCartQty(item.productId, item.quantity - 1)}
-                              className="flex h-6 w-6 items-center justify-center rounded bg-white text-slate-600 shadow-sm transition-all hover:scale-105 hover:text-rose-500"
-                            >
-                              <Minus className="h-3 w-3" />
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-black tracking-widest text-emerald-600 bg-emerald-50 px-2 py-1 rounded">Rs {formatCurrency(item.product.rate, settings)} / {item.product.unit}</span>
+                          <div className="flex items-center gap-2 bg-white rounded-xl p-1 border border-slate-200 shadow-sm">
+                            <button onClick={() => updateCartQty(item.productId, item.quantity - 1)} className="w-7 h-7 flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-700 rounded-lg transition-all">
+                              <Minus className="h-3 w-3" strokeWidth={3} />
                             </button>
-                            <span className="min-w-[1.5rem] text-center font-mono text-[10px] sm:text-xs font-black text-slate-900">
-                              {item.quantity}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => updateCartQty(item.productId, item.quantity + 1)}
-                              className="flex h-6 w-6 items-center justify-center rounded bg-white text-slate-600 shadow-sm transition-all hover:scale-105 hover:text-blue-600"
-                            >
-                              <Plus className="h-3 w-3" />
+                            <span className="text-xs font-black text-slate-800 w-6 text-center">{item.quantity}</span>
+                            <button onClick={() => updateCartQty(item.productId, item.quantity + 1)} className="w-7 h-7 flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-700 rounded-lg transition-all">
+                              <Plus className="h-3 w-3" strokeWidth={3} />
                             </button>
                           </div>
-                          <span className="font-mono text-[11px] sm:text-sm font-black text-blue-600 w-16 text-right">
-                            {formatCurrency(item.lineTotal, settings)}
-                          </span>
                         </div>
                       </motion.div>
                     ))}
                   </AnimatePresence>
-                  {cartItems.length === 0 && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200/60 bg-white/40 py-10 text-center">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-300 mb-3">
-                        <ShoppingCart className="h-6 w-6" />
-                      </div>
-                      <p className="text-xs font-bold text-slate-400 px-6">
-                        {t('Tap products on the left to build the cart.', 'بل بنانے کے لیے بائیں طرف سے پروڈکٹس منتخب کریں۔')}
-                      </p>
-                    </motion.div>
-                  )}
                 </div>
+              )}
+            </div>
+            
+            {/* Totals Section */}
+            <div className="mt-6 pt-6 border-t border-slate-200 border-dashed space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{t('Invoice-wise Flat Discount (Rs)', 'انوائس ڈسکاؤنٹ')}</span>
+                <input 
+                  type="number"
+                  value={discount}
+                  onChange={(e) => setDiscount(e.target.value)}
+                  className="w-24 px-3 py-2 text-right text-sm font-black text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                  placeholder="0"
+                />
               </div>
+              <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <span>Retail Subtotal</span>
+                <span>Rs {formatCurrency(totals.subtotal, settings)}</span>
+              </div>
+              <div className="flex items-center justify-between text-[11px] font-bold text-rose-500 uppercase tracking-wider">
+                <span>Total Deduction / Discount</span>
+                <span>-Rs {formatCurrency(totals.discount, settings)}</span>
+              </div>
+              <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider pb-4 border-b border-slate-100">
+                <span>Sales GST Standard (17%)</span>
+                <span>Rs {formatCurrency(totals.tax, settings)}</span>
+              </div>
+              <div className="flex items-center justify-between pt-2">
+                <span className="text-lg font-black text-slate-900 uppercase tracking-tight">GRAND BILL TOTAL</span>
+                <span className="text-xl font-black text-emerald-600">Rs {formatCurrency(totals.total, settings)}</span>
+              </div>
+            </div>
 
-              {/* Payment Details */}
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">
-                      {t('Payment Mode', 'ادائیگی کا طریقہ')}
-                    </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      <button type="button" onClick={() => setPaymentMode('cash')} className={`py-2 px-1 text-[11px] font-bold rounded-xl border transition-all ${paymentMode === 'cash' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white/70 text-slate-600 border-slate-200 hover:border-blue-200 hover:bg-white'}`}>{t('Cash', 'نقد')}</button>
-                      <button type="button" onClick={() => setPaymentMode('bank')} className={`py-2 px-1 text-[11px] font-bold rounded-xl border transition-all ${paymentMode === 'bank' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white/70 text-slate-600 border-slate-200 hover:border-blue-200 hover:bg-white'}`}>{t('Bank', 'بینک')}</button>
-                      <button type="button" onClick={() => setPaymentMode('digital')} className={`py-2 px-1 text-[11px] font-bold rounded-xl border transition-all ${paymentMode === 'digital' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white/70 text-slate-600 border-slate-200 hover:border-blue-200 hover:bg-white'}`}>{t('Digital', 'ڈیجیٹل')}</button>
-                      <button type="button" onClick={() => setPaymentMode('credit')} className={`py-2 px-1 text-[11px] font-bold rounded-xl border transition-all ${paymentMode === 'credit' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white/70 text-slate-600 border-slate-200 hover:border-blue-200 hover:bg-white'}`}>{t('Credit', 'ادھار')}</button>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">
-                      {t('Received Amount', 'وصول شدہ رقم')}
-                    </label>
-                    <input
-                      value={amountReceived}
-                      onChange={(e) => setAmountReceived(e.target.value)}
-                      disabled={paymentMode === 'credit'}
-                      placeholder={paymentMode === 'credit' ? '0' : '0.00'}
-                      className="w-full rounded-2xl border border-white bg-white/70 px-4 py-3 text-sm font-bold text-slate-700 placeholder-slate-400 shadow-inner backdrop-blur-md focus:border-blue-400 focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-blue-500/10 transition-all disabled:opacity-50"
-                    />
-                  </div>
+            {/* Posting Type & Action */}
+            <div className="mt-8 space-y-5">
+              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
+                  <span className="text-slate-800">🔒</span> CHOOSE LEDGER POSTING TYPE
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <button onClick={() => setPaymentMode('cash')} className={`py-3 px-2 rounded-[14px] text-[10px] font-black uppercase tracking-wider transition-all border shadow-sm ${paymentMode === 'cash' ? 'bg-emerald-500 border-emerald-600 text-white' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>Cash</button>
+                  <button onClick={() => setPaymentMode('credit')} className={`py-3 px-2 rounded-[14px] text-[10px] font-black uppercase tracking-wider transition-all border shadow-sm ${paymentMode === 'credit' ? 'bg-blue-500 border-blue-600 text-white' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>Credit</button>
+                  <button onClick={() => setPaymentMode('bank')} className={`py-3 px-2 rounded-[14px] text-[10px] font-black uppercase tracking-wider transition-all border shadow-sm ${paymentMode === 'bank' ? 'bg-purple-500 border-purple-600 text-white' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>Bank</button>
+                  <button onClick={() => setPaymentMode('digital')} className={`py-3 px-2 rounded-[14px] text-[10px] font-black uppercase tracking-wider transition-all border shadow-sm ${paymentMode === 'digital' ? 'bg-orange-500 border-orange-600 text-white' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>Digital</button>
                 </div>
 
-                {paymentMode === 'bank' && (
-                  <div>
-                    <select
-                      value={bankAccountId}
-                      onChange={(e) => setBankAccountId(e.target.value)}
-                      className="w-full appearance-none rounded-2xl border border-white bg-white/70 px-4 py-3 text-sm font-bold text-slate-700 shadow-inner backdrop-blur-md focus:border-blue-400 focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-blue-500/10 transition-all"
-                    >
+                {/* Conditional inputs for bank/digital/cash received */}
+                <div className="mt-3 space-y-3">
+                  {paymentMode === 'bank' && (
+                    <select value={bankAccountId} onChange={(e) => setBankAccountId(e.target.value)} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 focus:outline-none focus:border-blue-400">
                       <option value="">{t('Select receiving bank', 'بینک منتخب کریں')}</option>
                       {banks.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
                     </select>
-                  </div>
-                )}
-
-                {paymentMode === 'digital' && (
-                  <div>
-                    <select
-                      value={digitalAccountId}
-                      onChange={(e) => setDigitalAccountId(e.target.value)}
-                      className="w-full appearance-none rounded-2xl border border-white bg-white/70 px-4 py-3 text-sm font-bold text-slate-700 shadow-inner backdrop-blur-md focus:border-blue-400 focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-blue-500/10 transition-all"
-                    >
+                  )}
+                  {paymentMode === 'digital' && (
+                    <select value={digitalAccountId} onChange={(e) => setDigitalAccountId(e.target.value)} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 focus:outline-none focus:border-blue-400">
                       <option value="">{t('Select digital wallet', 'ڈیجیٹل والٹ منتخب کریں')}</option>
                       {digitalAccounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
                     </select>
-                  </div>
-                )}
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex flex-col">
-                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">
-                      {t('Discount', 'ڈسکاؤنٹ')}
-                    </label>
-                    <div className="flex gap-2">
-                      <div className="flex-1">
-                        <input
-                          value={discount}
-                          onChange={(e) => setDiscount(e.target.value)}
-                          placeholder="0.00"
-                          className="w-full rounded-2xl border border-white bg-white/70 px-3 py-3 text-sm font-bold text-slate-700 placeholder-slate-400 shadow-inner backdrop-blur-md focus:border-blue-400 focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-blue-500/10 transition-all"
-                        />
-                      </div>
-                      <select
-                        value={discountType}
-                        onChange={(e) => setDiscountType(e.target.value as 'amount' | 'percentage')}
-                        className="w-[4.5rem] appearance-none rounded-2xl border border-white bg-white/70 px-2 py-3 text-sm font-bold text-slate-700 shadow-inner backdrop-blur-md focus:border-blue-400 focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-blue-500/10 transition-all text-center"
-                      >
-                        <option value="amount">Rs</option>
-                        <option value="percentage">%</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">
-                      {t('Tax Amount', 'ٹیکس')}
-                    </label>
-                    <input
-                      value={tax}
-                      onChange={(e) => setTax(e.target.value)}
-                      placeholder="0.00"
-                      className="w-full rounded-2xl border border-white bg-white/70 px-4 py-3 text-sm font-bold text-slate-700 placeholder-slate-400 shadow-inner backdrop-blur-md focus:border-blue-400 focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-blue-500/10 transition-all"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Total Calculation Card */}
-              <div className="relative overflow-hidden rounded-[2rem] border border-blue-100 bg-linear-to-br from-blue-50 to-indigo-50/50 p-6 shadow-sm">
-                <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-blue-400/10 blur-2xl" />
-                <div className="relative z-10 space-y-4">
-                  <div className="flex justify-between text-slate-500 text-sm font-bold">
-                    <span>{t('Subtotal', 'سب ٹوٹل')}</span>
-                    <span className="font-mono text-slate-700">{formatCurrency(totals.subtotal, settings)}</span>
-                  </div>
-                  {(totals.discount > 0 || totals.tax > 0) && (
-                    <>
-                      <div className="flex justify-between text-slate-500 text-sm font-bold">
-                        <span>{t('Discount', 'ڈسکاؤنٹ')}</span>
-                        <span className="font-mono text-emerald-600">-{formatCurrency(totals.discount, settings)}</span>
-                      </div>
-                      <div className="flex justify-between text-slate-500 text-sm font-bold">
-                        <span>{t('Tax', 'ٹیکس')}</span>
-                        <span className="font-mono text-rose-500">+{formatCurrency(totals.tax, settings)}</span>
-                      </div>
-                    </>
                   )}
-                  <div className="border-t border-blue-200/50 pt-4" />
-                  <div className="flex items-end justify-between">
-                    <span className="text-[11px] font-black uppercase tracking-[0.2em] text-blue-800/60">
-                      {t('Total Due', 'کل بل')}
-                    </span>
-                    <span className="font-mono text-3xl font-black bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent drop-shadow-xs">
-                      {formatCurrency(totals.total, settings)}
-                    </span>
-                  </div>
-                  {paymentMode !== 'credit' && Number(amountReceived) > totals.total && (
-                    <div className="mt-4 flex justify-between rounded-xl bg-white/60 p-3 text-emerald-700 backdrop-blur-md border border-white shadow-sm">
-                      <span className="font-bold text-sm">{t('Change', 'واپسی')}</span>
-                      <span className="font-mono font-black">{formatCurrency(totals.change, settings)}</span>
+                  {paymentMode !== 'credit' && (
+                    <div className="flex items-center justify-between bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm">
+                      <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">{t('Amount Received', 'وصول شدہ رقم')}</span>
+                      <input value={amountReceived} onChange={(e) => setAmountReceived(e.target.value)} placeholder={totals.total.toString()} className="w-28 text-right font-black text-base text-slate-800 bg-transparent focus:outline-none" />
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Checkout Action */}
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                type="button"
+              <button 
                 onClick={handleCheckout}
                 disabled={cartItems.length === 0}
-                className="group flex w-full items-center justify-center gap-3 rounded-[2rem] bg-linear-to-r from-slate-900 to-slate-800 px-6 py-5 text-sm font-black uppercase tracking-[0.2em] text-white shadow-[0_10px_30px_rgb(0,0,0,0.2)] transition-all hover:shadow-[0_15px_40px_rgb(0,0,0,0.3)] disabled:opacity-50 disabled:pointer-events-none"
+                className="w-full py-4.5 rounded-[1.25rem] bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[15px] flex items-center justify-center gap-3 shadow-[0_8px_20px_rgb(16,185,129,0.3)] hover:shadow-[0_12px_25px_rgb(16,185,129,0.4)] hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
               >
-                {t('Confirm Payment', 'ادائیگی کی تصدیق کریں')}
-                <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-2" />
-              </motion.button>
+                Save Bill & Create Receipt (PKR {formatCurrency(totals.total, settings)})
+              </button>
             </div>
           </div>
         </div>
       </div>
       )}
-
-      {/* Print/Invoice Modal */}
-      <AnimatePresence>
-        {lastSale && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="flex w-full max-w-sm flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
-            >
-              <style>{`
-                @media print {
-                  body * { visibility: hidden; }
-                  #print-invoice, #print-invoice * { visibility: visible; }
-                  #print-invoice { position: absolute; left: 0; top: 0; width: 100%; padding: 0; margin: 0; }
-                  .no-print { display: none !important; }
-                }
-              `}</style>
-              
-              <div id="print-invoice" className="flex-1 overflow-y-auto bg-white p-6 text-slate-900">
-                <div className="mb-6 text-center">
-                  <h2 className="text-xl font-black">{settings.stationName}</h2>
-                  <p className="text-sm font-medium text-slate-500">{t('Lube POS Receipt', 'لیوب پی او ایس رسید')}</p>
-                </div>
-                
-                <div className="mb-6 space-y-1 border-b border-dashed border-slate-300 pb-4 text-xs font-medium text-slate-600">
-                  <div className="flex justify-between">
-                    <span>{t('Invoice No', 'بل نمبر')}:</span>
-                    <strong className="text-slate-900">{lastSale.invoiceNo}</strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>{t('Date', 'تاریخ')}:</span>
-                    <strong className="text-slate-900">{lastSale.date} {lastSale.time}</strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>{t('Customer', 'کسٹمر')}:</span>
-                    <strong className="text-slate-900">{lastSale.customerName}</strong>
-                  </div>
-                  {lastSale.vehicleNo && (
-                    <div className="flex justify-between">
-                      <span>{t('Vehicle', 'گاڑی')}:</span>
-                      <strong className="text-slate-900">{lastSale.vehicleNo}</strong>
-                    </div>
-                  )}
-                  {lastSale.isReturn && (
-                    <div className="mt-2 text-center font-bold text-rose-600 uppercase">
-                      *** RETURN / REFUND ***
-                    </div>
-                  )}
-                </div>
-
-                <div className="mb-4">
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="border-b border-slate-200">
-                        <th className="pb-2 text-left font-bold">{t('Item', 'آئٹم')}</th>
-                        <th className="pb-2 text-center font-bold">{t('Qty', 'مقدار')}</th>
-                        <th className="pb-2 text-right font-bold">{t('Total', 'کل')}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {lastSale.items.map((item, idx) => (
-                        <tr key={idx}>
-                          <td className="py-2 font-medium">{item.productName}</td>
-                          <td className="py-2 text-center">{item.quantity}</td>
-                          <td className="py-2 text-right">{formatCurrency(item.lineTotal, settings)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="space-y-1.5 border-t border-slate-800 pt-4 text-sm">
-                  <div className="flex justify-between text-slate-500">
-                    <span>{t('Subtotal', 'سب ٹوٹل')}:</span>
-                    <span>{formatCurrency(lastSale.subtotal, settings)}</span>
-                  </div>
-                  {lastSale.discount > 0 && (
-                    <div className="flex justify-between text-emerald-600">
-                      <span>{t('Discount', 'ڈسکاؤنٹ')}:</span>
-                      <span>-{formatCurrency(lastSale.discount, settings)}</span>
-                    </div>
-                  )}
-                  {lastSale.tax > 0 && (
-                    <div className="flex justify-between text-rose-500">
-                      <span>{t('Tax', 'ٹیکس')}:</span>
-                      <span>+{formatCurrency(lastSale.tax, settings)}</span>
-                    </div>
-                  )}
-                  <div className="mt-2 flex justify-between border-t border-dashed border-slate-300 pt-2 text-base font-black">
-                    <span>{t('Total', 'کل بل')}:</span>
-                    <span>{formatCurrency(lastSale.total, settings)}</span>
-                  </div>
-                </div>
-
-                <div className="mt-8 text-center text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  <p>{t('Thank you for your visit!', 'آپ کی آمد کا شکریہ!')}</p>
-                </div>
-              </div>
-              
-              <div className="no-print border-t border-slate-100 bg-slate-50 p-4">
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setLastSale(null)}
-                    className="flex-1 rounded-xl bg-slate-200 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-300 transition-colors"
-                  >
-                    {t('Close', 'بند کریں')}
-                  </button>
-                  <button
-                    onClick={() => window.print()}
-                    className="flex-1 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-[0_4px_15px_rgb(37,99,235,0.3)] hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Printer className="h-4 w-4" />
-                    {t('Print', 'پرنٹ')}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

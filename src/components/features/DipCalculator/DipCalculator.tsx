@@ -5,6 +5,7 @@ import {
   AlertTriangle, Info, ChevronDown, ChevronUp, FileDown
 } from 'lucide-react';
 import { GlobalSettings, Tank } from '../../../types';
+import { fetchWithAuth } from '../../../lib/api';
 import { formatCurrency } from '../../../lib/currency';
 
 interface DipCalculatorProps {
@@ -51,7 +52,7 @@ export default function DipCalculator({ settings, tanks }: DipCalculatorProps) {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/dip-calculator', {
+      const response = await fetchWithAuth('/api/dip-calculator', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

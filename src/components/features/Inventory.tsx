@@ -27,9 +27,11 @@ import {
   X,
   Gauge,
   Pencil,
-  Trash2
+  Trash2,
+  Sparkles
 } from 'lucide-react';
 import { Product, StockTransaction, Supplier, GlobalSettings, Tank, RateHistoryEntry } from '../../types';
+import { fetchWithAuth } from '../../lib/api';
 
 interface InventoryProps {
   settings: GlobalSettings;
@@ -217,6 +219,37 @@ export default function Inventory({
     setReceiptCost(computedTotal > 0 ? computedTotal.toString() : '');
   }, [receiptQty, purchasePrice]);
 
+  // Auto-initialize stock modal dropdown values on open
+  React.useEffect(() => {
+    if (showAddStockModal && products.length > 0) {
+      setSelectedProductId(products[0].id);
+      if (suppliers.length > 0) {
+        setSupplierId(suppliers[0].id);
+      }
+    }
+  }, [showAddStockModal, products, suppliers]);
+
+  // Auto-initialize reconciliation modal values on open
+  React.useEffect(() => {
+    if (showReconcileModal && products.length > 0) {
+      setReconProductId(products[0].id);
+    }
+  }, [showReconcileModal, products]);
+
+  // Auto-select first matching storage tank when selected product changes
+  React.useEffect(() => {
+    if (!selectedProductId) {
+      setSelectedTankId('');
+      return;
+    }
+    const matchingTanks = tanks.filter(t => t.productId === selectedProductId);
+    if (matchingTanks.length > 0) {
+      setSelectedTankId(matchingTanks[0].id);
+    } else {
+      setSelectedTankId('');
+    }
+  }, [selectedProductId, tanks]);
+
   // Memoized filter lists
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
@@ -285,6 +318,47 @@ export default function Inventory({
     return products.filter(p => p.currentStock <= p.minStock).length;
   }, [products]);
 
+
+  // ==========================================
+  // AI Stock Analysis State
+  // ==========================================
+  const [isGeneratingAiInsights, setIsGeneratingAiInsights] = useState(false);
+  const [aiInsightsResult, setAiInsightsResult] = useState<string | null>(null);
+
+  const generateAIStockInsights = async () => {
+    setIsGeneratingAiInsights(true);
+    setAiInsightsResult(null);
+    try {
+      const inventoryContext = {
+        isLube,
+        totalFuelVolume,
+        totalLubricantsQty,
+        lowStockCount,
+        products: products.map(p => ({ name: p.name, type: p.type, current: p.currentStock, min: p.minStock, unit: p.unit })),
+        tanks: tanks.map(t => ({ name: t.name, product: t.productId, fillPct: Math.round((t.currentStock / t.capacity) * 100), isLow: t.currentStock < t.criticalLevel }))
+      };
+
+      const response = await fetchWithAuth('/api/ai-assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemPrompt: 'You are an AI inventory manager for a fuel station. Analyze the current stock levels, highlight low stock alerts, and suggest reorder quantities or strategic actions in 3-4 concise sentences.',
+          userMessage: JSON.stringify(inventoryContext),
+          language: settings.language,
+          conversationHistory: []
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to generate AI insights');
+      const data = await response.json();
+      setAiInsightsResult(data.reply);
+    } catch (error) {
+      console.error(error);
+      setAiInsightsResult(t("⚠️ Could not generate AI stock analysis.", "⚠️ اسٹاک کا اے آئی تجزیہ تیار نہیں ہو سکا۔"));
+    } finally {
+      setIsGeneratingAiInsights(false);
+    }
+  };
 
   // ==========================================
   // HANDLERS
@@ -400,6 +474,15 @@ export default function Inventory({
 
         <div className="flex flex-wrap gap-2">
           <button
+            onClick={generateAIStockInsights}
+            disabled={isGeneratingAiInsights || products.length === 0}
+            className={`flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 font-sans text-xs font-bold text-white shadow-md hover:bg-indigo-700 transition-all cursor-pointer ${isGeneratingAiInsights ? 'opacity-50' : ''}`}
+          >
+            <Sparkles className={`h-4 w-4 ${isGeneratingAiInsights ? 'animate-spin' : ''}`} />
+            <span>{t('AI Stock Analysis', 'اے آئی اسٹاک تجزیہ')}</span>
+          </button>
+
+          <button
             onClick={() => setShowReconcileModal(true)}
             className="flex items-center justify-center gap-1.5 rounded-lg border border-orange-200 bg-orange-50 px-3.5 py-2 font-sans text-xs font-bold text-orange-700 hover:bg-orange-100 transition-all cursor-pointer"
           >
@@ -430,6 +513,18 @@ export default function Inventory({
           )}
         </div>
       </div>
+
+      {aiInsightsResult && (
+        <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 shadow-sm relative">
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="h-4 w-4 text-indigo-500" />
+            <span className="font-bold text-indigo-800 text-sm">{t('AI Stock Analysis', 'اے آئی اسٹاک تجزیہ')}</span>
+          </div>
+          <div className="prose prose-sm max-w-none text-indigo-900 whitespace-pre-wrap leading-relaxed text-xs">
+            {aiInsightsResult}
+          </div>
+        </div>
+      )}
 
       {/* BEN-TO ROW INVENTORY STATS OVERVIEWS */}
       <div className={`grid grid-cols-1 gap-4 ${isLube ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
