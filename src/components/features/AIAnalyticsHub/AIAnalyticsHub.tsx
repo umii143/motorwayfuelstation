@@ -180,13 +180,13 @@ export default function AIAnalyticsHub({ settings, dataContext }: AIAnalyticsHub
                   key={idx}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={\`flex \${msg.role === 'user' ? 'justify-end' : 'justify-start'}\`}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div className={\`max-w-[85%] rounded-2xl p-4 \${
+                  <div className={`max-w-[85%] rounded-2xl p-4 ${
                     msg.role === 'user' 
                       ? 'bg-indigo-600 text-white rounded-br-sm' 
                       : 'bg-[var(--bg-hover)] border border-[var(--border-main)] text-[var(--text-main)] rounded-bl-sm'
-                  }\`}>
+                  }`}>
                     <div className="flex items-center gap-2 mb-1.5 opacity-70">
                       {msg.role === 'assistant' ? (
                         <Sparkles className="h-3 w-3" />

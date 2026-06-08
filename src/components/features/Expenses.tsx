@@ -19,7 +19,6 @@ import {
   Calendar,
   X,
   CreditCard,
-  CreditCard,
   Notebook,
   Sparkles
 } from 'lucide-react';

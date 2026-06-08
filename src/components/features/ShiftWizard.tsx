@@ -4051,7 +4051,6 @@ export default function ShiftWizard({
               </span>
             </button>
           </div>
-          </div>
         </div>
       )}
 

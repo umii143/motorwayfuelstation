@@ -275,7 +275,7 @@ export default function Navigation({
         customers: customers.map(c => ({ name: c.name, balance: c.balance, limit: c.creditLimit })),
         suppliers: suppliers.map(s => ({ name: s.name, balance: s.balance })),
         products: products.map(p => ({ name: p.name, stock: p.currentStock, price: p.rate })),
-        banks: banks.map(b => ({ name: b.bankName, balance: b.balance })),
+        banks: banks.map(b => ({ name: b.name, balance: b.balance })),
         recentShifts: shifts.slice(0, 10).map(s => ({ date: s.date, status: s.status, overage: s.overage, shortage: s.shortage })),
         staff: staff.map(s => ({ name: s.name, role: s.role, status: s.status })),
         recentStockTxns: stockTxns.slice(0, 15).map(t => ({ itemId: t.itemId, type: t.type, qty: t.quantity, date: t.date })),
@@ -1013,8 +1013,15 @@ export default function Navigation({
 
       {/* MOBILE POPUP DRAWER */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-45 bg-slate-900/40 backdrop-blur-xs lg:hidden">
-          <div className="fixed bottom-0 top-[65px] left-0 z-50 w-64 border-r border-slate-200 bg-white py-4 shadow-xl flex flex-col justify-between h-[calc(100vh-65px)]">
+        <>
+          {/* Backdrop Overlay */}
+          <div
+            onClick={() => setMobileMenuOpen(false)}
+            className="fixed inset-0 z-45 bg-slate-900/40 backdrop-blur-sm lg:hidden"
+          />
+
+          {/* Drawer Container */}
+          <div className="fixed bottom-0 top-[65px] left-0 z-50 w-64 border-r border-slate-200 bg-white py-4 shadow-xl flex flex-col justify-between h-[calc(100vh-65px)] lg:hidden">
             
             {/* MOBILE SEGMENTED SWITCH */}
             <div className="px-3 mb-4 shrink-0 select-none">
@@ -1137,7 +1144,7 @@ export default function Navigation({
               </div>
             )}
           </div>
-        </div>
+        </>
       )}
 
       {/* MOBILE BOTTOM NAVIGATION */}

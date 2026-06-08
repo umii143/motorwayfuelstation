@@ -35,7 +35,7 @@ export function DashboardAIAssistant({ settings, shifts, customers, products, ba
         recentShifts,
         lowStockProducts: products.filter(p => p.currentStock <= p.minStock).map(p => ({ name: p.name, stock: p.currentStock })),
         highCreditCustomers: customers.filter(c => c.balance > (c.creditLimit || Infinity)).map(c => ({ name: c.name, balance: c.balance })),
-        bankBalances: banks.map(b => ({ name: b.bankName, balance: b.balance }))
+        bankBalances: banks.map(b => ({ name: b.name, balance: b.balance }))
       };
 
       const res = await fetchWithAuth('/api/ai-assistant', {
