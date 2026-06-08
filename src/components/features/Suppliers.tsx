@@ -28,16 +28,19 @@ import {
 import EmptyState from '../ui/EmptyState';
 import AIDocumentScanner from '../ui/AIDocumentScanner';
 import PartyLedgerModal, { LedgerEntry, PartyInfo } from '../ui/PartyLedgerModal';
-import { Supplier, Shift, Product, GlobalSettings } from '../../types';
+import SupplierPayments from './SupplierPayments';
+import { Supplier, Shift, Product, GlobalSettings, BankAccount } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
 import { fetchWithAuth } from '../../lib/api';
+import { useFinancialStore } from '../../stores/useFinancialStore';
 
 interface SuppliersProps {
   settings: GlobalSettings;
   suppliers: Supplier[];
   shifts: Shift[];
   products: Product[];
+  banks: BankAccount[];
   onAddSupplier: (supplier: Supplier) => void;
   onUpdateSupplier: (supplier: Supplier) => void;
   onDeleteSupplier: (supplierId: string) => void;
@@ -49,6 +52,7 @@ export default function Suppliers({
   suppliers,
   shifts,
   products,
+  banks,
   onAddSupplier,
   onUpdateSupplier,
   onDeleteSupplier,
@@ -61,43 +65,40 @@ export default function Suppliers({
   const [selectedSupplierId, setSelectedSupplierId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [timeFilter, setTimeFilter] = useState<'all' | 'weekly' | 'monthly' | 'yearly'>('all');
+  const [activeTab, setActiveTab] = useState<'ledger' | 'purchases' | 'payments'>('ledger');
 
   // Ledger Modal State
   const [ledgerParty, setLedgerParty] = useState<PartyInfo | null>(null);
   const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([]);
   const [isLedgerOpen, setIsLedgerOpen] = useState(false);
 
+  // Pay Bill Modal State
+  const [showPayBillModal, setShowPayBillModal] = useState(false);
+
   // Open full ledger for a supplier
   const openSupplierLedger = (sup: Supplier) => {
     const rawEntries: LedgerEntry[] = [];
+    const journalEntries = useFinancialStore.getState().journalEntries;
+    
+    const supplierEntries = journalEntries.filter(j => j.partyType === 'supplier' && j.partyId === sup.id);
 
-    shifts.forEach(sh => {
-      // Find payments we made to this supplier
-      sh.supplierPayments.forEach(pay => {
-        if (pay.supplierId !== sup.id) return;
-        rawEntries.push({
-          id: `pay_${pay.id}`,
-          date: sh.date,
-          description: `Cheque/Bank Payment (Ref: ${pay.reference || 'ONLINE'})`,
-          debit: pay.amount,
-          credit: 0,
+    supplierEntries.forEach(j => {
+       rawEntries.push({
+          id: j.id,
+          date: j.date.split('T')[0],
+          description: j.description,
+          debit: j.type === 'debit' ? j.amount : 0,
+          credit: j.type === 'credit' ? j.amount : 0,
           balance: 0,
-          tag: 'Payment Made',
-        });
-      });
+          tag: j.type === 'debit' ? 'Payment Made' : 'Stock Invoice'
+       });
     });
 
-    // Currently supplier module relies on manual adjustments or mock shift for credit (Invoice)
-    // However the existing ledgerLogs just shows payments. We'll map them.
-    
     // Sort ascending, compute running balance (Credit increases what we owe, Debit reduces what we owe)
-    // Wait, the modal is generic. For a supplier:
-    // Debit = money we paid (reduces our debt)
-    // Credit = invoice stock we received (increases our debt)
     rawEntries.sort((a, b) => a.date.localeCompare(b.date));
-    let running = 0;
+    let running = 0; // Ideally starting balance should be handled, but we assume 0 before first txn
     const withBalance = rawEntries.map(e => {
-      running += e.credit - e.debit; // Increase debt by credit, reduce by debit
+      running += e.credit - e.debit;
       return { ...e, balance: running };
     });
 
@@ -295,6 +296,9 @@ export default function Suppliers({
   const vendorLedgerLogs = useMemo(() => {
     if (!currentSupplier) return [];
 
+    const journalEntries = useFinancialStore.getState().journalEntries;
+    const supplierEntries = journalEntries.filter(j => j.partyType === 'supplier' && j.partyId === currentSupplier.id);
+
     const history: Array<{
       id: string;
       date: string;
@@ -302,26 +306,17 @@ export default function Suppliers({
       debit: number;  // Outflowing Payments we made to vendor (reduces our payable)
       credit: number; // Inflowing Invoice stock we bought (increases our payable)
       balance: number;
-      shiftId?: string;
-      entryId?: string;
     }> = [];
 
-    shifts.forEach(sh => {
-      // Find payments we made to this supplier in this shift
-      sh.supplierPayments.forEach(pay => {
-        if (pay.supplierId === currentSupplier.id) {
-          history.push({
-            id: `pay_${pay.id}`,
-            date: sh.date,
-            description: t(`Cheque Payment via Bank Account (Ref: ${pay.reference || 'ONLINE'})`, `چیک کے ذریعے کھاتہ ادائیگی چالان`),
-            debit: pay.amount,
-            credit: 0,
-            balance: 0,
-            shiftId: sh.id,
-            entryId: pay.id
-          });
-        }
-      });
+    supplierEntries.forEach(j => {
+       history.push({
+          id: j.id,
+          date: j.date.split('T')[0],
+          description: j.description,
+          debit: j.type === 'debit' ? j.amount : 0,
+          credit: j.type === 'credit' ? j.amount : 0,
+          balance: 0
+       });
     });
 
     // Sort by Date ascending
@@ -339,7 +334,7 @@ export default function Suppliers({
     });
 
     return computed.reverse();
-  }, [currentSupplier, shifts]);
+  }, [currentSupplier]);
 
 
   // ==========================================
@@ -451,6 +446,14 @@ export default function Suppliers({
           >
             <PlusCircle className="h-4 w-4" />
             <span>{t('+ Add Supplier', 'نیا سپلائر شامل کریں')}</span>
+          </button>
+
+          <button
+            onClick={() => setShowPayBillModal(true)}
+            className="flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2.5 font-sans text-xs font-bold text-white shadow-md shadow-emerald-500/10 hover:bg-emerald-700 transition-all cursor-pointer"
+          >
+            <CreditCard className="h-4 w-4" />
+            <span>{t('Pay Bill', 'بل ادا کریں')}</span>
           </button>
         </div>
       </div>
@@ -783,61 +786,66 @@ export default function Suppliers({
 
               {/* Ledger TIMELINES history */}
               <div className="space-y-3.5">
-                <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 block">
-                  {t('Wholesale Oil Delivery Invoices Ledger History', 'سپلائر بلنگ، سپلائی اور ادائیگیوں کی تاریخ')}
-                </h4>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-2 gap-2">
+                  <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest block">
+                    {t('Ledger History', 'لیجر ہسٹری')}
+                  </h4>
+                  <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200">
+                    <button
+                      onClick={() => setActiveTab('ledger')}
+                      className={`px-3 py-1 text-[11px] font-bold rounded-md transition-colors ${activeTab === 'ledger' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                      {t('Running Ledger', 'مکمل لیجر')}
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('purchases')}
+                      className={`px-3 py-1 text-[11px] font-bold rounded-md transition-colors ${activeTab === 'purchases' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                      {t('Purchases', 'خریداری')}
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('payments')}
+                      className={`px-3 py-1 text-[11px] font-bold rounded-md transition-colors ${activeTab === 'payments' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                      {t('Payments', 'ادائیگیاں')}
+                    </button>
+                  </div>
+                </div>
 
                 <div className="overflow-x-auto rounded-lg border border-slate-105">
                   <table className="w-full border-collapse text-left font-sans text-xs">
                     <thead>
                       <tr className="bg-slate-50 border-b border-slate-150 text-slate-650 font-bold">
-                        <th className="py-2.5 px-3">{t('Session Date', 'تاریخ')}</th>
-                        <th className="py-2.5 px-3">{t('Description / Narrative Reference', 'تفصیل چالان حوالہ')}</th>
-                        <th className="py-2.5 px-3 text-right">{t('Invoice Cr (+We Owe)', 'چالان بل (+)')}</th>
-                        <th className="py-2.5 px-3 text-right">{t('Payment Dr (–Made)', 'ادائیگی رقم (–)')}</th>
-                        <th className="py-2.5 px-3 text-right">{t('Running Balance Owed', 'حتمی پیبل رقم')}</th>
-                        <th className="py-2.5 px-3 text-center w-16">{t('Actions', 'اقدامات')}</th>
+                        <th className="py-2.5 px-3">{t('Date', 'تاریخ')}</th>
+                        <th className="py-2.5 px-3">{t('Description', 'تفصیل')}</th>
+                        {activeTab !== 'payments' && <th className="py-2.5 px-3 text-right">{t('Purchase (+)', 'خریداری (+)')}</th>}
+                        {activeTab !== 'purchases' && <th className="py-2.5 px-3 text-right">{t('Payment (-)', 'ادائیگی (-)')}</th>}
+                        {activeTab === 'ledger' && <th className="py-2.5 px-3 text-right">{t('Balance', 'بیلنس')}</th>}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-slate-705">
-                      {vendorLedgerLogs.length === 0 ? (
+                      {vendorLedgerLogs.filter(v => 
+                        activeTab === 'ledger' || 
+                        (activeTab === 'purchases' && v.credit > 0) || 
+                        (activeTab === 'payments' && v.debit > 0)
+                      ).length === 0 ? (
                         <tr>
-                          <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
-                            {t('No past delivery payments locked inside shifts ledger accounts. Register payment in a running shift.', 'اس سپلائر کی گذشتہ کوئی ٹرانسفر انٹری یا ادائیگی ریکارڈ نہیں ہوئی ہے۔')}
+                          <td colSpan={5} className="py-8 text-center text-slate-400 font-medium">
+                            {t('No records found for the selected view.', 'کوئی ریکارڈ نہیں ملا۔')}
                           </td>
                         </tr>
                       ) : (
-                        vendorLedgerLogs.map(v => (
+                        vendorLedgerLogs.filter(v => 
+                          activeTab === 'ledger' || 
+                          (activeTab === 'purchases' && v.credit > 0) || 
+                          (activeTab === 'payments' && v.debit > 0)
+                        ).map(v => (
                           <tr key={v.id} className="hover:bg-slate-55/40">
                             <td className="py-3 px-3 font-mono font-medium text-slate-500">{v.date}</td>
                             <td className="py-3 px-3 font-semibold text-slate-800 leading-tight pr-4">{v.description}</td>
-                            <td className="py-3 px-3 text-right font-mono font-bold text-red-550">{v.credit > 0 ? `${formatCurrency(v.credit, settings)}` : '—'}</td>
-                            <td className="py-3 px-3 text-right font-mono font-bold text-emerald-600">{v.debit > 0 ? `${formatCurrency(v.debit, settings)}` : '—'}</td>
-                            <td className="py-3 px-3 text-right font-mono font-bold text-slate-900">{formatCurrency(v.balance, settings)}</td>
-                            <td className="py-3 px-3 text-center">
-                              {v.shiftId && v.entryId ? (
-                                <button
-                                  onClick={() => {
-                                    showConfirm(
-                                      t('Confirm Payment Deletion', 'ادائیگی حذف کرنے کی تصدیق'),
-                                      t(
-                                        `Delete this supplier payment entry? This will revert the transaction and update the supplier's balance.`,
-                                        `کیا آپ واقعی اس ادائیگی کی انٹری کو حذف کرنا چاہتے ہیں؟ اس سے سپلائر کا بیلنس بھی تبدیل ہو جائے گا۔`
-                                      ),
-                                      () => {
-                                        onDeleteSupplierPayment(v.shiftId!, v.entryId!);
-                                      }
-                                    );
-                                  }}
-                                  className="text-red-500 hover:text-red-750 font-bold cursor-pointer text-xs p-1"
-                                  title={t('Delete Entry', 'حذف کریں')}
-                                >
-                                  🗑️
-                                </button>
-                              ) : (
-                                <span className="text-slate-300 font-sans text-[10px]">—</span>
-                              )}
-                            </td>
+                            {activeTab !== 'payments' && <td className="py-3 px-3 text-right font-mono font-bold text-red-550">{v.credit > 0 ? `${formatCurrency(v.credit, settings)}` : '—'}</td>}
+                            {activeTab !== 'purchases' && <td className="py-3 px-3 text-right font-mono font-bold text-emerald-600">{v.debit > 0 ? `${formatCurrency(v.debit, settings)}` : '—'}</td>}
+                            {activeTab === 'ledger' && <td className="py-3 px-3 text-right font-mono font-bold text-slate-900">{formatCurrency(v.balance, settings)}</td>}
                           </tr>
                         ))
                       )}
@@ -1043,6 +1051,17 @@ export default function Suppliers({
         creditLabel="Stock Invoice (Cr)"
         accentColor="emerald"
       />
+
+      <AnimatePresence>
+        {showPayBillModal && (
+          <SupplierPayments
+            suppliers={suppliers}
+            banks={banks}
+            settings={settings}
+            onClose={() => setShowPayBillModal(false)}
+          />
+        )}
+      </AnimatePresence>
 
       <AIDocumentScanner
         isOpen={isScannerOpen}

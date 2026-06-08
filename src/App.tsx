@@ -5,6 +5,7 @@ import { firestoreDb } from './data/firestore';
 import { writeBatch, doc, setDoc } from 'firebase/firestore';
 import { dbFS } from './lib/firebase';
 import { fetchWithAuth } from './lib/api';
+import { migrateAccountsPayable } from './utils/migrations';
 
 /**
  * @license
@@ -160,7 +161,10 @@ function MainApp() {
   // This prevents stale views (e.g. 'lube_pos') appearing on the wrong business
   React.useEffect(() => {
     setActiveView('dashboard');
-  }, [activeStationId]);
+    if (activeStationId) {
+       migrateAccountsPayable(authenticatedUser?.uid).catch(console.error);
+    }
+  }, [activeStationId, authenticatedUser]);
 
   // ==========================================
   // ROUTING VIEW CONTROLS
@@ -288,6 +292,7 @@ function MainApp() {
             suppliers={suppliers}
             shifts={shifts}
             products={products}
+            banks={banks}
             onAddSupplier={handleAddSupplier}
             onUpdateSupplier={handleUpdateSupplier}
             onDeleteSupplier={handleDeleteSupplier}

@@ -177,10 +177,12 @@ export interface LubePosSale extends TenantDocument {
 export interface SupplierPayment extends TenantDocument {
   id: string;
   supplierId: string;
+  date: string;
   amount: number;
-  mode: 'cash' | 'cheque' | 'transfer';
+  mode: 'cash' | 'cheque' | 'transfer' | 'digital';
   bankAccountId?: string;
   reference: string;
+  notes?: string;
 }
 
 export interface DiscountEntry extends TenantDocument {
@@ -332,6 +334,13 @@ export interface StockTransaction extends TenantDocument {
   supplierId?: string;
   carriageCost?: number;
   tankId?: string;
+  // Purchase Financials
+  paymentMode?: 'cash' | 'credit' | 'bank' | 'digital';
+  amountPaid?: number;
+  bankAccountId?: string;
+  dueDate?: string;
+  invoiceNo?: string;
+  notes?: string;
 }
 
 export interface Station extends TenantDocument {

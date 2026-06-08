@@ -3,6 +3,7 @@ import { Package, Truck, Receipt, CheckCircle, Calculator, Info } from 'lucide-r
 import { Product, Supplier, Tank, StockBatch, StockTransaction } from '../../types';
 import { useInventoryStore } from '../../stores/useInventoryStore';
 import { t } from '../../lib/translations';
+import { useFinancialStore } from '../../stores/useFinancialStore';
 
 interface StockInFormProps {
   products: Product[];
@@ -29,6 +30,14 @@ export default function StockInForm({
   const [purchasePricePerUnit, setPurchasePricePerUnit] = useState('');
   const [carriageCost, setCarriageCost] = useState('');
   const [invoiceRef, setInvoiceRef] = useState('');
+
+  // Payment State
+  const [paymentMode, setPaymentMode] = useState<'cash' | 'bank' | 'credit'>('credit');
+  const [amountPaid, setAmountPaid] = useState('');
+  const [bankAccountId, setBankAccountId] = useState('');
+  const [dueDate, setDueDate] = useState('');
+
+  const banks = useFinancialStore(state => state.banks);
 
   // Auto-select first matching storage tank when selected product changes
   useEffect(() => {
@@ -63,6 +72,30 @@ export default function StockInForm({
        return;
     }
 
+    if (!supplierId) {
+       alert(t('Please select a supplier.', 'براہ کرم سپلائر منتخب کریں۔', language));
+       return;
+    }
+
+    const calculatedBaseCost = qty * rate;
+    const totalCost = calculatedBaseCost + carriage;
+    const paid = Number(amountPaid) || 0;
+
+    if (paid > totalCost) {
+       alert(t('Amount paid cannot exceed total bill.', 'ادا کی گئی رقم کل بل سے زیادہ نہیں ہو سکتی۔', language));
+       return;
+    }
+
+    if (paymentMode === 'bank' && paid > 0 && !bankAccountId) {
+       alert(t('Please select a bank account.', 'براہ کرم بینک اکاؤنٹ منتخب کریں۔', language));
+       return;
+    }
+
+    if (paymentMode === 'credit' && !dueDate) {
+       alert(t('Please enter a due date for credit purchase.', 'براہ کرم ادھار خریداری کے لیے آخری تاریخ درج کریں۔', language));
+       return;
+    }
+
     const landedCost = rate + (carriage / qty);
 
     const batch: StockBatch = {
@@ -92,7 +125,12 @@ export default function StockInForm({
       fuelType: prod.type === 'fuel' ? prod.name : undefined,
       supplierId: supplierId,
       carriageCost: carriage,
-      tankId: batch.tankId
+      tankId: batch.tankId,
+      paymentMode,
+      amountPaid: paid,
+      bankAccountId: paymentMode === 'bank' ? bankAccountId : undefined,
+      dueDate: paymentMode === 'credit' ? dueDate : undefined,
+      invoiceNo: invoiceRef
     };
 
     // Note: useInventoryStore should be imported or passed down
@@ -265,6 +303,83 @@ export default function StockInForm({
                <Info className="size-3" />
                {t('Landed cost equals (Total Base Value + Carriage) / Quantity. This value is used for precise FIFO COGS calculation.', 'پہنچ کی قیمت = (بنیادی قیمت + کرایہ) / مقدار۔ یہ قیمت FIFO کے تحت فروخت کی لاگت جانچنے میں استعمال ہوگی۔', language)}
              </p>
+          </div>
+
+          {/* Payment Section */}
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mt-6">
+             <div className="flex items-center gap-2 mb-4">
+                <Receipt className="size-4 text-slate-500" />
+                <h4 className="font-semibold text-slate-700">{t('Payment Details', 'ادائیگی کی تفصیلات', language)}</h4>
+             </div>
+             
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">{t('Payment Method', 'ادائیگی کا طریقہ', language)}</label>
+                  <select
+                    value={paymentMode}
+                    onChange={(e) => {
+                      setPaymentMode(e.target.value as any);
+                      if (e.target.value === 'credit') setAmountPaid('');
+                      if (e.target.value === 'cash' || e.target.value === 'bank') setAmountPaid(totalCost.toString());
+                    }}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-slate-800 focus:border-orange-500 focus:outline-none"
+                  >
+                    <option value="credit">{t('Credit (Udhar)', 'ادھار', language)}</option>
+                    <option value="cash">{t('Cash', 'نقد', language)}</option>
+                    <option value="bank">{t('Bank Transfer', 'بینک ٹرانسفر', language)}</option>
+                  </select>
+                </div>
+
+                {paymentMode === 'bank' && (
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">{t('Bank Account', 'بینک اکاؤنٹ', language)}</label>
+                    <select
+                      value={bankAccountId}
+                      onChange={(e) => setBankAccountId(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-slate-800 focus:border-orange-500 focus:outline-none"
+                    >
+                      <option value="">{t('-- Select Bank --', '-- بینک منتخب کریں --', language)}</option>
+                      {banks.map(b => (
+                        <option key={b.id} value={b.id}>{b.name} (Rs.{b.balance.toLocaleString()})</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {paymentMode === 'credit' && (
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">{t('Due Date', 'ادائیگی کی آخری تاریخ', language)}</label>
+                    <input
+                      type="date"
+                      value={dueDate}
+                      onChange={(e) => setDueDate(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-slate-800 focus:border-orange-500 focus:outline-none"
+                    />
+                  </div>
+                )}
+             </div>
+
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">{t('Amount Paid Now', 'ادا کردہ رقم', language)}</label>
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium text-sm">Rs</div>
+                    <input
+                      type="number"
+                      step="0.01"
+                      max={totalCost}
+                      value={amountPaid}
+                      onChange={(e) => setAmountPaid(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-white pl-12 pr-4 py-2.5 text-slate-800 focus:border-orange-500 focus:outline-none"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+                <div className="bg-orange-50 rounded-xl p-3 border border-orange-100 flex justify-between items-center h-[46px]">
+                   <span className="text-orange-800 font-medium">{t('Remaining Balance', 'بقیہ رقم', language)}:</span>
+                   <span className="text-orange-600 font-bold text-lg">Rs. {(totalCost - (Number(amountPaid) || 0)).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                </div>
+             </div>
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-2">

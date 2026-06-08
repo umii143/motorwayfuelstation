@@ -383,6 +383,137 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
         }
       }
     }
+
+    // --- FINANCIAL INTEGRATION FOR PURCHASES ---
+    if (txn.supplierId && txn.amount !== undefined) {
+       const totalBill = txn.amount + (txn.carriageCost || 0);
+       const amountPaid = txn.amountPaid || 0;
+       
+       Promise.all([
+         import('./useSupplierStore'),
+         import('./useFinancialStore')
+       ]).then(([{ useSupplierStore }, { useFinancialStore }]) => {
+         const supplierStore = useSupplierStore.getState();
+         const financialStore = useFinancialStore.getState();
+         
+         const supplier = supplierStore.suppliers.find(s => s.id === txn.supplierId);
+         if (supplier) {
+           // Update Supplier Balance (Total Bill added to Credit Balance)
+           const newBalance = (supplier.balance || 0) + totalBill;
+           supplierStore.handleUpdateSupplier({
+             ...supplier,
+             balance: newBalance
+           }, orgId, sId);
+
+           // 1. Purchase Journal Entry
+           const purchaseJournalId = `jr_pur_${txn.id}`;
+           const purchaseJournal: import('../types').JournalEntry = {
+              id: purchaseJournalId,
+              date: new Date().toISOString(),
+              partyId: supplier.id,
+              partyType: 'supplier',
+              partyName: supplier.name,
+              type: 'credit',
+              amount: totalBill,
+              description: `Stock Purchase (${txn.fuelType || 'Item'}) - Invoice: ${txn.invoiceNo || 'N/A'}`,
+              referenceId: txn.id,
+              orgId: orgId || undefined,
+              stationId: sId,
+              businessType: bType,
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+              isLocked: false
+           };
+           
+           const entriesToSave = [purchaseJournal];
+
+           // 2. Payment Journal Entry & Balance Update (If paid immediately)
+           if (amountPaid > 0) {
+              const updatedSupplier = useSupplierStore.getState().suppliers.find(s => s.id === txn.supplierId) || supplier;
+              const balanceAfterPayment = (updatedSupplier.balance || 0) - amountPaid;
+              
+              supplierStore.handleUpdateSupplier({
+                ...updatedSupplier,
+                balance: balanceAfterPayment
+              }, orgId, sId);
+
+              const paymentJournalId = `jr_pay_${txn.id}`;
+              const paymentJournal: import('../types').JournalEntry = {
+                  id: paymentJournalId,
+                  date: new Date().toISOString(),
+                  partyId: supplier.id,
+                  partyType: 'supplier',
+                  partyName: supplier.name,
+                  type: 'debit',
+                  amount: amountPaid,
+                  description: `Payment for Purchase ${txn.invoiceNo || 'N/A'} via ${txn.paymentMode}`,
+                  referenceId: txn.id,
+                  orgId: orgId || undefined,
+                  stationId: sId,
+                  businessType: bType,
+                  createdAt: Date.now(),
+                  updatedAt: Date.now(),
+                  isLocked: false
+              };
+              entriesToSave.push(paymentJournal);
+
+              // 3. Cash/Bank Outflow
+              if (txn.paymentMode === 'cash') {
+                 entriesToSave.push({
+                    id: `jr_cashout_${txn.id}`,
+                    date: new Date().toISOString(),
+                    partyType: 'expense',
+                    type: 'credit',
+                    amount: amountPaid,
+                    description: `Cash outflow for Supplier Payment ${supplier.name}`,
+                    referenceId: txn.id,
+                    orgId: orgId || undefined,
+                    stationId: sId,
+                    businessType: bType,
+                    createdAt: Date.now(),
+                    updatedAt: Date.now(),
+                    isLocked: false
+                 });
+              } else if (txn.paymentMode === 'bank' && txn.bankAccountId) {
+                 entriesToSave.push({
+                    id: `jr_bankout_${txn.id}`,
+                    date: new Date().toISOString(),
+                    partyId: txn.bankAccountId,
+                    partyType: 'bank',
+                    type: 'credit',
+                    amount: amountPaid,
+                    description: `Bank outflow for Supplier Payment ${supplier.name}`,
+                    referenceId: txn.id,
+                    orgId: orgId || undefined,
+                    stationId: sId,
+                    businessType: bType,
+                    createdAt: Date.now(),
+                    updatedAt: Date.now(),
+                    isLocked: false
+                 });
+                 // Deduct from bank
+                 const bank = financialStore.banks.find(b => b.id === txn.bankAccountId);
+                 if (bank) {
+                    financialStore.handleUpdateBanks(
+                       financialStore.banks.map(b => b.id === bank.id ? { ...b, balance: (b.balance || 0) - amountPaid } : b),
+                       orgId, sId
+                    );
+                 }
+              }
+           }
+           
+           // Save journal entries
+           financialStore.setJournalEntries([...entriesToSave, ...financialStore.journalEntries]);
+           entriesToSave.forEach(entry => {
+             if (orgId) {
+               firestoreDb.saveDocument(orgId, sId, bType, 'journalEntries', entry.id, entry);
+             }
+           });
+         }
+       }).catch(err => {
+         console.error("Error integrating purchase financials:", err);
+       });
+    }
   },
 
   handleAddStockBatch: async (batch, orgId, stationId, checkPerm) => {
