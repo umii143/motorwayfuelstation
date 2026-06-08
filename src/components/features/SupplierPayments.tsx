@@ -45,7 +45,7 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
     }
 
     try {
-      const financialStore = useFinancialStore.getState();
+      const handleUpdateBanks = useFinancialStore.getState().handleUpdateBanks;
       const supplierStore = useSupplierStore.getState();
 
       const paymentId = `sup_pay_${Date.now()}`;
@@ -58,17 +58,12 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
 
       // Update Bank/Cash Balance
       if (paymentMode === 'bank') {
-        const bank = banks.find(b => b.id === bankAccountId);
-        if (bank) {
-          await financialStore.handleUpdateBank({
-            ...bank,
-            balance: bank.balance - payAmount
-          });
-        }
+        const updatedBanks = banks.map(b => b.id === bankAccountId ? { ...b, balance: b.balance - payAmount } : b);
+        await handleUpdateBanks(updatedBanks);
       }
 
       // Generate Journal Entry
-      await financialStore.handleAddJournalEntry({
+      await useFinancialStore.getState().handleAddJournalEntry({
         id: `jr_${Date.now()}`,
         date: new Date(date).toISOString(),
         partyId: selectedSupplier.id,

@@ -12,7 +12,7 @@ export function BISmartMetrics({ metrics }: any) {
     new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', minimumFractionDigits: 0 }).format(val);
 
   // Calculate Credit Exposure
-  const totalCreditExposure = customers.reduce((acc, c) => acc + (c.currentBalance || 0), 0);
+  const totalCreditExposure = customers.reduce((acc, c) => acc + (c.balance || 0), 0);
   
   // Calculate Avg Stock Turnover (Simplified)
   // For actual turnover we'd need average inventory / COGS

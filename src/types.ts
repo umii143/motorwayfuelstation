@@ -248,8 +248,6 @@ export interface Shift extends TenantDocument {
 }
 
 export interface ReceiptLine {
-  productId: string;
-  productName: string;
   quantity: number;
   rate: number;
   amount: number;
@@ -312,12 +310,15 @@ export interface COGSRecord extends TenantDocument {
   rateSegmentId?: string;
   batchId: string;
   productId: string;
-  tankId: string;
+  tankId?: string;
   date: string;
-  litersSold: number;
-  costPrice: number;
-  sellingPrice: number;
-  profit: number;
+  litersSold?: number;
+  costPrice?: number;
+  sellingPrice?: number;
+  profit?: number;
+  quantitySold?: number;
+  unitLandedCost?: number;
+  totalCOGS?: number;
 }
 
 export interface StockTransaction extends TenantDocument {
@@ -653,6 +654,7 @@ export interface JournalEntry extends TenantDocument {
   description: string;
   referenceId: string; // shiftId, lubePosSaleId, standaloneExpenseId
   runningBalanceAfter?: number;
+  isLocked?: boolean;
 }
 
 export interface ToastConfig {

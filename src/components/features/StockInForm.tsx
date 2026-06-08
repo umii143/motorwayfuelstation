@@ -107,7 +107,8 @@ export default function StockInForm({
       supplierId: supplierId,
       qtyReceived: qty,
       qtyRemaining: qty,
-      purchaseRate: rate,
+      purchasePrice: rate,
+      sellingPriceAtReceipt: products.find(p => p.id === formData.productId)?.rate || 0,
       carriage: carriage,
       landedCost: landedCost,
       status: 'active'

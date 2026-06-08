@@ -1143,6 +1143,7 @@ export default function ShiftWizard({
 
     const newSup: SupplierPayment = {
       id: `supp_${Date.now()}`,
+      date: new Date().toISOString().split('T')[0],
       supplierId: supId,
       amount,
       mode: supMode,

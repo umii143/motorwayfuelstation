@@ -22,6 +22,7 @@ interface FinancialState {
   handleUpdateDigitalAccounts: (updatedAccs: DigitalAccount[], orgId?: string, stationId?: string) => Promise<void>;
   handleAddStandaloneExpense: (expense: ExpenseEntry, orgId?: string, stationId?: string) => Promise<void>;
   handleAddLubePosSale: (sale: LubePosSale, orgId?: string, stationId?: string, handleUpdateCustomerBalanceStore?: (customerId: string, diff: number) => void) => Promise<void>;
+  handleAddJournalEntry: (entry: JournalEntry, orgId?: string, stationId?: string) => Promise<void>;
 }
 
 const getBusinessType = (stationId: string): 'fuel_station' | 'cng' | 'lube' => {
@@ -419,6 +420,19 @@ export const useFinancialStore = create<FinancialState>((set, get) => ({
     if (orgId) {
       await firestoreDb.saveDocument(orgId, sId, bType, 'lubePosSales', sale.id, sale);
       // Customer and banks are updated in Firestore via context bridge calls to saveDocument
+    }
+  },
+
+  handleAddJournalEntry: async (entry, orgId, stationId) => {
+    const sId = stationId || db.getActiveStationId();
+    const bType = getBusinessType(sId);
+    set((state) => {
+      const next = [entry, ...state.journalEntries];
+      db.saveJournalEntries(sId, next);
+      return { journalEntries: next };
+    });
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, sId, bType, 'journalEntries', entry.id, entry);
     }
   }
 }));

@@ -95,7 +95,7 @@ export function BIProductSupplierAnalysis({ metrics }: any) {
                     const supp = suppliers.find(s => s.id === supplierId);
                     return (
                       <tr key={supplierId} className="hover:bg-slate-50 transition-colors">
-                        <td className="py-3 px-5 font-bold text-slate-800">{supp?.companyName || supplierId}</td>
+                        <td className="py-3 px-5 font-bold text-slate-800">{supp?.name || 'Unknown Supplier'}</td>
                         <td className="py-3 px-5 text-slate-600 text-right">{data.batches}</td>
                         <td className="py-3 px-5 text-slate-600 text-right">{data.liters.toLocaleString()} L</td>
                         <td className="py-3 px-5 font-bold text-slate-700 text-right">{formatCurrency(data.spent)}</td>

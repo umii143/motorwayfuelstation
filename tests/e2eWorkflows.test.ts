@@ -93,7 +93,8 @@ describe('End-to-End Operational Workflows', () => {
       activeShift.supplierPayments.push({
         id: 'sp_1',
         supplierId: 's_1',
-        amount: 10000,
+        amount: 1500000,
+        date: '2025-01-01',
         mode: 'transfer',
         bankAccountId: 'b_1',
         reference: 'TR-PSO-01'

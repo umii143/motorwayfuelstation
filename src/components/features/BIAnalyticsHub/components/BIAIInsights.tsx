@@ -17,7 +17,7 @@ export function BIAIInsights({ metrics }: any) {
     const generatedInsights = [];
 
     const { kpi, productSales, supplierPerformance, smartMetrics } = metrics;
-    const totalCreditExposure = customers.reduce((acc, c) => acc + (c.currentBalance || 0), 0);
+    const totalCreditExposure = customers.reduce((acc, c) => acc + (c.balance || 0), 0);
     const totalRevenue = kpi.totalRevenue || 0;
     const netProfit = kpi.netProfit || 0;
 
@@ -97,7 +97,7 @@ export function BIAIInsights({ metrics }: any) {
         generatedInsights.push({
           type: 'warning',
           title: 'High Supplier Cost',
-          description: `${supp?.companyName || 'Supplier'} costs are ${highestCostDiff.toFixed(1)}% higher than your average procurement cost.`,
+          description: `${supp?.name || 'Supplier'} costs are ${highestCostDiff.toFixed(1)}% higher than your average procurement cost.`,
           icon: <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
         });
       }

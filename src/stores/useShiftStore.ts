@@ -447,7 +447,7 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
               nextBatches[batchIndex] = {
                 ...nextBatches[batchIndex],
                 qtyRemaining: newRemaining,
-                status: newRemaining <= 0 ? 'exhausted' : 'active'
+                status: newRemaining <= 0 ? 'depleted' : 'active'
               };
             }
 

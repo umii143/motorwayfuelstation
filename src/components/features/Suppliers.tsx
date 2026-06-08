@@ -23,7 +23,8 @@ import {
   Clock,
   ArrowUpRight,
   ArrowDownRight,
-  Sparkles
+  Sparkles,
+  CreditCard
 } from 'lucide-react';
 import EmptyState from '../ui/EmptyState';
 import AIDocumentScanner from '../ui/AIDocumentScanner';

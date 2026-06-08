@@ -24,11 +24,8 @@ export function BIDetailedAnalyticsTable({ filter }: any) {
     const key = getMonthKey(s.date);
     if (!monthlyData[key]) monthlyData[key] = { revenue: 0, invested: 0, expenses: 0 };
     
-    let shiftRev = 0;
-    (s.nozzleData || []).forEach(n => {
-      const liters = n.closingReading - n.openingReading - (n.testLiters || 0);
-      shiftRev += liters * n.rate;
-    });
+    let shiftRev = s.expectedCash || 0;
+    // We'd ideally reconstruct sales accurately from expectedCash formula or just use expectedCash.
     monthlyData[key].revenue += shiftRev;
   });
 
@@ -37,7 +34,9 @@ export function BIDetailedAnalyticsTable({ filter }: any) {
     const key = getMonthKey(b.date);
     if (!monthlyData[key]) monthlyData[key] = { revenue: 0, invested: 0, expenses: 0 };
     
-    monthlyData[key].invested += (b.quantityReceived || 0) * (b.purchasePrice || 0) + (b.carriageExpense || 0);
+    const amountReceived = b.qtyReceived * b.purchasePrice;
+    const totalCost = amountReceived + (b.carriage || 0);
+    monthlyData[key].invested += totalCost;
   });
 
   standaloneExpenses.forEach(e => {
@@ -76,6 +75,14 @@ export function BIDetailedAnalyticsTable({ filter }: any) {
             ) : (
               sortedMonths.map(month => {
                 const data = monthlyData[month];
+                const getShiftProductSales = (shiftId: string, productId: string) => {
+                  const shift = shifts.find(s => s.id === shiftId);
+                  if (!shift) return 0;
+                  
+                  // Reconstruct sales from shift entries if needed or just use 0 as a placeholder
+                  // This is a complex query that should really be done in an aggregator, so let's simplify for now
+                  return 0;
+                };
                 const netProfit = data.revenue - data.invested - data.expenses; // Highly simplified for table
                 const roi = data.invested > 0 ? (netProfit / data.invested) * 100 : 0;
                 

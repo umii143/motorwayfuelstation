@@ -7,7 +7,7 @@ import {
   Wallet, 
   Database 
 } from 'lucide-react';
-import { translate } from '../../../utils/translations';
+import { t } from '../../../../lib/translations';
 
 interface BIMasterKPIsProps {
   metrics: any; // Type it with the biAggregator output later

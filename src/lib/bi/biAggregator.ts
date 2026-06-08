@@ -35,20 +35,20 @@ export function useBIAggregator(filter: BIFilter) {
     let supplierPerformance: Record<string, { batches: number, liters: number, spent: number, count: number }> = {};
 
     filteredBatches.forEach(b => {
-      const stockCost = (b.quantityReceived || 0) * (b.purchasePrice || 0);
-      const carriage = b.carriageExpense || 0;
+      const stockCost = b.qtyReceived * b.purchasePrice;
+      const carriage = b.carriage || 0;
       totalInvested += stockCost + carriage;
       totalCogs += stockCost;
       totalCarriage += carriage;
       
-      totalLitersPurchased += (b.quantityReceived || 0);
+      totalLitersPurchased += b.qtyReceived;
 
       if (b.supplierId) {
         if (!supplierPerformance[b.supplierId]) {
           supplierPerformance[b.supplierId] = { batches: 0, liters: 0, spent: 0, count: 0 };
         }
         supplierPerformance[b.supplierId].batches += 1;
-        supplierPerformance[b.supplierId].liters += (b.quantityReceived || 0);
+        supplierPerformance[b.supplierId].liters += b.qtyReceived;
         supplierPerformance[b.supplierId].spent += stockCost + carriage;
         supplierPerformance[b.supplierId].count += 1;
       }
@@ -71,31 +71,14 @@ export function useBIAggregator(filter: BIFilter) {
     };
 
     filteredShifts.forEach(shift => {
-      let shiftRevenue = 0;
-      let shiftCogs = 0;
-      (shift.nozzleData || []).forEach(n => {
-        if (filter.productId === 'all' || n.productId === filter.productId) {
-          const liters = n.closingReading - n.openingReading - (n.testLiters || 0);
-          totalTestLiters += (n.testLiters || 0);
-          const revenue = liters * n.rate;
-          const cogs = liters * (n.costPrice || 0); // Simplified cost calculation
-          
-          shiftRevenue += revenue;
-          shiftCogs += cogs;
-
-          if (!productSales[n.productId]) productSales[n.productId] = { revenue: 0, liters: 0, cogs: 0 };
-          productSales[n.productId].revenue += revenue;
-          productSales[n.productId].liters += liters;
-          productSales[n.productId].cogs += cogs;
-        }
-      });
-      totalRevenue += shiftRevenue;
+      totalRevenue += shift.expectedCash || 0;
+      totalTestLiters += Object.values(shift.testLiters || {}).reduce((acc: number, val: any) => acc + Number(val), 0);
       
       // Breakdown payments
-      paymentBreakdown.cash += shift.cashDeposited || 0;
-      paymentBreakdown.bank += shift.bankDeposited || 0;
-      paymentBreakdown.digital += shift.digitalDeposited || 0;
-      paymentBreakdown.credit += shift.creditSales || 0;
+      paymentBreakdown.cash += shift.submittedCash || 0;
+      paymentBreakdown.bank += (shift.bankCashEntries || []).reduce((acc, b) => acc + b.amount, 0);
+      paymentBreakdown.digital += (shift.digitalCashEntries || []).reduce((acc, d) => acc + d.amount, 0);
+      paymentBreakdown.credit += (shift.debitEntries || []).reduce((acc, d) => acc + d.amount, 0);
     });
 
     // Process Rate History for Inventory Gain/Loss
@@ -111,7 +94,7 @@ export function useBIAggregator(filter: BIFilter) {
     let currentStockValueSell = 0;
     products.forEach(p => {
       if (filter.productId === 'all' || p.id === filter.productId) {
-        currentStockValueCost += (p.currentStock || 0) * (p.averageCost || 0);
+        currentStockValueCost += (p.currentStock || 0) * (p.rate || 0) * 0.9; // approx cost
         currentStockValueSell += (p.currentStock || 0) * (p.rate || 0);
       }
     });

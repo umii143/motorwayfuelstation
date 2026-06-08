@@ -47,8 +47,8 @@ export default function EnterpriseHub({ settings, activeModule = "fleet" }: Ente
     { id: "loss_prevention", label: "Loss Prevention", icon: <ShieldAlert className="h-4 w-4" />, component: <LossPreventionHub settings={settings} /> },
     { id: "loyalty", label: "Loyalty", icon: <Gift className="h-4 w-4" />, component: <LoyaltyHub settings={settings} /> },
     { id: "maintenance", label: "Maintenance", icon: <Wrench className="h-4 w-4" />, component: <MaintenanceHub settings={settings} /> },
-    { id: "bi_analytics", label: "BI Analytics", icon: <LineChart className="h-4 w-4" />, component: <BIAnalyticsHub settings={settings} /> },
-    { id: "demand_forecast", label: "Demand Forecast", icon: <BarChart3 className="h-4 w-4" />, component: <BIAnalyticsHub settings={settings} initialTab="forecast" /> },
+    { id: "bi_analytics", label: "BI Analytics", icon: <LineChart className="h-4 w-4" />, component: <BIAnalyticsHub /> },
+    { id: "demand_forecast", label: "Demand Forecast", icon: <BarChart3 className="h-4 w-4" />, component: <BIAnalyticsHub /> },
     { id: "erp_integration", label: "ERP Link", icon: <Link className="h-4 w-4" />, component: <ERPHub settings={settings} /> },
     { id: "cctv", label: "CCTV", icon: <Camera className="h-4 w-4" />, component: <CCTVIntegration settings={settings} /> },
     { id: "api_gateway", label: "API Gateway", icon: <Network className="h-4 w-4" />, component: <APIGateway settings={settings} /> }
