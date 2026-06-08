@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Shift, Product, Customer, Supplier, Tank, BankAccount, Staff, StockTransaction, InventoryMovement, StaffFinanceEntry, JournalEntry } from '../types';
+import { Shift, Product, Customer, Supplier, Tank, BankAccount, Staff, StockTransaction, InventoryMovement, StaffFinanceEntry, JournalEntry, COGSRecord } from '../types';
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
 import { useInventoryStore } from './useInventoryStore';

@@ -536,22 +536,14 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
        // use dynamic import for useFinancialStore
        import('./useFinancialStore').then(({ useFinancialStore }) => {
          const financialStore = useFinancialStore.getState();
-         const categoryName = bType === 'lube' ? 'Carriage & Freight' : 'Carriage & Freight (Karaya)';
-         const expenseCat = financialStore.expenseCategories.find(c => c.name === categoryName);
-         if (expenseCat) {
-           financialStore.handleAddExpense({
-              id: `exp_carr_${batch.id}`,
-              amount: batch.carriage,
-              date: new Date().toISOString().split('T')[0],
-              categoryId: expenseCat.id,
-              notes: `Carriage for Batch ${batch.batchNumber} (Product: ${batch.productId})`,
-              paidBy: 'Cash'
-           }, orgId, sId);
-         } else {
-           // Optionally, if category doesn't exist, create it and log?
-           // For now, log to console
-           console.warn('Carriage expense category not found. Auto-logging skipped.');
-         }
+         financialStore.handleAddStandaloneExpense({
+            id: `exp_carr_${batch.id}`,
+            amount: batch.carriage,
+            date: new Date().toISOString().split('T')[0],
+            category: bType === 'lube' ? 'Carriage & Freight' : 'Carriage & Freight (Karaya)',
+            description: `Carriage for Batch ${batch.batchNumber} (Product: ${batch.productId})`,
+            paidFrom: 'cash'
+         }, orgId, sId);
        }).catch(err => {
          console.error('Failed to dynamic import useFinancialStore:', err);
        });
