@@ -1017,11 +1017,11 @@ export default function Navigation({
           {/* Backdrop Overlay */}
           <div
             onClick={() => setMobileMenuOpen(false)}
-            className="fixed inset-0 z-45 bg-slate-900/40 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-45 bg-slate-900/40 lg:hidden"
           />
 
           {/* Drawer Container */}
-          <div className="fixed bottom-0 top-[65px] left-0 z-50 w-64 border-r border-slate-200 bg-white py-4 shadow-xl flex flex-col justify-between h-[calc(100vh-65px)] lg:hidden">
+          <div className="fixed bottom-0 top-[65px] left-0 z-50 w-64 border-r border-slate-200 bg-white py-4 shadow-xl flex flex-col justify-between lg:hidden overflow-hidden">
             
             {/* MOBILE SEGMENTED SWITCH */}
             <div className="px-3 mb-4 shrink-0 select-none">
