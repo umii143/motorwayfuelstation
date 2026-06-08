@@ -30,6 +30,7 @@ const DiscountsHub = React.lazy(() => import('./components/features/DiscountsHub
 
 const StaffPanel = React.lazy(() => import('./components/features/Staff'));
 const SettingsPanel = React.lazy(() => import('./components/features/Settings'));
+const ConfigurationHub = React.lazy(() => import('./components/features/ConfigurationHub/ConfigurationHub'));
 const OnboardingWizard = React.lazy(() => import('./components/features/OnboardingWizard'));
 import AuthInterface from './components/layouts/AuthInterface'; // Kept static for immediate auth render
 const SecurityHub = React.lazy(() => import('./components/features/SecurityHub'));
@@ -419,12 +420,22 @@ function MainApp() {
           />
         );
 
+      case 'configuration':
+        return (
+          <ConfigurationHub
+            onNavigate={setActiveView}
+            language={settings.language}
+            isLube={activeStationId === 'st_lube'}
+          />
+        );
+
       case 'settings':
       case 'setup_nozzles':
       case 'setup_tanks':
       case 'setup_rates':
       case 'setup_accounts':
       case 'setup_profile':
+      case 'setup_audit':
         return (
           <SettingsPanel
             activeStationId={activeStationId}
@@ -451,6 +462,7 @@ function MainApp() {
               activeView === 'setup_tanks' ? 'tanks' :
               activeView === 'setup_rates' ? 'tariff' :
               activeView === 'setup_accounts' ? 'accounts' :
+              activeView === 'setup_audit' ? 'audit' :
               activeView === 'setup_profile' ? 'profile' :
               'profile'
             }

@@ -160,7 +160,7 @@ export default function Navigation({
         { id: 'api_gateway', icon: Network, label: 'API Gateway', urdu: 'اے پی آئی گیٹ وے', showInLube: true },
       ]
     },
-    { id: 'settings', icon: Settings, label: 'Settings', urdu: 'ترتیبات', showInLube: true },
+    { id: 'configuration', icon: Settings, label: 'Configuration', urdu: 'کنفیگریشن', showInLube: true },
     { id: 'security_hub', icon: Shield, label: 'Security & Roles', urdu: 'سیکیورٹی ہب', showInLube: true },
     { id: 'subscription_hub', icon: CreditCard, label: 'Subscription & Billing', urdu: 'بلنگ اور پلان', showInLube: true }
   ];
@@ -974,7 +974,7 @@ export default function Navigation({
                 );
               }
 
-              const isActive = activeView === item.id || (item.id === 'settings' && activeView.startsWith('setup_'));
+              const isActive = activeView === item.id || (item.id === 'configuration' && (activeView === 'settings' || activeView.startsWith('setup_')));
               return (
                 <button
                   key={item.id}
@@ -1110,7 +1110,7 @@ export default function Navigation({
                   );
                 }
 
-                const isActive = activeView === item.id || (item.id === 'settings' && activeView.startsWith('setup_'));
+                const isActive = activeView === item.id || (item.id === 'configuration' && (activeView === 'settings' || activeView.startsWith('setup_')));
                 return (
                   <button
                     key={item.id}
