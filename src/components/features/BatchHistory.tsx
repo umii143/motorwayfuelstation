@@ -1,7 +1,7 @@
 import React from 'react';
 import { Package, Clock, Hash, CheckCircle, Search } from 'lucide-react';
-import { StockBatch, Product } from '../../../types';
-import { t } from '../../../lib/translations';
+import { StockBatch, Product } from '../../types';
+import { t } from '../../lib/translations';
 
 interface BatchHistoryProps {
   batches: StockBatch[];

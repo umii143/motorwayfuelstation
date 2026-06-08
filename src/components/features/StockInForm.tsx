@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Package, Truck, Receipt, CheckCircle, Calculator, Info } from 'lucide-react';
-import { Product, Supplier, Tank, StockBatch, StockTransaction } from '../../../types';
-import { useInventoryStore } from '../../../stores/useInventoryStore';
-import { t } from '../../../lib/translations';
+import { Product, Supplier, Tank, StockBatch, StockTransaction } from '../../types';
+import { useInventoryStore } from '../../stores/useInventoryStore';
+import { t } from '../../lib/translations';
 
 interface StockInFormProps {
   products: Product[];
