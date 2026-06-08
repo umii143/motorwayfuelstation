@@ -65,6 +65,8 @@ import HelpGuideModal from '../ui/HelpGuideModal';
 import AIDocumentScanner from '../ui/AIDocumentScanner';
 import { useStation } from '../../contexts/StationContext';
 import { fetchWithAuth } from '../../lib/api';
+import { useSetupProgress } from '../../hooks/useSetupProgress';
+import { ConfigSidebarItem } from './ConfigSidebarItem';
 
 interface NavigationProps {
   activeView: string;
@@ -123,26 +125,20 @@ export default function Navigation({
   const isLube = activeStationId === 'st_lube';
 
   const allMenuItems = [
-    { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', urdu: 'ڈیش بورڈ', showInLube: true },
-    { id: isLube ? 'lube_pos' : 'shift_wizard', icon: RefreshCw, label: isLube ? 'Lube POS Terminal' : 'Shift Wizard', urdu: isLube ? 'لیوب پی او ایس' : 'شفٹ وزرڈ', showInLube: true },
-    { id: 'shift_logs', icon: History, label: 'Shift Logs & Audit', urdu: 'شفٹ لاگز', showInLube: false },
-    { id: 'price_management', icon: DollarSign, label: 'Price Management', urdu: 'قیمتیں اور نرخ', showInLube: false },
-    { id: 'ledger', icon: BookOpen, label: 'Accounts & Billing', urdu: 'کھاتہ اور بلنگ', showInLube: true },
-    { id: 'customers', icon: Users, label: 'Customers Khata', urdu: 'گاہکوں کا کھاتہ', showInLube: true },
-    { id: 'suppliers', icon: Factory, label: isLube ? 'Suppliers' : 'Suppliers Depot', urdu: isLube ? 'سپلائرز' : 'سپلائرز ڈپو', showInLube: true },
-    { id: 'inventory', icon: isLube ? Wrench : Fuel, label: isLube ? 'Product & Parts Stock' : 'Fuel Stock', urdu: isLube ? 'پروڈکٹ اسٹاک' : 'فیول اسٹاک', showInLube: true },
-    { id: 'bank_cash', icon: Landmark, label: 'Bank Cash', urdu: 'بینک کیش', showInLube: true },
-    { id: 'digital_cash', icon: Smartphone, label: 'Digital Cash', urdu: 'ڈیجیٹل کیش', showInLube: true },
-    { id: 'discounts', icon: Tag, label: 'Discounts', urdu: 'ڈسکاؤنٹس', showInLube: true },
-    { id: 'expenses', icon: TrendingDown, label: 'Expenses', urdu: 'اخراجات', showInLube: true },
-    { id: 'staff', icon: Users2, label: 'Staff & Payroll', urdu: 'اسٹاف اور تنخواہ', showInLube: true },
-    { id: 'reports', icon: FileBarChart, label: isLube ? 'Lube Reports' : 'Advanced Reports (104)', urdu: isLube ? 'لیوب رپورٹس' : 'ایڈوانسڈ رپورٹس', showInLube: true },
-    { id: 'dip_calculator', icon: Droplets, label: 'Dip Chart Calculator', urdu: 'دپ چارٹ کیلکولیٹر', showInLube: false },
-    { id: 'ogra_sync', icon: ShieldCheck, label: 'OGRA Price Sync', urdu: 'OGRA قیمت سنک', showInLube: false },
-    { id: 'ai_analytics', icon: Sparkles, label: 'AI Analytics Hub', urdu: 'اے آئی اینالٹکس', showInLube: true },
-    { id: 'whatsapp_alerts', icon: MessageCircle, label: 'WhatsApp Alerts', urdu: 'واٹس ایپ الرٹس', showInLube: true },
+    // MAIN
+    { id: 'dashboard', section: 'main', icon: LayoutDashboard, label: 'Dashboard', urdu: 'ڈیش بورڈ', showInLube: true },
+    { id: isLube ? 'lube_pos' : 'shift_wizard', section: 'main', icon: RefreshCw, label: isLube ? 'Lube POS Terminal' : 'Shift Wizard', urdu: isLube ? 'لیوب پی او ایس' : 'شفٹ وزرڈ', showInLube: true },
+    { id: 'shift_logs', section: 'main', icon: History, label: 'Shift Logs & Audit', urdu: 'شفٹ لاگز', showInLube: false },
+    { id: 'price_management', section: 'main', icon: DollarSign, label: 'Price Management', urdu: 'قیمتیں اور نرخ', showInLube: false },
+    { id: 'ledger', section: 'main', icon: BookOpen, label: 'Accounts & Billing', urdu: 'کھاتہ اور بلنگ', showInLube: true },
+    { id: 'customers', section: 'main', icon: Users, label: 'Customers Khata', urdu: 'گاہکوں کا کھاتہ', showInLube: true },
+    { id: 'suppliers', section: 'main', icon: Factory, label: isLube ? 'Suppliers' : 'Suppliers Depot', urdu: isLube ? 'سپلائرز' : 'سپلائرز ڈپو', showInLube: true },
+    { id: 'inventory', section: 'main', icon: isLube ? Wrench : Fuel, label: isLube ? 'Product & Parts Stock' : 'Fuel Stock', urdu: isLube ? 'پروڈکٹ اسٹاک' : 'فیول اسٹاک', showInLube: true },
+    { id: 'bank_cash', section: 'main', icon: Landmark, label: 'Bank Cash', urdu: 'بینک کیش', showInLube: true },
+    { id: 'digital_cash', section: 'main', icon: Smartphone, label: 'Digital Cash', urdu: 'ڈیجیٹل کیش', showInLube: true },
     { 
       id: 'enterprise_hub', 
+      section: 'main',
       icon: Building, 
       label: 'Enterprise Modules', 
       urdu: 'انٹرپرائز ماڈیولز', 
@@ -160,9 +156,19 @@ export default function Navigation({
         { id: 'api_gateway', icon: Network, label: 'API Gateway', urdu: 'اے پی آئی گیٹ وے', showInLube: true },
       ]
     },
-    { id: 'configuration', icon: Settings, label: 'Configuration', urdu: 'کنفیگریشن', showInLube: true },
-    { id: 'security_hub', icon: Shield, label: 'Security & Roles', urdu: 'سیکیورٹی ہب', showInLube: true },
-    { id: 'subscription_hub', icon: CreditCard, label: 'Subscription & Billing', urdu: 'بلنگ اور پلان', showInLube: true }
+    // OPERATIONS
+    { id: 'discounts', section: 'operations', icon: Tag, label: 'Discounts', urdu: 'ڈسکاؤنٹس', showInLube: true },
+    { id: 'expenses', section: 'operations', icon: TrendingDown, label: 'Expenses', urdu: 'اخراجات', showInLube: true },
+    { id: 'staff', section: 'operations', icon: Users2, label: 'Staff & Payroll', urdu: 'اسٹاف اور تنخواہ', showInLube: true },
+    // ANALYTICS
+    { id: 'reports', section: 'analytics', icon: FileBarChart, label: isLube ? 'Lube Reports' : 'Advanced Reports (104)', urdu: isLube ? 'لیوب رپورٹس' : 'ایڈوانسڈ رپورٹس', showInLube: true },
+    { id: 'dip_calculator', section: 'analytics', icon: Droplets, label: 'Dip Chart Calculator', urdu: 'دپ چارٹ کیلکولیٹر', showInLube: false },
+    { id: 'ogra_sync', section: 'analytics', icon: ShieldCheck, label: 'OGRA Price Sync', urdu: 'OGRA قیمت سنک', showInLube: false },
+    { id: 'ai_analytics', section: 'analytics', icon: Sparkles, label: 'AI Analytics Hub', urdu: 'اے آئی اینالٹکس', showInLube: true },
+    // SYSTEM
+    { id: 'security_hub', section: 'system', icon: Shield, label: 'Security & Roles', urdu: 'سیکیورٹی ہب', showInLube: true },
+    { id: 'subscription_hub', section: 'system', icon: CreditCard, label: 'Subscription & Billing', urdu: 'بلنگ اور پلان', showInLube: true },
+    { id: 'whatsapp_alerts', section: 'system', icon: MessageCircle, label: 'WhatsApp Alerts', urdu: 'واٹس ایپ الرٹس', showInLube: true }
   ];
 
   // Filter menu items based on business type
@@ -182,7 +188,9 @@ export default function Navigation({
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   // NEW CONTEXT & STATES
-  const { products, customers, staff, shifts, banks, standaloneExpenses, stockTxns, tanks, suppliers } = useStation();
+  const { products, customers, staff, shifts, banks, standaloneExpenses, stockTxns, tanks, suppliers, nozzles } = useStation();
+  const { steps, setupComplete, progressPercent, firstIncompleteStep } = useSetupProgress();
+  const [isConfigExpanded, setIsConfigExpanded] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [isSetupOpen, setIsSetupOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -909,90 +917,184 @@ export default function Navigation({
           </div>
 
           <nav className="space-y-1 px-3 flex-1 overflow-y-auto">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              
-              if (item.children) {
-                // Determine if any child is active to keep accordion open by default
-                const isChildActive = item.children.some(child => activeView === child.id);
-                // We use a local state for accordion OR we can just keep it open if active
-                const expanded = expandedMenus[item.id] !== undefined ? expandedMenus[item.id] : isChildActive;
-                
+            {['main', 'operations', 'analytics', 'setup', 'system'].map(sectionKey => {
+              if (sectionKey === 'setup') {
+                if (isLube) return null;
                 return (
-                  <div key={item.id} className="space-y-1">
+                  <div key="desktop_section_setup" className="space-y-1">
+                    {!isSidebarCollapsed && (
+                      <div className="px-3 py-2 mt-4 flex items-center">
+                        <div className="h-px bg-slate-200 flex-1"></div>
+                        <span className="px-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                          {t('SETUP', 'سیٹ اپ')}
+                        </span>
+                        <div className="h-px bg-slate-200 flex-1"></div>
+                      </div>
+                    )}
+                    
+                    {/* DYNAMIC CONFIGURATION ACCORDION */}
                     <button
                       onClick={() => {
-                        setExpandedMenus(prev => ({ ...prev, [item.id]: !expanded }));
+                        const newExpanded = !isConfigExpanded;
+                        setIsConfigExpanded(newExpanded);
                         if (isSidebarCollapsed && onToggleSidebar) onToggleSidebar(false);
+                        if (newExpanded && firstIncompleteStep && !setupComplete) {
+                          onViewChange(firstIncompleteStep.viewId);
+                        } else if (newExpanded && setupComplete) {
+                          onViewChange('setup_tanks');
+                        }
                       }}
                       className={`flex w-full items-center justify-between gap-3 rounded-lg py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
                         isSidebarCollapsed ? 'px-2 justify-center' : 'px-3'
                       } ${
-                        isChildActive
+                        activeView.startsWith('setup_') || activeView === 'configuration'
                           ? isLube
                             ? 'bg-blue-50 text-blue-600 font-bold border-l-4 border-blue-600 shadow-xs'
                             : 'bg-orange-50 text-orange-600 font-bold border-l-4 border-orange-600 shadow-xs'
                           : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent'
                       }`}
-                      title={isSidebarCollapsed ? t(item.label, item.urdu) : undefined}
+                      title={isSidebarCollapsed ? t('Configuration', 'کنفیگریشن') : undefined}
                     >
                       <div className="flex items-center gap-3">
-                        <Icon className={`h-5 w-5 shrink-0 ${isChildActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
-                        {!isSidebarCollapsed && <span className="flex-1 text-left whitespace-nowrap">{t(item.label, item.urdu)}</span>}
+                        <Settings className={`h-5 w-5 shrink-0 ${activeView.startsWith('setup_') || activeView === 'configuration' ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                        {!isSidebarCollapsed && (
+                          <div className="flex-1 text-left flex items-center justify-between pr-1">
+                            <span>{t('Configuration', 'کنفیگریشن')}</span>
+                            {!setupComplete && (
+                              <span className="ml-2 inline-flex items-center justify-center bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">
+                                {progressPercent}%
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      {!isSidebarCollapsed && <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${expanded ? 'rotate-180' : ''} ${isChildActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />}
+                      {!isSidebarCollapsed && <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${isConfigExpanded ? 'rotate-180' : ''} ${activeView.startsWith('setup_') || activeView === 'configuration' ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />}
                     </button>
                     
-                    {expanded && (
+                    {isConfigExpanded && !isSidebarCollapsed && (
                       <div className="pl-9 pr-2 space-y-1 mt-1 mb-2 animate-in slide-in-from-top-2 duration-200">
-                        {item.children.filter(child => isLube ? child.showInLube : true).map(child => {
-                          const ChildIcon = child.icon;
-                          const isChildItemActive = activeView === child.id;
-                          return (
-                            <button
-                              key={child.id}
-                              onClick={() => handleItemClick(child.id)}
-                              className={`flex w-full items-center gap-3 rounded-lg py-2 font-sans text-xs font-semibold transition-all cursor-pointer ${
-                                isSidebarCollapsed ? 'px-2 justify-center' : 'px-3'
-                              } ${
-                                isChildItemActive
-                                  ? isLube
-                                    ? 'bg-blue-50 text-blue-700 shadow-xs border-l-2 border-blue-600'
-                                    : 'bg-orange-50 text-orange-700 shadow-xs border-l-2 border-orange-600'
-                                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800 border-l-2 border-transparent'
-                              }`}
-                              title={isSidebarCollapsed ? t(child.label, child.urdu) : undefined}
-                            >
-                              <ChildIcon className={`h-4 w-4 shrink-0 ${isChildItemActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
-                              {!isSidebarCollapsed && <span className="whitespace-nowrap">{t(child.label, child.urdu)}</span>}
-                            </button>
-                          );
-                        })}
+                        {steps.map(step => (
+                          <ConfigSidebarItem
+                            key={step.id}
+                            step={step}
+                            isActive={activeView === step.viewId}
+                            onClick={onViewChange}
+                          />
+                        ))}
+                        <div className="mt-2 mb-1 px-2 py-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-around shadow-sm">
+                          <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                            {t('Tanks', 'ٹینک')}: <span className="text-slate-800 font-bold ml-1">{tanks.length}</span>
+                          </div>
+                          <div className="w-px h-3 bg-slate-200"></div>
+                          <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                            {t('Nozzles', 'نوزلز')}: <span className="text-slate-800 font-bold ml-1">{nozzles.length}</span>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
                 );
               }
 
-              const isActive = activeView === item.id || (item.id === 'configuration' && (activeView === 'settings' || activeView.startsWith('setup_')));
+              const sectionItems = menuItems.filter(item => item.section === sectionKey);
+              if (sectionItems.length === 0) return null;
+
               return (
-                <button
-                  key={item.id}
-                  onClick={() => handleItemClick(item.id)}
-                  className={`flex w-full items-center gap-3 rounded-lg py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
-                    isSidebarCollapsed ? 'px-2 justify-center' : 'px-3'
-                  } ${
-                    isActive
-                      ? isLube
-                        ? 'bg-blue-50 text-blue-600 font-bold border-l-4 border-blue-600 shadow-xs'
-                        : 'bg-orange-50 text-orange-600 font-bold border-l-4 border-orange-600 shadow-xs'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent'
-                  }`}
-                  title={isSidebarCollapsed ? t(item.label, item.urdu) : undefined}
-                >
-                  <Icon className={`h-5 w-5 shrink-0 ${isActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
-                  {!isSidebarCollapsed && <span className="whitespace-nowrap">{t(item.label, item.urdu)}</span>}
-                </button>
+                <div key={`desktop_section_${sectionKey}`} className="space-y-1">
+                  {!isSidebarCollapsed && (
+                    <div className="px-3 py-2 mt-4 flex items-center">
+                      <div className="h-px bg-slate-200 flex-1"></div>
+                      <span className="px-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                        {t(sectionKey.toUpperCase(), sectionKey === 'main' ? 'مین' : sectionKey === 'operations' ? 'آپریشنز' : sectionKey === 'analytics' ? 'رپورٹس' : 'سسٹم')}
+                      </span>
+                      <div className="h-px bg-slate-200 flex-1"></div>
+                    </div>
+                  )}
+                  {sectionItems.map((item) => {
+                    const Icon = item.icon;
+                    
+                    if (item.children) {
+                      const isChildActive = item.children.some(child => activeView === child.id);
+                      const expanded = expandedMenus[item.id] !== undefined ? expandedMenus[item.id] : isChildActive;
+                      
+                      return (
+                        <div key={item.id} className="space-y-1">
+                          <button
+                            onClick={() => {
+                              setExpandedMenus(prev => ({ ...prev, [item.id]: !expanded }));
+                              if (isSidebarCollapsed && onToggleSidebar) onToggleSidebar(false);
+                            }}
+                            className={`flex w-full items-center justify-between gap-3 rounded-lg py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
+                              isSidebarCollapsed ? 'px-2 justify-center' : 'px-3'
+                            } ${
+                              isChildActive
+                                ? isLube
+                                  ? 'bg-blue-50 text-blue-600 font-bold border-l-4 border-blue-600 shadow-xs'
+                                  : 'bg-orange-50 text-orange-600 font-bold border-l-4 border-orange-600 shadow-xs'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent'
+                            }`}
+                            title={isSidebarCollapsed ? t(item.label, item.urdu) : undefined}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Icon className={`h-5 w-5 shrink-0 ${isChildActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                              {!isSidebarCollapsed && <span className="flex-1 text-left whitespace-nowrap">{t(item.label, item.urdu)}</span>}
+                            </div>
+                            {!isSidebarCollapsed && <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${expanded ? 'rotate-180' : ''} ${isChildActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />}
+                          </button>
+                          
+                          {expanded && (
+                            <div className="pl-9 pr-2 space-y-1 mt-1 mb-2 animate-in slide-in-from-top-2 duration-200">
+                              {item.children.filter(child => isLube ? child.showInLube : true).map(child => {
+                                const ChildIcon = child.icon;
+                                const isChildItemActive = activeView === child.id;
+                                return (
+                                  <button
+                                    key={child.id}
+                                    onClick={() => handleItemClick(child.id)}
+                                    className={`flex w-full items-center gap-3 rounded-lg py-2 font-sans text-xs font-semibold transition-all cursor-pointer ${
+                                      isSidebarCollapsed ? 'px-2 justify-center' : 'px-3'
+                                    } ${
+                                      isChildItemActive
+                                        ? isLube
+                                          ? 'bg-blue-50 text-blue-700 shadow-xs border-l-2 border-blue-600'
+                                          : 'bg-orange-50 text-orange-700 shadow-xs border-l-2 border-orange-600'
+                                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800 border-l-2 border-transparent'
+                                    }`}
+                                    title={isSidebarCollapsed ? t(child.label, child.urdu) : undefined}
+                                  >
+                                    <ChildIcon className={`h-4 w-4 shrink-0 ${isChildItemActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                                    {!isSidebarCollapsed && <span className="whitespace-nowrap">{t(child.label, child.urdu)}</span>}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    const isActive = activeView === item.id || (item.id === 'configuration' && (activeView === 'settings' || activeView.startsWith('setup_')));
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => handleItemClick(item.id)}
+                        className={`flex w-full items-center gap-3 rounded-lg py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
+                          isSidebarCollapsed ? 'px-2 justify-center' : 'px-3'
+                        } ${
+                          isActive
+                            ? isLube
+                              ? 'bg-blue-50 text-blue-600 font-bold border-l-4 border-blue-600 shadow-xs'
+                              : 'bg-orange-50 text-orange-600 font-bold border-l-4 border-orange-600 shadow-xs'
+                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent'
+                        }`}
+                        title={isSidebarCollapsed ? t(item.label, item.urdu) : undefined}
+                      >
+                        <Icon className={`h-5 w-5 shrink-0 ${isActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                        {!isSidebarCollapsed && <span className="whitespace-nowrap">{t(item.label, item.urdu)}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
               );
             })}
           </nav>
@@ -1054,78 +1156,167 @@ export default function Navigation({
             </div>
 
             <nav className="space-y-1 px-3 flex-1 overflow-y-auto">
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                
-                if (item.children) {
-                  // Determine if any child is active to keep accordion open by default
-                  const isChildActive = item.children.some(child => activeView === child.id);
-                  // We use a local state for accordion OR we can just keep it open if active
-                  const expanded = expandedMenus[item.id] !== undefined ? expandedMenus[item.id] : isChildActive;
-                  
+              {['main', 'operations', 'analytics', 'setup', 'system'].map(sectionKey => {
+                if (sectionKey === 'setup') {
+                  if (isLube) return null;
                   return (
-                    <div key={item.id} className="space-y-1">
+                    <div key="mobile_section_setup" className="space-y-1">
+                      <div className="px-3 py-2 mt-4 flex items-center">
+                        <div className="h-px bg-slate-200 flex-1"></div>
+                        <span className="px-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                          {t('SETUP', 'سیٹ اپ')}
+                        </span>
+                        <div className="h-px bg-slate-200 flex-1"></div>
+                      </div>
+                      
+                      {/* DYNAMIC CONFIGURATION ACCORDION MOBILE */}
                       <button
-                        onClick={() => setExpandedMenus(prev => ({ ...prev, [item.id]: !expanded }))}
+                        onClick={() => {
+                          const newExpanded = !isConfigExpanded;
+                          setIsConfigExpanded(newExpanded);
+                          if (newExpanded && firstIncompleteStep && !setupComplete) {
+                            onViewChange(firstIncompleteStep.viewId);
+                            setMobileMenuOpen(false);
+                          } else if (newExpanded && setupComplete) {
+                            onViewChange('setup_tanks');
+                            setMobileMenuOpen(false);
+                          }
+                        }}
                         className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
-                          isChildActive
+                          activeView.startsWith('setup_') || activeView === 'configuration'
                             ? isLube
                               ? 'bg-blue-50 text-blue-600 font-bold border-l-4 border-blue-600'
                               : 'bg-orange-50 text-orange-600 font-bold border-l-4 border-orange-600'
-                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent'
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          <Icon className={`h-5 w-5 ${isChildActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
-                          <span className="flex-1 text-left">{t(item.label, item.urdu)}</span>
+                          <Settings className={`h-5 w-5 ${activeView.startsWith('setup_') || activeView === 'configuration' ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                          <div className="flex-1 text-left flex items-center justify-between pr-1">
+                            <span>{t('Configuration', 'کنفیگریشن')}</span>
+                            {!setupComplete && (
+                              <span className="ml-2 inline-flex items-center justify-center bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">
+                                {progressPercent}%
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <ChevronDown className={`h-4 w-4 transition-transform ${expanded ? 'rotate-180' : ''} ${isChildActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                        <ChevronDown className={`h-4 w-4 transition-transform ${isConfigExpanded ? 'rotate-180' : ''} ${activeView.startsWith('setup_') || activeView === 'configuration' ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
                       </button>
                       
-                      {expanded && (
+                      {isConfigExpanded && (
                         <div className="pl-9 pr-2 space-y-1 mt-1 mb-2 animate-in slide-in-from-top-2 duration-200">
-                          {item.children.filter(child => isLube ? child.showInLube : true).map(child => {
-                            const ChildIcon = child.icon;
-                            const isChildItemActive = activeView === child.id;
-                            return (
-                              <button
-                                key={child.id}
-                                onClick={() => handleItemClick(child.id)}
-                                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 font-sans text-xs font-semibold transition-all cursor-pointer ${
-                                  isChildItemActive
-                                    ? isLube
-                                      ? 'bg-blue-50 text-blue-700 font-bold'
-                                      : 'bg-orange-50 text-orange-700 font-bold'
-                                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                                }`}
-                              >
-                                <ChildIcon className={`h-4 w-4 ${isChildItemActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
-                                <span className="flex-1 text-left">{t(child.label, child.urdu)}</span>
-                              </button>
-                            );
-                          })}
+                          {steps.map(step => (
+                            <ConfigSidebarItem
+                              key={step.id}
+                              step={step}
+                              isActive={activeView === step.viewId}
+                              onClick={(viewId) => {
+                                onViewChange(viewId);
+                                setMobileMenuOpen(false);
+                              }}
+                            />
+                          ))}
+                          <div className="mt-2 mb-1 px-2 py-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-around shadow-sm">
+                            <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                              {t('Tanks', 'ٹینک')}: <span className="text-slate-800 font-bold ml-1">{tanks.length}</span>
+                            </div>
+                            <div className="w-px h-3 bg-slate-200"></div>
+                            <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                              {t('Nozzles', 'نوزلز')}: <span className="text-slate-800 font-bold ml-1">{nozzles.length}</span>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
                   );
                 }
 
-                const isActive = activeView === item.id || (item.id === 'configuration' && (activeView === 'settings' || activeView.startsWith('setup_')));
+                const sectionItems = menuItems.filter(item => item.section === sectionKey);
+                if (sectionItems.length === 0) return null;
+
                 return (
-                  <button
-                    key={item.id}
-                    onClick={() => handleItemClick(item.id)}
-                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
-                      isActive
-                        ? isLube
-                          ? 'bg-blue-50 text-blue-600 font-bold border-l-4 border-blue-600'
-                          : 'bg-orange-50 text-orange-600 font-bold border-l-4 border-orange-600'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                    }`}
-                  >
-                    <Icon className={`h-5 w-5 ${isActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
-                    <span className="flex-1 text-left">{t(item.label, item.urdu)}</span>
-                  </button>
+                  <div key={`mobile_section_${sectionKey}`} className="space-y-1">
+                    <div className="px-3 py-2 mt-4 flex items-center">
+                      <div className="h-px bg-slate-200 flex-1"></div>
+                      <span className="px-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                        {t(sectionKey.toUpperCase(), sectionKey === 'main' ? 'مین' : sectionKey === 'operations' ? 'آپریشنز' : sectionKey === 'analytics' ? 'رپورٹس' : 'سسٹم')}
+                      </span>
+                      <div className="h-px bg-slate-200 flex-1"></div>
+                    </div>
+                    {sectionItems.map((item) => {
+                      const Icon = item.icon;
+                      
+                      if (item.children) {
+                        const isChildActive = item.children.some(child => activeView === child.id);
+                        const expanded = expandedMenus[item.id] !== undefined ? expandedMenus[item.id] : isChildActive;
+                        
+                        return (
+                          <div key={item.id} className="space-y-1">
+                            <button
+                              onClick={() => setExpandedMenus(prev => ({ ...prev, [item.id]: !expanded }))}
+                              className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
+                                isChildActive
+                                  ? isLube
+                                    ? 'bg-blue-50 text-blue-600 font-bold border-l-4 border-blue-600'
+                                    : 'bg-orange-50 text-orange-600 font-bold border-l-4 border-orange-600'
+                                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <Icon className={`h-5 w-5 ${isChildActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                                <span className="flex-1 text-left">{t(item.label, item.urdu)}</span>
+                              </div>
+                              <ChevronDown className={`h-4 w-4 transition-transform ${expanded ? 'rotate-180' : ''} ${isChildActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                            </button>
+                            
+                            {expanded && (
+                              <div className="pl-9 pr-2 space-y-1 mt-1 mb-2 animate-in slide-in-from-top-2 duration-200">
+                                {item.children.filter(child => isLube ? child.showInLube : true).map(child => {
+                                  const ChildIcon = child.icon;
+                                  const isChildItemActive = activeView === child.id;
+                                  return (
+                                    <button
+                                      key={child.id}
+                                      onClick={() => handleItemClick(child.id)}
+                                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 font-sans text-xs font-semibold transition-all cursor-pointer ${
+                                        isChildItemActive
+                                          ? isLube
+                                            ? 'bg-blue-50 text-blue-700 font-bold'
+                                            : 'bg-orange-50 text-orange-700 font-bold'
+                                          : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                                      }`}
+                                    >
+                                      <ChildIcon className={`h-4 w-4 ${isChildItemActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                                      <span className="flex-1 text-left">{t(child.label, child.urdu)}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+
+                      const isActive = activeView === item.id || (item.id === 'configuration' && (activeView === 'settings' || activeView.startsWith('setup_')));
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => handleItemClick(item.id)}
+                          className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
+                            isActive
+                              ? isLube
+                                ? 'bg-blue-50 text-blue-600 font-bold border-l-4 border-blue-600'
+                                : 'bg-orange-50 text-orange-600 font-bold border-l-4 border-orange-600'
+                              : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent'
+                          }`}
+                        >
+                          <Icon className={`h-5 w-5 ${isActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                          <span className="flex-1 text-left">{t(item.label, item.urdu)}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 );
               })}
             </nav>

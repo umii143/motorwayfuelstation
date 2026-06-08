@@ -195,6 +195,21 @@ export interface DiscountEntry extends TenantDocument {
   timestamp: string;
 }
 
+export interface ShiftRateSegment {
+  id: string;
+  shiftId: string;
+  nozzleId: string;
+  productId: string;
+  rate: number;
+  meterOpen: number;
+  meterClose: number;
+  litersSold: number;
+  revenue: number;
+  segmentIndex: number;
+  startedAt: string;
+  closedAt: string;
+}
+
 export interface Shift extends TenantDocument {
   id: string;
   staffId: string;
@@ -207,6 +222,8 @@ export interface Shift extends TenantDocument {
   isLocked?: boolean;
   lockedBy?: string;
   lockedAt?: number;
+  activeMidShiftAlert?: boolean;
+  segments?: ShiftRateSegment[];
   
   openingReadings: { [nozzleId: string]: number };
   closingReadings: { [nozzleId: string]: number };
@@ -269,6 +286,36 @@ export interface DigitalAccount extends TenantDocument {
   name: string;
   accountNo: string;
   balance: number;
+}
+
+export interface StockBatch extends TenantDocument {
+  id: string;
+  tankId: string;
+  productId: string;
+  batchNumber: string;
+  supplierId?: string;
+  date: string;
+  qtyReceived: number;
+  qtyRemaining: number;
+  purchasePrice: number;
+  carriage: number;
+  landedCost: number;
+  sellingPriceAtReceipt: number;
+  status: 'active' | 'depleted';
+}
+
+export interface COGSRecord extends TenantDocument {
+  id: string;
+  shiftId?: string;
+  rateSegmentId?: string;
+  batchId: string;
+  productId: string;
+  tankId: string;
+  date: string;
+  litersSold: number;
+  costPrice: number;
+  sellingPrice: number;
+  profit: number;
 }
 
 export interface StockTransaction extends TenantDocument {

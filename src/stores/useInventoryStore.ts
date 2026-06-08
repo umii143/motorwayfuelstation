@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Product, Tank, Nozzle, Pump, StockTransaction, RateHistoryEntry, InventoryMovement } from '../types';
+import { Product, Tank, Nozzle, Pump, StockTransaction, RateHistoryEntry, InventoryMovement, StockBatch, COGSRecord } from '../types';
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
 
@@ -11,6 +11,8 @@ interface InventoryState {
   stockTxns: StockTransaction[];
   rateHistory: RateHistoryEntry[];
   inventoryMovements: InventoryMovement[];
+  stockBatches: StockBatch[];
+  cogsRecords: COGSRecord[];
 
   setProducts: (products: Product[]) => void;
   setTanks: (tanks: Tank[]) => void;
@@ -19,6 +21,8 @@ interface InventoryState {
   setStockTxns: (txns: StockTransaction[]) => void;
   setRateHistory: (history: RateHistoryEntry[]) => void;
   setInventoryMovements: (movements: InventoryMovement[]) => void;
+  setStockBatches: (batches: StockBatch[]) => void;
+  setCOGSRecords: (records: COGSRecord[]) => void;
 
   handleUpdateProductStock: (productId: string, newStock: number, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
   handleUpdateProductRate: (productId: string, newRate: number, reason?: string, changedBy?: string, dateStr?: string, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
@@ -33,6 +37,7 @@ interface InventoryState {
   handleUpdateNozzle: (updatedNozzle: Nozzle, orgId?: string, stationId?: string) => Promise<void>;
   handleDeleteNozzle: (id: string, orgId?: string, stationId?: string) => Promise<void>;
   handleAddStockReceipt: (txn: StockTransaction, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
+  handleAddStockBatch: (batch: StockBatch, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
 }
 
 const getBusinessType = (stationId: string): 'fuel_station' | 'cng' | 'lube' => {
@@ -48,6 +53,8 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   stockTxns: db.getStockTransactions(db.getActiveStationId()),
   rateHistory: db.getRateHistory(db.getActiveStationId()),
   inventoryMovements: db.getInventoryMovements(db.getActiveStationId()),
+  stockBatches: db.getStockBatches(db.getActiveStationId()),
+  cogsRecords: db.getCOGSRecords(db.getActiveStationId()),
 
   setProducts: (products) => {
     set({ products });
@@ -83,6 +90,16 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     set({ inventoryMovements });
     const sId = db.getActiveStationId();
     if (sId) db.saveInventoryMovements(sId, inventoryMovements);
+  },
+  setStockBatches: (stockBatches) => {
+    set({ stockBatches });
+    const sId = db.getActiveStationId();
+    if (sId) db.saveStockBatches(sId, stockBatches);
+  },
+  setCOGSRecords: (cogsRecords) => {
+    set({ cogsRecords });
+    const sId = db.getActiveStationId();
+    if (sId) db.saveCOGSRecords(sId, cogsRecords);
   },
 
   handleUpdateProductStock: async (productId, newStock, orgId, stationId, checkPerm) => {
@@ -365,6 +382,48 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
           await firestoreDb.saveDocument(orgId, sId, bType, 'tanks', tank.id, tank);
         }
       }
+    }
+  },
+
+  handleAddStockBatch: async (batch, orgId, stationId, checkPerm) => {
+    if (checkPerm) checkPerm('inventory.manage', 'add stock batch', 'اسٹاک بیچ بنانے');
+    const sId = stationId || db.getActiveStationId();
+    const bType = getBusinessType(sId);
+
+    set((state) => {
+      const nextBatches = [batch, ...state.stockBatches];
+      db.saveStockBatches(sId, nextBatches);
+      return { stockBatches: nextBatches };
+    });
+
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, sId, bType, 'stockBatches', batch.id, batch);
+    }
+
+    // Process Carriage as an Expense dynamically to avoid circular dependencies
+    if (batch.carriage > 0) {
+       // use dynamic import for useFinancialStore
+       import('./useFinancialStore').then(({ useFinancialStore }) => {
+         const financialStore = useFinancialStore.getState();
+         const categoryName = bType === 'lube' ? 'Carriage & Freight' : 'Carriage & Freight (Karaya)';
+         const expenseCat = financialStore.expenseCategories.find(c => c.name === categoryName);
+         if (expenseCat) {
+           financialStore.handleAddExpense({
+              id: `exp_carr_${batch.id}`,
+              amount: batch.carriage,
+              date: new Date().toISOString().split('T')[0],
+              categoryId: expenseCat.id,
+              notes: `Carriage for Batch ${batch.batchNumber} (Product: ${batch.productId})`,
+              paidBy: 'Cash'
+           }, orgId, sId);
+         } else {
+           // Optionally, if category doesn't exist, create it and log?
+           // For now, log to console
+           console.warn('Carriage expense category not found. Auto-logging skipped.');
+         }
+       }).catch(err => {
+         console.error('Failed to dynamic import useFinancialStore:', err);
+       });
     }
   }
 }));

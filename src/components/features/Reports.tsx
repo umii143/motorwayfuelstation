@@ -56,6 +56,7 @@ import { REPORT_TEMPLATES, ReportRow, ReportTemplate } from '../../lib/reportCom
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { db } from '../../data/db';
 import { fetchWithAuth } from '../../lib/api';
+import { useInventoryStore } from '../../stores/useInventoryStore';
 
 const getFuelCategory = (productId: string, products: Product[]): 'petrol' | 'diesel' | 'cng' | null => {
   const p = products.find((prod) => prod.id === productId);
@@ -138,6 +139,8 @@ export default function Reports({
   // States
   const [activeReportTab, setActiveReportTab] = useState<'sales_pnl' | 'corporate_audit' | 'party_outstanding' | 'inventory_audit' | 'shift_sheets' | 'reconciliation'>('corporate_audit');
   const [selectedHistoricalShiftId, setSelectedHistoricalShiftId] = useState<string | null>(null);
+
+  const { cogsRecords } = useInventoryStore();
 
   // Reconciled Shift IDs state
   const [reconciledShiftIds, setReconciledShiftIds] = useState<string[]>(() =>
@@ -388,9 +391,10 @@ export default function Reports({
       staffFinance,
       attendance,
       staff,
-      nozzles
+      nozzles,
+      cogsRecords
     });
-  }, [activeTemplate, shifts, products, customers, suppliers, standaloneExpenses, tanks, rateHistory, staffFinance, attendance, staff, nozzles]);
+  }, [activeTemplate, shifts, products, customers, suppliers, standaloneExpenses, tanks, rateHistory, staffFinance, attendance, staff, nozzles, cogsRecords]);
 
   // Apply filters
   const filteredRows = useMemo(() => {

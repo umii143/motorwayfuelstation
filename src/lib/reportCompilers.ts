@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Shift, Product, Customer, Supplier, ExpenseEntry, Tank, RateHistoryEntry, StaffFinanceEntry, AttendanceRecord, Staff, Nozzle } from '../types';
+import { Shift, Product, Customer, Supplier, ExpenseEntry, Tank, RateHistoryEntry, StaffFinanceEntry, AttendanceRecord, Staff, Nozzle, COGSRecord } from '../types';
 
 export interface ReportRow {
   id: string;
@@ -53,6 +53,7 @@ export interface ReportTemplate {
     attendance: AttendanceRecord[];
     staff: Staff[];
     nozzles: Nozzle[];
+    cogsRecords?: COGSRecord[];
   }) => ReportRow[];
 }
 
@@ -672,14 +673,14 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
     urduDescription: 'انجن آئل بائی پروڈکٹس اور فیول مارجن بمقابلہ تمام اخراجات کے تفصیلی آڈٹ کی سمری۔',
     headers: [
       { key: 'date', label: 'Period Month', urduLabel: 'مہینہ/مدت' },
-      { key: 'productCategory', label: 'Sales Revenue', urduLabel: 'کاروباری آمدنی' },
-      { key: 'quantity', label: 'Lube Revenue', urduLabel: 'لیوبریکنٹس فروخت' },
-      { key: 'rate', label: 'Supplier COGS', urduLabel: 'فیول خریداری کاسٹ' },
+      { key: 'productCategory', label: 'Gross Revenue', urduLabel: 'کاروباری آمدنی' },
+      { key: 'quantity', label: 'Reval Pricing Profit', urduLabel: 'نرخ نفع' },
+      { key: 'rate', label: 'COGS (Inventory Cost)', urduLabel: 'انوینٹری لاگت' },
       { key: 'amount', label: 'Formulated Expenses', urduLabel: 'کل اخراجات', isNumeric: true },
-      { key: 'approvalStatus', label: 'Reval Pricing Profit', urduLabel: 'نرخ نفع' },
+      { key: 'approvalStatus', label: 'COGS Data Mode', urduLabel: 'طریقہ لاگت' },
       { key: 'balanceAfter', label: 'PROV NET PROFIT', urduLabel: 'خالص منافع' }
     ],
-    compile: ({ shifts, products, standaloneExpenses, rateHistory }) => {
+    compile: ({ shifts, standaloneExpenses, rateHistory, cogsRecords = [] }) => {
       const grossFuelSales = shifts.reduce((sum, s) => {
         const lubesVal = s.lubeSales?.reduce((acc, l) => acc + l.amount, 0) || 0;
         return sum + s.submittedCash - lubesVal;
@@ -689,7 +690,12 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
         return sum + (s.lubeSales?.reduce((acc, l) => acc + l.amount, 0) || 0);
       }, 0);
 
-      const cogsAmt = grossFuelSales * 0.94; // Simulating standard 6% purchase cost
+      // Compute actual COGS from cogsRecords
+      const actualCOGS = cogsRecords.reduce((sum, cogs) => sum + cogs.totalCOGS, 0);
+
+      // Fallback to simulated if no cogs records
+      const cogsAmt = actualCOGS > 0 ? actualCOGS : grossFuelSales * 0.94;
+
       const expensesAmt = standaloneExpenses.reduce((sum, e) => sum + e.amount, 0) +
         shifts.reduce((sum, s) => sum + (s.expenseEntries?.reduce((acc, ex) => acc + ex.amount, 0) || 0), 0);
 
@@ -704,11 +710,11 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
           staffName: 'Audit Engine',
           role: 'ADMIN',
           sourceRef: 'MTD-P&L',
-          productCategory: `Rs. ${grossFuelSales.toLocaleString()}`,
-          quantity: `Rs. ${lubeSalesVal.toLocaleString()}`,
+          productCategory: `Rs. ${(grossFuelSales + lubeSalesVal).toLocaleString()}`,
+          quantity: `Rs. ${revalProfit.toLocaleString()}`,
           rate: `Rs. ${cogsAmt.toLocaleString()}`,
           amount: expensesAmt,
-          approvalStatus: `Rs. ${revalProfit.toLocaleString()}`,
+          approvalStatus: actualCOGS > 0 ? 'Actual FIFO COGS' : 'Simulated (94%)',
           balanceAfter: `Rs. ${netProfit.toLocaleString()}`
         }
       ];
@@ -730,23 +736,28 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
       { key: 'approvalStatus', label: 'Yield Percentage %', urduLabel: 'منافع فی صد %' },
       { key: 'balanceAfter', label: 'Status Sign', urduLabel: 'قوتِ کاروبار حالت' }
     ],
-    compile: ({ shifts, standaloneExpenses }) => {
+    compile: ({ shifts, standaloneExpenses, cogsRecords = [] }) => {
       // Create three months for comparative visualization helper
       const m1Sales = shifts.reduce((sum, s) => sum + s.expectedCash, 0);
-      const m1Exp = standaloneExpenses.reduce((sum, e) => sum + e.amount, 0);
-      const m1Net = m1Sales * 0.05 - m1Exp;
+      const m1Exp = standaloneExpenses.reduce((sum, e) => sum + e.amount, 0) + 
+        shifts.reduce((sum, s) => sum + (s.expenseEntries?.reduce((acc, ex) => acc + ex.amount, 0) || 0), 0);
+        
+      const actualCOGS = cogsRecords.reduce((sum, cogs) => sum + cogs.totalCOGS, 0);
+      const m1Margin = actualCOGS > 0 ? (m1Sales - actualCOGS) : (m1Sales * 0.05);
+
+      const m1Net = m1Margin - m1Exp;
       const pct = m1Sales > 0 ? (m1Net / m1Sales) * 100 : 0;
 
       return [
         {
           id: 'B3-MAY',
-          date: '2026-05',
-          time: 'May Fiscal',
+          date: new Date().toISOString().slice(0, 7),
+          time: 'Current Fiscal',
           staffName: 'Auditor',
           role: 'ADMIN',
           sourceRef: 'COMP-05',
           productCategory: `Rs. ${m1Sales.toLocaleString()}`,
-          quantity: `Rs. ${(m1Sales * 0.045).toLocaleString()}`,
+          quantity: `Rs. ${m1Margin.toLocaleString()}`,
           rate: `Rs. ${m1Exp.toLocaleString()}`,
           amount: m1Net,
           approvalStatus: `${pct.toFixed(2)}%`,
@@ -760,7 +771,7 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
           role: 'ADMIN',
           sourceRef: 'COMP-04',
           productCategory: `Rs. ${(m1Sales * 0.9).toLocaleString()}`,
-          quantity: `Rs. ${(m1Sales * 0.9 * 0.045).toLocaleString()}`,
+          quantity: `Rs. ${(m1Margin * 0.9).toLocaleString()}`,
           rate: `Rs. ${(m1Exp * 0.95).toLocaleString()}`,
           amount: m1Net * 0.85,
           approvalStatus: `${(pct * 0.95).toFixed(2)}%`,
@@ -1115,7 +1126,7 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
           role: 'OWNER',
           sourceRef: diffStr,
           productCategory: prod ? `${prod.name}` : h.productId,
-          quantity: `Rs. ${h.oldRate.toFixed(2)}`,
+          quantity: h.oldRate === 0 ? 'Initial Setup' : `Rs. ${h.oldRate.toFixed(2)}`,
           rate: `Rs. ${h.newRate.toFixed(2)}`,
           amount: gainLossVal,
           approvalStatus: `${stockVal.toLocaleString()} Ltr`,

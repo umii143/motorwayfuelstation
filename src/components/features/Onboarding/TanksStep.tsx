@@ -1,20 +1,17 @@
 import React, { useState } from 'react';
 import { Plus, Check, X, Database } from 'lucide-react';
-import { Tank, Product } from '../../../types';
 import { t } from '../../../lib/translations';
+import { Tank, Product } from '../../../types';
 
-interface TankWizardProps {
+interface Props {
   tanks: Tank[];
   products: Product[];
+  onUpdate: (tanks: Tank[]) => void;
+  onContinue: () => void;
   language: string;
-  onAddTank: (newTank: Tank) => void;
-  onUpdateTank: (updatedTank: Tank) => void;
-  onDeleteTank: (id: string) => void;
-  onLogAudit: (category: string, action: string, details: string) => void;
-  onUpdateProducts?: (products: Product[]) => void;
 }
 
-export default function TankWizard({ tanks, products, language, onAddTank, onDeleteTank }: TankWizardProps) {
+export function TanksStep({ tanks, products, onUpdate, onContinue, language }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [productId, setProductId] = useState("");
@@ -29,22 +26,29 @@ export default function TankWizard({ tanks, products, language, onAddTank, onDel
     setShowForm(false);
   };
 
-  const handleAdd = () => {
+  const addTank = () => {
     if (!name || !productId || !capacity || !currentStock) return;
 
-    onAddTank({
-      id: 'tank_' + Date.now(),
-      name,
-      productId,
-      capacity: Number(capacity),
-      currentStock: Number(currentStock),
-      openingStock: Number(currentStock),
-      safeLevel: Number(capacity) * 0.8,
-      criticalLevel: Number(capacity) * 0.15,
-      physicalLabel: name,
-      dipChart: []
-    });
+    onUpdate([
+      ...tanks,
+      {
+        id: 'tank_' + Date.now(),
+        name,
+        productId,
+        capacity: Number(capacity),
+        currentStock: Number(currentStock),
+        openingStock: Number(currentStock),
+        safeLevel: Number(capacity) * 0.8,
+        criticalLevel: Number(capacity) * 0.15,
+        physicalLabel: name,
+        dipChart: []
+      },
+    ]);
     resetForm();
+  };
+
+  const removeTank = (id: string) => {
+    onUpdate(tanks.filter((t) => t.id !== id));
   };
 
   const getProductName = (prodId: string) => {
@@ -52,10 +56,24 @@ export default function TankWizard({ tanks, products, language, onAddTank, onDel
   };
 
   return (
-    <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-right-4 duration-500">
-      <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+    <div className="flex items-center justify-center min-h-[80vh] p-4 animate-in fade-in slide-in-from-right-4 duration-500">
+      <div className="max-w-2xl w-full bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden flex flex-col h-[85vh] max-h-[800px]">
         
-        <div className="p-6 md:p-8 space-y-8 flex-1">
+        <div className="text-center border-b border-slate-100 p-6 md:p-8 shrink-0 bg-slate-50/50">
+          <div className="flex justify-center mb-4">
+            <div className="size-12 rounded-2xl bg-blue-100 flex items-center justify-center">
+              <Database className="size-6 text-blue-600" />
+            </div>
+          </div>
+          <h2 className="text-2xl font-black text-slate-800">
+            {t('Add Storage Tanks', 'اسٹوریج ٹینکس شامل کریں', language)}
+          </h2>
+          <p className="text-slate-500 font-medium mt-2">
+            {t('Configure your fuel storage tanks', 'اپنے فیول اسٹوریج ٹینکس کی ترتیب کریں', language)}
+          </p>
+        </div>
+
+        <div className="p-6 md:p-8 space-y-8 overflow-y-auto flex-1 custom-scrollbar">
           
           {!showForm ? (
             <button
@@ -66,7 +84,7 @@ export default function TankWizard({ tanks, products, language, onAddTank, onDel
               {t('Add New Tank', 'نیا ٹینک شامل کریں', language)}
             </button>
           ) : (
-            <div className="border border-slate-200 rounded-2xl p-6 space-y-5 bg-slate-50 shadow-inner animate-in zoom-in-95 duration-200">
+            <div className="border border-slate-200 rounded-2xl p-6 space-y-5 bg-slate-50/50 shadow-sm animate-in zoom-in-95 duration-200">
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700">{t('Tank Name', 'ٹینک کا نام', language)}</label>
                 <input
@@ -118,9 +136,9 @@ export default function TankWizard({ tanks, products, language, onAddTank, onDel
 
               <div className="flex gap-3 pt-2">
                 <button 
-                  onClick={handleAdd} 
+                  onClick={addTank} 
                   disabled={!name || !productId || !capacity || !currentStock}
-                  className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md"
+                  className="flex-1 h-12 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md"
                 >
                   {t('Save Tank', 'ٹینک محفوظ کریں', language)}
                 </button>
@@ -139,42 +157,42 @@ export default function TankWizard({ tanks, products, language, onAddTank, onDel
               <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">
                 {t('Configured Tanks', 'ترتیب دیے گئے ٹینکس', language)}
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-3">
                 {tanks.map((tank, index) => (
                   <div
                     key={tank.id}
-                    className="border border-slate-200 bg-white shadow-sm rounded-2xl p-5 space-y-3 animate-in fade-in slide-in-from-left-4 transition-all hover:border-blue-300 hover:shadow-md"
+                    className="border border-blue-200 bg-blue-50/50 rounded-2xl p-5 space-y-3 animate-in fade-in slide-in-from-left-4"
                     style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
                   >
                     <div className="flex items-start justify-between">
                       <div className="space-y-1 flex-1">
                         <div className="flex items-center gap-3">
-                          <div className="size-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                            <Database className="size-4 text-blue-600" />
+                          <div className="size-6 rounded-full bg-blue-200 flex items-center justify-center shrink-0">
+                            <Check className="size-4 text-blue-700" />
                           </div>
                           <h4 className="font-bold text-lg text-slate-800">{tank.name}</h4>
                         </div>
-                        <div className="flex items-center gap-2 ml-11">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600">
+                        <div className="flex items-center gap-2 ml-9">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white border border-blue-200 text-blue-700">
                             {getProductName(tank.productId)}
                           </span>
                         </div>
                       </div>
                       <button
-                        onClick={() => onDeleteTank(tank.id)}
-                        className="size-8 flex items-center justify-center rounded-xl hover:bg-red-100 text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
+                        onClick={() => removeTank(tank.id)}
+                        className="size-10 flex items-center justify-center rounded-xl hover:bg-red-100 text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
                       >
-                        <X className="size-4" />
+                        <X className="size-5" />
                       </button>
                     </div>
-                    <div className="ml-11 grid grid-cols-2 gap-2 text-sm pt-3 border-t border-slate-100 mt-3">
+                    <div className="ml-9 grid grid-cols-2 gap-4 text-sm pt-2 border-t border-blue-100/50">
                       <div>
-                        <div className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{t('Capacity', 'گنجائش', language)}</div>
-                        <div className="font-black text-slate-700">{Number(tank.capacity).toLocaleString()} <span className="text-xs text-slate-400 font-medium">L</span></div>
+                        <span className="text-slate-500 font-medium">{t('Capacity:', 'گنجائش:', language)} </span>
+                        <span className="font-bold text-slate-700">{Number(tank.capacity).toLocaleString()} L</span>
                       </div>
                       <div>
-                        <div className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{t('Stock', 'اسٹاک', language)}</div>
-                        <div className="font-black text-blue-600">{Number(tank.currentStock).toLocaleString()} <span className="text-xs text-blue-400 font-medium">L</span></div>
+                        <span className="text-slate-500 font-medium">{t('Stock:', 'اسٹاک:', language)} </span>
+                        <span className="font-bold text-slate-700">{Number(tank.currentStock).toLocaleString()} L</span>
                       </div>
                     </div>
                   </div>
@@ -184,6 +202,17 @@ export default function TankWizard({ tanks, products, language, onAddTank, onDel
           )}
 
         </div>
+
+        <div className="p-6 border-t border-slate-100 bg-white shrink-0">
+          <button
+            onClick={onContinue}
+            disabled={tanks.length === 0}
+            className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-black text-lg transition-all shadow-lg hover:shadow-orange-600/30 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:hover:scale-100 cursor-pointer"
+          >
+            {t('Continue', 'جاری رکھیں', language)}
+          </button>
+        </div>
+        
       </div>
     </div>
   );

@@ -361,6 +361,17 @@ export default function ShiftWizard({
     }
   }, [debProdId, defaultProductId, products]);
 
+  // Safeguard: Ensure wizardStep is always aligned with activeShift state
+  useEffect(() => {
+    if (activeShift && wizardStep < 3) {
+      // If an active shift exists, user MUST be at least on step 3 (Operational Dashboard)
+      setWizardStep(3);
+    } else if (!activeShift && wizardStep >= 3) {
+      // If no active shift exists, but user is stranded on operational steps, throw back to start
+      setWizardStep(1);
+    }
+  }, [activeShift, wizardStep]);
+
   // ==========================================
   // DYNAMIC COMPUTATIONS & LOOKUPS
   // ==========================================

@@ -32,6 +32,9 @@ import {
 } from 'lucide-react';
 import { Product, StockTransaction, Supplier, GlobalSettings, Tank, RateHistoryEntry } from '../../types';
 import { fetchWithAuth } from '../../lib/api';
+import StockInForm from './StockInForm';
+import BatchHistory from './BatchHistory';
+import { useInventoryStore } from '../../stores/useInventoryStore';
 
 interface InventoryProps {
   settings: GlobalSettings;
@@ -68,9 +71,10 @@ export default function Inventory({
 
   // Single source of truth: use activeStationId, not product-type heuristic
   const isLube = activeStationId === 'st_lube';
+  const stockBatches = useInventoryStore(state => state.stockBatches);
 
   // Filter States
-  const [activeTab, setActiveTab] = useState<'inventory' | 'tanks_calibration' | 'pricing_logs'>('inventory');
+  const [activeTab, setActiveTab] = useState<'inventory' | 'tanks_calibration' | 'pricing_logs' | 'batch_history'>('inventory');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'fuel' | 'lube' | 'low'>('all');
 
@@ -608,6 +612,17 @@ export default function Inventory({
         >
           📈 {t('Price Revisions History Log', 'ریٹ تبدیلی اور اسٹاک نفع نقصان')}
         </button>
+
+        <button
+          onClick={() => setActiveTab('batch_history')}
+          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer ${
+            activeTab === 'batch_history'
+              ? 'border-orange-600 text-orange-600 font-extrabold'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          🏷️ {t('FIFO Batches', 'فیفو بیچز')}
+        </button>
       </div>
 
       {/* CORE ACTIVE WORKSPACE MODULES */}
@@ -1013,171 +1028,24 @@ export default function Inventory({
         </div>
       )}
 
+      {/* ==========================================
+          TAB 4: BATCH HISTORY
+          ========================================== */}
+      {activeTab === 'batch_history' && (
+        <BatchHistory batches={stockBatches} products={products} language={settings.language} />
+      )}
+
       {/* MODAL 1: SUPPLIER STOCK RECEIPT (Module-C) */}
       <AnimatePresence>
         {showAddStockModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs"
-          >
-              <motion.div
-                initial={{ scale: 0.95, y: 15, opacity: 0 }}
-                animate={{ scale: 1, y: 0, opacity: 1 }}
-                exit={{ scale: 0.95, y: 15, opacity: 0 }}
-                transition={{ type: "spring", damping: 25, stiffness: 350 }}
-                className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-slate-200 bg-white p-6 shadow-xl"
-              >
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-                  <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-2">
-                    <PlusCircle className="h-5 w-5 text-orange-600" />
-                    <span>{t('Register Supplier Stock Receipt', 'نیا اسٹاک سپلائی کھاتہ انٹری')}</span>
-                  </h3>
-                  <button onClick={() => setShowAddStockModal(false)} className="text-slate-400 hover:text-slate-650 cursor-pointer font-bold text-xl">&times;</button>
-                </div>
-
-                <form onSubmit={handleAddStockSubmit} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-555 uppercase tracking-wider mb-1">{t('Select Product Grade:', 'پراڈکٹ منتخب کریں:')}</label>
-                      <select
-                        value={selectedProductId}
-                        onChange={(e) => setSelectedProductId(e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
-                      >
-                        {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-555 uppercase tracking-wider mb-1">{t('Suppliers Depot:', 'سپلائر انتخاب کریں:')}</label>
-                      <select
-                        value={supplierId}
-                        onChange={(e) => setSupplierId(e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
-                      >
-                        {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    {!isLube && (
-                      <>
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-555 uppercase tracking-wider mb-1">{t('Select Storage Tank:', 'سٹوریج ٹینک منتخب کریں:')}</label>
-                          <select
-                            value={selectedTankId}
-                            onChange={(e) => setSelectedTankId(e.target.value)}
-                            className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
-                          >
-                            <option value="">{t('-- Choose Tank --', '-- منتخب ٹینک کریں --')}</option>
-                            {tanks.filter(t => t.productId === selectedProductId).map(t => (
-                              <option key={t.id} value={t.id}>{t.name}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-555 uppercase tracking-wider mb-1">{t('Fuel Stock Grade Type:', 'فیول گریڈ قسم:')}</label>
-                          <select
-                            value={fuelType}
-                            onChange={(e) => setFuelType(e.target.value)}
-                            className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
-                          >
-                            {productSubtypes.map(sub => (
-                              <option key={sub.value} value={sub.value}>{sub.label}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </>
-                    )}
-
-                    <div className={isLube ? 'col-span-2' : 'col-span-2'}>
-                      <label className="block text-[10px] font-bold text-slate-555 uppercase tracking-wider mb-1">{isLube ? t('Received Qty (Units):', 'موصول مقدار (یونٹس):') : t('Delivered Qty (Ltr):', 'سپلائی مقدار (لیٹرز):')}</label>
-                      <input
-                        type="number"
-                        required
-                        value={receiptQty}
-                        onChange={(e) => setReceiptQty(e.target.value)}
-                        placeholder={isLube ? 'e.g. 24' : 'e.g. 5000'}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 font-mono text-xs focus:border-orange-500 focus:outline-hidden"
-                      />
-                    </div>
-                  </div>
-
-                  <div className={`grid gap-3 ${isLube ? 'grid-cols-1' : 'grid-cols-2'}`}>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-555 uppercase tracking-wider mb-1">{t('Total Base Value (Rs):', 'مجموعی خرید قیمت:')}</label>
-                      <input
-                        type="text"
-                        readOnly
-                        value={receiptCost ? `Rs. ${Number(receiptCost).toLocaleString('en-PK')}` : ''}
-                        placeholder={t('Auto-calculated (Qty * Rate)', 'خودکار حساب (مقدار * قیمت)')}
-                        className="w-full rounded-lg border border-slate-200 bg-slate-50 text-slate-500 font-bold px-2 py-1 font-mono text-xs cursor-not-allowed focus:outline-hidden"
-                      />
-                    </div>
-
-                    {!isLube && (
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-555 uppercase tracking-wider mb-1">{t('Carriage / Karaya (Rs):', 'گاڑی کرایہ / فریٹ (روپے):')}</label>
-                      <input
-                        type="number"
-                        value={carriageCost}
-                        onChange={(e) => setCarriageCost(e.target.value)}
-                        placeholder="e.g. 15000"
-                        className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 font-mono text-xs focus:border-orange-500 focus:outline-hidden"
-                      />
-                    </div>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-555 uppercase tracking-wider mb-1">{isLube ? t('Purchase Unit Rate:', 'خرید فی یونٹ ریٹ:') : t('Purchase Unit Rate (P/L):', 'خرید فی لیٹر ریٹ:')}</label>
-                      <input
-                        type="number"
-                        required
-                        value={purchasePrice}
-                        onChange={(e) => setPurchasePrice(e.target.value)}
-                        placeholder={isLube ? 'e.g. 850' : 'e.g. 265'}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 font-mono text-xs focus:border-orange-500 focus:outline-hidden"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-555 uppercase tracking-wider mb-1">{isLube ? t('Selling Unit Rate:', 'فروخت فی یونٹ ریٹ:') : t('Selling Unit Rate (P/L):', 'فروخت فی لیٹر ریٹ:')}</label>
-                      <input
-                        type="number"
-                        value={sellingPrice}
-                        onChange={(e) => setSellingPrice(e.target.value)}
-                        placeholder={isLube ? 'e.g. 1100' : 'e.g. 282'}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 font-mono text-xs focus:border-orange-500 focus:outline-hidden"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-555 uppercase tracking-wider mb-1">{t('Supplier Invoice / Delivery Order (D.O):', 'سپلائر بل نمبر / ڈیلیوری آرڈر:')}</label>
-                    <input
-                      type="text"
-                      required
-                      value={invoiceRef}
-                      onChange={(e) => setInvoiceRef(e.target.value)}
-                      placeholder="PSO-DE-883"
-                      className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs focus:border-orange-500 focus:outline-hidden"
-                    />
-                  </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-sans text-sm font-bold tracking-wider rounded-lg shadow-md mt-4 cursor-pointer"
-                >
-                  {t('UPGRADE STOCK QUANTITY', 'اسٹاک بڑھائیں')}
-                </button>
-              </form>
-            </motion.div>
-          </motion.div>
+          <StockInForm
+            products={products}
+            suppliers={suppliers}
+            tanks={tanks}
+            language={settings.language}
+            onClose={() => setShowAddStockModal(false)}
+            isLube={isLube}
+          />
         )}
       </AnimatePresence>
 

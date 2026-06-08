@@ -28,12 +28,14 @@ import { GlobalSettings, Product, Nozzle, Pump, Tank, RateHistoryEntry, AuditTra
 import { db } from '../../data/db';
 import { useStation } from '../../contexts/StationContext';
 
-// Modular Child Wizards Imports
 import RateWizard from './Settings/RateWizard';
 import TankWizard from './Settings/TankWizard';
 import NozzleWizard from './Settings/NozzleWizard';
+import ProductWizard from './Settings/ProductWizard';
 import UnifiedAccountManager from './Settings/UnifiedAccountManager';
 import SystemAuditTrail from './Settings/SystemAuditTrail';
+import { SetupBanner } from './ConfigurationHub/SetupBanner';
+import { SetupNavigationFooter } from './ConfigurationHub/SetupNavigationFooter';
 
 interface SettingsProps {
   activeStationId: string;
@@ -63,7 +65,8 @@ interface SettingsProps {
   onUpdateBanks?: any;
   onUpdateProducts?: any;
   onUpdatePumps?: any;
-  initialTab?: 'profile' | 'tariff' | 'tanks' | 'nozzles' | 'accounts' | 'audit';
+  initialTab?: 'profile' | 'products' | 'tariff' | 'tanks' | 'nozzles' | 'accounts' | 'audit';
+  onNavigate?: (viewId: string) => void;
 }
 
 export default function SettingsPanel({
@@ -86,7 +89,8 @@ export default function SettingsPanel({
   onUpdateBanks,
   onUpdateProducts,
   onUpdatePumps,
-  initialTab = 'profile'
+  initialTab = 'profile',
+  onNavigate
 }: SettingsProps) {
   const { showToast, showAlert, showConfirm } = useStation();
   const isUrdu = settings.language === 'ur';
@@ -95,7 +99,7 @@ export default function SettingsPanel({
   const isLube = activeStationId === 'st_lube';
 
   // Unified outer page Tabs state
-  const [activeTab, setActiveTab] = useState<'profile' | 'tariff' | 'tanks' | 'nozzles' | 'accounts' | 'audit'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'profile' | 'products' | 'tariff' | 'tanks' | 'nozzles' | 'accounts' | 'audit'>(initialTab);
 
   React.useEffect(() => {
     if (initialTab) {
@@ -204,29 +208,7 @@ export default function SettingsPanel({
         </div>
       </div>
 
-      {/* HORIZONTAL TABS NAVIGATION BAR */}
-      <div className="flex flex-wrap items-center gap-1 border-b border-slate-200 pb-0.5 select-none">
-        {[
-          { id: 'profile', label: t('🔑 Central Profile', '🔑 دفتری معلومات'), show: true },
-          { id: 'tariff', label: t('⛽ Pricing Manager', '⛽ فیول ریٹ لاگ'), show: !isLube },
-          { id: 'tanks', label: t('🛢️ Storage Tanks', '🛢️ اسٹوریج ٹینکس'), show: !isLube },
-          { id: 'nozzles', label: t('🔌 Nozzles Setup', '🔌 نوزل میٹرز'), show: !isLube },
-          { id: 'accounts', label: t('🏦 Ledger Accounts', '🏦 پے منٹ اکاؤنٹس'), show: true },
-          { id: 'audit', label: t('🛡️ System Audit Logs', '🛡️ مرکزی آڈٹ لاگ'), show: true }
-        ].filter(tab => tab.show).map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`px-3.5 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer ${
-              activeTab === tab.id
-                ? 'border-orange-600 text-orange-655 font-extrabold'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <SetupBanner activeViewId={activeTab === 'tariff' ? 'setup_rates' : activeTab === 'accounts' ? 'setup_accounts' : activeTab === 'audit' ? 'setup_audit' : `setup_${activeTab}`} />
 
       {/* ======================= TAB 1: STATION PROFILE ======================= */}
       {activeTab === 'profile' && (
@@ -362,7 +344,7 @@ export default function SettingsPanel({
                   className="w-full text-xs font-bold rounded-lg border border-slate-200 p-2 bg-slate-50 cursor-pointer"
                 >
                   <option value="PKR">PKR (Rs.) - Pakistani Rupee</option>
-                  <option value="USD">USD ($) - United States Dollar</option>
+                  <option value="PKR">USD ($) - United States Dollar</option>
                   <option value="EUR">EUR (€) - Euro Zone</option>
                   <option value="GBP">GBP (£) - British Pound Sterling</option>
                   <option value="AED">AED (د.إ) - United Arab Emirates Dirham</option>
@@ -396,6 +378,16 @@ export default function SettingsPanel({
         </div>
       )}
 
+      {/* ======================= TAB 1.5: FUEL PRODUCTS CONFIG ======================= */}
+      {activeTab === 'products' && (
+        <ProductWizard
+          products={products}
+          language={settings.language}
+          onUpdateProducts={onUpdateProducts}
+          onLogAudit={handleLogAudit}
+        />
+      )}
+
       {/* ======================= TAB 2: PRICING MANAGER (WIZARDS) ======================= */}
       {activeTab === 'tariff' && (
         <RateWizard
@@ -403,6 +395,7 @@ export default function SettingsPanel({
           tanks={tanks}
           rateHistory={rateHistory}
           language={settings.language}
+          settings={settings}
           onUpdateProductRate={onUpdateProductRate}
           onLogAudit={handleLogAudit}
           onUpdateProducts={onUpdateProducts}
@@ -526,6 +519,14 @@ export default function SettingsPanel({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Render the Navigation Footer if the user is in the setup flow */}
+      {onNavigate && (
+        <SetupNavigationFooter 
+          activeViewId={activeTab === 'tariff' ? 'setup_rates' : activeTab === 'accounts' ? 'setup_accounts' : activeTab === 'audit' ? 'setup_audit' : `setup_${activeTab}`}
+          onNavigate={onNavigate}
+        />
+      )}
     </div>
   );
 }

@@ -310,7 +310,7 @@ INSTRUCTIONS:
                       </div>
                     ) : (
                       <p className="font-sans text-xs leading-relaxed whitespace-pre-wrap">
-                        {msg.content.replace(/\*\*(.*?)\*\*/g, '$1')}
+                        {msg.content.replace(/\*\*(.*?)\*\*/g, 'Rs.1')}
                       </p>
                     )}
                     <p className="font-sans text-[9px] mt-1 opacity-50">

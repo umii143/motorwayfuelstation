@@ -30,7 +30,7 @@ const DiscountsHub = React.lazy(() => import('./components/features/DiscountsHub
 
 const StaffPanel = React.lazy(() => import('./components/features/Staff'));
 const SettingsPanel = React.lazy(() => import('./components/features/Settings'));
-const ConfigurationHub = React.lazy(() => import('./components/features/ConfigurationHub/ConfigurationHub'));
+
 const OnboardingWizard = React.lazy(() => import('./components/features/OnboardingWizard'));
 import AuthInterface from './components/layouts/AuthInterface'; // Kept static for immediate auth render
 const SecurityHub = React.lazy(() => import('./components/features/SecurityHub'));
@@ -421,23 +421,31 @@ function MainApp() {
         );
 
       case 'configuration':
-        return (
-          <ConfigurationHub
-            onNavigate={setActiveView}
-            language={settings.language}
-            isLube={activeStationId === 'st_lube'}
-          />
-        );
-
-      case 'settings':
+      case 'setup_products':
       case 'setup_nozzles':
       case 'setup_tanks':
       case 'setup_rates':
       case 'setup_accounts':
       case 'setup_profile':
-      case 'setup_audit':
+      case 'setup_audit': {
+        const getTab = () => {
+          switch (activeView) {
+            case 'setup_products': return 'products';
+            case 'setup_nozzles': return 'nozzles';
+            case 'setup_tanks': return 'tanks';
+            case 'setup_rates': return 'tariff';
+            case 'setup_accounts': return 'accounts';
+            case 'setup_audit': return 'audit';
+            case 'configuration':
+            case 'setup_profile':
+            default: return 'profile';
+          }
+        };
+        
         return (
           <SettingsPanel
+            key={activeView} // Force remount on view change
+            initialTab={getTab()}
             activeStationId={activeStationId}
             settings={settings}
             products={products}
@@ -457,17 +465,10 @@ function MainApp() {
             onUpdateBanks={setBanks}
             onUpdateProducts={setProducts}
             onUpdatePumps={setPumps}
-            initialTab={
-              activeView === 'setup_nozzles' ? 'nozzles' :
-              activeView === 'setup_tanks' ? 'tanks' :
-              activeView === 'setup_rates' ? 'tariff' :
-              activeView === 'setup_accounts' ? 'accounts' :
-              activeView === 'setup_audit' ? 'audit' :
-              activeView === 'setup_profile' ? 'profile' :
-              'profile'
-            }
+            onNavigate={setActiveView}
           />
         );
+      }
 
       case 'security_hub':
         return (
@@ -488,6 +489,7 @@ function MainApp() {
             tanks={tanks}
             rateHistory={rateHistory}
             language={settings.language}
+            settings={settings}
             onUpdateProductRate={handleUpdateProductRate}
             onLogAudit={(category, action, details) => { /* handled internally or stub for standalone view */ }}
             onUpdateProducts={setProducts}
@@ -590,27 +592,33 @@ function MainApp() {
   return (
     <div className={`min-h-screen w-full overflow-x-hidden bg-background text-foreground selection:bg-orange-500/10 selection:text-orange-600 pb-10 transition-colors duration-500 theme-${settings.theme || 'light'}`}>
       <LocalStorageMigrationWizard />
-      {showOnboarding && (
-        <OnboardingWizard
-          currentLanguage={settings.language}
-          onCancel={async () => {
-            const newSettings = { ...settings, setupCompleted: true };
-            setSettings(newSettings);
-            const orgId = authenticatedUser?.orgId;
-            if (orgId && activeStationId) {
-              try {
-                const settingsRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'settings', 'global');
-                await setDoc(settingsRef, newSettings, { merge: true });
-              } catch (err) {
-                console.error("Failed to skip setup", err);
+      {/* ALWAYS SHOW ONBOARDING WIZARD IF REQUESTED MANUALLY OR IF NEVER COMPLETED */}
+      {(showOnboarding || activeView === 'onboarding') && (
+        <React.Suspense fallback={<LoadingScreen />}>
+          <OnboardingWizard
+            currentLanguage={settings.language}
+            onCancel={async () => {
+              if (activeView === 'onboarding') {
+                 setActiveView('configuration');
+                 return;
               }
-            }
-          }}
-          onComplete={async (completedData) => {
-            setSettings(completedData.settings);
-            setTanks(completedData.tanks);
-            setNozzles(completedData.nozzles);
-            setProducts(completedData.products);
+              const newSettings = { ...settings, setupCompleted: true };
+              setSettings(newSettings);
+              const orgId = authenticatedUser?.orgId;
+              if (orgId && activeStationId) {
+                try {
+                  const settingsRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'settings', 'global');
+                  await setDoc(settingsRef, newSettings, { merge: true });
+                } catch (err) {
+                  console.error("Failed to skip setup", err);
+                }
+              }
+            }}
+            onComplete={async (completedData) => {
+              setSettings(completedData.settings);
+              setTanks(completedData.tanks);
+              setNozzles(completedData.nozzles);
+              setProducts(completedData.products);
             setStaff(completedData.staff);
 
             // Extract pumps that nozzles refer to and populate them automatically
@@ -663,8 +671,13 @@ function MainApp() {
                 });
                 
                 await batch.commit();
+                
+                if (activeView === 'onboarding') {
+                  setActiveView('configuration');
+                  return;
+                }
               } catch (err) {
-                console.error("Failed to commit onboarding data to Firestore:", err);
+                console.error("Failed to commit onboarding setup", err);
                 throw err;
               }
             }
@@ -673,6 +686,7 @@ function MainApp() {
             setActiveView('dashboard');
           }}
         />
+        </React.Suspense>
       )}
 
       {/* Dynamic Bilingual Header and Responsive Drawer */}

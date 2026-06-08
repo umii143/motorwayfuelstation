@@ -20,6 +20,7 @@ interface ShiftState {
   handleDeleteDebitEntry: (shiftId: string, entryId: string, orgId?: string, stationId?: string) => Promise<void>;
   handleDeleteRecoveryEntry: (shiftId: string, entryId: string, orgId?: string, stationId?: string) => Promise<void>;
   handleDeleteSupplierPayment: (shiftId: string, entryId: string, orgId?: string, stationId?: string) => Promise<void>;
+  handleMidShiftSplit: (productId: string, meterReadings: Record<string, number>, orgId?: string, stationId?: string) => Promise<void>;
 }
 
 const getBusinessType = (stationId: string): 'fuel_station' | 'cng' | 'lube' => {
@@ -154,6 +155,80 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
     if (orgId) {
       await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'shifts', newShift.id, newShift);
     }
+  },
+
+  handleMidShiftSplit: async (productId, meterReadings, orgId, stationId) => {
+    const sId = stationId || db.getActiveStationId();
+    const bType = getBusinessType(sId);
+    
+    // Get current product rate before it is updated
+    const product = useInventoryStore.getState().products.find(p => p.id === productId);
+    if (!product) return;
+    const oldRate = product.rate;
+    const now = new Date().toISOString();
+
+    set((state) => {
+      const updatedShifts = state.shifts.map(shift => {
+        if (shift.status !== 'active') return shift;
+
+        // Check if this shift has any nozzles for this product
+        const nozzles = useInventoryStore.getState().nozzles;
+        const relevantNozzles = Object.keys(shift.openingReadings).filter(nId => {
+          const nz = nozzles.find(n => n.id === nId);
+          return nz && nz.productId === productId;
+        });
+
+        if (relevantNozzles.length === 0) return shift;
+
+        // Create segments for this product's nozzles
+        const newSegments = [...(shift.segments || [])];
+        
+        relevantNozzles.forEach(nId => {
+          const meterClose = meterReadings[nId];
+          if (meterClose === undefined) return;
+
+          // Find the last segment for this nozzle to get the meterOpen, OR use shift.openingReadings
+          const previousSegments = newSegments.filter(s => s.nozzleId === nId);
+          const meterOpen = previousSegments.length > 0 
+            ? previousSegments[previousSegments.length - 1].meterClose 
+            : shift.openingReadings[nId];
+
+          const litersSold = Math.max(0, meterClose - meterOpen);
+          const revenue = litersSold * oldRate;
+          
+          const segmentIndex = previousSegments.length + 1;
+          const startedAt = previousSegments.length > 0 
+            ? previousSegments[previousSegments.length - 1].closedAt 
+            : shift.date + 'T' + shift.startTime;
+
+          newSegments.push({
+            id: `seg_${shift.id}_${nId}_${Date.now()}`,
+            shiftId: shift.id,
+            nozzleId: nId,
+            productId,
+            rate: oldRate,
+            meterOpen,
+            meterClose,
+            litersSold,
+            revenue,
+            segmentIndex,
+            startedAt,
+            closedAt: now
+          });
+        });
+
+        const updatedShift = { ...shift, segments: newSegments, activeMidShiftAlert: true };
+        
+        if (orgId) {
+          firestoreDb.saveDocument(orgId, sId, bType, 'shifts', shift.id, updatedShift).catch(console.error);
+        }
+
+        return updatedShift;
+      });
+
+      db.saveShifts(sId, updatedShifts);
+      return { shifts: updatedShifts };
+    });
   },
 
   handleUpdateShift: async (updatedShift, orgId, stationId, checkPerm) => {
@@ -294,20 +369,28 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
         return tk;
       });
 
-      // 6. Compute new product stocks
+      // 5.5 Prepare FIFO Batches
+      let nextBatches = [...useInventoryStore.getState().stockBatches];
+      const newCOGSRecords: COGSRecord[] = [];
+
+      // 6. Compute new product stocks and deduct from FIFO batches
       const nextProducts = products.map((prod) => {
+        let netSoldForFIFO = 0;
+
         if (prod.type === 'fuel') {
           const totalDisch = productDischarges[prod.id] || 0;
           const testLit = updatedShift.testLiters[prod.id] || 0;
           const netSoldLitres = Math.max(0, totalDisch - testLit);
           if (netSoldLitres > 0) {
-            return { ...prod, currentStock: Math.max(0, Number((prod.currentStock - netSoldLitres).toFixed(2))) };
+            netSoldForFIFO = netSoldLitres;
+            prod = { ...prod, currentStock: Math.max(0, Number((prod.currentStock - netSoldLitres).toFixed(2))) };
           }
         } else if (prod.type === 'lube') {
           const lubeTx = updatedShift.lubeSales.reduce((acc, sale) => {
             return sale.itemId === prod.id ? acc + sale.quantity : acc;
           }, 0);
           if (lubeTx > 0) {
+            netSoldForFIFO = lubeTx;
             const txnId = `stk_lube_sale_shift_${updatedShift.id}_prod_${prod.id}`;
             generatedStockTxns.push({
               id: txnId,
@@ -341,7 +424,51 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
               updatedAt: Date.now()
             });
 
-            return { ...prod, currentStock: Math.max(0, Number((prod.currentStock - lubeTx).toFixed(2))) };
+            prod = { ...prod, currentStock: Math.max(0, Number((prod.currentStock - lubeTx).toFixed(2))) };
+          }
+        }
+
+        // Apply FIFO Deduction for this product
+        if (netSoldForFIFO > 0) {
+          let remainingToDeduct = netSoldForFIFO;
+          // Sort active batches by date (oldest first)
+          const productBatches = nextBatches
+             .filter(b => b.productId === prod.id && b.status === 'active')
+             .sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+          
+          for (const batch of productBatches) {
+            if (remainingToDeduct <= 0) break;
+            const qtyToTake = Math.min(batch.qtyRemaining, remainingToDeduct);
+            
+            // Update batch
+            const batchIndex = nextBatches.findIndex(b => b.id === batch.id);
+            if (batchIndex !== -1) {
+              const newRemaining = nextBatches[batchIndex].qtyRemaining - qtyToTake;
+              nextBatches[batchIndex] = {
+                ...nextBatches[batchIndex],
+                qtyRemaining: newRemaining,
+                status: newRemaining <= 0 ? 'exhausted' : 'active'
+              };
+            }
+
+            // Record COGS
+            newCOGSRecords.push({
+              id: `cogs_${Date.now()}_${Math.random().toString(36).substr(2,6)}`,
+              shiftId: updatedShift.id,
+              productId: prod.id,
+              batchId: batch.id,
+              date: updatedShift.date,
+              quantitySold: qtyToTake,
+              unitLandedCost: batch.landedCost,
+              totalCOGS: qtyToTake * batch.landedCost,
+              orgId: orgId || undefined,
+              stationId: sId,
+              businessType: bType,
+              createdAt: Date.now(),
+              updatedAt: Date.now()
+            });
+
+            remainingToDeduct -= qtyToTake;
           }
         }
         return prod;
@@ -450,6 +577,17 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
           batch.set(movRef, mov);
         });
 
+        // FIFO Batches & COGS
+        nextBatches.forEach((b) => {
+          const bRef = doc(dbFS, 'organizations', orgId, 'stations', sId, 'stockBatches', b.id);
+          batch.set(bRef, b, { merge: true });
+        });
+
+        newCOGSRecords.forEach((cogs) => {
+          const cogsRef = doc(dbFS, 'organizations', orgId, 'stations', sId, 'cogsRecords', cogs.id);
+          batch.set(cogsRef, cogs);
+        });
+
         // Journal Entries
         generatedJournals.forEach((jr) => {
           const jrRef = doc(dbFS, 'organizations', orgId, 'stations', sId, 'journalEntries', jr.id);
@@ -471,6 +609,12 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
         if (generatedJournals.length > 0) {
           const nextJournals = [...generatedJournals, ...journalEntries];
           useFinancialStore.getState().setJournalEntries(nextJournals);
+        }
+        
+        useInventoryStore.getState().setStockBatches(nextBatches);
+        if (newCOGSRecords.length > 0) {
+          const oldCOGSRecords = useInventoryStore.getState().cogsRecords;
+          useInventoryStore.getState().setCOGSRecords([...newCOGSRecords, ...oldCOGSRecords]);
         }
         
         set((state) => ({ shifts: state.shifts.map((s) => (s.id === updatedShift.id ? updatedShift : s)) }));

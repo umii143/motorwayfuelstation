@@ -10,7 +10,7 @@ export interface CurrencyConfig {
 
 export const SUPPORTED_CURRENCIES: CurrencyConfig[] = [
   { code: 'PKR', symbol: 'Rs.', urduSymbol: 'روپے', name: 'Pakistani Rupee', urduName: 'پاکستانی روپیہ' },
-  { code: 'USD', symbol: '$', urduSymbol: 'ڈالر', name: 'US Dollar', urduName: 'امریکی ڈالر' },
+  { code: 'PKR', symbol: '$', urduSymbol: 'ڈالر', name: 'US Dollar', urduName: 'امریکی ڈالر' },
   { code: 'EUR', symbol: '€', urduSymbol: 'یورو', name: 'Euro', urduName: 'یورو' },
   { code: 'GBP', symbol: '£', urduSymbol: 'پاؤنڈ', name: 'British Pound', urduName: 'برطانوی پاؤنڈ' },
   { code: 'AED', symbol: 'د.إ', urduSymbol: 'درہم', name: 'UAE Dirham', urduName: 'اماراتی درہم' },

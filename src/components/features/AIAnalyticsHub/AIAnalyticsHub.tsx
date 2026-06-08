@@ -198,8 +198,8 @@ export default function AIAnalyticsHub({ settings, dataContext }: AIAnalyticsHub
                       // Extremely basic markdown parsing for demo purposes. 
                       // In production, use react-markdown.
                       __html: msg.content
-                        .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')
-                        .replace(/\\*(.*?)\\*/g, '<em>$1</em>')
+                        .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>Rs.1</strong>')
+                        .replace(/\\*(.*?)\\*/g, '<em>Rs.1</em>')
                         .replace(/\\n/g, '<br />') 
                     }} />
                   </div>

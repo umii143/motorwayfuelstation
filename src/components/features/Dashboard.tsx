@@ -127,23 +127,6 @@ export default function Dashboard({
   const isLube = activeStationId === 'st_lube';
   const salesEntryView = isLube ? 'lube_pos' : 'shift_wizard';
 
-  const pricingStats = useMemo(() => {
-    let totalGain = 0;
-    let totalLoss = 0;
-    rateHistory.forEach((entry) => {
-      const val = entry.gainLoss !== undefined ? entry.gainLoss : (entry.impactAmount || 0);
-      if (val > 0) {
-        totalGain += val;
-      } else {
-        totalLoss += Math.abs(val);
-      }
-    });
-    return {
-      gain: totalGain,
-      loss: totalLoss,
-      net: totalGain - totalLoss
-    };
-  }, [rateHistory]);
 
   // ==========================================
   // METRICS & AGGREGATIONS
@@ -157,6 +140,28 @@ export default function Dashboard({
     }
     return new Date().toISOString().split('T')[0];
   });
+
+  const pricingStats = useMemo(() => {
+    let totalGain = 0;
+    let totalLoss = 0;
+    
+    // Filter rate history by selected date for "Today's Price Impact" KPI
+    const dailyHistory = rateHistory.filter(entry => entry.date.startsWith(selectedDate));
+    
+    dailyHistory.forEach((entry) => {
+      const val = entry.gainLoss !== undefined ? entry.gainLoss : (entry.impactAmount || 0);
+      if (val > 0) {
+        totalGain += val;
+      } else {
+        totalLoss += Math.abs(val);
+      }
+    });
+    return {
+      gain: totalGain,
+      loss: totalLoss,
+      net: totalGain - totalLoss
+    };
+  }, [rateHistory, selectedDate]);
 
   // Unique shift dates for filtering
   const availableDates = useMemo(() => {

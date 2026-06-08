@@ -32,10 +32,12 @@ import {
   VarianceIncident,
   Asset,
   MaintenanceRecord,
-  LoyaltyMember,
   RewardTransaction,
   InventoryMovement,
-  JournalEntry
+  JournalEntry,
+  StockBatch,
+  COGSRecord,
+  LoyaltyMember
 } from '../types';
 
 const STORAGE_KEYS = {
@@ -73,7 +75,9 @@ const SPECIAL_STORAGE_KEYS = {
   LOYALTY_MEMBERS: 'fuelpro_loyalty_members',
   REWARD_TRANSACTIONS: 'fuelpro_reward_transactions',
   INVENTORY_MOVEMENTS: 'fuelpro_inventory_movements',
-  JOURNAL_ENTRIES: 'fuelpro_journal_entries'
+  JOURNAL_ENTRIES: 'fuelpro_journal_entries',
+  STOCK_BATCHES: 'fuelpro_stock_batches',
+  COGS_RECORDS: 'fuelpro_cogs_records'
 };
 
 // Clear trigger for clean slate if needed
@@ -647,6 +651,28 @@ export const db = {
     setStorageItem(
       db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.JOURNAL_ENTRIES),
       entries
+    ),
+
+  getStockBatches: (stationId: string): StockBatch[] =>
+    getStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.STOCK_BATCHES),
+      [] as StockBatch[]
+    ),
+  saveStockBatches: (stationId: string, batches: StockBatch[]) =>
+    setStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.STOCK_BATCHES),
+      batches
+    ),
+
+  getCOGSRecords: (stationId: string): COGSRecord[] =>
+    getStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.COGS_RECORDS),
+      [] as COGSRecord[]
+    ),
+  saveCOGSRecords: (stationId: string, records: COGSRecord[]) =>
+    setStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.COGS_RECORDS),
+      records
     ),
 
   clearSettingsAuditTrail: (stationId: string) => {

@@ -65,13 +65,14 @@ export default function OGRAPriceSync({ settings, products, onApplyRates }: OGRA
         const match = products.find(p => {
           const lp = p.name.toLowerCase();
           const lo = ogprice.product.toLowerCase();
-          return lp.includes('petrol') && lo.includes('pmg') ||
-            lp.includes('pmg') && lo.includes('pmg') ||
-            lp.includes('diesel') && lo.includes('hsd') ||
-            lp.includes('hsd') && lo.includes('hsd') ||
-            lp.includes('kerosene') && lo.includes('sko') ||
-            lp.includes('ldo') && lo.includes('ldo') ||
-            lp.includes(ogprice.productId);
+          const lid = ogprice.productId.toLowerCase();
+          
+          if (lid === 'petrol' && (lp.includes('petrol') || lp.includes('pmg') || lp.includes('super'))) return true;
+          if (lid === 'diesel' && (lp.includes('diesel') || lp.includes('hsd'))) return true;
+          if (lid === 'kerosene' && (lp.includes('kerosene') || lp.includes('sko'))) return true;
+          if (lid === 'ldo' && (lp.includes('ldo') || lp.includes('light diesel'))) return true;
+          
+          return lp.includes(lid) || lp.includes(lo);
         });
         if (match) matches[ogprice.productId] = match.id;
       });
