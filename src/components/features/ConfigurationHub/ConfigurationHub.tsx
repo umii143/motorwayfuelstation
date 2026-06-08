@@ -1,8 +1,8 @@
 import React from 'react';
 import { useStation } from '../../../contexts/StationContext';
-import { 
+import {
   Settings, Database, Fuel, DollarSign, Building, Shield, 
-  Users, AlertTriangle, CheckCircle2, ChevronRight, Activity, Server
+  Users, AlertTriangle, CheckCircle2, ChevronRight, Activity, Server, Droplets, ArrowRight
 } from 'lucide-react';
 
 interface ConfigurationHubProps {
@@ -17,47 +17,28 @@ export default function ConfigurationHub({ onNavigate, language, isLube }: Confi
 
   const modules = [
     {
-      id: 'infrastructure',
-      title: t('Fuel Infrastructure', 'فیول انفراسٹرکچر'),
+      id: 'fuel_setup',
+      title: t('Fuel Setup', 'فیول سیٹ اپ'),
       icon: Server,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
       items: [
-        { label: t('Tank Configuration', 'ٹینک سیٹ اپ'), view: 'setup_tanks', icon: Database },
-        { label: t('Nozzle Configuration', 'نوزل سیٹ اپ'), view: 'setup_nozzles', icon: Fuel },
+        { label: t('Fuel Products', 'فیول پروڈکٹس'), view: 'setup_products', icon: Droplets },
+        { label: t('Tanks', 'ٹینک'), view: 'setup_tanks', icon: Database },
+        { label: t('Nozzles', 'نوزل'), view: 'setup_nozzles', icon: Fuel },
+        { label: t('Rates', 'ریٹس'), view: 'setup_rates', icon: Activity },
       ],
       hideForLube: true
     },
     {
-      id: 'product_pricing',
-      title: t('Product & Pricing', 'پروڈکٹ اور قیمتیں'),
-      icon: DollarSign,
-      color: 'text-emerald-600',
-      bgColor: 'bg-emerald-50',
-      items: [
-        { label: t('Rate Management', 'فیول ریٹ سیٹ اپ'), view: 'setup_rates', icon: Activity },
-      ],
-      hideForLube: false
-    },
-    {
-      id: 'financial',
-      title: t('Financial Settings', 'مالیاتی ترتیبات'),
+      id: 'financial_setup',
+      title: t('Financial Setup', 'مالیاتی سیٹ اپ'),
       icon: Building,
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
       items: [
-        { label: t('Chart of Accounts', 'اکاؤنٹس چارٹ'), view: 'setup_accounts', icon: Building },
-      ],
-      hideForLube: false
-    },
-    {
-      id: 'station_setup',
-      title: t('Station Setup', 'اسٹیشن سیٹ اپ'),
-      icon: Settings,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
-      items: [
-        { label: t('Station Profile', 'اسٹیشن پروفائل'), view: 'setup_profile', icon: Settings },
+        { label: t('Banks & Cash Accounts', 'بینک اور کیش اکاؤنٹس'), view: 'setup_accounts', icon: Building },
+        { label: t('Expense Categories', 'اخراجات کیٹیگریز'), view: 'setup_expenses', icon: DollarSign },
       ],
       hideForLube: false
     },
@@ -68,7 +49,20 @@ export default function ConfigurationHub({ onNavigate, language, isLube }: Confi
       color: 'text-rose-600',
       bgColor: 'bg-rose-50',
       items: [
+        { label: t('Users & Roles', 'یوزرز اور کردار'), view: 'setup_users', icon: Users },
         { label: t('Audit Settings & Logs', 'آڈٹ لاگز'), view: 'setup_audit', icon: Shield },
+      ],
+      hideForLube: false
+    },
+    {
+      id: 'business_setup',
+      title: t('Business Setup', 'بزنس سیٹ اپ'),
+      icon: Settings,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50',
+      items: [
+        { label: t('Station Profile', 'اسٹیشن پروفائل'), view: 'setup_profile', icon: Settings },
+        { label: t('Tax Settings', 'ٹیکس سیٹنگز'), view: 'setup_tax', icon: DollarSign },
       ],
       hideForLube: false
     }
@@ -91,53 +85,74 @@ export default function ConfigurationHub({ onNavigate, language, isLube }: Confi
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-          <div className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">
-            {t('Configured Tanks', 'ٹینک سیٹ اپ')}
+      {/* Setup Progress & KPIs */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        
+        {/* Setup Progress Dashboard */}
+        <div className="lg:col-span-1 bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <Activity className="h-4 w-4 text-orange-600" />
+            {t('Station Setup Progress', 'اسٹیشن کی تیاری')}
+          </h3>
+          <div className="space-y-3 font-sans text-sm font-semibold">
+            <div className="flex items-center gap-3 text-emerald-700">
+              <CheckCircle2 className="h-5 w-5" />
+              <span>{t('Fuel Products Configured', 'فیول پروڈکٹس')}</span>
+            </div>
+            <div className="flex items-center gap-3 text-emerald-700">
+              <CheckCircle2 className="h-5 w-5" />
+              <span>{t('Tanks Configured', 'ٹینک سیٹ اپ')}</span>
+            </div>
+            <div className="flex items-center gap-3 text-orange-600">
+              <AlertTriangle className="h-5 w-5" />
+              <span>{t('Nozzles Missing', 'نوزلز درکار ہیں')}</span>
+            </div>
+            <div className="flex items-center gap-3 text-orange-600">
+              <AlertTriangle className="h-5 w-5" />
+              <span>{t('Rates Missing', 'ریٹس درکار ہیں')}</span>
+            </div>
           </div>
-          <div className="text-2xl font-black text-slate-800">8<span className="text-sm text-slate-400 font-medium">/8</span></div>
-        </div>
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-          <div className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">
-            {t('Configured Nozzles', 'نوزل سیٹ اپ')}
+          <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
+            <div>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">{t('Setup Score', 'اسکور')}</span>
+              <span className="text-xl font-black text-emerald-600">65%</span>
+            </div>
+            <button 
+              onClick={() => onNavigate('setup_nozzles')}
+              className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-colors cursor-pointer"
+            >
+              <span>{t('Configure Nozzles', 'نوزلز سیٹ کریں')}</span>
+              <ArrowRight className="h-4 w-4" />
+            </button>
           </div>
-          <div className="text-2xl font-black text-slate-800">24<span className="text-sm text-slate-400 font-medium">/24</span></div>
         </div>
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-          <div className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">
-            {t('Configured Staff', 'اسٹاف ممبرز')}
-          </div>
-          <div className="text-2xl font-black text-slate-800">15</div>
-        </div>
-        <div className="bg-white border border-orange-200 bg-orange-50/50 rounded-xl p-4 shadow-sm">
-          <div className="text-orange-700 text-xs font-bold uppercase tracking-wider mb-1">
-            {t('Missing Items', 'نامکمل سیٹ اپ')}
-          </div>
-          <div className="text-2xl font-black text-orange-600">2</div>
-        </div>
-        <div className="bg-white border border-emerald-200 bg-emerald-50/50 rounded-xl p-4 shadow-sm col-span-2 md:col-span-4 lg:col-span-1">
-          <div className="text-emerald-700 text-xs font-bold uppercase tracking-wider mb-1">
-            {t('Config Score', 'سسٹم اسکور')}
-          </div>
-          <div className="text-2xl font-black text-emerald-600">96%</div>
-        </div>
-      </div>
 
-      {/* Alerts */}
-      <div className="flex flex-col gap-2">
-        <div className="bg-orange-50 border-l-4 border-orange-500 p-3 rounded-r-lg flex items-center gap-3">
-          <AlertTriangle className="h-5 w-5 text-orange-600 shrink-0" />
-          <span className="text-sm font-semibold text-orange-800">
-            {t('Tank #3 Missing Calibration Chart', 'ٹینک 3 کا کیلیبریشن چارٹ نامکمل ہے')}
-          </span>
-        </div>
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-r-lg flex items-center gap-3">
-          <Shield className="h-5 w-5 text-blue-600 shrink-0" />
-          <span className="text-sm font-semibold text-blue-800">
-            {t('2 Users Have Weak Passwords', 'دو یوزرز کا پاس ورڈ کمزور ہے')}
-          </span>
+        {/* Standard KPI Grid */}
+        <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+            <div className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">
+              {t('Configured Tanks', 'ٹینک سیٹ اپ')}
+            </div>
+            <div className="text-2xl font-black text-slate-800 mt-2">8<span className="text-sm text-slate-400 font-medium">/8</span></div>
+          </div>
+          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+            <div className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">
+              {t('Configured Nozzles', 'نوزل سیٹ اپ')}
+            </div>
+            <div className="text-2xl font-black text-slate-800 mt-2">24<span className="text-sm text-slate-400 font-medium">/24</span></div>
+          </div>
+          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+            <div className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">
+              {t('Configured Staff', 'اسٹاف ممبرز')}
+            </div>
+            <div className="text-2xl font-black text-slate-800 mt-2">15</div>
+          </div>
+          <div className="bg-white border border-orange-200 bg-orange-50/50 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+            <div className="text-orange-700 text-xs font-bold uppercase tracking-wider mb-1">
+              {t('Missing Items', 'نامکمل سیٹ اپ')}
+            </div>
+            <div className="text-2xl font-black text-orange-600 mt-2">2</div>
+          </div>
         </div>
       </div>
 

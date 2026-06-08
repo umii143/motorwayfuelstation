@@ -434,6 +434,9 @@ export default function SettingsPanel({
           onUpdateNozzle={onUpdateNozzle}
           onDeleteNozzle={onDeleteNozzle}
           onLogAudit={handleLogAudit}
+          onUpdateProducts={onUpdateProducts}
+          onAddTank={onAddTank}
+          onUpdatePumps={onUpdatePumps}
         />
       )}
 
