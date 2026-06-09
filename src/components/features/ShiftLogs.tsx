@@ -324,7 +324,6 @@ function ShiftAuditDrawer({
   digitalAccounts,
   nozzles,
   viewDetailType,
-  viewDetailType,
   setViewDetailType
 }: any) {
   const t = (en: string, ur: string) => translate(en, ur, settings);
