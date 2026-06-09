@@ -503,6 +503,7 @@ function MainApp() {
         );
 
       case 'fleet':
+      case 'fuel_quality':
       case 'tanker_delivery':
       case 'loss_prevention':
       case 'loyalty':

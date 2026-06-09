@@ -57,7 +57,8 @@ import {
   ShieldCheck,
   MessageCircle,
   Sparkles,
-  ScanLine
+  ScanLine,
+  Beaker
 } from 'lucide-react';
 import { GlobalSettings, Station } from '../../types';
 import { t as translate } from '../../lib/translations';
@@ -146,6 +147,7 @@ export default function Navigation({
       children: [
         { id: 'fleet', icon: Truck, label: 'Fleet Accounts', urdu: 'فلیٹ منیجمنٹ', showInLube: false },
         { id: 'tanker_delivery', icon: ArrowRightLeft, label: isLube ? 'Supplier Deliveries' : 'Tankers & Delivery', urdu: isLube ? 'سپلائر ڈیلیوری' : 'ٹینکر شیڈول', showInLube: false },
+        { id: 'fuel_quality', icon: Beaker, label: 'Fuel Quality', urdu: 'فیول کوالٹی', showInLube: false },
         { id: 'loss_prevention', icon: ShieldAlert, label: 'Loss Prevention', urdu: 'نقصان کی روک تھام', showInLube: false },
         { id: 'loyalty', icon: Gift, label: 'Loyalty & Rewards', urdu: 'لائلٹی پروگرام', showInLube: true },
         { id: 'maintenance', icon: Wrench, label: 'Maintenance & Assets', urdu: 'مرمت', showInLube: true },
