@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Product, Tank, Nozzle, Pump, StockTransaction, RateHistoryEntry, InventoryMovement, StockBatch, CogsRecord, DealerMarginSetting } from '../types';
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
+import { getBusinessTypeForStation, isolateProductRecords, withBusinessScope } from '../lib/businessScope';
 
 interface InventoryState {
   products: Product[];
@@ -44,8 +45,7 @@ interface InventoryState {
 }
 
 const getBusinessType = (stationId: string): 'fuel_station' | 'cng' | 'lube' => {
-  if (stationId === 'st_lube') return 'lube';
-  return 'fuel_station';
+  return getBusinessTypeForStation(stationId);
 };
 
 export const useInventoryStore = create<InventoryState>((set, get) => ({
@@ -61,9 +61,10 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   dealerMarginSettings: db.getDealerMarginSettings(db.getActiveStationId()),
 
   setProducts: (products) => {
-    set({ products });
     const sId = db.getActiveStationId();
-    if (sId) db.saveProducts(sId, products);
+    const scopedProducts = isolateProductRecords(products, sId);
+    set({ products: scopedProducts });
+    if (sId) db.saveProducts(sId, scopedProducts);
   },
   setTanks: (tanks) => {
     set({ tanks });
@@ -219,14 +220,19 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
 
   handleUpdateProduct: async (updatedProduct, orgId, stationId) => {
     const sId = stationId || db.getActiveStationId();
+    const scopedProduct = withBusinessScope(updatedProduct, sId, orgId);
     set((state) => {
-      const updated = state.products.map((p) => (p.id === updatedProduct.id ? updatedProduct : p));
+      const updated = isolateProductRecords(
+        state.products.map((p) => (p.id === updatedProduct.id ? scopedProduct : p)),
+        sId,
+        orgId
+      );
       db.saveProducts(sId, updated);
       return { products: updated };
     });
 
     if (orgId) {
-      await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'products', updatedProduct.id, updatedProduct);
+      await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'products', scopedProduct.id, scopedProduct);
     }
   },
 
@@ -245,14 +251,15 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
 
   handleAddProduct: async (newProduct, orgId, stationId) => {
     const sId = stationId || db.getActiveStationId();
+    const scopedProduct = withBusinessScope(newProduct, sId, orgId);
     set((state) => {
-      const updated = [...state.products, newProduct];
+      const updated = isolateProductRecords([...state.products, scopedProduct], sId, orgId);
       db.saveProducts(sId, updated);
       return { products: updated };
     });
 
     if (orgId) {
-      await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'products', newProduct.id, newProduct);
+      await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'products', scopedProduct.id, scopedProduct);
     }
   },
 

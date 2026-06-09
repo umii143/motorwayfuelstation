@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Staff, StaffFinanceEntry, AttendanceRecord, ExpenseEntry, BankAccount } from '../types';
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
+import { getBusinessTypeForStation, isolateTenantRecords, withBusinessScope } from '../lib/businessScope';
 
 interface StaffState {
   staff: Staff[];
@@ -21,8 +22,7 @@ interface StaffState {
 }
 
 const getBusinessType = (stationId: string): 'fuel_station' | 'cng' | 'lube' => {
-  if (stationId === 'st_lube') return 'lube';
-  return 'fuel_station';
+  return getBusinessTypeForStation(stationId);
 };
 
 export const useStaffStore = create<StaffState>((set, get) => ({
@@ -31,25 +31,28 @@ export const useStaffStore = create<StaffState>((set, get) => ({
   attendance: db.getAttendance(db.getActiveStationId()),
 
   setStaff: (staff) => {
-    set({ staff });
     const sId = db.getActiveStationId();
-    if (sId) db.saveStaffList(sId, staff);
+    const scopedStaff = isolateTenantRecords(staff, sId);
+    set({ staff: scopedStaff });
+    if (sId) db.saveStaffList(sId, scopedStaff);
   },
   setStaffFinance: (staffFinance) => {
-    set({ staffFinance });
     const sId = db.getActiveStationId();
-    if (sId) db.saveStaffFinance(sId, staffFinance);
+    const scopedFinance = isolateTenantRecords(staffFinance, sId);
+    set({ staffFinance: scopedFinance });
+    if (sId) db.saveStaffFinance(sId, scopedFinance);
   },
   setAttendance: (attendance) => {
-    set({ attendance });
     const sId = db.getActiveStationId();
-    if (sId) db.saveAttendance(sId, attendance);
+    const scopedAttendance = isolateTenantRecords(attendance, sId);
+    set({ attendance: scopedAttendance });
+    if (sId) db.saveAttendance(sId, scopedAttendance);
   },
 
   handleAddStaff: async (newStaff, orgId, stationId) => {
     const sId = stationId || db.getActiveStationId();
     const activeBType = getBusinessType(sId);
-    const staffWithBType: Staff = { ...newStaff, businessType: activeBType };
+    const staffWithBType: Staff = withBusinessScope(newStaff, sId, orgId);
 
     set((state) => {
       const updated = [...state.staff, staffWithBType];
@@ -65,7 +68,7 @@ export const useStaffStore = create<StaffState>((set, get) => ({
   handleUpdateStaff: async (updatedMember, orgId, stationId) => {
     const sId = stationId || db.getActiveStationId();
     const activeBType = getBusinessType(sId);
-    const staffWithBType: Staff = { ...updatedMember, businessType: activeBType };
+    const staffWithBType: Staff = withBusinessScope(updatedMember, sId, orgId);
 
     set((state) => {
       const updated = state.staff.map((s) => (s.id === updatedMember.id ? staffWithBType : s));

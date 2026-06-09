@@ -301,10 +301,8 @@ export default function Reports({
       const pSales = pLiters * petrolRate;
       const dSales = dLiters * dieselRate;
       const cSales = cKgs * cngRate;
-      const lubeSalesVal = s.lubeSales?.reduce((acc, l) => acc + l.amount, 0) || 0;
-
-      const shiftSales = pSales + dSales + cSales + lubeSalesVal;
-      const shiftMargin = (pSales + dSales + cSales) * 0.045 + lubeSalesVal * 0.22;
+      const shiftSales = pSales + dSales + cSales;
+      const shiftMargin = shiftSales * 0.045;
 
       dataByDate[s.date].Sales += shiftSales;
       dataByDate[s.date].Profit += shiftMargin;

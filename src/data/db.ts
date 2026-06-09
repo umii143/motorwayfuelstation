@@ -36,11 +36,22 @@ import {
   InventoryMovement,
   JournalEntry,
   StockBatch,
-  StockBatch,
   CogsRecord,
   LoyaltyMember,
-  DealerMarginSetting
+  DealerMarginSetting,
+  TenantDocument
 } from '../types';
+import {
+  DEFAULT_FUEL_STATION_ID,
+  LUBE_STATION_ID,
+  getBusinessTypeForStation,
+  isolateLubePosSales,
+  isolateProductRecords,
+  isolateShiftRecords,
+  isolateTenantRecords,
+  resolveStationId,
+  withBusinessScope
+} from '../lib/businessScope';
 
 const STORAGE_KEYS = {
   SETTINGS: 'fuelpro_settings',
@@ -89,8 +100,7 @@ if (typeof window !== 'undefined' && !localStorage.getItem('fuelpro_fresh_v4_cle
   localStorage.setItem('fuelpro_fresh_v4_clean', 'true');
 }
 
-const DEFAULT_STATION_ID = 'st_default';
-const LUBE_STATION_ID = 'st_lube';
+const DEFAULT_STATION_ID = DEFAULT_FUEL_STATION_ID;
 const STATION_SCOPE_MIGRATION_KEY = 'fuelpro_station_scope_v2';
 
 // ==========================================
@@ -300,10 +310,6 @@ const STATION_DATA_BASE_KEYS = [
   ...Object.values(SPECIAL_STORAGE_KEYS)
 ];
 
-function resolveStationId(stationId?: string): string {
-  return stationId || DEFAULT_STATION_ID;
-}
-
 function buildScopedStorageKey(stationId: string, baseKey: string): string {
   return `${baseKey}_${resolveStationId(stationId)}`;
 }
@@ -367,6 +373,58 @@ function setStorageItem<T>(key: string, data: T): void {
   }
 }
 
+type ScopedListKind = 'default' | 'products' | 'shifts' | 'lubePosSales';
+
+function scopeStorageRecords<T extends TenantDocument>(
+  stationId: string,
+  records: T[],
+  kind: ScopedListKind = 'default'
+): T[] {
+  if (kind === 'products') {
+    return isolateProductRecords(records as unknown as Product[], stationId) as unknown as T[];
+  }
+
+  if (kind === 'shifts') {
+    return isolateShiftRecords(records as unknown as Shift[], stationId) as unknown as T[];
+  }
+
+  if (kind === 'lubePosSales') {
+    return isolateLubePosSales(records as unknown as LubePosSale[], stationId) as unknown as T[];
+  }
+
+  return isolateTenantRecords(records, stationId);
+}
+
+function getScopedStorageList<T extends TenantDocument>(
+  stationId: string,
+  baseKey: string,
+  seed: T[],
+  kind: ScopedListKind = 'default'
+): T[] {
+  const key = db.getStationStorageKey(stationId, baseKey);
+  const scopedSeed = scopeStorageRecords(stationId, seed, kind);
+  const stored = getStorageItem<T[]>(key, scopedSeed);
+  const scopedStored = scopeStorageRecords(stationId, stored, kind);
+
+  if (JSON.stringify(stored) !== JSON.stringify(scopedStored)) {
+    setStorageItem(key, scopedStored);
+  }
+
+  return scopedStored;
+}
+
+function saveScopedStorageList<T extends TenantDocument>(
+  stationId: string,
+  baseKey: string,
+  records: T[],
+  kind: ScopedListKind = 'default'
+): void {
+  setStorageItem(
+    db.getStationStorageKey(stationId, baseKey),
+    scopeStorageRecords(stationId, records, kind)
+  );
+}
+
 export const db = {
   getStationStorageKey: (stationId: string, baseKey: string): string => {
     return buildScopedStorageKey(stationId, baseKey);
@@ -376,19 +434,28 @@ export const db = {
     try {
       const list = localStorage.getItem('fuelpro_stations');
       if (!list) {
-        const defaultList = [SEED_FUEL_STATION, SEED_LUBE_STATION];
+        const defaultList = [
+          withBusinessScope(SEED_FUEL_STATION, DEFAULT_STATION_ID),
+          withBusinessScope(SEED_LUBE_STATION, LUBE_STATION_ID)
+        ];
         localStorage.setItem('fuelpro_stations', JSON.stringify(defaultList));
         return defaultList;
       }
       const parsed = JSON.parse(list) as Station[];
-      // Self-Correction: ensure Lube station exists for smooth Dual-Business ERP
+      if (!parsed.some(s => s.id === DEFAULT_STATION_ID)) {
+        parsed.unshift(SEED_FUEL_STATION);
+      }
       if (!parsed.some(s => s.id === LUBE_STATION_ID)) {
         parsed.push(SEED_LUBE_STATION);
-        localStorage.setItem('fuelpro_stations', JSON.stringify(parsed));
       }
-      return parsed;
+      const scopedStations = parsed.map((station) => withBusinessScope(station, station.id));
+      localStorage.setItem('fuelpro_stations', JSON.stringify(scopedStations));
+      return scopedStations;
     } catch {
-      return [SEED_FUEL_STATION, SEED_LUBE_STATION];
+      return [
+        withBusinessScope(SEED_FUEL_STATION, DEFAULT_STATION_ID),
+        withBusinessScope(SEED_LUBE_STATION, LUBE_STATION_ID)
+      ];
     }
   },
 
@@ -418,114 +485,112 @@ export const db = {
     const item = localStorage.getItem(key);
     if (!item) {
       const isLube = stationId === LUBE_STATION_ID;
-      const initialSettings = isLube ? SEED_LUBE_SETTINGS : SEED_FUEL_SETTINGS;
+      const initialSettings = withBusinessScope(isLube ? SEED_LUBE_SETTINGS : SEED_FUEL_SETTINGS, stationId);
       localStorage.setItem(key, JSON.stringify(initialSettings));
       return initialSettings;
     }
-    return JSON.parse(item) as GlobalSettings;
+    const scopedSettings = withBusinessScope(JSON.parse(item) as GlobalSettings, stationId);
+    if (JSON.stringify(JSON.parse(item)) !== JSON.stringify(scopedSettings)) {
+      localStorage.setItem(key, JSON.stringify(scopedSettings));
+    }
+    return scopedSettings;
   },
   
   saveSettings: (stationId: string, settings: GlobalSettings) => 
-    localStorage.setItem(db.getStationStorageKey(stationId, STORAGE_KEYS.SETTINGS), JSON.stringify(settings)),
+    localStorage.setItem(db.getStationStorageKey(stationId, STORAGE_KEYS.SETTINGS), JSON.stringify(withBusinessScope(settings, stationId))),
 
   getStaffList: (stationId: string): Staff[] => {
     const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_STAFF : SEED_FUEL_STAFF;
-    return getStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.STAFF), seed);
+    return getScopedStorageList(stationId, STORAGE_KEYS.STAFF, seed);
   },
   saveStaffList: (stationId: string, staff: Staff[]) => 
-    setStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.STAFF), staff),
+    saveScopedStorageList(stationId, STORAGE_KEYS.STAFF, staff),
 
   getProducts: (stationId: string): Product[] => {
     const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_PRODUCTS : SEED_FUEL_PRODUCTS;
-    return getStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.PRODUCTS), seed);
+    return getScopedStorageList(stationId, STORAGE_KEYS.PRODUCTS, seed, 'products');
   },
   saveProducts: (stationId: string, products: Product[]) => 
-    setStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.PRODUCTS), products),
+    saveScopedStorageList(stationId, STORAGE_KEYS.PRODUCTS, products, 'products'),
 
   getPumps: (stationId: string): Pump[] => {
     const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_PUMPS : SEED_FUEL_PUMPS;
-    return getStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.PUMPS), seed);
+    return getScopedStorageList(stationId, STORAGE_KEYS.PUMPS, seed);
   },
   savePumps: (stationId: string, pumps: Pump[]) => 
-    setStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.PUMPS), pumps),
+    saveScopedStorageList(stationId, STORAGE_KEYS.PUMPS, pumps),
 
   getNozzles: (stationId: string): Nozzle[] => {
     const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_NOZZLES : SEED_FUEL_NOZZLES;
-    return getStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.NOZZLES), seed);
+    return getScopedStorageList(stationId, STORAGE_KEYS.NOZZLES, seed);
   },
   saveNozzles: (stationId: string, nozzles: Nozzle[]) => 
-    setStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.NOZZLES), nozzles),
+    saveScopedStorageList(stationId, STORAGE_KEYS.NOZZLES, nozzles),
 
   getCustomers: (stationId: string): Customer[] => {
     const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_CUSTOMERS : SEED_FUEL_CUSTOMERS;
-    return getStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.CUSTOMERS), seed);
+    return getScopedStorageList(stationId, STORAGE_KEYS.CUSTOMERS, seed);
   },
   saveCustomers: (stationId: string, customers: Customer[]) => 
-    setStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.CUSTOMERS), customers),
+    saveScopedStorageList(stationId, STORAGE_KEYS.CUSTOMERS, customers),
 
   getSuppliers: (stationId: string): Supplier[] => {
     const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_SUPPLIERS : SEED_FUEL_SUPPLIERS;
-    return getStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.SUPPLIERS), seed);
+    return getScopedStorageList(stationId, STORAGE_KEYS.SUPPLIERS, seed);
   },
   saveSuppliers: (stationId: string, suppliers: Supplier[]) => 
-    setStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.SUPPLIERS), suppliers),
+    saveScopedStorageList(stationId, STORAGE_KEYS.SUPPLIERS, suppliers),
 
   getShifts: (stationId: string): Shift[] => 
-    getStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.SHIFTS), [] as Shift[]),
+    getScopedStorageList(stationId, STORAGE_KEYS.SHIFTS, [] as Shift[], 'shifts'),
   saveShifts: (stationId: string, shifts: Shift[]) => 
-    setStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.SHIFTS), shifts),
+    saveScopedStorageList(stationId, STORAGE_KEYS.SHIFTS, shifts, 'shifts'),
 
   getBankAccounts: (stationId: string): BankAccount[] => {
     const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_BANKS : SEED_FUEL_BANKS;
-    return getStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.BANKS), seed);
+    return getScopedStorageList(stationId, STORAGE_KEYS.BANKS, seed);
   },
   saveBankAccounts: (stationId: string, banks: BankAccount[]) => 
-    setStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.BANKS), banks),
+    saveScopedStorageList(stationId, STORAGE_KEYS.BANKS, banks),
 
   getDigitalAccounts: (stationId: string): DigitalAccount[] => {
     const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_DIGITAL_ACCOUNTS : SEED_FUEL_DIGITAL_ACCOUNTS;
-    return getStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.DIGITAL_ACCOUNTS), seed);
+    return getScopedStorageList(stationId, STORAGE_KEYS.DIGITAL_ACCOUNTS, seed);
   },
   saveDigitalAccounts: (stationId: string, digital: DigitalAccount[]) => 
-    setStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.DIGITAL_ACCOUNTS), digital),
+    saveScopedStorageList(stationId, STORAGE_KEYS.DIGITAL_ACCOUNTS, digital),
 
   getStockTransactions: (stationId: string): StockTransaction[] => 
-    getStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.STOCK_TXNS), [] as StockTransaction[]),
+    getScopedStorageList(stationId, STORAGE_KEYS.STOCK_TXNS, [] as StockTransaction[]),
   saveStockTransactions: (stationId: string, txns: StockTransaction[]) => 
-    setStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.STOCK_TXNS), txns),
+    saveScopedStorageList(stationId, STORAGE_KEYS.STOCK_TXNS, txns),
 
   getTanks: (stationId: string): Tank[] => {
     const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_TANKS : SEED_FUEL_TANKS;
-    return getStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.TANKS), seed);
+    return getScopedStorageList(stationId, STORAGE_KEYS.TANKS, seed);
   },
   saveTanks: (stationId: string, tanks: Tank[]) => 
-    setStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.TANKS), tanks),
+    saveScopedStorageList(stationId, STORAGE_KEYS.TANKS, tanks),
 
   getRateHistory: (stationId: string): RateHistoryEntry[] => 
-    getStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.RATE_HISTORY), [] as RateHistoryEntry[]),
+    getScopedStorageList(stationId, STORAGE_KEYS.RATE_HISTORY, [] as RateHistoryEntry[]),
   saveRateHistory: (stationId: string, history: RateHistoryEntry[]) => 
-    setStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.RATE_HISTORY), history),
+    saveScopedStorageList(stationId, STORAGE_KEYS.RATE_HISTORY, history),
 
   getStaffFinance: (stationId: string): StaffFinanceEntry[] => 
-    getStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.STAFF_FINANCE), [] as StaffFinanceEntry[]),
+    getScopedStorageList(stationId, STORAGE_KEYS.STAFF_FINANCE, [] as StaffFinanceEntry[]),
   saveStaffFinance: (stationId: string, finances: StaffFinanceEntry[]) => 
-    setStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.STAFF_FINANCE), finances),
+    saveScopedStorageList(stationId, STORAGE_KEYS.STAFF_FINANCE, finances),
 
   getAttendance: (stationId: string): AttendanceRecord[] => 
-    getStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.ATTENDANCE), [] as AttendanceRecord[]),
+    getScopedStorageList(stationId, STORAGE_KEYS.ATTENDANCE, [] as AttendanceRecord[]),
   saveAttendance: (stationId: string, records: AttendanceRecord[]) => 
-    setStorageItem(db.getStationStorageKey(stationId, STORAGE_KEYS.ATTENDANCE), records),
+    saveScopedStorageList(stationId, STORAGE_KEYS.ATTENDANCE, records),
 
   getStandaloneExpenses: (stationId: string): ExpenseEntry[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.STANDALONE_EXPENSES),
-      [] as ExpenseEntry[]
-    ),
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.STANDALONE_EXPENSES, [] as ExpenseEntry[]),
   saveStandaloneExpenses: (stationId: string, expenses: ExpenseEntry[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.STANDALONE_EXPENSES),
-      expenses
-    ),
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.STANDALONE_EXPENSES, expenses),
 
   getReconciledShiftIds: (stationId: string): string[] =>
     getStorageItem(
@@ -539,190 +604,88 @@ export const db = {
     ),
 
   getSettingsAuditTrail: (stationId: string): AuditTrailEntry[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL),
-      [] as AuditTrailEntry[]
-    ),
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL, [] as AuditTrailEntry[]),
   saveSettingsAuditTrail: (stationId: string, entries: AuditTrailEntry[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL),
-      entries
-    ),
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL, entries),
   getLubePosSales: (stationId: string): LubePosSale[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.LUBE_POS_SALES),
-      [] as LubePosSale[]
-    ),
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.LUBE_POS_SALES, [] as LubePosSale[], 'lubePosSales'),
   saveLubePosSales: (stationId: string, sales: LubePosSale[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.LUBE_POS_SALES),
-      sales
-    ),
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.LUBE_POS_SALES, sales, 'lubePosSales'),
 
   getFleetAccounts: (stationId: string): FleetAccount[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.FLEET_ACCOUNTS),
-      [] as FleetAccount[]
-    ),
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_ACCOUNTS, [] as FleetAccount[]),
   saveFleetAccounts: (stationId: string, accounts: FleetAccount[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.FLEET_ACCOUNTS),
-      accounts
-    ),
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_ACCOUNTS, accounts),
 
   getFleetVehicles: (stationId: string): FleetVehicle[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.FLEET_VEHICLES),
-      [] as FleetVehicle[]
-    ),
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_VEHICLES, [] as FleetVehicle[]),
   saveFleetVehicles: (stationId: string, vehicles: FleetVehicle[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.FLEET_VEHICLES),
-      vehicles
-    ),
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_VEHICLES, vehicles),
 
   getFleetDrivers: (stationId: string): Driver[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.FLEET_DRIVERS),
-      [] as Driver[]
-    ),
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_DRIVERS, [] as Driver[]),
   saveFleetDrivers: (stationId: string, drivers: Driver[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.FLEET_DRIVERS),
-      drivers
-    ),
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_DRIVERS, drivers),
 
   getFleetTransactions: (stationId: string): FleetTransaction[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.FLEET_TRANSACTIONS),
-      [] as FleetTransaction[]
-    ),
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_TRANSACTIONS, [] as FleetTransaction[]),
   saveFleetTransactions: (stationId: string, txns: FleetTransaction[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.FLEET_TRANSACTIONS),
-      txns
-    ),
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_TRANSACTIONS, txns),
 
   getTankerSchedules: (stationId: string): TankerSchedule[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.TANKER_SCHEDULES),
-      [] as TankerSchedule[]
-    ),
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.TANKER_SCHEDULES, [] as TankerSchedule[]),
   saveTankerSchedules: (stationId: string, schedules: TankerSchedule[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.TANKER_SCHEDULES),
-      schedules
-    ),
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.TANKER_SCHEDULES, schedules),
 
   getTankerDeliveries: (stationId: string): TankerDelivery[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.TANKER_DELIVERIES),
-      [] as TankerDelivery[]
-    ),
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.TANKER_DELIVERIES, [] as TankerDelivery[]),
   saveTankerDeliveries: (stationId: string, deliveries: TankerDelivery[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.TANKER_DELIVERIES),
-      deliveries
-    ),
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.TANKER_DELIVERIES, deliveries),
 
   getVarianceIncidents: (stationId: string): VarianceIncident[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.VARIANCE_INCIDENTS),
-      [] as VarianceIncident[]
-    ),
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.VARIANCE_INCIDENTS, [] as VarianceIncident[]),
   saveVarianceIncidents: (stationId: string, incidents: VarianceIncident[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.VARIANCE_INCIDENTS),
-      incidents
-    ),
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.VARIANCE_INCIDENTS, incidents),
 
   getAssets: (stationId: string): Asset[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.ASSETS),
-      [] as Asset[]
-    ),
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.ASSETS, [] as Asset[]),
   saveAssets: (stationId: string, assets: Asset[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.ASSETS),
-      assets
-    ),
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.ASSETS, assets),
 
   getMaintenanceRecords: (stationId: string): MaintenanceRecord[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.MAINTENANCE_RECORDS),
-      [] as MaintenanceRecord[]
-    ),
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.MAINTENANCE_RECORDS, [] as MaintenanceRecord[]),
   saveMaintenanceRecords: (stationId: string, records: MaintenanceRecord[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.MAINTENANCE_RECORDS),
-      records
-    ),
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.MAINTENANCE_RECORDS, records),
 
   getLoyaltyMembers: (stationId: string): LoyaltyMember[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.LOYALTY_MEMBERS),
-      [] as LoyaltyMember[]
-    ),
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.LOYALTY_MEMBERS, [] as LoyaltyMember[]),
   saveLoyaltyMembers: (stationId: string, members: LoyaltyMember[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.LOYALTY_MEMBERS),
-      members
-    ),
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.LOYALTY_MEMBERS, members),
 
   getRewardTransactions: (stationId: string): RewardTransaction[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.REWARD_TRANSACTIONS),
-      [] as RewardTransaction[]
-    ),
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.REWARD_TRANSACTIONS, [] as RewardTransaction[]),
   saveRewardTransactions: (stationId: string, transactions: RewardTransaction[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.REWARD_TRANSACTIONS),
-      transactions
-    ),
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.REWARD_TRANSACTIONS, transactions),
 
   getInventoryMovements: (stationId: string): InventoryMovement[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_MOVEMENTS),
-      [] as InventoryMovement[]
-    ),
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_MOVEMENTS, [] as InventoryMovement[]),
   saveInventoryMovements: (stationId: string, movements: InventoryMovement[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_MOVEMENTS),
-      movements
-    ),
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_MOVEMENTS, movements),
 
   getJournalEntries: (stationId: string): JournalEntry[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.JOURNAL_ENTRIES),
-      [] as JournalEntry[]
-    ),
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.JOURNAL_ENTRIES, [] as JournalEntry[]),
   saveJournalEntries: (stationId: string, entries: JournalEntry[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.JOURNAL_ENTRIES),
-      entries
-    ),
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.JOURNAL_ENTRIES, entries),
 
   getStockBatches: (stationId: string): StockBatch[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.STOCK_BATCHES),
-      [] as StockBatch[]
-    ),
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.STOCK_BATCHES, [] as StockBatch[]),
   saveStockBatches: (stationId: string, batches: StockBatch[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.STOCK_BATCHES),
-      batches
-    ),
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.STOCK_BATCHES, batches),
 
   getCOGSRecords: (stationId: string): CogsRecord[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.COGS_RECORDS),
-      [] as CogsRecord[]
-    ),
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.COGS_RECORDS, [] as CogsRecord[]),
   saveCOGSRecords: (stationId: string, records: CogsRecord[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.COGS_RECORDS),
-      records
-    ),
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.COGS_RECORDS, records),
 
   getDealerMarginSettings: (stationId: string): DealerMarginSetting[] =>
     getStorageItem(

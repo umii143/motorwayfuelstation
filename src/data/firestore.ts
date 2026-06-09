@@ -5,12 +5,16 @@ import {
   deleteDoc, 
   getDocs, 
   query, 
-  where, 
   onSnapshot, 
   writeBatch,
   getDoc
 } from 'firebase/firestore';
 import { dbFS, auth } from '../lib/firebase';
+import {
+  getBusinessTypeForStation,
+  isRecordInBusinessScope,
+  withBusinessScope
+} from '../lib/businessScope';
 
 // Helper to construct references
 const getCollectionRef = (orgId: string, stationId: string, collectionName: string) => {
@@ -24,12 +28,15 @@ const getDocumentRef = (orgId: string, stationId: string, collectionName: string
 // Generic interface for metadata addition
 const createMetadata = (orgId: string, stationId: string, businessType: 'fuel_station' | 'cng' | 'lube') => {
   const uid = auth.currentUser?.uid || 'system';
+  const enforcedBusinessType = getBusinessTypeForStation(stationId);
   return {
     orgId,
     stationId,
-    businessType,
+    businessId: stationId,
+    businessType: enforcedBusinessType,
     createdBy: uid,
     createdAt: new Date().toISOString(),
+    updatedBy: uid,
     updatedAt: new Date().toISOString()
   };
 };
@@ -45,14 +52,22 @@ export const firestoreDb = {
     data: any
   ) => {
     try {
+      const enforcedBusinessType = getBusinessTypeForStation(stationId);
       const docRef = getDocumentRef(orgId, stationId, collectionName, docId);
       const docSnap = await getDoc(docRef);
       
       const meta = docSnap.exists() 
-        ? { updatedAt: new Date().toISOString() } 
+        ? {
+            orgId,
+            stationId,
+            businessId: stationId,
+            businessType: enforcedBusinessType,
+            updatedBy: auth.currentUser?.uid || 'system',
+            updatedAt: new Date().toISOString()
+          } 
         : createMetadata(orgId, stationId, businessType);
 
-      await setDoc(docRef, { ...data, ...meta }, { merge: true });
+      await setDoc(docRef, { ...withBusinessScope(data, stationId, orgId), ...meta }, { merge: true });
     } catch (err) {
       console.error(`Error saving document in ${collectionName}:`, err);
       throw err;
@@ -76,7 +91,10 @@ export const firestoreDb = {
       const colRef = getCollectionRef(orgId, stationId, collectionName);
       const q = query(colRef);
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as unknown as T[];
+      return snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter((item) => isRecordInBusinessScope(item as any, stationId, orgId))
+        .map((item) => withBusinessScope(item as any, stationId, orgId)) as unknown as T[];
     } catch (err) {
       console.error(`Error fetching collection ${collectionName}:`, err);
       return [];
@@ -92,7 +110,10 @@ export const firestoreDb = {
   ) => {
     const colRef = getCollectionRef(orgId, stationId, collectionName);
     return onSnapshot(colRef, (snapshot) => {
-      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as unknown as T[];
+      const items = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter((item) => isRecordInBusinessScope(item as any, stationId, orgId))
+        .map((item) => withBusinessScope(item as any, stationId, orgId)) as unknown as T[];
       callback(items);
     }, (error) => {
       console.error(`Real-time subscription error in ${collectionName}:`, error);
@@ -108,13 +129,14 @@ export const firestoreDb = {
     items: any[]
   ) => {
     try {
+      const enforcedBusinessType = getBusinessTypeForStation(stationId);
       const batch = writeBatch(dbFS);
       items.forEach((item) => {
         const docId = item.id || `doc_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`;
         const docRef = getDocumentRef(orgId, stationId, collectionName, docId);
         
-        const metadata = createMetadata(orgId, stationId, businessType);
-        batch.set(docRef, { ...item, ...metadata }, { merge: true });
+        const metadata = createMetadata(orgId, stationId, enforcedBusinessType);
+        batch.set(docRef, { ...withBusinessScope(item, stationId, orgId), ...metadata }, { merge: true });
       });
       await batch.commit();
       

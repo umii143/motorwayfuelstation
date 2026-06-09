@@ -39,7 +39,6 @@ import {
   BankCashEntry,
   DigitalCashEntry,
   SupplierPayment,
-  SupplierPayment,
   Nozzle,
   CogsRecord
 } from '../../types';

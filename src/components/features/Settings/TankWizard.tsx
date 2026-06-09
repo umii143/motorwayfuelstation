@@ -14,7 +14,7 @@ interface TankWizardProps {
   onUpdateProducts?: (products: Product[]) => void;
 }
 
-export default function TankWizard({ tanks, products, language, onAddTank, onDeleteTank }: TankWizardProps) {
+export default function TankWizard({ tanks, products, language, onAddTank, onUpdateTank, onDeleteTank }: TankWizardProps) {
   const [showForm, setShowForm] = useState(false);
   const [editingTankId, setEditingTankId] = useState<string | null>(null);
   const [name, setName] = useState("");

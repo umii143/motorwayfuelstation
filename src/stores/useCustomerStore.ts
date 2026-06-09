@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Customer } from '../types';
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
+import { getBusinessTypeForStation, isolateTenantRecords, withBusinessScope } from '../lib/businessScope';
 
 interface CustomerState {
   customers: Customer[];
@@ -15,17 +16,18 @@ export const useCustomerStore = create<CustomerState>((set) => ({
   customers: db.getCustomers(db.getActiveStationId()),
 
   setCustomers: (customers) => {
-    set({ customers });
     const stationId = db.getActiveStationId();
+    const scopedCustomers = isolateTenantRecords(customers, stationId);
+    set({ customers: scopedCustomers });
     if (stationId) {
-      db.saveCustomers(stationId, customers);
+      db.saveCustomers(stationId, scopedCustomers);
     }
   },
 
   handleAddCustomer: async (newCustomer, orgId, stationId, language, showToast) => {
     const sId = stationId || db.getActiveStationId();
-    const activeBType = sId === 'st_lube' ? 'lube' : 'fuel_station';
-    const customerWithBType: Customer = { ...newCustomer, businessType: activeBType as 'fuel_station' | 'cng' | 'lube' };
+    const activeBType = getBusinessTypeForStation(sId);
+    const customerWithBType: Customer = withBusinessScope(newCustomer, sId, orgId);
     
     set((state) => {
       const updated = [...state.customers, customerWithBType];
@@ -47,8 +49,8 @@ export const useCustomerStore = create<CustomerState>((set) => ({
 
   handleUpdateCustomer: async (updatedCustomer, orgId, stationId, language, showToast) => {
     const sId = stationId || db.getActiveStationId();
-    const activeBType = sId === 'st_lube' ? 'lube' : 'fuel_station';
-    const customerWithBType: Customer = { ...updatedCustomer, businessType: activeBType as 'fuel_station' | 'cng' | 'lube' };
+    const activeBType = getBusinessTypeForStation(sId);
+    const customerWithBType: Customer = withBusinessScope(updatedCustomer, sId, orgId);
 
     set((state) => {
       const updated = state.customers.map((c) => (c.id === updatedCustomer.id ? customerWithBType : c));

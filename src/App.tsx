@@ -6,6 +6,7 @@ import { writeBatch, doc, setDoc } from 'firebase/firestore';
 import { dbFS } from './lib/firebase';
 import { fetchWithAuth } from './lib/api';
 import { migrateAccountsPayable } from './utils/migrations';
+import { getBusinessTypeForStation, resolveViewForBusiness } from './lib/businessScope';
 
 /**
  * @license
@@ -156,6 +157,16 @@ function MainApp() {
 
   // Single source of truth — always use activeStationId, never product sniffing
   const isLubeBusiness = activeStationId === 'st_lube';
+  const resolveActiveView = React.useCallback(
+    (view: string) => resolveViewForBusiness(view, activeStationId),
+    [activeStationId]
+  );
+  const handleViewChange = React.useCallback(
+    (view: string) => {
+      setActiveView(resolveActiveView(view));
+    },
+    [resolveActiveView]
+  );
 
   // Reset navigation to dashboard whenever the user switches stations
   // This prevents stale views (e.g. 'lube_pos') appearing on the wrong business
@@ -165,6 +176,13 @@ function MainApp() {
        migrateAccountsPayable(authenticatedUser?.uid).catch(console.error);
     }
   }, [activeStationId, authenticatedUser]);
+
+  React.useEffect(() => {
+    const nextView = resolveActiveView(activeView);
+    if (nextView !== activeView) {
+      setActiveView(nextView);
+    }
+  }, [activeView, resolveActiveView]);
 
   // ==========================================
   // ROUTING VIEW CONTROLS
@@ -185,9 +203,9 @@ function MainApp() {
             staff={staff}
             nozzles={nozzles}
             tanks={tanks}
-            onNavigate={setActiveView}
+            onNavigate={handleViewChange}
             lubePosSales={lubePosSales}
-            onStartShiftQuick={() => setActiveView(isLubeBusiness ? 'lube_pos' : 'shift_wizard')}
+            onStartShiftQuick={() => handleViewChange(isLubeBusiness ? 'lube_pos' : 'shift_wizard')}
             rateHistory={rateHistory}
           />
         );
@@ -204,7 +222,7 @@ function MainApp() {
               digitalAccounts={digitalAccounts}
               lubePosSales={lubePosSales}
               onAddLubePosSale={handleAddLubePosSale}
-              onNavigate={setActiveView}
+              onNavigate={handleViewChange}
             />
           );
         }
@@ -223,7 +241,7 @@ function MainApp() {
             shifts={shifts}
             onAddShift={handleAddShift}
             onUpdateShift={handleUpdateShift}
-            onNavigateToView={setActiveView}
+            onNavigateToView={handleViewChange}
             onAddCustomer={handleAddCustomer}
             onAddSupplier={handleAddSupplier}
             onAddBank={handleAddBank}
@@ -251,7 +269,6 @@ function MainApp() {
       case 'lube_pos':
         // Guard: Only Lube stations can access LubePOS — redirect Fuel stations to dashboard
         if (!isLubeBusiness) {
-          setActiveView('dashboard');
           return null;
         }
         return (
@@ -264,7 +281,7 @@ function MainApp() {
             digitalAccounts={digitalAccounts}
             lubePosSales={lubePosSales}
             onAddLubePosSale={handleAddLubePosSale}
-            onNavigate={setActiveView}
+            onNavigate={handleViewChange}
           />
         );
 
@@ -471,7 +488,7 @@ function MainApp() {
             onUpdateBanks={setBanks}
             onUpdateProducts={setProducts}
             onUpdatePumps={setPumps}
-            onNavigate={setActiveView}
+            onNavigate={handleViewChange}
           />
         );
       }
@@ -514,7 +531,7 @@ function MainApp() {
       case 'cctv':
       case 'api_gateway':
         // Let EnterpriseHub handle the internal tab selection using the activeView
-        return <EnterpriseHub settings={settings} activeModule={activeView} onNavigate={setActiveView} stationId={activeStationId} />;
+        return <EnterpriseHub settings={settings} activeModule={activeView} onNavigate={handleViewChange} stationId={activeStationId} />;
 
       case 'dip_calculator':
         return (
@@ -532,7 +549,7 @@ function MainApp() {
             onApplyRates={(updates) => {
               updates.forEach(u => handleUpdateProductRate(u.productId, u.newRate));
               showToast('OGRA rates applied successfully!', 'success');
-              setActiveView('inventory');
+              handleViewChange('inventory');
 
               if (settings.whatsappSettings?.enabled && settings.whatsappSettings?.alerts?.priceChange) {
                 try {
@@ -578,7 +595,7 @@ function MainApp() {
     }
   };
 
-  const showOnboarding = !settings.setupCompleted;
+  const showOnboarding = !isLubeBusiness && !settings.setupCompleted;
 
   // 1. Session verification loading splash screen
   if (checkingAuth) {
@@ -606,7 +623,7 @@ function MainApp() {
             currentLanguage={settings.language}
             onCancel={async () => {
               if (activeView === 'onboarding') {
-                 setActiveView('configuration');
+                 handleViewChange('configuration');
                  return;
               }
               const newSettings = { ...settings, setupCompleted: true };
@@ -639,48 +656,55 @@ function MainApp() {
 
             const orgId = authenticatedUser?.orgId;
             if (orgId) {
-              const bType = 'fuel_station';
+              const bType = getBusinessTypeForStation(activeStationId);
+              const scopedMeta = {
+                orgId,
+                stationId: activeStationId,
+                businessId: activeStationId,
+                businessType: bType,
+                updatedAt: new Date().toISOString()
+              };
               try {
                 const batch = writeBatch(dbFS);
                 
                 // settings
                 const settingsRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'settings', 'global');
-                batch.set(settingsRef, completedData.settings, { merge: true });
+                batch.set(settingsRef, { ...completedData.settings, ...scopedMeta }, { merge: true });
                 
                 // tanks
                 completedData.tanks.forEach(tk => {
                   const tRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'tanks', tk.id);
-                  batch.set(tRef, tk, { merge: true });
+                  batch.set(tRef, { ...tk, ...scopedMeta }, { merge: true });
                 });
                 
                 // nozzles
                 completedData.nozzles.forEach(nz => {
                   const nRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'nozzles', nz.id);
-                  batch.set(nRef, nz, { merge: true });
+                  batch.set(nRef, { ...nz, ...scopedMeta }, { merge: true });
                 });
                 
                 // products
                 completedData.products.forEach(prod => {
                   const pRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'products', prod.id);
-                  batch.set(pRef, prod, { merge: true });
+                  batch.set(pRef, { ...prod, ...scopedMeta }, { merge: true });
                 });
                 
                 // staff
                 completedData.staff.forEach(st => {
                   const sRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'staff', st.id);
-                  batch.set(sRef, st, { merge: true });
+                  batch.set(sRef, { ...st, ...scopedMeta }, { merge: true });
                 });
                 
                 // pumps
                 generatedPumps.forEach(pump => {
                   const puRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'pumps', pump.id);
-                  batch.set(puRef, pump, { merge: true });
+                  batch.set(puRef, { ...pump, ...scopedMeta }, { merge: true });
                 });
                 
                 await batch.commit();
                 
                 if (activeView === 'onboarding') {
-                  setActiveView('configuration');
+                  handleViewChange('configuration');
                   return;
                 }
               } catch (err) {
@@ -690,7 +714,7 @@ function MainApp() {
             }
 
             // Re-route to dashboard to display fresh, populated layout
-            setActiveView('dashboard');
+            handleViewChange('dashboard');
           }}
         />
         </React.Suspense>
@@ -699,7 +723,7 @@ function MainApp() {
       {/* Dynamic Bilingual Header and Responsive Drawer */}
       <Navigation
         activeView={activeView}
-        onViewChange={setActiveView}
+        onViewChange={handleViewChange}
         settings={settings}
         onSettingsUpdate={handleUpdateSettings}
         user={authenticatedUser}

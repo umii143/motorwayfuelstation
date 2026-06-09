@@ -11,6 +11,7 @@ import { useStationStore } from './useStationStore';
 import { doc, writeBatch } from 'firebase/firestore';
 import { dbFS } from '../lib/firebase';
 import { fetchWithAuth } from '../lib/api';
+import { getBusinessTypeForStation, isolateShiftRecords, withBusinessScope } from '../lib/businessScope';
 
 interface ShiftState {
   shifts: Shift[];
@@ -24,8 +25,7 @@ interface ShiftState {
 }
 
 const getBusinessType = (stationId: string): 'fuel_station' | 'cng' | 'lube' => {
-  if (stationId === 'st_lube') return 'lube';
-  return 'fuel_station';
+  return getBusinessTypeForStation(stationId);
 };
 
 const generateShiftJournalEntries = (
@@ -146,14 +146,17 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
 
   handleAddShift: async (newShift, orgId, stationId) => {
     const sId = stationId || db.getActiveStationId();
+    const scopedShift = isolateShiftRecords([newShift], sId, orgId)[0];
+    if (!scopedShift) return;
+
     set((state) => {
-      const updated = [newShift, ...state.shifts];
+      const updated = [scopedShift, ...state.shifts];
       db.saveShifts(sId, updated);
       return { shifts: updated };
     });
 
     if (orgId) {
-      await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'shifts', newShift.id, newShift);
+      await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'shifts', scopedShift.id, scopedShift);
     }
   },
 
@@ -234,6 +237,9 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
   handleUpdateShift: async (updatedShift, orgId, stationId, checkPerm) => {
     const sId = stationId || db.getActiveStationId();
     const bType = getBusinessType(sId);
+    if (bType === 'lube') return;
+
+    updatedShift = withBusinessScope({ ...updatedShift, lubeSales: [] }, sId, orgId);
     const showToast = useStationStore.getState().showToast;
     const settings = useStationStore.getState().settings;
 
@@ -471,7 +477,7 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
               grossProfit: qtyToTake * dealerMargin,
               netProfit: (qtyToTake * prod.rate) - (qtyToTake * (batch.landedCostPerLiter || 0)),
               saleDate: updatedShift.date + 'T' + (updatedShift.endTime || '16:00:00') + '.000Z',
-              createdAt: new Date().toISOString()
+              createdAt: Date.now()
             });
 
             remainingToDeduct -= qtyToTake;

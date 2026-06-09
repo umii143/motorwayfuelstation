@@ -5,18 +5,21 @@ import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
 import { JournalEntry, SupplierPayment, StockTransaction, Supplier } from '../types';
 import { useShiftStore } from '../stores/useShiftStore';
+import { getBusinessTypeForStation } from '../lib/businessScope';
 
 export const migrateAccountsPayable = async (orgId?: string) => {
-  const isMigrated = localStorage.getItem('fuelpro_ap_migrated_v1');
+  const sId = db.getActiveStationId();
+  if (!sId) return;
+
+  const migrationKey = `fuelpro_ap_migrated_v1_${sId}`;
+  const isMigrated = localStorage.getItem(migrationKey);
   if (isMigrated === 'true') {
     return;
   }
 
   console.log('--- STARTING ACCOUNTS PAYABLE RETROACTIVE MIGRATION ---');
 
-  const sId = db.getActiveStationId();
-  if (!sId) return;
-  const bType = sId === 'st_lube' ? 'lube' : 'fuel_station';
+  const bType = getBusinessTypeForStation(sId);
 
   const inventoryStore = useInventoryStore.getState();
   const supplierStore = useSupplierStore.getState();
@@ -29,7 +32,7 @@ export const migrateAccountsPayable = async (orgId?: string) => {
   
   if (!suppliers || suppliers.length === 0) {
      console.log('No suppliers found. Skipping migration.');
-     localStorage.setItem('fuelpro_ap_migrated_v1', 'true');
+     localStorage.setItem(migrationKey, 'true');
      return;
   }
 
@@ -136,6 +139,6 @@ export const migrateAccountsPayable = async (orgId?: string) => {
      supplierStore.handleUpdateSupplier(us, orgId, sId);
   });
 
-  localStorage.setItem('fuelpro_ap_migrated_v1', 'true');
+  localStorage.setItem(migrationKey, 'true');
   console.log('--- ACCOUNTS PAYABLE MIGRATION COMPLETED SUCCESSFULLY ---');
 };

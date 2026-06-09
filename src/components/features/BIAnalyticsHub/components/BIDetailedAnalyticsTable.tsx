@@ -34,8 +34,8 @@ export function BIDetailedAnalyticsTable({ filter }: any) {
     const key = getMonthKey(b.date);
     if (!monthlyData[key]) monthlyData[key] = { revenue: 0, invested: 0, expenses: 0 };
     
-    const amountReceived = b.qtyReceived * b.purchasePrice;
-    const totalCost = amountReceived + (b.carriage || 0);
+    const amountReceived = b.qtyReceived * b.omcInvoicePrice;
+    const totalCost = amountReceived + (b.carriageTotal || 0);
     monthlyData[key].invested += totalCost;
   });
 

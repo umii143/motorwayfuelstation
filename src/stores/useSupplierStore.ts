@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Supplier } from '../types';
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
+import { getBusinessTypeForStation, isolateTenantRecords, withBusinessScope } from '../lib/businessScope';
 
 interface SupplierState {
   suppliers: Supplier[];
@@ -15,17 +16,18 @@ export const useSupplierStore = create<SupplierState>((set) => ({
   suppliers: db.getSuppliers(db.getActiveStationId()),
 
   setSuppliers: (suppliers) => {
-    set({ suppliers });
     const stationId = db.getActiveStationId();
+    const scopedSuppliers = isolateTenantRecords(suppliers, stationId);
+    set({ suppliers: scopedSuppliers });
     if (stationId) {
-      db.saveSuppliers(stationId, suppliers);
+      db.saveSuppliers(stationId, scopedSuppliers);
     }
   },
 
   handleAddSupplier: async (newSupplier, orgId, stationId, language, showToast) => {
     const sId = stationId || db.getActiveStationId();
-    const activeBType = sId === 'st_lube' ? 'lube' : 'fuel_station';
-    const supplierWithBType: Supplier = { ...newSupplier, businessType: activeBType as 'fuel_station' | 'cng' | 'lube' };
+    const activeBType = getBusinessTypeForStation(sId);
+    const supplierWithBType: Supplier = withBusinessScope(newSupplier, sId, orgId);
 
     set((state) => {
       const updated = [...state.suppliers, supplierWithBType];
@@ -47,8 +49,8 @@ export const useSupplierStore = create<SupplierState>((set) => ({
 
   handleUpdateSupplier: async (updatedSupplier, orgId, stationId, language, showToast) => {
     const sId = stationId || db.getActiveStationId();
-    const activeBType = sId === 'st_lube' ? 'lube' : 'fuel_station';
-    const supplierWithBType: Supplier = { ...updatedSupplier, businessType: activeBType as 'fuel_station' | 'cng' | 'lube' };
+    const activeBType = getBusinessTypeForStation(sId);
+    const supplierWithBType: Supplier = withBusinessScope(updatedSupplier, sId, orgId);
 
     set((state) => {
       const updated = state.suppliers.map((s) => (s.id === updatedSupplier.id ? supplierWithBType : s));

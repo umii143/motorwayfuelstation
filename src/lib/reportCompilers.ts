@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Shift, Product, Customer, Supplier, ExpenseEntry, Tank, RateHistoryEntry, StaffFinanceEntry, AttendanceRecord, Staff, Nozzle, COGSRecord } from '../types';
+import { Shift, Product, Customer, Supplier, ExpenseEntry, Tank, RateHistoryEntry, StaffFinanceEntry, AttendanceRecord, Staff, Nozzle, CogsRecord } from '../types';
 
 export interface ReportRow {
   id: string;
@@ -53,7 +53,7 @@ export interface ReportTemplate {
     attendance: AttendanceRecord[];
     staff: Staff[];
     nozzles: Nozzle[];
-    cogsRecords?: COGSRecord[];
+    cogsRecords?: CogsRecord[];
   }) => ReportRow[];
 }
 
@@ -407,32 +407,7 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
       { key: 'approvalStatus', label: 'Status', urduLabel: 'اسٹیٹس' },
       { key: 'balanceAfter', label: 'Secured Ref', urduLabel: 'ڈیلیوری سیکیور کوڈ' }
     ],
-    compile: ({ shifts, products, staff }) => {
-      const rows: ReportRow[] = [];
-      shifts.forEach(s => {
-        const staffObj = getStaffInfo(staff, s.staffId);
-        s.lubeSales?.forEach(l => {
-          const item = products.find(p => p.id === l.itemId);
-          rows.push({
-            id: `A6-${s.id}-${l.id}`,
-            date: s.date,
-            time: 'Shift Hour',
-            staffName: staffObj.name,
-            role: staffObj.role,
-            sourceRef: `SH-${s.id}`,
-            productCategory: item?.name || l.itemId,
-            quantity: `${l.quantity} Pcs`,
-            rate: `Rs. ${l.price.toFixed(2)}`,
-            amount: l.amount,
-            approvalStatus: 'Sold Counter',
-            balanceAfter: `TX-${l.id.slice(0, 6)}`,
-            productId: l.itemId,
-            staffId: s.staffId
-          });
-        });
-      });
-      return rows;
-    }
+    compile: () => []
   },
   {
     id: 'A7',
@@ -681,17 +656,10 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
       { key: 'balanceAfter', label: 'PROV NET PROFIT', urduLabel: 'خالص منافع' }
     ],
     compile: ({ shifts, standaloneExpenses, rateHistory, cogsRecords = [] }) => {
-      const grossFuelSales = shifts.reduce((sum, s) => {
-        const lubesVal = s.lubeSales?.reduce((acc, l) => acc + l.amount, 0) || 0;
-        return sum + s.submittedCash - lubesVal;
-      }, 0);
-
-      const lubeSalesVal = shifts.reduce((sum, s) => {
-        return sum + (s.lubeSales?.reduce((acc, l) => acc + l.amount, 0) || 0);
-      }, 0);
+      const grossFuelSales = shifts.reduce((sum, s) => sum + s.submittedCash, 0);
 
       // Compute actual COGS from cogsRecords
-      const actualCOGS = cogsRecords.reduce((sum, cogs) => sum + cogs.totalCOGS, 0);
+      const actualCOGS = cogsRecords.reduce((sum, cogs) => sum + cogs.cogs, 0);
 
       // Fallback to simulated if no cogs records
       const cogsAmt = actualCOGS > 0 ? actualCOGS : grossFuelSales * 0.94;
@@ -700,7 +668,7 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
         shifts.reduce((sum, s) => sum + (s.expenseEntries?.reduce((acc, ex) => acc + ex.amount, 0) || 0), 0);
 
       const revalProfit = rateHistory.reduce((sum, entry) => sum + entry.impactAmount, 0);
-      const netProfit = (grossFuelSales + lubeSalesVal + revalProfit) - cogsAmt - expensesAmt;
+      const netProfit = (grossFuelSales + revalProfit) - cogsAmt - expensesAmt;
 
       return [
         {
@@ -710,7 +678,7 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
           staffName: 'Audit Engine',
           role: 'ADMIN',
           sourceRef: 'MTD-P&L',
-          productCategory: `Rs. ${(grossFuelSales + lubeSalesVal).toLocaleString()}`,
+          productCategory: `Rs. ${grossFuelSales.toLocaleString()}`,
           quantity: `Rs. ${revalProfit.toLocaleString()}`,
           rate: `Rs. ${cogsAmt.toLocaleString()}`,
           amount: expensesAmt,
@@ -742,7 +710,7 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
       const m1Exp = standaloneExpenses.reduce((sum, e) => sum + e.amount, 0) + 
         shifts.reduce((sum, s) => sum + (s.expenseEntries?.reduce((acc, ex) => acc + ex.amount, 0) || 0), 0);
         
-      const actualCOGS = cogsRecords.reduce((sum, cogs) => sum + cogs.totalCOGS, 0);
+      const actualCOGS = cogsRecords.reduce((sum, cogs) => sum + cogs.cogs, 0);
       const m1Margin = actualCOGS > 0 ? (m1Sales - actualCOGS) : (m1Sales * 0.05);
 
       const m1Net = m1Margin - m1Exp;
@@ -1985,22 +1953,7 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
       { key: 'rate', label: 'Unit Retail Price', urduLabel: 'پرچون ریٹ' },
       { key: 'amount', label: 'Revenue Generated (PKR)', urduLabel: 'کل فروخت مالیت', isNumeric: true }
     ],
-    compile: ({ shifts, products }) => {
-      const r: ReportRow[] = [];
-      shifts.forEach(s => {
-        s.lubeSales?.forEach(l => {
-          const pr = products.find(p => p.id === l.itemId);
-          r.push({
-            id: `F2-${l.id}`, date: s.date, time: 'Lubes Corner',
-            staffName: 'Sales Boy', role: 'OPERATOR', sourceRef: `SH-${s.id}`,
-            entityName: pr?.name || l.itemId, productCategory: 'Lubricant Pack',
-            quantity: `${l.quantity} Packets`, rate: `Rs. ${l.price}`, amount: l.amount,
-            approvalStatus: 'Outflow Logged', balanceAfter: 'Shelf Stock synced'
-          });
-        });
-      });
-      return r;
-    }
+    compile: () => []
   },
   {
     id: 'F3',

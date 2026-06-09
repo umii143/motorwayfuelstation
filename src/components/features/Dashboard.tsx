@@ -41,7 +41,8 @@ import {
   BankAccount,
   GlobalSettings,
   LubePosSale,
-  RateHistoryEntry
+  RateHistoryEntry,
+  Tank
 } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
@@ -233,11 +234,9 @@ export default function Dashboard({
         dieselSales = dieselLiters * dieselRate;
         cngSales = cngKgs * cngRate;
 
-        const lubeSalesVal = s.lubeSales?.reduce((acc, l) => acc + l.amount, 0) || 0;
-
-        const grossShiftSales = petrolSales + dieselSales + cngSales + lubeSalesVal;
+        const grossShiftSales = petrolSales + dieselSales + cngSales;
         totalSalesVal += grossShiftSales;
-        estimatedMargin += (petrolSales + dieselSales + cngSales) * 0.045 + lubeSalesVal * 0.22;
+        estimatedMargin += grossShiftSales * 0.045;
 
         if (s.status === 'closed') {
           expectedCashOnHand += s.submittedCash;
@@ -316,9 +315,8 @@ export default function Dashboard({
         const petrolSales = petrolLiters * petrolRate;
         const dieselSales = dieselLiters * dieselRate;
         const cngSales = cngKgs * cngRate;
-        const lubeSalesVal = s.lubeSales?.reduce((acc, l) => acc + l.amount, 0) || 0;
-        const grossShiftSales = petrolSales + dieselSales + cngSales + lubeSalesVal;
-        const shiftMargin = (petrolSales + dieselSales + cngSales) * 0.045 + lubeSalesVal * 0.22;
+        const grossShiftSales = petrolSales + dieselSales + cngSales;
+        const shiftMargin = grossShiftSales * 0.045;
 
         dataByDate[s.date].Sales += grossShiftSales;
         dataByDate[s.date].Margin += shiftMargin;

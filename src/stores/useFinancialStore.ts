@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { BankAccount, DigitalAccount, ExpenseEntry, LubePosSale, JournalEntry, Customer } from '../types';
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
+import { getBusinessTypeForStation, isolateLubePosSales, isolateTenantRecords, withBusinessScope } from '../lib/businessScope';
 
 interface FinancialState {
   banks: BankAccount[];
@@ -26,8 +27,7 @@ interface FinancialState {
 }
 
 const getBusinessType = (stationId: string): 'fuel_station' | 'cng' | 'lube' => {
-  if (stationId === 'st_lube') return 'lube';
-  return 'fuel_station';
+  return getBusinessTypeForStation(stationId);
 };
 
 const generateLubePosJournalEntries = (sale: LubePosSale, sId: string, bType: 'fuel_station' | 'cng' | 'lube', orgId?: string): JournalEntry[] => {
@@ -245,52 +245,59 @@ export const useFinancialStore = create<FinancialState>((set, get) => ({
   journalEntries: db.getJournalEntries(db.getActiveStationId()),
 
   setBanks: (banks) => {
-    set({ banks });
     const sId = db.getActiveStationId();
-    if (sId) db.saveBankAccounts(sId, banks);
+    const scopedBanks = isolateTenantRecords(banks, sId);
+    set({ banks: scopedBanks });
+    if (sId) db.saveBankAccounts(sId, scopedBanks);
   },
   setDigitalAccounts: (digitalAccounts) => {
-    set({ digitalAccounts });
     const sId = db.getActiveStationId();
-    if (sId) db.saveDigitalAccounts(sId, digitalAccounts);
+    const scopedDigitalAccounts = isolateTenantRecords(digitalAccounts, sId);
+    set({ digitalAccounts: scopedDigitalAccounts });
+    if (sId) db.saveDigitalAccounts(sId, scopedDigitalAccounts);
   },
   setStandaloneExpenses: (standaloneExpenses) => {
-    set({ standaloneExpenses });
     const sId = db.getActiveStationId();
-    if (sId) db.saveStandaloneExpenses(sId, standaloneExpenses);
+    const scopedExpenses = isolateTenantRecords(standaloneExpenses, sId);
+    set({ standaloneExpenses: scopedExpenses });
+    if (sId) db.saveStandaloneExpenses(sId, scopedExpenses);
   },
   setLubePosSales: (lubePosSales) => {
-    set({ lubePosSales });
     const sId = db.getActiveStationId();
-    if (sId) db.saveLubePosSales(sId, lubePosSales);
+    const scopedLubeSales = isolateLubePosSales(lubePosSales, sId);
+    set({ lubePosSales: scopedLubeSales });
+    if (sId) db.saveLubePosSales(sId, scopedLubeSales);
   },
   setJournalEntries: (journalEntries) => {
-    set({ journalEntries });
     const sId = db.getActiveStationId();
-    if (sId) db.saveJournalEntries(sId, journalEntries);
+    const scopedJournalEntries = isolateTenantRecords(journalEntries, sId);
+    set({ journalEntries: scopedJournalEntries });
+    if (sId) db.saveJournalEntries(sId, scopedJournalEntries);
   },
 
   handleAddBank: async (bank, orgId, stationId) => {
     const sId = stationId || db.getActiveStationId();
+    const scopedBank = withBusinessScope(bank, sId, orgId);
     set((state) => {
-      const updated = [...state.banks, bank];
+      const updated = isolateTenantRecords([...state.banks, scopedBank], sId, orgId);
       db.saveBankAccounts(sId, updated);
       return { banks: updated };
     });
 
     if (orgId) {
-      await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'banks', bank.id, bank);
+      await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'banks', scopedBank.id, scopedBank);
     }
   },
 
   handleUpdateBanks: async (updatedBanks, orgId, stationId) => {
     const sId = stationId || db.getActiveStationId();
-    set({ banks: updatedBanks });
-    db.saveBankAccounts(sId, updatedBanks);
+    const scopedBanks = isolateTenantRecords(updatedBanks, sId, orgId);
+    set({ banks: scopedBanks });
+    db.saveBankAccounts(sId, scopedBanks);
 
     if (orgId) {
       const bType = getBusinessType(sId);
-      for (const bank of updatedBanks) {
+      for (const bank of scopedBanks) {
         await firestoreDb.saveDocument(orgId, sId, bType, 'banks', bank.id, bank);
       }
     }
@@ -298,25 +305,27 @@ export const useFinancialStore = create<FinancialState>((set, get) => ({
 
   handleAddDigitalAccount: async (acc, orgId, stationId) => {
     const sId = stationId || db.getActiveStationId();
+    const scopedAccount = withBusinessScope(acc, sId, orgId);
     set((state) => {
-      const updated = [...state.digitalAccounts, acc];
+      const updated = isolateTenantRecords([...state.digitalAccounts, scopedAccount], sId, orgId);
       db.saveDigitalAccounts(sId, updated);
       return { digitalAccounts: updated };
     });
 
     if (orgId) {
-      await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'digitalAccounts', acc.id, acc);
+      await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'digitalAccounts', scopedAccount.id, scopedAccount);
     }
   },
 
   handleUpdateDigitalAccounts: async (updatedAccs, orgId, stationId) => {
     const sId = stationId || db.getActiveStationId();
-    set({ digitalAccounts: updatedAccs });
-    db.saveDigitalAccounts(sId, updatedAccs);
+    const scopedAccounts = isolateTenantRecords(updatedAccs, sId, orgId);
+    set({ digitalAccounts: scopedAccounts });
+    db.saveDigitalAccounts(sId, scopedAccounts);
 
     if (orgId) {
       const bType = getBusinessType(sId);
-      for (const acc of updatedAccs) {
+      for (const acc of scopedAccounts) {
         await firestoreDb.saveDocument(orgId, sId, bType, 'digitalAccounts', acc.id, acc);
       }
     }
@@ -324,20 +333,26 @@ export const useFinancialStore = create<FinancialState>((set, get) => ({
 
   handleAddStandaloneExpense: async (expense, orgId, stationId) => {
     const sId = stationId || db.getActiveStationId();
+    const scopedExpense = withBusinessScope(expense, sId, orgId);
     set((state) => {
-      const updated = [expense, ...state.standaloneExpenses];
+      const updated = isolateTenantRecords([scopedExpense, ...state.standaloneExpenses], sId, orgId);
       db.saveStandaloneExpenses(sId, updated);
       return { standaloneExpenses: updated };
     });
 
     if (orgId) {
-      await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'standaloneExpenses', expense.id, expense);
+      await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'standaloneExpenses', scopedExpense.id, scopedExpense);
     }
   },
 
   handleAddLubePosSale: async (sale, orgId, stationId, handleUpdateCustomerBalanceStore) => {
     const sId = stationId || db.getActiveStationId();
     const bType = getBusinessType(sId);
+    if (bType !== 'lube') {
+      console.warn('Blocked Lube POS sale outside the lube business scope.', { stationId: sId });
+      return;
+    }
+    sale = withBusinessScope(sale, sId, orgId);
 
     // Save POS Sale
     set((state) => {
@@ -399,6 +414,39 @@ export const useFinancialStore = create<FinancialState>((set, get) => ({
           db.saveDigitalAccounts(sId, next);
           return { digitalAccounts: next };
         });
+      }
+    }
+
+    if (!sale.isRecovery) {
+      const stockDirection = sale.isReturn ? 1 : -1;
+      try {
+        const { useInventoryStore } = await import('./useInventoryStore');
+        const inventoryStore = useInventoryStore.getState();
+        const nextProducts = inventoryStore.products.map((product) => {
+          const quantity = sale.items
+            .filter((item) => item.productId === product.id)
+            .reduce((sum, item) => sum + item.quantity, 0);
+
+          if (quantity === 0) return product;
+
+          return {
+            ...product,
+            currentStock: Math.max(0, Number((product.currentStock + stockDirection * quantity).toFixed(2)))
+          };
+        });
+
+        useInventoryStore.setState({ products: nextProducts });
+        db.saveProducts(sId, nextProducts);
+
+        if (orgId) {
+          for (const product of nextProducts) {
+            if (sale.items.some((item) => item.productId === product.id)) {
+              await firestoreDb.saveDocument(orgId, sId, bType, 'products', product.id, product);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to update lube POS inventory stock:', err);
       }
     }
 

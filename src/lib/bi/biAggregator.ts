@@ -35,8 +35,8 @@ export function useBIAggregator(filter: BIFilter) {
     let supplierPerformance: Record<string, { batches: number, liters: number, spent: number, count: number }> = {};
 
     filteredBatches.forEach(b => {
-      const stockCost = b.qtyReceived * b.purchasePrice;
-      const carriage = b.carriage || 0;
+      const stockCost = b.qtyReceived * b.omcInvoicePrice;
+      const carriage = b.carriageTotal || 0;
       totalInvested += stockCost + carriage;
       totalCogs += stockCost;
       totalCarriage += carriage;

@@ -19,13 +19,23 @@ import {
   Station,
   LubePosSale,
   InventoryMovement,
-  JournalEntry
+  JournalEntry,
+  StockBatch,
+  CogsRecord,
+  DealerMarginSetting
 } from '../types';
 import { db } from '../data/db';
 import { useAuth } from './AuthContext';
 import { firestoreDb } from '../data/firestore';
 import { doc, getDoc } from 'firebase/firestore';
 import { dbFS } from '../lib/firebase';
+import {
+  getBusinessTypeForStation,
+  isolateLubePosSales,
+  isolateProductRecords,
+  isolateShiftRecords,
+  isolateTenantRecords
+} from '../lib/businessScope';
 
 import { useStationStore } from '../stores/useStationStore';
 import { useCustomerStore } from '../stores/useCustomerStore';
@@ -253,7 +263,7 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     if (orgId) {
       const updatedC = nextCusts.find(c => c.id === cId);
       if (updatedC) {
-        firestoreDb.saveDocument(orgId, activeStationId, activeStationId === 'st_lube' ? 'lube' : 'fuel_station', 'customers', cId, updatedC);
+        firestoreDb.saveDocument(orgId, activeStationId, getBusinessTypeForStation(activeStationId), 'customers', cId, updatedC);
       }
     }
   });
@@ -308,63 +318,72 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     const loadedLubePosSales = db.getLubePosSales(activeStationId);
     const loadedInventoryMovements = db.getInventoryMovements(activeStationId);
     const loadedJournalEntries = db.getJournalEntries(activeStationId);
-
-    const activeBType = activeStationId === 'st_lube' ? 'lube' : 'fuel_station';
+    const loadedStockBatches = db.getStockBatches(activeStationId);
+    const loadedCogsRecords = db.getCOGSRecords(activeStationId);
+    const loadedDealerMarginSettings = db.getDealerMarginSettings(activeStationId);
 
     useStationStore.setState({ settings: loadedSettings });
-    useStaffStore.setState({ staff: loadedStaff.filter(item => !item.businessType || item.businessType === activeBType) });
+    useStaffStore.setState({ staff: isolateTenantRecords(loadedStaff, activeStationId) });
     useInventoryStore.setState({
-      products: loadedProducts,
-      pumps: loadedPumps,
-      nozzles: loadedNozzles,
-      stockTxns: loadedStockTxns,
-      tanks: loadedTanks,
-      rateHistory: loadedRateHistory,
-      inventoryMovements: loadedInventoryMovements
+      products: isolateProductRecords(loadedProducts, activeStationId),
+      pumps: isolateTenantRecords(loadedPumps, activeStationId),
+      nozzles: isolateTenantRecords(loadedNozzles, activeStationId),
+      stockTxns: isolateTenantRecords(loadedStockTxns, activeStationId),
+      tanks: isolateTenantRecords(loadedTanks, activeStationId),
+      rateHistory: isolateTenantRecords(loadedRateHistory, activeStationId),
+      inventoryMovements: isolateTenantRecords(loadedInventoryMovements, activeStationId),
+      stockBatches: isolateTenantRecords(loadedStockBatches, activeStationId),
+      cogsRecords: isolateTenantRecords(loadedCogsRecords, activeStationId),
+      dealerMarginSettings: loadedDealerMarginSettings
     });
-    useCustomerStore.setState({ customers: loadedCustomers.filter(item => !item.businessType || item.businessType === activeBType) });
-    useSupplierStore.setState({ suppliers: loadedSuppliers.filter(item => !item.businessType || item.businessType === activeBType) });
-    useShiftStore.setState({ shifts: loadedShifts });
+    useCustomerStore.setState({ customers: isolateTenantRecords(loadedCustomers, activeStationId) });
+    useSupplierStore.setState({ suppliers: isolateTenantRecords(loadedSuppliers, activeStationId) });
+    useShiftStore.setState({ shifts: isolateShiftRecords(loadedShifts, activeStationId) });
     useFinancialStore.setState({
-      banks: loadedBanks,
-      digitalAccounts: loadedDigital,
-      standaloneExpenses: loadedStandalone,
-      lubePosSales: loadedLubePosSales,
-      journalEntries: loadedJournalEntries
+      banks: isolateTenantRecords(loadedBanks, activeStationId),
+      digitalAccounts: isolateTenantRecords(loadedDigital, activeStationId),
+      standaloneExpenses: isolateTenantRecords(loadedStandalone, activeStationId),
+      lubePosSales: isolateLubePosSales(loadedLubePosSales, activeStationId),
+      journalEntries: isolateTenantRecords(loadedJournalEntries, activeStationId)
     });
-    useStaffStore.setState({ staffFinance: loadedStaffFinance, attendance: loadedAttendance });
+    useStaffStore.setState({
+      staffFinance: isolateTenantRecords(loadedStaffFinance, activeStationId),
+      attendance: isolateTenantRecords(loadedAttendance, activeStationId)
+    });
   }, [activeStationId, orgId]);
 
   // Firestore subscribers for SaaS tenancy
   useEffect(() => {
     if (!orgId) return;
 
-    const activeBType = activeStationId === 'st_lube' ? 'lube' : 'fuel_station';
     const unsubscribes = [
       firestoreDb.subscribeToCollection<Staff>(orgId, activeStationId, 'staff', (items) => {
-        useStaffStore.setState({ staff: items.filter(item => !item.businessType || item.businessType === activeBType) });
+        useStaffStore.setState({ staff: isolateTenantRecords(items, activeStationId, orgId) });
       }),
-      firestoreDb.subscribeToCollection<Product>(orgId, activeStationId, 'products', (items) => useInventoryStore.setState({ products: items })),
-      firestoreDb.subscribeToCollection<Pump>(orgId, activeStationId, 'pumps', (items) => useInventoryStore.setState({ pumps: items })),
-      firestoreDb.subscribeToCollection<Nozzle>(orgId, activeStationId, 'nozzles', (items) => useInventoryStore.setState({ nozzles: items })),
+      firestoreDb.subscribeToCollection<Product>(orgId, activeStationId, 'products', (items) => useInventoryStore.setState({ products: isolateProductRecords(items, activeStationId, orgId) })),
+      firestoreDb.subscribeToCollection<Pump>(orgId, activeStationId, 'pumps', (items) => useInventoryStore.setState({ pumps: isolateTenantRecords(items, activeStationId, orgId) })),
+      firestoreDb.subscribeToCollection<Nozzle>(orgId, activeStationId, 'nozzles', (items) => useInventoryStore.setState({ nozzles: isolateTenantRecords(items, activeStationId, orgId) })),
       firestoreDb.subscribeToCollection<Customer>(orgId, activeStationId, 'customers', (items) => {
-        useCustomerStore.setState({ customers: items.filter(item => !item.businessType || item.businessType === activeBType) });
+        useCustomerStore.setState({ customers: isolateTenantRecords(items, activeStationId, orgId) });
       }),
       firestoreDb.subscribeToCollection<Supplier>(orgId, activeStationId, 'suppliers', (items) => {
-        useSupplierStore.setState({ suppliers: items.filter(item => !item.businessType || item.businessType === activeBType) });
+        useSupplierStore.setState({ suppliers: isolateTenantRecords(items, activeStationId, orgId) });
       }),
-      firestoreDb.subscribeToCollection<Shift>(orgId, activeStationId, 'shifts', (items) => useShiftStore.setState({ shifts: items })),
-      firestoreDb.subscribeToCollection<BankAccount>(orgId, activeStationId, 'banks', (items) => useFinancialStore.setState({ banks: items })),
-      firestoreDb.subscribeToCollection<DigitalAccount>(orgId, activeStationId, 'digitalAccounts', (items) => useFinancialStore.setState({ digitalAccounts: items })),
-      firestoreDb.subscribeToCollection<StockTransaction>(orgId, activeStationId, 'stockTxns', (items) => useInventoryStore.setState({ stockTxns: items })),
-      firestoreDb.subscribeToCollection<Tank>(orgId, activeStationId, 'tanks', (items) => useInventoryStore.setState({ tanks: items })),
-      firestoreDb.subscribeToCollection<RateHistoryEntry>(orgId, activeStationId, 'rateHistory', (items) => useInventoryStore.setState({ rateHistory: items })),
-      firestoreDb.subscribeToCollection<StaffFinanceEntry>(orgId, activeStationId, 'staffFinance', (items) => useStaffStore.setState({ staffFinance: items })),
-      firestoreDb.subscribeToCollection<AttendanceRecord>(orgId, activeStationId, 'attendance', (items) => useStaffStore.setState({ attendance: items })),
-      firestoreDb.subscribeToCollection<ExpenseEntry>(orgId, activeStationId, 'standaloneExpenses', (items) => useFinancialStore.setState({ standaloneExpenses: items })),
-      firestoreDb.subscribeToCollection<LubePosSale>(orgId, activeStationId, 'lubePosSales', (items) => useFinancialStore.setState({ lubePosSales: items })),
-      firestoreDb.subscribeToCollection<InventoryMovement>(orgId, activeStationId, 'inventoryMovements', (items) => useInventoryStore.setState({ inventoryMovements: items })),
-      firestoreDb.subscribeToCollection<JournalEntry>(orgId, activeStationId, 'journalEntries', (items) => useFinancialStore.setState({ journalEntries: items }))
+      firestoreDb.subscribeToCollection<Shift>(orgId, activeStationId, 'shifts', (items) => useShiftStore.setState({ shifts: isolateShiftRecords(items, activeStationId, orgId) })),
+      firestoreDb.subscribeToCollection<BankAccount>(orgId, activeStationId, 'banks', (items) => useFinancialStore.setState({ banks: isolateTenantRecords(items, activeStationId, orgId) })),
+      firestoreDb.subscribeToCollection<DigitalAccount>(orgId, activeStationId, 'digitalAccounts', (items) => useFinancialStore.setState({ digitalAccounts: isolateTenantRecords(items, activeStationId, orgId) })),
+      firestoreDb.subscribeToCollection<StockTransaction>(orgId, activeStationId, 'stockTxns', (items) => useInventoryStore.setState({ stockTxns: isolateTenantRecords(items, activeStationId, orgId) })),
+      firestoreDb.subscribeToCollection<Tank>(orgId, activeStationId, 'tanks', (items) => useInventoryStore.setState({ tanks: isolateTenantRecords(items, activeStationId, orgId) })),
+      firestoreDb.subscribeToCollection<RateHistoryEntry>(orgId, activeStationId, 'rateHistory', (items) => useInventoryStore.setState({ rateHistory: isolateTenantRecords(items, activeStationId, orgId) })),
+      firestoreDb.subscribeToCollection<StaffFinanceEntry>(orgId, activeStationId, 'staffFinance', (items) => useStaffStore.setState({ staffFinance: isolateTenantRecords(items, activeStationId, orgId) })),
+      firestoreDb.subscribeToCollection<AttendanceRecord>(orgId, activeStationId, 'attendance', (items) => useStaffStore.setState({ attendance: isolateTenantRecords(items, activeStationId, orgId) })),
+      firestoreDb.subscribeToCollection<ExpenseEntry>(orgId, activeStationId, 'standaloneExpenses', (items) => useFinancialStore.setState({ standaloneExpenses: isolateTenantRecords(items, activeStationId, orgId) })),
+      firestoreDb.subscribeToCollection<LubePosSale>(orgId, activeStationId, 'lubePosSales', (items) => useFinancialStore.setState({ lubePosSales: isolateLubePosSales(items, activeStationId, orgId) })),
+      firestoreDb.subscribeToCollection<InventoryMovement>(orgId, activeStationId, 'inventoryMovements', (items) => useInventoryStore.setState({ inventoryMovements: isolateTenantRecords(items, activeStationId, orgId) })),
+      firestoreDb.subscribeToCollection<JournalEntry>(orgId, activeStationId, 'journalEntries', (items) => useFinancialStore.setState({ journalEntries: isolateTenantRecords(items, activeStationId, orgId) })),
+      firestoreDb.subscribeToCollection<StockBatch>(orgId, activeStationId, 'stockBatches', (items) => useInventoryStore.setState({ stockBatches: isolateTenantRecords(items, activeStationId, orgId) })),
+      firestoreDb.subscribeToCollection<CogsRecord>(orgId, activeStationId, 'cogsRecords', (items) => useInventoryStore.setState({ cogsRecords: isolateTenantRecords(items, activeStationId, orgId) })),
+      firestoreDb.subscribeToCollection<DealerMarginSetting>(orgId, activeStationId, 'dealerMarginSettings', (items) => useInventoryStore.setState({ dealerMarginSettings: items }))
     ];
 
     const loadSettingsFS = async () => {

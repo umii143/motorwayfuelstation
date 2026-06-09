@@ -94,7 +94,7 @@ export default function BatchHistory({ batches, products, language }: BatchHisto
                       </span>
                     </td>
                     <td className="py-4 px-6 text-right font-mono font-medium text-slate-600">
-                      Rs. {batch.landedCost.toFixed(2)}
+                      Rs. {batch.landedCostPerLiter.toFixed(2)}
                     </td>
                     <td className="py-4 px-6 text-center">
                       <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${getStatusColor(batch.status)}`}>
