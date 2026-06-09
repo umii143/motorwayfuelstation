@@ -37,6 +37,17 @@ export interface Staff extends TenantDocument {
   salaryBalance?: number;
 }
 
+export interface DealerMarginSetting {
+  id: string;
+  productType: 'petrol' | 'diesel' | 'kerosene' | 'ldo' | string;
+  marginPerLiter: number;       // e.g. 8.64
+  effectiveFrom: string;        // ISO date: "2024-01-01"
+  effectiveTo: string | null;   // null = currently active
+  setBy: string;                // userId
+  notes: string;                // "OGRA notification ref XYZ"
+  createdAt: string;
+}
+
 export type ProductType = 'fuel' | 'lube' | 'other';
 
 export interface Product extends TenantDocument {
@@ -50,6 +61,7 @@ export interface Product extends TenantDocument {
   minStock: number;
   capacity?: number;
   category?: string;
+  currentDealerMargin?: number;
 }
 
 export interface Nozzle extends TenantDocument {
@@ -290,35 +302,52 @@ export interface DigitalAccount extends TenantDocument {
 
 export interface StockBatch extends TenantDocument {
   id: string;
-  tankId: string;
+  tankId?: string;
   productId: string;
   batchNumber: string;
   supplierId?: string;
   date: string;
   qtyReceived: number;
   qtyRemaining: number;
-  purchasePrice: number;
-  carriage: number;
-  landedCost: number;
-  sellingPriceAtReceipt: number;
+
+  ograPumpPrice: number;
+  dealerMargin: number;
+  omcInvoicePrice: number;
+  carriageTotal: number;
+  carriagePerLiter: number;
+  otherChargesTotal: number;
+  otherPerLiter: number;
+  landedCostPerLiter: number;
+
+  grossMarginPerLiter: number;
+  netMarginPerLiter: number;
+  expectedGrossProfit: number;
+  expectedNetProfit: number;
+
+  dipBefore?: number;
+  dipAfter?: number;
+
   status: 'active' | 'depleted';
 }
 
-export interface COGSRecord extends TenantDocument {
+export interface CogsRecord extends TenantDocument {
   id: string;
-  shiftId?: string;
-  rateSegmentId?: string;
+  shiftId: string;
+  shiftSegmentId: string;
   batchId: string;
-  productId: string;
-  tankId?: string;
-  date: string;
-  litersSold?: number;
-  costPrice?: number;
-  sellingPrice?: number;
-  profit?: number;
-  quantitySold?: number;
-  unitLandedCost?: number;
-  totalCOGS?: number;
+  productType: string;
+  litersDeducted: number;
+  ograPumpPrice: number;
+  dealerMargin: number;
+  omcInvoicePrice: number;
+  carriagePerLiter: number;
+  otherChargesPerLiter: number;
+  landedCostPerLiter: number;
+  revenue: number;
+  cogs: number;
+  grossProfit: number;
+  netProfit: number;
+  saleDate: string;
 }
 
 export interface StockTransaction extends TenantDocument {

@@ -39,8 +39,11 @@ import {
   BankCashEntry,
   DigitalCashEntry,
   SupplierPayment,
-  Nozzle
+  SupplierPayment,
+  Nozzle,
+  CogsRecord
 } from '../../types';
+import { useInventoryStore } from '../../stores/useInventoryStore';
 import { t as translate } from '../../lib/translations';
 
 interface ShiftLogsProps {
@@ -321,10 +324,12 @@ function ShiftAuditDrawer({
   digitalAccounts,
   nozzles,
   viewDetailType,
+  viewDetailType,
   setViewDetailType
 }: any) {
   const t = (en: string, ur: string) => translate(en, ur, settings);
   const isUrdu = settings.language === 'ur';
+  const cogsRecords = useInventoryStore((state) => state.cogsRecords) || [];
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat(isUrdu ? 'ur-PK' : 'en-PK', {
@@ -391,6 +396,14 @@ function ShiftAuditDrawer({
     });
   }
 
+  // Calculate Profit from COGS Records for this Shift
+  const shiftCogs = cogsRecords.filter((c: CogsRecord) => c.shiftId === shift.id);
+  const totalLitersSoldCogs = shiftCogs.reduce((sum: number, c: CogsRecord) => sum + c.litersDeducted, 0);
+  const totalRevenue = shiftCogs.reduce((sum: number, c: CogsRecord) => sum + c.revenue, 0);
+  const totalCogsCost = shiftCogs.reduce((sum: number, c: CogsRecord) => sum + c.cogs, 0);
+  const totalNetProfit = shiftCogs.reduce((sum: number, c: CogsRecord) => sum + c.netProfit, 0);
+  const totalGrossProfit = shiftCogs.reduce((sum: number, c: CogsRecord) => sum + c.grossProfit, 0);
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="w-full sm:w-[95vw] md:w-[85vw] lg:w-[1200px] max-w-full h-[95vh] bg-slate-50 rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
@@ -428,8 +441,10 @@ function ShiftAuditDrawer({
           <div>
             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 px-1 flex items-center justify-between">
               {t('Financial Summary', 'مالیاتی خلاصہ')}
-              <span className="text-xs font-medium text-slate-500 bg-slate-200 px-2.5 py-1 rounded-full">
-                Total Collection: {formatCurrency(totalCashCollected)}
+              <span className="text-xs font-medium text-slate-500 bg-slate-200 px-2.5 py-1 rounded-full flex gap-2">
+                <span>Net Profit: {formatCurrency(totalNetProfit)}</span>
+                <span>•</span>
+                <span>Total Collection: {formatCurrency(totalCashCollected)}</span>
               </span>
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -467,8 +482,10 @@ function ShiftAuditDrawer({
           <div>
             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 px-1 flex items-center justify-between">
               {t('Fuel Sales Summary', 'فیول سیلز کا خلاصہ')}
-              <span className="text-xs font-medium text-slate-500 bg-slate-200 px-2.5 py-1 rounded-full">
-                Est. Sales: {formatCurrency(estimatedFuelSalesAmount)}
+              <span className="text-xs font-medium text-slate-500 bg-slate-200 px-2.5 py-1 rounded-full flex gap-2">
+                <span>Avg Dealer Margin: {totalLitersSoldCogs > 0 ? formatCurrency(totalGrossProfit / totalLitersSoldCogs) : '0'} /L</span>
+                <span>•</span>
+                <span>Est. Sales: {formatCurrency(estimatedFuelSalesAmount)}</span>
               </span>
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -563,6 +580,16 @@ function ShiftAuditDrawer({
                 colorClass="text-violet-600 bg-violet-50 border-violet-200 hover:border-violet-300"
               />
 
+              <DrillDownCard
+                icon={TrendingUp}
+                title={t('Profit Breakdown (COGS)', 'منافع کی تفصیلات')}
+                count={shiftCogs.length || 0}
+                amount={totalNetProfit}
+                formatCurrency={formatCurrency}
+                onClick={() => setViewDetailType('cogs')}
+                colorClass="text-indigo-600 bg-indigo-50 border-indigo-200 hover:border-indigo-300"
+              />
+
             </div>
           </div>
 
@@ -649,6 +676,22 @@ function ShiftAuditDrawer({
               { key: 'digital', label: t('Account', 'اکاؤنٹ'), render: (item: any) => digitalAccounts.find((d: DigitalAccount) => d.id === item.method)?.name || item.method },
               { key: 'amount', label: t('Amount', 'رقم'), render: (item: any) => formatCurrency(item.amount) },
               { key: 'transactionId', label: t('Txn ID', 'ٹرانزیکشن آئی ڈی'), render: (item: any) => item.transactionId || '-' }
+            ]}
+          />
+        )}
+
+        {viewDetailType === 'cogs' && (
+          <TransactionModal
+            title={t('Profit Breakdown (COGS)', 'منافع کی تفصیلات')}
+            onClose={() => setViewDetailType(null)}
+            items={shiftCogs || []}
+            columns={[
+              { key: 'product', label: t('Product', 'پروڈکٹ'), render: (item: CogsRecord) => item.productType },
+              { key: 'qty', label: t('Qty Deducted', 'مقدار (لیٹر)'), render: (item: CogsRecord) => `${item.litersDeducted.toFixed(2)} L` },
+              { key: 'margin', label: t('D. Margin', 'ڈیلر مارجن'), render: (item: CogsRecord) => formatCurrency(item.dealerMargin) },
+              { key: 'cost', label: t('Landed Cost', 'خریداری لاگت'), render: (item: CogsRecord) => formatCurrency(item.landedCostPerLiter) },
+              { key: 'pumpPrice', label: t('Pump Price', 'پمپ قیمت'), render: (item: CogsRecord) => formatCurrency(item.ograPumpPrice) },
+              { key: 'netProfit', label: t('Net Profit', 'خالص منافع'), render: (item: CogsRecord) => <span className="text-emerald-600 font-bold">{formatCurrency(item.netProfit)}</span> }
             ]}
           />
         )}

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Product, Tank, Nozzle, Pump, StockTransaction, RateHistoryEntry, InventoryMovement, StockBatch, COGSRecord } from '../types';
+import { Product, Tank, Nozzle, Pump, StockTransaction, RateHistoryEntry, InventoryMovement, StockBatch, CogsRecord, DealerMarginSetting } from '../types';
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
 
@@ -12,7 +12,8 @@ interface InventoryState {
   rateHistory: RateHistoryEntry[];
   inventoryMovements: InventoryMovement[];
   stockBatches: StockBatch[];
-  cogsRecords: COGSRecord[];
+  cogsRecords: CogsRecord[];
+  dealerMarginSettings: DealerMarginSetting[];
 
   setProducts: (products: Product[]) => void;
   setTanks: (tanks: Tank[]) => void;
@@ -22,7 +23,9 @@ interface InventoryState {
   setRateHistory: (history: RateHistoryEntry[]) => void;
   setInventoryMovements: (movements: InventoryMovement[]) => void;
   setStockBatches: (batches: StockBatch[]) => void;
-  setCOGSRecords: (records: COGSRecord[]) => void;
+  setCOGSRecords: (records: CogsRecord[]) => void;
+  setDealerMarginSettings: (settings: DealerMarginSetting[]) => void;
+  handleUpdateDealerMargin: (setting: DealerMarginSetting, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
 
   handleUpdateProductStock: (productId: string, newStock: number, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
   handleUpdateProductRate: (productId: string, newRate: number, reason?: string, changedBy?: string, dateStr?: string, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
@@ -55,6 +58,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   inventoryMovements: db.getInventoryMovements(db.getActiveStationId()),
   stockBatches: db.getStockBatches(db.getActiveStationId()),
   cogsRecords: db.getCOGSRecords(db.getActiveStationId()),
+  dealerMarginSettings: db.getDealerMarginSettings(db.getActiveStationId()),
 
   setProducts: (products) => {
     set({ products });
@@ -100,6 +104,29 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     set({ cogsRecords });
     const sId = db.getActiveStationId();
     if (sId) db.saveCOGSRecords(sId, cogsRecords);
+  },
+  
+  setDealerMarginSettings: (dealerMarginSettings) => {
+    set({ dealerMarginSettings });
+    const sId = db.getActiveStationId();
+    if (sId) db.saveDealerMarginSettings(sId, dealerMarginSettings);
+  },
+  
+  handleUpdateDealerMargin: async (setting, orgId, stationId, checkPerm) => {
+    if (checkPerm) checkPerm('settings.manage', 'manage dealer margins', 'ڈیلر مارجن تبدیل کرنے');
+    const sId = stationId || db.getActiveStationId();
+    const bType = getBusinessType(sId);
+    
+    set((state) => {
+       const existing = state.dealerMarginSettings.filter(s => s.id !== setting.id);
+       const updated = [...existing, setting];
+       db.saveDealerMarginSettings(sId, updated);
+       return { dealerMarginSettings: updated };
+    });
+    
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, sId, bType, 'dealerMarginSettings', setting.id, setting);
+    }
   },
 
   handleUpdateProductStock: async (productId, newStock, orgId, stationId, checkPerm) => {
@@ -532,13 +559,13 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     }
 
     // Process Carriage as an Expense dynamically to avoid circular dependencies
-    if (batch.carriage > 0) {
+    if (batch.carriageTotal > 0) {
        // use dynamic import for useFinancialStore
        import('./useFinancialStore').then(({ useFinancialStore }) => {
          const financialStore = useFinancialStore.getState();
          financialStore.handleAddStandaloneExpense({
             id: `exp_carr_${batch.id}`,
-            amount: batch.carriage,
+            amount: batch.carriageTotal,
             date: new Date().toISOString().split('T')[0],
             category: bType === 'lube' ? 'Carriage & Freight' : 'Carriage & Freight (Karaya)',
             description: `Carriage for Batch ${batch.batchNumber} (Product: ${batch.productId})`,

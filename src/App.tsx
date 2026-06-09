@@ -184,6 +184,7 @@ function MainApp() {
             banks={banks}
             staff={staff}
             nozzles={nozzles}
+            tanks={tanks}
             onNavigate={setActiveView}
             lubePosSales={lubePosSales}
             onStartShiftQuick={() => setActiveView(isLubeBusiness ? 'lube_pos' : 'shift_wizard')}

@@ -34,6 +34,7 @@ import NozzleWizard from './Settings/NozzleWizard';
 import ProductWizard from './Settings/ProductWizard';
 import UnifiedAccountManager from './Settings/UnifiedAccountManager';
 import SystemAuditTrail from './Settings/SystemAuditTrail';
+import DealerMarginWizard from './Settings/DealerMarginWizard';
 import { SetupBanner } from './ConfigurationHub/SetupBanner';
 import { SetupNavigationFooter } from './ConfigurationHub/SetupNavigationFooter';
 
@@ -65,7 +66,7 @@ interface SettingsProps {
   onUpdateBanks?: any;
   onUpdateProducts?: any;
   onUpdatePumps?: any;
-  initialTab?: 'profile' | 'products' | 'tariff' | 'tanks' | 'nozzles' | 'accounts' | 'audit';
+  initialTab?: 'profile' | 'products' | 'tariff' | 'margins' | 'tanks' | 'nozzles' | 'accounts' | 'audit';
   onNavigate?: (viewId: string) => void;
 }
 
@@ -99,7 +100,7 @@ export default function SettingsPanel({
   const isLube = activeStationId === 'st_lube';
 
   // Unified outer page Tabs state
-  const [activeTab, setActiveTab] = useState<'profile' | 'products' | 'tariff' | 'tanks' | 'nozzles' | 'accounts' | 'audit'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'profile' | 'products' | 'tariff' | 'margins' | 'tanks' | 'nozzles' | 'accounts' | 'audit'>(initialTab);
 
   React.useEffect(() => {
     if (initialTab) {
@@ -208,7 +209,7 @@ export default function SettingsPanel({
         </div>
       </div>
 
-      <SetupBanner activeViewId={activeTab === 'tariff' ? 'setup_rates' : activeTab === 'accounts' ? 'setup_accounts' : activeTab === 'audit' ? 'setup_audit' : `setup_${activeTab}`} />
+      <SetupBanner activeViewId={activeTab === 'tariff' ? 'setup_rates' : activeTab === 'accounts' ? 'setup_accounts' : activeTab === 'audit' ? 'setup_audit' : activeTab === 'margins' ? 'setup_margins' : `setup_${activeTab}`} />
 
       {/* ======================= TAB 1: STATION PROFILE ======================= */}
       {activeTab === 'profile' && (
@@ -402,6 +403,15 @@ export default function SettingsPanel({
         />
       )}
 
+      {/* ======================= TAB 2.5: DEALER MARGIN MANAGER ======================= */}
+      {activeTab === 'margins' && (
+        <DealerMarginWizard
+          language={settings.language}
+          onLogAudit={handleLogAudit}
+          stationId={activeStationId}
+        />
+      )}
+
       {/* ======================= TAB 3: STORAGE TANKS CONFIG (WIZARDS) ======================= */}
       {activeTab === 'tanks' && (
         <TankWizard
@@ -523,7 +533,7 @@ export default function SettingsPanel({
       {/* Render the Navigation Footer if the user is in the setup flow */}
       {onNavigate && (
         <SetupNavigationFooter 
-          activeViewId={activeTab === 'tariff' ? 'setup_rates' : activeTab === 'accounts' ? 'setup_accounts' : activeTab === 'audit' ? 'setup_audit' : `setup_${activeTab}`}
+          activeViewId={activeTab === 'tariff' ? 'setup_rates' : activeTab === 'accounts' ? 'setup_accounts' : activeTab === 'audit' ? 'setup_audit' : activeTab === 'margins' ? 'setup_margins' : `setup_${activeTab}`}
           onNavigate={onNavigate}
         />
       )}

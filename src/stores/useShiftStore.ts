@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Shift, Product, Customer, Supplier, Tank, BankAccount, Staff, StockTransaction, InventoryMovement, StaffFinanceEntry, JournalEntry, COGSRecord } from '../types';
+import { Shift, Product, Customer, Supplier, Tank, BankAccount, Staff, StockTransaction, InventoryMovement, StaffFinanceEntry, JournalEntry, CogsRecord } from '../types';
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
 import { useInventoryStore } from './useInventoryStore';
@@ -371,7 +371,7 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
 
       // 5.5 Prepare FIFO Batches
       let nextBatches = [...useInventoryStore.getState().stockBatches];
-      const newCOGSRecords: COGSRecord[] = [];
+      const newCOGSRecords: CogsRecord[] = [];
 
       // 6. Compute new product stocks and deduct from FIFO batches
       const nextProducts = products.map((prod) => {
@@ -452,20 +452,26 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
             }
 
             // Record COGS
+            const dealerMargin = db.getCurrentDealerMargin(sId, prod.name, updatedShift.date + 'T' + (updatedShift.endTime || '16:00:00') + '.000Z');
             newCOGSRecords.push({
               id: `cogs_${Date.now()}_${Math.random().toString(36).substr(2,6)}`,
               shiftId: updatedShift.id,
-              productId: prod.id,
+              shiftSegmentId: 'default',
               batchId: batch.id,
-              date: updatedShift.date,
-              quantitySold: qtyToTake,
-              unitLandedCost: batch.landedCost,
-              totalCOGS: qtyToTake * batch.landedCost,
-              orgId: orgId || undefined,
-              stationId: sId,
-              businessType: bType,
-              createdAt: Date.now(),
-              updatedAt: Date.now()
+              productType: prod.type,
+              litersDeducted: qtyToTake,
+              ograPumpPrice: prod.rate,
+              dealerMargin: dealerMargin,
+              omcInvoicePrice: batch.omcInvoicePrice || 0,
+              carriagePerLiter: batch.carriagePerLiter || 0,
+              otherChargesPerLiter: batch.otherPerLiter || 0,
+              landedCostPerLiter: batch.landedCostPerLiter || 0,
+              revenue: qtyToTake * prod.rate,
+              cogs: qtyToTake * (batch.landedCostPerLiter || 0),
+              grossProfit: qtyToTake * dealerMargin,
+              netProfit: (qtyToTake * prod.rate) - (qtyToTake * (batch.landedCostPerLiter || 0)),
+              saleDate: updatedShift.date + 'T' + (updatedShift.endTime || '16:00:00') + '.000Z',
+              createdAt: new Date().toISOString()
             });
 
             remainingToDeduct -= qtyToTake;

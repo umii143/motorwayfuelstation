@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Gauge, Droplets, ArrowUpCircle } from 'lucide-react';
+import { Clock, Droplets } from 'lucide-react';
 import { Tank, GlobalSettings, Product } from '../../types';
-import { db } from '../../data/db';
 
-export function DashboardRealtimeGauges({ settings, products = [], activeStationId }: { settings: GlobalSettings; products?: Product[]; activeStationId: string }) {
+export function DashboardRealtimeGauges({ settings, products = [], tanks = [], activeStationId }: { settings: GlobalSettings; products?: Product[]; tanks?: Tank[]; activeStationId: string }) {
   const [time, setTime] = useState(new Date());
-  const [tanks, setTanks] = useState<Tank[]>([]);
 
   useEffect(() => {
-    setTanks(db.getTanks(activeStationId));
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, [activeStationId]);

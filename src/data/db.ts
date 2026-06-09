@@ -36,8 +36,10 @@ import {
   InventoryMovement,
   JournalEntry,
   StockBatch,
-  COGSRecord,
-  LoyaltyMember
+  StockBatch,
+  CogsRecord,
+  LoyaltyMember,
+  DealerMarginSetting
 } from '../types';
 
 const STORAGE_KEYS = {
@@ -77,7 +79,8 @@ const SPECIAL_STORAGE_KEYS = {
   INVENTORY_MOVEMENTS: 'fuelpro_inventory_movements',
   JOURNAL_ENTRIES: 'fuelpro_journal_entries',
   STOCK_BATCHES: 'fuelpro_stock_batches',
-  COGS_RECORDS: 'fuelpro_cogs_records'
+  COGS_RECORDS: 'fuelpro_cogs_records',
+  DEALER_MARGIN_SETTINGS: 'fuelpro_dealer_margin_settings'
 };
 
 // Clear trigger for clean slate if needed
@@ -240,6 +243,52 @@ const SEED_FUEL_BANKS: any = [
 const SEED_FUEL_DIGITAL_ACCOUNTS: any = [
   { id: 'da_f1', name: 'HBL PSO Fuel card POS', accountNo: 'HBL-POS-4839210-9', balance: 185000 },
   { id: 'da_f2', name: 'EasyPaisa Merchant Wallet', accountNo: '0300-8884422', balance: 45000 }
+];
+
+// ==========================================
+// SEED DATA FOR DEALER MARGINS
+// ==========================================
+const SEED_DEALER_MARGINS: DealerMarginSetting[] = [
+  {
+    id: 'dm_petrol_1',
+    productType: 'petrol',
+    marginPerLiter: 8.64,
+    effectiveFrom: '2024-01-01',
+    effectiveTo: null,
+    setBy: 'system',
+    notes: 'OGRA fixed dealer margin - current rate',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'dm_diesel_1',
+    productType: 'diesel',
+    marginPerLiter: 8.64,
+    effectiveFrom: '2024-01-01',
+    effectiveTo: null,
+    setBy: 'system',
+    notes: 'OGRA fixed dealer margin - current rate',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'dm_kerosene_1',
+    productType: 'kerosene',
+    marginPerLiter: 6.50,
+    effectiveFrom: '2024-01-01',
+    effectiveTo: null,
+    setBy: 'system',
+    notes: 'OGRA fixed dealer margin - current rate',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'dm_ldo_1',
+    productType: 'ldo',
+    marginPerLiter: 6.50,
+    effectiveFrom: '2024-01-01',
+    effectiveTo: null,
+    setBy: 'system',
+    notes: 'OGRA fixed dealer margin - current rate',
+    createdAt: new Date().toISOString(),
+  }
 ];
 
 // ==========================================
@@ -664,16 +713,52 @@ export const db = {
       batches
     ),
 
-  getCOGSRecords: (stationId: string): COGSRecord[] =>
+  getCOGSRecords: (stationId: string): CogsRecord[] =>
     getStorageItem(
       db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.COGS_RECORDS),
-      [] as COGSRecord[]
+      [] as CogsRecord[]
     ),
-  saveCOGSRecords: (stationId: string, records: COGSRecord[]) =>
+  saveCOGSRecords: (stationId: string, records: CogsRecord[]) =>
     setStorageItem(
       db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.COGS_RECORDS),
       records
     ),
+
+  getDealerMarginSettings: (stationId: string): DealerMarginSetting[] =>
+    getStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.DEALER_MARGIN_SETTINGS),
+      SEED_DEALER_MARGINS
+    ),
+  saveDealerMarginSettings: (stationId: string, settings: DealerMarginSetting[]) =>
+    setStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.DEALER_MARGIN_SETTINGS),
+      settings
+    ),
+    
+  getCurrentDealerMargin: (stationId: string, productType: string, atDate: string = new Date().toISOString()): number => {
+    const settings = db.getDealerMarginSettings(stationId);
+    
+    // Check for exact productType or name-based fallback matching
+    const normalizedType = productType.toLowerCase();
+    let typeToMatch = normalizedType;
+    if (normalizedType.includes('petrol') || normalizedType.includes('pmg') || normalizedType.includes('hobc') || normalizedType.includes('altron')) {
+       typeToMatch = 'petrol';
+    } else if (normalizedType.includes('diesel') || normalizedType.includes('hsd')) {
+       typeToMatch = 'diesel';
+    } else if (normalizedType.includes('kerosene') || normalizedType.includes('sko')) {
+       typeToMatch = 'kerosene';
+    } else if (normalizedType.includes('ldo')) {
+       typeToMatch = 'ldo';
+    }
+
+    const setting = settings
+      .filter(s => s.productType === typeToMatch)
+      .filter(s => s.effectiveFrom <= atDate)
+      .filter(s => s.effectiveTo === null || s.effectiveTo >= atDate)
+      .sort((a, b) => b.effectiveFrom.localeCompare(a.effectiveFrom))[0];
+
+    return setting?.marginPerLiter ?? 8.64; // fallback to current OGRA rate
+  },
 
   clearSettingsAuditTrail: (stationId: string) => {
     const scopedKey = db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL);

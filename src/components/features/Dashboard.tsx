@@ -99,6 +99,7 @@ interface DashboardProps {
   banks: BankAccount[];
   staff: Staff[];
   nozzles: Nozzle[];
+  tanks: Tank[];
   lubePosSales: LubePosSale[];
   onNavigate: (view: string) => void;
   onStartShiftQuick?: () => void;
@@ -115,6 +116,7 @@ export default function Dashboard({
   banks,
   staff,
   nozzles,
+  tanks,
   lubePosSales,
   onNavigate,
   onStartShiftQuick,
@@ -577,7 +579,7 @@ export default function Dashboard({
       )}
 
       {/* REAL-TIME GAUGES */}
-      <DashboardRealtimeGauges settings={settings} products={products} activeStationId={activeStationId} />
+      <DashboardRealtimeGauges settings={settings} products={products} tanks={tanks} activeStationId={activeStationId} />
 
       {/* TOP SUMMARY BAR STATS CARDS */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 mt-6">

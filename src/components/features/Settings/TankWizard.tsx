@@ -16,6 +16,7 @@ interface TankWizardProps {
 
 export default function TankWizard({ tanks, products, language, onAddTank, onDeleteTank }: TankWizardProps) {
   const [showForm, setShowForm] = useState(false);
+  const [editingTankId, setEditingTankId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [productId, setProductId] = useState("");
   const [capacity, setCapacity] = useState("");
@@ -27,23 +28,49 @@ export default function TankWizard({ tanks, products, language, onAddTank, onDel
     setCapacity("");
     setCurrentStock("");
     setShowForm(false);
+    setEditingTankId(null);
   };
 
-  const handleAdd = () => {
+  const handleEdit = (tank: Tank) => {
+    setEditingTankId(tank.id);
+    setName(tank.name);
+    setProductId(tank.productId);
+    setCapacity(tank.capacity.toString());
+    setCurrentStock(tank.currentStock.toString());
+    setShowForm(true);
+  };
+
+  const handleSave = () => {
     if (!name || !productId || !capacity || !currentStock) return;
 
-    onAddTank({
-      id: 'tank_' + Date.now(),
-      name,
-      productId,
-      capacity: Number(capacity),
-      currentStock: Number(currentStock),
-      openingStock: Number(currentStock),
-      safeLevel: Number(capacity) * 0.8,
-      criticalLevel: Number(capacity) * 0.15,
-      physicalLabel: name,
-      dipChart: []
-    });
+    if (editingTankId) {
+      const existing = tanks.find(t => t.id === editingTankId);
+      if (existing) {
+        onUpdateTank({
+          ...existing,
+          name,
+          productId,
+          capacity: Number(capacity),
+          currentStock: Number(currentStock),
+          safeLevel: Number(capacity) * 0.8,
+          criticalLevel: Number(capacity) * 0.15,
+          physicalLabel: name,
+        });
+      }
+    } else {
+      onAddTank({
+        id: 'tank_' + Date.now(),
+        name,
+        productId,
+        capacity: Number(capacity),
+        currentStock: Number(currentStock),
+        openingStock: Number(currentStock),
+        safeLevel: Number(capacity) * 0.8,
+        criticalLevel: Number(capacity) * 0.15,
+        physicalLabel: name,
+        dipChart: []
+      });
+    }
     resetForm();
   };
 
@@ -118,11 +145,11 @@ export default function TankWizard({ tanks, products, language, onAddTank, onDel
 
               <div className="flex gap-3 pt-2">
                 <button 
-                  onClick={handleAdd} 
+                  onClick={handleSave} 
                   disabled={!name || !productId || !capacity || !currentStock}
                   className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md"
                 >
-                  {t('Save Tank', 'ٹینک محفوظ کریں', language)}
+                  {editingTankId ? t('Update Tank', 'ٹینک اپڈیٹ کریں', language) : t('Save Tank', 'ٹینک محفوظ کریں', language)}
                 </button>
                 <button 
                   onClick={resetForm} 
@@ -155,17 +182,31 @@ export default function TankWizard({ tanks, products, language, onAddTank, onDel
                           <h4 className="font-bold text-lg text-slate-800">{tank.name}</h4>
                         </div>
                         <div className="flex items-center gap-2 ml-11">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600">
-                            {getProductName(tank.productId)}
-                          </span>
+                          {getProductName(tank.productId) ? (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600">
+                              {getProductName(tank.productId)}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-50 border border-red-200 text-red-600 animate-pulse">
+                              ⚠️ {t('Missing Product (Edit Tank)', 'لاوارث ٹینک (ترمیم کریں)', language)}
+                            </span>
+                          )}
                         </div>
                       </div>
-                      <button
-                        onClick={() => onDeleteTank(tank.id)}
-                        className="size-8 flex items-center justify-center rounded-xl hover:bg-red-100 text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
-                      >
-                        <X className="size-4" />
-                      </button>
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => handleEdit(tank)}
+                          className="size-8 flex items-center justify-center rounded-xl hover:bg-blue-100 text-slate-400 hover:text-blue-600 transition-colors cursor-pointer"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                        </button>
+                        <button
+                          onClick={() => onDeleteTank(tank.id)}
+                          className="size-8 flex items-center justify-center rounded-xl hover:bg-red-100 text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
+                        >
+                          <X className="size-4" />
+                        </button>
+                      </div>
                     </div>
                     <div className="ml-11 grid grid-cols-2 gap-2 text-sm pt-3 border-t border-slate-100 mt-3">
                       <div>
