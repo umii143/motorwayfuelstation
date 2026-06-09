@@ -196,26 +196,26 @@ export default function StockInForm({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden animate-in zoom-in-95 duration-200 my-8">
-        <div className="bg-orange-600 px-6 py-5 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+      <div className="bg-white rounded-none sm:rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden animate-in zoom-in-95 duration-200 sm:my-8 min-h-screen sm:min-h-0 flex flex-col">
+        <div className="bg-orange-600 px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between sticky top-0 z-10">
           <div className="flex items-center gap-3">
-             <div className="size-10 rounded-xl bg-white/20 flex items-center justify-center">
-               <Truck className="size-5 text-white" />
+             <div className="size-8 sm:size-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+               <Truck className="size-4 sm:size-5 text-white" />
              </div>
-             <h2 className="text-xl font-bold text-white">
+             <h2 className="text-base sm:text-xl font-bold text-white line-clamp-1">
                {t('Record Fuel Purchase (Stock IN)', 'نیا فیول درج کریں (اسٹاک ان)', language)}
              </h2>
           </div>
-          <button onClick={onClose} className="p-2 text-white/70 hover:text-white rounded-full hover:bg-white/10 transition-colors">
-            <CheckCircle className="size-6" />
+          <button onClick={onClose} className="p-2 text-white/70 hover:text-white rounded-full hover:bg-white/10 transition-colors shrink-0">
+            <CheckCircle className="size-5 sm:size-6" />
           </button>
         </div>
 
-        <form onSubmit={handleAddStockSubmit} className="p-6">
+        <form onSubmit={handleAddStockSubmit} className="p-4 sm:p-6 pb-24 sm:pb-6 flex-1 overflow-y-auto">
           
           {/* HEADER SECTION */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div>
               <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">{t('Product', 'پراڈکٹ', language)} *</label>
               <select 
@@ -282,7 +282,7 @@ export default function StockInForm({
               {/* QUANTITY SECTION */}
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
                 <h3 className="text-sm font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2">{t('QUANTITY', 'مقدار', language)}</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-slate-600 mb-1.5">{t('Quantity Received', 'موصول شدہ مقدار', language)} *</label>
                     <div className="relative">
@@ -342,24 +342,24 @@ export default function StockInForm({
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between bg-white border border-slate-200 rounded-lg p-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white border border-slate-200 rounded-lg p-3 gap-2 sm:gap-0">
                     <div>
                       <div className="text-sm font-semibold text-slate-700">{t('Dealer Margin', 'ڈیلر مارجن', language)}</div>
                       <div className="text-xs text-slate-500">{t('(Set by OGRA — see Settings)', '(اوگرا کی طرف سے مقرر کردہ)', language)}</div>
                     </div>
-                    <div className="text-right flex items-center gap-2">
+                    <div className="text-left sm:text-right flex items-center gap-2">
                       <span className="text-sm font-bold text-slate-800">Rs. {dealerMargin.toFixed(2)}</span>
                       <span className="text-xs text-slate-400">/ Liter</span>
                       <span title="Fixed Rate" className="text-slate-400 text-xs">🔒 FIXED</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-emerald-50 border border-emerald-200 rounded-lg p-3 gap-2 sm:gap-0">
                     <div>
                       <div className="text-sm font-bold text-emerald-800">{t('OMC Invoice Price', 'او ایم سی انوائس پرائس', language)}</div>
                       <div className="text-xs text-emerald-600">{t('(OGRA Price - Dealer Margin)', '(اوگرا پرائس - ڈیلر مارجن)', language)}</div>
                     </div>
-                    <div className="text-right flex items-center gap-2">
+                    <div className="text-left sm:text-right flex items-center gap-2">
                       <span className="text-base font-bold text-emerald-700">Rs. {omcInvoicePrice.toFixed(2)}</span>
                       <span className="text-xs text-emerald-600">/ Liter</span>
                     </div>
@@ -371,7 +371,7 @@ export default function StockInForm({
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
                 <h3 className="text-sm font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2">{t('ADDITIONAL COSTS', 'دیگر اخراجات', language)}</h3>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-slate-600 mb-1.5">{t('Total Carriage/Freight', 'کرایہ / فریٹ کی قیمت', language)}</label>
                     <div className="relative">
@@ -428,7 +428,7 @@ export default function StockInForm({
                 </h3>
                 
                 <div className="space-y-3 mb-5 border-b border-white/10 pb-4">
-                  <div className="flex justify-between items-center text-sm">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center text-sm gap-1 sm:gap-0">
                     <span className="text-slate-300">{t('Total Invoice Amount', 'کل بل', language)}:</span>
                     <span className="font-medium text-lg">Rs. {totalInvoiceAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
                   </div>
@@ -438,26 +438,26 @@ export default function StockInForm({
                 </div>
 
                 <div className="space-y-2 mb-5 border-b border-white/10 pb-4">
-                  <div className="flex justify-between items-center text-sm">
+                  <div className="flex justify-between items-start text-sm gap-2">
                     <span className="text-slate-300">{t('Gross Margin/Liter', 'خالص مارجن/لیٹر', language)}:</span>
-                    <span>Rs. {grossMarginPerLiter.toFixed(2)}</span>
+                    <span className="text-right">Rs. {grossMarginPerLiter.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between items-center text-sm text-rose-300">
+                  <div className="flex justify-between items-start text-sm text-rose-300 gap-2">
                     <span>{t('Carriage/Other per Liter', 'کرایہ وغیرہ/لیٹر', language)}:</span>
-                    <span>- Rs. {(carriagePerLiter + otherPerLiter).toFixed(2)}</span>
+                    <span className="text-right">- Rs. {(carriagePerLiter + otherPerLiter).toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between items-center text-sm font-bold text-emerald-400 pt-2 border-t border-white/10 mt-2">
+                  <div className="flex justify-between items-center text-sm font-bold text-emerald-400 pt-2 border-t border-white/10 mt-2 gap-2">
                     <span>{t('Net Margin/Liter', 'خالص منافع/لیٹر', language)}:</span>
-                    <span className="flex items-center gap-2">Rs. {netMarginPerLiter.toFixed(2)} {netMarginPerLiter > 0 && '✅'}</span>
+                    <span className="flex items-center gap-1 text-right">Rs. {netMarginPerLiter.toFixed(2)} {netMarginPerLiter > 0 && '✅'}</span>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center text-sm">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center text-sm gap-1 sm:gap-0">
                     <span className="text-slate-300">{t('Expected Gross Profit', 'متوقع کل منافع', language)}:</span>
                     <span className="font-bold">Rs. {expectedGrossProfit.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
                   </div>
-                  <div className="flex justify-between items-center text-sm">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center text-sm gap-1 sm:gap-0">
                     <span className="text-slate-300">{t('Expected Net Profit', 'متوقع خالص منافع', language)}:</span>
                     <span className="font-bold text-emerald-400 text-lg">Rs. {expectedNetProfit.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
                   </div>
@@ -470,7 +470,7 @@ export default function StockInForm({
               {/* DIP READINGS */}
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
                 <h3 className="text-sm font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2">{t('DIP READINGS', 'ڈِپ ریڈنگز', language)}</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-slate-600 mb-1.5">{t('Tank Level Before', 'ٹینک لیول (پہلے)', language)}</label>
                     <div className="relative">
@@ -512,7 +512,7 @@ export default function StockInForm({
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
                  <h3 className="text-sm font-bold text-slate-800 mb-3 border-b border-slate-200 pb-2">{t('PAYMENT', 'ادائیگی', language)}</h3>
                  
-                 <div className="grid grid-cols-2 gap-4 mb-4">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                     <div>
                       <label className="block text-xs font-medium text-slate-600 mb-1.5">{t('Payment Method', 'ادائیگی کا طریقہ', language)}</label>
                       <select
@@ -559,7 +559,7 @@ export default function StockInForm({
                     )}
                  </div>
 
-                 <div className="grid grid-cols-2 gap-4 items-end">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:items-end">
                     <div>
                       <label className="block text-xs font-medium text-slate-600 mb-1.5">{t('Amount Paid Now', 'ادا کردہ رقم', language)}</label>
                       <div className="relative">
@@ -583,14 +583,14 @@ export default function StockInForm({
               </div>
 
               {/* PURCHASE DATE */}
-              <div className="flex gap-4 items-center justify-end pt-4 border-t border-slate-200">
-                <div className="flex items-center gap-2">
-                  <label className="text-xs font-medium text-slate-600">{t('Date & Time', 'تاریخ و وقت', language)}:</label>
+              <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-end pt-4 border-t border-slate-200">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+                  <label className="text-xs font-medium text-slate-600 shrink-0">{t('Date & Time', 'تاریخ و وقت', language)}:</label>
                   <input
                     type="datetime-local"
                     value={purchaseDate}
                     onChange={(e) => setPurchaseDate(e.target.value)}
-                    className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-slate-800 outline-none text-sm"
+                    className="w-full sm:w-auto rounded-lg border border-slate-300 bg-white px-3 py-2 sm:py-1.5 text-slate-800 outline-none text-sm"
                   />
                 </div>
               </div>
@@ -598,17 +598,17 @@ export default function StockInForm({
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-6 mt-6 border-t border-slate-200">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-6 mt-6 border-t border-slate-200">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2.5 rounded-xl font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+              className="px-6 py-3 sm:py-2.5 rounded-xl font-medium text-slate-600 hover:bg-slate-100 transition-colors w-full sm:w-auto text-center"
             >
               {t('Cancel', 'منسوخ کریں', language)}
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl font-bold text-white bg-orange-600 hover:bg-orange-700 transition-colors flex items-center gap-2 shadow-sm"
+              className="px-6 py-3 sm:py-2.5 rounded-xl font-bold text-white bg-orange-600 hover:bg-orange-700 transition-colors flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto"
             >
               <Package className="size-4" />
               {t('Save Stock IN →', 'اسٹاک محفوظ کریں', language)}
