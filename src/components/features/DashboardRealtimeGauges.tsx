@@ -18,11 +18,13 @@ export function DashboardRealtimeGauges({ settings, products = [], tanks = [], a
         <p className="text-slate-400 font-sans text-xs mt-1 font-bold uppercase tracking-widest">Local Station Time</p>
       </div>
 
-      {tanks.slice(0, 3).map(tank => {
-        // Sync with real product stock if available
-        const relatedProduct = products.find(p => p.id === tank.productId);
-        const actualStock = relatedProduct ? relatedProduct.currentStock : tank.currentStock;
-        const capacity = relatedProduct?.capacity || tank.capacity;
+      {tanks
+        .filter(tank => products.some(p => p.id === tank.productId)) // Only show tanks linked to active products
+        .slice(0, 4)
+        .map(tank => {
+        const relatedProduct = products.find(p => p.id === tank.productId)!;
+        const actualStock = relatedProduct.currentStock;
+        const capacity = relatedProduct.capacity || tank.capacity || 25000;
         
         const fillPercentage = capacity > 0 ? (actualStock / capacity) * 100 : 0;
         const isLow = actualStock <= tank.criticalLevel;
