@@ -39,12 +39,12 @@ export class AIAssistantService {
     const finalGroq = storedGroq || envGroq;
     const finalGemini = storedGemini || envGemini;
 
-    if (finalGroq) {
-      this.groqClient = new Groq({ apiKey: finalGroq, dangerouslyAllowBrowser: true });
-      this.activeProvider = 'groq';
-    } else if (finalGemini) {
+    if (finalGemini) {
       this.geminiClient = new GoogleGenAI({ apiKey: finalGemini });
       this.activeProvider = 'gemini';
+    } else if (finalGroq) {
+      this.groqClient = new Groq({ apiKey: finalGroq, dangerouslyAllowBrowser: true });
+      this.activeProvider = 'groq';
     } else {
       this.activeProvider = 'mock';
       console.warn('[AIAssistantService] No API keys found. Falling back to local Mock Mode.');
@@ -124,7 +124,7 @@ export class AIAssistantService {
             { role: 'system', content: systemPrompt },
             { role: 'user', content: question }
           ],
-          model: 'llama3-70b-8192',
+          model: 'llama-3.3-70b-versatile',
           temperature: 0.3,
         });
         content = completion.choices[0]?.message?.content || "";
@@ -216,7 +216,7 @@ export class AIAssistantService {
       if (this.activeProvider === 'groq' && this.groqClient) {
         const completion = await this.groqClient.chat.completions.create({
           messages: [{ role: 'user', content: prompt }],
-          model: 'llama3-70b-8192',
+          model: 'llama-3.3-70b-versatile',
           temperature: 0.1,
         });
         content = completion.choices[0]?.message?.content || "";
