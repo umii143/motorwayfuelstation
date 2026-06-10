@@ -35,6 +35,7 @@ export interface Staff extends TenantDocument {
   cnic?: string;
   advanceBalance?: number;
   salaryBalance?: number;
+  loanBalance?: number;
 }
 
 export interface DealerMarginSetting {
@@ -61,6 +62,9 @@ export interface Product extends TenantDocument {
   minStock: number;
   capacity?: number;
   category?: string;
+  purchasePrice?: number;
+  sellingPrice?: number;
+  dealerMarginPerUnit?: number;
   currentDealerMargin?: number;
 }
 
@@ -119,7 +123,9 @@ export interface RecoveryEntry extends TenantDocument {
 
 export interface ExpenseEntry extends TenantDocument {
   id: string;
-  category: string;
+  category?: string; // Legacy
+  categoryId?: string;
+  categoryName?: string;
   amount: number;
   description: string;
   date: string;
@@ -383,12 +389,18 @@ export interface Station extends TenantDocument {
 }
 
 export interface AuditTrailEntry extends TenantDocument {
-  id: string;
+  id: string; // Action ID
   timestamp: string; // ISO String or unix timestamp
   category: string;
   action: string;
   details: string;
-  operator: string;
+  user: string; // User ID or Name
+  role: string; // Role
+  branch: string; // Branch ID
+  oldValue?: string | object;
+  newValue?: string | object;
+  ip?: string;
+  device?: string;
 }
 
 export interface GlobalSettings extends TenantDocument {
@@ -442,18 +454,75 @@ export interface Tank extends TenantDocument {
   dipChart: { cm: number; liters: number }[];
 }
 
+export interface Attachment {
+  id: string;
+  fileName: string;
+  url: string;
+  type: 'pdf' | 'image' | 'circular' | 'letter';
+  uploadedDate: string;
+  uploadedBy: string;
+  size: number;
+}
+
+export interface TankSnapshotDetail {
+  tankId: string;
+  tankName: string;
+  stockQuantity: number;
+  waterLevel?: number;
+  temperature?: number;
+}
+
+export interface InventorySnapshot extends TenantDocument {
+  id: string;
+  snapshotDate: string;
+  snapshotTime: string;
+  productId: string;
+  productName: string;
+  stockQuantity: number;
+  currentPrice: number;
+  inventoryValue: number;
+  snapshotValueBefore?: number;
+  snapshotValueAfter?: number;
+  tankDetails?: TankSnapshotDetail[];
+  createdBy: string;
+}
+
+export type RateChangeReason = 
+  | 'OGRA Revision' 
+  | 'PSO Revision' 
+  | 'Shell Revision' 
+  | 'GO Revision' 
+  | 'APL Revision' 
+  | 'Manual Correction' 
+  | 'Special Adjustment' 
+  | 'System Correction';
+
 export interface RateHistoryEntry extends TenantDocument {
   id: string;
   productId: string;
-  date: string;
-  oldRate: number;
-  newRate: number;
-  change: number;
-  stockAtTime: number;
-  impactAmount: number; // old vs new stock gain/loss
-  reason: string;
+  productName: string;
+  oldPrice: number;
+  newPrice: number;
+  difference: number;
+  changeType: 'increase' | 'decrease';
+  stockAtTimeOfChange: number;
+  inventoryImpact: number;
+  snapshotId: string;
+  effectiveDate: string;
+  effectiveTime: string;
   changedBy: string;
-  difference?: number;
+  approvalStatus: 'approved' | 'pending';
+  notes?: string;
+  reason: RateChangeReason;
+  attachments?: Attachment[];
+
+  // Legacy fields (kept for backward compatibility, optional)
+  date?: string;
+  oldRate?: number;
+  newRate?: number;
+  change?: number;
+  stockAtTime?: number;
+  impactAmount?: number;
   stockAtChange?: number;
   gainLoss?: number;
   changedAt?: number;
@@ -470,6 +539,49 @@ export interface StaffFinanceEntry extends TenantDocument {
   note?: string;
   mode?: 'cash' | 'bank' | 'card' | 'transfer';
   deductedAdvance?: number;
+}
+
+export interface SalaryTransaction extends TenantDocument {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  amount: number;
+  month: string;
+  paymentDate: string;
+  paymentMethod: string;
+  paymentSource: string; // e.g. 'cash', 'hbl', 'meezan'
+  status: 'draft' | 'pending_approval' | 'approved' | 'paid';
+  expenseId?: string;
+  createdBy: string;
+  approvedBy?: string;
+  remarks?: string;
+  branchId?: string;
+  advanceDeduction?: number;
+  loanDeduction?: number;
+  netPaid?: number;
+}
+
+export interface StaffLoan extends TenantDocument {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  loanAmount: number;
+  monthlyInstallment: number;
+  remainingBalance: number;
+  dateIssued: string;
+  status: 'active' | 'cleared';
+  branchId?: string;
+}
+
+export interface SalaryAdvance extends TenantDocument {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  amount: number;
+  dateIssued: string;
+  status: 'active' | 'recovered';
+  recoveredAmount: number;
+  branchId?: string;
 }
 
 export interface AttendanceRecord extends TenantDocument {
@@ -701,4 +813,58 @@ export interface ConfirmConfig {
   isAlert?: boolean;
   confirmText?: string;
   cancelText?: string;
+}
+
+// ==========================================
+// TREASURY & CASH CONTROL MODULE (PHASE 3)
+// ==========================================
+
+export type CashAccountType = 'shift_cash' | 'main_safe' | 'owner_cash' | 'bank' | 'digital';
+
+export interface CashAccount extends TenantDocument {
+  id: string;
+  name: string; // e.g. "Main Safe", "Shift Cash Pool"
+  type: CashAccountType;
+  balance: number;
+  bankAccountId?: string; // If mapped directly to BankAccount
+  digitalAccountId?: string; // If mapped to DigitalAccount
+}
+
+export type TreasuryTransactionType = 'transfer' | 'deposit' | 'withdrawal' | 'supplier_payment' | 'reconciliation' | 'adjustment' | 'income' | 'expense';
+
+export interface TreasuryTransaction extends TenantDocument {
+  id: string;
+  date: string;
+  sourceAccountId?: string;
+  sourceAccountType?: CashAccountType;
+  destinationAccountId?: string;
+  destinationAccountType?: CashAccountType;
+  amount: number;
+  type: TreasuryTransactionType;
+  referenceId?: string; // invoice number, shift ID, etc.
+  description: string;
+  performedBy: string; // user ID or name
+  status: 'completed' | 'pending' | 'failed';
+}
+
+export interface CashReconciliation extends TenantDocument {
+  id: string;
+  date: string;
+  shiftId?: string;
+  accountId: string; // The account being reconciled (usually shift_cash or main_safe)
+  expectedCash: number;
+  physicalCash: number;
+  variance: number; // positive = overage, negative = shortage
+  notes: string;
+  reconciledBy: string;
+}
+
+export interface OwnerDrawing extends TenantDocument {
+  id: string;
+  date: string;
+  amount: number;
+  sourceAccountId: string;
+  sourceAccountType: CashAccountType;
+  description: string;
+  withdrawnBy: string; // Usually the owner's ID
 }

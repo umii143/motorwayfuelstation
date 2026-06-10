@@ -22,7 +22,10 @@ import {
   JournalEntry,
   StockBatch,
   CogsRecord,
-  DealerMarginSetting
+  DealerMarginSetting,
+  SalaryTransaction,
+  StaffLoan,
+  SalaryAdvance
 } from '../types';
 import { db } from '../data/db';
 import { useAuth } from './AuthContext';
@@ -79,6 +82,9 @@ export interface StationContextType {
   tanks: Tank[];
   rateHistory: RateHistoryEntry[];
   staffFinance: StaffFinanceEntry[];
+  salaryTransactions: SalaryTransaction[];
+  staffLoans: StaffLoan[];
+  salaryAdvances: SalaryAdvance[];
   attendance: AttendanceRecord[];
   standaloneExpenses: ExpenseEntry[];
   lubePosSales: LubePosSale[];
@@ -106,6 +112,9 @@ export interface StationContextType {
   setTanks: (tanks: Tank[]) => void;
   setRateHistory: (rateHistory: RateHistoryEntry[]) => void;
   setStaffFinance: (staffFinance: StaffFinanceEntry[]) => void;
+  setSalaryTransactions: (txns: SalaryTransaction[]) => void;
+  setStaffLoans: (loans: StaffLoan[]) => void;
+  setSalaryAdvances: (advances: SalaryAdvance[]) => void;
   setAttendance: (attendance: AttendanceRecord[]) => void;
   setStandaloneExpenses: (standaloneExpenses: ExpenseEntry[]) => void;
   setLubePosSales: (lubePosSales: LubePosSale[]) => void;
@@ -140,6 +149,12 @@ export interface StationContextType {
   handleUpdateNozzle: (updatedNozzle: Nozzle) => void;
   handleDeleteNozzle: (id: string) => void;
   handleAddStaffFinance: (newEntry: StaffFinanceEntry) => void;
+  handleAddSalaryTransaction: (txn: SalaryTransaction) => Promise<void>;
+  handleUpdateSalaryTransaction: (txn: SalaryTransaction) => Promise<void>;
+  handleAddStaffLoan: (loan: StaffLoan) => Promise<void>;
+  handleUpdateStaffLoan: (loan: StaffLoan) => Promise<void>;
+  handleAddSalaryAdvance: (adv: SalaryAdvance) => Promise<void>;
+  handleUpdateSalaryAdvance: (adv: SalaryAdvance) => Promise<void>;
   handleAddShiftSalaryPayment: (staffId: string, amount: number, note: string, paidFrom: 'cash' | 'bank', date: string, expenseId: string) => void;
   handleDeleteShiftSalaryPayment: (expenseId: string) => void;
   handleAddAttendance: (records: AttendanceRecord[]) => void;
@@ -270,10 +285,16 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const staff = useStaffStore((state) => state.staff);
   const staffFinance = useStaffStore((state) => state.staffFinance);
+  const salaryTransactions = useStaffStore((state) => state.salaryTransactions);
+  const staffLoans = useStaffStore((state) => state.staffLoans);
+  const salaryAdvances = useStaffStore((state) => state.salaryAdvances);
   const attendance = useStaffStore((state) => state.attendance);
 
   const setStaff = useStaffStore((state) => state.setStaff);
   const setStaffFinance = useStaffStore((state) => state.setStaffFinance);
+  const setSalaryTransactions = useStaffStore((state) => state.setSalaryTransactions);
+  const setStaffLoans = useStaffStore((state) => state.setStaffLoans);
+  const setSalaryAdvances = useStaffStore((state) => state.setSalaryAdvances);
   const setAttendance = useStaffStore((state) => state.setAttendance);
 
   const handleAddStaff = (st: Staff) => useStaffStore.getState().handleAddStaff(st, orgId, activeStationId);
@@ -287,6 +308,12 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     handleUpdateBanks,
     banks
   );
+  const handleAddSalaryTransaction = (txn: SalaryTransaction) => useStaffStore.getState().handleAddSalaryTransaction(txn, orgId, activeStationId);
+  const handleUpdateSalaryTransaction = (txn: SalaryTransaction) => useStaffStore.getState().handleUpdateSalaryTransaction(txn, orgId, activeStationId);
+  const handleAddStaffLoan = (loan: StaffLoan) => useStaffStore.getState().handleAddStaffLoan(loan, orgId, activeStationId);
+  const handleUpdateStaffLoan = (loan: StaffLoan) => useStaffStore.getState().handleUpdateStaffLoan(loan, orgId, activeStationId);
+  const handleAddSalaryAdvance = (adv: SalaryAdvance) => useStaffStore.getState().handleAddSalaryAdvance(adv, orgId, activeStationId);
+  const handleUpdateSalaryAdvance = (adv: SalaryAdvance) => useStaffStore.getState().handleUpdateSalaryAdvance(adv, orgId, activeStationId);
   const handleAddShiftSalaryPayment = (sId: string, amt: number, note: string, paidFrom: 'cash' | 'bank', date: string, expId: string) =>
     useStaffStore.getState().handleAddShiftSalaryPayment(sId, amt, note, paidFrom, date, expId, orgId, activeStationId);
   const handleDeleteShiftSalaryPayment = (expId: string) =>
@@ -313,6 +340,9 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     const loadedTanks = db.getTanks(activeStationId);
     const loadedRateHistory = db.getRateHistory(activeStationId);
     const loadedStaffFinance = db.getStaffFinance(activeStationId);
+    const loadedSalaryTransactions = db.getSalaryTransactions(activeStationId);
+    const loadedStaffLoans = db.getStaffLoans(activeStationId);
+    const loadedSalaryAdvances = db.getSalaryAdvances(activeStationId);
     const loadedAttendance = db.getAttendance(activeStationId);
     const loadedStandalone = db.getStandaloneExpenses(activeStationId);
     const loadedLubePosSales = db.getLubePosSales(activeStationId);
@@ -348,6 +378,9 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
     useStaffStore.setState({
       staffFinance: isolateTenantRecords(loadedStaffFinance, activeStationId),
+      salaryTransactions: isolateTenantRecords(loadedSalaryTransactions, activeStationId),
+      staffLoans: isolateTenantRecords(loadedStaffLoans, activeStationId),
+      salaryAdvances: isolateTenantRecords(loadedSalaryAdvances, activeStationId),
       attendance: isolateTenantRecords(loadedAttendance, activeStationId)
     });
   }, [activeStationId, orgId]);
@@ -376,6 +409,9 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
       firestoreDb.subscribeToCollection<Tank>(orgId, activeStationId, 'tanks', (items) => useInventoryStore.setState({ tanks: isolateTenantRecords(items, activeStationId, orgId) })),
       firestoreDb.subscribeToCollection<RateHistoryEntry>(orgId, activeStationId, 'rateHistory', (items) => useInventoryStore.setState({ rateHistory: isolateTenantRecords(items, activeStationId, orgId) })),
       firestoreDb.subscribeToCollection<StaffFinanceEntry>(orgId, activeStationId, 'staffFinance', (items) => useStaffStore.setState({ staffFinance: isolateTenantRecords(items, activeStationId, orgId) })),
+      firestoreDb.subscribeToCollection<SalaryTransaction>(orgId, activeStationId, 'salaryTransactions', (items) => useStaffStore.setState({ salaryTransactions: isolateTenantRecords(items, activeStationId, orgId) })),
+      firestoreDb.subscribeToCollection<StaffLoan>(orgId, activeStationId, 'staffLoans', (items) => useStaffStore.setState({ staffLoans: isolateTenantRecords(items, activeStationId, orgId) })),
+      firestoreDb.subscribeToCollection<SalaryAdvance>(orgId, activeStationId, 'salaryAdvances', (items) => useStaffStore.setState({ salaryAdvances: isolateTenantRecords(items, activeStationId, orgId) })),
       firestoreDb.subscribeToCollection<AttendanceRecord>(orgId, activeStationId, 'attendance', (items) => useStaffStore.setState({ attendance: isolateTenantRecords(items, activeStationId, orgId) })),
       firestoreDb.subscribeToCollection<ExpenseEntry>(orgId, activeStationId, 'standaloneExpenses', (items) => useFinancialStore.setState({ standaloneExpenses: isolateTenantRecords(items, activeStationId, orgId) })),
       firestoreDb.subscribeToCollection<LubePosSale>(orgId, activeStationId, 'lubePosSales', (items) => useFinancialStore.setState({ lubePosSales: isolateLubePosSales(items, activeStationId, orgId) })),
@@ -417,6 +453,9 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     tanks,
     rateHistory,
     staffFinance,
+    salaryTransactions,
+    staffLoans,
+    salaryAdvances,
     attendance,
     standaloneExpenses,
     lubePosSales,
@@ -443,6 +482,9 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     setTanks,
     setRateHistory,
     setStaffFinance,
+    setSalaryTransactions,
+    setStaffLoans,
+    setSalaryAdvances,
     setAttendance,
     setStandaloneExpenses,
     setLubePosSales,
@@ -476,6 +518,12 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     handleUpdateNozzle,
     handleDeleteNozzle,
     handleAddStaffFinance,
+    handleAddSalaryTransaction,
+    handleUpdateSalaryTransaction,
+    handleAddStaffLoan,
+    handleUpdateStaffLoan,
+    handleAddSalaryAdvance,
+    handleUpdateSalaryAdvance,
     handleAddShiftSalaryPayment,
     handleDeleteShiftSalaryPayment,
     handleAddAttendance,

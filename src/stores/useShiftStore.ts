@@ -638,6 +638,7 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
       useSupplierStore.getState().setSuppliers(nextSuppliers);
       useInventoryStore.getState().setTanks(nextTanks);
       useInventoryStore.getState().setProducts(nextProducts);
+      useInventoryStore.getState().setNozzles(nextNozzles);
       useFinancialStore.getState().setBanks(nextBanks);
       useStaffStore.getState().setStaff(nextStaff);
 

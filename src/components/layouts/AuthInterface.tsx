@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { GlobalSettings } from "../../types";
 import { useStation } from "../../contexts/StationContext";
+import { PoweredByUmarAli } from "../shared/PoweredByUmarAli";
 
 interface AuthInterfaceProps {
   settings: GlobalSettings;
@@ -749,8 +750,9 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
       </motion.div>
 
       {/* FOOTER */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="mt-8 text-center z-10">
-        <p className="font-sans text-[10px] text-slate-600 uppercase tracking-widest">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="mt-8 flex flex-col items-center justify-center z-10">
+        <PoweredByUmarAli variant="full" showLogo={false} className="text-white/60 w-full" />
+        <p className="font-sans text-[10px] text-slate-600 uppercase tracking-widest mt-2">
           FuelPro ERP · Secured by Firebase · AES-256 Encrypted at Rest
         </p>
       </motion.div>

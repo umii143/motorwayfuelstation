@@ -29,9 +29,12 @@ import {
   AlertCircle
 } from 'lucide-react';
 import EmptyState from '../ui/EmptyState';
-import { Staff, GlobalSettings, StaffFinanceEntry, AttendanceRecord, Shift } from '../../types';
+import { ModuleSearchBar } from '../shared/ModuleSearchBar';
+import { Staff, GlobalSettings, StaffFinanceEntry, AttendanceRecord, Shift, SalaryTransaction, StaffLoan, SalaryAdvance } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { useStation } from '../../contexts/StationContext';
+import { SalaryEngine } from '../../services/salaryEngine';
+import RoleGuard from '../ui/RoleGuard';
 
 interface StaffProps {
   settings: GlobalSettings;
@@ -58,17 +61,20 @@ export default function StaffPanel({
   onAddAttendance,
   shifts
 }: StaffProps) {
-  const { showToast, showAlert, showConfirm } = useStation();
+  const { showToast, showAlert, showConfirm, salaryTransactions, staffLoans, salaryAdvances, handleAddSalaryTransaction, handleAddStaffLoan, handleAddSalaryAdvance, handleAddStandaloneExpense, handleUpdateBanks, banks } = useStation();
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
 
   // Active section tab
-  const [activeTab, setActiveTab] = useState<'crew' | 'finance' | 'attendance' | 'performance' | 'attendance_reports'>('crew');
+  const [activeTab, setActiveTab] = useState<'crew' | 'finance' | 'legacy_finance' | 'attendance' | 'performance' | 'attendance_reports'>('crew');
 
   // Query and reporting states for Performance and Attendance tabs
   const [selectedPerfStaffId, setSelectedPerfStaffId] = useState<string>('all');
   const [attendanceReportView, setAttendanceReportView] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [attendanceReportMonth, setAttendanceReportMonth] = useState(() => new Date().toISOString().substring(0, 7));
+
+  // Search query state
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Register state overlays/toggles
   const [showAddStaff, setShowAddStaff] = useState(false);
@@ -84,11 +90,13 @@ export default function StaffPanel({
 
   // Form caches: Ledger Entries
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
-  const [financeType, setFinanceType] = useState<'advance' | 'accrual' | 'issue'>('advance');
+  const [financeType, setFinanceType] = useState<'advance' | 'loan' | 'accrual' | 'issue'>('advance');
   const [financeAmount, setFinanceAmount] = useState('');
   const [financeNote, setFinanceNote] = useState('');
   const [financeMode, setFinanceMode] = useState<'cash' | 'bank' | 'transfer'>('cash');
   const [financeDate, setFinanceDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [salaryMonth, setSalaryMonth] = useState(() => new Date().toISOString().substring(0, 7));
+  const [loanInstallment, setLoanInstallment] = useState('');
 
   // Form caches: Daily Attendance Register (Module E1)
   const [attendanceDate, setAttendanceDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -108,17 +116,11 @@ export default function StaffPanel({
 
   // Calculations for dashboard highlights
   const totalAdvancesSum = useMemo(() => {
-    // outstanding advances = total advance issued minus deductions
-    return staff.reduce((sum, s) => {
-      const staffEntries = staffFinance.filter(f => f.staffId === s.id);
-      const totalAdv = staffEntries.filter(f => f.type === 'advance').reduce((a, e) => a + e.amount, 0);
-      const totalPaidBack = staffEntries.filter(f => f.type === 'issue').reduce((a, e) => a + (e.deductedAdvance || 0), 0);
-      return sum + Math.max(0, totalAdv - totalPaidBack);
-    }, 0);
-  }, [staff, staffFinance]);
+    return staff.reduce((sum, s) => sum + (s.advanceBalance || 0), 0);
+  }, [staff]);
 
   const totalMonthlyPayrollExpect = useMemo(() => {
-    return staff.reduce((sum, s) => sum + s.salary, 0);
+    return staff.reduce((sum, s) => sum + (s.salary || 0), 0);
   }, [staff]);
 
   const todayAttendanceSummary = useMemo(() => {
@@ -127,6 +129,15 @@ export default function StaffPanel({
     const absent = todayRecs.filter(r => r.status === 'absent').length;
     return { present, absent, totalCount: todayRecs.length };
   }, [attendance, attendanceDate]);
+
+  // Filtered staff
+  const filteredStaff = useMemo(() => {
+    if (!searchQuery.trim()) return staff;
+    return staff.filter(s => 
+      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (s.urduName && s.urduName.includes(searchQuery))
+    );
+  }, [staff, searchQuery]);
 
   // ==========================================
   // HANDLERS
@@ -173,8 +184,8 @@ export default function StaffPanel({
     showToast(t('Pump crew member registered successfully!', 'پمپ ملازم کامیابی سے رجسٹر ہو گیا!'), 'success');
   };
 
-  // Log Finance entry (Advances, Salary issued / accrual)
-  const handleLogFinanceSubmit = (e: React.FormEvent) => {
+  // Salary Engine Handler
+  const handlePostFinance = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedStaffId) return;
 
@@ -187,59 +198,74 @@ export default function StaffPanel({
       return;
     }
 
-    // Determine balance after this entry
-    const previousEntries = staffFinance.filter(f => f.staffId === selectedStaffId);
-    
-    // Earned salary balance outstanding
-    const accrued = previousEntries.filter(f => f.type === 'accrual').reduce((sum, x) => sum + x.amount, 0);
-    const paid = previousEntries.filter(f => f.type === 'issue').reduce((sum, x) => sum + x.amount + (x.deductedAdvance || 0), 0);
-    const currentPayableBalance = accrued - paid;
+    try {
+      if (financeType === 'advance') {
+        const adv = SalaryEngine.issueAdvance(staffMember.id, staffMember.name, amt);
+        await handleAddSalaryAdvance(adv);
+        // Also update staff advanceBalance
+        onUpdateStaff({ ...staffMember, advanceBalance: (staffMember.advanceBalance || 0) + amt });
+      } else if (financeType === 'loan') {
+        const inst = Number(loanInstallment) || amt;
+        const loan = SalaryEngine.issueLoan(staffMember.id, staffMember.name, amt, inst);
+        await handleAddStaffLoan(loan);
+        // Also update staff loanBalance
+        onUpdateStaff({ ...staffMember, loanBalance: (staffMember.loanBalance || 0) + amt });
+      } else if (financeType === 'accrual') {
+        const txn = SalaryEngine.accrueSalary(staffMember.id, staffMember.name, amt, salaryMonth, 'system');
+        await handleAddSalaryTransaction(txn);
+        // Update staff salaryBalance
+        onUpdateStaff({ ...staffMember, salaryBalance: (staffMember.salaryBalance || 0) + amt });
+      } else if (financeType === 'issue') {
+        const txn = SalaryEngine.accrueSalary(staffMember.id, staffMember.name, amt, salaryMonth, 'system');
+        
+        // Calculate deductions
+        const maxAdvance = staffMember.advanceBalance || 0;
+        const maxLoan = staffMember.loanBalance || 0;
+        const loanInstallmentToDeduct = staffLoans.find(l => l.employeeId === staffMember.id && l.status === 'active')?.monthlyInstallment || 0;
+        
+        // Very basic deduction strategy for now (deduct all advance if possible, then loan installment)
+        const advDed = Math.min(amt, maxAdvance);
+        let remainingForLoan = amt - advDed;
+        const loanDed = Math.min(remainingForLoan, Math.min(maxLoan, loanInstallmentToDeduct));
 
-    let balanceAfter = 0;
-    if (financeType === 'accrual') {
-      balanceAfter = currentPayableBalance + amt;
-    } else if (financeType === 'issue') {
-      balanceAfter = Math.max(0, currentPayableBalance - amt);
-    } else {
-      // standard advance balances are calculated separately but we can list active payables
-      balanceAfter = currentPayableBalance;
+        txn.advanceDeduction = advDed;
+        txn.loanDeduction = loanDed;
+
+        const res = SalaryEngine.paySalary({
+          salaryTx: txn,
+          staffMember,
+          paymentSource: financeMode,
+          isBankOrDigital: financeMode !== 'cash',
+          expenseDate: financeDate
+        });
+        
+        await handleAddSalaryTransaction(res.updatedSalaryTx);
+        handleAddStandaloneExpense(res.expenseEntry);
+
+        // Update Bank Balance if needed
+        if (res.cashEntry && banks && financeMode !== 'cash') {
+          // Assume financeMode is the bank account ID when it's not 'cash'.
+          const updatedBanks = banks.map(bk => bk.id === financeMode ? { ...bk, balance: bk.balance + res.cashEntry!.amount } : bk);
+          handleUpdateBanks(updatedBanks);
+        }
+
+        // Update Staff Balances
+        onUpdateStaff({
+          ...staffMember,
+          salaryBalance: Math.max(0, (staffMember.salaryBalance || 0) - amt),
+          advanceBalance: Math.max(0, (staffMember.advanceBalance || 0) - advDed),
+          loanBalance: Math.max(0, (staffMember.loanBalance || 0) - loanDed)
+        });
+      }
+
+      setFinanceAmount('');
+      setFinanceNote('');
+      setLoanInstallment('');
+      setSelectedStaffId(null);
+      showToast(t('Transaction successfully recorded!', 'مالی لاگ محفوظ ہو گیا!'), 'success');
+    } catch (err: any) {
+      showToast(err.message || 'Error occurred', 'error');
     }
-
-    // Create the record
-    const refId = 'SF-' + Date.now().toString().substring(6);
-    const newFin: StaffFinanceEntry = {
-      id: 'sf_' + Date.now(),
-      staffId: selectedStaffId,
-      date: financeDate,
-      type: financeType,
-      amount: amt,
-      balanceAfter,
-      reference: refId,
-      note: financeNote || t('Manual ledger adjustment', 'دستی کھاتہ ایڈجسٹمنٹ'),
-      mode: financeType === 'accrual' ? undefined : financeMode,
-      deductedAdvance: financeType === 'issue' ? Math.min(amt, staffMember.advances) : undefined
-    };
-
-    onAddStaffFinance(newFin);
-
-    // Sync state: if advance issued, update staff.advances! If salary issue, reduce advances if deduction
-    let updatedAdvances = staffMember.advances || 0;
-    if (financeType === 'advance') {
-      updatedAdvances += amt;
-    } else if (financeType === 'issue') {
-      const deductionVal = Math.min(updatedAdvances, Math.max(0, staffMember.advances)); // automatic deduct
-      updatedAdvances = Math.max(0, updatedAdvances - deductionVal);
-    }
-
-    onUpdateStaff({
-      ...staffMember,
-      advances: updatedAdvances
-    });
-
-    setFinanceAmount('');
-    setFinanceNote('');
-    setSelectedStaffId(null);
-    showToast(t('Salary ledger log successfully recorded. Downstream cashbox flows adjusted!', 'ملازم کا مالی لاگ محفوظ ہو گیا۔ نقد رقم اسٹیشن فنڈز سے کاٹ لی گئی ہے!'), 'success');
   };
 
   // Submit Active Attendance Register (Module E1)
@@ -290,6 +316,14 @@ export default function StaffPanel({
           <span>{t('Register New Crew', 'نیا پمپ ملازم شامل کریں')}</span>
         </button>
       </div>
+
+      {/* UNIVERSAL MODULE SEARCH BAR */}
+      <ModuleSearchBar
+        moduleName={t('Staff', 'عملہ')}
+        placeholder={t('Search staff members...', 'عملہ تلاش کریں...')}
+        onSearch={setSearchQuery}
+        onExport={() => showToast(t('Export coming soon', 'ایکسپورٹ جلد آرہا ہے'), 'info')}
+      />
 
       {/* CORE HIGHLIGHT CARDS ROW */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -359,7 +393,18 @@ export default function StaffPanel({
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          {t('💵 Salary & Advances Account Logs', '💵 تنخواہ اور ایڈوانس لاگز')}
+          {t('💵 Salary & Advances Ledger', '💵 تنخواہ اور ایڈوانس لاگز')}
+        </button>
+
+        <button
+          onClick={() => setActiveTab('legacy_finance')}
+          className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap ${
+            activeTab === 'legacy_finance'
+              ? 'border-orange-600 text-orange-600 font-extrabold'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          {t('📜 Legacy Salary History', '📜 پرانی تنخواہ کا ریکارڈ (صرف پڑھنے کے لیے)')}
         </button>
 
         <button
@@ -417,13 +462,17 @@ export default function StaffPanel({
                         />
                       </td>
                     </tr>
+                  ) : filteredStaff.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-6 text-center text-slate-400 font-sans">
+                        {t('No staff found matching search.', 'تلاش کے مطابق کوئی ملازم نہیں ملا۔')}
+                      </td>
+                    </tr>
                   ) : (
-                    staff.map(mem => {
-                      // Calc advances
-                      const memFinances = staffFinance.filter(f => f.staffId === mem.id);
-                      const advSum = memFinances.filter(f => f.type === 'advance').reduce((a, e) => a + e.amount, 0);
-                      const repaidSum = memFinances.filter(f => f.type === 'issue').reduce((a, e) => a + (e.deductedAdvance || 0), 0);
-                      const activeAdvanceBalance = Math.max(0, advSum - repaidSum);
+                    filteredStaff.map(mem => {
+                      const activeAdvanceBalance = mem.advanceBalance || 0;
+                      const activeLoanBalance = mem.loanBalance || 0;
+                      const activeSalaryBalance = mem.salaryBalance || 0;
 
                       return (
                         <tr key={mem.id} className="hover:bg-slate-50/50">
@@ -451,12 +500,16 @@ export default function StaffPanel({
                             {formatCurrency(mem.salary, settings)}
                           </td>
 
-                          <td className={`py-3.5 px-4 text-right font-mono font-bold ${activeAdvanceBalance > 0 ? 'text-red-500' : 'text-slate-400'}`}>
-                            {activeAdvanceBalance > 0 ? `${formatCurrency(activeAdvanceBalance, settings)}` : '—'}
+                          <td className={`py-3.5 px-4 text-right font-mono font-bold ${activeAdvanceBalance > 0 || activeLoanBalance > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
+                            <div className="flex flex-col items-end gap-0.5">
+                              {activeAdvanceBalance > 0 && <span className="text-[10px]"><span className="text-slate-500">Adv:</span> {formatCurrency(activeAdvanceBalance, settings)}</span>}
+                              {activeLoanBalance > 0 && <span className="text-[10px]"><span className="text-slate-500">Loan:</span> {formatCurrency(activeLoanBalance, settings)}</span>}
+                              {activeAdvanceBalance === 0 && activeLoanBalance === 0 && '—'}
+                            </div>
                           </td>
 
                           <td className="py-3.5 px-4 text-right">
-                            <div className="flex justify-end gap-1.5">
+                            <div className="flex flex-wrap justify-end gap-1.5">
                               <button
                                 onClick={() => {
                                   setSelectedStaffId(mem.id);
@@ -466,7 +519,19 @@ export default function StaffPanel({
                                 }}
                                 className="px-2.5 py-1 text-[10.5px] font-sans font-semibold rounded border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 cursor-pointer"
                               >
-                                {t('💸 Issue Advance', 'ایڈوانس دیں')}
+                                {t('💸 Advance', 'ایڈوانس')}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setSelectedStaffId(mem.id);
+                                  setFinanceType('loan');
+                                  setFinanceAmount('');
+                                  setFinanceNote('');
+                                  setLoanInstallment('');
+                                }}
+                                className="px-2.5 py-1 text-[10.5px] font-sans font-semibold rounded border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 cursor-pointer"
+                              >
+                                {t('🏦 Loan', 'قرضہ')}
                               </button>
                               <button
                                 onClick={() => {
@@ -477,7 +542,7 @@ export default function StaffPanel({
                                 }}
                                 className="px-2.5 py-1 text-[10.5px] font-sans font-semibold rounded border border-teal-250 bg-teal-50 text-teal-700 hover:bg-teal-100 cursor-pointer"
                               >
-                                {t('⚖️ Issue Salaries', 'تنخواہ ادا کریں')}
+                                {t('⚖️ Salary', 'تنخواہ')}
                               </button>
                             </div>
                           </td>
@@ -697,9 +762,122 @@ export default function StaffPanel({
           )}
 
           {/* ==========================================
-              TAB 3: STAFF FINANCE AND PAYROLL LOG (MODULE E3)
+              TAB: NEW SALARY ENGINE
               ========================================== */}
           {activeTab === 'finance' && (
+            <div className="space-y-6">
+              {/* SALARY TRANSACTIONS */}
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+                <h3 className="font-sans text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-2">
+                  <DollarSign className="h-4 w-4 text-emerald-500" />
+                  <span>{t('Salary Transactions', 'تنخواہ کی تفصیل')}</span>
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left font-sans text-xs">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                        <th className="py-2.5 px-3">Date</th>
+                        <th className="py-2.5 px-3">Month</th>
+                        <th className="py-2.5 px-3">Employee</th>
+                        <th className="py-2.5 px-3 text-right">Amount</th>
+                        <th className="py-2.5 px-3">Source</th>
+                        <th className="py-2.5 px-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-700">
+                      {salaryTransactions.length === 0 ? (
+                        <tr><td colSpan={6} className="py-4 text-center">No transactions</td></tr>
+                      ) : salaryTransactions.map(txn => (
+                        <tr key={txn.id}>
+                          <td className="py-3 px-3">{txn.paymentDate}</td>
+                          <td className="py-3 px-3">{txn.month}</td>
+                          <td className="py-3 px-3 font-bold">{txn.employeeName}</td>
+                          <td className="py-3 px-3 text-right">{formatCurrency(txn.amount, settings)}</td>
+                          <td className="py-3 px-3 uppercase">{txn.paymentSource}</td>
+                          <td className="py-3 px-3 uppercase">{txn.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* STAFF LOANS */}
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+                <h3 className="font-sans text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-2">
+                  <Briefcase className="h-4 w-4 text-indigo-500" />
+                  <span>{t('Staff Loans', 'ملازمین کے قرضے')}</span>
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left font-sans text-xs">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                        <th className="py-2.5 px-3">Date</th>
+                        <th className="py-2.5 px-3">Employee</th>
+                        <th className="py-2.5 px-3 text-right">Loan Amount</th>
+                        <th className="py-2.5 px-3 text-right">Monthly Inst.</th>
+                        <th className="py-2.5 px-3 text-right">Remaining</th>
+                        <th className="py-2.5 px-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-700">
+                      {staffLoans.length === 0 ? (
+                        <tr><td colSpan={6} className="py-4 text-center">No loans</td></tr>
+                      ) : staffLoans.map(loan => (
+                        <tr key={loan.id}>
+                          <td className="py-3 px-3">{loan.dateIssued}</td>
+                          <td className="py-3 px-3 font-bold">{loan.employeeName}</td>
+                          <td className="py-3 px-3 text-right">{formatCurrency(loan.loanAmount, settings)}</td>
+                          <td className="py-3 px-3 text-right">{formatCurrency(loan.monthlyInstallment, settings)}</td>
+                          <td className="py-3 px-3 text-right text-rose-600 font-bold">{formatCurrency(loan.remainingBalance, settings)}</td>
+                          <td className="py-3 px-3 uppercase">{loan.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* SALARY ADVANCES */}
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+                <h3 className="font-sans text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-2">
+                  <Coins className="h-4 w-4 text-orange-500" />
+                  <span>{t('Salary Advances', 'تنخواہ کے ایڈوانس')}</span>
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left font-sans text-xs">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                        <th className="py-2.5 px-3">Date</th>
+                        <th className="py-2.5 px-3">Employee</th>
+                        <th className="py-2.5 px-3 text-right">Amount</th>
+                        <th className="py-2.5 px-3 text-right">Recovered</th>
+                        <th className="py-2.5 px-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-700">
+                      {salaryAdvances.length === 0 ? (
+                        <tr><td colSpan={5} className="py-4 text-center">No advances</td></tr>
+                      ) : salaryAdvances.map(adv => (
+                        <tr key={adv.id}>
+                          <td className="py-3 px-3">{adv.dateIssued}</td>
+                          <td className="py-3 px-3 font-bold">{adv.employeeName}</td>
+                          <td className="py-3 px-3 text-right">{formatCurrency(adv.amount, settings)}</td>
+                          <td className="py-3 px-3 text-right">{formatCurrency(adv.recoveredAmount, settings)}</td>
+                          <td className="py-3 px-3 uppercase">{adv.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================
+              TAB 3: STAFF FINANCE AND PAYROLL LOG (MODULE E3)
+              ========================================== */}
+          {activeTab === 'legacy_finance' && (
             <div className="space-y-6">
               <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
                 <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-2">
@@ -1144,11 +1322,12 @@ export default function StaffPanel({
                 </div>
                 <div className="flex justify-between text-[11px] text-slate-500 font-mono">
                   <span>{t('Standard Base Pay:', 'ماہانہ تنخواہ:')} {formatCurrency(activeStaffToCharge.salary, settings)}</span>
-                  <span>{t('Pending Advance:', 'ایڈوانس قرض بقایا:')} <strong className="text-rose-600">{formatCurrency(activeStaffToCharge.advances, settings)}</strong></span>
+                  <span>{t('Advances:', 'ایڈوانس بقایا:')} <strong className="text-rose-600">{formatCurrency(activeStaffToCharge.advanceBalance || 0, settings)}</strong></span>
+                  <span>{t('Loans:', 'قرضہ بقایا:')} <strong className="text-rose-600">{formatCurrency(activeStaffToCharge.loanBalance || 0, settings)}</strong></span>
                 </div>
               </div>
 
-              <form onSubmit={handleLogFinanceSubmit} className="space-y-4 font-sans text-xs">
+              <form onSubmit={handlePostFinance} className="space-y-4 font-sans text-xs">
                 <div className="space-y-3">
                   <div>
                     <label className="block text-slate-505 font-bold mb-1">{t('Select Audit Aspect:', 'ٹرانزیکشن کی قسم:')}</label>
@@ -1157,8 +1336,9 @@ export default function StaffPanel({
                       onChange={(e: any) => setFinanceType(e.target.value)}
                       className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 outline-hidden focus:border-orange-500"
                     >
-                      <option value="advance">{t('Lent Short-term Advance (Loan)', '💵 نیا ایڈوانس پے کریں')}</option>
-                      <option value="issue">{t('Monthly Net Salary Cashout (Handout)', '⚖️ تنخواہ جاری کریں (آٹومیٹک کٹوتی پلس فلو)')}</option>
+                      <option value="advance">{t('Lent Short-term Advance', '💵 نیا ایڈوانس پے کریں')}</option>
+                      <option value="loan">{t('Issue Long-term Loan', '🏦 نیا قرضہ دیں')}</option>
+                      <option value="issue">{t('Monthly Net Salary Cashout', '⚖️ تنخواہ جاری کریں')}</option>
                       <option value="accrual">{t('Accrue Monthly Earned Salary Liabilities', '📊 تنخواہ اکاؤنٹ میں جمع کریں / جمع بقایا جات')}</option>
                     </select>
                   </div>
@@ -1174,6 +1354,19 @@ export default function StaffPanel({
                     />
                   </div>
 
+                  {(financeType === 'issue' || financeType === 'accrual') && (
+                    <div>
+                      <label className="block text-slate-505 font-bold mb-1">{t('Salary Month:', 'تنخواہ کا مہینہ:')}</label>
+                      <input
+                        type="month"
+                        required
+                        value={salaryMonth}
+                        onChange={(e) => setSalaryMonth(e.target.value)}
+                        className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500 font-mono"
+                      />
+                    </div>
+                  )}
+
                   <div>
                     <label className="block text-slate-505 font-bold mb-1">{t(`Monetary Amount (${getCurrencySymbol(settings)}):`, 'رقم (روپے):')}</label>
                     <input
@@ -1185,6 +1378,20 @@ export default function StaffPanel({
                       className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500 font-mono"
                     />
                   </div>
+
+                  {financeType === 'loan' && (
+                    <div>
+                      <label className="block text-slate-505 font-bold mb-1">{t(`Monthly Installment (${getCurrencySymbol(settings)}):`, 'ماہانہ قسط (روپے):')}</label>
+                      <input
+                        type="number"
+                        required
+                        placeholder="e.g. 1000"
+                        value={loanInstallment}
+                        onChange={(e) => setLoanInstallment(e.target.value)}
+                        className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500 font-mono"
+                      />
+                    </div>
+                  )}
 
                   {financeType !== 'accrual' && (
                     <div>
@@ -1205,23 +1412,13 @@ export default function StaffPanel({
                     <input
                       type="text"
                       required
-                      placeholder={t('e.g. Family medical emergency support advance', 'مثال: طبی وجوہات کی وجہ سے پیشگی بقایا رقم')}
+                      placeholder={t('e.g. Description or Reference', 'مثال: معلومات یا حوالہ')}
                       value={financeNote}
                       onChange={(e) => setFinanceNote(e.target.value)}
                       className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500"
                     />
                   </div>
                 </div>
-
-                {/* AUTOMATIC TAX & ADVANCE CALCULATION FOOTNOTE */}
-                {financeType === 'issue' && financeAmount && (
-                  <div className="rounded bg-teal-50 p-2.5 text-[11px] text-teal-800 leading-normal border border-teal-100">
-                     {t(
-                      `* Salary Handout: The system will automatically subtract the outstanding advance loan amount (Max deduction: ${getCurrencySymbol(settings)} ${activeStaffToCharge.advances.toLocaleString()}) first, keeping ledger books clear!`,
-                      `* تنخواہ ادائیگی: سوفٹ ویئر خودکار طور پر اس ملازم کے ذمے پچھلا بقایا ایڈوانس (زیادہ سے زیادہ کٹوتی: ${getCurrencySymbol(settings)} ${activeStaffToCharge.advances.toLocaleString()}) پہلے کاٹ لیگا!`
-                    )}
-                  </div>
-                )}
 
                 <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
                   <button
@@ -1231,12 +1428,17 @@ export default function StaffPanel({
                   >
                     {t('Cancel', 'کینسل')}
                   </button>
-                  <button
-                    type="submit"
-                    className="bg-orange-600 text-white font-sans text-xs font-bold py-1.5 px-4 rounded-lg hover:bg-orange-700 cursor-pointer uppercase shadow-xs"
+                  <RoleGuard 
+                    allowedRoles={['Manager', 'Owner', 'Accountant']} 
+                    fallback={<span className="text-red-500 font-bold self-center mr-2 text-[10px]">Unauthorized Role</span>}
                   >
-                    {t('RECORD ADJUSTMENT LOG', 'اوساط لاگ درج کریں')}
-                  </button>
+                    <button
+                      type="submit"
+                      className="bg-orange-600 text-white font-sans text-xs font-bold py-1.5 px-4 rounded-lg hover:bg-orange-700 cursor-pointer uppercase shadow-xs"
+                    >
+                      {t('RECORD ADJUSTMENT LOG', 'اوساط لاگ درج کریں')}
+                    </button>
+                  </RoleGuard>
                 </div>
               </form>
             </motion.div>

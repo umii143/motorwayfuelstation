@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Truck, CheckCircle, Receipt, CreditCard } from 'lucide-react';
 import { Supplier, BankAccount, GlobalSettings } from '../../types';
 import { useFinancialStore } from '../../stores/useFinancialStore';
+import { useTreasuryStore } from '../../stores/useTreasuryStore';
 import { useSupplierStore } from '../../stores/useSupplierStore';
 import { useStation } from '../../contexts/StationContext';
 import { t as translate } from '../../lib/translations';
@@ -18,8 +19,8 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
   const t = (en: string, ur: string) => translate(en, ur, settings);
 
   const [selectedSupplierId, setSelectedSupplierId] = useState(suppliers[0]?.id || '');
-  const [paymentMode, setPaymentMode] = useState<'bank' | 'cash'>('bank');
-  const [bankAccountId, setBankAccountId] = useState('');
+  const [paymentMode, setPaymentMode] = useState<'bank' | 'cash' | 'digital'>('bank');
+  const [accountId, setAccountId] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [reference, setReference] = useState('');
@@ -39,8 +40,8 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
       return;
     }
 
-    if (paymentMode === 'bank' && !bankAccountId) {
-      showToast('Please select a bank account.', 'error');
+    if (!accountId) {
+      showToast('Please select a payment account.', 'error');
       return;
     }
 
@@ -58,8 +59,21 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
 
       // Update Bank/Cash Balance
       if (paymentMode === 'bank') {
-        const updatedBanks = banks.map(b => b.id === bankAccountId ? { ...b, balance: b.balance - payAmount } : b);
+        const updatedBanks = banks.map(b => b.id === accountId ? { ...b, balance: b.balance - payAmount } : b);
         await handleUpdateBanks(updatedBanks);
+      } else if (paymentMode === 'cash') {
+        const cashAccounts = useTreasuryStore.getState().cashAccounts;
+        const acc = cashAccounts.find(a => a.id === accountId);
+        if (acc) {
+          await useTreasuryStore.getState().handleUpdateCashAccount({ ...acc, balance: acc.balance - payAmount }, '');
+        }
+      } else if (paymentMode === 'digital') {
+        const digitalAccounts = useFinancialStore.getState().digitalAccounts;
+        const acc = digitalAccounts.find(a => a.id === accountId);
+        if (acc) {
+          const updatedDig = digitalAccounts.map(d => d.id === accountId ? { ...d, balance: d.balance - payAmount } : d);
+          await useFinancialStore.getState().handleUpdateDigitalAccounts(updatedDig);
+        }
       }
 
       // Generate Journal Entry
@@ -71,9 +85,24 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
         partyName: selectedSupplier.name,
         type: 'debit',
         amount: payAmount,
-        description: `Supplier Payment (${paymentMode === 'cash' ? 'Cash' : 'Bank'}) - Ref: ${reference || 'N/A'}`,
+        description: `Supplier Payment (${paymentMode}) - Ref: ${reference || 'N/A'}`,
         referenceId: paymentId
       });
+
+      // Also record in Treasury Center Transactions
+      await useTreasuryStore.getState().recordTransaction({
+        id: `trx_sup_${Date.now()}`,
+        date: new Date(date).toISOString(),
+        sourceAccountId: accountId,
+        sourceAccountType: paymentMode === 'cash' ? 'shift_cash' : paymentMode as any, // fallback type
+        destinationAccountId: selectedSupplier.id,
+        destinationAccountType: 'digital', // representation
+        amount: payAmount,
+        type: 'withdrawal',
+        description: `Supplier Payment: ${selectedSupplier.name}`,
+        performedBy: 'System',
+        status: 'completed'
+      }, '', '');
 
       showToast(t('Payment recorded successfully.', 'ادائیگی کامیابی سے درج ہو گئی۔'), 'success');
       onClose();
@@ -122,29 +151,37 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Payment Method:', 'ادائیگی کا طریقہ:')}</label>
             <select
               value={paymentMode}
-              onChange={(e) => setPaymentMode(e.target.value as any)}
+              onChange={(e) => {
+                setPaymentMode(e.target.value as any);
+                setAccountId('');
+              }}
               className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-emerald-500 outline-none"
             >
               <option value="bank">{t('Bank Transfer', 'بینک ٹرانسفر')}</option>
-              <option value="cash">{t('Cash', 'نقد')}</option>
+              <option value="cash">{t('Cash / Safe', 'نقد')}</option>
+              <option value="digital">{t('Digital Wallet', 'ڈیجیٹل والٹ')}</option>
             </select>
           </div>
 
-          {paymentMode === 'bank' && (
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('From Bank Account:', 'بینک اکاؤنٹ سے:')}</label>
-              <select
-                value={bankAccountId}
-                onChange={(e) => setBankAccountId(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-emerald-500 outline-none"
-              >
-                <option value="">{t('-- Select Bank --', '-- بینک منتخب کریں --')}</option>
-                {banks.map(b => (
-                  <option key={b.id} value={b.id}>{b.name} (Bal: Rs. {b.balance.toLocaleString()})</option>
-                ))}
-              </select>
-            </div>
-          )}
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('From Account:', 'اکاؤنٹ سے:')}</label>
+            <select
+              value={accountId}
+              onChange={(e) => setAccountId(e.target.value)}
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-emerald-500 outline-none"
+            >
+              <option value="">{t('-- Select Account --', '-- اکاؤنٹ منتخب کریں --')}</option>
+              {paymentMode === 'bank' && banks.map(b => (
+                <option key={b.id} value={b.id}>{b.name} (Bal: Rs. {b.balance.toLocaleString()})</option>
+              ))}
+              {paymentMode === 'cash' && useTreasuryStore(state => state.cashAccounts).map(c => (
+                <option key={c.id} value={c.id}>{c.name} (Bal: Rs. {c.balance.toLocaleString()})</option>
+              ))}
+              {paymentMode === 'digital' && useFinancialStore(state => state.digitalAccounts).map(d => (
+                <option key={d.id} value={d.id}>{d.name} (Bal: Rs. {d.balance.toLocaleString()})</option>
+              ))}
+            </select>
+          </div>
 
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Amount to Pay:', 'ادائیگی کی رقم:')}</label>

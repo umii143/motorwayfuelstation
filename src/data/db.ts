@@ -39,7 +39,15 @@ import {
   CogsRecord,
   LoyaltyMember,
   DealerMarginSetting,
-  TenantDocument
+  TenantDocument,
+  SalaryTransaction,
+  StaffLoan,
+  SalaryAdvance,
+  InventorySnapshot,
+  CashAccount,
+  TreasuryTransaction,
+  OwnerDrawing,
+  CashReconciliation
 } from '../types';
 import {
   DEFAULT_FUEL_STATION_ID,
@@ -91,7 +99,15 @@ const SPECIAL_STORAGE_KEYS = {
   JOURNAL_ENTRIES: 'fuelpro_journal_entries',
   STOCK_BATCHES: 'fuelpro_stock_batches',
   COGS_RECORDS: 'fuelpro_cogs_records',
-  DEALER_MARGIN_SETTINGS: 'fuelpro_dealer_margin_settings'
+  DEALER_MARGIN_SETTINGS: 'fuelpro_dealer_margin_settings',
+  SALARY_TRANSACTIONS: 'fuelpro_salary_transactions',
+  STAFF_LOANS: 'fuelpro_staff_loans',
+  SALARY_ADVANCES: 'fuelpro_salary_advances',
+  INVENTORY_SNAPSHOTS: 'fuelpro_inventory_snapshots',
+  CASH_ACCOUNTS: 'fuelpro_cash_accounts',
+  TREASURY_TRANSACTIONS: 'fuelpro_treasury_transactions',
+  OWNER_DRAWINGS: 'fuelpro_owner_drawings',
+  CASH_RECONCILIATIONS: 'fuelpro_cash_reconciliations'
 };
 
 // Clear trigger for clean slate if needed
@@ -687,6 +703,26 @@ export const db = {
   saveCOGSRecords: (stationId: string, records: CogsRecord[]) =>
     saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.COGS_RECORDS, records),
 
+  getSalaryTransactions: (stationId: string): SalaryTransaction[] =>
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SALARY_TRANSACTIONS, [] as SalaryTransaction[]),
+  saveSalaryTransactions: (stationId: string, txns: SalaryTransaction[]) =>
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SALARY_TRANSACTIONS, txns),
+
+  getStaffLoans: (stationId: string): StaffLoan[] =>
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.STAFF_LOANS, [] as StaffLoan[]),
+  saveStaffLoans: (stationId: string, loans: StaffLoan[]) =>
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.STAFF_LOANS, loans),
+
+  getSalaryAdvances: (stationId: string): SalaryAdvance[] =>
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SALARY_ADVANCES, [] as SalaryAdvance[]),
+  saveSalaryAdvances: (stationId: string, advances: SalaryAdvance[]) =>
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SALARY_ADVANCES, advances),
+
+  getInventorySnapshots: (stationId: string): InventorySnapshot[] =>
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_SNAPSHOTS, [] as InventorySnapshot[]),
+  saveInventorySnapshots: (stationId: string, snapshots: InventorySnapshot[]) =>
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_SNAPSHOTS, snapshots),
+
   getDealerMarginSettings: (stationId: string): DealerMarginSetting[] =>
     getStorageItem(
       db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.DEALER_MARGIN_SETTINGS),
@@ -697,6 +733,26 @@ export const db = {
       db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.DEALER_MARGIN_SETTINGS),
       settings
     ),
+    
+  getCashAccounts: (stationId: string): CashAccount[] =>
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.CASH_ACCOUNTS, [] as CashAccount[]),
+  saveCashAccounts: (stationId: string, accounts: CashAccount[]) =>
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.CASH_ACCOUNTS, accounts),
+
+  getTreasuryTransactions: (stationId: string): TreasuryTransaction[] =>
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.TREASURY_TRANSACTIONS, [] as TreasuryTransaction[]),
+  saveTreasuryTransactions: (stationId: string, transactions: TreasuryTransaction[]) =>
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.TREASURY_TRANSACTIONS, transactions),
+
+  getOwnerDrawings: (stationId: string): OwnerDrawing[] =>
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.OWNER_DRAWINGS, [] as OwnerDrawing[]),
+  saveOwnerDrawings: (stationId: string, drawings: OwnerDrawing[]) =>
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.OWNER_DRAWINGS, drawings),
+
+  getCashReconciliations: (stationId: string): CashReconciliation[] =>
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.CASH_RECONCILIATIONS, [] as CashReconciliation[]),
+  saveCashReconciliations: (stationId: string, reconciliations: CashReconciliation[]) =>
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.CASH_RECONCILIATIONS, reconciliations),
     
   getCurrentDealerMargin: (stationId: string, productType: string, atDate: string = new Date().toISOString()): number => {
     const settings = db.getDealerMarginSettings(stationId);

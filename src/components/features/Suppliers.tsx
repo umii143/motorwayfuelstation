@@ -24,9 +24,12 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Sparkles,
-  CreditCard
+  CreditCard,
+  Activity
 } from 'lucide-react';
 import EmptyState from '../ui/EmptyState';
+import { ModuleSearchBar } from '../shared/ModuleSearchBar';
+import { ExportToolbar } from '../shared/ExportToolbar';
 import AIDocumentScanner from '../ui/AIDocumentScanner';
 import PartyLedgerModal, { LedgerEntry, PartyInfo } from '../ui/PartyLedgerModal';
 import SupplierPayments from './SupplierPayments';
@@ -237,6 +240,7 @@ export default function Suppliers({
   const [addContact, setAddContact] = useState('');
   const [addAccount, setAddAccount] = useState('');
   const [addOpeningBal, setAddOpeningBal] = useState('');
+  const [showExport, setShowExport] = useState(false);
 
   // Adjust direct ledger balances
   const [isAdjusting, setIsAdjusting] = useState(false);
@@ -292,6 +296,13 @@ export default function Suppliers({
       );
     });
   }, [suppliers, searchQuery]);
+
+  const exportColumns = [
+    { key: 'name', label: 'Supplier Name', urduLabel: 'سپلائر کا نام' },
+    { key: 'contact', label: 'Contact', urduLabel: 'رابطہ نمبر' },
+    { key: 'balance', label: 'Payable Balance', urduLabel: 'قابل ادا رقم' },
+    { key: 'accountNo', label: 'Account No', urduLabel: 'اکاؤنٹ نمبر' }
+  ];
 
   // Historical ledger statement for chosen vendor
   const vendorLedgerLogs = useMemo(() => {
@@ -471,6 +482,14 @@ export default function Suppliers({
         </div>
       )}
 
+      {/* UNIVERSAL MODULE SEARCH BAR */}
+      <ModuleSearchBar
+        moduleName={t('Suppliers', 'سپلائرز')}
+        placeholder={t('Search oil company...', 'سپلائر تلاش کریں...')}
+        onSearch={setSearchQuery}
+        onExport={() => setShowExport(true)}
+      />
+
       {/* DYNAMIC KPI CARDS SECTION */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* AMBER CARD - TOTAL PAYABLES */}
@@ -551,19 +570,6 @@ export default function Suppliers({
         
         {/* LEFT COLUMN: LIST OF OIL VENDORS */}
         <div className="space-y-4">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3">
-            <div className="relative">
-              <Plus className="absolute top-2.5 left-3 h-4 w-4 text-slate-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t('Search oil company...', 'سپلائر تلا ش کریں...')}
-                className="w-full rounded-md border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-3 font-sans text-xs shadow-inner focus:bg-white focus:outline-hidden"
-              />
-            </div>
-          </div>
-
           <div className="space-y-2 max-h-[460px] overflow-y-auto">
             {suppliers.length === 0 ? (
               <EmptyState
@@ -1072,6 +1078,14 @@ export default function Suppliers({
         onDataExtracted={handleSupplierAutoFill}
       />
 
+      <ExportToolbar
+        isOpen={showExport}
+        onClose={() => setShowExport(false)}
+        data={filteredSuppliers}
+        columns={exportColumns}
+        title="Suppliers Report"
+        filenamePrefix="suppliers_report"
+      />
     </div>
   );
 }

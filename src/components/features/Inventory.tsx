@@ -32,6 +32,8 @@ import {
 } from 'lucide-react';
 import { Product, StockTransaction, Supplier, GlobalSettings, Tank, RateHistoryEntry } from '../../types';
 import { fetchWithAuth } from '../../lib/api';
+import { ModuleSearchBar } from '../shared/ModuleSearchBar';
+import { ExportToolbar } from '../shared/ExportToolbar';
 import StockInForm from './StockInForm';
 import BatchHistory from './BatchHistory';
 import { useInventoryStore } from '../../stores/useInventoryStore';
@@ -81,6 +83,7 @@ export default function Inventory({
   // Interactive Calibrator Calculator
   const [calcTankId, setCalcTankId] = useState('');
   const [calcDepthCm, setCalcDepthCm] = useState('');
+  const [showExport, setShowExport] = useState(false);
 
   // Modal state for Add/Edit Product
   const [showAddProductModal, setShowAddProductModal] = useState(false);
@@ -269,7 +272,16 @@ export default function Inventory({
       
       return true;
     });
-  }, [products, searchQuery, filterType]);
+  }, [products, searchQuery, filterType, isLube]);
+
+  const exportColumns = [
+    { key: 'name', label: 'Product Name', urduLabel: 'پروڈکٹ کا نام' },
+    { key: 'type', label: 'Type', urduLabel: 'قسم' },
+    { key: 'currentStock', label: 'Current Stock', urduLabel: 'موجودہ اسٹاک' },
+    { key: 'unit', label: 'Unit', urduLabel: 'یونٹ' },
+    { key: 'rate', label: 'Rate', urduLabel: 'ریٹ' },
+    { key: 'purchasePrice', label: 'Purchase Price', urduLabel: 'خرید قیمت' }
+  ];
 
   // Calibration lookup result
   const calculatedCalibratedVolume = useMemo(() => {
@@ -458,6 +470,16 @@ export default function Inventory({
 
   return (
     <div className="space-y-6 pb-20 lg:pb-5">
+      {showExport && (
+        <ExportToolbar
+          isOpen={showExport}
+          data={filteredProducts}
+          columns={exportColumns}
+          title="Inventory Report"
+          filenamePrefix="inventory-report"
+          onClose={() => setShowExport(false)}
+        />
+      )}
 
       {/* HEADER SECTION */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-4">
@@ -529,6 +551,15 @@ export default function Inventory({
           </div>
         </div>
       )}
+
+      {/* UNIVERSAL MODULE SEARCH BAR */}
+      <ModuleSearchBar
+        moduleName={t('Inventory', 'انوینٹری')}
+        placeholder={t('Search products...', 'پراڈکٹ تلاش کریں...')}
+        onSearch={setSearchQuery}
+        onFilter={() => setFilterType(prev => prev === 'all' ? (isLube ? 'lube' : 'fuel') : 'all')}
+        onExport={() => showToast(t('Export coming soon', 'ایکسپورٹ جلد آرہا ہے'), 'info')}
+      />
 
       {/* BEN-TO ROW INVENTORY STATS OVERVIEWS */}
       <div className={`grid grid-cols-1 gap-4 ${isLube ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
@@ -652,18 +683,6 @@ export default function Inventory({
                     {t(f.label, f.urdu)}
                   </button>
                 ))}
-              </div>
-
-              {/* Keyword lookup */}
-              <div className="relative w-full sm:w-60">
-                <Search className="absolute top-2.5 left-3 h-3.5 w-3.5 text-slate-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={t('Search products...', 'پراڈکٹ تلاش کریں...')}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-3 font-sans text-xs outline-hidden focus:border-orange-500 focus:bg-white focus:outline-hidden"
-                />
               </div>
             </div>
 
@@ -1239,6 +1258,14 @@ export default function Inventory({
         )}
       </AnimatePresence>
 
+      <ExportToolbar
+        isOpen={showExport}
+        onClose={() => setShowExport(false)}
+        data={filteredProducts}
+        columns={exportColumns}
+        title="Inventory Report"
+        filenamePrefix="inventory_report"
+      />
     </div>
   );
 }

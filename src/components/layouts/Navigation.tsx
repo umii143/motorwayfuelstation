@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   LayoutDashboard,
   RefreshCw,
@@ -58,15 +58,18 @@ import {
   MessageCircle,
   Sparkles,
   ScanLine,
+  Briefcase,
   Beaker
 } from 'lucide-react';
 import { GlobalSettings, Station } from '../../types';
 import { t as translate } from '../../lib/translations';
 import HelpGuideModal from '../ui/HelpGuideModal';
 import AIDocumentScanner from '../ui/AIDocumentScanner';
+import { NotificationCenter } from '../shared/NotificationCenter';
 import { useStation } from '../../contexts/StationContext';
 import { fetchWithAuth } from '../../lib/api';
 import { useSetupProgress } from '../../hooks/useSetupProgress';
+import { PoweredByUmarAli } from '../shared/PoweredByUmarAli';
 import { ConfigSidebarItem } from './ConfigSidebarItem';
 
 interface NavigationProps {
@@ -111,6 +114,8 @@ export default function Navigation({
   const [showEditModal, setShowEditModal] = useState(false);
   const [stationToEdit, setStationToEdit] = useState<Station | null>(null);
 
+
+
   // Form states
   const [formName, setFormName] = useState('');
   const [formUrduName, setFormUrduName] = useState('');
@@ -145,17 +150,14 @@ export default function Navigation({
       urdu: 'انٹرپرائز ماڈیولز', 
       showInLube: true,
       children: [
+        { id: 'bi_analytics', icon: LineChart, label: 'BI Analytics', urdu: 'بی آئی اینالٹکس', showInLube: true },
+        { id: 'executive_dashboard', icon: Briefcase, label: 'Executive Insights', urdu: 'ایگزیکٹو ڈیش بورڈ', showInLube: true },
+        { id: 'treasury', icon: Landmark, label: 'Treasury Center', urdu: 'ٹریژری سینٹر', showInLube: true },
+        { id: 'risk_center', icon: ShieldAlert, label: 'Risk Center', urdu: 'رسک سینٹر', showInLube: true },
+        { id: 'demand_forecast', icon: BarChart3, label: 'Forecasting', urdu: 'فورکاسٹنگ', showInLube: true },
         { id: 'fleet', icon: Truck, label: 'Fleet Accounts', urdu: 'فلیٹ منیجمنٹ', showInLube: false },
         { id: 'tanker_delivery', icon: ArrowRightLeft, label: isLube ? 'Supplier Deliveries' : 'Tankers & Delivery', urdu: isLube ? 'سپلائر ڈیلیوری' : 'ٹینکر شیڈول', showInLube: false },
-        { id: 'fuel_quality', icon: Beaker, label: 'Fuel Quality', urdu: 'فیول کوالٹی', showInLube: false },
-        { id: 'loss_prevention', icon: ShieldAlert, label: 'Loss Prevention', urdu: 'نقصان کی روک تھام', showInLube: false },
-        { id: 'loyalty', icon: Gift, label: 'Loyalty & Rewards', urdu: 'لائلٹی پروگرام', showInLube: true },
-        { id: 'maintenance', icon: Wrench, label: 'Maintenance & Assets', urdu: 'مرمت', showInLube: true },
-        { id: 'bi_analytics', icon: LineChart, label: 'BI Analytics', urdu: 'بی آئی اینالٹکس', showInLube: true },
-        { id: 'demand_forecast', icon: BarChart3, label: 'Demand Forecast', urdu: 'ڈیمانڈ', showInLube: true },
         { id: 'erp_integration', icon: Link, label: 'ERP Connect', urdu: 'ای آر پی کنیکٹ', showInLube: true },
-        { id: 'cctv', icon: Camera, label: 'CCTV Security', urdu: 'سی سی ٹی وی', showInLube: true },
-        { id: 'api_gateway', icon: Network, label: 'API Gateway', urdu: 'اے پی آئی گیٹ وے', showInLube: true },
       ]
     },
     // OPERATIONS
@@ -170,7 +172,7 @@ export default function Navigation({
     // SYSTEM
     { id: 'security_hub', section: 'system', icon: Shield, label: 'Security & Roles', urdu: 'سیکیورٹی ہب', showInLube: true },
     { id: 'subscription_hub', section: 'system', icon: CreditCard, label: 'Subscription & Billing', urdu: 'بلنگ اور پلان', showInLube: true },
-    { id: 'whatsapp_alerts', section: 'system', icon: MessageCircle, label: 'WhatsApp Alerts', urdu: 'واٹس ایپ الرٹس', showInLube: true }
+    { id: 'communication_center', section: 'system', icon: MessageCircle, label: 'Communication Center', urdu: 'مواصلاتی مرکز', showInLube: true }
   ];
 
   // Filter menu items based on business type
@@ -207,6 +209,26 @@ export default function Navigation({
   
   // Document Scanner state
   const [isDocScannerOpen, setIsDocScannerOpen] = useState(false);
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Effect to focus search input when search opens
+  useEffect(() => {
+    if (isSearchOpen && searchInputRef.current) {
+      setTimeout(() => searchInputRef.current?.focus(), 50);
+    }
+  }, [isSearchOpen]);
 
   // 1. Theme Logic
   const availableThemes = [
@@ -608,6 +630,7 @@ export default function Navigation({
                 <div className="relative mb-3">
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                   <input
+                    ref={searchInputRef}
                     autoFocus
                     type="text"
                     value={globalSearch}
@@ -768,60 +791,8 @@ export default function Navigation({
             )}
           </div>
 
-          {/* Notifications Dropdown */}
-          <div className="relative z-[60] shrink-0">
-            <button
-              onClick={() => setIsNotifOpen(!isNotifOpen)}
-              className="relative flex items-center justify-center rounded-lg border border-slate-200 bg-white p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors cursor-pointer shadow-xs"
-              title={t('Notifications', 'اطلاعات')}
-            >
-              <Bell className="h-4 w-4" />
-              {notifications.length > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 sm:h-4 sm:w-4 items-center justify-center rounded-full bg-red-500 text-[9px] sm:text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
-                  {notifications.length > 9 ? '9+' : notifications.length}
-                </span>
-              )}
-            </button>
-
-            {isNotifOpen && (
-              <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 lg:w-96 rounded-2xl bg-white shadow-2xl border border-slate-100 z-50 animate-in fade-in slide-in-from-top-2 overflow-hidden flex flex-col">
-                <div className="flex items-center justify-between bg-slate-50 px-4 py-3 border-b border-slate-100">
-                  <span className="font-sans text-sm font-black text-slate-900">{t('Notifications', 'اطلاعات')}</span>
-                  <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-600">
-                    {notifications.length} {t('New', 'نئی')}
-                  </span>
-                </div>
-                <div className="max-h-80 overflow-y-auto p-2">
-                  {notifications.length > 0 ? (
-                    <div className="space-y-1">
-                      {notifications.map(notif => (
-                        <div key={notif.id} className="flex gap-3 rounded-xl p-3 hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
-                          <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${notif.type === 'danger' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}`}>
-                            <notif.icon className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <div className="text-sm font-bold text-slate-800">{notif.title}</div>
-                            <div className="text-xs font-semibold text-slate-500 mt-0.5 leading-snug">{notif.message}</div>
-                            <div className="text-[10px] font-bold text-slate-400 mt-1 flex items-center gap-1">
-                              <Clock className="h-3 w-3" /> {t('Just now', 'ابھی ابھی')}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-500 mb-3">
-                        <CheckCircle2 className="h-6 w-6" />
-                      </div>
-                      <h4 className="text-sm font-bold text-slate-900">{t("All caught up!", "سب کچھ ٹھیک ہے!")}</h4>
-                      <p className="text-xs font-semibold text-slate-500 mt-1">{t("You don't have any pending alerts or notifications.", "آپ کے پاس کوئی زیر التواء انتباہات یا اطلاعات نہیں ہیں۔")}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+          {/* Notifications Dropdown via Enterprise Component */}
+          <NotificationCenter />
 
           <button
             onClick={() => setIsHelpOpen(true)}
@@ -1103,6 +1074,9 @@ export default function Navigation({
           
           {onLogout && (
             <div className="p-3 border-t border-slate-100 bg-slate-50/50">
+              <div className="mb-3 px-1">
+                <PoweredByUmarAli variant="compact" />
+              </div>
               <button
                 onClick={onLogout}
                 className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 font-sans text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors cursor-pointer"

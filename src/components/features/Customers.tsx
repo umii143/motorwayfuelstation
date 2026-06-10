@@ -26,6 +26,8 @@ import {
   Sparkles
 } from 'lucide-react';
 import EmptyState from '../ui/EmptyState';
+import { ModuleSearchBar } from '../shared/ModuleSearchBar';
+import { ExportToolbar } from '../shared/ExportToolbar';
 import PartyLedgerModal, { LedgerEntry, PartyInfo } from '../ui/PartyLedgerModal';
 import { Customer, Shift, Product, GlobalSettings, DebitEntry, RecoveryEntry, LubePosSale } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
@@ -247,6 +249,7 @@ export default function Customers({
   const [showAddModal, setShowAddModal] = useState(false);
   const [addName, setAddName] = useState('');
   const [addUrduName, setAddUrduName] = useState('');
+  const [showExport, setShowExport] = useState(false);
   const [addContact, setAddContact] = useState('');
   const [addAddress, setAddAddress] = useState('');
   const [addLimit, setAddLimit] = useState('');
@@ -342,6 +345,14 @@ export default function Customers({
       return true;
     });
   }, [customers, searchQuery, filterType]);
+
+  const exportColumns = [
+    { key: 'name', label: 'Name', urduLabel: 'نام' },
+    { key: 'contact', label: 'Contact', urduLabel: 'رابطہ نمبر' },
+    { key: 'balance', label: 'Balance', urduLabel: 'بقایا جات' },
+    { key: 'creditLimit', label: 'Credit Limit', urduLabel: 'ادھار کی حد' },
+    { key: 'address', label: 'Address', urduLabel: 'پتہ' }
+  ];
 
   // Aggregate customer details from shifts (Ledger views)
   const ledgerEntries = useMemo(() => {
@@ -675,6 +686,15 @@ export default function Customers({
         </div>
       )}
 
+      {/* UNIVERSAL MODULE SEARCH BAR */}
+      <ModuleSearchBar
+        moduleName={t('Customers', 'گاہک')}
+        placeholder={t('Search by name/phone...', 'کھاتہ تلاش کریں...')}
+        onSearch={setSearchQuery}
+        onFilter={() => setFilterType(prev => prev === 'all' ? 'udhar' : 'all')}
+        onExport={() => setShowExport(true)}
+      />
+
       {/* DYNAMIC KPI CARDS SECTION */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* AMBER CARD - TOTAL RECEIVABLES */}
@@ -756,21 +776,8 @@ export default function Customers({
         {/* LEFT COLUMN: CUSTOMER ACCOUNTS LISTINGS */}
         <div className="space-y-4">
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3.5">
-            
-            {/* Search Input field */}
-            <div className="relative">
-              <Search className="absolute top-2.5 left-3 h-4 w-4 text-slate-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t('Search by name/phone...', 'کھاتہ تلا ش کریں...')}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 font-sans text-sm outline-hidden focus:border-orange-500 focus:bg-white"
-              />
-            </div>
-
             {/* Filter buttons track */}
-            <div className="flex flex-wrap gap-1.5 border-t border-slate-100 pt-3">
+            <div className="flex flex-wrap gap-1.5">
               {[
                 { id: 'all', label: 'All', urdu: 'تمام' },
                 { id: 'udhar', label: 'Udhar Only', urdu: 'صرف بقایا' },
@@ -1365,6 +1372,14 @@ export default function Customers({
         accentColor="orange"
       />
 
+      <ExportToolbar
+        isOpen={showExport}
+        onClose={() => setShowExport(false)}
+        data={filteredCustomers}
+        columns={exportColumns}
+        title="Customers Report"
+        filenamePrefix="customers_report"
+      />
     </div>
   );
 }

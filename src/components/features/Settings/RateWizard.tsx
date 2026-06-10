@@ -4,6 +4,7 @@ import { Product, Tank, RateHistoryEntry, GlobalSettings } from '../../../types'
 import { t } from '../../../lib/translations';
 import OGRAPriceSync from '../OGRAPriceSync/OGRAPriceSync';
 import MidShiftRateModal from './MidShiftRateModal';
+import PriceImpactSimulatorModal from './PriceImpactSimulatorModal';
 import { useShiftStore } from '../../../stores/useShiftStore';
 import { useInventoryStore } from '../../../stores/useInventoryStore';
 
@@ -17,7 +18,11 @@ interface RateWizardProps {
     newRate: number,
     reason?: string,
     changedBy?: string,
-    dateStr?: string
+    dateStr?: string,
+    orgId?: string,
+    stationId?: string,
+    checkPerm?: any,
+    attachments?: any[]
   ) => void;
   onLogAudit: (category: string, action: string, details: string) => void;
   onUpdateProducts?: (products: Product[]) => void;
@@ -38,14 +43,9 @@ export default function RateWizard({
   const [targetRate, setTargetRate] = useState<string>('');
   
   const activeShifts = useShiftStore(state => state.shifts).filter(s => s.status === 'active');
-  const [rateUpdateQueue, setRateUpdateQueue] = useState<{productId: string, newRate: number, reason: string, author: string}[]>([]);
+  const [rateUpdateQueue, setRateUpdateQueue] = useState<{productId: string, newRate: number, reason: string, author: string, attachments?: any[]}[]>([]);
   const [modalProduct, setModalProduct] = useState<Product | null>(null);
-  
-  // Removed self-healing logic; products should be managed in Product Setup.
-
-  // Hardcoded for simplicity as requested by user
-  const rateReason = 'Admin Update';
-  const rateAuthor = 'System Admin';
+  const [simulatingProduct, setSimulatingProduct] = useState<{ product: Product, newRate: number } | null>(null);
 
   const activeProduct = products.find(p => p.id === selectedProduct);
   const currentRate = activeProduct?.rate || 0;
@@ -64,7 +64,7 @@ export default function RateWizard({
         setModalProduct(products.find(p => p.id === nextUpdate.productId) || null);
       } else {
         // process immediately
-        onUpdateProductRate(nextUpdate.productId, nextUpdate.newRate, nextUpdate.reason, nextUpdate.author);
+        onUpdateProductRate(nextUpdate.productId, nextUpdate.newRate, nextUpdate.reason, nextUpdate.author, undefined, undefined, undefined, undefined, nextUpdate.attachments);
         const product = products.find(p => p.id === nextUpdate.productId);
         if (product) {
            onLogAudit(
@@ -86,7 +86,7 @@ export default function RateWizard({
     await useShiftStore.getState().handleMidShiftSplit(update.productId, readings);
     
     // Now update the product rate
-    onUpdateProductRate(update.productId, update.newRate, update.reason, update.author);
+    onUpdateProductRate(update.productId, update.newRate, update.reason, update.author, undefined, undefined, undefined, undefined, update.attachments);
     onLogAudit(
       'Tariff', 
       update.reason === 'OGRA Sync' ? 'OGRA Sync' : 'Update Rate', 
@@ -105,7 +105,22 @@ export default function RateWizard({
   const handleSaveRate = () => {
     if (!selectedProduct || !targetRate || isNaN(Number(targetRate))) return;
     const rateVal = Number(targetRate);
-    setRateUpdateQueue(prev => [...prev, { productId: selectedProduct, newRate: rateVal, reason: rateReason, author: rateAuthor }]);
+    const prod = products.find(p => p.id === selectedProduct);
+    if (!prod) return;
+    
+    setSimulatingProduct({ product: prod, newRate: rateVal });
+  };
+
+  const handleSimulatorConfirm = (reason: string, attachments: any[]) => {
+    if (!simulatingProduct) return;
+    setRateUpdateQueue(prev => [...prev, { 
+      productId: simulatingProduct.product.id, 
+      newRate: simulatingProduct.newRate, 
+      reason, 
+      author: 'System Admin',
+      attachments 
+    }]);
+    setSimulatingProduct(null);
     setTargetRate('');
     setSelectedProduct('');
   };
@@ -123,6 +138,15 @@ export default function RateWizard({
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
       
+      <PriceImpactSimulatorModal
+        isOpen={!!simulatingProduct}
+        product={simulatingProduct?.product || null}
+        newRate={simulatingProduct?.newRate || 0}
+        language={language}
+        onConfirm={handleSimulatorConfirm}
+        onCancel={() => setSimulatingProduct(null)}
+      />
+
       <MidShiftRateModal
         isOpen={!!modalProduct}
         product={modalProduct}

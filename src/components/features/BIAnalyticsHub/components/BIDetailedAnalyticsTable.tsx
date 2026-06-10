@@ -87,12 +87,23 @@ export function BIDetailedAnalyticsTable({ filter }: any) {
                 const roi = data.invested > 0 ? (netProfit / data.invested) * 100 : 0;
                 
                 // Format Month name
-                const [year, m] = month.split('-');
-                const monthName = new Date(parseInt(year), parseInt(m) - 1).toLocaleString('default', { month: 'long' });
+                let monthName = month;
+                let yearStr = '';
+                if (month !== 'Unknown') {
+                  const [year, m] = month.split('-');
+                  if (year && m) {
+                    const parsedYear = parseInt(year);
+                    const parsedMonth = parseInt(m) - 1;
+                    if (!isNaN(parsedYear) && !isNaN(parsedMonth)) {
+                      monthName = new Date(parsedYear, parsedMonth).toLocaleString('default', { month: 'long' });
+                      yearStr = year;
+                    }
+                  }
+                }
 
                 return (
                   <tr key={month} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-4 px-5 font-bold text-slate-800">{monthName} {year}</td>
+                    <td className="py-4 px-5 font-bold text-slate-800">{monthName} {yearStr}</td>
                     <td className="py-4 px-5 font-bold text-emerald-700 text-right">{formatCurrency(data.revenue)}</td>
                     <td className="py-4 px-5 text-slate-700 text-right">{formatCurrency(data.invested)}</td>
                     <td className="py-4 px-5 text-rose-600 text-right">{formatCurrency(data.expenses)}</td>

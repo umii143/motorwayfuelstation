@@ -2,8 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, X, Send, Bot, User, Loader2, ChevronDown, Zap } from 'lucide-react';
 import { GlobalSettings, Shift, Product, Customer, Tank, Nozzle, Staff } from '../../../types';
-import { formatCurrency } from '../../../lib/currency';
-import { fetchWithAuth } from '../../../lib/api';
+import { aiAssistantService } from '../../../services/aiAssistantService';
+import { useInventoryStore } from '../../../stores/useInventoryStore';
+import { useTreasuryStore } from '../../../stores/useTreasuryStore';
 
 interface Message {
   id: string;
@@ -11,6 +12,7 @@ interface Message {
   content: string;
   timestamp: Date;
   isLoading?: boolean;
+  isReceiptFormat?: boolean;
 }
 
 interface AIAssistantProps {
@@ -22,93 +24,6 @@ interface AIAssistantProps {
   nozzles: Nozzle[];
   staff: Staff[];
 }
-
-// Build a context summary of the station's data for Gemini to reason over
-function buildStationContext(
-  settings: GlobalSettings,
-  shifts: Shift[],
-  products: Product[],
-  customers: Customer[],
-  tanks: Tank[],
-  nozzles: Nozzle[],
-  staff: Staff[]
-): string {
-  const closedShifts = shifts.filter(s => s.status === 'closed');
-  const recentShifts = closedShifts.slice(-30);
-
-  const totalSales = recentShifts.reduce((sum, s) => {
-    const nozzleTotal = Object.keys(s.closingReadings || {}).reduce((nSum, nId) => {
-      const close = s.closingReadings[nId] || 0;
-      const open = s.openingReadings[nId] || 0;
-      const diff = Math.max(0, close - open);
-      const nozzle = nozzles.find(n => n.id === nId);
-      const product = nozzle ? products.find(p => p.id === nozzle.productId) : null;
-      return nSum + diff * (product?.rate || 0);
-    }, 0);
-    return sum + nozzleTotal;
-  }, 0);
-
-  const avgCashVariance = recentShifts.length > 0
-    ? recentShifts.reduce((sum, s) => sum + Math.abs(s.shortage || 0), 0) / recentShifts.length
-    : 0;
-
-  const totalCreditDue = customers.reduce((sum, c) => sum + c.balance, 0);
-
-  const lowStockProducts = products.filter(p => p.currentStock <= p.minStock);
-
-  const tankSummary = tanks.map(t => {
-    const product = products.find(p => p.id === t.productId);
-    const pct = t.capacity > 0 ? Math.round((t.currentStock / t.capacity) * 100) : 0;
-    return `${t.name} (${product?.name || 'unknown'}): ${t.currentStock}L / ${t.capacity}L (${pct}%)`;
-  }).join(', ');
-
-  const shiftsByDate: Record<string, { count: number; cashVariance: number }> = {};
-  recentShifts.forEach(s => {
-    if (!shiftsByDate[s.date]) shiftsByDate[s.date] = { count: 0, cashVariance: 0 };
-    shiftsByDate[s.date].count++;
-    shiftsByDate[s.date].cashVariance += Math.abs(s.shortage || 0);
-  });
-
-  // Find worst days
-  const worstDay = Object.entries(shiftsByDate)
-    .sort((a, b) => b[1].cashVariance - a[1].cashVariance)[0];
-
-  return `
-FUEL STATION MANAGEMENT SYSTEM — LIVE DATA CONTEXT
-Station: ${settings.stationName} | Currency: ${settings.currency || 'PKR'}
-Date: ${new Date().toLocaleDateString('en-PK', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-
-RECENT PERFORMANCE (last ${recentShifts.length} shifts):
-- Total Fuel Revenue: ${formatCurrency(totalSales, settings)}
-- Total Shifts Analyzed: ${recentShifts.length} shifts across ${Object.keys(shiftsByDate).length} days
-- Avg Cash Variance per Shift: ${formatCurrency(avgCashVariance, settings)}
-- Worst Cash Variance Day: ${worstDay ? `${worstDay[0]} (${formatCurrency(worstDay[1].cashVariance, settings)})` : 'None'}
-
-INVENTORY & TANKS:
-- Tank Levels: ${tankSummary || 'No tanks configured'}
-- Low Stock Alerts: ${lowStockProducts.length > 0 ? lowStockProducts.map(p => `${p.name} (${p.currentStock} ${p.unit})`).join(', ') : 'None'}
-
-CUSTOMERS:
-- Total Customers: ${customers.length}
-- Total Credit Due (Udhar): ${formatCurrency(totalCreditDue, settings)}
-- Over-limit customers: ${customers.filter(c => c.balance > c.creditLimit).length}
-
-STAFF:
-- Total Staff: ${staff.length} | Active: ${staff.filter(s => s.status === 'active' || s.active).length}
-
-PRODUCTS:
-${products.map(p => `- ${p.name}: Rate ${p.rate} ${settings.currency || 'PKR'}, Stock ${p.currentStock} ${p.unit}`).join('\n')}
-  `.trim();
-}
-
-const SUGGESTED_QUERIES = [
-  "What's my cash variance this week?",
-  "Which products are running low?",
-  "How much udhar is pending from customers?",
-  "What's my best performing day?",
-  "Give me a financial health summary",
-  "Are my tank levels safe?",
-];
 
 export default function AIAssistant({
   settings,
@@ -124,7 +39,7 @@ export default function AIAssistant({
     {
       id: 'welcome',
       role: 'assistant',
-      content: `Assalam-o-alaikum! 👋 I'm your **FuelPro AI Assistant**, powered by Gemini.\n\nI have full access to your station data — shifts, inventory, customers, and cash records. Ask me anything in plain English or Urdu!`,
+      content: `Assalam-o-alaikum! 👋 I'm your **FuelPro AI Assistant**.\n\nI have full access to your station data. Ask me anything and I will provide you with a structured receipt summary!`,
       timestamp: new Date(),
     }
   ]);
@@ -132,6 +47,8 @@ export default function AIAssistant({
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const rateHistory = useInventoryStore(state => state.rateHistory);
+  const { cashAccounts, treasuryTransactions, ownerDrawings } = useTreasuryStore();
 
   useEffect(() => {
     if (isOpen) {
@@ -163,43 +80,26 @@ export default function AIAssistant({
     setIsLoading(true);
 
     try {
-      const stationContext = buildStationContext(settings, shifts, products, customers, tanks, nozzles, staff);
+      const contextData = {
+        settings,
+        tanks: tanks.map(t => ({ name: t.name, currentVolume: t.currentStock, capacity: t.capacity })),
+        recentShifts: shifts.slice(-5),
+        products,
+        customers: customers.length,
+        rateHistory: rateHistory.slice(-10), // provide recent price history
+        treasury: {
+          cashBalances: cashAccounts.map(a => ({ name: a.name, type: a.type, balance: a.balance })),
+          recentTransactions: treasuryTransactions.slice(-5),
+          ownerDrawingsTotal: ownerDrawings.reduce((sum, d) => sum + d.amount, 0)
+        }
+      };
 
-      const systemPrompt = `You are FuelPro AI, an intelligent business analytics assistant for a Pakistani fuel station management system. 
-
-${stationContext}
-
-INSTRUCTIONS:
-- Answer questions based ONLY on the data above
-- Be concise, actionable, and specific with numbers
-- Use Pakistani context (PKR currency, petrol/diesel/CNG terminology)
-- If data is insufficient, say so honestly
-- Format numbers with commas (e.g., 1,234,567)
-- You can respond in Urdu if the user writes in Urdu
-- Highlight urgent issues (low tanks, high cash variance, over-limit customers) proactively
-- Keep responses under 200 words unless a detailed breakdown is needed`;
-
-      const response = await fetchWithAuth('/api/ai-assistant', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          systemPrompt,
-          userMessage: text.trim(),
-          conversationHistory: messages
-            .filter(m => !m.isLoading && m.id !== 'welcome')
-            .slice(-6)
-            .map(m => ({ role: m.role, content: m.content }))
-        }),
-      });
-
-      if (!response.ok) throw new Error('API error');
-
-      const data = await response.json();
+      const aiResponse = await aiAssistantService.askQuestion(text.trim(), contextData);
 
       setMessages(prev =>
         prev.map(m =>
           m.isLoading
-            ? { ...m, content: data.reply || 'Sorry, I could not process that.', isLoading: false }
+            ? { ...m, content: aiResponse.formattedReceipt, isLoading: false, isReceiptFormat: true }
             : m
         )
       );
@@ -209,7 +109,7 @@ INSTRUCTIONS:
           m.isLoading
             ? {
                 ...m,
-                content: '⚠️ I\'m having trouble connecting to the AI service. Please check your API key configuration in the server settings.',
+                content: '⚠️ I\'m having trouble connecting to the AI service.',
                 isLoading: false,
               }
             : m
@@ -244,7 +144,6 @@ INSTRUCTIONS:
             title="FuelPro AI Assistant"
           >
             <Sparkles className="h-6 w-6" />
-            {/* Pulse ring */}
             <span className="absolute h-14 w-14 rounded-full bg-violet-500/30 animate-ping" />
           </motion.button>
         )}
@@ -267,9 +166,9 @@ INSTRUCTIONS:
                   <Sparkles className="h-4 w-4" />
                 </div>
                 <div>
-                  <div className="font-sans font-bold text-sm leading-none">FuelPro AI</div>
+                  <div className="font-sans font-bold text-sm leading-none">ShiftWizard AI</div>
                   <div className="text-[10px] text-violet-200 font-medium mt-0.5 flex items-center gap-1">
-                    <Zap className="h-2.5 w-2.5" /> Powered by Gemini
+                    <Zap className="h-2.5 w-2.5" /> Powered by Umar Ali ⚡
                   </div>
                 </div>
               </div>
@@ -288,7 +187,6 @@ INSTRUCTIONS:
                   key={msg.id}
                   className={`flex gap-2.5 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
                 >
-                  {/* Avatar */}
                   <div className={`shrink-0 flex h-7 w-7 items-center justify-center rounded-full mt-0.5 ${
                     msg.role === 'user'
                       ? 'bg-orange-500 text-white'
@@ -297,23 +195,24 @@ INSTRUCTIONS:
                     {msg.role === 'user' ? <User className="h-3.5 w-3.5" /> : <Bot className="h-3.5 w-3.5" />}
                   </div>
 
-                  {/* Bubble */}
                   <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 ${
                     msg.role === 'user'
                       ? 'bg-orange-500 text-white rounded-tr-sm'
-                      : 'bg-[var(--bg-hover)] text-[var(--text-main)] rounded-tl-sm'
+                      : msg.isReceiptFormat
+                        ? 'bg-white border border-slate-200 text-slate-800 rounded-tl-sm shadow-sm font-mono text-[10px] sm:text-xs leading-relaxed whitespace-pre overflow-x-auto'
+                        : 'bg-[var(--bg-hover)] text-[var(--text-main)] rounded-tl-sm'
                   }`}>
                     {msg.isLoading ? (
                       <div className="flex items-center gap-1.5 py-1">
                         <Loader2 className="h-3.5 w-3.5 animate-spin text-violet-500" />
-                        <span className="text-xs text-[var(--text-muted)]">Thinking...</span>
+                        <span className="text-xs text-[var(--text-muted)]">Generating Receipt...</span>
                       </div>
                     ) : (
-                      <p className="font-sans text-xs leading-relaxed whitespace-pre-wrap">
-                        {msg.content.replace(/\*\*(.*?)\*\*/g, 'Rs.1')}
+                      <p className={msg.isReceiptFormat ? 'font-mono' : 'font-sans text-xs leading-relaxed whitespace-pre-wrap'}>
+                        {msg.content}
                       </p>
                     )}
-                    <p className="font-sans text-[9px] mt-1 opacity-50">
+                    <p className="font-sans text-[9px] mt-1 opacity-50 text-right">
                       {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
@@ -322,18 +221,32 @@ INSTRUCTIONS:
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Suggested Queries */}
+            {/* Quick Actions */}
             {messages.length === 1 && (
-              <div className="px-4 pb-2 flex gap-2 overflow-x-auto scrollbar-hide shrink-0">
-                {SUGGESTED_QUERIES.slice(0, 3).map(q => (
-                  <button
-                    key={q}
-                    onClick={() => sendMessage(q)}
-                    className="shrink-0 rounded-full border border-[var(--border-main)] bg-[var(--bg-hover)] px-3 py-1.5 font-sans text-[10px] font-semibold text-[var(--text-muted)] hover:border-violet-400 hover:text-violet-600 transition-colors whitespace-nowrap"
-                  >
-                    {q}
-                  </button>
-                ))}
+              <div className="px-4 pb-2">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Quick Actions</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    "Shift shortfalls today?",
+                    "Total sales this week?",
+                    "Which tanks need refilling?",
+                    "Outstanding credit recovery?",
+                    "Highest expense category?",
+                    "Recommend price revision?",
+                    "Generate shift summary",
+                    "Pending supplier payments?",
+                    "Compare Lube vs Fuel sales",
+                    "System health check"
+                  ].map((action, i) => (
+                    <button
+                      key={i}
+                      onClick={() => sendMessage(action)}
+                      className="px-2.5 py-1.5 bg-[var(--bg-hover)] border border-[var(--border-main)] hover:border-violet-300 hover:bg-violet-50 text-[10px] text-[var(--text-main)] rounded-full transition-colors whitespace-nowrap cursor-pointer"
+                    >
+                      {action}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -344,7 +257,7 @@ INSTRUCTIONS:
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask about your station data..."
+                placeholder="Ask for stock updates, shifts..."
                 disabled={isLoading}
                 className="flex-1 rounded-xl border border-[var(--border-main)] bg-[var(--bg-hover)] px-3.5 py-2.5 font-sans text-xs text-[var(--text-main)] placeholder:text-[var(--text-muted)] focus:border-violet-500 focus:outline-none transition-colors disabled:opacity-60"
               />

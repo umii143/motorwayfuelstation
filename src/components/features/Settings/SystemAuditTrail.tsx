@@ -126,7 +126,9 @@ export default function SystemAuditTrail({ language, stationId }: SystemAuditTra
                   </td>
                   <td className="py-3 px-2 font-bold text-slate-800 text-left">{lg.action}</td>
                   <td className="py-3 px-3 text-left max-w-sm whitespace-normal leading-relaxed text-slate-600">{lg.details}</td>
-                  <td className="py-3 px-2 text-right font-medium text-slate-500">{lg.operator}</td>
+                  <td className="py-3 px-2 text-right">
+                    <div className="text-sm font-medium text-slate-800">{lg.user}</div>
+                  </td>
                 </tr>
               ))
             )}

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Staff, StaffFinanceEntry, AttendanceRecord, ExpenseEntry, BankAccount } from '../types';
+import { Staff, StaffFinanceEntry, AttendanceRecord, ExpenseEntry, BankAccount, SalaryTransaction, StaffLoan, SalaryAdvance } from '../types';
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
 import { getBusinessTypeForStation, isolateTenantRecords, withBusinessScope } from '../lib/businessScope';
@@ -18,6 +18,23 @@ interface StaffState {
   handleAddStaffFinance: (newEntry: StaffFinanceEntry, orgId?: string, stationId?: string, settings?: any, handleAddStandaloneExpenseStore?: (exp: ExpenseEntry) => void, handleUpdateBanksStore?: (banks: BankAccount[]) => void, banks?: BankAccount[]) => Promise<void>;
   handleAddShiftSalaryPayment: (staffId: string, amount: number, note: string, paidFrom: 'cash' | 'bank', date: string, expenseId: string, orgId?: string, stationId?: string) => Promise<void>;
   handleDeleteShiftSalaryPayment: (expenseId: string, orgId?: string, stationId?: string) => Promise<void>;
+  salaryTransactions: SalaryTransaction[];
+  staffLoans: StaffLoan[];
+  salaryAdvances: SalaryAdvance[];
+
+  setSalaryTransactions: (txns: SalaryTransaction[]) => void;
+  setStaffLoans: (loans: StaffLoan[]) => void;
+  setSalaryAdvances: (advances: SalaryAdvance[]) => void;
+
+  handleAddSalaryTransaction: (txn: SalaryTransaction, orgId?: string, stationId?: string) => Promise<void>;
+  handleUpdateSalaryTransaction: (txn: SalaryTransaction, orgId?: string, stationId?: string) => Promise<void>;
+  
+  handleAddStaffLoan: (loan: StaffLoan, orgId?: string, stationId?: string) => Promise<void>;
+  handleUpdateStaffLoan: (loan: StaffLoan, orgId?: string, stationId?: string) => Promise<void>;
+  
+  handleAddSalaryAdvance: (advance: SalaryAdvance, orgId?: string, stationId?: string) => Promise<void>;
+  handleUpdateSalaryAdvance: (advance: SalaryAdvance, orgId?: string, stationId?: string) => Promise<void>;
+
   handleAddAttendance: (records: AttendanceRecord[], orgId?: string, stationId?: string) => Promise<void>;
 }
 
@@ -29,6 +46,9 @@ export const useStaffStore = create<StaffState>((set, get) => ({
   staff: db.getStaffList(db.getActiveStationId()),
   staffFinance: db.getStaffFinance(db.getActiveStationId()),
   attendance: db.getAttendance(db.getActiveStationId()),
+  salaryTransactions: db.getSalaryTransactions(db.getActiveStationId()),
+  staffLoans: db.getStaffLoans(db.getActiveStationId()),
+  salaryAdvances: db.getSalaryAdvances(db.getActiveStationId()),
 
   setStaff: (staff) => {
     const sId = db.getActiveStationId();
@@ -47,6 +67,24 @@ export const useStaffStore = create<StaffState>((set, get) => ({
     const scopedAttendance = isolateTenantRecords(attendance, sId);
     set({ attendance: scopedAttendance });
     if (sId) db.saveAttendance(sId, scopedAttendance);
+  },
+  setSalaryTransactions: (salaryTransactions) => {
+    const sId = db.getActiveStationId();
+    const scoped = isolateTenantRecords(salaryTransactions, sId);
+    set({ salaryTransactions: scoped });
+    if (sId) db.saveSalaryTransactions(sId, scoped);
+  },
+  setStaffLoans: (staffLoans) => {
+    const sId = db.getActiveStationId();
+    const scoped = isolateTenantRecords(staffLoans, sId);
+    set({ staffLoans: scoped });
+    if (sId) db.saveStaffLoans(sId, scoped);
+  },
+  setSalaryAdvances: (salaryAdvances) => {
+    const sId = db.getActiveStationId();
+    const scoped = isolateTenantRecords(salaryAdvances, sId);
+    set({ salaryAdvances: scoped });
+    if (sId) db.saveSalaryAdvances(sId, scoped);
   },
 
   handleAddStaff: async (newStaff, orgId, stationId) => {
@@ -237,5 +275,74 @@ export const useStaffStore = create<StaffState>((set, get) => ({
         await firestoreDb.saveDocument(orgId, sId, bType, 'attendance', docId, rec);
       }
     }
+  },
+
+  handleAddSalaryTransaction: async (txn, orgId, stationId) => {
+    const sId = stationId || db.getActiveStationId();
+    const bType = getBusinessType(sId);
+    const scoped = withBusinessScope(txn, sId, orgId);
+    set((state) => {
+      const updated = [scoped, ...state.salaryTransactions];
+      db.saveSalaryTransactions(sId, updated);
+      return { salaryTransactions: updated };
+    });
+    if (orgId) await firestoreDb.saveDocument(orgId, sId, bType, 'salaryTransactions', scoped.id, scoped);
+  },
+  handleUpdateSalaryTransaction: async (txn, orgId, stationId) => {
+    const sId = stationId || db.getActiveStationId();
+    const bType = getBusinessType(sId);
+    const scoped = withBusinessScope(txn, sId, orgId);
+    set((state) => {
+      const updated = state.salaryTransactions.map(t => t.id === scoped.id ? scoped : t);
+      db.saveSalaryTransactions(sId, updated);
+      return { salaryTransactions: updated };
+    });
+    if (orgId) await firestoreDb.saveDocument(orgId, sId, bType, 'salaryTransactions', scoped.id, scoped);
+  },
+
+  handleAddStaffLoan: async (loan, orgId, stationId) => {
+    const sId = stationId || db.getActiveStationId();
+    const bType = getBusinessType(sId);
+    const scoped = withBusinessScope(loan, sId, orgId);
+    set((state) => {
+      const updated = [scoped, ...state.staffLoans];
+      db.saveStaffLoans(sId, updated);
+      return { staffLoans: updated };
+    });
+    if (orgId) await firestoreDb.saveDocument(orgId, sId, bType, 'staffLoans', scoped.id, scoped);
+  },
+  handleUpdateStaffLoan: async (loan, orgId, stationId) => {
+    const sId = stationId || db.getActiveStationId();
+    const bType = getBusinessType(sId);
+    const scoped = withBusinessScope(loan, sId, orgId);
+    set((state) => {
+      const updated = state.staffLoans.map(t => t.id === scoped.id ? scoped : t);
+      db.saveStaffLoans(sId, updated);
+      return { staffLoans: updated };
+    });
+    if (orgId) await firestoreDb.saveDocument(orgId, sId, bType, 'staffLoans', scoped.id, scoped);
+  },
+
+  handleAddSalaryAdvance: async (adv, orgId, stationId) => {
+    const sId = stationId || db.getActiveStationId();
+    const bType = getBusinessType(sId);
+    const scoped = withBusinessScope(adv, sId, orgId);
+    set((state) => {
+      const updated = [scoped, ...state.salaryAdvances];
+      db.saveSalaryAdvances(sId, updated);
+      return { salaryAdvances: updated };
+    });
+    if (orgId) await firestoreDb.saveDocument(orgId, sId, bType, 'salaryAdvances', scoped.id, scoped);
+  },
+  handleUpdateSalaryAdvance: async (adv, orgId, stationId) => {
+    const sId = stationId || db.getActiveStationId();
+    const bType = getBusinessType(sId);
+    const scoped = withBusinessScope(adv, sId, orgId);
+    set((state) => {
+      const updated = state.salaryAdvances.map(t => t.id === scoped.id ? scoped : t);
+      db.saveSalaryAdvances(sId, updated);
+      return { salaryAdvances: updated };
+    });
+    if (orgId) await firestoreDb.saveDocument(orgId, sId, bType, 'salaryAdvances', scoped.id, scoped);
   }
 }));

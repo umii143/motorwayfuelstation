@@ -15,6 +15,8 @@ import { getBusinessTypeForStation, resolveViewForBusiness } from './lib/busines
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Toaster } from 'react-hot-toast';
+import { PoweredByUmarAli } from './components/shared/PoweredByUmarAli';
 import Navigation from './components/layouts/Navigation';
 const Dashboard = React.lazy(() => import('./components/features/Dashboard'));
 const ShiftWizard = React.lazy(() => import('./components/features/ShiftWizard'));
@@ -39,13 +41,22 @@ const SecurityHub = React.lazy(() => import('./components/features/SecurityHub')
 const SubscriptionHub = React.lazy(() => import('./components/features/SubscriptionHub'));
 const BankCashPanel = React.lazy(() => import('./components/features/BankCashPanel'));
 const DigitalCashPanel = React.lazy(() => import('./components/features/DigitalCashPanel'));
-const RateWizard = React.lazy(() => import('./components/features/Settings/RateWizard'));
+const PriceManagement = React.lazy(() => import('./components/features/PriceManagement'));
 const EnterpriseHub = React.lazy(() => import('./components/features/EnterpriseHub'));
 const DipCalculator = React.lazy(() => import('./components/features/DipCalculator/DipCalculator'));
 const OGRAPriceSync = React.lazy(() => import('./components/features/OGRAPriceSync/OGRAPriceSync'));
 const AIAssistant = React.lazy(() => import('./components/features/AIAssistant/AIAssistant'));
 const AIAnalyticsHub = React.lazy(() => import('./components/features/AIAnalyticsHub/AIAnalyticsHub'));
-const WhatsAppAlerts = React.lazy(() => import('./components/features/WhatsAppAlerts'));
+const CommunicationDashboard = React.lazy(() => import('./components/features/CommunicationCenter/CommunicationDashboard'));
+
+const BIDashboard = React.lazy(() => import('./components/features/BIAnalytics/BIDashboard'));
+const RiskCenter = React.lazy(() => import('./components/features/RiskCenter/RiskCenter'));
+const ExecutiveDashboard = React.lazy(() => import('./components/features/ExecutiveDashboard/ExecutiveDashboard'));
+const TreasuryCenter = React.lazy(() => import('./components/features/TreasuryCenter/TreasuryCenter'));
+import { GlobalSearchModal } from './components/shared/GlobalSearchModal';
+import { SmartSuggestions } from './components/shared/SmartSuggestions';
+import { useKeyboardShortcut, SHORTCUTS } from './hooks/useKeyboardShortcut';
+import { buildSearchIndex, rebuildModuleIndex } from './services/searchService';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { RefreshCw, CheckCircle2, AlertTriangle, XCircle, Info, X } from 'lucide-react';
 
@@ -57,6 +68,7 @@ import {
 function MainApp() {
   // Navigation active view routing
   const [activeView, setActiveView] = useState<string>('dashboard');
+  const [searchOpen, setSearchOpen] = useState(false);
 
   // Centralized Auth Context connection
   const { user: authenticatedUser, checkingAuth, logout } = useAuth();
@@ -183,6 +195,29 @@ function MainApp() {
       setActiveView(nextView);
     }
   }, [activeView, resolveActiveView]);
+
+  // Ctrl+K opens global search
+  useKeyboardShortcut(SHORTCUTS.GLOBAL_SEARCH, () => setSearchOpen(true));
+
+  // Build search index when data loads
+  React.useEffect(() => {
+    buildSearchIndex({
+      customers: customers,
+      suppliers: suppliers,
+      shifts: shifts,
+      batches: stockTxns,
+      expenses: standaloneExpenses,
+      staff: staff,
+    });
+  }, []); // Initial build
+
+  // Rebuild indices when specific data changes
+  React.useEffect(() => { rebuildModuleIndex('customers', customers); }, [customers]);
+  React.useEffect(() => { rebuildModuleIndex('suppliers', suppliers); }, [suppliers]);
+  React.useEffect(() => { rebuildModuleIndex('shifts', shifts); }, [shifts]);
+  React.useEffect(() => { rebuildModuleIndex('batches', stockTxns); }, [stockTxns]);
+  React.useEffect(() => { rebuildModuleIndex('expenses', standaloneExpenses); }, [standaloneExpenses]);
+  React.useEffect(() => { rebuildModuleIndex('staff', staff); }, [staff]);
 
   // ==========================================
   // ROUTING VIEW CONTROLS
@@ -443,6 +478,11 @@ function MainApp() {
           />
         );
 
+      case 'treasury':
+        return (
+          <TreasuryCenter />
+        );
+
       case 'configuration':
       case 'setup_products':
       case 'setup_nozzles':
@@ -507,7 +547,7 @@ function MainApp() {
 
       case 'price_management':
         return (
-          <RateWizard
+          <PriceManagement
             products={products}
             tanks={tanks}
             rateHistory={rateHistory}
@@ -525,8 +565,6 @@ function MainApp() {
       case 'loss_prevention':
       case 'loyalty':
       case 'maintenance':
-      case 'bi_analytics':
-      case 'demand_forecast':
       case 'erp_integration':
       case 'cctv':
       case 'api_gateway':
@@ -569,8 +607,25 @@ function MainApp() {
             }}
           />
         );
-      case 'whatsapp_alerts':
-        return <WhatsAppAlerts settings={settings} onUpdateSettings={handleUpdateSettings} />;
+      case 'communication_center':
+        return <CommunicationDashboard />;
+
+      case 'bi_analytics':
+        return <BIDashboard />;
+        
+      case 'risk_center':
+        return <RiskCenter />;
+        
+      case 'executive_dashboard':
+        return <ExecutiveDashboard />;
+        
+      case 'demand_forecast':
+        return (
+          <div className="flex flex-col items-center justify-center p-12 text-center h-[50vh]">
+            <h2 className="text-xl font-bold text-slate-800">Forecasting Module (Standalone)</h2>
+            <p className="text-sm text-slate-500 mt-2">Currently integrated inside the BI Analytics dashboard.</p>
+          </div>
+        );
 
       case 'ai_analytics':
         return (
@@ -736,6 +791,14 @@ function MainApp() {
         onDeleteStation={handleDeleteStation}
       />
 
+      <GlobalSearchModal
+        isOpen={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onNavigate={(viewId, context) => {
+          handleViewChange(viewId);
+        }}
+      />
+
       {/* Main Container Workspace */}
       <main className="flex-1 w-full lg:pl-64 pt-[65px] flex flex-col min-h-screen">
         <div className="p-4 lg:p-8 w-full max-w-[1800px] mx-auto flex-1 flex flex-col">
@@ -763,7 +826,7 @@ function MainApp() {
               © 2026 {settings.stationName}. All rights reserved.
             </div>
             <div className="flex items-center justify-center gap-1.5 font-semibold">
-              <span>Powered by Umar Ali</span>
+              <PoweredByUmarAli variant="compact" />
               <a
                 href="https://wa.me/923168432329"
                 target="_blank"
@@ -824,7 +887,7 @@ function MainApp() {
                   </p>
                   <div className="mt-2.5 flex items-center justify-between border-t border-[var(--border-main)]/40 pt-2 text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-widest">
                     <span>{settings.language === 'ur' ? 'کامیابی سے مکمل ہوا' : 'Successfully processed'}</span>
-                    <span className="font-black text-orange-500">Powered by Umar Ali</span>
+                    <span className="font-black text-orange-500"><PoweredByUmarAli variant="compact" /></span>
                   </div>
                 </div>
               </div>
@@ -886,8 +949,8 @@ function MainApp() {
               
               {/* Footer Divider & Actions */}
               <div className="mt-6 pt-4 border-t border-[var(--border-main)]/60 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-                <span className="font-mono text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-widest">
-                  Powered by Umar Ali
+                <span className="font-mono text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-widest flex items-center">
+                  <PoweredByUmarAli variant="compact" />
                 </span>
                 
                 <div className="flex items-center justify-end gap-2 w-full sm:w-auto">
@@ -917,6 +980,12 @@ function MainApp() {
           </div>
         )}
       </AnimatePresence>
+      
+      {/* Context-Aware Smart Suggestions Panel */}
+      <React.Suspense fallback={null}>
+        <SmartSuggestions />
+      </React.Suspense>
+
       {/* Global AI Assistant — floats on all pages */}
       <React.Suspense fallback={null}>
         <AIAssistant
@@ -929,6 +998,26 @@ function MainApp() {
           staff={staff}
         />
       </React.Suspense>
+
+      {/* Global Toaster for feedback */}
+      <Toaster 
+        position="top-center" 
+        toastOptions={{
+          style: {
+            background: 'var(--bg-card)',
+            color: 'var(--text-main)',
+            border: '1px solid var(--border-main)',
+            fontSize: '14px',
+            fontFamily: 'Inter, sans-serif'
+          },
+          success: {
+            iconTheme: {
+              primary: '#10b981',
+              secondary: 'white',
+            },
+          },
+        }} 
+      />
     </div>
   );
 }

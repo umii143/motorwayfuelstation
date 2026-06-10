@@ -129,7 +129,9 @@ export default function SettingsPanel({
       category,
       action,
       details,
-      operator: 'Sajid Mahmood (Manager)'
+      user: 'Sajid Mahmood (Manager)',
+      role: 'Manager',
+      branch: activeStationId
     };
     db.saveSettingsAuditTrail(activeStationId, [newEntry, ...existing]);
   };

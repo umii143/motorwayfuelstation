@@ -190,3 +190,49 @@ html, body {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid color-mix(in srgb, var(--border-main) 50%, transparent);
 }
+
+/* Print Styles for Receipts and Reports */
+@media print {
+  /* Hide UI elements not meant for printing */
+  nav, header, aside, .no-print, button, .lucide {
+    display: none !important;
+  }
+
+  /* Reset body and remove backgrounds */
+  body {
+    background: white !important;
+    color: black !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Thermal Receipt Styles (58mm / 80mm) */
+  .receipt-print {
+    width: 80mm; /* Adjust to 58mm if needed */
+    margin: 0 auto;
+    font-family: 'Courier New', Courier, monospace; /* Monospace is better for receipts */
+    font-size: 12px;
+    line-height: 1.2;
+    padding: 10px;
+  }
+
+  /* A4 Report Styles */
+  .report-print {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 20mm;
+    margin: 0 auto;
+    font-family: 'Inter', sans-serif;
+    font-size: 11pt;
+  }
+
+  /* General Print Resets */
+  @page {
+    margin: 0.5cm;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

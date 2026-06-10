@@ -48,6 +48,12 @@ import { db } from "../../data/db";
 import { fetchWithAuth } from "../../lib/api";
 import { useStation } from "../../contexts/StationContext";
 import AIDocumentScanner from "../ui/AIDocumentScanner";
+import {
+  processCreditSale, processRecovery, processExpense,
+  processBankDeposit, processDigitalPayment, processSupplierPayment,
+  processDiscount, processLubeSale, processReversal,
+  processShiftOpen, processShiftClose as eocShiftClose,
+} from "../../services/core/operationalCore";
 
 // Helper to classify fuel product IDs into hardcoded categories expected by the shift closeout logic
 const getFuelCategory = (productId: string, products: Product[]): "petrol" | "diesel" | "cng" | null => {
@@ -762,6 +768,7 @@ export default function ShiftWizard({
       : products.find((p) => p.id === debProdId)?.rate || 100;
     const amount = qty * rate;
 
+    const customer = customers.find((c) => c.id === debCustId);
     const newDebit: DebitEntry = {
       id: `deb_${Date.now()}`,
       customerId: debCustId,
@@ -772,11 +779,26 @@ export default function ShiftWizard({
       note: debNote,
     };
 
+    // ── Optimistic UI update ──────────────────────────────────────────────────
     const updated = {
       ...activeShift,
       debitEntries: [...activeShift.debitEntries, newDebit],
     };
     onUpdateShift(updated);
+
+    // ── EOC Pipeline (async, non-blocking) ────────────────────────────────────
+    processCreditSale(
+      activeShift.id, activeStationId, activeStationId,
+      {
+        customerId: debCustId,
+        customerName: customer?.name ?? debCustId,
+        productId: debProdId,
+        productName: product?.name ?? debProdId,
+        quantity: qty, rate, amount,
+        note: debNote,
+      },
+      activeShift.date
+    ).catch((err: Error) => console.warn('[EOC] Credit sale pipeline:', err.message));
 
     // Reset inputs
     setDebQty("");
@@ -785,11 +807,26 @@ export default function ShiftWizard({
 
   const handleDeleteDebit = (id: string) => {
     if (!activeShift) return;
-    const updated = {
-      ...activeShift,
-      debitEntries: activeShift.debitEntries.filter((d) => d.id !== id),
-    };
-    onUpdateShift(updated);
+    showConfirm(
+      t("Reverse Entry", "اندراج کو پلٹائیں"),
+      t(
+        "This entry will be reversed (not deleted). A reversal journal entry will be posted to maintain the audit trail. Continue?",
+        "یہ اندراج حذف نہیں ہوگا۔ ایک ریورسل جرنل انٹری پوسٹ کی جائے گی۔ جاری رکھیں؟"
+      ),
+      () => {
+        // ── Optimistic UI update ──────────────────────────────────────────────
+        const updated = {
+          ...activeShift,
+          debitEntries: activeShift.debitEntries.filter((d) => d.id !== id),
+        };
+        onUpdateShift(updated);
+        // ── EOC Reversal Pipeline ─────────────────────────────────────────────
+        processReversal(
+          id, t("User reversed credit sale entry", "صارف نے کریڈٹ سیل اندراج پلٹایا"),
+          activeShift.id, activeStationId, activeStationId, activeShift.date
+        ).catch((err: Error) => console.warn('[EOC] Reversal pipeline:', err.message));
+      }
+    );
   };
 
   const handleAddRecovery = () => {
@@ -804,6 +841,7 @@ export default function ShiftWizard({
       return;
     }
 
+    const customer = customers.find((c) => c.id === recCustId);
     const newRec: RecoveryEntry = {
       id: `rec_${Date.now()}`,
       customerId: recCustId,
@@ -812,11 +850,23 @@ export default function ShiftWizard({
       reference: recRef,
     };
 
+    // ── Optimistic UI update ──────────────────────────────────────────────────
     const updated = {
       ...activeShift,
       recoveryEntries: [...activeShift.recoveryEntries, newRec],
     };
     onUpdateShift(updated);
+
+    // ── EOC Pipeline ─────────────────────────────────────────────────────────
+    processRecovery(
+      activeShift.id, activeStationId, activeStationId,
+      {
+        customerId: recCustId,
+        customerName: customer?.name ?? recCustId,
+        amount, mode: recMode, reference: recRef,
+      },
+      activeShift.date
+    ).catch((err: Error) => console.warn('[EOC] Recovery pipeline:', err.message));
 
     // Reset inputs
     setRecAmount("");
@@ -825,11 +875,16 @@ export default function ShiftWizard({
 
   const handleDeleteRecovery = (id: string) => {
     if (!activeShift) return;
-    const updated = {
-      ...activeShift,
-      recoveryEntries: activeShift.recoveryEntries.filter((r) => r.id !== id),
-    };
-    onUpdateShift(updated);
+    showConfirm(
+      t("Reverse Entry", "اندراج کو پلٹائیں"),
+      t("This recovery will be reversed with an audit entry. Continue?", "یہ ریکوری ریورسل انٹری کے ساتھ پلٹائی جائے گی۔ جاری رکھیں؟"),
+      () => {
+        const updated = { ...activeShift, recoveryEntries: activeShift.recoveryEntries.filter((r) => r.id !== id) };
+        onUpdateShift(updated);
+        processReversal(id, t("User reversed recovery entry", "صارف نے ریکوری اندراج پلٹایا"), activeShift.id, activeStationId, activeStationId, activeShift.date)
+          .catch((err: Error) => console.warn('[EOC] Recovery reversal:', err.message));
+      }
+    );
   };
 
   const handleAddExpense = () => {
@@ -837,10 +892,7 @@ export default function ShiftWizard({
     const amount = Number(expAmount);
     if (!amount || amount <= 0) {
       showToast(
-        t(
-          "Please enter a valid expense amount.",
-          "براہ کرم درست رقم درج کریں۔",
-        ),
+        t("Please enter a valid expense amount.", "براہ کرم درست رقم درج کریں۔"),
         "error",
       );
       return;
@@ -881,20 +933,27 @@ export default function ShiftWizard({
 
     if (expCategory === "salary" && expStaffId && onAddShiftSalaryPayment) {
       onAddShiftSalaryPayment(
-        expStaffId,
-        amount,
-        finalDesc,
-        expPaidFrom,
-        activeShift.date,
-        newExp.id,
+        expStaffId, amount, finalDesc, expPaidFrom, activeShift.date, newExp.id,
       );
     }
 
+    // ── Optimistic UI update ──────────────────────────────────────────────────
     const updated = {
       ...activeShift,
       expenseEntries: [...activeShift.expenseEntries, newExp],
     };
     onUpdateShift(updated);
+
+    // ── EOC Pipeline ─────────────────────────────────────────────────────────
+    processExpense(
+      activeShift.id, activeStationId, activeStationId,
+      {
+        category: expCategory, amount, description: finalDesc,
+        paidFrom: expPaidFrom as any,
+        staffId: expCategory === "salary" ? expStaffId : undefined,
+      },
+      activeShift.date
+    ).catch((err: Error) => console.warn('[EOC] Expense pipeline:', err.message));
 
     // Reset inputs
     setExpAmount("");
@@ -906,20 +965,20 @@ export default function ShiftWizard({
     if (!activeShift) return;
 
     const expToDelete = activeShift.expenseEntries.find((e) => e.id === id);
-    if (
-      expToDelete &&
-      expToDelete.category === "salary" &&
-      expToDelete.staffId &&
-      onDeleteShiftSalaryPayment
-    ) {
+    if (expToDelete?.category === "salary" && expToDelete.staffId && onDeleteShiftSalaryPayment) {
       onDeleteShiftSalaryPayment(id);
     }
 
-    const updated = {
-      ...activeShift,
-      expenseEntries: activeShift.expenseEntries.filter((e) => e.id !== id),
-    };
-    onUpdateShift(updated);
+    showConfirm(
+      t("Reverse Entry", "اندراج کو پلٹائیں"),
+      t("This expense will be reversed with an audit entry.", "یہ اخراجات ریورسل انٹری کے ساتھ پلٹائے جائیں گے۔"),
+      () => {
+        const updated = { ...activeShift, expenseEntries: activeShift.expenseEntries.filter((e) => e.id !== id) };
+        onUpdateShift(updated);
+        processReversal(id, t("User reversed expense entry", "صارف نے اخراجات اندراج پلٹایا"), activeShift.id, activeStationId, activeStationId, activeShift.date)
+          .catch((err: Error) => console.warn('[EOC] Expense reversal:', err.message));
+      }
+    );
   };
 
   const handleAddBank = () => {
@@ -931,15 +990,13 @@ export default function ShiftWizard({
     const amount = Number(bankAmount);
     if (!amount || amount <= 0) {
       showToast(
-        t(
-          "Please enter a valid deposit amount.",
-          "براہ کرم درست رقم درج کریں۔",
-        ),
+        t("Please enter a valid deposit amount.", "براہ کرم درست رقم درج کریں۔"),
         "error",
       );
       return;
     }
 
+    const bankAccount = banks.find((b) => b.id === bankAcctId);
     const newBank: BankCashEntry = {
       id: `bc_${Date.now()}`,
       bankAccountId: bankAcctId,
@@ -948,11 +1005,19 @@ export default function ShiftWizard({
       customerId: bankCustId || undefined,
     };
 
+    // ── Optimistic UI update ──────────────────────────────────────────────────
     const updated = {
       ...activeShift,
       bankCashEntries: [...activeShift.bankCashEntries, newBank],
     };
     onUpdateShift(updated);
+
+    // ── EOC Pipeline ─────────────────────────────────────────────────────────
+    processBankDeposit(
+      activeShift.id, activeStationId, activeStationId,
+      { bankAccountId: bankAcctId, bankName: bankAccount?.name ?? bankAcctId, amount, reference: bankRef },
+      activeShift.date
+    ).catch((err: Error) => console.warn('[EOC] Bank deposit pipeline:', err.message));
 
     // Reset inputs
     setBankAmount("");
@@ -985,11 +1050,20 @@ export default function ShiftWizard({
       accountHolder: digAccountHolder,
     };
 
+    // ── Optimistic UI update ──────────────────────────────────────────────────
     const updated = {
       ...activeShift,
       digitalCashEntries: [...activeShift.digitalCashEntries, newDig],
     };
     onUpdateShift(updated);
+
+    // ── EOC Pipeline ─────────────────────────────────────────────────────────
+    const methodKey = digMethod.toLowerCase().replace(/\s/g, '') as 'jazzcash' | 'easypaisa' | 'pos';
+    processDigitalPayment(
+      activeShift.id, activeStationId, activeStationId,
+      { method: methodKey === 'jazzcash' ? 'jazzcash' : methodKey === 'pos' ? 'pos' : 'easypaisa', amount, transactionId: digRefId, accountHolder: digAccountHolder },
+      activeShift.date
+    ).catch((err: Error) => console.warn('[EOC] Digital payment pipeline:', err.message));
 
     // Reset inputs
     setDigAmount("");
@@ -1110,11 +1184,19 @@ export default function ShiftWizard({
       amount,
     };
 
+    // ── Optimistic UI update ──────────────────────────────────────────────────
     const updated = {
       ...activeShift,
       lubeSales: [...activeShift.lubeSales, newLube],
     };
     onUpdateShift(updated);
+
+    // ── EOC Pipeline ─────────────────────────────────────────────────────────
+    processLubeSale(
+      activeShift.id, activeStationId, activeStationId,
+      { itemId: lubeItemId, itemName: product?.name ?? lubeItemId, quantity: qty, price, amount },
+      activeShift.date
+    ).catch((err: Error) => console.warn('[EOC] Lube sale pipeline:', err.message));
 
     // Reset inputs
     setLubeQty("");
@@ -1122,11 +1204,16 @@ export default function ShiftWizard({
 
   const handleDeleteLube = (id: string) => {
     if (!activeShift) return;
-    const updated = {
-      ...activeShift,
-      lubeSales: activeShift.lubeSales.filter((l) => l.id !== id),
-    };
-    onUpdateShift(updated);
+    showConfirm(
+      t("Reverse Entry", "اندراج کو پلٹائیں"),
+      t("This lube sale will be reversed with an audit entry.", "یہ لیوب سیل ریورسل انٹری کے ساتھ پلٹایا جائے گا۔"),
+      () => {
+        const updated = { ...activeShift, lubeSales: activeShift.lubeSales.filter((l) => l.id !== id) };
+        onUpdateShift(updated);
+        processReversal(id, t("User reversed lube sale", "صارف نے لیوب سیل پلٹایا"), activeShift.id, activeStationId, activeStationId, activeShift.date)
+          .catch((err: Error) => console.warn('[EOC] Lube reversal:', err.message));
+      }
+    );
   };
 
   const handleAddSupplier = () => {
@@ -1141,6 +1228,7 @@ export default function ShiftWizard({
       return;
     }
 
+    const supplier = suppliers.find((s) => s.id === supId);
     const newSup: SupplierPayment = {
       id: `supp_${Date.now()}`,
       date: new Date().toISOString().split('T')[0],
@@ -1151,11 +1239,34 @@ export default function ShiftWizard({
       reference: supRef,
     };
 
+    // ── Optimistic UI update ──────────────────────────────────────────────────
     const updated = {
       ...activeShift,
       supplierPayments: [...activeShift.supplierPayments, newSup],
     };
     onUpdateShift(updated);
+
+    // ── EOC Pipeline (Approval gate built-in for amounts > Rs 100,000) ────────
+    processSupplierPayment(
+      activeShift.id, activeStationId, activeStationId,
+      {
+        supplierId: supId,
+        supplierName: supplier?.name ?? supId,
+        amount,
+        mode: supMode === 'transfer' ? 'transfer' : 'cash',
+        bankAccountId: supMode === 'transfer' ? supBankAcct : undefined,
+        reference: supRef,
+      },
+      activeShift.date
+    ).then((txn) => {
+      if (txn.status === 'pending_approval') {
+        showToast(
+          t(`Supplier payment of Rs ${amount.toLocaleString()} requires approval. Request sent to Manager/Owner.`,
+            `Rs ${amount.toLocaleString()} کی سپلائر ادائیگی کے لیے منظوری درکار ہے۔`),
+          'warning'
+        );
+      }
+    }).catch((err: Error) => console.warn('[EOC] Supplier payment pipeline:', err.message));
 
     // Reset inputs
     setSupAmount("");
@@ -1165,11 +1276,16 @@ export default function ShiftWizard({
 
   const handleDeleteSupplier = (id: string) => {
     if (!activeShift) return;
-    const updated = {
-      ...activeShift,
-      supplierPayments: activeShift.supplierPayments.filter((s) => s.id !== id),
-    };
-    onUpdateShift(updated);
+    showConfirm(
+      t("Reverse Entry", "اندراج کو پلٹائیں"),
+      t("This supplier payment will be reversed with an audit entry.", "یہ سپلائر ادائیگی ریورسل انٹری کے ساتھ پلٹائی جائے گی۔"),
+      () => {
+        const updated = { ...activeShift, supplierPayments: activeShift.supplierPayments.filter((s) => s.id !== id) };
+        onUpdateShift(updated);
+        processReversal(id, t("User reversed supplier payment", "صارف نے سپلائر ادائیگی پلٹائی"), activeShift.id, activeStationId, activeStationId, activeShift.date)
+          .catch((err: Error) => console.warn('[EOC] Supplier reversal:', err.message));
+      }
+    );
   };
 
   // Step 3 Transition to Step 4 (Configure closings)
@@ -1306,31 +1422,50 @@ export default function ShiftWizard({
     setWizardStep(7); // Final summary
   };
 
-  // Step 7 trigger: Finalize shift closeout and trigger modules synchronizations
-  const handleFinalShiftSubmission = () => {
+  // Step 7 trigger: Finalize shift closeout through EOC pipeline
+  const handleFinalShiftSubmission = async () => {
     if (!activeShift || !expectedTotals) return;
 
     const endT = new Date();
     const formattedEndTime = `${String(endT.getHours()).padStart(2, "0")}:${String(endT.getMinutes()).padStart(2, "0")}`;
 
-    // Update shift status to closed
+    // ── Optimistic UI close ───────────────────────────────────────────────────
     const finalizedShift: Shift = {
       ...activeShift,
       status: "closed",
       endTime: formattedEndTime,
     };
 
-    onUpdateShift(finalizedShift);
+    try {
+      await Promise.resolve(onUpdateShift(finalizedShift));
 
-    // Redirect to Dashboard home screen
-    onNavigateToView("dashboard");
-    showToast(
-      t(
-        "Shift successfully submitted, closed, and local ledgers synchronized!",
-        "شفٹ کامیابی سے مغلوب اور تمام لیجرز اپڈیٹ ہو چکے ہیں!",
-      ),
-      "success"
-    );
+      // ── EOC Shift Close Pipeline (async) ──────────────────────────────────────
+      // Runs: lockShiftJournals → reconciliation → fraud analysis → integrity score → snapshot
+      eocShiftClose(finalizedShift, activeStationId, activeStationId, nozzles, products)
+        .then(({ reconciliationReport, riskScore }) => {
+          const scoreLabel = reconciliationReport.integrityScore >= 90 ? '🟢' :
+            reconciliationReport.integrityScore >= 70 ? '🟡' : '🔴';
+          console.info(
+            `[EOC] Shift closed. Integrity: ${scoreLabel} ${reconciliationReport.integrityScore}/100. Risk: ${riskScore.overallRisk.toUpperCase()}`
+          );
+        })
+        .catch((err: Error) => console.warn('[EOC] Shift close pipeline:', err.message));
+
+      onNavigateToView("dashboard");
+      showToast(
+        t(
+          "Shift closed! Journals locked, reconciliation complete, snapshot saved.",
+          "شفٹ بند! جرنلز لاک، مطابقت مکمل، سنیپ شاٹ محفوظ۔",
+        ),
+        "success"
+      );
+    } catch (err: any) {
+      console.error("Error during shift close:", err);
+      showToast(
+        err.message || t("Failed to close shift. Please check tank stocks and try again.", "شفٹ بند کرنے میں خرابی۔ براہ کرم ٹینک کا اسٹاک چیک کریں۔"),
+        "error"
+      );
+    }
   };
 
   // Cancel running shift trigger

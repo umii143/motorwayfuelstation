@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Product, Tank, Nozzle, Pump, StockTransaction, RateHistoryEntry, InventoryMovement, StockBatch, CogsRecord, DealerMarginSetting } from '../types';
+import { Product, Tank, Nozzle, Pump, StockTransaction, RateHistoryEntry, InventoryMovement, StockBatch, CogsRecord, DealerMarginSetting, InventorySnapshot } from '../types';
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
 import { getBusinessTypeForStation, isolateProductRecords, withBusinessScope } from '../lib/businessScope';
@@ -16,6 +16,8 @@ interface InventoryState {
   cogsRecords: CogsRecord[];
   dealerMarginSettings: DealerMarginSetting[];
 
+  inventorySnapshots: InventorySnapshot[];
+
   setProducts: (products: Product[]) => void;
   setTanks: (tanks: Tank[]) => void;
   setNozzles: (nozzles: Nozzle[]) => void;
@@ -26,10 +28,11 @@ interface InventoryState {
   setStockBatches: (batches: StockBatch[]) => void;
   setCOGSRecords: (records: CogsRecord[]) => void;
   setDealerMarginSettings: (settings: DealerMarginSetting[]) => void;
+  setInventorySnapshots: (snapshots: InventorySnapshot[]) => void;
   handleUpdateDealerMargin: (setting: DealerMarginSetting, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
 
   handleUpdateProductStock: (productId: string, newStock: number, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
-  handleUpdateProductRate: (productId: string, newRate: number, reason?: string, changedBy?: string, dateStr?: string, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
+  handleUpdateProductRate: (productId: string, newRate: number, reason?: string, changedBy?: string, dateStr?: string, orgId?: string, stationId?: string, checkPerm?: any, attachments?: any[]) => Promise<void>;
   handleDeleteRateHistory: (id: string, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
   handleUpdateProduct: (updatedProduct: Product, orgId?: string, stationId?: string) => Promise<void>;
   handleDeleteProduct: (productId: string, orgId?: string, stationId?: string) => Promise<void>;
@@ -59,6 +62,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   stockBatches: db.getStockBatches(db.getActiveStationId()),
   cogsRecords: db.getCOGSRecords(db.getActiveStationId()),
   dealerMarginSettings: db.getDealerMarginSettings(db.getActiveStationId()),
+  inventorySnapshots: db.getInventorySnapshots(db.getActiveStationId()),
 
   setProducts: (products) => {
     const sId = db.getActiveStationId();
@@ -113,6 +117,12 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     if (sId) db.saveDealerMarginSettings(sId, dealerMarginSettings);
   },
   
+  setInventorySnapshots: (inventorySnapshots) => {
+    set({ inventorySnapshots });
+    const sId = db.getActiveStationId();
+    if (sId) db.saveInventorySnapshots(sId, inventorySnapshots);
+  },
+  
   handleUpdateDealerMargin: async (setting, orgId, stationId, checkPerm) => {
     if (checkPerm) checkPerm('settings.manage', 'manage dealer margins', 'ڈیلر مارجن تبدیل کرنے');
     const sId = stationId || db.getActiveStationId();
@@ -148,59 +158,57 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     }
   },
 
-  handleUpdateProductRate: async (productId, newRate, reason = 'Market revision Adjustment', changedBy = 'Admin (Owner)', dateStr, orgId, stationId, checkPerm) => {
+  handleUpdateProductRate: async (productId, newRate, reason = 'Manual Correction', changedBy = 'Admin (Owner)', dateStr, orgId, stationId, checkPerm, attachments = []) => {
     if (checkPerm) checkPerm('pricing.manage', 'manage pricing', 'قیمتوں کا انتظام کرنے');
     const sId = stationId || db.getActiveStationId();
-    const dStr = dateStr || new Date().toISOString().replace('T', ' ').substring(0, 16);
+    
+    // Import engine and financial store dynamically to avoid circular dependencies
+    const { priceChangeEngine } = await import('../services/priceManagement/priceChangeEngine');
+    const { useFinancialStore } = await import('./useFinancialStore');
+    const financialStore = useFinancialStore.getState();
 
     const productsCopy = [...get().products];
     const tanksCopy = [...get().tanks];
+    const productToUpdate = productsCopy.find(p => p.id === productId);
 
-    const updatedProducts = productsCopy.map((p) => {
-      if (p.id === productId) {
-        const oldRate = p.rate;
-        const change = newRate - oldRate;
-        
-        const relevantTanks = tanksCopy.filter(t => t.productId === productId);
-        const totalStock = relevantTanks.reduce((s, t) => s + t.currentStock, 0) || p.currentStock;
-        const impact = change * totalStock;
+    if (!productToUpdate) return;
 
-        const newRateHistory: RateHistoryEntry = {
-          id: 'rh_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5),
-          productId,
-          date: dStr,
-          oldRate,
-          newRate,
-          change,
-          stockAtTime: totalStock,
-          impactAmount: Number(impact.toFixed(2)),
-          reason,
-          changedBy,
-          difference: change,
-          stockAtChange: totalStock,
-          gainLoss: Number(impact.toFixed(2)),
-          changedAt: Date.now()
-        };
+    const result = priceChangeEngine.applyPriceChange(
+      productToUpdate,
+      tanksCopy,
+      newRate,
+      changedBy,
+      reason,
+      orgId,
+      sId,
+      attachments
+    );
 
-        set((state) => {
-          const updatedRH = [newRateHistory, ...state.rateHistory];
-          db.saveRateHistory(sId, updatedRH);
-          return { rateHistory: updatedRH };
-        });
+    const updatedProducts = productsCopy.map(p => p.id === productId ? result.updatedProduct : p);
 
-        if (orgId) {
-          const bType = getBusinessType(sId);
-          firestoreDb.saveDocument(orgId, sId, bType, 'rateHistory', newRateHistory.id, newRateHistory);
-          firestoreDb.saveDocument(orgId, sId, bType, 'products', productId, { ...p, rate: newRate });
-        }
-
-        return { ...p, rate: newRate };
-      }
-      return p;
+    set((state) => {
+      const updatedRH = [result.rateHistoryEntry, ...state.rateHistory];
+      const updatedSnapshots = [result.snapshot, ...state.inventorySnapshots];
+      db.saveRateHistory(sId, updatedRH);
+      db.saveInventorySnapshots(sId, updatedSnapshots);
+      db.saveProducts(sId, updatedProducts);
+      return { 
+        rateHistory: updatedRH, 
+        inventorySnapshots: updatedSnapshots,
+        products: updatedProducts
+      };
     });
 
-    set({ products: updatedProducts });
-    db.saveProducts(sId, updatedProducts);
+    if (result.journalEntry) {
+      await financialStore.handleAddJournalEntry(result.journalEntry, orgId, sId);
+    }
+
+    if (orgId) {
+      const bType = getBusinessType(sId);
+      firestoreDb.saveDocument(orgId, sId, bType, 'inventorySnapshots', result.snapshot.id, result.snapshot);
+      firestoreDb.saveDocument(orgId, sId, bType, 'rateHistory', result.rateHistoryEntry.id, result.rateHistoryEntry);
+      firestoreDb.saveDocument(orgId, sId, bType, 'products', productId, result.updatedProduct);
+    }
   },
 
   handleDeleteRateHistory: async (id, orgId, stationId, checkPerm) => {

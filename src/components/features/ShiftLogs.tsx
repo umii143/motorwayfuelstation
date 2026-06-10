@@ -23,6 +23,11 @@ import {
   Download,
   UserCircle
 } from 'lucide-react';
+import { ExportToolbar } from '../shared/ExportToolbar';
+import { DocumentActionToolbar } from '../shared/DocumentActionToolbar';
+import { ShiftReceiptDocument } from '../shared/receipts/ShiftReceipt';
+import { useWhatsAppShare } from '../../hooks/useWhatsAppShare';
+import { WhatsAppShareModal } from '../shared/WhatsAppShareModal';
 import {
   Shift,
   Staff,
@@ -79,6 +84,9 @@ export default function ShiftLogs({
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'closed'>('all');
   
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
+  const [showExport, setShowExport] = useState(false);
+  
+  const whatsappHook = useWhatsAppShare();
   
   // Drill-down states
   const [viewDetailType, setViewDetailType] = useState<
@@ -132,13 +140,39 @@ export default function ShiftLogs({
           </p>
         </div>
       </div>
+      
+      {/* Export Toolbar */}
+      <ExportToolbar
+        isOpen={showExport}
+        onClose={() => setShowExport(false)}
+        data={filteredShifts}
+        columns={[
+          { key: 'date', label: 'Date', urduLabel: 'تاریخ' },
+          { key: 'salesmanId', label: 'Salesman', urduLabel: 'سیلزمین' },
+          { key: 'status', label: 'Status', urduLabel: 'سٹیٹس' },
+          { key: 'totalSales', label: 'Total Sales', urduLabel: 'کل فروخت' },
+          { key: 'totalCash', label: 'Total Cash', urduLabel: 'کل کیش' },
+          { key: 'shortage', label: 'Shortage', urduLabel: 'کمی' }
+        ]}
+        title="Shift Logs Report"
+        filenamePrefix="shift_logs"
+      />
 
       {/* Filters */}
       <div className="bg-white rounded-xl shadow-xs border border-slate-200 p-4 mb-6">
-        <div className="flex items-center gap-2 mb-4 text-slate-800 font-semibold">
-          <Filter className="w-4 h-4 text-slate-500" />
-          {t('Filters', 'فلٹرز')}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2 text-slate-800 font-semibold">
+            <Filter className="w-4 h-4 text-slate-500" />
+            {t('Filters', 'فلٹرز')}
+          </div>
+          <button
+            onClick={() => setShowExport(true)}
+            className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 text-sm font-bold rounded-lg hover:bg-indigo-100 transition-colors cursor-pointer"
+          >
+            {t('Export', 'ایکسپورٹ')}
+          </button>
         </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">
@@ -254,17 +288,38 @@ export default function ShiftLogs({
                       )}
                     </td>
                     <td className="p-4 text-center">
-                      {shift.status === 'active' ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
-                          <Clock className="w-3.5 h-3.5" />
-                          {t('Active', 'جاری ہے')}
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          {t('Closed', 'بند ہو گئی')}
-                        </span>
-                      )}
+                      <div className="flex flex-col items-center gap-1.5">
+                        {shift.status === 'active' ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                            <Clock className="w-3.5 h-3.5" />
+                            {t('Active', 'جاری ہے')}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            {t('Closed', 'بند ہو گئی')}
+                          </span>
+                        )}
+                        {/* Data Integrity Badges */}
+                        {shift.status === 'closed' && (
+                          shift.shortage > 0 ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700">
+                              <AlertTriangle className="w-3 h-3" />
+                              {t('Issue Detected', 'مسئلہ پایا گیا')}
+                            </span>
+                          ) : shift.overage > 0 ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700">
+                              <AlertTriangle className="w-3 h-3" />
+                              {t('Review Required', 'جائزہ درکار ہے')}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700">
+                              <CheckCircle2 className="w-3 h-3" />
+                              {t('Verified', 'تصدیق شدہ')}
+                            </span>
+                          )
+                        )}
+                      </div>
                     </td>
                     <td className="p-4 text-right">
                       <button
@@ -301,8 +356,16 @@ export default function ShiftLogs({
           nozzles={nozzles}
           viewDetailType={viewDetailType}
           setViewDetailType={setViewDetailType}
+          whatsappHook={whatsappHook}
         />
       )}
+
+      <WhatsAppShareModal 
+        hook={whatsappHook} 
+        customers={customers} 
+        suppliers={suppliers} 
+        staff={staff} 
+      />
     </div>
   );
 }
@@ -323,7 +386,8 @@ function ShiftAuditDrawer({
   digitalAccounts,
   nozzles,
   viewDetailType,
-  setViewDetailType
+  setViewDetailType,
+  whatsappHook
 }: any) {
   const t = (en: string, ur: string) => translate(en, ur, settings);
   const isUrdu = settings.language === 'ur';
@@ -424,12 +488,28 @@ function ShiftAuditDrawer({
               <span>{shift.startTime} to {shift.endTime || 'Present'}</span>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-slate-100 text-slate-500 hover:text-slate-700 rounded-full transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
+          <div className="flex items-center gap-3">
+            <DocumentActionToolbar 
+              pdfDocument={<ShiftReceiptDocument shift={shift} generatedBy="Admin" />}
+              pdfFileName={`Shift_Report_${shift.id}.pdf`}
+              onPrint={() => window.print()}
+              onWhatsAppShare={() => {
+                whatsappHook.openShareModal(
+                  'custom',
+                  {},
+                  undefined,
+                  `Shift_Report_${shift.id}.pdf`,
+                  <ShiftReceiptDocument shift={shift} generatedBy="Admin" />
+                );
+              }}
+            />
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-slate-100 text-slate-500 hover:text-slate-700 rounded-full transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
         </div>
 
         {/* Drawer Content */}

@@ -17,12 +17,13 @@ import {
   Lightbulb,
   Info,
   Calendar,
-  X,
   CreditCard,
   Notebook,
   Sparkles
 } from 'lucide-react';
 import EmptyState from '../ui/EmptyState';
+import { ModuleSearchBar } from '../shared/ModuleSearchBar';
+import { ExportToolbar } from '../shared/ExportToolbar';
 import AIDocumentScanner from '../ui/AIDocumentScanner';
 import { ExpenseEntry, GlobalSettings, Shift } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
@@ -76,6 +77,7 @@ export default function Expenses({
   const [formAmount, setFormAmount] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formPaidFrom, setFormPaidFrom] = useState<'cash' | 'bank'>('cash');
+  const [showExport, setShowExport] = useState(false);
 
   // Single source of truth: use activeStationId, not shift-existence heuristic
   const isLube = activeStationId === 'st_lube';
@@ -130,6 +132,14 @@ export default function Expenses({
     });
   }, [allExpenses, searchQuery, categoryFilter, paymentModeFilter, timeFilter]);
 
+  const exportColumns = [
+    { key: 'date', label: 'Date', urduLabel: 'تاریخ' },
+    { key: 'category', label: 'Category', urduLabel: 'کیٹیگری' },
+    { key: 'description', label: 'Description', urduLabel: 'تفصیل' },
+    { key: 'paidFrom', label: 'Paid From', urduLabel: 'ادائیگی کا ذریعہ' },
+    { key: 'amount', label: 'Amount', urduLabel: 'رقم' }
+  ];
+
   // Aggregate metrics
   const totalAmountSpent = useMemo(() => {
     return filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
@@ -171,6 +181,11 @@ export default function Expenses({
 
     if (!formDescription) {
       showToast(t('Please describe the expenditure.', 'تفصیل لکھنا ضروری ہے۔'), 'error');
+      return;
+    }
+
+    if (formCategory === 'salary') {
+      showToast(t('Please use the Staff module to process salaries to maintain the ledger.', 'تنخواہ کا اندراج سٹاف ماڈیول سے کریں۔'), 'error');
       return;
     }
 
@@ -298,6 +313,14 @@ export default function Expenses({
         </div>
       </div>
 
+      {/* UNIVERSAL MODULE SEARCH BAR */}
+      <ModuleSearchBar
+        moduleName={t('Expenses', 'اخراجات')}
+        placeholder={t('Search notes description...', 'تفصیل تلاش کریں...')}
+        onSearch={setSearchQuery}
+        onExport={() => setShowExport(true)}
+      />
+
       {/* DYNAMIC KPI CARDS SECTION */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* AMBER CARD - TOTAL SPEND */}
@@ -381,18 +404,7 @@ export default function Expenses({
           
           {/* SEARCH & FILTER CONTROLS CARD */}
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3.5">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              
-              <div className="relative">
-                <Search className="absolute top-2.5 left-3 h-3.5 w-3.5 text-slate-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={t('Search notes description...', 'تفصیل تلاش کریں...')}
-                  className="w-full rounded-md border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-3 font-sans text-xs outline-hidden focus:border-red-500 focus:bg-white"
-                />
-              </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 
               <div>
                 <select
@@ -548,7 +560,7 @@ export default function Expenses({
                     onChange={(e) => setFormCategory(e.target.value)}
                     className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 font-sans text-sm focus:border-red-500 focus:outline-hidden"
                   >
-                    {expenseCategories.map(c => (
+                    {expenseCategories.filter(c => c.id !== 'salary').map(c => (
                       <option key={c.id} value={c.id}>{isUrdu ? c.urdu : c.label}</option>
                     ))}
                   </select>
@@ -622,6 +634,14 @@ export default function Expenses({
         onDataExtracted={handleExpenseAutoFill}
       />
 
+      <ExportToolbar
+        isOpen={showExport}
+        onClose={() => setShowExport(false)}
+        data={filteredExpenses}
+        columns={exportColumns}
+        title="Expenses Report"
+        filenamePrefix="expenses_report"
+      />
     </div>
   );
 }

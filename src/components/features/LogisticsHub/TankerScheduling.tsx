@@ -131,7 +131,11 @@ export default function TankerScheduling({ settings, stationId }: TankerScheduli
   const filteredSchedules = schedules.filter(s => 
     s.poNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
     getSupplierName(s.supplierId).toLowerCase().includes(searchQuery.toLowerCase())
-  ).sort((a, b) => new Date(b.expectedDeliveryDate).getTime() - new Date(a.expectedDeliveryDate).getTime());
+  ).sort((a, b) => {
+    const timeA = a.expectedDeliveryDate ? new Date(a.expectedDeliveryDate).getTime() : 0;
+    const timeB = b.expectedDeliveryDate ? new Date(b.expectedDeliveryDate).getTime() : 0;
+    return timeB - timeA;
+  });
 
   return (
     <div className="space-y-4">
@@ -190,7 +194,11 @@ export default function TankerScheduling({ settings, stationId }: TankerScheduli
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-slate-400">Exp. Delivery</span>
-                <span className="font-medium text-slate-700">{new Date(schedule.expectedDeliveryDate).toLocaleDateString()}</span>
+                <span className="font-medium text-slate-700">
+                  {schedule.expectedDeliveryDate && !isNaN(new Date(schedule.expectedDeliveryDate).getTime())
+                    ? new Date(schedule.expectedDeliveryDate).toLocaleDateString()
+                    : 'N/A'}
+                </span>
               </div>
               {schedule.eta && (
                 <div className="flex justify-between items-center">
