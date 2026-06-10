@@ -9,6 +9,7 @@ interface SmartSuggestionsProps {
 
 export const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ onClose }) => {
   const { tanks, customers, shifts } = useStation();
+  const [isVisible, setIsVisible] = React.useState(true);
 
   const suggestions = useMemo(() => {
     const alerts = [];
@@ -63,7 +64,7 @@ export const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ onClose }) =
     return alerts;
   }, [tanks, customers, shifts]);
 
-  if (suggestions.length === 0) return null;
+  if (suggestions.length === 0 || !isVisible) return null;
 
   return (
     <div className="fixed bottom-6 right-6 z-40 w-80 max-w-[calc(100vw-3rem)]">
@@ -73,11 +74,12 @@ export const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ onClose }) =
             <Lightbulb className="w-4 h-4 text-yellow-300" />
             Smart Suggestions
           </h3>
-          {onClose && (
-            <button onClick={onClose} className="text-indigo-200 hover:text-white transition-colors">
-              <X className="w-4 h-4" />
-            </button>
-          )}
+          <button 
+            onClick={() => { if (onClose) onClose(); else setIsVisible(false); }} 
+            className="text-indigo-200 hover:text-white transition-colors p-1 rounded-full hover:bg-white/20"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
         
         <div className="max-h-72 overflow-y-auto p-2 space-y-2">
