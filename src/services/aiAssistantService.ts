@@ -179,9 +179,11 @@ export class AIAssistantService {
 
     } catch (error) {
       console.error("[AIAssistantService] Request failed:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
       return {
-        rawResponse: "Error connecting to AI Provider.",
-        formattedReceipt: `┌──────────────────────────────────┐\n│         ERROR OCCURRED           │\n│ Check API Keys in settings.      │\n├──────────────────────────────────┤\n│      Powered by Umar Ali ⚡      │\n└──────────────────────────────────┘`
+        rawResponse: "Error connecting to AI Provider: " + errorMessage,
+        formattedReceipt: `┌──────────────────────────────────┐\n│         ERROR OCCURRED           │\n│ ${errorMessage.substring(0, 30).padEnd(32)} │\n├──────────────────────────────────┤\n│ Check API Keys in Vercel.        │\n│ MUST be named VITE_GEMINI_API_KEY│\n├──────────────────────────────────┤\n│      Powered by Umar Ali ⚡      │\n└──────────────────────────────────┘`
       };
     }
   }
