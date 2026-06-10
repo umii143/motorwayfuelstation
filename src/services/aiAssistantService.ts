@@ -132,7 +132,7 @@ export class AIAssistantService {
       else if (this.activeProvider === 'gemini' && this.geminiClient) {
         // GenAI SDK v2 approach
         const response = await this.geminiClient.models.generateContent({
-          model: 'gemini-1.5-pro',
+          model: 'gemini-1.5-flash',
           contents: [
             { role: 'user', parts: [{ text: systemPrompt + "\n\nUser Query: " + question }] }
           ],
@@ -222,7 +222,7 @@ export class AIAssistantService {
         content = completion.choices[0]?.message?.content || "";
       } else if (this.activeProvider === 'gemini' && this.geminiClient) {
         const response = await this.geminiClient.models.generateContent({
-          model: 'gemini-1.5-pro',
+          model: 'gemini-1.5-flash',
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
           config: { temperature: 0.1 }
         });
