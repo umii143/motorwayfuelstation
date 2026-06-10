@@ -75,16 +75,20 @@ export const AIAssistantWidget: React.FC = () => {
   return (
     <>
       {/* Floating Button */}
-      <button
+      <motion.button
+        drag
+        dragMomentum={false}
+        whileHover={{ scale: 1.05 }}
+        whileDrag={{ scale: 1.1, cursor: "grabbing" }}
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-24 md:bottom-6 right-4 md:right-6 z-50 p-4 bg-indigo-600 text-white rounded-full shadow-2xl hover:bg-indigo-700 transition-all hover:scale-105 active:scale-95 ${isOpen ? 'scale-0 opacity-0 pointer-events-none' : 'scale-100 opacity-100'}`}
+        className={`fixed bottom-24 md:bottom-6 right-4 md:right-6 z-50 p-4 bg-indigo-600 text-white rounded-full shadow-2xl transition-colors active:scale-95 touch-none ${isOpen ? 'scale-0 opacity-0 pointer-events-none' : 'scale-100 opacity-100'}`}
       >
-        <Bot className="w-6 h-6" />
-        <span className="absolute -top-1 -right-1 flex h-4 w-4">
+        <Bot className="w-6 h-6 pointer-events-none" />
+        <span className="absolute -top-1 -right-1 flex h-4 w-4 pointer-events-none">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 border-2 border-white"></span>
         </span>
-      </button>
+      </motion.button>
 
       {/* Chat Window */}
       <AnimatePresence>
