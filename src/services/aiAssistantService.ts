@@ -128,10 +128,11 @@ export class AIAssistantService {
     3. The receipt MUST be wrapped in an ASCII border.
     4. The header of the receipt MUST be "SHIFTWIZARD ERP".
     5. The footer of the receipt MUST be "Powered by Umar Ali ⚡".
-    6. Be concise, professional, and data-driven. Do not add markdown outside the ASCII box.
+    6. CRITICAL: NEVER hallucinate, make up, or use dummy data. If the SYSTEM DATA CONTEXT shows empty lists ([]), 0 sales, or no active shifts, YOU MUST state exactly that (e.g. "No sales recorded", "0 PKR"). DO NOT copy the example format's dummy numbers.
+    7. Be concise, professional, and data-driven. Do not add markdown outside the ASCII box.
     ${dataContext}
     
-    EXAMPLE FORMAT:
+    EXAMPLE FORMAT (STRUCTURE ONLY - DO NOT USE THESE NUMBERS):
     ┌──────────────────────────────────┐
     │          SHIFTWIZARD ERP         │
     │         Fuel Station AI          │
@@ -140,11 +141,9 @@ export class AIAssistantService {
     │ Query: Low Stock Alert           │
     ├──────────────────────────────────┤
     │ ITEM                QTY          │
-    │ HSD Diesel          450 Liters   │
-    │ Super Petrol        1200 Liters  │
+    │ (Your Data Here)                 │
     ├──────────────────────────────────┤
-    │ STATUS: ACTION REQUIRED          │
-    │ Please reorder HSD Diesel        │
+    │ STATUS: (Your Status Here)       │
     ├──────────────────────────────────┤
     │      Powered by Umar Ali ⚡      │
     └──────────────────────────────────┘
