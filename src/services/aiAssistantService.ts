@@ -1,5 +1,4 @@
-import { Groq } from 'groq-sdk';
-import { GoogleGenAI } from '@google/genai';
+
 
 export interface AIResponse {
   rawResponse: string;
@@ -15,10 +14,38 @@ export interface AIBusinessInsight {
 
 export type AIAssistantMode = 'chat' | 'analytics';
 
+// Gemini REST API — works directly in browser without any SDK
+const GEMINI_MODEL = 'gemini-2.0-flash';
+const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+
+async function callGeminiRest(
+  apiKey: string,
+  prompt: string,
+  temperature = 0.3
+): Promise<string> {
+  const url = `${GEMINI_API_BASE}/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature },
+    }),
+  });
+
+  if (!res.ok) {
+    const errBody = await res.text();
+    throw new Error(`Gemini API error ${res.status}: ${errBody}`);
+  }
+
+  const data = await res.json();
+  return data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+}
+
 export class AIAssistantService {
-  private groqClient: Groq | null = null;
-  private geminiClient: GoogleGenAI | null = null;
-  
+  private groqApiKey: string | null = null;
+  private geminiApiKey: string | null = null;
+
   private activeProvider: 'groq' | 'gemini' | 'mock' = 'mock';
 
   constructor() {
@@ -26,41 +53,53 @@ export class AIAssistantService {
   }
 
   private initializeClients() {
-    // Attempt to load from localStorage first (User Settings)
-    const storedGroq = localStorage.getItem('GROQ_API_KEY');
-    const storedGemini = localStorage.getItem('GEMINI_API_KEY');
+    // Read keys from localStorage (user settings) or Vite env vars.
+    // Both plain and VITE_-prefixed names are checked for compatibility.
+    const groqKey =
+      localStorage.getItem('VITE_GROQ_API_KEY') ||
+      localStorage.getItem('GROQ_API_KEY') ||
+      // @ts-ignore
+      (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GROQ_API_KEY) ||
+      undefined;
 
-    // Fallback to Vite env variables
-    // @ts-ignore
-    const envGroq = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_GROQ_API_KEY : undefined;
-    // @ts-ignore
-    const envGemini = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_GEMINI_API_KEY : undefined;
+    const geminiKey =
+      localStorage.getItem('VITE_GEMINI_API_KEY') ||
+      localStorage.getItem('GEMINI_API_KEY') ||
+      // @ts-ignore
+      (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) ||
+      undefined;
 
-    const finalGroq = storedGroq || envGroq;
-    const finalGemini = storedGemini || envGemini;
-
-    if (finalGemini) {
-      this.geminiClient = new GoogleGenAI({ apiKey: finalGemini });
-      this.activeProvider = 'gemini';
-    } else if (finalGroq) {
-      this.groqClient = new Groq({ apiKey: finalGroq, dangerouslyAllowBrowser: true });
+    // Prefer Groq first — it is explicitly designed for browser use.
+    if (groqKey) {
+      this.groqApiKey = groqKey;
       this.activeProvider = 'groq';
+      console.info('[AIAssistantService] ✅ Groq provider active (via REST API).');
+    } else if (geminiKey) {
+      this.geminiApiKey = geminiKey;
+      this.activeProvider = 'gemini';
+      console.info('[AIAssistantService] ✅ Gemini provider active (via REST API).');
     } else {
       this.activeProvider = 'mock';
-      console.warn('[AIAssistantService] No API keys found. Falling back to local Mock Mode.');
+      console.warn(
+        '[AIAssistantService] ⚠️ No API keys found. Running in Mock Mode.\n' +
+        'Add VITE_GROQ_API_KEY or VITE_GEMINI_API_KEY to your .env file.'
+      );
     }
   }
 
-  /**
-   * Refreshes clients, useful if the user updates API keys in settings.
-   */
+  /** Call this after the user saves new API keys in Settings. */
   public reinitialize() {
+    this.groqApiKey = null;
+    this.geminiApiKey = null;
+    this.activeProvider = 'mock';
     this.initializeClients();
   }
 
   private getSystemPrompt(contextData?: any, mode: AIAssistantMode = 'chat'): string {
-    const dataContext = contextData ? `\n\n=== SYSTEM DATA CONTEXT ===\n${JSON.stringify(contextData)}\n===========================\n` : '';
-    
+    const dataContext = contextData
+      ? `\n\n=== SYSTEM DATA CONTEXT ===\n${JSON.stringify(contextData)}\n===========================\n`
+      : '';
+
     if (mode === 'analytics') {
       return `You are ShiftWizard AI, an expert Enterprise Assistant for a Fuel Station ERP.
       
@@ -112,44 +151,56 @@ export class AIAssistantService {
     `;
   }
 
-  public async askQuestion(question: string, contextData?: any, mode: AIAssistantMode = 'chat'): Promise<AIResponse> {
+  public async askQuestion(
+    question: string,
+    contextData?: any,
+    mode: AIAssistantMode = 'chat'
+  ): Promise<AIResponse> {
     const systemPrompt = this.getSystemPrompt(contextData, mode);
 
     try {
-      let content = "";
+      let content = '';
 
-      if (this.activeProvider === 'groq' && this.groqClient) {
-        const completion = await this.groqClient.chat.completions.create({
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: question }
-          ],
-          model: 'llama-3.3-70b-versatile',
-          temperature: 0.3,
-        });
-        content = completion.choices[0]?.message?.content || "";
-      } 
-      else if (this.activeProvider === 'gemini' && this.geminiClient) {
-        // GenAI SDK v2 approach
-        const response = await this.geminiClient.models.generateContent({
-          model: 'gemini-1.5-flash',
-          contents: [
-            { role: 'user', parts: [{ text: systemPrompt + "\n\nUser Query: " + question }] }
-          ],
-          config: {
+      if (this.activeProvider === 'groq' && this.groqApiKey) {
+        // Direct REST call to Groq
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.groqApiKey}`,
+          },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: question },
+            ],
             temperature: 0.3,
-          }
+          }),
         });
-        content = response.text || "";
-      } 
-      else {
+
+        if (!res.ok) {
+          const errBody = await res.text();
+          throw new Error(`Groq API error ${res.status}: ${errBody}`);
+        }
+
+        const data = await res.json();
+        content = data?.choices?.[0]?.message?.content ?? '';
+      } else if (this.activeProvider === 'gemini' && this.geminiApiKey) {
+        // Direct REST call — no SDK issues, works in any browser
+        content = await callGeminiRest(
+          this.geminiApiKey,
+          `${systemPrompt}\n\nUser Query: ${question}`,
+          0.3
+        );
+      } else {
         // MOCK MODE
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise((resolve) => setTimeout(resolve, 1200));
         if (mode === 'analytics') {
           content = JSON.stringify({
-            summary: "Mock analytics response for: " + question,
-            insights: ["Sales are up 10%", "Inventory is stable"],
-            metrics: { totalSales: 50000, inventoryAlerts: 0 }
+            summary: 'Mock analytics response for: ' + question,
+            insights: ['Sales are up 10%', 'Inventory is stable'],
+            metrics: { totalSales: 50000, inventoryAlerts: 0 },
           });
         } else {
           content = `┌──────────────────────────────────┐
@@ -167,23 +218,28 @@ export class AIAssistantService {
         }
       }
 
-      // Ensure footer exists even if AI hallucinated it out in chat mode
+      // Ensure footer exists if AI omitted it
       if (mode === 'chat' && !content.includes('Powered by Umar Ali')) {
         content += '\n\n    Powered by Umar Ali ⚡';
       }
 
-      return {
-        rawResponse: content,
-        formattedReceipt: content
-      };
-
+      return { rawResponse: content, formattedReceipt: content };
     } catch (error) {
-      console.error("[AIAssistantService] Request failed:", error);
+      console.error('[AIAssistantService] Request failed:', error);
       const errorMessage = error instanceof Error ? error.message : String(error);
-      
+
       return {
-        rawResponse: "Error connecting to AI Provider: " + errorMessage,
-        formattedReceipt: `┌──────────────────────────────────┐\n│         ERROR OCCURRED           │\n│ ${errorMessage.substring(0, 30).padEnd(32)} │\n├──────────────────────────────────┤\n│ Check API Keys in Vercel.        │\n│ MUST be named VITE_GEMINI_API_KEY│\n├──────────────────────────────────┤\n│      Powered by Umar Ali ⚡      │\n└──────────────────────────────────┘`
+        rawResponse: 'Error: ' + errorMessage,
+        formattedReceipt: `┌──────────────────────────────────┐
+│         ERROR OCCURRED           │
+│ ${errorMessage.substring(0, 30).padEnd(30)} │
+├──────────────────────────────────┤
+│ Check API Keys in settings.      │
+│ Use VITE_GROQ_API_KEY or         │
+│     VITE_GEMINI_API_KEY          │
+├──────────────────────────────────┤
+│      Powered by Umar Ali ⚡      │
+└──────────────────────────────────┘`,
       };
     }
   }
@@ -211,54 +267,61 @@ export class AIAssistantService {
     `;
 
     try {
-      let content = "";
+      let content = '';
 
-      if (this.activeProvider === 'groq' && this.groqClient) {
-        const completion = await this.groqClient.chat.completions.create({
-          messages: [{ role: 'user', content: prompt }],
-          model: 'llama-3.3-70b-versatile',
-          temperature: 0.1,
+      if (this.activeProvider === 'groq' && this.groqApiKey) {
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.groqApiKey}`,
+          },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [{ role: 'user', content: prompt }],
+            temperature: 0.1,
+          }),
         });
-        content = completion.choices[0]?.message?.content || "";
-      } else if (this.activeProvider === 'gemini' && this.geminiClient) {
-        const response = await this.geminiClient.models.generateContent({
-          model: 'gemini-1.5-flash',
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          config: { temperature: 0.1 }
-        });
-        content = response.text || "";
+
+        if (!res.ok) {
+          const errBody = await res.text();
+          throw new Error(`Groq API error ${res.status}: ${errBody}`);
+        }
+
+        const data = await res.json();
+        content = data?.choices?.[0]?.message?.content ?? '';
+      } else if (this.activeProvider === 'gemini' && this.geminiApiKey) {
+        content = await callGeminiRest(this.geminiApiKey, prompt, 0.1);
       } else {
         // MOCK MODE
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise((resolve) => setTimeout(resolve, 1200));
         return [
           {
-            recommendation: "Increase Super Petrol order by 5000L to prevent Friday stockout.",
-            impact: "High",
+            recommendation: 'Increase Super Petrol order by 5000L to prevent Friday stockout.',
+            impact: 'High',
             confidence: 88,
-            priority: "High"
+            priority: 'High',
           },
           {
-            recommendation: "Follow up with Top Customer XYZ for pending 150k PKR payment.",
-            impact: "Medium",
+            recommendation: 'Follow up with Top Customer XYZ for pending 150k PKR payment.',
+            impact: 'Medium',
             confidence: 95,
-            priority: "Critical"
+            priority: 'Critical',
           },
           {
-            recommendation: "Investigate Night Shift 2; variance of -4,200 PKR detected.",
-            impact: "High",
+            recommendation: 'Investigate Night Shift 2; variance of -4,200 PKR detected.',
+            impact: 'High',
             confidence: 99,
-            priority: "Critical"
-          }
+            priority: 'Critical',
+          },
         ];
       }
 
       const jsonMatch = content.match(/\[.*\]/s);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
-      }
+      if (jsonMatch) return JSON.parse(jsonMatch[0]);
       return JSON.parse(content);
     } catch (error) {
-      console.error("[AIAssistantService] Insights generation failed:", error);
+      console.error('[AIAssistantService] Insights generation failed:', error);
       return [];
     }
   }
