@@ -234,6 +234,13 @@ export async function getAccountLedger(
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
+/** Get treasury balance by linkedAccountId. */
+export async function getTreasuryBalance(stationId: string, linkedAccountId: string): Promise<number> {
+  const accounts = await getTreasuryAccounts(stationId);
+  const account = accounts.find(a => a.linkedAccountId === linkedAccountId);
+  return account ? account.balance : 0;
+}
+
 // ─── Storage Helpers ──────────────────────────────────────────────────────────
 
 function _persistAccounts(stationId: string, accounts: TreasuryAccount[]): void {

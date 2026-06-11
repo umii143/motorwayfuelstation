@@ -13,40 +13,7 @@ export interface NotificationItem {
   actionUrl?: string;
 }
 
-const mockNotifications: NotificationItem[] = [
-  {
-    id: 'n1',
-    type: 'warning',
-    title: 'Low Stock Alert',
-    message: 'Super Petrol is below minimum threshold (1500L remaining).',
-    time: '10 mins ago',
-    read: false,
-  },
-  {
-    id: 'n2',
-    type: 'alert',
-    title: 'Shift Reconciliation Failed',
-    message: 'Morning shift reported a cash shortage of Rs 5,400.',
-    time: '1 hour ago',
-    read: false,
-  },
-  {
-    id: 'n3',
-    type: 'success',
-    title: 'Supplier Delivery Verified',
-    message: 'PSO Tanker (40,000L) delivery confirmed via QR.',
-    time: '2 hours ago',
-    read: true,
-  },
-  {
-    id: 'n4',
-    type: 'info',
-    title: 'System Update',
-    message: 'FuelPro v2.4 has been installed successfully.',
-    time: '1 day ago',
-    read: true,
-  }
-];
+const mockNotifications: NotificationItem[] = [];
 
 export function NotificationCenter() {
   const [isOpen, setIsOpen] = useState(false);

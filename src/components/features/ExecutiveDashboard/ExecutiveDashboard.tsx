@@ -5,6 +5,13 @@ import { generateHealthScore } from '../../../services/analytics/executiveInsigh
 import { Activity, Briefcase, ChevronRight, PieChart, TrendingUp, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import RoleGuard from '../../ui/RoleGuard';
 import { KPIDrillDownModal } from './KPIDrillDownModal';
+import CustomerCreditDrillDownModal from './CustomerCreditDrillDownModal';
+import SupplierLiabilityDrillDownModal from './SupplierLiabilityDrillDownModal';
+import TreasuryDrillDownModal from './TreasuryDrillDownModal';
+import InventoryDrillDownModal from './InventoryDrillDownModal';
+import ProfitDrillDownModal from './ProfitDrillDownModal';
+import { useSupplierStore } from '../../../stores/useSupplierStore';
+import { Calendar } from 'lucide-react';
 
 export const ExecutiveDashboard: React.FC = () => {
   const { 
@@ -16,17 +23,28 @@ export const ExecutiveDashboard: React.FC = () => {
     lubePosSales,
     nozzles,
     rateHistory,
-    activeStationId
+    activeStationId,
+    settings
   } = useStation();
 
-  const [activeDrillDown, setActiveDrillDown] = React.useState<'revenue' | 'profit' | 'expenses' | 'revaluation' | null>(null);
+  const suppliers = useSupplierStore(state => state.suppliers);
+
+  const [activeDrillDown, setActiveDrillDown] = React.useState<'revenue' | 'profit' | 'expenses' | null>(null);
+  const [isCreditDrillDownOpen, setIsCreditDrillDownOpen] = React.useState(false);
+  const [isSupplierDrillDownOpen, setIsSupplierDrillDownOpen] = React.useState(false);
+  const [isTreasuryDrillDownOpen, setIsTreasuryDrillDownOpen] = React.useState(false);
+  const [isInventoryDrillDownOpen, setIsInventoryDrillDownOpen] = React.useState(false);
+  const [dateRange, setDateRange] = React.useState<{from: string, to: string}>({from: '', to: ''});
 
   const kpis = useMemo(() => 
-    generateKPIs(shifts, products, customers, tanks, standaloneExpenses, lubePosSales, activeStationId, nozzles, rateHistory), 
-    [shifts, products, customers, tanks, standaloneExpenses, lubePosSales, activeStationId, nozzles, rateHistory]
+    generateKPIs(shifts, products, customers, tanks, standaloneExpenses, lubePosSales, activeStationId, nozzles, rateHistory, dateRange), 
+    [shifts, products, customers, tanks, standaloneExpenses, lubePosSales, activeStationId, nozzles, rateHistory, dateRange]
   );
   
   const health = useMemo(() => generateHealthScore(kpis), [kpis]);
+
+  const totalPayables = useMemo(() => suppliers.reduce((sum, s) => sum + (s.balance > 0 ? s.balance : 0), 0), [suppliers]);
+  const overdueCount = useMemo(() => suppliers.filter(s => s.balance > 1000000).length, [suppliers]);
 
   return (
     <RoleGuard allowedRoles={['Owner', 'Manager']} fallbackMessage="Executive Dashboard is strictly restricted.">
@@ -43,13 +61,42 @@ export const ExecutiveDashboard: React.FC = () => {
           </div>
           <div className="flex flex-col items-end">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Data Integrity Score</span>
-            <div className="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full">
+            <div className="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full mb-3">
               {kpis.dataQuality.score >= 90 ? <CheckCircle className="h-4 w-4 text-emerald-500" /> : <AlertTriangle className="h-4 w-4 text-amber-500" />}
               <span className={`text-sm font-bold ${kpis.dataQuality.score >= 90 ? 'text-emerald-700' : 'text-amber-700'}`}>
                 {kpis.dataQuality.score}/100
               </span>
             </div>
           </div>
+        </div>
+
+        {/* Global Date Filters */}
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center gap-4 mb-6">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-indigo-500" />
+            <span className="text-sm font-bold text-slate-700">Analysis Period:</span>
+          </div>
+          <input 
+            type="date" 
+            value={dateRange.from}
+            onChange={e => setDateRange(prev => ({...prev, from: e.target.value}))}
+            className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <span className="text-slate-400 font-medium">to</span>
+          <input 
+            type="date" 
+            value={dateRange.to}
+            onChange={e => setDateRange(prev => ({...prev, to: e.target.value}))}
+            className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          {(dateRange.from || dateRange.to) && (
+            <button 
+              onClick={() => setDateRange({from: '', to: ''})}
+              className="ml-auto px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
 
         {/* Business Health Score */}
@@ -95,6 +142,63 @@ export const ExecutiveDashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* Owner Command Center: Executive Recommendations */}
+        {health.recommendations && health.recommendations.length > 0 && (
+          <div className="bg-slate-900 rounded-3xl p-6 shadow-xl border border-slate-800">
+            <div className="flex items-center gap-3 mb-6 px-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-400">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-black text-white tracking-tight">Owner Command Center</h2>
+                <p className="text-xs font-semibold text-slate-400">AI-Driven Executive Recommendations</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {health.recommendations.map((rec, idx) => {
+                const isCritical = rec.type === 'critical';
+                const isWarning = rec.type === 'warning';
+                const isPositive = rec.type === 'positive';
+                
+                return (
+                  <div 
+                    key={idx} 
+                    className={`rounded-2xl p-5 border ${
+                      isCritical ? 'bg-red-500/10 border-red-500/20' :
+                      isWarning ? 'bg-amber-500/10 border-amber-500/20' :
+                      isPositive ? 'bg-emerald-500/10 border-emerald-500/20' :
+                      'bg-blue-500/10 border-blue-500/20'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`mt-0.5 shrink-0 h-2 w-2 rounded-full ${
+                        isCritical ? 'bg-red-500' :
+                        isWarning ? 'bg-amber-500' :
+                        isPositive ? 'bg-emerald-500' :
+                        'bg-blue-500'
+                      }`} />
+                      <div className="space-y-2">
+                        <p className="text-sm font-semibold text-slate-200 leading-snug">
+                          {rec.message}
+                        </p>
+                        <p className={`text-xs font-bold ${
+                          isCritical ? 'text-red-400' :
+                          isWarning ? 'text-amber-400' :
+                          isPositive ? 'text-emerald-400' :
+                          'text-blue-400'
+                        }`}>
+                          Action Required: {rec.action}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Core KPI Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mt-8">
           
@@ -109,7 +213,7 @@ export const ExecutiveDashboard: React.FC = () => {
             </h3>
             <div className="space-y-4">
               <div>
-                <p className="text-xs text-slate-500 font-semibold mb-1">YTD Revenue</p>
+                <p className="text-xs text-slate-500 font-semibold mb-1">{dateRange.from || dateRange.to ? 'Selected Period' : 'Lifetime'} Revenue</p>
                 <p className="text-2xl font-black text-slate-900">Rs {kpis.revenue.ytd.toLocaleString(undefined, {maximumFractionDigits:0})}</p>
               </div>
               <div className="flex justify-between border-t border-slate-100 pt-3">
@@ -136,7 +240,7 @@ export const ExecutiveDashboard: React.FC = () => {
             </h3>
             <div className="space-y-4">
               <div>
-                <p className="text-xs text-slate-500 font-semibold mb-1">YTD Net Profit</p>
+                <p className="text-xs text-slate-500 font-semibold mb-1">{dateRange.from || dateRange.to ? 'Selected Period' : 'Lifetime'} Net Profit</p>
                 <p className="text-2xl font-black text-emerald-600">Rs {kpis.profit.net.toLocaleString(undefined, {maximumFractionDigits:0})}</p>
               </div>
               <div className="flex justify-between border-t border-slate-100 pt-3">
@@ -155,7 +259,7 @@ export const ExecutiveDashboard: React.FC = () => {
           {/* Inventory Revaluation */}
           <div 
             className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-md hover:border-purple-300 transition-all cursor-pointer group"
-            onClick={() => setActiveDrillDown('revaluation')}
+            onClick={() => setIsInventoryDrillDownOpen(true)}
           >
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center justify-between">
               Inventory Revaluation
@@ -188,7 +292,7 @@ export const ExecutiveDashboard: React.FC = () => {
             </h3>
             <div className="space-y-4">
               <div>
-                <p className="text-xs text-slate-500 font-semibold mb-1">Total Expenses YTD</p>
+                <p className="text-xs text-slate-500 font-semibold mb-1">Total Expenses ({dateRange.from || dateRange.to ? 'Selected' : 'Lifetime'})</p>
                 <p className="text-2xl font-black text-amber-600">Rs {kpis.expenses.total.toLocaleString(undefined, {maximumFractionDigits:0})}</p>
               </div>
               <div className="flex justify-between border-t border-slate-100 pt-3">
@@ -208,22 +312,46 @@ export const ExecutiveDashboard: React.FC = () => {
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Cash Position</h3>
             <div className="space-y-4">
-              <div>
-                <p className="text-xs text-slate-500 font-semibold mb-1">Net Flow</p>
+              <div 
+                onClick={() => setIsTreasuryDrillDownOpen(true)}
+                className="cursor-pointer hover:bg-emerald-50/50 p-2 -mx-2 rounded-lg transition-colors group"
+                title="Open Treasury Intelligence Center"
+              >
+                <p className="text-xs text-slate-500 font-semibold mb-1 group-hover:text-emerald-600 transition-colors">Net Flow</p>
                 <p className={`text-2xl font-black ${kpis.cash.position >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                   Rs {kpis.cash.position.toLocaleString(undefined, {maximumFractionDigits:0})}
                 </p>
               </div>
-              <div className="flex justify-between border-t border-slate-100 pt-3">
+              <div 
+                onClick={() => setIsCreditDrillDownOpen(true)}
+                className="flex justify-between border-t border-slate-100 pt-3 mt-3 cursor-pointer hover:bg-blue-50/50 p-2 -mx-2 rounded-lg transition-colors group"
+                title="Open Credit Intelligence Center"
+              >
                 <div>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase">Credit Outstanding</p>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase group-hover:text-blue-500 transition-colors">Credit Outstanding</p>
                   <p className="text-sm font-bold text-slate-700">{kpis.credit.outstanding.toLocaleString(undefined, {maximumFractionDigits:0})}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] text-slate-400 font-bold uppercase">Collection Eff.</p>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase group-hover:text-blue-500 transition-colors">Collection Eff.</p>
                   <p className="text-sm font-bold text-slate-700">{kpis.credit.collectionEfficiency.toFixed(1)}%</p>
                 </div>
               </div>
+
+              <div 
+                onClick={() => setIsSupplierDrillDownOpen(true)}
+                className="flex justify-between border-t border-slate-100 pt-3 mt-3 cursor-pointer hover:bg-amber-50/50 p-2 -mx-2 rounded-lg transition-colors group"
+                title="Open Supplier Intelligence Center"
+              >
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase group-hover:text-amber-600 transition-colors">Total Payables</p>
+                  <p className="text-sm font-bold text-slate-700">{totalPayables.toLocaleString(undefined, {maximumFractionDigits:0})}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase group-hover:text-amber-600 transition-colors">Overdue</p>
+                  <p className="text-sm font-bold text-slate-700">{overdueCount}</p>
+                </div>
+              </div>
+
             </div>
           </div>
 
@@ -293,12 +421,49 @@ export const ExecutiveDashboard: React.FC = () => {
 
       </div>
 
-      <KPIDrillDownModal
-        isOpen={activeDrillDown !== null}
+      {activeDrillDown && activeDrillDown !== 'profit' && (
+        <KPIDrillDownModal
+          isOpen={activeDrillDown !== null}
+          onClose={() => setActiveDrillDown(null)}
+          kpis={kpis}
+          metric={activeDrillDown}
+        />
+      )}
+
+      <ProfitDrillDownModal 
+        isOpen={activeDrillDown === 'profit'}
         onClose={() => setActiveDrillDown(null)}
         kpis={kpis}
-        metric={activeDrillDown}
+        settings={settings}
       />
+
+      <CustomerCreditDrillDownModal 
+        isOpen={isCreditDrillDownOpen}
+        onClose={() => setIsCreditDrillDownOpen(false)}
+        customers={customers}
+        shifts={shifts}
+        settings={settings}
+      />
+
+      <SupplierLiabilityDrillDownModal 
+        isOpen={isSupplierDrillDownOpen}
+        onClose={() => setIsSupplierDrillDownOpen(false)}
+        suppliers={suppliers}
+        settings={settings}
+      />
+
+      <TreasuryDrillDownModal 
+        isOpen={isTreasuryDrillDownOpen}
+        onClose={() => setIsTreasuryDrillDownOpen(false)}
+        settings={settings}
+      />
+
+      <InventoryDrillDownModal 
+        isOpen={isInventoryDrillDownOpen}
+        onClose={() => setIsInventoryDrillDownOpen(false)}
+        settings={settings}
+      />
+
     </RoleGuard>
   );
 };

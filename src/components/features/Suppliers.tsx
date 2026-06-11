@@ -33,6 +33,7 @@ import { ExportToolbar } from '../shared/ExportToolbar';
 import AIDocumentScanner from '../ui/AIDocumentScanner';
 import PartyLedgerModal, { LedgerEntry, PartyInfo } from '../ui/PartyLedgerModal';
 import SupplierPayments from './SupplierPayments';
+import SupplierLiabilityDrillDownModal from './ExecutiveDashboard/SupplierLiabilityDrillDownModal';
 import { Supplier, Shift, Product, GlobalSettings, BankAccount } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
@@ -78,6 +79,7 @@ export default function Suppliers({
 
   // Pay Bill Modal State
   const [showPayBillModal, setShowPayBillModal] = useState(false);
+  const [isDrillDownOpen, setIsDrillDownOpen] = useState(false);
 
   // Open full ledger for a supplier
   const openSupplierLedger = (sup: Supplier) => {
@@ -493,10 +495,13 @@ export default function Suppliers({
       {/* DYNAMIC KPI CARDS SECTION */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* AMBER CARD - TOTAL PAYABLES */}
-        <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
+        <div 
+          onClick={() => setIsDrillDownOpen(true)}
+          className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden cursor-pointer hover:bg-amber-100/50 hover:shadow-md transition-all group"
+        >
           <div className="flex items-start justify-between">
             <div>
-              <span className="font-mono text-[9px] font-black text-amber-800 uppercase tracking-widest block mb-1">TOTAL PAYABLES</span>
+              <span className="font-mono text-[9px] font-black text-amber-800 uppercase tracking-widest block mb-1 group-hover:text-amber-900 transition-colors">TOTAL PAYABLES</span>
               <h3 className="font-sans text-2xl font-black text-amber-900 mt-1 truncate animate-pulse">
                 {formatCurrency(kpiStats.totalPayables, settings)}
               </h3>
@@ -1085,6 +1090,13 @@ export default function Suppliers({
         columns={exportColumns}
         title="Suppliers Report"
         filenamePrefix="suppliers_report"
+      />
+
+      <SupplierLiabilityDrillDownModal 
+        isOpen={isDrillDownOpen}
+        onClose={() => setIsDrillDownOpen(false)}
+        suppliers={suppliers}
+        settings={settings}
       />
     </div>
   );

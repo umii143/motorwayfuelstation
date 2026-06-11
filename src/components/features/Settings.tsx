@@ -1,28 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  Settings,
-  Shield,
-  Palette,
-  Truck,
-  DollarSign,
-  HelpCircle,
-  RefreshCw,
-  Phone,
-  FileText,
-  Save,
-  Globe,
-  Database,
-  Trash2,
-  Layers,
-  Activity,
-  Plus,
-  X,
-  ChevronRight,
-  Sliders,
-  AlertTriangle,
-  Lock,
-  Fuel
+  Settings, Shield, Palette, Truck, DollarSign, HelpCircle, RefreshCw, Phone,
+  FileText, Save, Globe, Database, Trash2, Layers, Activity, Plus, X,
+  ChevronRight, Sliders, AlertTriangle, Lock, Fuel, User, Building, Users,
+  Key, Package, Tag, Percent, Landmark, Wallet, Siren, Clock, FileSearch,
+  Bell, Link as LinkIcon, DownloadCloud, Wrench, Menu
 } from 'lucide-react';
 import { GlobalSettings, Product, Nozzle, Pump, Tank, RateHistoryEntry, AuditTrailEntry } from '../../types';
 import { db } from '../../data/db';
@@ -35,8 +18,30 @@ import ProductWizard from './Settings/ProductWizard';
 import UnifiedAccountManager from './Settings/UnifiedAccountManager';
 import SystemAuditTrail from './Settings/SystemAuditTrail';
 import DealerMarginWizard from './Settings/DealerMarginWizard';
+import ProfileCenter from './Settings/ProfileCenter';
+import SecurityCenter from './Settings/SecurityCenter';
+import BackupRecovery from './Settings/BackupRecovery';
+import MeterManagement from './Settings/MeterManagement';
+import DataIntegrity from './Settings/DataIntegrity';
+import AdvancedTools from './Settings/AdvancedTools';
+import FactoryReset from './Settings/FactoryReset';
+import StationIdentity from './Settings/StationIdentity';
+import ShiftSettings from './Settings/ShiftSettings';
+import NotificationsConfig from './Settings/NotificationsConfig';
+import Integrations from './Settings/Integrations';
+import SystemPreferences from './Settings/SystemPreferences';
+import LicenseSubscription from './Settings/LicenseSubscription';
+import UsersAndRoles from './Settings/UsersAndRoles';
+import TreasurySettings from './Settings/TreasurySettings';
 import { SetupBanner } from './ConfigurationHub/SetupBanner';
 import { SetupNavigationFooter } from './ConfigurationHub/SetupNavigationFooter';
+
+export type SettingsView = 
+  | 'profile' | 'station' | 'users' | 'security' | 'treasury' 
+  | 'shift' | 'meter' | 'price' | 'backup' | 'integrity' 
+  | 'notifications' | 'integrations' | 'preferences' | 'advanced' 
+  | 'factory_reset' | 'tanks' | 'products' | 'nozzles' | 'margins' 
+  | 'accounts' | 'audit' | 'license' | 'emergency';
 
 interface SettingsProps {
   activeStationId: string;
@@ -61,12 +66,11 @@ interface SettingsProps {
   onDeleteNozzle: (id: string) => void;
   rateHistory: RateHistoryEntry[];
   
-  // Custom enhanced account manager props passed via App case mounting
   banks?: any;
   onUpdateBanks?: any;
   onUpdateProducts?: any;
   onUpdatePumps?: any;
-  initialTab?: 'profile' | 'products' | 'tariff' | 'margins' | 'tanks' | 'nozzles' | 'accounts' | 'audit';
+  initialTab?: string;
   onNavigate?: (viewId: string) => void;
 }
 
@@ -99,26 +103,16 @@ export default function SettingsPanel({
 
   const isLube = activeStationId === 'st_lube';
 
-  // Unified outer page Tabs state
-  const [activeTab, setActiveTab] = useState<'profile' | 'products' | 'tariff' | 'margins' | 'tanks' | 'nozzles' | 'accounts' | 'audit'>(initialTab);
+  const [activeTab, setActiveTab] = useState<SettingsView>((initialTab as SettingsView) || 'profile');
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   React.useEffect(() => {
     if (initialTab) {
-      setActiveTab(initialTab);
+      // Map legacy tariff to price for compatibility
+      const tabToSet = initialTab === 'tariff' ? 'price' : (initialTab as SettingsView);
+      setActiveTab(tabToSet);
     }
   }, [initialTab]);
-
-  // Business profile inputs
-  const [stationName, setStationName] = useState(settings.stationName);
-  const [stationUrduName, setStationUrduName] = useState(settings.stationUrduName);
-  const [address, setAddress] = useState(settings.address);
-  const [ntn, setNtn] = useState(settings.ntn);
-  const [ownerContact, setOwnerContact] = useState(settings.ownerContact);
-
-  // Security PIN Reset flow states
-  const [showResetModal, setShowResetModal] = useState<boolean>(false);
-  const [pinInput, setPinInput] = useState<string>('');
-  const [pinError, setPinError] = useState<string>('');
 
   // Universal audit logging trigger within settings sub-modules
   const handleLogAudit = (category: string, action: string, details: string) => {
@@ -129,413 +123,228 @@ export default function SettingsPanel({
       category,
       action,
       details,
-      user: 'Sajid Mahmood (Manager)',
-      role: 'Manager',
+      user: 'Owner', // TODO: Fetch current user
+      role: 'Owner',
       branch: activeStationId
     };
     db.saveSettingsAuditTrail(activeStationId, [newEntry, ...existing]);
   };
 
-  const handleSaveProfile = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!stationName) return;
-
-    onUpdateSettings({
-      ...settings,
-      stationName,
-      stationUrduName,
-      address,
-      ntn,
-      ownerContact
-    });
-
-    handleLogAudit('System', 'Update Profile', `Profile parameters modified: Name = ${stationName}, address = ${address}`);
-    showToast(t('Business profile settings saved!', 'کاروباری معلومات کامیابی سے محفوظ ہو گئیں!'), 'success');
-  };
-
-  const handleLanguageToggle = (lang: 'en' | 'ur' | 'ar' | 'es' | 'zh') => {
-    onUpdateSettings({
-      ...settings,
-      language: lang
-    });
-    handleLogAudit('System', 'Toggle Language', `Language interface flipped to ${lang.toUpperCase()}`);
-  };
-
-  const handleThemeChange = (theme: 'light' | 'dark' | 'blue' | 'emerald' | 'orange') => {
-    onUpdateSettings({
-      ...settings,
-      theme
-    });
-    handleLogAudit('System', 'Update Theme', `Theme visual environment adjusted to ${theme.toUpperCase()}`);
-  };
-
-  const handleCurrencyChange = (currency: string) => {
-    onUpdateSettings({
-      ...settings,
-      currency
-    });
-    handleLogAudit('System', 'Update Currency', `Business default currency changed to ${currency}`);
-  };
-
-  // Safe Factory Reset PIN authentication check
-  const handleExecuteFullReset = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (pinInput !== '1234') {
-      setPinError(t('Invalid diagnostic authentication PIN!', 'سیکیورٹی اکاؤنٹ پن غلط ہے!'));
-      return;
+  const SIDEBAR_SECTIONS = [
+    {
+      title: t('Enterprise Setup', 'انٹرپرائز سیٹ اپ'),
+      items: [
+        { id: 'profile', label: t('Profile Center', 'پروفائل سینٹر'), icon: User },
+        { id: 'station', label: t('Station Identity', 'اسٹیشن کی شناخت'), icon: Building },
+        { id: 'users', label: t('Users & Roles', 'یوزرز اور کردار'), icon: Users },
+        { id: 'license', label: t('License & Subscription', 'لائسنس اور سبسکرپشن'), icon: Key },
+      ]
+    },
+    {
+      title: t('Hardware & Inventory', 'ہارڈویئر اور انوینٹری'),
+      items: [
+        { id: 'tanks', label: t('Tanks & Storage', 'ٹینک اور اسٹوریج'), icon: Database },
+        { id: 'nozzles', label: t('Dispenser Nozzles', 'ڈسپینسر نوزلز'), icon: Fuel },
+        { id: 'meter', label: t('Meter Management', 'میٹر مینجمنٹ'), icon: Activity },
+        { id: 'products', label: t('Products', 'مصنوعات'), icon: Package },
+      ]
+    },
+    {
+      title: t('Financial & Pricing', 'مالیاتی اور قیمتوں کا تعین'),
+      items: [
+        { id: 'price', label: t('Price Settings', 'قیمت کی ترتیبات'), icon: Tag },
+        { id: 'margins', label: t('Dealer Margin', 'ڈیلر مارجن'), icon: Percent },
+        { id: 'treasury', label: t('Treasury Settings', 'ٹریژری سیٹنگز'), icon: Landmark },
+        { id: 'accounts', label: t('Banks & Wallets', 'بینک اور کیش'), icon: Wallet },
+      ]
+    },
+    {
+      title: t('Security & Control', 'سیکیورٹی اور کنٹرول'),
+      items: [
+        { id: 'security', label: t('Security Center', 'سیکیورٹی سینٹر'), icon: Shield },
+        { id: 'emergency', label: t('Emergency Access', 'ہنگامی رسائی'), icon: Siren },
+        { id: 'shift', label: t('Shift Settings', 'شفٹ سیٹنگز'), icon: Clock },
+        { id: 'integrity', label: t('Data Integrity', 'ڈیٹا کی درستگی'), icon: Activity },
+        { id: 'audit', label: t('Settings Audit Center', 'آڈٹ سینٹر'), icon: FileSearch },
+      ]
+    },
+    {
+      title: t('System Administration', 'سسٹم ایڈمنسٹریشن'),
+      items: [
+        { id: 'preferences', label: t('System Preferences', 'سسٹم کی ترجیحات'), icon: Sliders },
+        { id: 'notifications', label: t('Notifications', 'اطلاعات'), icon: Bell },
+        { id: 'integrations', label: t('Integrations', 'انضمام'), icon: LinkIcon },
+        { id: 'backup', label: t('Backup & Recovery', 'بیک اپ اور ریکوری'), icon: DownloadCloud },
+        { id: 'advanced', label: t('Advanced Tools', 'ایڈوانسڈ ٹولز'), icon: Wrench },
+        { id: 'factory_reset', label: t('Factory Reset', 'فیکٹری ری سیٹ'), icon: AlertTriangle, isDanger: true },
+      ]
     }
+  ];
 
-    // PIN is correct, execute database wipe
-    db.resetToDefault();
-    handleLogAudit('System', 'Factory Reset', 'Database wipe was authorized using master PIN and resetting to pristine empty states.');
-    showToast(t('System Database fully reset! Reloading...', 'ڈیٹا بیس کامیابی سے ری سیٹ کر دیا گیا ہے! پیج دوبارہ لوڈ ہو رہا ہے...'), 'success');
-    setTimeout(() => {
-      window.location.reload();
-    }, 1500);
+  const handleTabChange = (id: SettingsView) => {
+    setActiveTab(id);
+    setIsMobileSidebarOpen(false);
+  };
+
+  const renderContent = () => {
+    switch (activeTab) {
+      // PRE-EXISTING WIZARDS
+      case 'products':
+        return <ProductWizard products={products} language={settings.language} onUpdateProducts={onUpdateProducts} onLogAudit={handleLogAudit} />;
+      case 'price':
+        return <RateWizard products={products} tanks={tanks} rateHistory={rateHistory} language={settings.language} settings={settings} onUpdateProductRate={onUpdateProductRate} onLogAudit={handleLogAudit} onUpdateProducts={onUpdateProducts} />;
+      case 'margins':
+        return <DealerMarginWizard language={settings.language} onLogAudit={handleLogAudit} stationId={activeStationId} />;
+      case 'tanks':
+        return <TankWizard tanks={tanks} products={products} language={settings.language} onAddTank={onAddTank} onUpdateTank={onUpdateTank} onDeleteTank={onDeleteTank} onLogAudit={handleLogAudit} />;
+      case 'nozzles':
+        return <NozzleWizard nozzles={nozzles} pumps={pumps} tanks={tanks} products={products} language={settings.language} onAddNozzle={onAddNozzle} onUpdateNozzle={onUpdateNozzle} onDeleteNozzle={onDeleteNozzle} onLogAudit={handleLogAudit} onUpdateProducts={onUpdateProducts} onAddTank={onAddTank} onUpdatePumps={onUpdatePumps} />;
+      case 'accounts':
+        return <UnifiedAccountManager products={products} banks={banks} pumps={pumps} language={settings.language} onUpdateProducts={onUpdateProducts} onUpdateBanks={onUpdateBanks} onUpdatePumps={onUpdatePumps} onLogAudit={handleLogAudit} />;
+      case 'audit':
+        return <SystemAuditTrail language={settings.language} stationId={activeStationId} />;
+      
+      // NEW MODULES
+      case 'profile':
+        return <ProfileCenter settings={settings} />;
+      case 'security':
+        return <SecurityCenter settings={settings} onUpdateSettings={onUpdateSettings} />;
+      case 'backup':
+        return <BackupRecovery settings={settings} activeStationId={activeStationId} />;
+      case 'meter':
+        return <MeterManagement settings={settings} activeStationId={activeStationId} />;
+      case 'integrity':
+        return <DataIntegrity settings={settings} activeStationId={activeStationId} onNavigate={onNavigate} />;
+      case 'advanced':
+        return <AdvancedTools settings={settings} activeStationId={activeStationId} />;
+      case 'factory_reset':
+        return <FactoryReset settings={settings} activeStationId={activeStationId} />;
+      case 'station':
+        return <StationIdentity settings={settings} onUpdateSettings={onUpdateSettings} activeStationId={activeStationId} />;
+      case 'shift':
+        return <ShiftSettings settings={settings} onUpdateSettings={onUpdateSettings} activeStationId={activeStationId} />;
+      case 'notifications':
+        return <NotificationsConfig settings={settings} onUpdateSettings={onUpdateSettings} activeStationId={activeStationId} />;
+      case 'integrations':
+        return <Integrations settings={settings} activeStationId={activeStationId} />;
+      case 'preferences':
+        return <SystemPreferences settings={settings} onUpdateSettings={onUpdateSettings} activeStationId={activeStationId} />;
+      case 'license':
+        return <LicenseSubscription settings={settings} />;
+      case 'users':
+        return <UsersAndRoles settings={settings} />;
+      case 'treasury':
+        return <TreasurySettings settings={settings} />;
+      case 'emergency':
+        return <div className="p-12 text-center text-slate-500">Emergency Access module is configured via Security Center.</div>;
+      
+      // NEW PLACEHOLDERS TO BE IMPLEMENTED
+      default:
+        return (
+          <div className="flex flex-col items-center justify-center h-full text-slate-400 p-12 text-center">
+            <Settings className="h-16 w-16 mb-4 text-slate-200" />
+            <h2 className="text-xl font-bold text-slate-700 mb-2">Module Under Construction</h2>
+            <p className="max-w-md">The {activeTab} module is currently being built as part of the V3.0 Enterprise Command Center upgrade.</p>
+          </div>
+        );
+    }
   };
 
   return (
-    <div className="space-y-6 pb-20 lg:pb-5">
-      {/* PAGE HEADER */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-4">
-        <div>
-          <h2 className="font-sans text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-            <Settings className="h-6 w-6 text-orange-600" />
-            <span>{isLube ? t('Lube Business Settings', 'لیوب کاروبار کی ترتیبات') : t('Central Settings & Station Hardware', 'سیٹنگز اور اسٹیشن ہارڈویئر')}</span>
-          </h2>
-          <p className="font-sans text-xs text-slate-500 mt-1">
-            {isLube
-              ? t('Configure your lube shop profile, manage bank accounts, staff roles, and business preferences.', 'لیوب دکان کی پروفائل، بینک اکاؤنٹس، اسٹاف کردار اور کاروباری ترجیحات یہاں سے تبدیل کریں۔')
-              : t('Configure fuel storage tanks, establish nozzle mappings, record certified rate changes and adjust station profile variables.', 'اسٹوریج ٹینک، نوزل میٹرز، پٹرول ڈیزل کے دفتری ریٹ اور بنیادی سیٹنگز یہاں سے تبدیل کریں۔')}
-          </p>
+    <div className="flex flex-col h-[calc(100vh-80px)] overflow-hidden">
+      {/* HEADER */}
+      <div className="flex items-center justify-between border-b border-slate-200 bg-white p-4 shadow-xs shrink-0">
+        <div className="flex items-center gap-3">
+          <button 
+            className="lg:hidden p-2 -ml-2 rounded-lg text-slate-500 hover:bg-slate-100"
+            onClick={() => setIsMobileSidebarOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <div>
+            <h2 className="font-sans text-xl sm:text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+              <Settings className="h-6 w-6 text-orange-600" />
+              <span>{t('Enterprise Command Center', 'انٹرپرائز کمانڈ سینٹر')}</span>
+            </h2>
+            <p className="font-sans text-xs text-slate-500 mt-0.5">
+              {t('Secure governance, hardware setup, and business configuration.', 'سیکیورٹی، ہارڈویئر سیٹ اپ اور کاروباری ترتیبات۔')}
+            </p>
+          </div>
         </div>
       </div>
 
-      <SetupBanner activeViewId={activeTab === 'tariff' ? 'setup_rates' : activeTab === 'accounts' ? 'setup_accounts' : activeTab === 'audit' ? 'setup_audit' : activeTab === 'margins' ? 'setup_margins' : `setup_${activeTab}`} />
+      <SetupBanner activeViewId={activeTab === 'price' ? 'setup_rates' : activeTab === 'accounts' ? 'setup_accounts' : activeTab === 'audit' ? 'setup_audit' : activeTab === 'margins' ? 'setup_margins' : `setup_${activeTab}`} />
 
-      {/* ======================= TAB 1: STATION PROFILE ======================= */}
-      {activeTab === 'profile' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-            <form onSubmit={handleSaveProfile} className="space-y-4 font-sans text-xs text-slate-650">
-              <h3 className="font-bold text-slate-800 uppercase tracking-wider border-b pb-2 text-[11px] flex items-center gap-1">
-                <Database className="h-4 w-4 text-orange-600" />
-                <span>{t('Station Legal Authority Registry:', 'پیٹرولیم اسٹیشن دفتری رجسٹر:')}</span>
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-550">{t('Commercial Trading Title (English):', 'تجارتی نام (English):')}</label>
-                  <input
-                    type="text"
-                    required
-                    value={stationName}
-                    onChange={(e) => setStationName(e.target.value)}
-                    className="w-full rounded border border-slate-205 p-2 bg-slate-50/50"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-550">{t('Commercial Trading Title (Urdu):', 'تجارتی نام (Urdu):')}</label>
-                  <input
-                    type="text"
-                    required
-                    value={stationUrduName}
-                    onChange={(e) => setStationUrduName(e.target.value)}
-                    className="w-full rounded border border-slate-205 p-2 bg-slate-50/50"
-                  />
-                </div>
-
-                <div className="sm:col-span-2 space-y-1">
-                  <label className="font-bold text-slate-550">{t('Authorized Mailing Address:', 'اسٹیشن کا پتہ / ایڈریس:')}</label>
-                  <input
-                    type="text"
-                    required
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    className="w-full rounded border border-slate-205 p-2 bg-slate-50/50"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-550">{t('Tax Registry NTN License / GST:', 'ٹیکس رجسٹریشن نمبر (Licenses / NTN):')}</label>
-                  <input
-                    type="text"
-                    required
-                    value={ntn}
-                    onChange={(e) => setNtn(e.target.value)}
-                    className="w-full rounded border border-slate-205 p-2 bg-slate-50/50"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-550">{t('Owner Emergency Cell Contact:', 'ہنگامی رابطہ نمبر (Owner Phone):')}</label>
-                  <input
-                    type="text"
-                    required
-                    value={ownerContact}
-                    onChange={(e) => setOwnerContact(e.target.value)}
-                    className="w-full rounded border border-slate-205 p-2 bg-slate-50/50"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-2 border-t border-slate-100">
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs uppercase leading-none"
-                >
-                  <Save className="h-4 w-4" />
-                  <span>{t('Save Profile Spec', 'پروفائل محفوظ کریں')}</span>
-                </button>
-              </div>
-            </form>
+      <div className="flex flex-1 overflow-hidden bg-slate-50 relative">
+        {/* SIDEBAR NAVIGATION */}
+        <div className={`
+          absolute lg:static inset-y-0 left-0 z-40 w-72 bg-white border-r border-slate-200 flex flex-col 
+          transform transition-transform duration-300 ease-in-out
+          ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}>
+          <div className="flex items-center justify-between p-4 border-b border-slate-100 lg:hidden">
+            <span className="font-bold text-slate-700 text-sm uppercase">Menu</span>
+            <button onClick={() => setIsMobileSidebarOpen(false)} className="p-1 rounded-lg hover:bg-slate-100 text-slate-500">
+              <X className="h-5 w-5" />
+            </button>
           </div>
 
-          <div className="space-y-6">
-            {/* CENTRAL SYSTEM CUSTOMIZATION & APPEARANCE */}
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-5">
-              <span className="font-sans font-bold text-slate-700 block text-[10px] uppercase tracking-widest flex items-center gap-1">
-                <Sliders className="h-4 w-4 text-orange-600" />
-                <span>{t('WORKSPACE APPEARANCE & CUSTOMIZATION', 'ایپ ترتیبات اور ظاہری شکل')}</span>
-              </span>
-              
-              {/* 1. Language Sector dropdown select */}
-              <div className="space-y-2">
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  {t('Interface Language:', 'سسٹم انٹرفیس زبان:')}
-                </label>
-                <select
-                  value={settings.language || 'en'}
-                  onChange={(e) => handleLanguageToggle(e.target.value as any)}
-                  className="w-full text-xs font-bold rounded-lg border border-slate-200 p-2 bg-slate-50 cursor-pointer"
-                >
-                  <option value="en">English (US)</option>
-                  <option value="ur">اردو (Urdu)</option>
-                  <option value="ar">العربية (Arabic)</option>
-                  <option value="es">Español (Spanish)</option>
-                  <option value="zh">中文 (Chinese)</option>
-                </select>
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-6">
+            {SIDEBAR_SECTIONS.map((section, idx) => (
+              <div key={idx}>
+                <h3 className="px-3 mb-2 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+                  {section.title}
+                </h3>
+                <ul className="space-y-0.5">
+                  {section.items.map(item => {
+                    const Icon = item.icon;
+                    const isActive = activeTab === item.id;
+                    const isDanger = item.isDanger;
+                    return (
+                      <li key={item.id}>
+                        <button
+                          onClick={() => handleTabChange(item.id as SettingsView)}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold transition-all cursor-pointer ${
+                            isActive 
+                              ? (isDanger ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-orange-50 text-orange-700 border border-orange-200 shadow-xs')
+                              : (isDanger ? 'text-slate-600 hover:bg-red-50/50 hover:text-red-600' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900')
+                          }`}
+                        >
+                          <Icon className={`h-4 w-4 ${isActive ? (isDanger ? 'text-red-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                          <span className="flex-1 text-left">{item.label}</span>
+                          {isActive && <ChevronRight className="h-3 w-3 opacity-50" />}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
-
-              {/* 2. Theme Customizer select */}
-              <div className="space-y-2">
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  {t('Environmental Color Theme:', 'ایپ کا رنگ / تھیم:')}
-                </label>
-                <select
-                  value={settings.theme || 'light'}
-                  onChange={(e) => handleThemeChange(e.target.value as any)}
-                  className="w-full text-xs font-bold rounded-lg border border-slate-200 p-2 bg-slate-50 cursor-pointer"
-                >
-                  <option value="light">{t('Light Slate (Default)', 'روشن تھیم')}</option>
-                  <option value="dark">{t('Cosmic Dark', 'تاریک نائٹ تھیم')}</option>
-                  <option value="blue">{t('Sapphire Blue', 'نیلا کارپوریٹ تھیم')}</option>
-                  <option value="emerald">{t('Emerald Green', 'سبز زمرد تھیم')}</option>
-                  <option value="orange">{t('Vibrant Orange', 'نارنجی سن سیٹ تھیم')}</option>
-                </select>
-              </div>
-
-              {/* 3. Base Currency Format select */}
-              <div className="space-y-2">
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  {t('Core Business Currency:', 'کاروباری بنیادی کرنسی:')}
-                </label>
-                <select
-                  value={settings.currency || 'PKR'}
-                  onChange={(e) => handleCurrencyChange(e.target.value)}
-                  className="w-full text-xs font-bold rounded-lg border border-slate-200 p-2 bg-slate-50 cursor-pointer"
-                >
-                  <option value="PKR">PKR (Rs.) - Pakistani Rupee</option>
-                  <option value="PKR">USD ($) - United States Dollar</option>
-                  <option value="EUR">EUR (€) - Euro Zone</option>
-                  <option value="GBP">GBP (£) - British Pound Sterling</option>
-                  <option value="AED">AED (د.إ) - United Arab Emirates Dirham</option>
-                  <option value="SAR">SAR (ر.س) - Saudi Arabian Riyal</option>
-                </select>
-              </div>
-            </div>
-
-            {/* SAFE SYSTEM HARD DELETION resetting DIAGNOSTICS */}
-            <div className="rounded-xl border border-rose-200 bg-rose-50/10 p-5 shadow-xs space-y-3">
-              <span className="font-sans font-bold text-rose-700 block text-[10px] uppercase tracking-widest flex items-center gap-1">
-                <AlertTriangle className="h-4 w-4" />
-                <span>{t('DANGER ZONE & FACTORY WIPE', 'سسٹم ڈیٹا بیس کلیئر کریں')}</span>
-              </span>
-              <p className="font-sans text-[11px] text-slate-500 leading-normal">
-                {t(
-                  'Permanent delete of all registered tanks calibrations, mapped nozzle gears, staff attendance archives, and supplier transactions logs.',
-                  'ہنگامی ری سیٹ کرنے اور فیکٹری ڈیفالٹ حالت میں لانے کیلئے نیچے کلک کریں۔ تمام محفوظ کھاتے حذف ہو جائیں گے۔'
-                )}
-              </p>
-              <button
-                type="button"
-                onClick={() => setShowResetModal(true)}
-                className="w-full py-2 bg-red-650 bg-red-650 bg-red-605 bg-red-600 hover:bg-red-750 hover:bg-red-700 text-white font-sans text-xs font-extrabold rounded-lg flex items-center justify-center gap-1 shadow-xs cursor-pointer select-none uppercase"
-              >
-                <RefreshCw className="h-3.5 w-3.5" />
-                <span>{t('Execute Factory Reset', 'فیکٹری ری سیٹ کریں')}</span>
-              </button>
-            </div>
+            ))}
+          </div>
+          <div className="p-4 border-t border-slate-200 bg-slate-50 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">
+            Powered by Umar Ali ⚡
           </div>
         </div>
-      )}
 
-      {/* ======================= TAB 1.5: FUEL PRODUCTS CONFIG ======================= */}
-      {activeTab === 'products' && (
-        <ProductWizard
-          products={products}
-          language={settings.language}
-          onUpdateProducts={onUpdateProducts}
-          onLogAudit={handleLogAudit}
-        />
-      )}
-
-      {/* ======================= TAB 2: PRICING MANAGER (WIZARDS) ======================= */}
-      {activeTab === 'tariff' && (
-        <RateWizard
-          products={products}
-          tanks={tanks}
-          rateHistory={rateHistory}
-          language={settings.language}
-          settings={settings}
-          onUpdateProductRate={onUpdateProductRate}
-          onLogAudit={handleLogAudit}
-          onUpdateProducts={onUpdateProducts}
-        />
-      )}
-
-      {/* ======================= TAB 2.5: DEALER MARGIN MANAGER ======================= */}
-      {activeTab === 'margins' && (
-        <DealerMarginWizard
-          language={settings.language}
-          onLogAudit={handleLogAudit}
-          stationId={activeStationId}
-        />
-      )}
-
-      {/* ======================= TAB 3: STORAGE TANKS CONFIG (WIZARDS) ======================= */}
-      {activeTab === 'tanks' && (
-        <TankWizard
-          tanks={tanks}
-          products={products}
-          language={settings.language}
-          onAddTank={onAddTank}
-          onUpdateTank={onUpdateTank}
-          onDeleteTank={onDeleteTank}
-          onLogAudit={handleLogAudit}
-        />
-      )}
-
-      {/* ======================= TAB 4: DISPENSER NOZZLES (WIZARDS) ======================= */}
-      {activeTab === 'nozzles' && (
-        <NozzleWizard
-          nozzles={nozzles}
-          pumps={pumps}
-          tanks={tanks}
-          products={products}
-          language={settings.language}
-          onAddNozzle={onAddNozzle}
-          onUpdateNozzle={onUpdateNozzle}
-          onDeleteNozzle={onDeleteNozzle}
-          onLogAudit={handleLogAudit}
-          onUpdateProducts={onUpdateProducts}
-          onAddTank={onAddTank}
-          onUpdatePumps={onUpdatePumps}
-        />
-      )}
-
-      {/* ======================= TAB 5: UNIFIED ACCOUNTS MANAGER ======================= */}
-      {activeTab === 'accounts' && (
-        <UnifiedAccountManager
-          products={products}
-          banks={banks}
-          pumps={pumps}
-          language={settings.language}
-          onUpdateProducts={onUpdateProducts}
-          onUpdateBanks={onUpdateBanks}
-          onUpdatePumps={onUpdatePumps}
-          onLogAudit={handleLogAudit}
-        />
-      )}
-
-      {/* ======================= TAB 6: AUDIT TIME TRAIL GRID ======================= */}
-      {activeTab === 'audit' && (
-        <SystemAuditTrail language={settings.language} stationId={activeStationId} />
-      )}
-
-      {/* ======================= EMERGENCY FACTORY RESET PIN VERIFICATION MODAL ======================= */}
-      <AnimatePresence>
-        {showResetModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs select-none"
-          >
-            <motion.div
-              initial={{ scale: 0.95, y: 15, opacity: 0 }}
-              animate={{ scale: 1, y: 0, opacity: 1 }}
-              exit={{ scale: 0.95, y: 15, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 350 }}
-              className="bg-white border border-slate-200 rounded-xl w-full max-w-sm overflow-hidden p-5 space-y-4 shadow-xl font-sans text-xs text-slate-600"
-            >
-              <div className="flex justify-between items-center border-b pb-2.5">
-                <strong className="text-red-600 text-[11px] uppercase tracking-wider flex items-center gap-1">
-                  <Lock className="h-4 w-4" />
-                  <span>{t('Security pin Authentication', 'سیکیورٹی اکاؤنٹ آتھنٹیکیشن')}</span>
-                </strong>
-                <button onClick={() => { setShowResetModal(false); setPinInput(''); setPinError(''); }} className="text-slate-400 font-bold hover:text-slate-650 cursor-pointer">×</button>
-              </div>
-
-              <form onSubmit={handleExecuteFullReset} className="space-y-3">
-                <p className="leading-relaxed text-slate-500">
-                  {t(
-                    'This operation deletes all database state tables. Type diagnostics master PIN code "1234" to execute:',
-                    'اس سرگرمی سے کھاتے مٹ جائیں گے، لامتناہی ری سیٹ تصدیق کرنے کیلئے ڈیفالٹ لاگ پن کوڈ "1234" درج کریں:'
-                  )}
-                </p>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-650 mb-1">{t('Enter PIN Passcode:', 'تصدیقی پاس کوڈپن (PIN):')}</label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="e.g. 1234"
-                    value={pinInput}
-                    onChange={(e) => { setPinInput(e.target.value); setPinError(''); }}
-                    className="w-full bg-slate-50 border border-slate-205 rounded p-2 text-center font-mono font-bold tracking-widest text-lg outline-hidden focus:border-red-500"
-                  />
-                </div>
-
-                {pinError && <span className="block text-[10px] text-red-500 font-sans font-bold text-center">{pinError}</span>}
-
-                <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
-                  <button
-                    type="button"
-                    onClick={() => { setShowResetModal(false); setPinInput(''); setPinError(''); }}
-                    className="bg-slate-100 text-slate-600 px-3 py-1 text-xs font-bold uppercase rounded hover:bg-slate-200 cursor-pointer"
-                  >
-                    {t('Cancel', 'کینسل')}
-                  </button>
-                  
-                  <button
-                    type="submit"
-                    className="bg-red-655 bg-red-600 hover:bg-red-700 text-white px-4 py-1.5 text-xs font-extrabold uppercase rounded shadow-xs cursor-pointer"
-                  >
-                    {t('DESTRUCT ALL DATA AND RE-INITIALIZE', 'ڈیٹا ڈیلیٹ کریں')}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
+        {/* MOBILE OVERLAY */}
+        {isMobileSidebarOpen && (
+          <div 
+            className="absolute inset-0 bg-slate-900/20 backdrop-blur-xs z-30 lg:hidden"
+            onClick={() => setIsMobileSidebarOpen(false)}
+          />
         )}
-      </AnimatePresence>
 
-      {/* Render the Navigation Footer if the user is in the setup flow */}
+        {/* MAIN CONTENT AREA */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-6 pb-24">
+          <div className="max-w-6xl mx-auto h-full">
+            {renderContent()}
+          </div>
+        </div>
+      </div>
+
       {onNavigate && (
         <SetupNavigationFooter 
-          activeViewId={activeTab === 'tariff' ? 'setup_rates' : activeTab === 'accounts' ? 'setup_accounts' : activeTab === 'audit' ? 'setup_audit' : activeTab === 'margins' ? 'setup_margins' : `setup_${activeTab}`}
+          activeViewId={activeTab === 'price' ? 'setup_rates' : activeTab === 'accounts' ? 'setup_accounts' : activeTab === 'audit' ? 'setup_audit' : activeTab === 'margins' ? 'setup_margins' : `setup_${activeTab}`}
           onNavigate={onNavigate}
         />
       )}

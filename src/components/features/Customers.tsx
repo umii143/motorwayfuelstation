@@ -33,6 +33,7 @@ import { Customer, Shift, Product, GlobalSettings, DebitEntry, RecoveryEntry, Lu
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
 import { fetchWithAuth } from '../../lib/api';
+import CustomerCreditDrillDownModal from './ExecutiveDashboard/CustomerCreditDrillDownModal';
 
 interface CustomersProps {
   settings: GlobalSettings;
@@ -78,6 +79,9 @@ export default function Customers({
   const [ledgerParty, setLedgerParty] = useState<PartyInfo | null>(null);
   const [modalLedgerEntries, setModalLedgerEntries] = useState<LedgerEntry[]>([]);
   const [isLedgerOpen, setIsLedgerOpen] = useState(false);
+
+  // Enterprise Intelligence Modal State
+  const [isDrillDownOpen, setIsDrillDownOpen] = useState(false);
 
   // Open full ledger for a customer
   const openCustomerLedger = (cust: Customer) => {
@@ -698,11 +702,14 @@ export default function Customers({
       {/* DYNAMIC KPI CARDS SECTION */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* AMBER CARD - TOTAL RECEIVABLES */}
-        <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
-          <div className="flex items-start justify-between">
+        <div 
+          onClick={() => setIsDrillDownOpen(true)}
+          className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden cursor-pointer hover:shadow-md transition-shadow group"
+        >
+          <div className="flex items-start justify-between relative z-10">
             <div>
               <span className="font-mono text-[9px] font-black text-amber-800 uppercase tracking-widest block mb-1">TOTAL RECEIVABLES</span>
-              <h3 className="font-sans text-2xl font-black text-amber-900 mt-1 truncate animate-pulse">
+              <h3 className="font-sans text-2xl font-black text-amber-900 mt-1 truncate group-hover:scale-105 transition-transform origin-left">
                 {formatCurrency(kpiStats.totalReceivables, settings)}
               </h3>
             </div>
@@ -1370,6 +1377,15 @@ export default function Customers({
         debitLabel="Credit Sale (Dr)"
         creditLabel="Recovery (Cr)"
         accentColor="orange"
+      />
+
+      {/* CUSTOMER CREDIT INTELLIGENCE DRILL DOWN (ENTERPRISE) */}
+      <CustomerCreditDrillDownModal
+        isOpen={isDrillDownOpen}
+        onClose={() => setIsDrillDownOpen(false)}
+        customers={filteredCustomers}
+        shifts={shifts}
+        settings={settings}
       />
 
       <ExportToolbar

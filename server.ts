@@ -1112,6 +1112,65 @@ app.post("/api/security/sessions/:id/revoke", requireAuth, (req, res) => {
 });
 
 // ==========================================
+// FACTORY RESET (DELETE ALL DATA)
+// ==========================================
+app.post("/api/security/factory-reset", requireAuth, async (req, res) => {
+  const actUser = (req as any).user;
+  const { ip, userAgent } = getClientDetails(req);
+
+  if (actUser.role !== "owner") {
+    return res.status(403).json({ error: "Only the Station Owner can perform a Factory Reset." });
+  }
+
+  try {
+    if (fs.existsSync(DB_FILE_PATH)) {
+      fs.unlinkSync(DB_FILE_PATH);
+    }
+
+    // Check if SaaS user and wipe their Firestore data
+    if (adminAuthInstance) {
+      try {
+        const { getFirestore } = await import("firebase-admin/firestore");
+        const dbFSAdmin = getFirestore();
+        const userSnap = await dbFSAdmin.collection("users").doc(actUser.id).get();
+        if (userSnap.exists) {
+           const userData = userSnap.data();
+           if (userData && userData.orgId) {
+             const orgId = userData.orgId;
+             // Delete stations collection (which holds all records: shifts, customers, banks, etc)
+             await dbFSAdmin.recursiveDelete(dbFSAdmin.collection("organizations").doc(orgId).collection("stations"));
+           }
+        }
+      } catch (fsErr) {
+        console.error("Firestore wipe failed:", fsErr);
+      }
+    }
+    
+    // Re-initialize with default DB
+    const newDb = loadDatabase();
+
+    const auditRec: AuditLogSchema = {
+      id: `aud_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`,
+      userId: actUser.id,
+      email: actUser.email,
+      eventType: "FACTORY_RESET",
+      timestamp: new Date().toISOString(),
+      status: "success",
+      ip,
+      device: userAgent,
+      details: "Database wiped and factory reset. System re-initialized for a fresh start."
+    };
+    newDb.auditLogs.unshift(auditRec);
+    saveDatabase(newDb);
+
+    res.json({ success: true, message: "Backend data wiped and reset successfully." });
+  } catch (err) {
+    console.error("Factory Reset failed:", err);
+    res.status(500).json({ error: "Failed to reset backend database." });
+  }
+});
+
+// ==========================================
 // GOOGLE DRIVE ENCRYPTED EXPORT BACKUP
 // ==========================================
 app.post("/api/security/backup/drive", requireAuth, async (req, res) => {

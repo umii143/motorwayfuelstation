@@ -12,6 +12,7 @@ import { doc, writeBatch } from 'firebase/firestore';
 import { dbFS } from '../lib/firebase';
 import { fetchWithAuth } from '../lib/api';
 import { getBusinessTypeForStation, isolateShiftRecords, withBusinessScope } from '../lib/businessScope';
+import { dispatchShiftToOperationalCore } from '../services/core/shadowMode';
 
 interface ShiftState {
   shifts: Shift[];
@@ -641,6 +642,10 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
       useInventoryStore.getState().setNozzles(nextNozzles);
       useFinancialStore.getState().setBanks(nextBanks);
       useStaffStore.getState().setStaff(nextStaff);
+
+      // Phase 2: Shadow Mode Validation (Unified Enterprise Architecture)
+      // We dispatch the shift to the new Operational Core without blocking the UI
+      dispatchShiftToOperationalCore(updatedShift, sId, 'default', orgId).catch(console.error);
 
       // WhatsApp alerts
       if (settings.whatsappSettings?.enabled && settings.whatsappSettings?.alerts?.shiftClose) {

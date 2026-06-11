@@ -37,6 +37,7 @@ import { ExportToolbar } from '../shared/ExportToolbar';
 import StockInForm from './StockInForm';
 import BatchHistory from './BatchHistory';
 import { useInventoryStore } from '../../stores/useInventoryStore';
+import InventoryDrillDownModal from './ExecutiveDashboard/InventoryDrillDownModal';
 
 interface InventoryProps {
   settings: GlobalSettings;
@@ -79,6 +80,7 @@ export default function Inventory({
   const [activeTab, setActiveTab] = useState<'inventory' | 'tanks_calibration' | 'pricing_logs' | 'batch_history'>('inventory');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'fuel' | 'lube' | 'low'>('all');
+  const [isInventoryDrillDownOpen, setIsInventoryDrillDownOpen] = useState(false);
 
   // Interactive Calibrator Calculator
   const [calcTankId, setCalcTankId] = useState('');
@@ -565,12 +567,16 @@ export default function Inventory({
       <div className={`grid grid-cols-1 gap-4 ${isLube ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
         {/* Total Fuels — hidden for lube businesses */}
         {!isLube && (
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-orange-600">
+        <div 
+           className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs flex items-center gap-3 cursor-pointer hover:border-orange-300 hover:bg-orange-50/30 transition-colors group"
+           onClick={() => setIsInventoryDrillDownOpen(true)}
+           title="Open Enterprise Inventory Intelligence"
+        >
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-orange-600 group-hover:scale-110 transition-transform">
             <Layers className="h-5 w-5" />
           </div>
           <div>
-            <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block">{t('Total Fuel In Storage Tanks', 'ٹینکس میں موجود کل فیول والیم')}</span>
+            <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block group-hover:text-orange-500 transition-colors">{t('Total Fuel In Storage Tanks', 'ٹینکس میں موجود کل فیول والیم')}</span>
             <strong className="font-mono text-base font-bold text-slate-800 tracking-tight mt-1 block">
               {totalFuelVolume.toLocaleString()} Litres
             </strong>
@@ -580,12 +586,16 @@ export default function Inventory({
 
         {/* Total Lubes — ONLY shown for lube businesses */}
         {isLube && (
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
+        <div 
+           className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs flex items-center gap-3 cursor-pointer hover:border-sky-300 hover:bg-sky-50/30 transition-colors group"
+           onClick={() => setIsInventoryDrillDownOpen(true)}
+           title="Open Enterprise Inventory Intelligence"
+        >
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600 group-hover:scale-110 transition-transform">
             <Package className="h-5 w-5" />
           </div>
           <div>
-            <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block">{t('Lubricants / Accessories', 'کل انجن آئل اسٹاک')}</span>
+            <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block group-hover:text-sky-600 transition-colors">{t('Lubricants / Accessories', 'کل انجن آئل اسٹاک')}</span>
             <strong className="font-mono text-base font-bold text-slate-800 tracking-tight mt-1 block">
               {totalLubricantsQty.toLocaleString()} Units
             </strong>
@@ -1265,6 +1275,12 @@ export default function Inventory({
         columns={exportColumns}
         title="Inventory Report"
         filenamePrefix="inventory_report"
+      />
+
+      <InventoryDrillDownModal 
+        isOpen={isInventoryDrillDownOpen}
+        onClose={() => setIsInventoryDrillDownOpen(false)}
+        settings={settings}
       />
     </div>
   );

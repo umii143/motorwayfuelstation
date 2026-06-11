@@ -45,10 +45,10 @@ import {
   DigitalCashEntry,
   SupplierPayment,
   Nozzle,
-  CogsRecord
 } from '../../types';
 import { useInventoryStore } from '../../stores/useInventoryStore';
 import { t as translate } from '../../lib/translations';
+import ShiftDrillDownModal from './ExecutiveDashboard/ShiftDrillDownModal';
 
 interface ShiftLogsProps {
   shifts: Shift[];
@@ -92,6 +92,8 @@ export default function ShiftLogs({
   const [viewDetailType, setViewDetailType] = useState<
     'credits' | 'debits' | 'expenses' | 'supplier' | 'bank' | 'digital' | null
   >(null);
+  
+  const [isShiftDrillDownOpen, setIsShiftDrillDownOpen] = useState(false);
 
   const filteredShifts = useMemo(() => {
     return shifts
@@ -138,6 +140,60 @@ export default function ShiftLogs({
           <p className="text-slate-500 mt-1">
             {t('Complete history and centralized audit system for all shifts.', 'تمام شفٹوں کی مکمل تاریخ اور آڈٹ سسٹم۔')}
           </p>
+        </div>
+      </div>
+      
+      {/* ENTERPRISE KPI ROW */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div 
+          onClick={() => setIsShiftDrillDownOpen(true)}
+          className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/30 transition-colors group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 group-hover:scale-110 transition-transform">
+              <History className="h-5 w-5" />
+            </div>
+            <div>
+              <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block group-hover:text-indigo-600 transition-colors">Total Shifts Processed</span>
+              <strong className="font-mono text-xl font-bold text-slate-800 tracking-tight mt-1 block">
+                {shifts.length}
+              </strong>
+            </div>
+          </div>
+        </div>
+
+        <div 
+          onClick={() => setIsShiftDrillDownOpen(true)}
+          className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs cursor-pointer hover:border-red-300 hover:bg-red-50/30 transition-colors group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 group-hover:scale-110 transition-transform">
+              <TrendingDown className="h-5 w-5" />
+            </div>
+            <div>
+              <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block group-hover:text-red-600 transition-colors">Accumulated Shortage</span>
+              <strong className="font-mono text-xl font-bold text-red-600 tracking-tight mt-1 block">
+                {formatCurrency(shifts.reduce((sum, s) => sum + (s.shortage > 0 ? s.shortage : 0), 0))}
+              </strong>
+            </div>
+          </div>
+        </div>
+
+        <div 
+          onClick={() => setIsShiftDrillDownOpen(true)}
+          className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs cursor-pointer hover:border-emerald-300 hover:bg-emerald-50/30 transition-colors group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 group-hover:scale-110 transition-transform">
+              <TrendingUp className="h-5 w-5" />
+            </div>
+            <div>
+              <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block group-hover:text-emerald-600 transition-colors">Accumulated Overage</span>
+              <strong className="font-mono text-xl font-bold text-emerald-600 tracking-tight mt-1 block">
+                {formatCurrency(shifts.reduce((sum, s) => sum + (s.overage > 0 ? s.overage : 0), 0))}
+              </strong>
+            </div>
+          </div>
         </div>
       </div>
       
@@ -366,6 +422,12 @@ export default function ShiftLogs({
         suppliers={suppliers} 
         staff={staff} 
       />
+
+      <ShiftDrillDownModal 
+        isOpen={isShiftDrillDownOpen}
+        onClose={() => setIsShiftDrillDownOpen(false)}
+        settings={settings}
+      />
     </div>
   );
 }
@@ -467,47 +529,65 @@ function ShiftAuditDrawer({
   const totalGrossProfit = shiftCogs.reduce((sum: number, c: CogsRecord) => sum + c.grossProfit, 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-200">
       <div className="w-full sm:w-[95vw] md:w-[85vw] lg:w-[1200px] max-w-full h-[95vh] bg-slate-50 rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
         
-        {/* Drawer Header */}
-        <div className="flex-none bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between z-10 shadow-xs">
-          <div>
-            <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-              <History className="w-5 h-5 text-indigo-600" />
-              {t(`Shift Audit Log: ${shift.date}`, `شفٹ آڈٹ لاگ: ${shift.date}`)}
-            </h2>
-            <div className="flex items-center gap-3 mt-1.5 text-sm text-slate-500 font-medium">
-              <span className="flex items-center gap-1.5">
-                <UserCircle className="w-4 h-4" />
-                {getStaffName(shift.staffId)}
-              </span>
-              <span className="w-1 h-1 rounded-full bg-slate-300" />
-              <span>{shift.type === 'day' ? t('Day Shift', 'دن کی شفٹ') : t('Night Shift', 'رات کی شفٹ')}</span>
-              <span className="w-1 h-1 rounded-full bg-slate-300" />
-              <span>{shift.startTime} to {shift.endTime || 'Present'}</span>
+        {/* ENTERPRISE HEADER */}
+        <div className="flex-none bg-slate-900 border-b border-slate-800 px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between z-10 shadow-2xl relative overflow-hidden">
+          {/* Subtle background glow */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+          
+          <div className="relative z-10 mb-4 sm:mb-0">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-indigo-500/20 rounded-xl border border-indigo-500/30 shadow-inner">
+                <History className="w-6 h-6 text-indigo-400" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-black text-white flex items-center gap-3 tracking-tight">
+                  {t(`Shift Intelligence Audit`, `شفٹ آڈٹ لاگ`)}
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 tracking-widest uppercase flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> {t('Audit Verified', 'تصدیق شدہ')}
+                  </span>
+                </h2>
+                <div className="flex items-center gap-3 mt-1.5 text-sm font-medium">
+                  <span className="flex items-center gap-1.5 text-indigo-300">
+                    <UserCircle className="w-4 h-4" />
+                    {getStaffName(shift.staffId)}
+                  </span>
+                  <span className="w-1 h-1 rounded-full bg-slate-700" />
+                  <span className="text-slate-300 font-bold">{shift.date}</span>
+                  <span className="w-1 h-1 rounded-full bg-slate-700" />
+                  <span className="text-slate-400">{shift.type === 'day' ? t('Day Shift', 'دن کی شفٹ') : t('Night Shift', 'رات کی شفٹ')}</span>
+                  <span className="w-1 h-1 rounded-full bg-slate-700" />
+                  <span className="text-slate-400">{shift.startTime} to {shift.endTime || 'Present'}</span>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <DocumentActionToolbar 
-              pdfDocument={<ShiftReceiptDocument shift={shift} generatedBy="Admin" />}
-              pdfFileName={`Shift_Report_${shift.id}.pdf`}
-              onPrint={() => window.print()}
-              onWhatsAppShare={() => {
-                whatsappHook.openShareModal(
-                  'custom',
-                  {},
-                  undefined,
-                  `Shift_Report_${shift.id}.pdf`,
-                  <ShiftReceiptDocument shift={shift} generatedBy="Admin" />
-                );
-              }}
-            />
+
+          <div className="flex items-center gap-3 relative z-10 w-full sm:w-auto justify-end">
+            <div className="bg-slate-800/80 p-1 rounded-lg border border-slate-700 backdrop-blur-sm flex items-center shadow-inner">
+              <DocumentActionToolbar 
+                pdfDocument={<ShiftReceiptDocument shift={shift} generatedBy="Admin" />}
+                pdfFileName={`Shift_Report_${shift.id}.pdf`}
+                onPrint={() => window.print()}
+                onWhatsAppShare={() => {
+                  whatsappHook.openShareModal(
+                    'custom',
+                    {},
+                    undefined,
+                    `Shift_Report_${shift.id}.pdf`,
+                    <ShiftReceiptDocument shift={shift} generatedBy="Admin" />
+                  );
+                }}
+              />
+            </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-slate-100 text-slate-500 hover:text-slate-700 rounded-full transition-colors"
+              className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl border border-slate-700 transition-all cursor-pointer shadow-lg"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -517,85 +597,79 @@ function ShiftAuditDrawer({
           
           {/* Main Financial Summary Grid */}
           <div>
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 px-1 flex items-center justify-between">
-              {t('Financial Summary', 'مالیاتی خلاصہ')}
-              <span className="text-xs font-medium text-slate-500 bg-slate-200 px-2.5 py-1 rounded-full flex gap-2">
-                <span>Net Profit: {formatCurrency(totalNetProfit)}</span>
-                <span>•</span>
-                <span>Total Collection: {formatCurrency(totalCashCollected)}</span>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
+                {t('Financial Summary', 'مالیاتی خلاصہ')}
+              </h3>
+              <span className="text-xs font-bold text-slate-600 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-sm flex gap-2">
+                <span className="text-slate-400">Net Profit:</span> <span className="text-emerald-600">{formatCurrency(totalNetProfit)}</span>
+                <span className="text-slate-300">|</span>
+                <span className="text-slate-400">Total Collection:</span> <span className="text-indigo-600">{formatCurrency(totalCashCollected)}</span>
               </span>
-            </h3>
+            </div>
+            
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              <SummaryCard
-                title={t('Expected Cash', 'متوقع کیش')}
-                amount={shift.expectedCash || 0}
-                formatCurrency={formatCurrency}
-                className="bg-white border-slate-200"
-              />
-              <SummaryCard
-                title={t('Submitted Cash', 'جمع شدہ کیش')}
-                amount={shift.submittedCash || 0}
-                formatCurrency={formatCurrency}
-                className="bg-indigo-50 border-indigo-100 text-indigo-900"
-                valueClassName="text-indigo-700"
-              />
-              <SummaryCard
-                title={t('Shortage', 'کمی')}
-                amount={shift.shortage || 0}
-                formatCurrency={formatCurrency}
-                className="bg-red-50 border-red-100 text-red-900"
-                valueClassName="text-red-700"
-              />
-              <SummaryCard
-                title={t('Overage', 'زیادتی')}
-                amount={shift.overage || 0}
-                formatCurrency={formatCurrency}
-                className="bg-emerald-50 border-emerald-100 text-emerald-900"
-                valueClassName="text-emerald-700"
-              />
+              <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('Expected Cash', 'متوقع کیش')}</span>
+                <span className="text-2xl font-black text-slate-800 truncate">{formatCurrency(shift.expectedCash || 0)}</span>
+              </div>
+              <div className="bg-indigo-50/80 rounded-xl border border-indigo-100 p-5 shadow-sm flex flex-col justify-between">
+                <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">{t('Submitted Cash', 'جمع شدہ کیش')}</span>
+                <span className="text-2xl font-black text-indigo-700 truncate">{formatCurrency(shift.submittedCash || 0)}</span>
+              </div>
+              <div className="bg-red-50/80 rounded-xl border border-red-100 p-5 shadow-sm flex flex-col justify-between">
+                <span className="text-[10px] font-black text-red-400 uppercase tracking-widest mb-1">{t('Shortage', 'کمی')}</span>
+                <span className="text-2xl font-black text-red-700 truncate">{formatCurrency(shift.shortage || 0)}</span>
+              </div>
+              <div className="bg-emerald-50/80 rounded-xl border border-emerald-100 p-5 shadow-sm flex flex-col justify-between">
+                <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">{t('Overage', 'زیادتی')}</span>
+                <span className="text-2xl font-black text-emerald-700 truncate">{formatCurrency(shift.overage || 0)}</span>
+              </div>
             </div>
           </div>
 
           {/* Fuel Sales Summary Grid */}
           <div>
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 px-1 flex items-center justify-between">
-              {t('Fuel Sales Summary', 'فیول سیلز کا خلاصہ')}
-              <span className="text-xs font-medium text-slate-500 bg-slate-200 px-2.5 py-1 rounded-full flex gap-2">
-                <span>Avg Dealer Margin: {totalLitersSoldCogs > 0 ? formatCurrency(totalGrossProfit / totalLitersSoldCogs) : '0'} /L</span>
-                <span>•</span>
-                <span>Est. Sales: {formatCurrency(estimatedFuelSalesAmount)}</span>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
+                {t('Fuel Sales Summary', 'فیول سیلز کا خلاصہ')}
+              </h3>
+              <span className="text-xs font-bold text-slate-600 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-sm flex gap-2">
+                <span className="text-slate-400">Avg Dealer Margin:</span> <span className="text-orange-600">{totalLitersSoldCogs > 0 ? formatCurrency(totalGrossProfit / totalLitersSoldCogs) : '0'} /L</span>
+                <span className="text-slate-300">|</span>
+                <span className="text-slate-400">Est. Sales:</span> <span className="text-blue-600">{formatCurrency(estimatedFuelSalesAmount)}</span>
               </span>
-            </h3>
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <SummaryCard
-                title={t('Petrol Sold', 'پٹرول فروخت')}
-                amount={petrolSold}
-                formatCurrency={(val: number) => `${val.toFixed(2)} L`}
-                className="bg-orange-50 border-orange-100 text-orange-900"
-                valueClassName="text-orange-700"
-              />
-              <SummaryCard
-                title={t('Diesel Sold', 'ڈیزل فروخت')}
-                amount={dieselSold}
-                formatCurrency={(val: number) => `${val.toFixed(2)} L`}
-                className="bg-blue-50 border-blue-100 text-blue-900"
-                valueClassName="text-blue-700"
-              />
-              <SummaryCard
-                title={t('Total Fuel Sold', 'کل فیول فروخت')}
-                amount={totalFuelSold}
-                formatCurrency={(val: number) => `${val.toFixed(2)} L`}
-                className="bg-slate-100 border-slate-200 text-slate-900"
-                valueClassName="text-slate-800"
-              />
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100/30 rounded-xl border border-orange-200 p-5 shadow-sm flex flex-col justify-between relative overflow-hidden">
+                <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-orange-200/50 to-transparent"></div>
+                <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-2 relative z-10">{t('Petrol Sold', 'پٹرول فروخت')}</span>
+                <span className="text-3xl font-black text-orange-700 truncate relative z-10">{petrolSold.toFixed(2)} L</span>
+              </div>
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100/30 rounded-xl border border-blue-200 p-5 shadow-sm flex flex-col justify-between relative overflow-hidden">
+                <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-blue-200/50 to-transparent"></div>
+                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2 relative z-10">{t('Diesel Sold', 'ڈیزل فروخت')}</span>
+                <span className="text-3xl font-black text-blue-700 truncate relative z-10">{dieselSold.toFixed(2)} L</span>
+              </div>
+              <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between relative overflow-hidden">
+                <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-slate-100 to-transparent"></div>
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 relative z-10">{t('Total Fuel Sold', 'کل فیول فروخت')}</span>
+                <span className="text-3xl font-black text-slate-800 truncate relative z-10">{totalFuelSold.toFixed(2)} L</span>
+              </div>
             </div>
           </div>
 
           {/* Drill Down Sections */}
           <div>
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 px-1">
-              {t('Transaction Drill-Downs', 'ٹرانزیکشن کی تفصیلات')}
-            </h3>
+            <div className="flex items-center mb-4">
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></div>
+                {t('Transaction Intelligence Drill-Downs', 'ٹرانزیکشن کی تفصیلات')}
+              </h3>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               
               <DrillDownCard
@@ -795,25 +869,70 @@ function SummaryCard({ title, amount, formatCurrency, className = '', valueClass
 }
 
 function DrillDownCard({ icon: Icon, title, count, amount, formatCurrency, onClick, colorClass }: any) {
+  // Map our old colorClass strings to modern gradient logic based on key words
+  const isRose = colorClass.includes('rose');
+  const isEmerald = colorClass.includes('emerald');
+  const isAmber = colorClass.includes('amber');
+  const isBlue = colorClass.includes('blue');
+  const isCyan = colorClass.includes('cyan');
+  const isViolet = colorClass.includes('violet');
+  const isIndigo = colorClass.includes('indigo');
+
+  let gradient = 'from-slate-50 to-white border-slate-200 text-slate-600';
+  let iconBg = 'bg-slate-100 text-slate-500';
+  let valueColor = 'text-slate-800';
+
+  if (isRose) {
+    gradient = 'from-rose-50 to-white border-rose-200 text-rose-600';
+    iconBg = 'bg-rose-100 text-rose-500';
+    valueColor = 'text-rose-700';
+  } else if (isEmerald) {
+    gradient = 'from-emerald-50 to-white border-emerald-200 text-emerald-600';
+    iconBg = 'bg-emerald-100 text-emerald-500';
+    valueColor = 'text-emerald-700';
+  } else if (isAmber) {
+    gradient = 'from-amber-50 to-white border-amber-200 text-amber-600';
+    iconBg = 'bg-amber-100 text-amber-500';
+    valueColor = 'text-amber-700';
+  } else if (isBlue) {
+    gradient = 'from-blue-50 to-white border-blue-200 text-blue-600';
+    iconBg = 'bg-blue-100 text-blue-500';
+    valueColor = 'text-blue-700';
+  } else if (isCyan) {
+    gradient = 'from-cyan-50 to-white border-cyan-200 text-cyan-600';
+    iconBg = 'bg-cyan-100 text-cyan-500';
+    valueColor = 'text-cyan-700';
+  } else if (isViolet) {
+    gradient = 'from-violet-50 to-white border-violet-200 text-violet-600';
+    iconBg = 'bg-violet-100 text-violet-500';
+    valueColor = 'text-violet-700';
+  } else if (isIndigo) {
+    gradient = 'from-indigo-50 to-white border-indigo-200 text-indigo-600';
+    iconBg = 'bg-indigo-100 text-indigo-500';
+    valueColor = 'text-indigo-700';
+  }
+
   return (
     <div 
       onClick={onClick}
-      className={`p-5 rounded-xl border shadow-xs cursor-pointer transition-all duration-200 hover:-translate-y-1 ${colorClass}`}
+      className={`p-5 rounded-2xl border shadow-xs cursor-pointer transition-all duration-300 hover:shadow-md hover:-translate-y-1 bg-gradient-to-br ${gradient} group relative overflow-hidden`}
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="p-2.5 bg-white/60 backdrop-blur-sm rounded-lg shadow-xs">
+      <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-white/40 to-transparent"></div>
+      
+      <div className="flex items-center justify-between mb-4 relative z-10">
+        <div className={`p-2.5 rounded-xl shadow-inner ${iconBg}`}>
           <Icon className="w-5 h-5" />
         </div>
-        <div className="text-xs font-bold uppercase tracking-wider px-2 py-1 bg-white/60 rounded-full">
+        <div className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 bg-white/80 rounded-full shadow-xs border border-white">
           {count} Entries
         </div>
       </div>
-      <div className="text-sm font-bold opacity-80 mb-1">{title}</div>
-      <div className="text-2xl font-bold">
+      <div className="text-xs font-black uppercase tracking-widest opacity-80 mb-1 relative z-10">{title}</div>
+      <div className={`text-2xl font-black relative z-10 ${valueColor}`}>
         {formatCurrency(amount)}
       </div>
-      <div className="mt-4 pt-3 border-t border-current/10 text-xs font-semibold flex items-center justify-between opacity-80 group-hover:opacity-100">
-        Click to view detailed log
+      <div className="mt-4 pt-3 border-t border-black/5 text-[10px] font-bold uppercase tracking-widest flex items-center justify-between opacity-60 group-hover:opacity-100 transition-opacity relative z-10">
+        <span>Click to deep-dive log</span>
         <Search className="w-3.5 h-3.5" />
       </div>
     </div>

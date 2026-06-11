@@ -111,9 +111,9 @@ const SPECIAL_STORAGE_KEYS = {
 };
 
 // Clear trigger for clean slate if needed
-if (typeof window !== 'undefined' && !localStorage.getItem('fuelpro_fresh_v4_clean')) {
+if (typeof window !== 'undefined' && !localStorage.getItem('fuelpro_fresh_v5_nodummies')) {
   localStorage.clear();
-  localStorage.setItem('fuelpro_fresh_v4_clean', 'true');
+  localStorage.setItem('fuelpro_fresh_v5_nodummies', 'true');
 }
 
 const DEFAULT_STATION_ID = DEFAULT_FUEL_STATION_ID;
@@ -169,107 +169,44 @@ const SEED_LUBE_SETTINGS: GlobalSettings = {
   setupVersion: 1
 };
 
-const SEED_LUBE_STAFF: any = [
-  { id: 'st_l_1', name: 'Zohaib Butt', urduName: 'زہیب بٹ', role: 'owner', salary: 150000, advances: 0, active: true, pin: '1234', phone: '0316-8432329' },
-  { id: 'st_l_2', name: 'Muhammad Waqas', urduName: 'محمد وقاص', role: 'manager', salary: 45000, advances: 0, active: true, pin: '2222', phone: '0300-1234567' },
-  { id: 'st_l_3', name: 'Sajid Ali', urduName: 'ساجد علی', role: 'cashier', salary: 28000, advances: 0, active: true, pin: '1111', phone: '0300-7654321' }
-];
+const SEED_LUBE_STAFF: any = [];
 
-const SEED_LUBE_PRODUCTS: any = [
-  { id: 'prod_l1', name: 'Shell Helix Ultra 5W-40 (4L)', urduName: 'شیل ہیلکس الٹرا 5W-40', rate: 9400, unit: 'Bottles', type: 'lube', currentStock: 85, minStock: 10, capacity: 150 },
-  { id: 'prod_l2', name: 'Rimula R4 15W-40 (4L)', urduName: 'ریمولا R4 15W-40', rate: 7200, unit: 'Bottles', type: 'lube', currentStock: 60, minStock: 15, capacity: 100 },
-  { id: 'prod_l3', name: 'Premium Genuine Oil Filter', urduName: 'پریمیم آئل فلٹر', rate: 1500, unit: 'Packets', type: 'other', currentStock: 120, minStock: 20, capacity: 250 },
-  { id: 'prod_l4', name: 'Toyota Genuine Air Filter', urduName: 'ٹوئوٹا ایئر فلٹر', rate: 2500, unit: 'Packets', type: 'other', currentStock: 80, minStock: 12, capacity: 200 },
-  { id: 'prod_l5', name: 'Castrol Magnatec 10W-40 (4L)', urduName: 'کیسٹرول میگنیٹیک 10W-40', rate: 8500, unit: 'Bottles', type: 'lube', currentStock: 45, minStock: 8, capacity: 120 }
-];
+const SEED_LUBE_PRODUCTS: any = [];
 
-const SEED_LUBE_CUSTOMERS: any = [
-  { id: 'cust_l1', name: 'Faisal Auto Care', urduName: 'فیصل آٹو کیئر', contact: '0333-1234567', address: 'DHA Phase 2, Karachi', balance: 35000, creditLimit: 200000 },
-  { id: 'cust_l2', name: 'Defense Service Station', urduName: 'ڈیفنس سروس اسٹیشن', contact: '021-3567890', address: 'Gizri Road, Karachi', balance: -8500, creditLimit: 100000 },
-  { id: 'cust_l3', name: 'Elite Car Spa', urduName: 'ایلیٹ کار اسپار', contact: '0312-9876543', address: 'Clifton Block 5, Karachi', balance: 12400, creditLimit: 150000 }
-];
+const SEED_LUBE_CUSTOMERS: any = [];
 
-const SEED_LUBE_SUPPLIERS: any = [
-  { id: 'sup_l1', name: 'Shell Pakistan Distributor HQ', urduName: 'شیل پاکستان ڈسٹریبیوٹر', contact: '021-111-743-557', accountNo: 'MEEZAN-9832049219', balance: 150000 },
-  { id: 'sup_l2', name: 'Guard Filter Supply Depot', urduName: 'گارڈ فلٹر ڈسٹری بیوشن', contact: '042-3584910', accountNo: 'HBL-12498392109', balance: 45000 }
-];
+const SEED_LUBE_SUPPLIERS: any = [];
 
-const SEED_LUBE_BANKS: any = [
-  { id: 'bank_l1', name: 'Meezan Bank Lube Account', accountNo: '0250-9832049219', balance: 385000 },
-  { id: 'bank_l2', name: 'HBL Business Account', accountNo: '1249-8392109281', balance: 145000 }
-];
+const SEED_LUBE_BANKS: any = [];
 
-const SEED_LUBE_DIGITAL_ACCOUNTS: any = [
-  { id: 'da_l1', name: 'JazzCash Lube Merchant', accountNo: '0316-8432329', balance: 25000 },
-  { id: 'da_l2', name: 'EasyPaisa Business Wallet', accountNo: '0300-8884422', balance: 18000 }
-];
+const SEED_LUBE_DIGITAL_ACCOUNTS: any = [];
 
-const SEED_LUBE_PUMPS: any = [
-  { id: 'pump_l1', name: 'Service Pit #1' },
-  { id: 'pump_l2', name: 'Service Pit #2' }
-];
+const SEED_LUBE_PUMPS: any = [];
 
-const SEED_LUBE_NOZZLES: any = [
-  { id: 'nozzle_l1', name: 'Pit 1 Shell Helix', pumpId: 'pump_l1', productId: 'prod_l1', tankId: 'tank_l1', startReading: 0, currentReading: 0 },
-  { id: 'nozzle_l2', name: 'Pit 2 Rimula', pumpId: 'pump_l2', productId: 'prod_l2', tankId: 'tank_l1', startReading: 0, currentReading: 0 }
-];
+const SEED_LUBE_NOZZLES: any = [];
 
-const SEED_LUBE_TANKS: any = [
-  { id: 'tank_l1', name: 'Lube Pit #1 Hydraulic Reservoir', productId: 'prod_l1', capacity: 2000, safeLevel: 1500, criticalLevel: 300, currentStock: 1200, openingStock: 1200, dipChart: [] }
-];
+const SEED_LUBE_TANKS: any = [];
 
 // ==========================================
 // SEED DATA FOR BUSINESS 1: FUEL STATION FALLBACKS
 // ==========================================
-const SEED_FUEL_STAFF: any = [
-  { id: 'st_f_1', name: 'Sohail Khan', urduName: 'سہیل خان', role: 'owner', salary: 200000, advances: 0, active: true, pin: '1234', phone: '0300-8884422' },
-  { id: 'st_f_2', name: 'Yasir Shah', urduName: 'یاسر شاہ', role: 'manager', salary: 50000, advances: 0, active: true, pin: '2222', phone: '0300-1112223' },
-  { id: 'st_f_3', name: 'Rashid Minhas', urduName: 'راشد منہاس', role: 'salesman', salary: 25000, advances: 0, active: true, pin: '1111', phone: '0333-4445556' }
-];
+const SEED_FUEL_STAFF: any = [];
 
-const SEED_FUEL_PRODUCTS: any = [
-  { id: 'prod_f1', name: 'Altron Premium PMG (Petrol)', urduName: 'پٹرول مائع', rate: 275.50, unit: 'Ltrs', type: 'fuel', currentStock: 18500, minStock: 2000, capacity: 25000 },
-  { id: 'prod_f2', name: 'Euro 5 HSD (Diesel)', urduName: 'ڈیزل مائع', rate: 284.10, unit: 'Ltrs', type: 'fuel', currentStock: 14200, minStock: 3000, capacity: 25000 },
-  { id: 'prod_f3', name: 'Altron X High Octane (HOBC)', urduName: 'ہائی اوکٹین', rate: 298.60, unit: 'Ltrs', type: 'fuel', currentStock: 6800, minStock: 1000, capacity: 15000 }
-];
+const SEED_FUEL_PRODUCTS: any = [];
 
-const SEED_FUEL_PUMPS: any = [
-  { id: 'pump_f1', name: 'Dispenser Island #1' },
-  { id: 'pump_f2', name: 'Dispenser Island #2' }
-];
+const SEED_FUEL_PUMPS: any = [];
 
-const SEED_FUEL_NOZZLES: any = [
-  { id: 'nozzle_f1', name: 'Nozzle 1A PMG', pumpId: 'pump_f1', productId: 'prod_f1', tankId: 'tank_f1', startReading: 125000, currentReading: 125000 },
-  { id: 'nozzle_f2', name: 'Nozzle 1B HSD', pumpId: 'pump_f1', productId: 'prod_f2', tankId: 'tank_f2', startReading:  85000, currentReading:  85000 },
-  { id: 'nozzle_f3', name: 'Nozzle 2A HOBC', pumpId: 'pump_f2', productId: 'prod_f3', tankId: 'tank_f3', startReading:  42000, currentReading:  42000 }
-];
+const SEED_FUEL_NOZZLES: any = [];
 
-const SEED_FUEL_TANKS: any = [
-  { id: 'tank_f1', name: 'PMG Storage Tank 1', productId: 'prod_f1', capacity: 25000, safeLevel: 22000, criticalLevel: 2000, currentStock: 18500, openingStock: 18500, dipChart: [] },
-  { id: 'tank_f2', name: 'HSD Storage Tank 2', productId: 'prod_f2', capacity: 25000, safeLevel: 22000, criticalLevel: 3000, currentStock: 14200, openingStock: 14200, dipChart: [] },
-  { id: 'tank_f3', name: 'HOBC Storage Tank 3', productId: 'prod_f3', capacity: 15000, safeLevel: 12000, criticalLevel: 1000, currentStock: 6800, openingStock: 6800, dipChart: [] }
-];
+const SEED_FUEL_TANKS: any = [];
 
-const SEED_FUEL_CUSTOMERS: any = [
-  { id: 'cust_f1', name: 'Sindh High-Way Police Depot', urduName: 'سندھ ہائی وے پولیس', contact: '021-99212015', address: 'Super-Highway HQ, Karachi', balance: 145000, creditLimit: 500000 },
-  { id: 'cust_f2', name: 'Karachi Municipal Corporation', urduName: 'بلدیہ عظمی کراچی', contact: '021-99215111', address: 'Civic Centre, Karachi', balance: 289000, creditLimit: 1000000 },
-  { id: 'cust_f3', name: 'Green Luxury Travels Bus Co.', urduName: 'گرین لگژری ٹریول', contact: '0321-8283849', address: 'Sohrab Goth Bus terminal, Karachi', balance: -45000, creditLimit: 300000 }
-];
+const SEED_FUEL_CUSTOMERS: any = [];
 
-const SEED_FUEL_SUPPLIERS: any = [
-  { id: 'sup_f1', name: 'Pakistan State Oil Co. HQ', urduName: 'پاکستان اسٹیٹ آئل', contact: '021-111-111-PSO', accountNo: 'NBP-0010482015', balance: 1250000 },
-  { id: 'sup_f2', name: 'Shell Pakistan Depot Keamari', urduName: 'شیل پاکستان کیماڑی', contact: '021-111-743-557', accountNo: 'Meezan-9842109281', balance: 450000 }
-];
+const SEED_FUEL_SUPPLIERS: any = [];
 
-const SEED_FUEL_BANKS: any = [
-  { id: 'bank_f1', name: 'National Bank of Pakistan', accountNo: 'NBP-0012-984320-11', balance: 1250000 },
-  { id: 'bank_f2', name: 'Meezan Bank PSO Account', accountNo: 'MEEZAN-0320-84329-01', balance: 480000 }
-];
+const SEED_FUEL_BANKS: any = [];
 
-const SEED_FUEL_DIGITAL_ACCOUNTS: any = [
-  { id: 'da_f1', name: 'HBL PSO Fuel card POS', accountNo: 'HBL-POS-4839210-9', balance: 185000 },
-  { id: 'da_f2', name: 'EasyPaisa Merchant Wallet', accountNo: '0300-8884422', balance: 45000 }
-];
+const SEED_FUEL_DIGITAL_ACCOUNTS: any = [];
 
 // ==========================================
 // SEED DATA FOR DEALER MARGINS

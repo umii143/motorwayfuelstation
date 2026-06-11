@@ -4,6 +4,7 @@ import { formatCurrency } from '../../../lib/currency';
 import { t } from '../../../lib/translations';
 import { TrendingUp, TrendingDown, DollarSign, Award, AlertTriangle, Calendar, Activity } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell } from 'recharts';
+import RevaluationDrillDownModal from '../PriceManagement/RevaluationDrillDownModal';
 
 interface ExecutiveRevaluationIntelligenceProps {
   rateHistory: RateHistoryEntry[];
@@ -17,6 +18,14 @@ export default function ExecutiveRevaluationIntelligence({
   language
 }: ExecutiveRevaluationIntelligenceProps) {
   
+  const [isDrillDownOpen, setIsDrillDownOpen] = React.useState(false);
+  const [drillDownContext, setDrillDownContext] = React.useState<'all_time' | 'ytd' | 'month' | 'extremes'>('all_time');
+
+  const openDrillDown = (context: 'all_time' | 'ytd' | 'month' | 'extremes') => {
+    setDrillDownContext(context);
+    setIsDrillDownOpen(true);
+  };
+
   const stats = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
     const thisMonth = today.substring(0, 7);
@@ -96,8 +105,11 @@ export default function ExecutiveRevaluationIntelligence({
       {/* KPI WIDGETS */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Lifetime Reserve */}
-        <div className="bg-slate-900 rounded-2xl p-5 shadow-lg relative overflow-hidden text-white">
-          <div className="absolute -right-6 -top-6 size-24 bg-white/5 rounded-full blur-xl pointer-events-none"></div>
+        <div 
+          onClick={() => openDrillDown('all_time')}
+          className="bg-slate-900 rounded-2xl p-5 shadow-lg relative overflow-hidden text-white cursor-pointer hover:ring-2 hover:ring-emerald-500 transition-all group"
+        >
+          <div className="absolute -right-6 -top-6 size-24 bg-white/5 rounded-full blur-xl pointer-events-none group-hover:bg-white/10 transition-colors"></div>
           <p className="text-sm font-bold text-slate-400 mb-2 flex items-center gap-2">
             <DollarSign className="size-4 text-amber-400" />
             Lifetime Net Reserve
@@ -112,7 +124,10 @@ export default function ExecutiveRevaluationIntelligence({
         </div>
 
         {/* Annual Impact */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+        <div 
+          onClick={() => openDrillDown('ytd')}
+          className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 cursor-pointer hover:border-emerald-400 hover:shadow-md transition-all"
+        >
           <p className="text-sm font-bold text-slate-500 mb-2 flex items-center gap-2">
             <Calendar className="size-4" />
             YTD Annual Impact
@@ -123,7 +138,10 @@ export default function ExecutiveRevaluationIntelligence({
         </div>
 
         {/* Monthly Impact */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+        <div 
+          onClick={() => openDrillDown('month')}
+          className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 cursor-pointer hover:border-emerald-400 hover:shadow-md transition-all"
+        >
           <p className="text-sm font-bold text-slate-500 mb-2 flex items-center gap-2">
             <Calendar className="size-4" />
             Monthly Impact
@@ -134,7 +152,10 @@ export default function ExecutiveRevaluationIntelligence({
         </div>
 
         {/* Extreems */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between">
+        <div 
+          onClick={() => openDrillDown('extremes')}
+          className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between cursor-pointer hover:border-emerald-400 hover:shadow-md transition-all"
+        >
           <div>
             <p className="text-xs font-bold text-slate-500 mb-1 flex items-center gap-1">
               <Award className="size-3 text-emerald-500" /> Largest Gain
@@ -175,6 +196,14 @@ export default function ExecutiveRevaluationIntelligence({
           </ResponsiveContainer>
         </div>
       </div>
+
+      <RevaluationDrillDownModal 
+        isOpen={isDrillDownOpen}
+        onClose={() => setIsDrillDownOpen(false)}
+        rateHistory={rateHistory}
+        settings={settings}
+        initialContext={drillDownContext}
+      />
 
     </div>
   );

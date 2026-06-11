@@ -11,6 +11,8 @@ export interface KPIBreakdowns {
   expensesByMonth: Record<string, number>;
   expensesByBranch: Record<string, number>;
   salaryDetails: { employeeName: string; amount: number; description: string }[];
+  trendData: { date: string; revenue: number; profit: number; expenses: number }[];
+  ledgerTransactions: { id: string; date: string; type: string; description: string; amount: number }[];
 }
 
 export interface KPIResult {
@@ -72,7 +74,8 @@ export const generateKPIs = (
   lubePosSales: LubePosSale[] = [],
   branchId: string = 'main',
   nozzles: any[] = [],
-  rateHistory: RateHistoryEntry[] = []
+  rateHistory: RateHistoryEntry[] = [],
+  dateRange?: { from: string; to: string }
 ): KPIResult => {
   if (!shifts) shifts = [];
   if (!products) products = [];
@@ -92,7 +95,9 @@ export const generateKPIs = (
     expensesByCategory: {},
     expensesByMonth: {},
     expensesByBranch: {},
-    salaryDetails: []
+    salaryDetails: [],
+    trendData: [],
+    ledgerTransactions: []
   };
 
   const getProductCategory = (p?: Product) => p?.category === 'lubricant' ? 'Lubricants' : 'Fuel';
@@ -106,7 +111,30 @@ export const generateKPIs = (
   const now = new Date();
   const todayStr = now.toISOString().split('T')[0];
   const thisMonthStr = todayStr.substring(0, 7);
-  const thisYearStr = todayStr.substring(0, 4);
+  
+  // Helper to check if a date is within the targeted period
+  const isDateInPeriod = (dateStr: string) => {
+    if (!dateRange || (!dateRange.from && !dateRange.to)) {
+      // Default: All time (no filter) if dateRange is empty
+      return true;
+    }
+    const d = dateStr.split('T')[0];
+    if (dateRange.from && d < dateRange.from) return false;
+    if (dateRange.to && d > dateRange.to) return false;
+    return true;
+  };
+  
+  // Trend helper
+  const addTrend = (d: string, rev: number, prof: number, exp: number) => {
+    const existing = breakdowns.trendData.find(t => t.date === d);
+    if (existing) {
+      existing.revenue += rev;
+      existing.profit += prof;
+      existing.expenses += exp;
+    } else {
+      breakdowns.trendData.push({ date: d, revenue: rev, profit: prof, expenses: exp });
+    }
+  };
 
   // === Data Quality Engine ===
   let dataIssues = 0;
@@ -151,8 +179,10 @@ export const generateKPIs = (
   // Standalone Expenses
   standaloneExpenses.forEach(exp => {
     const d = exp.date.split('T')[0];
-    if (d.startsWith(thisYearStr)) {
+    if (isDateInPeriod(d)) {
       totalExpenses += exp.amount;
+      addTrend(d, 0, 0, exp.amount);
+      breakdowns.ledgerTransactions.push({ id: exp.id, date: d, type: 'Expense', description: exp.description || getExpenseCategory(exp), amount: -exp.amount });
       const cat = getExpenseCategory(exp);
       breakdowns.expensesByCategory[cat] = (breakdowns.expensesByCategory[cat] || 0) + exp.amount;
       
@@ -183,10 +213,13 @@ export const generateKPIs = (
     const d = sale.date.split('T')[0];
     if (d === todayStr) todayRevenue += sale.total;
     if (d.startsWith(thisMonthStr)) mtdRevenue += sale.total;
-    if (d.startsWith(thisYearStr)) {
+    
+    if (isDateInPeriod(d)) {
       ytdRevenue += sale.total;
       totalRevenue += sale.total;
       totalCashReceived += sale.amountReceived;
+      
+      breakdowns.ledgerTransactions.push({ id: sale.id, date: d, type: 'Lube Sale', description: 'Direct Lube Sale POS', amount: sale.total });
       
       // Calculate Lube COGS
       sale.items.forEach(item => {
@@ -199,6 +232,8 @@ export const generateKPIs = (
         const pCat = getProductCategory(p);
         const revenue = item.lineTotal;
         const profit = revenue - cogs;
+
+        addTrend(d, revenue, profit, 0);
 
         breakdowns.revenueByProduct[pName] = (breakdowns.revenueByProduct[pName] || 0) + revenue;
         breakdowns.revenueByCategory[pCat] = (breakdowns.revenueByCategory[pCat] || 0) + revenue;
@@ -228,10 +263,12 @@ export const generateKPIs = (
         const cogs = (seg.litersSold * pp);
         shiftCogs += cogs;
 
-        if (d.startsWith(thisYearStr)) {
+        if (isDateInPeriod(d)) {
           const pName = getProductName(p);
           const pCat = getProductCategory(p);
           const profit = seg.revenue - cogs;
+
+          addTrend(d, seg.revenue, profit, 0);
 
           breakdowns.revenueByProduct[pName] = (breakdowns.revenueByProduct[pName] || 0) + seg.revenue;
           breakdowns.revenueByCategory[pCat] = (breakdowns.revenueByCategory[pCat] || 0) + seg.revenue;
@@ -262,10 +299,12 @@ export const generateKPIs = (
       const cogs = (ls.quantity * pp);
       shiftCogs += cogs;
 
-      if (d.startsWith(thisYearStr)) {
+      if (isDateInPeriod(d)) {
         const pName = getProductName(p);
         const pCat = getProductCategory(p);
         const profit = ls.amount - cogs;
+
+        addTrend(d, ls.amount, profit, 0);
 
         breakdowns.revenueByProduct[pName] = (breakdowns.revenueByProduct[pName] || 0) + ls.amount;
         breakdowns.revenueByCategory[pCat] = (breakdowns.revenueByCategory[pCat] || 0) + ls.amount;
@@ -276,8 +315,11 @@ export const generateKPIs = (
 
     // Shift Expenses
     shift.expenseEntries?.forEach(exp => {
-      if (d.startsWith(thisYearStr)) {
+      if (isDateInPeriod(d)) {
         totalExpenses += exp.amount;
+        addTrend(d, 0, 0, exp.amount);
+        breakdowns.ledgerTransactions.push({ id: exp.id, date: d, type: 'Shift Expense', description: exp.description || getExpenseCategory(exp), amount: -exp.amount });
+
         const cat = getExpenseCategory(exp);
         breakdowns.expensesByCategory[cat] = (breakdowns.expensesByCategory[cat] || 0) + exp.amount;
         
@@ -291,21 +333,29 @@ export const generateKPIs = (
 
     // Recoveries
     shift.recoveryEntries?.forEach(rec => {
-      if (d.startsWith(thisYearStr)) {
+      if (isDateInPeriod(d)) {
         totalCashReceived += rec.amount;
       }
     });
 
     if (d === todayStr) todayRevenue += shiftRev;
     if (d.startsWith(thisMonthStr)) mtdRevenue += shiftRev;
-    if (d.startsWith(thisYearStr)) {
+    if (isDateInPeriod(d)) {
       ytdRevenue += shiftRev;
       totalRevenue += shiftRev;
       totalCogs += shiftCogs;
       totalLitersSold += shiftLiters;
       totalCashReceived += (shift.submittedCash || 0);
+      
+      if (shiftRev > 0) {
+         breakdowns.ledgerTransactions.push({ id: shift.id, date: d, type: 'Shift Sales', description: `Shift Fuel & Lube Sales (${shift.type})`, amount: shiftRev });
+      }
     }
   });
+
+  // Sort trend data and ledger
+  breakdowns.trendData.sort((a, b) => a.date.localeCompare(b.date));
+  breakdowns.ledgerTransactions.sort((a, b) => b.date.localeCompare(a.date));
 
   const grossProfit = totalRevenue - totalCogs;
   const netProfit = grossProfit - totalExpenses;

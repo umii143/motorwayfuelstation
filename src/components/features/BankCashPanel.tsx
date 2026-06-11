@@ -21,6 +21,7 @@ import { BankAccount, Shift, GlobalSettings, LubePosSale } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
 import { useStation } from '../../contexts/StationContext';
+import TreasuryDrillDownModal from './ExecutiveDashboard/TreasuryDrillDownModal';
 
 interface BankCashPanelProps {
   settings: GlobalSettings;
@@ -44,6 +45,7 @@ export default function BankCashPanel({
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddBank, setShowAddBank] = useState(false);
+  const [isDrillDownOpen, setIsDrillDownOpen] = useState(false);
   const [timeFilter, setTimeFilter] = useState<'all' | 'weekly' | 'monthly' | 'yearly'>('all');
 
   // Time filter checking helper
@@ -248,10 +250,13 @@ export default function BankCashPanel({
       {/* DYNAMIC KPI CARDS SECTION */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* AMBER CARD - TOTAL IN BANKS */}
-        <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
+        <div 
+          onClick={() => setIsDrillDownOpen(true)}
+          className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden cursor-pointer hover:bg-amber-100/50 hover:shadow-md transition-all group"
+        >
           <div className="flex items-start justify-between">
             <div>
-              <span className="font-mono text-[9px] font-black text-amber-800 uppercase tracking-widest block mb-1">TOTAL BANK CASH</span>
+              <span className="font-mono text-[9px] font-black text-amber-800 uppercase tracking-widest block mb-1 group-hover:text-amber-900 transition-colors">TOTAL BANK CASH</span>
               <h3 className="font-sans text-2xl font-black text-amber-900 mt-1 truncate animate-pulse">
                 {formatCurrency(kpiStats.totalBalance, settings)}
               </h3>
@@ -628,6 +633,12 @@ export default function BankCashPanel({
           </div>
         )}
       </AnimatePresence>
+
+      <TreasuryDrillDownModal 
+        isOpen={isDrillDownOpen}
+        onClose={() => setIsDrillDownOpen(false)}
+        settings={settings}
+      />
     </div>
   );
 }

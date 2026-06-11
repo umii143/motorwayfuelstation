@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { KPIResult } from '../../../services/analytics/kpiEngine';
 import { X, DollarSign, TrendingUp, TrendingDown, Clock, Activity, PieChart as PieChartIcon, CheckCircle2, AlertOctagon, Info } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, Legend, LineChart, Line, CartesianGrid } from 'recharts';
 
 interface KPIDrillDownModalProps {
   isOpen: boolean;
@@ -275,19 +275,108 @@ export const KPIDrillDownModal: React.FC<KPIDrillDownModalProps> = ({ isOpen, on
 
       case 'trends':
         return (
-          <div className="p-8 text-center text-slate-500">
-            <Activity className="h-12 w-12 mx-auto text-slate-300 mb-4" />
-            <p className="font-bold text-slate-700 text-lg">Trend Engine Active</p>
-            <p className="text-sm">Historical trend analysis is processing. Displaying 7, 30, and 90-day intervals shortly.</p>
+          <div className="space-y-6">
+            <h3 className="text-lg font-black text-slate-800">Historical Trend Analysis</h3>
+            <div className="h-80 w-full bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+              {breakdowns.trendData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={breakdowns.trendData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
+                    <YAxis 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{fontSize: 12, fill: '#64748b'}} 
+                      tickFormatter={(value) => `Rs ${value/1000}k`} 
+                    />
+                    <Tooltip 
+                      formatter={(value: number) => fmt(value)}
+                      labelStyle={{color: '#1e293b', fontWeight: 'bold'}}
+                      contentStyle={{borderRadius: '0.75rem', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}
+                    />
+                    <Legend iconType="circle" wrapperStyle={{paddingTop: '20px'}} />
+                    {(metric === 'revenue' || metric === null) && <Line type="monotone" dataKey="revenue" name="Revenue" stroke="#3b82f6" strokeWidth={3} dot={{r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6}} />}
+                    {(metric === 'profit' || metric === null) && <Line type="monotone" dataKey="profit" name="Gross Profit" stroke="#10b981" strokeWidth={3} dot={{r: 4, fill: '#10b981', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6}} />}
+                    {(metric === 'expenses' || metric === null) && <Line type="monotone" dataKey="expenses" name="Expenses" stroke="#ef4444" strokeWidth={3} dot={{r: 4, fill: '#ef4444', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6}} />}
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center text-slate-400">
+                  <Activity className="h-10 w-10 mb-2 opacity-50" />
+                  <p>No trend data available for selected period</p>
+                </div>
+              )}
+            </div>
+            
+            {/* KPI Summary for Trends */}
+            <div className="grid grid-cols-3 gap-4">
+               <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+                 <p className="text-xs font-bold text-blue-600 uppercase mb-1">Avg Daily Revenue</p>
+                 <p className="text-xl font-black text-blue-900">{fmt(kpis.revenue.averageDaily)}</p>
+               </div>
+               <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+                 <p className="text-xs font-bold text-emerald-600 uppercase mb-1">Avg Daily Profit</p>
+                 <p className="text-xl font-black text-emerald-900">{fmt(kpis.profit.net / (breakdowns.trendData.length || 1))}</p>
+               </div>
+               <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+                 <p className="text-xs font-bold text-red-600 uppercase mb-1">Avg Daily Expenses</p>
+                 <p className="text-xl font-black text-red-900">{fmt(kpis.expenses.total / (breakdowns.trendData.length || 1))}</p>
+               </div>
+            </div>
           </div>
         );
 
       case 'transactions':
         return (
-          <div className="p-8 text-center text-slate-500">
-            <Clock className="h-12 w-12 mx-auto text-slate-300 mb-4" />
-            <p className="font-bold text-slate-700 text-lg">Traceability Log</p>
-            <p className="text-sm">Source record mapping complete. Ledger display rendering.</p>
+          <div className="space-y-4">
+            <div className="flex justify-between items-end mb-2">
+              <h3 className="text-lg font-black text-slate-800">Traceability Ledger</h3>
+              <span className="text-xs font-bold text-slate-400 uppercase">{breakdowns.ledgerTransactions.length} Records Found</span>
+            </div>
+            <div className="overflow-hidden border border-slate-200 rounded-xl bg-white shadow-sm">
+              <div className="max-h-[500px] overflow-y-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead className="bg-slate-50 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+                    <tr>
+                      <th className="py-3 px-4 text-xs font-bold text-slate-500">Date</th>
+                      <th className="py-3 px-4 text-xs font-bold text-slate-500">Source Type</th>
+                      <th className="py-3 px-4 text-xs font-bold text-slate-500">Description</th>
+                      <th className="py-3 px-4 text-xs font-bold text-slate-500 text-right">Impact Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {breakdowns.ledgerTransactions.length > 0 ? (
+                      breakdowns.ledgerTransactions.map((tx, i) => (
+                        <tr key={`${tx.id}-${i}`} className="hover:bg-slate-50 transition-colors">
+                          <td className="py-3 px-4 text-sm font-semibold text-slate-700 whitespace-nowrap">{tx.date}</td>
+                          <td className="py-3 px-4 text-sm font-medium text-slate-600">
+                            <span className={`px-2 py-1 rounded text-xs font-bold ${
+                              tx.type.includes('Sales') ? 'bg-blue-100 text-blue-700' :
+                              tx.type.includes('Expense') ? 'bg-red-100 text-red-700' :
+                              'bg-slate-100 text-slate-700'
+                            }`}>
+                              {tx.type}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-slate-600 truncate max-w-xs">{tx.description}</td>
+                          <td className={`py-3 px-4 text-right font-bold whitespace-nowrap ${tx.amount >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                            {tx.amount > 0 ? '+' : ''}{fmt(tx.amount)}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="py-12 text-center text-slate-400">
+                          <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p className="font-semibold text-slate-500">No source transactions found</p>
+                          <p className="text-xs mt-1">Try expanding the selected date period.</p>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         );
     }

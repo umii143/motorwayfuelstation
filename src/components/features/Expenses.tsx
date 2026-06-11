@@ -19,7 +19,9 @@ import {
   Calendar,
   CreditCard,
   Notebook,
-  Sparkles
+  Sparkles,
+  Trash2,
+  Settings2
 } from 'lucide-react';
 import EmptyState from '../ui/EmptyState';
 import { ModuleSearchBar } from '../shared/ModuleSearchBar';
@@ -47,7 +49,7 @@ export default function Expenses({
   standaloneExpenses,
   onAddStandaloneExpense
 }: ExpensesProps) {
-  const { showToast } = useStation();
+  const { showToast, handleUpdateSettings } = useStation();
   const t = (en: string, ur: string) => translate(en, ur, settings);
   const isUrdu = settings.language === 'ur';
 
@@ -58,6 +60,9 @@ export default function Expenses({
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [timeFilter, setTimeFilter] = useState<'all' | 'weekly' | 'monthly' | 'yearly'>('all');
+  const [showManageCategories, setShowManageCategories] = useState(false);
+  const [newCatLabel, setNewCatLabel] = useState('');
+  const [newCatUrdu, setNewCatUrdu] = useState('');
 
   // Time filter checking helper
   const isWithinTimeFilter = (dateStr: string) => {
@@ -83,7 +88,7 @@ export default function Expenses({
   const isLube = activeStationId === 'st_lube';
 
   // Categories list helper — lube-appropriate labels
-  const expenseCategories = isLube ? [
+  const baseExpenseCategories = isLube ? [
     { id: 'meals', label: 'Staff Food & Meals', urdu: 'عملے کا کھانا' },
     { id: 'maintenance', label: 'Shop Maintenance', urdu: 'دکان کی دیکھ بھال/مرمت' },
     { id: 'electricity', label: 'Utility Grid Bills', urdu: 'بجلی اور گیس بل' },
@@ -100,6 +105,11 @@ export default function Expenses({
     { id: 'stationery', label: 'Stationery & Slips', urdu: 'اسٹیشنری و پرنٹنگ' },
     { id: 'other', label: 'Miscellaneous Other', urdu: 'دیگر متفرق اخراجات' }
   ];
+
+  const expenseCategories = useMemo(() => {
+    const custom = settings.customExpenseCategories || [];
+    return [...baseExpenseCategories, ...custom];
+  }, [baseExpenseCategories, settings.customExpenseCategories]);
 
   // Compile ALL expenses dynamically (Shifts expenses + standalone expenses)
   const allExpenses = useMemo(() => {
@@ -266,6 +276,34 @@ export default function Expenses({
     };
   }, [filteredExpenses]);
 
+  const handleAddCustomCategory = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCatLabel || !newCatUrdu) {
+      showToast(t('Please enter both English and Urdu names.', 'براہ کرم انگلش اور اردو دونوں نام درج کریں۔'), 'error');
+      return;
+    }
+    const id = 'custom_' + Date.now();
+    const newCat = { id, label: newCatLabel, urdu: newCatUrdu };
+    const currentCustom = settings.customExpenseCategories || [];
+    handleUpdateSettings({
+      ...settings,
+      customExpenseCategories: [...currentCustom, newCat]
+    });
+    setNewCatLabel('');
+    setNewCatUrdu('');
+    showToast(t('Custom category added!', 'کسٹم کیٹیگری شامل کر دی گئی!'), 'success');
+  };
+
+  const handleDeleteCustomCategory = (id: string) => {
+    if (!window.confirm(t('Are you sure you want to delete this category?', 'کیا آپ واقعی یہ کیٹیگری حذف کرنا چاہتے ہیں؟'))) return;
+    const currentCustom = settings.customExpenseCategories || [];
+    handleUpdateSettings({
+      ...settings,
+      customExpenseCategories: currentCustom.filter(c => c.id !== id)
+    });
+    showToast(t('Custom category deleted!', 'کسٹم کیٹیگری حذف کر دی گئی!'), 'success');
+  };
+
   return (
     <div className="space-y-6 pb-16 lg:pb-0">
 
@@ -303,6 +341,14 @@ export default function Expenses({
             ))}
           </div>
 
+          <button
+            onClick={() => setShowManageCategories(true)}
+            className="flex items-center justify-center gap-1.5 rounded-lg bg-slate-100 border border-slate-200 px-3 py-2.5 font-sans text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-200 transition-all cursor-pointer"
+          >
+            <Settings2 className="h-4 w-4" />
+            <span>{t('Categories', 'کیٹیگریز')}</span>
+          </button>
+          
           <button
             onClick={() => setShowAddExpense(true)}
             className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2.5 font-sans text-xs font-bold text-white shadow-md shadow-orange-500/10 hover:bg-orange-700 transition-all cursor-pointer"
@@ -619,6 +665,86 @@ export default function Expenses({
                   className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-sans text-sm font-bold tracking-wider rounded-lg shadow-md mt-4 cursor-pointer"
                 >
                   {t('SUBMIT EXPENDITURE BILL', 'خرچہ درج کر دیں')}
+                </button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {showManageCategories && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 15, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 350 }}
+              className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-xl"
+            >
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                <h3 className="font-sans text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <Settings2 className="h-5 w-5 text-indigo-550" />
+                  <span>{t('Manage Expense Categories', 'اخراجات کی کیٹیگریز ترتیب دیں')}</span>
+                </h3>
+                <button onClick={() => setShowManageCategories(false)} className="text-slate-400 hover:text-slate-650 cursor-pointer font-bold text-xl">&times;</button>
+              </div>
+
+              {/* List existing custom categories */}
+              <div className="mb-6 space-y-2 max-h-[30vh] overflow-y-auto pr-1">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('Custom Categories:', 'آپ کی بنائی گئی کیٹیگریز:')}</label>
+                {(!settings.customExpenseCategories || settings.customExpenseCategories.length === 0) ? (
+                  <div className="text-center p-4 bg-slate-50 rounded-lg text-slate-400 text-xs font-bold">
+                    {t('No custom categories yet.', 'ابھی تک کوئی کسٹم کیٹیگری نہیں ہے۔')}
+                  </div>
+                ) : (
+                  settings.customExpenseCategories.map(cat => (
+                    <div key={cat.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
+                      <div>
+                        <div className="font-bold text-sm text-slate-800">{cat.label}</div>
+                        <div className="text-xs text-slate-500">{cat.urdu}</div>
+                      </div>
+                      <button 
+                        onClick={() => handleDeleteCustomCategory(cat.id)}
+                        className="p-2 text-rose-500 hover:bg-rose-100 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Add New Category Form */}
+              <form onSubmit={handleAddCustomCategory} className="space-y-4 pt-4 border-t border-slate-100">
+                <label className="block text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">{t('Create New Category:', 'نئی کیٹیگری بنائیں:')}</label>
+                <div>
+                  <input
+                    type="text"
+                    required
+                    value={newCatLabel}
+                    onChange={(e) => setNewCatLabel(e.target.value)}
+                    placeholder={t("Category Name (English)", "انگلش نام")}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-indigo-500 focus:outline-hidden mb-3"
+                  />
+                  <input
+                    type="text"
+                    required
+                    value={newCatUrdu}
+                    onChange={(e) => setNewCatUrdu(e.target.value)}
+                    dir="rtl"
+                    placeholder={t("Category Name (Urdu)", "اردو نام")}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-indigo-500 focus:outline-hidden mb-3"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-sans text-xs font-bold tracking-wider rounded-lg shadow-md cursor-pointer"
+                >
+                  {t('+ ADD CATEGORY', 'کیٹیگری شامل کریں')}
                 </button>
               </form>
             </motion.div>

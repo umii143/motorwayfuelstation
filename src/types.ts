@@ -424,6 +424,21 @@ export interface GlobalSettings extends TenantDocument {
       cashVariance: boolean;
     };
   };
+  security?: {
+    masterPin?: string;
+    requirePinForMeterReset?: boolean;
+    requirePinForFactoryReset?: boolean;
+    sessionTimeoutMinutes?: number;
+    biometricEnabled?: boolean;
+  };
+  treasury?: {
+    cashVarianceThreshold?: number;
+    discountApprovalLimit?: number;
+    supplierPaymentLimit?: number;
+    autoLockPeriodMinutes?: number;
+    defaultOwnerSafe?: string;
+  };
+  customExpenseCategories?: { id: string; label: string; urdu: string }[];
 }
 
 export const EXPENSE_CATEGORIES = [

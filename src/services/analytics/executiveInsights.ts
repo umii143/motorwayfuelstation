@@ -9,9 +9,14 @@ export interface HealthScoreResult {
     weight: number;
     status: 'Positive' | 'Negative' | 'Neutral';
   }[];
+  recommendations: {
+    type: 'critical' | 'warning' | 'positive' | 'info';
+    message: string;
+    action: string;
+  }[];
 }
 
-export const generateHealthScore = (kpis: KPIResult): HealthScoreResult => {
+export const generateHealthScore = (kpis: KPIResult, suppliers: any[] = []): HealthScoreResult => {
   // Factors calculation out of 100
   
   // 1. Sales Trend (Weight: 20%)
@@ -64,6 +69,66 @@ export const generateHealthScore = (kpis: KPIResult): HealthScoreResult => {
   else if (finalScore < 70) label = 'Fair';
   else if (finalScore < 85) label = 'Good';
 
+  const recommendations: HealthScoreResult['recommendations'] = [];
+
+  // Generate dynamic AI-driven recommendations
+  if (kpis.cash.position < 0) {
+    recommendations.push({
+      type: 'critical',
+      message: 'Net cash flow is negative. Operations are consuming more cash than they generate.',
+      action: 'Open Treasury Center to investigate recent supplier payments vs collections.'
+    });
+  }
+
+  if (kpis.credit.riskScore > 60) {
+    recommendations.push({
+      type: 'warning',
+      message: `High credit risk detected. ${kpis.credit.overdueCustomers} accounts are near their limit.`,
+      action: 'Open Credit Intelligence Center to begin recovery procedures.'
+    });
+  }
+
+  if (kpis.profit.marginPercent < 5 && kpis.revenue.ytd > 0) {
+    recommendations.push({
+      type: 'warning',
+      message: `Gross margin is critically low (${kpis.profit.marginPercent.toFixed(1)}%). Expected around 10%.`,
+      action: 'Check Profit Intelligence to review COGS and recent price changes.'
+    });
+  }
+
+  const overdueSuppliers = suppliers.filter(s => s.balance > 1000000).length;
+  if (overdueSuppliers > 0) {
+    recommendations.push({
+      type: 'warning',
+      message: `${overdueSuppliers} suppliers have balances over Rs 1,000,000.`,
+      action: 'Open Supplier Liability Center to plan payments and avoid stock stops.'
+    });
+  }
+
+  if (kpis.inventory.stockCoverageDays < 2) {
+    recommendations.push({
+      type: 'critical',
+      message: `Stock coverage is critically low (${kpis.inventory.stockCoverageDays} days). Risk of dry out.`,
+      action: 'Open Inventory Intelligence to dispatch supply orders immediately.'
+    });
+  }
+
+  if (kpis.dataQuality.score < 80) {
+    recommendations.push({
+      type: 'warning',
+      message: 'Data integrity is compromised. Possible uncategorized expenses or missing readings.',
+      action: 'Review Shift Logs for unclosed or anomalous shift variances.'
+    });
+  }
+
+  if (recommendations.length === 0) {
+    recommendations.push({
+      type: 'positive',
+      message: 'All enterprise pillars are operating at high efficiency.',
+      action: 'Maintain current operational standards.'
+    });
+  }
+
   return {
     score: finalScore,
     label,
@@ -74,6 +139,7 @@ export const generateHealthScore = (kpis: KPIResult): HealthScoreResult => {
       { name: 'Inventory Health', score: Math.round(inventoryScore), weight: 15, status: inventoryScore >= 80 ? 'Positive' : inventoryScore < 50 ? 'Negative' : 'Neutral' },
       { name: 'Cash Flow', score: Math.round(cashScore), weight: 15, status: cashScore >= 80 ? 'Positive' : cashScore < 50 ? 'Negative' : 'Neutral' },
       { name: 'Data Quality', score: Math.round(opsScore), weight: 15, status: opsScore >= 80 ? 'Positive' : opsScore < 50 ? 'Negative' : 'Neutral' }
-    ]
+    ],
+    recommendations
   };
 };

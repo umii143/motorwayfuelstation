@@ -59,7 +59,8 @@ import {
   Sparkles,
   ScanLine,
   Briefcase,
-  Beaker
+  Beaker,
+  FlaskConical
 } from 'lucide-react';
 import { GlobalSettings, Station } from '../../types';
 import { t as translate } from '../../lib/translations';
@@ -154,6 +155,7 @@ export default function Navigation({
         { id: 'executive_dashboard', icon: Briefcase, label: 'Executive Insights', urdu: 'ایگزیکٹو ڈیش بورڈ', showInLube: true },
         { id: 'treasury', icon: Landmark, label: 'Treasury Center', urdu: 'ٹریژری سینٹر', showInLube: true },
         { id: 'risk_center', icon: ShieldAlert, label: 'Risk Center', urdu: 'رسک سینٹر', showInLube: true },
+        { id: 'integrity_center', icon: ShieldCheck, label: 'Integrity Center', urdu: 'انٹیگریٹی سینٹر', showInLube: true },
         { id: 'demand_forecast', icon: BarChart3, label: 'Forecasting', urdu: 'فورکاسٹنگ', showInLube: true },
         { id: 'fleet', icon: Truck, label: 'Fleet Accounts', urdu: 'فلیٹ منیجمنٹ', showInLube: false },
         { id: 'tanker_delivery', icon: ArrowRightLeft, label: isLube ? 'Supplier Deliveries' : 'Tankers & Delivery', urdu: isLube ? 'سپلائر ڈیلیوری' : 'ٹینکر شیڈول', showInLube: false },
@@ -891,83 +893,7 @@ export default function Navigation({
 
           <nav className="space-y-1 px-3 flex-1 overflow-y-auto">
             {['main', 'operations', 'analytics', 'setup', 'system'].map(sectionKey => {
-              if (sectionKey === 'setup') {
-                if (isLube) return null;
-                return (
-                  <div key="desktop_section_setup" className="space-y-1">
-                    {!isSidebarCollapsed && (
-                      <div className="px-3 py-2 mt-4 flex items-center">
-                        <div className="h-px bg-slate-200 flex-1"></div>
-                        <span className="px-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">
-                          {t('SETUP', 'سیٹ اپ')}
-                        </span>
-                        <div className="h-px bg-slate-200 flex-1"></div>
-                      </div>
-                    )}
-                    
-                    {/* DYNAMIC CONFIGURATION ACCORDION */}
-                    <button
-                      onClick={() => {
-                        const newExpanded = !isConfigExpanded;
-                        setIsConfigExpanded(newExpanded);
-                        if (isSidebarCollapsed && onToggleSidebar) onToggleSidebar(false);
-                        if (newExpanded && firstIncompleteStep && !setupComplete) {
-                          onViewChange(firstIncompleteStep.viewId);
-                        } else if (newExpanded && setupComplete) {
-                          onViewChange('setup_tanks');
-                        }
-                      }}
-                      className={`flex w-full items-center justify-between gap-3 rounded-lg py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
-                        isSidebarCollapsed ? 'px-2 justify-center' : 'px-3'
-                      } ${
-                        activeView.startsWith('setup_') || activeView === 'configuration'
-                          ? isLube
-                            ? 'bg-blue-50 text-blue-600 font-bold border-l-4 border-blue-600 shadow-xs'
-                            : 'bg-orange-50 text-orange-600 font-bold border-l-4 border-orange-600 shadow-xs'
-                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent'
-                      }`}
-                      title={isSidebarCollapsed ? t('Configuration', 'کنفیگریشن') : undefined}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Settings className={`h-5 w-5 shrink-0 ${activeView.startsWith('setup_') || activeView === 'configuration' ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
-                        {!isSidebarCollapsed && (
-                          <div className="flex-1 text-left flex items-center justify-between pr-1">
-                            <span>{t('Configuration', 'کنفیگریشن')}</span>
-                            {!setupComplete && (
-                              <span className="ml-2 inline-flex items-center justify-center bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">
-                                {progressPercent}%
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      {!isSidebarCollapsed && <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${isConfigExpanded ? 'rotate-180' : ''} ${activeView.startsWith('setup_') || activeView === 'configuration' ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />}
-                    </button>
-                    
-                    {isConfigExpanded && !isSidebarCollapsed && (
-                      <div className="pl-9 pr-2 space-y-1 mt-1 mb-2 animate-in slide-in-from-top-2 duration-200">
-                        {steps.map(step => (
-                          <ConfigSidebarItem
-                            key={step.id}
-                            step={step}
-                            isActive={activeView === step.viewId}
-                            onClick={onViewChange}
-                          />
-                        ))}
-                        <div className="mt-2 mb-1 px-2 py-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-around shadow-sm">
-                          <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
-                            {t('Tanks', 'ٹینک')}: <span className="text-slate-800 font-bold ml-1">{tanks.length}</span>
-                          </div>
-                          <div className="w-px h-3 bg-slate-200"></div>
-                          <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
-                            {t('Nozzles', 'نوزلز')}: <span className="text-slate-800 font-bold ml-1">{nozzles.length}</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              }
+
 
               const sectionItems = menuItems.filter(item => item.section === sectionKey);
               if (sectionItems.length === 0) return null;
@@ -1072,20 +998,22 @@ export default function Navigation({
             })}
           </nav>
           
-          {onLogout && (
-            <div className="p-3 border-t border-slate-100 bg-slate-50/50">
-              <div className="mb-3 px-1">
-                <PoweredByUmarAli variant="compact" />
-              </div>
-              <button
-                onClick={onLogout}
-                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 font-sans text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors cursor-pointer"
-              >
-                <LogOut className="h-4 w-4 text-red-500" />
-                <span>{t("Secure Sign Out", "لاگ آؤٹ اور لاگ آف کریں")}</span>
-              </button>
+          <div className="p-3 border-t border-slate-100 bg-slate-50/50">
+            <div className="mb-3 px-1">
+              <PoweredByUmarAli variant="compact" />
             </div>
-          )}
+            <button
+              onClick={() => handleItemClick('configuration')}
+              className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 font-sans text-sm font-bold transition-colors cursor-pointer ${
+                activeView === 'configuration' || activeView === 'settings'
+                  ? 'bg-indigo-50 text-indigo-700'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+              }`}
+            >
+              <Settings className={`h-5 w-5 ${activeView === 'configuration' || activeView === 'settings' ? 'text-indigo-600' : 'text-slate-400'}`} />
+              {!isSidebarCollapsed && <span>{t("Settings", "ترتیبات")}</span>}
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -1133,80 +1061,7 @@ export default function Navigation({
 
             <nav className="space-y-1 px-3 flex-1 overflow-y-auto">
               {['main', 'operations', 'analytics', 'setup', 'system'].map(sectionKey => {
-                if (sectionKey === 'setup') {
-                  if (isLube) return null;
-                  return (
-                    <div key="mobile_section_setup" className="space-y-1">
-                      <div className="px-3 py-2 mt-4 flex items-center">
-                        <div className="h-px bg-slate-200 flex-1"></div>
-                        <span className="px-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">
-                          {t('SETUP', 'سیٹ اپ')}
-                        </span>
-                        <div className="h-px bg-slate-200 flex-1"></div>
-                      </div>
-                      
-                      {/* DYNAMIC CONFIGURATION ACCORDION MOBILE */}
-                      <button
-                        onClick={() => {
-                          const newExpanded = !isConfigExpanded;
-                          setIsConfigExpanded(newExpanded);
-                          if (newExpanded && firstIncompleteStep && !setupComplete) {
-                            onViewChange(firstIncompleteStep.viewId);
-                            setMobileMenuOpen(false);
-                          } else if (newExpanded && setupComplete) {
-                            onViewChange('setup_tanks');
-                            setMobileMenuOpen(false);
-                          }
-                        }}
-                        className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
-                          activeView.startsWith('setup_') || activeView === 'configuration'
-                            ? isLube
-                              ? 'bg-blue-50 text-blue-600 font-bold border-l-4 border-blue-600'
-                              : 'bg-orange-50 text-orange-600 font-bold border-l-4 border-orange-600'
-                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <Settings className={`h-5 w-5 ${activeView.startsWith('setup_') || activeView === 'configuration' ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
-                          <div className="flex-1 text-left flex items-center justify-between pr-1">
-                            <span>{t('Configuration', 'کنفیگریشن')}</span>
-                            {!setupComplete && (
-                              <span className="ml-2 inline-flex items-center justify-center bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">
-                                {progressPercent}%
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <ChevronDown className={`h-4 w-4 transition-transform ${isConfigExpanded ? 'rotate-180' : ''} ${activeView.startsWith('setup_') || activeView === 'configuration' ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
-                      </button>
-                      
-                      {isConfigExpanded && (
-                        <div className="pl-9 pr-2 space-y-1 mt-1 mb-2 animate-in slide-in-from-top-2 duration-200">
-                          {steps.map(step => (
-                            <ConfigSidebarItem
-                              key={step.id}
-                              step={step}
-                              isActive={activeView === step.viewId}
-                              onClick={(viewId) => {
-                                onViewChange(viewId);
-                                setMobileMenuOpen(false);
-                              }}
-                            />
-                          ))}
-                          <div className="mt-2 mb-1 px-2 py-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-around shadow-sm">
-                            <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
-                              {t('Tanks', 'ٹینک')}: <span className="text-slate-800 font-bold ml-1">{tanks.length}</span>
-                            </div>
-                            <div className="w-px h-3 bg-slate-200"></div>
-                            <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
-                              {t('Nozzles', 'نوزلز')}: <span className="text-slate-800 font-bold ml-1">{nozzles.length}</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                }
+
 
                 const sectionItems = menuItems.filter(item => item.section === sectionKey);
                 if (sectionItems.length === 0) return null;
@@ -1296,20 +1151,22 @@ export default function Navigation({
                 );
               })}
             </nav>
-            {onLogout && (
-              <div className="p-3 border-t border-slate-100 bg-slate-50">
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onLogout();
-                  }}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-bold text-red-600 hover:bg-red-50 cursor-pointer"
-                >
-                  <LogOut className="h-5 w-5 text-red-500" />
-                  <span>{t("Sign Out", "لاگ آؤٹ")}</span>
-                </button>
-              </div>
-            )}
+            <div className="p-3 border-t border-slate-100 bg-slate-50">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleItemClick('configuration');
+                }}
+                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-bold cursor-pointer ${
+                  activeView === 'configuration' || activeView === 'settings'
+                    ? 'bg-indigo-50 text-indigo-700'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                <Settings className={`h-5 w-5 ${activeView === 'configuration' || activeView === 'settings' ? 'text-indigo-600' : 'text-slate-400'}`} />
+                <span>{t("Settings", "ترتیبات")}</span>
+              </button>
+            </div>
           </div>
         </>
       )}

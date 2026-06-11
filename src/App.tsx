@@ -566,6 +566,7 @@ function MainApp() {
       case 'loyalty':
       case 'maintenance':
       case 'erp_integration':
+      case 'integrity_center':
       case 'cctv':
       case 'api_gateway':
         // Let EnterpriseHub handle the internal tab selection using the activeView

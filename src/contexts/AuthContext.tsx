@@ -8,7 +8,9 @@ import {
   confirmPasswordReset as fbConfirmPasswordReset,
   reload as reloadUser,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  EmailAuthProvider,
+  reauthenticateWithCredential
 } from 'firebase/auth';
 import {
   doc,
@@ -78,6 +80,7 @@ export interface AuthContextType {
   registerVerify2FA: (code: string, tempToken: string) => Promise<any>;
   sendPasswordReset: (email: string) => Promise<void>;
   confirmPasswordReset: (token: string, newPass: string) => Promise<void>;
+  reauthenticateWithPassword: (password: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -524,6 +527,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     await fbConfirmPasswordReset(auth, token, newPass);
   };
 
+  const reauthenticateWithPassword = async (password: string): Promise<boolean> => {
+    const isMock = localStorage.getItem('fuelpro_mock_user') === 'true';
+    if (isMock) {
+      if (password === 'admin123') return true;
+      throw new Error('Incorrect password');
+    }
+
+    const fbUser = auth.currentUser;
+    if (!fbUser || !fbUser.email) throw new Error('No user logged in.');
+    
+    try {
+      const credential = EmailAuthProvider.credential(fbUser.email, password);
+      await reauthenticateWithCredential(fbUser, credential);
+      return true;
+    } catch (err: any) {
+      console.error("Reauthentication failed:", err);
+      throw new Error('Incorrect password');
+    }
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -542,7 +565,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       verifyTOTPChallenge,
       registerVerify2FA,
       sendPasswordReset,
-      confirmPasswordReset
+      confirmPasswordReset,
+      reauthenticateWithPassword
     }}>
       {children}
     </AuthContext.Provider>
