@@ -14,6 +14,27 @@ interface AIAnalyticsHubProps {
 }
 
 export default function AIAnalyticsHub({ settings, dataContext }: AIAnalyticsHubProps) {
+  const renderMarkdown = (text: string) => {
+    if (!text) return null;
+    const lines = text.split('\n');
+    return lines.map((line, idx) => {
+      let formattedLine = line
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>');
+      
+      if (line.startsWith('### ')) return <h3 key={idx} className="text-sm font-bold mt-2 mb-1" dangerouslySetInnerHTML={{__html: formattedLine.substring(4)}} />;
+      if (line.startsWith('## ')) return <h2 key={idx} className="text-base font-bold mt-3 mb-1" dangerouslySetInnerHTML={{__html: formattedLine.substring(3)}} />;
+      if (line.startsWith('# ')) return <h1 key={idx} className="text-lg font-bold mt-3 mb-2" dangerouslySetInnerHTML={{__html: formattedLine.substring(2)}} />;
+      
+      if (line.trim().startsWith('* ') || line.trim().startsWith('- ')) {
+        return <li key={idx} className="ml-4 list-disc marker:text-indigo-500" dangerouslySetInnerHTML={{__html: formattedLine.replace(/^[\*\-]\s/, '')}} />;
+      }
+      
+      if (line.trim() === '') return <br key={idx} />;
+      
+      return <p key={idx} className="mb-1.5" dangerouslySetInnerHTML={{__html: formattedLine}} />;
+    });
+  };
   const [messages, setMessages] = useState<Array<{role: 'user' | 'assistant', content: string}>>([
     { 
       role: 'assistant', 
@@ -194,14 +215,9 @@ export default function AIAnalyticsHub({ settings, dataContext }: AIAnalyticsHub
                         <span className="font-sans text-[10px] uppercase font-bold tracking-wider">You</span>
                       )}
                     </div>
-                    <div className="prose prose-sm dark:prose-invert max-w-none font-sans" dangerouslySetInnerHTML={{ 
-                      // Extremely basic markdown parsing for demo purposes. 
-                      // In production, use react-markdown.
-                      __html: msg.content
-                        .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>Rs.1</strong>')
-                        .replace(/\\*(.*?)\\*/g, '<em>Rs.1</em>')
-                        .replace(/\\n/g, '<br />') 
-                    }} />
+                    <div className="prose prose-sm dark:prose-invert max-w-none font-sans">
+                      {renderMarkdown(msg.content)}
+                    </div>
                   </div>
                 </motion.div>
               ))}

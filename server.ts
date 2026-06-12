@@ -1345,7 +1345,9 @@ app.post('/api/ai-assistant', requireRole(["owner", "manager", "station_manager"
         maxOutputTokens: 512,
       }
     });
-    res.json({ reply: response.text || 'I could not generate a response.' });
+    const responseText = response.text || 'I could not generate a response.';
+    console.log('[AI Assistant] Generated Response:', responseText);
+    res.json({ reply: responseText });
   } catch (err: any) {
     console.error('[AI Assistant] Gemini error:', err?.message);
     const errMsg = err?.message || 'Unknown error';
