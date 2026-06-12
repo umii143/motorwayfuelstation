@@ -260,7 +260,7 @@ export default function DiscountsHub({
                       </div>
                     </td>
                     <td
-                      className="p-4 max-w-[200px] truncate text-slate-600"
+                      className="p-4 max-w-full max-w-[200px] truncate text-slate-600"
                       title={d.reason}
                     >
                       {d.reason}

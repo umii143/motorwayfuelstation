@@ -888,7 +888,7 @@ export default function Reports({
 
             <div className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
               <div className="overflow-x-auto">
-                <div className="min-w-[800px]">
+                <div className="min-w-full max-w-[800px]">
                   <div className="flex bg-slate-50 border-b border-slate-200 text-slate-700 font-bold py-3 text-[11px] uppercase tracking-wider select-none">
                     {activeTemplate.headers.map(h => {
                       const colCount = activeTemplate.headers.length;
@@ -1271,7 +1271,7 @@ export default function Reports({
                 </div>
 
                 {/* Sub Metadata rows */}
-                <div className="grid grid-cols-2 gap-4 border-b border-slate-100 pb-4 text-xs font-sans text-slate-600">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-slate-100 pb-4 text-xs font-sans text-slate-600">
                   <div>
                     <span className="block font-bold">Shift ID: <span className="font-mono font-semibold">#{activeShiftToReceipt.id}</span></span>
                     <span className="block mt-1">Date: <span className="font-semibold">{activeShiftToReceipt.date}</span></span>
@@ -1290,7 +1290,7 @@ export default function Reports({
                     {t('Final Cash Audit Sheet Summary', 'حتمی کیش گوشوارہ پڑتال')}
                   </strong>
 
-                  <div className="grid grid-cols-2 gap-4 text-xs font-sans">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-sans">
                     <div className="rounded-lg bg-slate-50 p-3 space-y-1.5 border border-slate-105">
                       <span className="text-slate-400 font-semibold block">{t('EXPECTED COMPUTED CASH:', 'حسابی کیش ہونا چاہیۓ تھا:')}</span>
                       <strong className="font-mono text-sm font-bold text-slate-800">{formatCurrency(activeShiftToReceipt.expectedCash, settings)}</strong>
@@ -1421,7 +1421,7 @@ export default function Reports({
                             <span className="font-mono text-[11px] text-slate-400 block">{s.date}</span>
                             <strong className="text-slate-800 text-xs">SH-{s.id}</strong>
                           </td>
-                          <td className="py-3.5 px-3 text-slate-600 truncate max-w-[120px]" title={s.staffId}>
+                          <td className="py-3.5 px-3 text-slate-600 truncate max-w-full max-w-[120px]" title={s.staffId}>
                             {s.staffId?.toUpperCase()}
                           </td>
                           <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-800">

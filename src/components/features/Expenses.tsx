@@ -626,7 +626,7 @@ export default function Expenses({
 
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Paid From Account:', 'رقم کہاں سے ادا کی گئی:')}</label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <button
                       type="button"
                       onClick={() => setFormPaidFrom('cash')}

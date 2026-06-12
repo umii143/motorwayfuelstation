@@ -1013,7 +1013,7 @@ export default function Customers({
                     <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                       <div>
                         <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t('Transaction nature:', 'انٹری کی قسم:')}</label>
-                        <div className="grid grid-cols-2 gap-1.5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                           <button
                             type="button"
                             onClick={() => setTxnType('debit')}
@@ -1256,7 +1256,7 @@ export default function Customers({
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t(`Credit Limit (${getCurrencySymbol(settings)}):`, 'قرض کی انتہائ حد:')}</label>
                     <input

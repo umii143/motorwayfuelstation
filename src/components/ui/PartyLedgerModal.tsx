@@ -282,7 +282,7 @@ export default function PartyLedgerModal({
               </div>
 
               {/* Search */}
-              <div className="relative flex-1 min-w-[140px]">
+              <div className="relative flex-1 min-w-full max-w-[140px]">
                 <Filter className="absolute left-2.5 top-2 h-3.5 w-3.5 text-[var(--text-muted)]" />
                 <input
                   type="text"
@@ -314,15 +314,15 @@ export default function PartyLedgerModal({
 
             {/* ─── TRANSACTION TABLE ─── */}
             <div className="flex-1 overflow-auto">
-              <table className="w-full border-collapse text-left font-sans text-xs min-w-[640px]">
+              <table className="w-full border-collapse text-left font-sans text-xs min-w-full max-w-[640px]">
                 <thead className="sticky top-0 z-10">
                   <tr className="bg-[var(--bg-secondary)] border-b border-[var(--border-main)] text-[var(--text-muted)] font-bold select-none">
-                    <th className="py-3 px-4 w-[100px]">Date</th>
+                    <th className="py-3 px-4 w-full max-w-[100px]">Date</th>
                     <th className="py-3 px-4">Description</th>
-                    <th className="py-3 px-2 w-[80px]">Type</th>
-                    <th className="py-3 px-4 text-right w-[120px]">{debitLabel}</th>
-                    <th className="py-3 px-4 text-right w-[120px]">{creditLabel}</th>
-                    <th className="py-3 px-4 text-right w-[130px]">Balance</th>
+                    <th className="py-3 px-2 w-full max-w-[80px]">Type</th>
+                    <th className="py-3 px-4 text-right w-full max-w-[120px]">{debitLabel}</th>
+                    <th className="py-3 px-4 text-right w-full max-w-[120px]">{creditLabel}</th>
+                    <th className="py-3 px-4 text-right w-full max-w-[130px]">Balance</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border-main)]">
@@ -412,7 +412,7 @@ export default function PartyLedgerModal({
 
             {/* ─── TOTALS FOOTER ─── */}
             <div className="border-t-2 border-[var(--border-main)] bg-[var(--bg-secondary)] px-5 py-4 print:fixed print:bottom-0 print:w-full">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+              <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-4 text-center">
 
                 <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border-main)] p-3">
                   <span className="font-sans text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] block">Transactions</span>

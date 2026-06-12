@@ -490,7 +490,7 @@ const cartItems = useMemo(() => {
             </div>
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
               {sellableProducts.slice().sort((a, b) => b.currentStock - a.currentStock).slice(0, 4).map(product => (
-                <div key={'fast_'+product.id} className="flex-shrink-0 flex items-center justify-between w-[220px] bg-white border border-slate-200/80 rounded-2xl p-3 shadow-sm hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group" onClick={() => addToCart(product.id)}>
+                <div key={'fast_'+product.id} className="flex-shrink-0 flex items-center justify-between w-full max-w-[220px] bg-white border border-slate-200/80 rounded-2xl p-3 shadow-sm hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group" onClick={() => addToCart(product.id)}>
                   <div className="pr-2">
                     <h5 className="text-[11px] font-bold text-slate-700 leading-snug line-clamp-2">{isUrdu ? product.urduName : product.name}</h5>
                     <span className="text-xs font-black text-emerald-600 mt-1 block">Rs {formatCurrency(product.rate, settings)}</span>
@@ -540,7 +540,7 @@ const cartItems = useMemo(() => {
                   >
                     {/* Top tags row */}
                     <div className="flex justify-between items-start mb-4">
-                      <div className="bg-slate-100 text-slate-500 px-2.5 py-1 rounded-md text-[9px] font-black tracking-widest uppercase truncate max-w-[120px]">
+                      <div className="bg-slate-100 text-slate-500 px-2.5 py-1 rounded-md text-[9px] font-black tracking-widest uppercase truncate max-w-full max-w-[120px]">
                         {product.category || product.type}
                       </div>
                       {product.currentStock > 0 && product.currentStock <= 5 && (
@@ -576,7 +576,7 @@ const cartItems = useMemo(() => {
         </div>
 
         {/* Right Panel - Billing Cart */}
-        <div className="w-full lg:w-[400px] xl:w-[440px] flex flex-col bg-white rounded-[2rem] border border-slate-200/80 shadow-[0_8px_40px_rgb(0,0,0,0.06)] overflow-hidden shrink-0">
+        <div className="w-full lg:w-full max-w-[400px] xl:w-[440px] flex flex-col bg-white rounded-[2rem] border border-slate-200/80 shadow-[0_8px_40px_rgb(0,0,0,0.06)] overflow-hidden shrink-0">
           
           {/* Header */}
           <div className="px-6 py-5 flex items-center justify-between border-b border-slate-100/80">
@@ -638,7 +638,7 @@ const cartItems = useMemo(() => {
                   <div className="w-24 h-24 mb-4 rounded-full bg-slate-100 flex items-center justify-center">
                     <ShoppingCart className="h-10 w-10 text-slate-300" strokeWidth={1.5} />
                   </div>
-                  <p className="text-sm font-bold text-slate-400 max-w-[200px] leading-relaxed">{t('Cart is empty. Tap products left.', 'کارٹ خالی ہے۔ بائیں طرف سے پروڈکٹس منتخب کریں۔')}</p>
+                  <p className="text-sm font-bold text-slate-400 max-w-full max-w-[200px] leading-relaxed">{t('Cart is empty. Tap products left.', 'کارٹ خالی ہے۔ بائیں طرف سے پروڈکٹس منتخب کریں۔')}</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -710,7 +710,7 @@ const cartItems = useMemo(() => {
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
                   <span className="text-slate-800">🔒</span> CHOOSE LEDGER POSTING TYPE
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-2">
                   <button onClick={() => setPaymentMode('cash')} className={`py-3 px-2 rounded-[14px] text-[10px] font-black uppercase tracking-wider transition-all border shadow-sm ${paymentMode === 'cash' ? 'bg-emerald-500 border-emerald-600 text-white' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>Cash</button>
                   <button onClick={() => setPaymentMode('credit')} className={`py-3 px-2 rounded-[14px] text-[10px] font-black uppercase tracking-wider transition-all border shadow-sm ${paymentMode === 'credit' ? 'bg-blue-500 border-blue-600 text-white' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>Credit</button>
                   <button onClick={() => setPaymentMode('bank')} className={`py-3 px-2 rounded-[14px] text-[10px] font-black uppercase tracking-wider transition-all border shadow-sm ${paymentMode === 'bank' ? 'bg-purple-500 border-purple-600 text-white' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>Bank</button>

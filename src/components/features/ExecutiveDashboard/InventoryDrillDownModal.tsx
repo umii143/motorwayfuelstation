@@ -400,7 +400,7 @@ export default function InventoryDrillDownModal({
                                 </span>
                               </td>
                               <td className="p-3">
-                                <div className="font-bold text-slate-700 text-xs truncate max-w-[150px]">{txn.reason}</div>
+                                <div className="font-bold text-slate-700 text-xs truncate max-w-full max-w-[150px]">{txn.reason}</div>
                                 <div className="text-[10px] font-medium text-slate-400">{txn.changedBy}</div>
                               </td>
                             </tr>

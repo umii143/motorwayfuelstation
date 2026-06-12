@@ -483,7 +483,7 @@ export default function UnifiedAccountManager({
                 <div className="w-full space-y-1 text-[10px] text-slate-300">
                   <div className="flex justify-between">
                     <span>{t('MERCHANT TITLE:', 'کھاتہ دار ٹائٹل:')}</span>
-                    <strong className="text-white whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px]">{walletForm.merchantTitle || 'NOT SET'}</strong>
+                    <strong className="text-white whitespace-nowrap overflow-hidden text-ellipsis max-w-full max-w-[120px]">{walletForm.merchantTitle || 'NOT SET'}</strong>
                   </div>
                   <div className="flex justify-between">
                     <span>{t('STATUS SECURE:', 'سیکیورٹی پیرامیٹر:')}</span>
@@ -665,7 +665,7 @@ export default function UnifiedAccountManager({
                   <span className="block text-slate-450 font-medium text-[11px] mt-0.5">{prodForm.urduName || t('سامان کا اردو نام', 'سامان کا اردو نام')}</span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 border-t border-dashed border-slate-200 pt-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 border-t border-dashed border-slate-200 pt-3">
                   <div>
                     <span className="block text-[8px] text-slate-400 uppercase tracking-widest">{t('Current retail rate:', 'سیلز ریٹ:')}</span>
                     <strong className="block font-sans text-xs text-slate-800">Rs. {prodForm.rate} / {prodForm.unit}</strong>

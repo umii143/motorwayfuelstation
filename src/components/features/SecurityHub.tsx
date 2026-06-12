@@ -206,7 +206,7 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
                       <Globe className="h-4 w-4 text-slate-400" />
                       <span className="text-sm font-medium text-slate-700">{t('Organization ID', 'تنظیم کا آئی ڈی')}</span>
                     </div>
-                    <span className="text-xs font-mono text-slate-500 truncate max-w-[120px]">
+                    <span className="text-xs font-mono text-slate-500 truncate max-w-full max-w-[120px]">
                       {organization.orgId}
                     </span>
                   </div>

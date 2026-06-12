@@ -105,7 +105,7 @@ export const ExecutiveDashboard: React.FC = () => {
             <PieChart className="h-64 w-64" />
           </div>
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-            <div className="min-w-[250px]">
+            <div className="min-w-full max-w-[250px]">
               <h2 className="text-lg font-bold text-slate-300 mb-2">Business Health Score</h2>
               <div className="flex items-baseline gap-4">
                 <span className="text-6xl md:text-8xl font-black tracking-tighter">{health.score}</span>

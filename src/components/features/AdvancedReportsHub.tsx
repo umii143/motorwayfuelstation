@@ -883,7 +883,7 @@ export default function AdvancedReportsHub({
       </div>
 
       {/* KPI Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
           <span className="text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider block">
             Total Reports
@@ -991,7 +991,7 @@ export default function AdvancedReportsHub({
                     onClick={() => setActiveReport(report.id)}
                     className="bg-white border border-slate-200 rounded-xl p-4 flex gap-3 hover:border-orange-400 hover:shadow-md transition-all cursor-pointer group"
                   >
-                    <div className="font-mono text-[11px] font-bold text-slate-400 pt-0.5 min-w-[32px]">
+                    <div className="font-mono text-[11px] font-bold text-slate-400 pt-0.5 min-w-full max-w-[32px]">
                       {report.id}
                     </div>
                     <div className="flex-1 min-w-0">

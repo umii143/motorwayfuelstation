@@ -236,3 +236,37 @@ html, body {
     print-color-adjust: exact !important;
   }
 }
+
+/* =========================================
+   GLOBAL MOBILE OPTIMIZATIONS (APK READY)
+   ========================================= */
+@media (max-width: 640px) {
+  /* Prevent tap highlight colors on iOS/Android */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Improve touch targets for interactive elements */
+  button, select, input[type="text"], input[type="number"], input[type="password"] {
+    min-height: 44px;
+  }
+
+  /* Make ALL standard tables horizontally scrollable by default on mobile to prevent layout breakage */
+  table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    white-space: nowrap; /* Prevent columns from crushing */
+  }
+
+  /* Optional: Soften the scrollbar for tables */
+  table::-webkit-scrollbar {
+    height: 4px;
+  }
+  table::-webkit-scrollbar-thumb {
+    background: var(--border-main);
+    border-radius: 4px;
+  }
+}
+

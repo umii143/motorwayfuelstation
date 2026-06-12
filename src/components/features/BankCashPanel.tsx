@@ -452,7 +452,7 @@ export default function BankCashPanel({
               {banks.map((b) => (
                 <div key={b.id} className="p-3 bg-slate-50 rounded-lg flex items-center justify-between">
                   <div>
-                    <strong className="text-slate-800 text-xs block truncate max-w-[150px]">{b.name}</strong>
+                    <strong className="text-slate-800 text-xs block truncate max-w-full max-w-[150px]">{b.name}</strong>
                     <span className="text-[10px] text-slate-400 font-mono mt-0.5">{b.accountNo}</span>
                   </div>
                   <strong className="font-mono text-xs text-slate-700">{formatCurrency(b.balance, settings)}</strong>
@@ -568,7 +568,7 @@ export default function BankCashPanel({
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
                     {t('Adjustment Action Type:', 'تبدیلی کی نوعیت:')}
                   </label>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                     <button
                       type="button"
                       onClick={() => setAdjustType('deposit')}

@@ -203,7 +203,7 @@ export default function CustomerCreditDrillDownModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-slate-50 w-full max-w-[1400px] h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-700/50">
+      <div className="bg-slate-50 w-full max-w-full max-w-[1400px] h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-700/50">
         
         {/* Header */}
         <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between shrink-0">
@@ -370,7 +370,7 @@ export default function CustomerCreditDrillDownModal({
               
               {/* Grid Filters */}
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex flex-wrap gap-4 items-end shrink-0">
-                <div className="flex-1 min-w-[200px]">
+                <div className="flex-1 min-w-full max-w-[200px]">
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Search Customer</label>
                   <select 
                     value={customerFilter} 
@@ -422,7 +422,7 @@ export default function CustomerCreditDrillDownModal({
                           </td>
                           <td className="p-3 align-top">
                             <p className="font-bold text-slate-800">{entry.customerName}</p>
-                            <p className="text-[10px] text-slate-500 truncate max-w-[150px]">{entry.reference}</p>
+                            <p className="text-[10px] text-slate-500 truncate max-w-full max-w-[150px]">{entry.reference}</p>
                           </td>
                           <td className="p-3 align-top text-right whitespace-nowrap">
                             {entry.debit > 0 ? (

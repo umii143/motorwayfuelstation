@@ -215,19 +215,32 @@ export interface DiscountEntry extends TenantDocument {
   timestamp: string;
 }
 
-export interface ShiftRateSegment {
+export interface ShiftPriceSegment {
   id: string;
   shiftId: string;
   nozzleId: string;
   productId: string;
-  rate: number;
+  oldRate: number;
+  newRate: number;
+  effectiveAt: string;
+  capturedAt: string;
+  delayMinutes: number;
+  delayStatus: 'normal' | 'warning' | 'critical';
   meterOpen: number;
   meterClose: number;
   litersSold: number;
   revenue: number;
   segmentIndex: number;
-  startedAt: string;
-  closedAt: string;
+}
+
+export interface PendingPriceRevision {
+  id: string;
+  productId: string;
+  oldRate: number;
+  newRate: number;
+  effectiveAt: string;
+  reason?: string;
+  approvedBy?: string;
 }
 
 export interface Shift extends TenantDocument {
@@ -243,7 +256,8 @@ export interface Shift extends TenantDocument {
   lockedBy?: string;
   lockedAt?: number;
   activeMidShiftAlert?: boolean;
-  segments?: ShiftRateSegment[];
+  segments?: ShiftPriceSegment[];
+  pendingPriceRevisions?: PendingPriceRevision[];
   
   openingReadings: { [nozzleId: string]: number };
   closingReadings: { [nozzleId: string]: number };
@@ -308,32 +322,119 @@ export interface DigitalAccount extends TenantDocument {
 
 export interface StockBatch extends TenantDocument {
   id: string;
-  tankId?: string;
-  productId: string;
-  batchNumber: string;
-  supplierId?: string;
-  date: string;
-  qtyReceived: number;
-  qtyRemaining: number;
 
+  // Core identifiers
+  tankId?: string;
+  productId: string;           // Legacy: maps to productType
+  productType?: string;        // 'petrol' | 'diesel' | 'super' | 'kerosene' | 'ldo'
+  batchNumber: string;         // e.g. "HSD-2025-0041"
+  supplierId?: string;
+
+  // ─── INVOICE FIELDS ────────────────────────────────────────────
+  invoiceNumber?: string;      // "8810/02293"
+  doNumber?: string;           // Delivery Order No
+  tokenNumber?: string;        // PSO Token No
+  contractNumber?: string;
+  date: string;                // Legacy delivery date (kept for backward compat)
+  deliveryDate?: string;       // ISO date "2025-11-17"
+  deliveryTime?: string;       // "14:30"
+
+  // ─── QUANTITY ──────────────────────────────────────────────────
+  qtyOnInvoice?: number;       // What paper invoice says
+  qtyReceived: number;         // Actual measured quantity
+  qtyShort?: number;           // qtyOnInvoice - qtyReceived (stored in DB)
+  qtyRemaining: number;        // Decreases as sold via FIFO
+
+  // ─── INVOICE PRICING (NEW — Real Invoice Total Approach) ────────
+  invoiceTotalAmount?: number;     // Rs. 37,51,951.36 (actual total from invoice)
+  invoiceCostPerLiter?: number;    // Auto: invoiceTotalAmount / qtyReceived
+
+  // ─── LEGACY PRICING (kept for backward compat) ─────────────────
   ograPumpPrice: number;
   dealerMargin: number;
-  omcInvoicePrice: number;
-  carriageTotal: number;
-  carriagePerLiter: number;
-  otherChargesTotal: number;
-  otherPerLiter: number;
-  landedCostPerLiter: number;
+  omcInvoicePrice?: number;        // OLD approach: OGRA - margin (deprecated)
+  carriageTotal?: number;          // Legacy
+  carriagePerLiter?: number;       // Legacy
+  otherChargesTotal?: number;      // Legacy
+  otherPerLiter?: number;          // Legacy
 
-  grossMarginPerLiter: number;
-  netMarginPerLiter: number;
-  expectedGrossProfit: number;
-  expectedNetProfit: number;
+  // ─── EXTRA COSTS (NEW) ─────────────────────────────────────────
+  carriageAmount?: number;         // Separate carriage (0 for PSO)
+  carriagePaidTo?: string;         // "Abdullah Enterprises"
+  driverTipAmount?: number;        // Cash tip paid to driver
+  otherCharges?: number;           // Other misc costs
+  supplierCarriageInvoiced?: boolean; // PSO=true (delivery in invoice), Attock=false
 
+  // ─── LANDED COST ───────────────────────────────────────────────
+  totalExtraCosts?: number;        // carriage + tip + other
+  totalLandedCost?: number;        // invoiceTotal + all extras
+  landedCostPerLiter: number;      // totalLandedCost / qtyReceived
+
+  // ─── EXPECTED BATCH MARGIN (renamed from Gross Profit) ─────────
+  expectedBatchMarginPerLiter?: number; // ograPrice - landedCostPerLiter
+  expectedBatchMarginTotal?: number;    // margin × qtyReceived
+
+  // ─── LEGACY MARGIN FIELDS (kept for backward compat) ───────────
+  grossMarginPerLiter?: number;
+  netMarginPerLiter?: number;
+  expectedGrossProfit?: number;
+  expectedNetProfit?: number;
+
+  // ─── REALIZED PROFIT (fills as FIFO sales happen) ──────────────
+  totalLitersSold?: number;        // Tracks how much sold from this batch
+  realizedRevenue?: number;        // Sum of: liters × sell_price per deduction
+  realizedCOGS?: number;           // Sum of: liters × landed_cost per deduction
+  realizedMargin?: number;         // realizedRevenue - realizedCOGS
+  realizedMarginPerLiter?: number; // realizedMargin / totalLitersSold
+
+  // ─── SEAL VERIFICATION ────────────────────────────────────────
+  sealNumberFrom?: string;         // "920851"
+  sealNumberTo?: string;           // "920862"
+  totalSealsExpected?: number;     // Auto: To - From + 1
+  totalSealsReceived?: number;     // Physical count
+  sealStatus?: 'ok' | 'broken' | 'missing' | 'mismatch';
+  sealNotes?: string;
+
+  // ─── BATCH TRACEABILITY / QUALITY ─────────────────────────────
+  observedGravity?: number;        // e.g. 0.721
+  observedTemp?: number;           // e.g. 92 (°C)
+  calibrationNumber?: string;      // "7499"
+  calibrationExpiry?: string;      // "2027-05-04"
+  batchTestReport?: string;
+  density?: number;
+
+  // ─── DIP READINGS ─────────────────────────────────────────────
   dipBefore?: number;
   dipAfter?: number;
+  dipExpectedAfter?: number;       // Auto: dipBefore + qtyReceived
+  dipVariance?: number;            // |dipAfter - dipExpectedAfter|
 
-  status: 'active' | 'depleted';
+  // ─── DRIVER INFO ──────────────────────────────────────────────
+  driverName?: string;
+  driverNic?: string;
+  vehicleNumber?: string;
+
+  // ─── PAYMENT ──────────────────────────────────────────────────
+  paymentMethod?: 'credit' | 'cash' | 'bank' | 'partial';
+  amountPaid?: number;
+  outstandingBalance?: number;
+  paymentDueDate?: string;
+
+  // ─── RECEIVED BY (REQUIRED from v2) ───────────────────────────
+  receivedBy?: string;             // Staff ID
+
+  // ─── INVENTORY AGING ──────────────────────────────────────────
+  agingAlertSent?: boolean;
+
+  // ─── REVALUATION ──────────────────────────────────────────────
+  revaluationGainLoss?: number;
+  lastRevaluationAt?: string;
+
+  // ─── STATUS ───────────────────────────────────────────────────
+  status: 'active' | 'depleted' | 'partial' | 'exhausted'; // 'depleted' kept for compat
+  batchStatus?: 'active' | 'partial' | 'exhausted';
+  qualityStatus?: 'clear' | 'under_review' | 'quarantined';
+  notes?: string;
 }
 
 export interface CogsRecord extends TenantDocument {
@@ -354,6 +455,82 @@ export interface CogsRecord extends TenantDocument {
   grossProfit: number;
   netProfit: number;
   saleDate: string;
+}
+
+// ─── FIFO DEDUCTION RECORD ──────────────────────────────────────────
+export interface FIFODeduction extends TenantDocument {
+  id: string;
+  batchId: string;
+  shiftId: string;
+  shiftSegmentId?: string;
+  nozzleId: string;
+  litersDeducted: number;
+  sellingPrice: number;          // OGRA rate at time of sale
+  batchLandedCost: number;       // from batch.landedCostPerLiter
+  realizedRevenue: number;       // liters × sellingPrice
+  realizedCOGS: number;          // liters × landedCost
+  realizedMargin: number;        // revenue - cogs
+  realizedMarginPerLiter: number;
+  saleDate: string;              // ISO date string YYYY-MM-DD
+  // Note: createdAt / updatedAt from TenantDocument (number / ms)
+}
+
+// ─── SUPPLIER CLAIM ─────────────────────────────────────────────────
+export interface SupplierClaim extends TenantDocument {
+  id: string;
+  batchId: string;
+  supplierId: string;
+  claimNumber: string;           // "CLM-2025-0089" (auto-generated)
+  claimType: 'short_quantity' | 'quality' | 'seal_broken' | 'adulteration' | 'other';
+  qtyShort?: number;
+  claimAmount: number;
+  description: string;
+  status: 'pending' | 'submitted' | 'approved' | 'rejected' | 'recovered' | 'partial';
+  raisedDate: string;
+  submittedDate?: string;
+  supplierResponse?: string;
+  resolvedDate?: string;
+  recoveredAmount: number;
+  outstandingClaim: number;
+  raisedBy: string;
+  notes?: string;
+  // Note: createdAt / updatedAt from TenantDocument (number / ms)
+}
+
+// ─── INVENTORY REVALUATION ──────────────────────────────────────────
+export interface InventoryRevaluation extends TenantDocument {
+  id: string;
+  priceChangeId: string;
+  batchId: string;
+  productType: string;
+  qtyRemaining: number;
+  oldOGRAPrice: number;
+  newOGRAPrice: number;
+  rateDelta: number;
+  gainLossAmount: number;
+  impactType: 'gain' | 'loss';
+  revaluedAt: string;
+}
+
+// ─── SUPPLIER PERFORMANCE ───────────────────────────────────────────
+export interface SupplierPerformanceScore extends TenantDocument {
+  id: string;
+  supplierId: string;
+  supplierName: string;
+  periodMonth: string;           // "2025-11" (YYYY-MM)
+  deliveries: number;
+  onTime: number;
+  shortDeliveries: number;
+  totalQtyShort: number;
+  totalQtyDelivered: number;
+  claimsRaised: number;
+  claimsResolved: number;
+  avgMargin: number;
+  marginStdDeviation: number;
+  qualityIssues: number;
+  performanceScore: number;      // 0-100
+  grade: 'A' | 'B' | 'C' | 'D' | 'F';
+  recommendation: string;
 }
 
 export interface StockTransaction extends TenantDocument {
@@ -428,6 +605,8 @@ export interface GlobalSettings extends TenantDocument {
     masterPin?: string;
     requirePinForMeterReset?: boolean;
     requirePinForFactoryReset?: boolean;
+    factoryResetPin?: string;
+    priceOverridePin?: string;
     sessionTimeoutMinutes?: number;
     biometricEnabled?: boolean;
   };

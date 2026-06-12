@@ -28,7 +28,12 @@ import {
   Gauge,
   Pencil,
   Trash2,
-  Sparkles
+  Sparkles,
+  Award,
+  Flame,
+  Wallet,
+  ShieldAlert,
+  BarChart2
 } from 'lucide-react';
 import { Product, StockTransaction, Supplier, GlobalSettings, Tank, RateHistoryEntry } from '../../types';
 import { fetchWithAuth } from '../../lib/api';
@@ -37,7 +42,12 @@ import { ExportToolbar } from '../shared/ExportToolbar';
 import StockInForm from './StockInForm';
 import BatchHistory from './BatchHistory';
 import { useInventoryStore } from '../../stores/useInventoryStore';
+import { useSupplierStore } from '../../stores/useSupplierStore';
 import InventoryDrillDownModal from './ExecutiveDashboard/InventoryDrillDownModal';
+import InventoryAgingDashboard from './InventoryAgingDashboard';
+import SupplierScorecard from './SupplierScorecard';
+import SupplierPayablesPanel from './SupplierPayablesPanel';
+import SupplierClaimsPanel from './SupplierClaimsPanel';
 
 interface InventoryProps {
   settings: GlobalSettings;
@@ -75,9 +85,18 @@ export default function Inventory({
   // Single source of truth: use activeStationId, not product-type heuristic
   const isLube = activeStationId === 'st_lube';
   const stockBatches = useInventoryStore(state => state.stockBatches);
+  const supplierClaims = useInventoryStore(state => state.supplierClaims);
+  const storeSuppliers = useSupplierStore(state => state.suppliers);
+  const handleUpdateSupplier = useSupplierStore(state => state.handleUpdateSupplier);
+
+  // Merge passed-in suppliers with store (store is source of truth for balances)
+  const allSuppliers = useMemo(() => {
+    const storeMap = new Map(storeSuppliers.map(s => [s.id, s]));
+    return suppliers.map(s => storeMap.get(s.id) || s);
+  }, [suppliers, storeSuppliers]);
 
   // Filter States
-  const [activeTab, setActiveTab] = useState<'inventory' | 'tanks_calibration' | 'pricing_logs' | 'batch_history'>('inventory');
+  const [activeTab, setActiveTab] = useState<'inventory' | 'tanks_calibration' | 'pricing_logs' | 'batch_history' | 'aging' | 'supplier_perf' | 'payables' | 'claims'>('inventory');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'fuel' | 'lube' | 'low'>('all');
   const [isInventoryDrillDownOpen, setIsInventoryDrillDownOpen] = useState(false);
@@ -664,6 +683,67 @@ export default function Inventory({
         >
           🏷️ {t('FIFO Batches', 'فیفو بیچز')}
         </button>
+
+        {!isLube && (
+        <button
+          onClick={() => setActiveTab('aging')}
+          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer ${
+            activeTab === 'aging'
+              ? 'border-orange-600 text-orange-600 font-extrabold'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          🔥 {t('Aging Intel', 'عمر تجزیہ')}
+          {stockBatches.filter(b => b.qtyRemaining > 0 && (() => { const d = new Date().getTime() - new Date(b.deliveryDate || b.date).getTime(); return Math.floor(d / 86400000) > 60; })()).length > 0 && (
+            <span className="ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-black bg-red-600 text-white animate-pulse">
+              !
+            </span>
+          )}
+        </button>
+        )}
+
+        <button
+          onClick={() => setActiveTab('supplier_perf')}
+          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer ${
+            activeTab === 'supplier_perf'
+              ? 'border-orange-600 text-orange-600 font-extrabold'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          🏆 {t('Supplier Scores', 'سپلائر اسکور')}
+        </button>
+
+        <button
+          onClick={() => setActiveTab('payables')}
+          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer ${
+            activeTab === 'payables'
+              ? 'border-orange-600 text-orange-600 font-extrabold'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          💳 {t('Payables', 'واجبات')}
+          {allSuppliers.filter(s => s.balance > 0).length > 0 && (
+            <span className="ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-black bg-amber-500 text-white">
+              {allSuppliers.filter(s => s.balance > 0).length}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => setActiveTab('claims')}
+          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer ${
+            activeTab === 'claims'
+              ? 'border-orange-600 text-orange-600 font-extrabold'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          ⚖️ {t('Claims', 'کلیمز')}
+          {supplierClaims.filter(c => c.status === 'pending' || c.status === 'submitted').length > 0 && (
+            <span className="ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-black bg-red-600 text-white">
+              {supplierClaims.filter(c => c.status === 'pending' || c.status === 'submitted').length}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* CORE ACTIVE WORKSPACE MODULES */}
@@ -1062,6 +1142,65 @@ export default function Inventory({
           ========================================== */}
       {activeTab === 'batch_history' && (
         <BatchHistory batches={stockBatches} products={products} language={settings.language} />
+      )}
+
+      {/* ==========================================
+          TAB 5: INVENTORY AGING INTELLIGENCE
+          ========================================== */}
+      {activeTab === 'aging' && (
+        <InventoryAgingDashboard
+          batches={stockBatches}
+          products={products}
+          suppliers={allSuppliers}
+          language={settings.language}
+        />
+      )}
+
+      {/* ==========================================
+          TAB 6: SUPPLIER PERFORMANCE SCORECARD
+          ========================================== */}
+      {activeTab === 'supplier_perf' && (
+        <SupplierScorecard
+          suppliers={allSuppliers}
+          batches={stockBatches}
+          supplierClaims={supplierClaims}
+          language={settings.language}
+        />
+      )}
+
+      {/* ==========================================
+          TAB 7: SUPPLIER PAYABLES INTELLIGENCE
+          ========================================== */}
+      {activeTab === 'payables' && (
+        <SupplierPayablesPanel
+          suppliers={allSuppliers}
+          batches={stockBatches}
+          language={settings.language}
+          onRecordPayment={async (supplierId, amount, note) => {
+            const supplier = allSuppliers.find(s => s.id === supplierId);
+            if (!supplier) return;
+            const newBalance = Math.max(0, (supplier.balance || 0) - amount);
+            await handleUpdateSupplier({ ...supplier, balance: newBalance });
+            showToast(
+              t(
+                `Rs.${amount.toLocaleString()} payment recorded for ${supplier.name}`,
+                `${supplier.name} کو Rs.${amount.toLocaleString()} ادائیگی ریکارڈ ہوئی`
+              ),
+              'success'
+            );
+          }}
+        />
+      )}
+
+      {/* ==========================================
+          TAB 8: SUPPLIER CLAIMS MANAGEMENT
+          ========================================== */}
+      {activeTab === 'claims' && (
+        <SupplierClaimsPanel
+          batches={stockBatches}
+          suppliers={allSuppliers}
+          language={settings.language}
+        />
       )}
 
       {/* MODAL 1: SUPPLIER STOCK RECEIPT (Module-C) */}

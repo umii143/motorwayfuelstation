@@ -464,7 +464,7 @@ export default function RevaluationDrillDownModal({
                               <span className="inline-block px-2 py-1 bg-blue-50 text-blue-700 rounded text-[10px] font-bold border border-blue-100">
                                 {entry.reason || 'Manual Correction'}
                               </span>
-                              {entry.notes && <p className="text-[10px] text-slate-500 mt-1 truncate max-w-[150px]" title={entry.notes}>{entry.notes}</p>}
+                              {entry.notes && <p className="text-[10px] text-slate-500 mt-1 truncate max-w-full max-w-[150px]" title={entry.notes}>{entry.notes}</p>}
                             </td>
                             <td className="p-3 align-top text-center whitespace-nowrap">
                               <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

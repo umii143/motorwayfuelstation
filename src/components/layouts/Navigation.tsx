@@ -810,7 +810,7 @@ export default function Navigation({
                 {user.role?.substring(0, 2).toUpperCase()}
               </div>
               <div className="flex flex-col text-left">
-                <span className="font-sans text-xs font-bold text-slate-800 leading-none truncate max-w-[120px]" title={user.email}>
+                <span className="font-sans text-xs font-bold text-slate-800 leading-none truncate max-w-full max-w-[120px]" title={user.email}>
                   {user.email.split('@')[0]}
                 </span>
                 <span className="font-mono text-[9px] text-orange-600 font-bold leading-none mt-1">
@@ -846,7 +846,7 @@ export default function Navigation({
       {/* DESKTOP SIDEBAR */}
       <aside 
         className={`fixed bottom-0 top-[65px] left-0 z-40 hidden border-r border-border glass py-4 lg:block animate-fade-in shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)] transition-all duration-300 ${
-          isSidebarCollapsed ? 'w-[72px]' : 'w-64'
+          isSidebarCollapsed ? 'w-full max-w-[72px]' : 'w-64'
         }`}
       >
         <div className="flex flex-col h-full justify-between overflow-x-hidden">
@@ -1251,7 +1251,7 @@ export default function Navigation({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
                     {t('NTN Registration No.', 'این ٹی این نمبر')}
@@ -1357,7 +1357,7 @@ export default function Navigation({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
                     {t('NTN Registration No.', 'این ٹی این نمبر')}

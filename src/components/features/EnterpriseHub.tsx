@@ -9,6 +9,7 @@ import BIAnalyticsHub from "./BIAnalyticsHub/BIAnalyticsHub";
 import ERPHub from "./ERPHub/ERPHub";
 import FuelQualityHub from "./FuelQualityHub";
 import IntegrityCenter from "./IntegrityCenter/IntegrityCenter";
+import PriceIntelligenceHub from "./PriceIntelligenceHub";
 import {
   CCTVIntegration,
   APIGateway
@@ -54,6 +55,7 @@ export default function EnterpriseHub({ settings, activeModule = "fleet", statio
     { id: "maintenance", label: "Maintenance", icon: <Wrench className="h-4 w-4" />, component: <MaintenanceHub settings={settings} /> },
     { id: "bi_analytics", label: "BI Analytics", icon: <LineChart className="h-4 w-4" />, component: <BIAnalyticsHub /> },
     { id: "demand_forecast", label: "Demand Forecast", icon: <BarChart3 className="h-4 w-4" />, component: <BIAnalyticsHub /> },
+    { id: "price_intelligence", label: "Price Ledger", icon: <Zap className="h-4 w-4" />, component: <PriceIntelligenceHub settings={settings} /> },
     { id: "integrity_center", label: "Integrity Center", icon: <ShieldCheck className="h-4 w-4" />, component: <IntegrityCenter stationId={stationId || "st_default"} /> },
     { id: "erp_integration", label: "ERP Link", icon: <Link className="h-4 w-4" />, component: <ERPHub settings={settings} /> },
     { id: "cctv", label: "CCTV", icon: <Camera className="h-4 w-4" />, component: <CCTVIntegration settings={settings} /> },

@@ -186,7 +186,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
             {t('To reset your PIN, please verify your identity using one of the methods below.', 'اپنا پن ری سیٹ کرنے کے لیے، درج ذیل میں سے کسی ایک طریقے کا استعمال کر کے اپنی شناخت کی تصدیق کریں۔')}
           </p>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <button
               type="button"
               onClick={() => setForgotMethod('password')}
@@ -299,7 +299,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-xs font-bold text-slate-500 uppercase">{t('New PIN', 'نیا پن')}</label>
               <input 

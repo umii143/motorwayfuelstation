@@ -104,7 +104,11 @@ export default function SettingsPanel({
   const isLube = activeStationId === 'st_lube';
 
   const [activeTab, setActiveTab] = useState<SettingsView>((initialTab as SettingsView) || 'profile');
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  
+  // Default to showing the sidebar on mobile if they just navigated to general settings
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(() => {
+    return initialTab === 'profile' || !initialTab;
+  });
 
   React.useEffect(() => {
     if (initialTab) {
@@ -251,7 +255,7 @@ export default function SettingsPanel({
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] overflow-hidden">
+    <div className="flex flex-col h-full min-h-[calc(100dvh-120px)] overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-white">
       {/* HEADER */}
       <div className="flex items-center justify-between border-b border-slate-200 bg-white p-4 shadow-xs shrink-0">
         <div className="flex items-center gap-3">

@@ -105,7 +105,7 @@ export default function NozzleWizard({
             </button>
           ) : (
             <div className="border border-slate-200 rounded-2xl p-6 space-y-5 bg-slate-50 shadow-inner animate-in zoom-in-95 duration-200">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700">{t('Pump Name', 'پمپ کا نام', language)}</label>
                   <input

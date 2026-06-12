@@ -580,7 +580,7 @@ export default function Dashboard({
       <DashboardRealtimeGauges settings={settings} products={products} tanks={tanks} activeStationId={activeStationId} />
 
       {/* TOP SUMMARY BAR STATS CARDS */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 mt-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:grid-cols-4 mt-6">
         {/* Card 1: Sessions Sales */}
         <div 
           id="kpi_sessions_sales" 
@@ -791,7 +791,7 @@ export default function Dashboard({
         <h3 className="font-sans text-sm font-bold text-slate-800 border-b border-slate-100 pb-2.5 mb-4 uppercase tracking-wider">
           {t('Quick Entry Shortcuts', 'فوری کام کا شارٹ کٹ')}
         </h3>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:grid-cols-4">
           <button
             onClick={() => onNavigate(salesEntryView)}
             className="flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-55/40 p-4 hover:border-orange-500 hover:bg-orange-50/20 transition-all cursor-pointer group"

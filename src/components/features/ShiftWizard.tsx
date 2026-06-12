@@ -23,7 +23,11 @@ import {
   Building,
   ChevronRight,
   Coins,
-  Sparkles
+  Sparkles,
+  BarChart2,
+  Flame,
+  TrendingDown,
+  Zap
 } from "lucide-react";
 import {
   Staff,
@@ -48,6 +52,8 @@ import { db } from "../../data/db";
 import { fetchWithAuth } from "../../lib/api";
 import { useStation } from "../../contexts/StationContext";
 import AIDocumentScanner from "../ui/AIDocumentScanner";
+import { deductFIFO, FIFOResult } from "../../services/fifoEngine";
+import { useInventoryStore } from "../../stores/useInventoryStore";
 import {
   processCreditSale, processRecovery, processExpense,
   processBankDeposit, processDigitalPayment, processSupplierPayment,
@@ -261,7 +267,7 @@ export default function ShiftWizard({
   // STEP 3 OPERATIONAL TABS DRAWERS
   // ==========================================
   const [activeTab, setActiveTab] = useState<
-    "debit" | "recovery" | "expense" | "bank" | "digital" | "lube" | "supplier" | "discount"
+    "debit" | "recovery" | "expense" | "bank" | "digital" | "lube" | "supplier" | "discount" | "rateChange"
   >(() => (isLubeBusiness ? "lube" : "debit"));
   // Quick Add forms state
   const [showQuickCustomer, setShowQuickCustomer] = useState(false);
@@ -344,10 +350,23 @@ export default function ShiftWizard({
   const [testDiesel, setTestDiesel] = useState("0");
   const [testCNG, setTestCNG] = useState("0");
 
+  // Mid-Shift Price Revision Snapshot State
+  const [snapshotReadings, setSnapshotReadings] = useState<{ [nozzleId: string]: string }>({});
+  const [snapshotPin, setSnapshotPin] = useState("");
+  const [snapshotOverride, setSnapshotOverride] = useState(false);
+
   // ==========================================
   // STEP 6 FORM STATE: FINAL CASH CALCULATION
   // ==========================================
   const [submittedCash, setSubmittedCash] = useState("");
+
+  // ==========================================
+  // FIFO DEDUCTION STATE
+  // ==========================================
+  const [fifoResults, setFifoResults] = useState<{ productId: string; productName: string; result: FIFOResult }[]>([]);
+  const [fifoLoading, setFifoLoading] = useState(false);
+  const stockBatches = useInventoryStore(state => state.stockBatches);
+  const supplierClaimsStore = useInventoryStore(state => state.supplierClaims);
 
   // ==========================================
   // VALIDATORS / ALERT FLAGS
@@ -403,49 +422,70 @@ export default function ShiftWizard({
   const expectedTotals = useMemo(() => {
     if (!activeShift) return null;
 
-    // 1. Calculate Fuel Gross Sales from nozzle readings (or difference)
-    // If we're at step 6, we use final closingReadings input, otherwise we estimate from 0.
-    const getNozzleSale = (nId: string) => {
-      const open = activeShift.openingReadings[nId] || 0;
-      // If we are evaluating step 6 onwards, we check the local closingReadings input, else 0
-      const close = Number(
-        closingReadings[nId] || activeShift.closingReadings[nId] || open,
-      );
-      return Math.max(0, close - open);
-    };
-
-    // Fuel Sales Summation
+    // 1. Calculate Fuel Gross Sales from nozzle readings considering Segments
     let petLitersAccum = 0;
     let dieLitersAccum = 0;
     let cngKgsAccum = 0;
+    let petrolSalesSum = 0;
+    let dieselSalesSum = 0;
+    let cngSalesSum = 0;
 
     nozzles.forEach((nz) => {
-      const sale = getNozzleSale(nz.id);
+      const open = activeShift.openingReadings[nz.id] || 0;
+      const close = Number(closingReadings[nz.id] || activeShift.closingReadings[nz.id] || open);
+      
       const cat = getFuelCategory(nz.productId, products);
-      if (cat === "petrol") petLitersAccum += sale;
-      else if (cat === "diesel") dieLitersAccum += sale;
-      else if (cat === "cng") cngKgsAccum += sale;
+      const currentRate = cat === 'petrol' ? fuelRates.petrol : cat === 'diesel' ? fuelRates.diesel : fuelRates.cng;
+
+      // Find segments for this nozzle
+      const nzSegments = (activeShift.segments || []).filter(s => s.nozzleId === nz.id);
+      
+      let nozzleLiters = 0;
+      let nozzleRevenue = 0;
+
+      if (nzSegments.length > 0) {
+        // Sum from segments
+        nzSegments.forEach(seg => {
+          nozzleLiters += seg.litersSold;
+          nozzleRevenue += seg.revenue;
+        });
+        
+        // Add remaining from last segment close
+        const lastMeterClose = nzSegments[nzSegments.length - 1].meterClose;
+        const remainingLiters = Math.max(0, close - lastMeterClose);
+        nozzleLiters += remainingLiters;
+        nozzleRevenue += remainingLiters * currentRate;
+      } else {
+        // Normal (No price change)
+        nozzleLiters = Math.max(0, close - open);
+        nozzleRevenue = nozzleLiters * currentRate;
+      }
+
+      if (cat === "petrol") {
+        petLitersAccum += nozzleLiters;
+        petrolSalesSum += nozzleRevenue;
+      } else if (cat === "diesel") {
+        dieLitersAccum += nozzleLiters;
+        dieselSalesSum += nozzleRevenue;
+      } else if (cat === "cng") {
+        cngKgsAccum += nozzleLiters;
+        cngSalesSum += nozzleRevenue;
+      }
     });
 
-    const petSaleLiters = Math.max(
-      0,
-      petLitersAccum -
-        Number(testPetrol || activeShift.testLiters?.petrol || 0),
-    );
-    const petrolSalesSum = petSaleLiters * fuelRates.petrol;
+    // Deduct test liters at current rate
+    const petTestLiters = Number(testPetrol || activeShift.testLiters?.petrol || 0);
+    const dieTestLiters = Number(testDiesel || activeShift.testLiters?.diesel || 0);
+    const cngTestLiters = Number(testCNG || activeShift.testLiters?.cng || 0);
 
-    const dieSaleLiters = Math.max(
-      0,
-      dieLitersAccum -
-        Number(testDiesel || activeShift.testLiters?.diesel || 0),
-    );
-    const dieselSalesSum = dieSaleLiters * fuelRates.diesel;
+    const petSaleLiters = Math.max(0, petLitersAccum - petTestLiters);
+    petrolSalesSum = Math.max(0, petrolSalesSum - (petTestLiters * fuelRates.petrol));
 
-    const cngSaleKgs = Math.max(
-      0,
-      cngKgsAccum - Number(testCNG || activeShift.testLiters?.cng || 0),
-    );
-    const cngSalesSum = cngSaleKgs * fuelRates.cng;
+    const dieSaleLiters = Math.max(0, dieLitersAccum - dieTestLiters);
+    dieselSalesSum = Math.max(0, dieselSalesSum - (dieTestLiters * fuelRates.diesel));
+
+    const cngSaleKgs = Math.max(0, cngKgsAccum - cngTestLiters);
+    cngSalesSum = Math.max(0, cngSalesSum - (cngTestLiters * fuelRates.cng));
 
     // Lubricants Gross Sum
     const lubeSalesSum = activeShift.lubeSales.reduce(
@@ -1289,6 +1329,58 @@ export default function ShiftWizard({
   };
 
   // Step 3 Transition to Step 4 (Configure closings)
+  const handleCaptureSnapshot = async (productId: string) => {
+    if (!activeShift) return;
+
+    // Validate PIN if override
+    if (snapshotOverride) {
+      if (snapshotPin !== settings.security?.priceOverridePin) {
+        showToast(
+          settings.language === "ur" ? "غلط پن کوڈ" : "Invalid PIN code",
+          "error"
+        );
+        return;
+      }
+    }
+
+    const { useShiftStore } = await import("../../stores/useShiftStore");
+    
+    // Pass numeric readings to store
+    const numReadings: Record<string, number> = {};
+    Object.entries(snapshotReadings).forEach(([nid, val]) => {
+      numReadings[nid] = Number(val) || 0;
+    });
+
+    try {
+      await useShiftStore.getState().handleMidShiftSplit(
+        productId,
+        numReadings,
+        new Date().toISOString(),
+        snapshotOverride ? snapshotPin : undefined,
+        undefined, // orgId
+        undefined  // stationId
+      );
+      
+      showToast(
+        settings.language === "ur" ? "سنیپ شاٹ کامیابی سے محفوظ ہو گیا" : "Snapshot saved successfully",
+        "success"
+      );
+      
+      setSnapshotReadings({});
+      setSnapshotPin("");
+      setSnapshotOverride(false);
+      
+      // If no more pending revisions, switch tab
+      const remainingRevs = (activeShift.pendingPriceRevisions || []).filter(r => r.productId !== productId);
+      if (remainingRevs.length === 0) {
+        setActiveTab("debit");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error saving snapshot", "error");
+    }
+  };
+
   const handleGoToClosings = () => {
     if (!activeShift) return;
     if (isLubeBusiness) {
@@ -1426,6 +1518,148 @@ export default function ShiftWizard({
   const handleFinalShiftSubmission = async () => {
     if (!activeShift || !expectedTotals) return;
 
+    if (activeShift.activeMidShiftAlert) {
+      showToast(
+        settings.language === "ur" 
+          ? "براہ کرم شفٹ بند کرنے سے پہلے قیمت کی تبدیلی کا سنیپ شاٹ محفوظ کریں۔" 
+          : "Please capture the pending price revision snapshot before closing the shift.",
+        "error"
+      );
+      return;
+    }
+
+    // ── FIFO DEDUCTION (MANDATORY BEFORE CLOSE) ──────────────────────────────
+    // Deduct FIFO inventory for each fuel product sold this shift
+    setFifoLoading(true);
+    const fifoResultsArr: { productId: string; productName: string; result: FIFOResult }[] = [];
+    let hasFifoDeficit = false;
+
+    try {
+      // Group nozzle sales by product
+      const productSales = new Map<string, { liters: number; tankId?: string }>();
+
+      for (const nozzle of nozzles) {
+        const openR = activeShift.openingReadings[nozzle.id] || 0;
+        const closeR = activeShift.closingReadings[nozzle.id] || openR;
+        const sold = Math.max(0, closeR - openR);
+        if (sold <= 0) continue;
+
+        const product = products.find(p => p.id === nozzle.productId);
+        if (!product || product.type !== 'fuel') continue;
+
+        // Subtract test liters for this product category
+        const cat = getFuelCategory(nozzle.productId, products);
+        let testLitersForProduct = 0;
+        if (cat === 'petrol') testLitersForProduct = Number(testPetrol || activeShift.testLiters?.petrol || 0);
+        else if (cat === 'diesel') testLitersForProduct = Number(testDiesel || activeShift.testLiters?.diesel || 0);
+        else if (cat === 'cng') testLitersForProduct = Number(testCNG || activeShift.testLiters?.cng || 0);
+
+        const existing = productSales.get(nozzle.productId) || { liters: 0, tankId: nozzle.tankId };
+        productSales.set(nozzle.productId, {
+          liters: existing.liters + sold,
+          tankId: nozzle.tankId || existing.tankId,
+        });
+      }
+
+      // Run FIFO per product
+      for (const [productId, { liters, tankId }] of productSales.entries()) {
+        const product = products.find(p => p.id === productId);
+        const sellingPrice = product?.rate || 0;
+        // Subtract test liters proportionally (already handled above per-product)
+        const cat = getFuelCategory(productId, products);
+        let testLiters = 0;
+        if (cat === 'petrol') testLiters = Number(testPetrol || activeShift.testLiters?.petrol || 0);
+        else if (cat === 'diesel') testLiters = Number(testDiesel || activeShift.testLiters?.diesel || 0);
+        else if (cat === 'cng') testLiters = Number(testCNG || activeShift.testLiters?.cng || 0);
+        const netLiters = Math.max(0, liters - testLiters);
+
+        if (netLiters <= 0) continue;
+
+        // Find tank for this product if not on nozzle
+        const resolvedTankId = tankId || '';
+
+        const result = await deductFIFO(
+          activeStationId,
+          resolvedTankId,
+          productId,
+          netLiters,
+          sellingPrice,
+          activeShift.id,
+          `${activeShift.id}_${productId}`,
+          activeShift.date
+        );
+
+        fifoResultsArr.push({ productId, productName: product?.name || productId, result });
+
+        if (result.hasStockDeficit) {
+          hasFifoDeficit = true;
+        }
+      }
+
+      setFifoResults(fifoResultsArr);
+
+      // ── FIFO INTEGRITY GATE ────────────────────────────────────────────────
+      if (hasFifoDeficit) {
+        const deficitItems = fifoResultsArr
+          .filter(r => r.result.hasStockDeficit)
+          .map(r => `${r.productName}: ${r.result.deficitLiters.toFixed(0)}L`);
+        setFifoLoading(false);
+        setWizardError(
+          t(
+            `⛔ FIFO Stock Deficit — Cannot close shift. Insufficient batches for: ${deficitItems.join(', ')}. Add stock or get Owner Override.`,
+            `⛔ FIFO اسٹاک کمی — شفٹ بند نہیں کی جا سکتی۔ کم اسٹاک: ${deficitItems.join(', ')}۔ اسٹاک شامل کریں یا مالک کی اجازت لیں۔`
+          )
+        );
+        return;
+      }
+
+      // ── BATCH STATUS INTEGRITY GATE ───────────────────────────────────────
+      // Block shift close if any active batch is quarantined or pending QA approval
+      const productIdsInShift = Array.from(productSales.keys());
+      const blockedBatches = stockBatches.filter(b =>
+        productIdsInShift.includes(b.productId) &&
+        b.qtyRemaining > 0 &&
+        (b.status === 'quarantined' || b.status === 'pending_qa')
+      );
+      if (blockedBatches.length > 0) {
+        const batchNums = blockedBatches.map(b => b.batchNumber).join(', ');
+        setFifoLoading(false);
+        setWizardError(
+          t(
+            `🔒 Batch Integrity Block — Cannot close shift. Quarantined/Pending-QA batches detected: ${batchNums}. Resolve batch status before closing.`,
+            `🔒 بیچ انٹیگریٹی بلاک — شفٹ بند نہیں کی جا سکتی۔ قرنطینہ/زیر معائنہ بیچ: ${batchNums}۔ بیچ حل کریں۔`
+          )
+        );
+        return;
+      }
+
+      // ── CRITICAL CLAIMS GATE ──────────────────────────────────────────────
+      // Block if any critical unresolved claim (seal_broken / adulteration) exists for active batches
+      const activeBatchIds = new Set(stockBatches.filter(b => productIdsInShift.includes(b.productId) && b.qtyRemaining > 0).map(b => b.id));
+      const criticalOpenClaims = (supplierClaimsStore || []).filter(c =>
+        activeBatchIds.has(c.batchId) &&
+        (c.claimType === 'seal_broken' || c.claimType === 'adulteration') &&
+        (c.status === 'pending' || c.status === 'submitted') &&
+        c.outstandingClaim > 0
+      );
+      if (criticalOpenClaims.length > 0) {
+        const claimNums = criticalOpenClaims.map(c => c.claimNumber).join(', ');
+        setFifoLoading(false);
+        setWizardError(
+          t(
+            `🚨 Critical Claim Block — Cannot close shift. Unresolved seal/adulteration claims: ${claimNums}. Resolve or escalate before shift close.`,
+            `🚨 کریٹیکل کلیم بلاک — شفٹ بند نہیں کی جا سکتی۔ غیر حل شدہ سیل/ملاوٹ کلیمز: ${claimNums}۔`
+          )
+        );
+        return;
+      }
+    } catch (fifoErr: any) {
+      console.warn('[FIFO] Deduction error (non-blocking):', fifoErr.message);
+      // Non-blocking — log but proceed (owner decision)
+    } finally {
+      setFifoLoading(false);
+    }
+
     const endT = new Date();
     const formattedEndTime = `${String(endT.getHours()).padStart(2, "0")}:${String(endT.getMinutes()).padStart(2, "0")}`;
 
@@ -1452,10 +1686,11 @@ export default function ShiftWizard({
         .catch((err: Error) => console.warn('[EOC] Shift close pipeline:', err.message));
 
       onNavigateToView("dashboard");
+      const totalFifoMargin = fifoResultsArr.reduce((s, r) => s + r.result.totalMargin, 0);
       showToast(
         t(
-          "Shift closed! Journals locked, reconciliation complete, snapshot saved.",
-          "شفٹ بند! جرنلز لاک، مطابقت مکمل، سنیپ شاٹ محفوظ۔",
+          `Shift closed! FIFO deducted. Realized margin: Rs.${totalFifoMargin.toLocaleString()}. Journals locked.`,
+          `شفٹ بند! FIFO کٹوتی ہوئی۔ حقیقی منافع: Rs.${totalFifoMargin.toLocaleString()}۔ جرنلز لاک۔`,
         ),
         "success"
       );
@@ -1611,7 +1846,7 @@ export default function ShiftWizard({
               <label className="mb-2 block font-sans text-xs font-bold text-slate-500 uppercase tracking-wide">
                 {t("Choose Shift Type:", "شفٹ کی قسم:")}
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setShiftType("day")}
@@ -1933,6 +2168,29 @@ export default function ShiftWizard({
             </div>
           </div>
 
+          {/* CRITICAL PRICE REVISION BANNER */}
+          {activeShift?.activeMidShiftAlert && (
+            <div className="col-span-1 lg:col-span-3 mb-4 rounded-lg bg-red-50 border-l-4 border-red-500 p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-start sm:items-center gap-3">
+                <AlertCircle className="w-6 h-6 text-red-600 animate-pulse shrink-0 mt-0.5 sm:mt-0" />
+                <div>
+                  <h3 className="font-bold text-red-800">
+                    {t("CRITICAL: Rate Revision Pending", "اہم: قیمت کی تبدیلی زیر التواء ہے")}
+                  </h3>
+                  <p className="text-sm text-red-600 mt-1 sm:mt-0">
+                    {t("Please capture snapshot readings immediately or use Owner Override.", "براہ کرم فوری طور پر میٹر ریڈنگ درج کریں یا مالک کا پن استعمال کریں۔")}
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setActiveTab("rateChange")}
+                className="w-full sm:w-auto px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-md shadow-sm transition-colors"
+              >
+                {t("Capture Snapshot", "ریڈنگ درج کریں")}
+              </button>
+            </div>
+          )}
+
           {/* Operational Entry Cards (TABS) */}
           <div className="lg:col-span-2 space-y-4">
             {/* Tab selection rail */}
@@ -1946,6 +2204,7 @@ export default function ShiftWizard({
                 { id: "discount", label: "Discounts", urdu: "ڈسکاؤنٹس " },
                 { id: "lube", label: "Lubes", urdu: "انجن آئل " },
                 { id: "supplier", label: "Supplier", urdu: "سپلائر بل " },
+                ...(activeShift?.activeMidShiftAlert ? [{ id: "rateChange", label: "⚡ Rate Change", urdu: "⚡ قیمت تبدیل" }] : []),
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -2309,7 +2568,7 @@ export default function ShiftWizard({
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
                         {t("Payment Mode / Option:", "طریقہ ادائیگی:")}
                       </label>
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         {["cash", "cheque", "transfer"].map((m) => (
                           <button
                             key={m}
@@ -2499,7 +2758,7 @@ export default function ShiftWizard({
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
                         {t("Sourced From:", "ادائیگی کا منبع:")}
                       </label>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <button
                           type="button"
                           onClick={() => setExpPaidFrom("cash")}
@@ -3340,7 +3599,7 @@ export default function ShiftWizard({
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
                         {t("Clearance Mode:", "طریقہ ادائیگی:")}
                       </label>
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         {["cash", "cheque", "transfer"].map((m) => (
                           <button
                             key={m}
@@ -3463,6 +3722,83 @@ export default function ShiftWizard({
                       </div>
                     )}
                   </div>
+                </div>
+              )}
+              {/* TAB: RATE CHANGE (MID-SHIFT REVISION) */}
+              {activeTab === "rateChange" && activeShift?.pendingPriceRevisions && (
+                <div className="space-y-4">
+                  <h3 className="font-sans text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4 flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      <Zap className="h-5 w-5 text-red-500" />
+                      {t("Mid-Shift Price Revision Snapshot", "قیمت میں تبدیلی کا سنیپ شاٹ")}
+                    </span>
+                  </h3>
+                  
+                  {activeShift.pendingPriceRevisions.map(rev => {
+                    const prod = products.find(p => p.id === rev.productId);
+                    const prodNozzles = nozzles.filter(n => activeShift.openingReadings[n.id] !== undefined && n.productId === rev.productId);
+                    if (!prod) return null;
+
+                    return (
+                      <div key={rev.id} className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-2 sm:gap-0">
+                          <div>
+                            <h4 className="font-bold text-red-800 text-sm">{prod.name}</h4>
+                            <p className="text-xs text-red-600">Old: Rs {rev.oldRate} → New: Rs {rev.newRate}</p>
+                          </div>
+                          <div className="text-left sm:text-right text-xs text-red-500">
+                            Effective: {new Date(rev.effectiveAt).toLocaleTimeString()}
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          {prodNozzles.map(nz => (
+                            <div key={nz.id} className="flex flex-col sm:flex-row sm:items-center gap-2">
+                              <span className="font-medium text-sm text-slate-700 w-24">{nz.name}</span>
+                              <input
+                                type="number"
+                                className="flex-1 w-full rounded-md border-slate-200 text-sm"
+                                placeholder={t("Current Meter Reading", "موجودہ میٹر ریڈنگ")}
+                                value={snapshotReadings[nz.id] || ""}
+                                onChange={(e) => setSnapshotReadings({ ...snapshotReadings, [nz.id]: e.target.value })}
+                              />
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="mt-4 pt-4 border-t border-red-200">
+                          <label className="flex items-center gap-2 text-sm text-red-800 font-medium mb-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={snapshotOverride}
+                              onChange={(e) => setSnapshotOverride(e.target.checked)}
+                              className="rounded border-red-300 text-red-600 focus:ring-red-500"
+                            />
+                            {t("Owner Override (Apply new rate to entire shift without snapshot)", "مالک کا اوور رائیڈ (نئی قیمت پوری شفٹ پر لاگو کریں)")}
+                          </label>
+
+                          {snapshotOverride && (
+                            <input
+                              type="password"
+                              placeholder={t("Owner Price Override PIN", "قیمت اوور رائیڈ پن")}
+                              value={snapshotPin}
+                              onChange={(e) => setSnapshotPin(e.target.value)}
+                              className="mt-2 w-full sm:w-auto rounded-md border-slate-200 text-sm"
+                            />
+                          )}
+                        </div>
+
+                        <div className="mt-4 flex sm:justify-end">
+                          <button
+                            onClick={() => handleCaptureSnapshot(rev.productId)}
+                            className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-bold text-sm"
+                          >
+                            {t("Save Snapshot & Apply", "سنیپ شاٹ محفوظ کریں")}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -3995,7 +4331,7 @@ export default function ShiftWizard({
 
           <div className="p-6 space-y-5 font-sans">
             {/* Metadata Rows */}
-            <div className="grid grid-cols-2 gap-4 text-xs border-b border-dashed border-slate-100 pb-3 pt-0.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs border-b border-dashed border-slate-100 pb-3 pt-0.5">
               <div>
                 <span className="text-slate-400 block">
                   {t("Operator In-charge:", "ڈیوٹی آپریٹر:")}
@@ -4056,7 +4392,7 @@ export default function ShiftWizard({
             </div>
 
             {/* Outlays balances */}
-            <div className="grid grid-cols-2 gap-x-6 gap-y-2.5 text-xs border-b border-slate-100 pb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5 text-xs border-b border-slate-100 pb-4">
               <div className="flex justify-between">
                 <span className="text-slate-450">
                   {t("Debits (Receivables):", "گاہکوں کا بل:")}
@@ -4148,6 +4484,79 @@ export default function ShiftWizard({
               </div>
             </div>
 
+            {/* ─── SHIFT PROFIT INTELLIGENCE ─────────────────────────────── */}
+            {fifoResults.length > 0 && (() => {
+              const totalRevenue   = expectedTotals.grossSales;
+              const totalCOGS      = fifoResults.reduce((s, r) => s + r.result.totalCOGS, 0);
+              const grossProfit    = totalRevenue - totalCOGS;
+              const opExpenses     = expectedTotals.expenses;
+              const netShiftProfit = grossProfit - opExpenses;
+              
+              // Sum revaluation gain/loss from unique batches used in this shift
+              const uniqueBatchIds = new Set<string>();
+              fifoResults.forEach(r => r.result.deductions.forEach(d => uniqueBatchIds.add(d.batchId)));
+              const revaluation = Array.from(uniqueBatchIds).reduce((sum, bId) => {
+                const b = stockBatches.find(sb => sb.id === bId);
+                return sum + (b?.revaluationGainLoss || 0);
+              }, 0);
+              
+              const trueShiftProfit = netShiftProfit + revaluation;
+              const grossMarginPct  = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
+              const netMarginPct    = totalRevenue > 0 ? (netShiftProfit / totalRevenue) * 100 : 0;
+
+              const rows = [
+                { label: t('Gross Revenue (Sales)',   'مجموعی فروخت'),     value: totalRevenue,    sign: '',  color: 'text-blue-700',    bg: 'bg-blue-50' },
+                { label: t('Realized COGS (FIFO)',    'FIFO لاگت'),         value: -totalCOGS,      sign: '−', color: 'text-red-600',     bg: 'bg-red-50' },
+                { label: t('Gross Profit',            'مجموعی منافع'),      value: grossProfit,     sign: '=', color: grossProfit >= 0 ? 'text-emerald-700' : 'text-red-700', bg: grossProfit >= 0 ? 'bg-emerald-50' : 'bg-red-50', bold: true },
+                { label: t('Operational Expenses',   'آپریشنل اخراجات'), value: -opExpenses,     sign: '−', color: 'text-amber-700',   bg: 'bg-amber-50' },
+                { label: t('Net Shift Profit',        'خالص شفٹ منافع'),   value: netShiftProfit,  sign: '=', color: netShiftProfit >= 0 ? 'text-emerald-700' : 'text-red-700', bg: netShiftProfit >= 0 ? 'bg-emerald-50' : 'bg-red-50', bold: true },
+              ];
+
+              return (
+                <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                  <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-4 py-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="size-4 text-emerald-400" />
+                      <span className="text-xs font-black text-white uppercase tracking-widest">
+                        {t('Shift Profit Intelligence', 'شفٹ منافع آگاہی')}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase">
+                      {t('True P&L', 'حقیقی P&L')}
+                    </span>
+                  </div>
+                  <div className="bg-white divide-y divide-slate-50">
+                    {rows.map((row, i) => (
+                      <div key={i} className={`flex items-center justify-between px-4 py-2.5 ${row.bold ? 'border-t-2 border-dashed border-slate-200' : ''}`}>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-xs font-black w-4 text-center ${row.color}`}>{row.sign}</span>
+                          <span className={`text-xs ${row.bold ? 'font-black text-slate-700' : 'text-slate-500'}`}>{row.label}</span>
+                        </div>
+                        <span className={`font-mono text-sm font-black ${row.color} ${row.bold ? 'text-base' : ''}`}>
+                          Rs.{Math.abs(row.value).toLocaleString('en-PK', { maximumFractionDigits: 0 })}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  {/* True Profit Banner */}
+                  <div className={`px-4 py-3 flex items-center justify-between ${trueShiftProfit >= 0 ? 'bg-gradient-to-r from-emerald-600 to-teal-700' : 'bg-gradient-to-r from-red-600 to-rose-700'}`}>
+                    <div>
+                      <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest">{t('TRUE SHIFT PROFIT', 'حقیقی شفٹ منافع')}</p>
+                      <p className="text-white font-black text-xl font-mono">
+                        Rs.{trueShiftProfit.toLocaleString('en-PK', { maximumFractionDigits: 0 })}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] text-white/70 font-bold uppercase">{t('Gross Margin', 'مجموعی مارجن')}</p>
+                      <p className="text-white font-black text-base">{grossMarginPct.toFixed(1)}%</p>
+                      <p className="text-[10px] text-white/70 font-bold uppercase mt-0.5">{t('Net Margin', 'خالص مارجن')}</p>
+                      <p className="text-white font-black">{netMarginPct.toFixed(1)}%</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Auxiliary Printing buttons */}
             <div className="flex gap-2">
               <button
@@ -4185,17 +4594,110 @@ export default function ShiftWizard({
               </div>
             )}
 
+            {/* ─── FIFO BREAKDOWN ─────────────────────────────────────────── */}
+            {fifoResults.length > 0 && (
+              <div className="border border-indigo-100 rounded-xl overflow-hidden bg-gradient-to-br from-indigo-50 to-slate-50">
+                <div className="bg-indigo-600 px-4 py-2 flex items-center gap-2">
+                  <BarChart2 className="size-4 text-indigo-200" />
+                  <span className="text-xs font-black text-white uppercase tracking-widest">FIFO Realized Margin Breakdown</span>
+                </div>
+                <div className="p-3 space-y-3">
+                  {fifoResults.map(({ productId, productName, result }) => {
+                    const avgLandedCost = result.totalLiters > 0 ? result.totalCOGS / result.totalLiters : 0;
+                    const avgSellingPrice = result.totalLiters > 0 ? result.totalRevenue / result.totalLiters : 0;
+                    const marginPct = result.totalRevenue > 0 ? (result.totalMargin / result.totalRevenue) * 100 : 0;
+                    const isPositive = result.totalMargin >= 0;
+
+                    return (
+                      <div key={productId} className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+                        <div className="px-3 py-2 border-b border-slate-100 flex justify-between items-center">
+                          <span className="font-bold text-xs text-slate-700">{productName}</span>
+                          <div className="flex items-center gap-2">
+                            {result.hasStockDeficit && (
+                              <span className="text-[9px] font-black bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full border border-red-200">
+                                ⚠️ DEFICIT {result.deficitLiters.toFixed(0)}L
+                              </span>
+                            )}
+                            <span className={`text-xs font-black px-2 py-0.5 rounded-full ${
+                              isPositive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                            }`}>
+                              {isPositive ? '▲' : '▼'} Rs.{result.totalMargin.toLocaleString('en-PK', { maximumFractionDigits: 0 })}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-4 divide-x divide-slate-100 text-xs">
+                          {[
+                            { label: 'Liters', value: `${result.totalLiters.toLocaleString('en-PK', { maximumFractionDigits: 0 })}L`, color: 'text-slate-700' },
+                            { label: 'Avg Landed', value: `Rs.${avgLandedCost.toFixed(2)}`, color: 'text-blue-700' },
+                            { label: 'Avg Sell', value: `Rs.${avgSellingPrice.toFixed(2)}`, color: 'text-emerald-700' },
+                            { label: 'Margin/L', value: `Rs.${result.avgRealizedMarginPerLiter.toFixed(2)}`, color: isPositive ? 'text-emerald-700' : 'text-red-700' },
+                          ].map((m, i) => (
+                            <div key={i} className="px-2 py-1.5 text-center">
+                              <p className="text-slate-400 text-[9px] font-semibold uppercase">{m.label}</p>
+                              <p className={`font-black text-xs ${m.color}`}>{m.value}</p>
+                            </div>
+                          ))}
+                        </div>
+                        {result.deductions.length > 0 && (
+                          <div className="border-t border-slate-50 px-3 py-2">
+                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Batch Heatmap</p>
+                            <div className="space-y-1">
+                              {result.deductions.map((d, i) => {
+                                const heatPct = result.avgRealizedMarginPerLiter > 0 ? (d.realizedMarginPerLiter / result.avgRealizedMarginPerLiter) * 100 : 50;
+                                const isHot = d.realizedMarginPerLiter >= result.avgRealizedMarginPerLiter;
+                                return (
+                                  <div key={i} className="flex items-center gap-2">
+                                    <span className="font-mono text-[9px] text-slate-500 w-28 shrink-0 truncate">{d.batchNumber}</span>
+                                    <div className="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
+                                      <div
+                                        className={`h-full rounded-full ${isHot ? 'bg-emerald-400' : 'bg-amber-400'}`}
+                                        style={{ width: `${Math.min(100, Math.max(5, heatPct))}%` }}
+                                      />
+                                    </div>
+                                    <span className={`text-[9px] font-black w-20 text-right ${isHot ? 'text-emerald-700' : 'text-amber-700'}`}>
+                                      {d.litersDeducted.toFixed(0)}L · Rs.{d.realizedMarginPerLiter.toFixed(2)}/L
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {/* Totals */}
+                  <div className="bg-slate-800 rounded-lg p-3 text-white">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                      {[
+                        { label: 'Total Revenue', value: `Rs.${fifoResults.reduce((s,r) => s + r.result.totalRevenue, 0).toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, color: 'text-blue-300' },
+                        { label: 'Total COGS', value: `Rs.${fifoResults.reduce((s,r) => s + r.result.totalCOGS, 0).toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, color: 'text-amber-300' },
+                        { label: 'Realized Margin', value: `Rs.${fifoResults.reduce((s,r) => s + r.result.totalMargin, 0).toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, color: 'text-emerald-300' },
+                      ].map((s, i) => (
+                        <div key={i} className="text-center">
+                          <p className="text-slate-400 text-[9px] font-semibold uppercase">{s.label}</p>
+                          <p className={`font-black text-sm ${s.color}`}>{s.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <button
               onClick={handleFinalShiftSubmission}
-              className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-sans text-sm font-bold tracking-wide rounded-lg flex items-center justify-center gap-2 mt-4 shadow-md transition-all cursor-pointer"
+              disabled={fifoLoading}
+              className={`w-full py-4 text-white font-sans text-sm font-bold tracking-wide rounded-lg flex items-center justify-center gap-2 mt-4 shadow-md transition-all cursor-pointer ${
+                fifoLoading ? 'bg-slate-400' : 'bg-orange-600 hover:bg-orange-700'
+              }`}
             >
-              <Check className="h-4 w-4" />
-              <span>
-                {t(
-                  "CLOSE & SUBMIT SHIFT SESSION",
-                  "شفٹ بند کریں اور لیجرز اپڈیٹ کریں",
-                )}
-              </span>
+              {fifoLoading ? (
+                <><BarChart2 className="h-4 w-4 animate-spin" /><span>{t('Running FIFO Engine...', 'FIFO انجن چل رہا ہے...')}</span></>
+              ) : (
+                <><Check className="h-4 w-4" /><span>{t("CLOSE & SUBMIT SHIFT SESSION", "شفٹ بند کریں اور لیجرز اپڈیٹ کریں")}</span></>
+              )}
             </button>
           </div>
         </div>

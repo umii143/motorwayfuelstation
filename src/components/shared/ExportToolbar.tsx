@@ -123,7 +123,7 @@ export function ExportToolbar({ isOpen, onClose, data, columns, title, filenameP
             : 'Select the desired format to export your data:'}
         </p>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button
             onClick={handleExportPDF}
             className="flex flex-col items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 p-4 hover:bg-red-100 hover:border-red-300 transition-colors cursor-pointer"

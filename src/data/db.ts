@@ -37,6 +37,10 @@ import {
   JournalEntry,
   StockBatch,
   CogsRecord,
+  FIFODeduction,
+  SupplierClaim,
+  InventoryRevaluation,
+  SupplierPerformanceScore,
   LoyaltyMember,
   DealerMarginSetting,
   TenantDocument,
@@ -107,7 +111,12 @@ const SPECIAL_STORAGE_KEYS = {
   CASH_ACCOUNTS: 'fuelpro_cash_accounts',
   TREASURY_TRANSACTIONS: 'fuelpro_treasury_transactions',
   OWNER_DRAWINGS: 'fuelpro_owner_drawings',
-  CASH_RECONCILIATIONS: 'fuelpro_cash_reconciliations'
+  CASH_RECONCILIATIONS: 'fuelpro_cash_reconciliations',
+  // Enterprise Fuel Costing Engine (v2)
+  FIFO_DEDUCTIONS: 'fuelpro_fifo_deductions',
+  SUPPLIER_CLAIMS: 'fuelpro_supplier_claims',
+  INVENTORY_REVALUATIONS: 'fuelpro_inventory_revaluations',
+  SUPPLIER_PERFORMANCE: 'fuelpro_supplier_performance'
 };
 
 // Clear trigger for clean slate if needed
@@ -690,6 +699,27 @@ export const db = {
     getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.CASH_RECONCILIATIONS, [] as CashReconciliation[]),
   saveCashReconciliations: (stationId: string, reconciliations: CashReconciliation[]) =>
     saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.CASH_RECONCILIATIONS, reconciliations),
+
+  // ─── ENTERPRISE FUEL COSTING ENGINE (v2) ───────────────────────────────
+  getFIFODeductions: (stationId: string): FIFODeduction[] =>
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FIFO_DEDUCTIONS, [] as FIFODeduction[]),
+  saveFIFODeductions: (stationId: string, deductions: FIFODeduction[]) =>
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FIFO_DEDUCTIONS, deductions),
+
+  getSupplierClaims: (stationId: string): SupplierClaim[] =>
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SUPPLIER_CLAIMS, [] as SupplierClaim[]),
+  saveSupplierClaims: (stationId: string, claims: SupplierClaim[]) =>
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SUPPLIER_CLAIMS, claims),
+
+  getInventoryRevaluations: (stationId: string): InventoryRevaluation[] =>
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_REVALUATIONS, [] as InventoryRevaluation[]),
+  saveInventoryRevaluations: (stationId: string, revaluations: InventoryRevaluation[]) =>
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_REVALUATIONS, revaluations),
+
+  getSupplierPerformance: (stationId: string): SupplierPerformanceScore[] =>
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SUPPLIER_PERFORMANCE, [] as SupplierPerformanceScore[]),
+  saveSupplierPerformance: (stationId: string, scores: SupplierPerformanceScore[]) =>
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SUPPLIER_PERFORMANCE, scores),
     
   getCurrentDealerMargin: (stationId: string, productType: string, atDate: string = new Date().toISOString()): number => {
     const settings = db.getDealerMarginSettings(stationId);

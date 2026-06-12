@@ -22,7 +22,8 @@ interface ShiftState {
   handleDeleteDebitEntry: (shiftId: string, entryId: string, orgId?: string, stationId?: string) => Promise<void>;
   handleDeleteRecoveryEntry: (shiftId: string, entryId: string, orgId?: string, stationId?: string) => Promise<void>;
   handleDeleteSupplierPayment: (shiftId: string, entryId: string, orgId?: string, stationId?: string) => Promise<void>;
-  handleMidShiftSplit: (productId: string, meterReadings: Record<string, number>, orgId?: string, stationId?: string) => Promise<void>;
+  handleMidShiftSplit: (productId: string, meterReadings: Record<string, number>, capturedAt: string, overridePin?: string, orgId?: string, stationId?: string) => Promise<void>;
+  handleAddPendingPriceRevision: (productId: string, oldRate: number, newRate: number, effectiveAt: string, orgId?: string, stationId?: string) => Promise<void>;
 }
 
 const getBusinessType = (stationId: string): 'fuel_station' | 'cng' | 'lube' => {
@@ -161,7 +162,47 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
     }
   },
 
-  handleMidShiftSplit: async (productId, meterReadings, orgId, stationId) => {
+  handleAddPendingPriceRevision: async (productId, oldRate, newRate, effectiveAt, orgId, stationId) => {
+    const sId = stationId || db.getActiveStationId();
+    const bType = getBusinessType(sId);
+
+    set((state) => {
+      const updatedShifts = state.shifts.map(shift => {
+        if (shift.status !== 'active') return shift;
+        
+        // Check if this shift has any nozzles for this product
+        const nozzles = useInventoryStore.getState().nozzles;
+        const relevantNozzles = Object.keys(shift.openingReadings).filter(nId => {
+          const nz = nozzles.find(n => n.id === nId);
+          return nz && nz.productId === productId;
+        });
+
+        if (relevantNozzles.length === 0) return shift;
+
+        const newRevision = {
+          id: `rev_${Date.now()}_${Math.random().toString(36).substr(2,6)}`,
+          productId,
+          oldRate,
+          newRate,
+          effectiveAt
+        };
+
+        const pendingPriceRevisions = [...(shift.pendingPriceRevisions || []), newRevision];
+        const updatedShift = { ...shift, pendingPriceRevisions, activeMidShiftAlert: true };
+
+        if (orgId) {
+          firestoreDb.saveDocument(orgId, sId, bType, 'shifts', shift.id, updatedShift).catch(console.error);
+        }
+
+        return updatedShift;
+      });
+
+      db.saveShifts(sId, updatedShifts);
+      return { shifts: updatedShifts };
+    });
+  },
+
+  handleMidShiftSplit: async (productId, meterReadings, capturedAt, overridePin, orgId, stationId) => {
     const sId = stationId || db.getActiveStationId();
     const bType = getBusinessType(sId);
     
@@ -184,6 +225,14 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
 
         if (relevantNozzles.length === 0) return shift;
 
+        // Find the pending revision for this product
+        const pendingRevision = (shift.pendingPriceRevisions || []).find(r => r.productId === productId);
+        const effectiveAt = pendingRevision ? pendingRevision.effectiveAt : now;
+        const delayMinutes = Math.max(0, Math.floor((new Date(capturedAt).getTime() - new Date(effectiveAt).getTime()) / 60000));
+        let delayStatus: 'normal' | 'warning' | 'critical' = 'normal';
+        if (delayMinutes > 10 && delayMinutes <= 30) delayStatus = 'warning';
+        if (delayMinutes > 30) delayStatus = 'critical';
+
         // Create segments for this product's nozzles
         const newSegments = [...(shift.segments || [])];
         
@@ -191,7 +240,6 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
           const meterClose = meterReadings[nId];
           if (meterClose === undefined) return;
 
-          // Find the last segment for this nozzle to get the meterOpen, OR use shift.openingReadings
           const previousSegments = newSegments.filter(s => s.nozzleId === nId);
           const meterOpen = previousSegments.length > 0 
             ? previousSegments[previousSegments.length - 1].meterClose 
@@ -201,27 +249,35 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
           const revenue = litersSold * oldRate;
           
           const segmentIndex = previousSegments.length + 1;
-          const startedAt = previousSegments.length > 0 
-            ? previousSegments[previousSegments.length - 1].closedAt 
-            : shift.date + 'T' + shift.startTime;
 
           newSegments.push({
             id: `seg_${shift.id}_${nId}_${Date.now()}`,
             shiftId: shift.id,
             nozzleId: nId,
             productId,
-            rate: oldRate,
+            oldRate: oldRate,
+            newRate: pendingRevision ? pendingRevision.newRate : oldRate,
+            effectiveAt,
+            capturedAt,
+            delayMinutes,
+            delayStatus,
             meterOpen,
             meterClose,
             litersSold,
             revenue,
-            segmentIndex,
-            startedAt,
-            closedAt: now
+            segmentIndex
           });
         });
 
-        const updatedShift = { ...shift, segments: newSegments, activeMidShiftAlert: true };
+        const pendingPriceRevisions = (shift.pendingPriceRevisions || []).filter(r => r.productId !== productId);
+        const activeMidShiftAlert = pendingPriceRevisions.length > 0;
+
+        const updatedShift = { 
+          ...shift, 
+          segments: newSegments, 
+          pendingPriceRevisions,
+          activeMidShiftAlert 
+        };
         
         if (orgId) {
           firestoreDb.saveDocument(orgId, sId, bType, 'shifts', shift.id, updatedShift).catch(console.error);

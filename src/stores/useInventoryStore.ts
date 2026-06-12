@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Product, Tank, Nozzle, Pump, StockTransaction, RateHistoryEntry, InventoryMovement, StockBatch, CogsRecord, DealerMarginSetting, InventorySnapshot } from '../types';
+import { Product, Tank, Nozzle, Pump, StockTransaction, RateHistoryEntry, InventoryMovement, StockBatch, CogsRecord, DealerMarginSetting, InventorySnapshot, FIFODeduction, SupplierClaim, SupplierPerformanceScore } from '../types';
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
 import { getBusinessTypeForStation, isolateProductRecords, withBusinessScope } from '../lib/businessScope';
@@ -15,8 +15,11 @@ interface InventoryState {
   stockBatches: StockBatch[];
   cogsRecords: CogsRecord[];
   dealerMarginSettings: DealerMarginSetting[];
-
   inventorySnapshots: InventorySnapshot[];
+  // Enterprise v2
+  fifoDeductions: FIFODeduction[];
+  supplierClaims: SupplierClaim[];
+  supplierPerformance: SupplierPerformanceScore[];
 
   setProducts: (products: Product[]) => void;
   setTanks: (tanks: Tank[]) => void;
@@ -29,7 +32,14 @@ interface InventoryState {
   setCOGSRecords: (records: CogsRecord[]) => void;
   setDealerMarginSettings: (settings: DealerMarginSetting[]) => void;
   setInventorySnapshots: (snapshots: InventorySnapshot[]) => void;
+  // Enterprise v2 setters
+  setFIFODeductions: (deductions: FIFODeduction[]) => void;
+  setSupplierClaims: (claims: SupplierClaim[]) => void;
+  setSupplierPerformance: (scores: SupplierPerformanceScore[]) => void;
+
   handleUpdateDealerMargin: (setting: DealerMarginSetting, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
+  handleAddSupplierClaim: (claim: SupplierClaim, orgId?: string, stationId?: string) => Promise<void>;
+  handleUpdateSupplierClaim: (claim: SupplierClaim, orgId?: string, stationId?: string) => Promise<void>;
 
   handleUpdateProductStock: (productId: string, newStock: number, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
   handleUpdateProductRate: (productId: string, newRate: number, reason?: string, changedBy?: string, dateStr?: string, orgId?: string, stationId?: string, checkPerm?: any, attachments?: any[]) => Promise<void>;
@@ -63,6 +73,10 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   cogsRecords: db.getCOGSRecords(db.getActiveStationId()),
   dealerMarginSettings: db.getDealerMarginSettings(db.getActiveStationId()),
   inventorySnapshots: db.getInventorySnapshots(db.getActiveStationId()),
+  // Enterprise v2
+  fifoDeductions: db.getFIFODeductions(db.getActiveStationId()),
+  supplierClaims: db.getSupplierClaims(db.getActiveStationId()),
+  supplierPerformance: db.getSupplierPerformance(db.getActiveStationId()),
 
   setProducts: (products) => {
     const sId = db.getActiveStationId();
@@ -122,7 +136,49 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     const sId = db.getActiveStationId();
     if (sId) db.saveInventorySnapshots(sId, inventorySnapshots);
   },
-  
+
+  setFIFODeductions: (fifoDeductions) => {
+    set({ fifoDeductions });
+    const sId = db.getActiveStationId();
+    if (sId) db.saveFIFODeductions(sId, fifoDeductions);
+  },
+
+  setSupplierClaims: (supplierClaims) => {
+    set({ supplierClaims });
+    const sId = db.getActiveStationId();
+    if (sId) db.saveSupplierClaims(sId, supplierClaims);
+  },
+
+  setSupplierPerformance: (supplierPerformance) => {
+    set({ supplierPerformance });
+    const sId = db.getActiveStationId();
+    if (sId) db.saveSupplierPerformance(sId, supplierPerformance);
+  },
+
+  handleAddSupplierClaim: async (claim, orgId, stationId) => {
+    const sId = stationId || db.getActiveStationId();
+    set((state) => {
+      const updated = [claim, ...state.supplierClaims];
+      db.saveSupplierClaims(sId, updated);
+      return { supplierClaims: updated };
+    });
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'supplierClaims', claim.id, claim);
+    }
+  },
+
+  handleUpdateSupplierClaim: async (claim, orgId, stationId) => {
+    const sId = stationId || db.getActiveStationId();
+    set((state) => {
+      const updated = state.supplierClaims.map(c => c.id === claim.id ? claim : c);
+      db.saveSupplierClaims(sId, updated);
+      return { supplierClaims: updated };
+    });
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'supplierClaims', claim.id, claim);
+    }
+  },
+
   handleUpdateDealerMargin: async (setting, orgId, stationId, checkPerm) => {
     if (checkPerm) checkPerm('settings.manage', 'manage dealer margins', 'ڈیلر مارجن تبدیل کرنے');
     const sId = stationId || db.getActiveStationId();
@@ -183,6 +239,34 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
       sId,
       attachments
     );
+
+    // ─── REVALUATION TRIGGER ────────────────────────────────────────────────
+    import('../services/fifoEngine').then(({ revaluateInventory }) => {
+      const oldRate = productToUpdate.rate;
+      if (oldRate !== newRate) {
+        const revalResult = revaluateInventory(sId, productId, oldRate, newRate);
+        if (revalResult.batchesRevalued > 0) {
+          set(() => ({
+            stockBatches: db.getStockBatches(sId)
+          }));
+        }
+      }
+    }).catch(err => console.error('Failed to revaluate inventory:', err));
+
+    // ─── PENDING PRICE REVISION TRIGGER ─────────────────────────────────────
+    import('./useShiftStore').then(({ useShiftStore }) => {
+      const oldRate = productToUpdate.rate;
+      if (oldRate !== newRate) {
+        useShiftStore.getState().handleAddPendingPriceRevision(
+          productId, 
+          oldRate, 
+          newRate, 
+          dateStr || new Date().toISOString(), 
+          orgId, 
+          sId
+        ).catch(err => console.error('Failed to add pending price revision:', err));
+      }
+    });
 
     const updatedProducts = productsCopy.map(p => p.id === productId ? result.updatedProduct : p);
 
@@ -589,6 +673,35 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
        }).catch(err => {
          console.error('Failed to dynamic import useFinancialStore:', err);
        });
+    }
+
+    // ─── SUPPLIER LEDGER SYNC ──────────────────────────────────────────────
+    if (batch.supplierId) {
+      import('./useSupplierStore').then(({ useSupplierStore }) => {
+        const supplierStore = useSupplierStore.getState();
+        const supplier = supplierStore.suppliers.find(s => s.id === batch.supplierId);
+        
+        if (supplier) {
+          let updatedBalance = supplier.balance || 0;
+          
+          if (batch.paymentMethod === 'credit') {
+            updatedBalance += batch.totalLandedCost;
+          } else if (batch.paymentMethod === 'partial') {
+            updatedBalance += (batch.outstandingBalance || 0);
+          }
+          // cash or bank don't increase the outstanding payable balance
+          
+          if (updatedBalance !== supplier.balance) {
+            supplierStore.handleUpdateSupplier({
+              ...supplier,
+              balance: updatedBalance,
+              updatedAt: Date.now()
+            }, orgId, sId);
+          }
+        }
+      }).catch(err => {
+        console.error('Failed to sync supplier ledger:', err);
+      });
     }
   }
 }));

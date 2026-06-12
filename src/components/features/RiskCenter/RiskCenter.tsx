@@ -224,7 +224,7 @@ export const RiskCenter: React.FC = () => {
                   <div className="absolute top-0 left-0 w-1 h-full bg-red-500"></div>
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <span className="text-sm font-black text-slate-900 block truncate max-w-[150px]">{c.name}</span>
+                      <span className="text-sm font-black text-slate-900 block truncate max-w-full max-w-[150px]">{c.name}</span>
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Corporate</span>
                     </div>
                     <span className="bg-red-50 text-red-700 text-xs font-black px-2 py-1 rounded-md border border-red-200">

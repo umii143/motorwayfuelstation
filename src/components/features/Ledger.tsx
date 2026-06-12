@@ -640,7 +640,7 @@ export default function Ledger({
                 </h4>
 
                 <div className="overflow-x-auto rounded-lg border border-slate-200">
-                  <div className="min-w-[600px]">
+                  <div className="min-w-full max-w-[600px]">
                     <div className="flex bg-slate-50 border-b border-slate-200 text-slate-500 font-bold py-2.5 text-[11px] uppercase tracking-wider select-none">
                       <div style={{ width: '15%', padding: '0 12px' }}>{t('Date', 'تاریخ')}</div>
                       <div style={{ width: '45%', padding: '0 12px' }}>{t('Narrative Description', 'تفصیل')}</div>

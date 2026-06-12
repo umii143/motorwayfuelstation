@@ -45,6 +45,7 @@ import {
   DigitalCashEntry,
   SupplierPayment,
   Nozzle,
+  FIFODeduction,
 } from '../../types';
 import { useInventoryStore } from '../../stores/useInventoryStore';
 import { t as translate } from '../../lib/translations';
@@ -453,7 +454,6 @@ function ShiftAuditDrawer({
 }: any) {
   const t = (en: string, ur: string) => translate(en, ur, settings);
   const isUrdu = settings.language === 'ur';
-  const cogsRecords = useInventoryStore((state) => state.cogsRecords) || [];
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat(isUrdu ? 'ur-PK' : 'en-PK', {
@@ -520,13 +520,25 @@ function ShiftAuditDrawer({
     });
   }
 
-  // Calculate Profit from COGS Records for this Shift
-  const shiftCogs = cogsRecords.filter((c: CogsRecord) => c.shiftId === shift.id);
-  const totalLitersSoldCogs = shiftCogs.reduce((sum: number, c: CogsRecord) => sum + c.litersDeducted, 0);
-  const totalRevenue = shiftCogs.reduce((sum: number, c: CogsRecord) => sum + c.revenue, 0);
-  const totalCogsCost = shiftCogs.reduce((sum: number, c: CogsRecord) => sum + c.cogs, 0);
-  const totalNetProfit = shiftCogs.reduce((sum: number, c: CogsRecord) => sum + c.netProfit, 0);
-  const totalGrossProfit = shiftCogs.reduce((sum: number, c: CogsRecord) => sum + c.grossProfit, 0);
+  // Calculate Profit from FIFO Deductions for this Shift
+  const fifoDeductions = useInventoryStore((state) => state.fifoDeductions) || [];
+  const shiftDeductions = fifoDeductions.filter((d: FIFODeduction) => d.shiftId === shift.id);
+  
+  const totalLitersSoldFIFO = shiftDeductions.reduce((sum: number, d: FIFODeduction) => sum + d.litersDeducted, 0);
+  const totalRevenue = shiftDeductions.reduce((sum: number, d: FIFODeduction) => sum + d.realizedRevenue, 0);
+  const totalCogsCost = shiftDeductions.reduce((sum: number, d: FIFODeduction) => sum + d.realizedCOGS, 0);
+  const totalGrossProfit = shiftDeductions.reduce((sum: number, d: FIFODeduction) => sum + d.realizedMargin, 0);
+  
+  // Revaluation for this shift
+  const stockBatches = useInventoryStore((state) => state.stockBatches) || [];
+  const uniqueBatchIds = new Set<string>();
+  shiftDeductions.forEach((d: FIFODeduction) => uniqueBatchIds.add(d.batchId));
+  const shiftRevaluation = Array.from(uniqueBatchIds).reduce((sum, bId) => {
+    const b = stockBatches.find(sb => sb.id === bId);
+    return sum + (b?.revaluationGainLoss || 0);
+  }, 0);
+
+  const totalNetProfit = totalGrossProfit - totalExpenses + shiftRevaluation;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-200">
@@ -609,7 +621,7 @@ function ShiftAuditDrawer({
               </span>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
               <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('Expected Cash', 'متوقع کیش')}</span>
                 <span className="text-2xl font-black text-slate-800 truncate">{formatCurrency(shift.expectedCash || 0)}</span>
@@ -637,7 +649,7 @@ function ShiftAuditDrawer({
                 {t('Fuel Sales Summary', 'فیول سیلز کا خلاصہ')}
               </h3>
               <span className="text-xs font-bold text-slate-600 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-sm flex gap-2">
-                <span className="text-slate-400">Avg Dealer Margin:</span> <span className="text-orange-600">{totalLitersSoldCogs > 0 ? formatCurrency(totalGrossProfit / totalLitersSoldCogs) : '0'} /L</span>
+                <span className="text-slate-400">Avg Margin:</span> <span className="text-orange-600">{totalLitersSoldFIFO > 0 ? formatCurrency(totalGrossProfit / totalLitersSoldFIFO) : '0'} /L</span>
                 <span className="text-slate-300">|</span>
                 <span className="text-slate-400">Est. Sales:</span> <span className="text-blue-600">{formatCurrency(estimatedFuelSalesAmount)}</span>
               </span>
@@ -734,8 +746,8 @@ function ShiftAuditDrawer({
 
               <DrillDownCard
                 icon={TrendingUp}
-                title={t('Profit Breakdown (COGS)', 'منافع کی تفصیلات')}
-                count={shiftCogs.length || 0}
+                title={t('Profit Breakdown (FIFO)', 'منافع کی تفصیلات')}
+                count={shiftDeductions.length || 0}
                 amount={totalNetProfit}
                 formatCurrency={formatCurrency}
                 onClick={() => setViewDetailType('cogs')}
@@ -834,16 +846,24 @@ function ShiftAuditDrawer({
 
         {viewDetailType === 'cogs' && (
           <TransactionModal
-            title={t('Profit Breakdown (COGS)', 'منافع کی تفصیلات')}
+            title={t('Profit Breakdown (FIFO)', 'منافع کی تفصیلات')}
             onClose={() => setViewDetailType(null)}
-            items={shiftCogs || []}
+            items={shiftDeductions || []}
             columns={[
-              { key: 'product', label: t('Product', 'پروڈکٹ'), render: (item: CogsRecord) => item.productType },
-              { key: 'qty', label: t('Qty Deducted', 'مقدار (لیٹر)'), render: (item: CogsRecord) => `${item.litersDeducted.toFixed(2)} L` },
-              { key: 'margin', label: t('D. Margin', 'ڈیلر مارجن'), render: (item: CogsRecord) => formatCurrency(item.dealerMargin) },
-              { key: 'cost', label: t('Landed Cost', 'خریداری لاگت'), render: (item: CogsRecord) => formatCurrency(item.landedCostPerLiter) },
-              { key: 'pumpPrice', label: t('Pump Price', 'پمپ قیمت'), render: (item: CogsRecord) => formatCurrency(item.ograPumpPrice) },
-              { key: 'netProfit', label: t('Net Profit', 'خالص منافع'), render: (item: CogsRecord) => <span className="text-emerald-600 font-bold">{formatCurrency(item.netProfit)}</span> }
+              { 
+                key: 'product', 
+                label: t('Product', 'پروڈکٹ'), 
+                render: (item: FIFODeduction) => {
+                  const nozzle = nozzles.find((n: Nozzle) => n.id === item.nozzleId);
+                  const product = products.find((p: Product) => p.id === nozzle?.productId);
+                  return product?.name || 'Unknown';
+                }
+              },
+              { key: 'qty', label: t('Qty', 'مقدار (لیٹر)'), render: (item: FIFODeduction) => `${item.litersDeducted.toFixed(2)} L` },
+              { key: 'cost', label: t('Landed Cost', 'خریداری لاگت'), render: (item: FIFODeduction) => formatCurrency(item.batchLandedCost) },
+              { key: 'pumpPrice', label: t('Pump Price', 'پمپ قیمت'), render: (item: FIFODeduction) => formatCurrency(item.sellingPrice) },
+              { key: 'margin', label: t('Margin', 'مارجن'), render: (item: FIFODeduction) => formatCurrency(item.realizedMarginPerLiter) },
+              { key: 'netProfit', label: t('Realized Profit', 'خالص منافع'), render: (item: FIFODeduction) => <span className="text-emerald-600 font-bold">{formatCurrency(item.realizedMargin)}</span> }
             ]}
           />
         )}

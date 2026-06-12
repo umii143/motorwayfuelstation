@@ -47,7 +47,7 @@ export default function StationIdentity({ settings, onUpdateSettings, activeStat
             {/* Logo/Branding Section */}
             <div className="w-full md:w-1/3 space-y-4">
               <label className="text-sm font-bold text-slate-800">{t('Station Logo', 'اسٹیشن کا لوگو')}</label>
-              <div className="aspect-square w-full max-w-[200px] bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-slate-400 hover:bg-slate-100 hover:border-indigo-300 transition-all cursor-pointer relative overflow-hidden group">
+              <div className="aspect-square w-full max-w-full max-w-[200px] bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-slate-400 hover:bg-slate-100 hover:border-indigo-300 transition-all cursor-pointer relative overflow-hidden group">
                 {settings.logoUrl ? (
                   <img src={settings.logoUrl} alt="Logo" className="w-full h-full object-cover" />
                 ) : (
