@@ -3,7 +3,7 @@ import { Device } from '@capacitor/device';
 import { Browser } from '@capacitor/browser';
 
 // REPOSITORY TO CHECK FOR UPDATES
-const GITHUB_REPO = 'umii143/vyaparfuelstation';
+const GITHUB_REPO = 'umii143/motorwayfuelstation';
 
 export interface ReleaseInfo {
   version: string;
