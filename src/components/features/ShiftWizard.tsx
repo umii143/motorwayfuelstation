@@ -1860,7 +1860,7 @@ export default function ShiftWizard({
               <label className="mb-2 block font-sans text-xs font-bold text-slate-500 uppercase tracking-wide">
                 {t("Choose Shift Type:", "شفٹ کی قسم:")}
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                 <button
                   type="button"
                   onClick={() => setShiftType("day")}
@@ -1887,7 +1887,7 @@ export default function ShiftWizard({
             </div>
 
             {/* Date and Time Details */}
-            <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
               <div>
                 <label className="mb-2 block font-sans text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5 text-slate-400" />
@@ -2143,7 +2143,7 @@ export default function ShiftWizard({
                     </span>
                   </h3>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                     <div>
                       <div className="flex justify-between items-center mb-1.5">
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">
@@ -2362,7 +2362,7 @@ export default function ShiftWizard({
                     </span>
                   </h3>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                     <div>
                       <div className="flex justify-between items-center mb-1.5">
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">
@@ -2568,7 +2568,7 @@ export default function ShiftWizard({
                     </span>
                   </h3>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
                         {t("Digital Method:", "والٹ / کارڈ نیٹ ورک:")}
@@ -2698,7 +2698,7 @@ export default function ShiftWizard({
                     </span>
                   </h3>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
                         {t("Discount Amount (Rs.):", "رقم (روپے میں):")}
@@ -2731,7 +2731,7 @@ export default function ShiftWizard({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
                         {t("Customer Name:", "گاہک کا نام:")}
@@ -2758,7 +2758,7 @@ export default function ShiftWizard({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
                         {t("Product / Fuel:", "ایندھن کی قسم (آپشنل):")}
@@ -2872,7 +2872,7 @@ export default function ShiftWizard({
                     </span>
                   </h3>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
                         {t("Select Lubricant Lube:", "موبل آئل منتخب کریں:")}
@@ -2994,7 +2994,7 @@ export default function ShiftWizard({
                     </span>
                   </h3>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                     <div>
                       <div className="flex justify-between items-center mb-1.5">
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">
@@ -3539,7 +3539,7 @@ export default function ShiftWizard({
 
           <div className="p-6 space-y-5 font-sans">
             {/* Metadata Rows */}
-            <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 text-xs border-b border-dashed border-slate-100 pb-3 pt-0.5">
+            <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4 text-xs border-b border-dashed border-slate-100 pb-3 pt-0.5">
               <div>
                 <span className="text-slate-400 block">
                   {t("Operator In-charge:", "ڈیوٹی آپریٹر:")}

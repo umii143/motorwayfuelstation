@@ -70,6 +70,7 @@ import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { LUBE_REPORT_TEMPLATES, LubeReportRow, LubeReportTemplate } from '../../lib/lubeReportCompilers';
 import { fetchWithAuth } from '../../lib/api';
 import EmptyState from '../ui/EmptyState';
+import { ResponsiveTable } from '../shared/ResponsiveTable';
 
 // ==========================================
 // PROPS
@@ -417,7 +418,7 @@ export default function LubeReports({
       </div>
 
       {/* KPI CARDS ROW */}
-      <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4 sm:grid-cols-3 lg:grid-cols-6">
         {[
           { label: t('Total Revenue', 'کل آمدنی'),    value: formatCurrency(kpis.totalRevenue, settings),     icon: DollarSign,   color: 'text-violet-600' },
           { label: t('Invoices Issued', 'انوائسز'),   value: String(kpis.totalInvoices),                      icon: Receipt,      color: 'text-sky-600' },
@@ -489,7 +490,7 @@ export default function LubeReports({
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 lg:grid-cols-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3 lg:grid-cols-2">
 
             {/* Product Revenue Pie */}
             <div className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] p-5 shadow-sm space-y-4">
@@ -550,7 +551,7 @@ export default function LubeReports({
           TAB 2: INVOICE LEDGER (Corporate Report Console)
           ================================================ */}
       {activeTab === 'invoice_ledger' && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
 
           {/* LEFT: Report Directory */}
           <div className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] p-4 shadow-xs space-y-3 lg:sticky lg:top-5">
@@ -616,7 +617,7 @@ export default function LubeReports({
                 <Filter className="h-3.5 w-3.5 text-violet-500" />
                 <span>{t('Filter & Search Controls', 'فلٹر اور تلاش')}</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:grid-cols-4 text-xs font-sans">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3 sm:grid-cols-4 text-xs font-sans">
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-[var(--text-muted)] mb-1">{t('Start Date', 'شروع تاریخ')}</label>
                   <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
@@ -700,64 +701,45 @@ export default function LubeReports({
 
             {/* Data Table */}
             <div className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] shadow-xs overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-left font-sans text-xs">
-                  <thead>
-                    <tr className="bg-[var(--bg-secondary)] border-b border-[var(--border-main)] text-[var(--text-muted)] font-bold select-none whitespace-nowrap">
-                      {activeTemplate.headers.map(h => (
-                        <th
-                          key={h.key}
-                          onClick={() => {
-                            if (sortField === h.key) setSortAscending(!sortAscending);
-                            else { setSortField(h.key); setSortAscending(true); }
-                          }}
-                          className={`py-3 px-4 text-[11px] uppercase tracking-wider cursor-pointer hover:bg-[var(--bg-card)] transition-colors ${h.isNumeric ? 'text-right' : ''}`}
-                        >
-                          <div className={`flex items-center gap-1.5 ${h.isNumeric ? 'justify-end' : ''}`}>
-                            <span>{isUrdu ? h.urduLabel : h.label}</span>
-                            <ArrowUpDown className="h-3 w-3 text-[var(--text-muted)] opacity-50" />
-                          </div>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[var(--border-main)] font-medium">
-                    {sortedRows.length === 0 ? (
-                      <tr>
-                        <td colSpan={activeTemplate.headers.length} className="py-24 text-center text-[var(--text-muted)] font-sans italic">
-                          {t('No records match your filter criteria.', 'فلٹر معیار کے مطابق کوئی ریکارڈ نہیں ملا۔')}
-                        </td>
-                      </tr>
-                    ) : (
-                      sortedRows.map((row, idx) => (
-                        <tr key={row.id} className={`hover:bg-[var(--bg-secondary)] transition-colors ${idx % 2 === 0 ? 'bg-[var(--bg-card)]' : 'bg-[var(--bg-secondary)]/30'}`}>
-                          {activeTemplate.headers.map(h => {
-                            const cellValue = (row as any)[h.key as string];
-                            if (h.key === 'amount') {
-                              const numVal = Number(cellValue || 0);
-                              return (
-                                <td key={h.key} className="py-2.5 px-4 text-right font-mono font-bold">
-                                  <span className={numVal >= 0 ? 'text-[var(--text-main)]' : 'text-rose-600'}>
-                                    {formatCurrency(numVal, settings)}
-                                  </span>
-                                </td>
-                              );
-                            }
-                            let formatted = String(cellValue ?? '');
-                            if (formatted.includes('Rs.')) {
-                              formatted = formatted.replace(/Rs\./g, getCurrencySymbol(settings));
-                            }
-                            return (
-                              <td key={h.key} className={`py-2.5 px-4 text-[var(--text-main)] ${h.isNumeric ? 'text-right font-mono' : ''}`}>
-                                {formatted}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+              <div className="w-full">
+                <ResponsiveTable
+                  data={sortedRows}
+                  columns={activeTemplate.headers.map((h, i) => ({
+                    header: (
+                      <div
+                        onClick={() => {
+                          if (sortField === h.key) setSortAscending(!sortAscending);
+                          else { setSortField(h.key); setSortAscending(true); }
+                        }}
+                        className={`flex items-center gap-1.5 cursor-pointer ${h.isNumeric ? 'justify-end' : ''}`}
+                      >
+                        <span>{isUrdu ? h.urduLabel : h.label}</span>
+                        <ArrowUpDown className="h-3 w-3 text-[var(--text-muted)] opacity-50" />
+                      </div>
+                    ),
+                    className: h.isNumeric ? 'text-right' : '',
+                    isPrimaryMobile: i === 0,
+                    isSecondaryMobile: i === 1 || h.key === 'amount',
+                    accessor: (row: any) => {
+                      const cellValue = row[h.key as string];
+                      if (h.key === 'amount') {
+                        const numVal = Number(cellValue || 0);
+                        return (
+                          <span className={`font-mono font-bold ${numVal >= 0 ? 'text-[var(--text-main)]' : 'text-rose-600'}`}>
+                            {formatCurrency(numVal, settings)}
+                          </span>
+                        );
+                      }
+                      let formatted = String(cellValue ?? '');
+                      if (formatted.includes('Rs.')) {
+                        formatted = formatted.replace(/Rs\./g, getCurrencySymbol(settings));
+                      }
+                      return <span className={h.isNumeric ? 'font-mono' : ''}>{formatted}</span>;
+                    }
+                  }))}
+                  keyExtractor={(row) => row.id}
+                  emptyMessage={t('No records match your filter criteria.', 'فلٹر معیار کے مطابق کوئی ریکارڈ نہیں ملا۔')}
+                />
               </div>
             </div>
           </div>
@@ -777,47 +759,60 @@ export default function LubeReports({
             {productPerformance.length === 0 ? (
               <EmptyState icon={Package} title={t('No product sales yet.', 'پروڈکٹ فروخت ڈیٹا نہیں۔')} description="" />
             ) : (
-              <div className="overflow-x-auto rounded-lg border border-[var(--border-main)]">
-                <table className="w-full border-collapse text-left font-sans text-xs">
-                  <thead>
-                    <tr className="bg-[var(--bg-secondary)] border-b border-[var(--border-main)] text-[var(--text-muted)] font-bold">
-                      <th className="py-2.5 px-4">#</th>
-                      <th className="py-2.5 px-4">{t('Product Name', 'پروڈکٹ')}</th>
-                      <th className="py-2.5 px-4">{t('Unit', 'یونٹ')}</th>
-                      <th className="py-2.5 px-4 text-right">{t('Qty Sold', 'مقدار')}</th>
-                      <th className="py-2.5 px-4 text-right">{t('Revenue (PKR)', 'آمدنی')}</th>
-                      <th className="py-2.5 px-4 text-right">{t('Avg Unit Price', 'اوسط ریٹ')}</th>
-                      <th className="py-2.5 px-4">{t('Stock Level', 'اسٹاک')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[var(--border-main)] text-[var(--text-main)] font-medium">
-                    {productPerformance.map((item, idx) => {
-                      const avgUnit = item.qty > 0 ? item.revenue / item.qty : 0;
-                      const isLowStock = item.product && item.product.currentStock <= item.product.minStock;
-                      return (
-                        <tr key={item.productId} className="hover:bg-[var(--bg-secondary)]/50">
-                          <td className="py-3 px-4">
-                            <span className={`font-mono font-bold text-sm ${idx === 0 ? 'text-amber-500' : idx === 1 ? 'text-slate-400' : idx === 2 ? 'text-orange-600' : 'text-[var(--text-muted)]'}`}>
-                              #{idx + 1}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 font-bold text-[var(--text-main)]">{item.product?.name || item.productId}</td>
-                          <td className="py-3 px-4 text-[var(--text-muted)]">{item.product?.unit || 'pcs'}</td>
-                          <td className="py-3 px-4 text-right font-mono font-bold">{item.qty.toLocaleString()}</td>
-                          <td className="py-3 px-4 text-right font-mono font-bold text-violet-600">{formatCurrency(item.revenue, settings)}</td>
-                          <td className="py-3 px-4 text-right font-mono text-[var(--text-muted)]">{formatCurrency(avgUnit, settings)}</td>
-                          <td className="py-3 px-4">
-                            {item.product ? (
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${isLowStock ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700'}`}>
-                                {isLowStock ? '⚠ Low Stock' : '✓ In Stock'} ({item.product.currentStock} {item.product.unit})
-                              </span>
-                            ) : '—'}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              <div className="w-full rounded-lg border border-[var(--border-main)]">
+                <ResponsiveTable
+                  data={productPerformance}
+                  columns={[
+                    {
+                      header: '#',
+                      accessor: (_, idx) => (
+                        <span className={`font-mono font-bold text-sm ${idx === 0 ? 'text-amber-500' : idx === 1 ? 'text-slate-400' : idx === 2 ? 'text-orange-600' : 'text-[var(--text-muted)]'}`}>
+                          #{idx + 1}
+                        </span>
+                      )
+                    },
+                    {
+                      header: t('Product Name', 'پروڈکٹ'),
+                      isPrimaryMobile: true,
+                      accessor: (item) => <span className="font-bold text-[var(--text-main)]">{item.product?.name || item.productId}</span>
+                    },
+                    {
+                      header: t('Unit', 'یونٹ'),
+                      accessor: (item) => <span className="text-[var(--text-muted)]">{item.product?.unit || 'pcs'}</span>
+                    },
+                    {
+                      header: t('Qty Sold', 'مقدار'),
+                      className: 'text-right',
+                      isSecondaryMobile: true,
+                      accessor: (item) => <span className="font-mono font-bold">{item.qty.toLocaleString()}</span>
+                    },
+                    {
+                      header: t('Revenue (PKR)', 'آمدنی'),
+                      className: 'text-right',
+                      accessor: (item) => <span className="font-mono font-bold text-violet-600">{formatCurrency(item.revenue, settings)}</span>
+                    },
+                    {
+                      header: t('Avg Unit Price', 'اوسط ریٹ'),
+                      className: 'text-right',
+                      accessor: (item) => {
+                        const avgUnit = item.qty > 0 ? item.revenue / item.qty : 0;
+                        return <span className="font-mono text-[var(--text-muted)]">{formatCurrency(avgUnit, settings)}</span>;
+                      }
+                    },
+                    {
+                      header: t('Stock Level', 'اسٹاک'),
+                      accessor: (item) => {
+                        const isLowStock = item.product && item.product.currentStock <= item.product.minStock;
+                        return item.product ? (
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${isLowStock ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                            {isLowStock ? '⚠ Low Stock' : '✓ In Stock'} ({item.product.currentStock} {item.product.unit})
+                          </span>
+                        ) : '—';
+                      }
+                    }
+                  ]}
+                  keyExtractor={(item) => item.productId}
+                />
               </div>
             )}
           </div>
@@ -842,46 +837,60 @@ export default function LubeReports({
             {customerBalances.length === 0 ? (
               <EmptyState icon={Users} title={t('No outstanding balances.', 'کوئی بقایا رقم نہیں۔')} description={t('All customer accounts are settled.', 'تمام کسٹمر کھاتے صاف ہیں۔')} />
             ) : (
-              <div className="overflow-x-auto rounded-lg border border-[var(--border-main)]">
-                <table className="w-full border-collapse text-left font-sans text-xs">
-                  <thead>
-                    <tr className="bg-[var(--bg-secondary)] border-b border-[var(--border-main)] text-[var(--text-muted)] font-bold">
-                      <th className="py-2.5 px-4">{t('Customer Name', 'کسٹمر نام')}</th>
-                      <th className="py-2.5 px-4">{t('Contact', 'رابطہ')}</th>
-                      <th className="py-2.5 px-4 text-right">{t('Credit Limit', 'ادھار حد')}</th>
-                      <th className="py-2.5 px-4 text-right">{t('Outstanding Balance', 'بقایا رقم')}</th>
-                      <th className="py-2.5 px-4 text-center">{t('Utilization', 'استعمال')}</th>
-                      <th className="py-2.5 px-4 text-center">{t('Risk', 'خطرہ')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[var(--border-main)] text-[var(--text-main)] font-medium">
-                    {customerBalances.map(cust => {
-                      const utilPct = cust.creditLimit > 0 ? (cust.balance / cust.creditLimit) * 100 : 100;
-                      const risk = utilPct >= 90 ? 'HIGH' : utilPct >= 60 ? 'MEDIUM' : 'LOW';
-                      const riskColor = risk === 'HIGH' ? 'bg-rose-50 text-rose-700' : risk === 'MEDIUM' ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700';
-                      return (
-                        <tr key={cust.id} className="hover:bg-[var(--bg-secondary)]/50">
-                          <td className="py-3 px-4 font-bold">{cust.name}</td>
-                          <td className="py-3 px-4 font-mono text-[var(--text-muted)]">{cust.contact || '—'}</td>
-                          <td className="py-3 px-4 text-right font-mono">{formatCurrency(cust.creditLimit, settings)}</td>
-                          <td className="py-3 px-4 text-right font-mono font-extrabold text-rose-600">{formatCurrency(cust.balance, settings)}</td>
-                          <td className="py-3 px-4 text-center">
-                            <div className="flex flex-col items-center gap-1">
-                              <span className="text-[10px] font-bold text-[var(--text-muted)]">{utilPct.toFixed(0)}%</span>
-                              <div className="h-1.5 w-16 bg-[var(--bg-secondary)] rounded-full overflow-hidden">
-                                <div className={`h-full rounded-full ${risk === 'HIGH' ? 'bg-rose-500' : risk === 'MEDIUM' ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                                  style={{ width: `${Math.min(100, utilPct)}%` }} />
-                              </div>
+              <div className="w-full rounded-lg border border-[var(--border-main)]">
+                <ResponsiveTable
+                  data={customerBalances}
+                  columns={[
+                    {
+                      header: t('Customer Name', 'کسٹمر نام'),
+                      isPrimaryMobile: true,
+                      accessor: (cust) => <span className="font-bold">{cust.name}</span>
+                    },
+                    {
+                      header: t('Contact', 'رابطہ'),
+                      isSecondaryMobile: true,
+                      accessor: (cust) => <span className="font-mono text-[var(--text-muted)]">{cust.contact || '—'}</span>
+                    },
+                    {
+                      header: t('Credit Limit', 'ادھار حد'),
+                      className: 'text-right',
+                      accessor: (cust) => <span className="font-mono">{formatCurrency(cust.creditLimit, settings)}</span>
+                    },
+                    {
+                      header: t('Outstanding Balance', 'بقایا رقم'),
+                      className: 'text-right',
+                      accessor: (cust) => <span className="font-mono font-extrabold text-rose-600">{formatCurrency(cust.balance, settings)}</span>
+                    },
+                    {
+                      header: t('Utilization', 'استعمال'),
+                      className: 'text-center',
+                      accessor: (cust) => {
+                        const utilPct = cust.creditLimit > 0 ? (cust.balance / cust.creditLimit) * 100 : 100;
+                        const risk = utilPct >= 90 ? 'HIGH' : utilPct >= 60 ? 'MEDIUM' : 'LOW';
+                        return (
+                          <div className="flex flex-col items-center gap-1">
+                            <span className="text-[10px] font-bold text-[var(--text-muted)]">{utilPct.toFixed(0)}%</span>
+                            <div className="h-1.5 w-16 bg-[var(--bg-secondary)] rounded-full overflow-hidden">
+                              <div className={`h-full rounded-full ${risk === 'HIGH' ? 'bg-rose-500' : risk === 'MEDIUM' ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                                style={{ width: `${Math.min(100, utilPct)}%` }} />
                             </div>
-                          </td>
-                          <td className="py-3 px-4 text-center">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${riskColor}`}>{risk}</span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                          </div>
+                        );
+                      }
+                    },
+                    {
+                      header: t('Risk', 'خطرہ'),
+                      className: 'text-center',
+                      accessor: (cust) => {
+                        const utilPct = cust.creditLimit > 0 ? (cust.balance / cust.creditLimit) * 100 : 100;
+                        const risk = utilPct >= 90 ? 'HIGH' : utilPct >= 60 ? 'MEDIUM' : 'LOW';
+                        const riskColor = risk === 'HIGH' ? 'bg-rose-50 text-rose-700' : risk === 'MEDIUM' ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700';
+                        return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${riskColor}`}>{risk}</span>;
+                      }
+                    }
+                  ]}
+                  keyExtractor={(cust) => cust.id}
+                />
               </div>
             )}
           </div>
@@ -895,7 +904,7 @@ export default function LubeReports({
         <div className="space-y-6">
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {[
               { label: t('Gross Revenue', 'خام آمدنی'),       value: financialPeriod.totalRevenue,   color: 'text-violet-600',  bg: 'bg-violet-50' },
               { label: t('Product Returns', 'واپسی'),          value: -financialPeriod.totalReturns,  color: 'text-rose-600',    bg: 'bg-rose-50' },

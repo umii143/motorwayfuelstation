@@ -1169,13 +1169,13 @@ const Navigation = React.memo(function Navigation({
       </BottomSheet>
 
       {/* MOBILE BOTTOM NAVIGATION */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-[#0F172A] py-1 shadow-[0_-4px_10px_rgba(0,0,0,0.3)] lg:hidden pb-safe">
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--border-main)] bg-[var(--bg-card)]/90 backdrop-blur-xl py-1.5 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] lg:hidden pb-safe">
         <div className="flex justify-around items-center px-2">
           {[
             { id: 'dashboard', icon: LayoutDashboard, label: t('Home', 'ہوم') },
             { id: isLube ? 'lube_pos' : 'shift_wizard', icon: isLube ? RefreshCw : Play, label: isLube ? t('POS', 'پی او ایس') : t('Shift', 'شفٹ') },
-            { id: 'customers', icon: Users, label: t('Khata', 'کھاتہ') },
             { id: 'inventory', icon: isLube ? Wrench : Fuel, label: t('Stock', 'اسٹاک') },
+            { id: 'reports', icon: FileBarChart, label: t('Reports', 'رپورٹس') },
             { id: 'menu', icon: Menu, label: t('More', 'مزید') }
           ].map((item) => {
             const Icon = item.icon;
@@ -1191,19 +1191,19 @@ const Navigation = React.memo(function Navigation({
                     onViewChange(item.id);
                   }
                 }}
-                className={`relative flex flex-col items-center justify-center w-16 py-1.5 rounded-xl transition-all cursor-pointer ${
-                  isActive ? 'text-orange-500' : 'text-slate-400 hover:text-slate-300'
+                className={`relative flex flex-col items-center justify-center w-[72px] h-[52px] rounded-2xl transition-all cursor-pointer overflow-hidden ${
+                  isActive ? 'text-orange-500' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
                 }`}
               >
                 {isActive && (
                   <motion.div
                     layoutId="nav-pill"
-                    className="absolute inset-0 bg-slate-800 rounded-xl -z-10"
+                    className="absolute inset-0 bg-orange-500/10 rounded-2xl -z-10"
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
-                <Icon className={`h-6 w-6 mb-1 ${isActive ? 'animate-bounce-short' : ''}`} />
-                <span className={`text-[10px] font-bold tracking-tight ${isActive ? 'opacity-100' : 'opacity-70'}`}>
+                <Icon className={`h-5 w-5 mb-0.5 ${isActive ? 'animate-bounce-short stroke-[2.5px]' : 'stroke-2'}`} />
+                <span className={`text-[10px] font-bold tracking-tight ${isActive ? 'opacity-100' : 'opacity-80'}`}>
                   {item.label}
                 </span>
               </button>
@@ -1213,215 +1213,195 @@ const Navigation = React.memo(function Navigation({
       </div>
 
       {/* REGISTER STATION MODAL */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <h2 className="font-sans text-lg font-bold text-slate-950">
-                {t('Register Independent ERP Station', 'نیا آزادانہ فیول اسٹیشن درج کریں')}
-              </h2>
-              <button
-                onClick={handleCloseAddModal}
-                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
+      <BottomSheet
+        isOpen={showAddModal}
+        onClose={handleCloseAddModal}
+        title={t('Register Independent ERP Station', 'نیا آزادانہ فیول اسٹیشن درج کریں')}
+        desktopMode="modal"
+      >
+        <form onSubmit={handleSaveNewStation} className="space-y-4">
+          <div>
+            <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
+              {t('Station Name (English) *', 'اسٹیشن کا نام (انگریزی) *')}
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Star Petroleum GT Road"
+              value={formName}
+              onChange={(e) => setFormName(e.target.value)}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
+              {t('Station Name (Urdu)', 'اسٹیشن کا نام (اردو)')}
+            </label>
+            <input
+              type="text"
+              placeholder="مثال: اسٹار پٹرولیم جی ٹی روڈ"
+              value={formUrduName}
+              onChange={(e) => setFormUrduName(e.target.value)}
+              dir="rtl"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
+              {t('Address (Karachi, Multan, DHA, etc.)', 'اسٹیشن کا پتہ')}
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. Plot 104, Main GT Road, Lahore"
+              value={formAddress}
+              onChange={(e) => setFormAddress(e.target.value)}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
+                {t('NTN Registration No.', 'این ٹی این نمبر')}
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. NTN-4839210-9"
+                value={formNtn}
+                onChange={(e) => setFormNtn(e.target.value)}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+              />
             </div>
 
-            <form onSubmit={handleSaveNewStation} className="mt-4 space-y-4">
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
-                  {t('Station Name (English) *', 'اسٹیشن کا نام (انگریزی) *')}
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Star Petroleum GT Road"
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
-                  {t('Station Name (Urdu)', 'اسٹیشن کا نام (اردو)')}
-                </label>
-                <input
-                  type="text"
-                  placeholder="مثال: اسٹار پٹرولیم جی ٹی روڈ"
-                  value={formUrduName}
-                  onChange={(e) => setFormUrduName(e.target.value)}
-                  dir="rtl"
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
-                  {t('Address (Karachi, Multan, DHA, etc.)', 'اسٹیشن کا پتہ')}
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Plot 104, Main GT Road, Lahore"
-                  value={formAddress}
-                  onChange={(e) => setFormAddress(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
-                    {t('NTN Registration No.', 'این ٹی این نمبر')}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. NTN-4839210-9"
-                    value={formNtn}
-                    onChange={(e) => setFormNtn(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
-                    {t('Owner Contact / Phone', 'رابطہ نمبر')}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. 0300-1234567"
-                    value={formContact}
-                    onChange={(e) => setFormContact(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={handleCloseAddModal}
-                  className="rounded-lg px-4 py-2 font-sans text-xs font-bold text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer"
-                >
-                  {t('Cancel', 'منسوخ کریں')}
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-lg bg-orange-600 px-4 py-2 font-sans text-xs font-bold text-white hover:bg-orange-700 transition-colors shadow-xs cursor-pointer"
-                >
-                  {t('Create Isolated Station', 'نیا آزاد اسٹیشن بنائیں')}
-                </button>
-              </div>
-            </form>
+            <div>
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
+                {t('Owner Contact / Phone', 'رابطہ نمبر')}
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. 0300-1234567"
+                value={formContact}
+                onChange={(e) => setFormContact(e.target.value)}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+              />
+            </div>
           </div>
-        </div>
-      )}
+
+          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={handleCloseAddModal}
+              className="rounded-lg px-4 py-2 font-sans text-xs font-bold text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer"
+            >
+              {t('Cancel', 'منسوخ کریں')}
+            </button>
+            <button
+              type="submit"
+              className="rounded-lg bg-orange-600 px-4 py-2 font-sans text-xs font-bold text-white hover:bg-orange-700 transition-colors shadow-xs cursor-pointer"
+            >
+              {t('Create Isolated Station', 'نیا آزاد اسٹیشن بنائیں')}
+            </button>
+          </div>
+        </form>
+      </BottomSheet>
 
       {/* EDIT STATION MODAL */}
-      {showEditModal && stationToEdit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <h2 className="font-sans text-lg font-bold text-slate-950">
-                {t('Modify ERP Station Details', 'اسٹیشن کی معلومات تبدیل کریں')}
-              </h2>
-              <button
-                onClick={handleCloseEditModal}
-                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
+      {stationToEdit && (
+        <BottomSheet
+          isOpen={showEditModal}
+          onClose={handleCloseEditModal}
+          title={t('Modify ERP Station Details', 'اسٹیشن کی معلومات تبدیل کریں')}
+          desktopMode="modal"
+        >
+          <form onSubmit={handleSaveEditStation} className="space-y-4">
+            <div>
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
+                {t('Station Name (English) *', 'اسٹیشن کا نام (انگریزی) *')}
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Star Petroleum GT Road"
+                value={formName}
+                onChange={(e) => setFormName(e.target.value)}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+              />
             </div>
 
-            <form onSubmit={handleSaveEditStation} className="mt-4 space-y-4">
+            <div>
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
+                {t('Station Name (Urdu)', 'اسٹیشن کا نام (اردو)')}
+              </label>
+              <input
+                type="text"
+                placeholder="مثال: اسٹار پٹرولیم جی ٹی روڈ"
+                value={formUrduName}
+                onChange={(e) => setFormUrduName(e.target.value)}
+                dir="rtl"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
+                {t('Address', 'اسٹیشن کا پتہ')}
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Plot 104, Main GT Road, Lahore"
+                value={formAddress}
+                onChange={(e) => setFormAddress(e.target.value)}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
-                  {t('Station Name (English) *', 'اسٹیشن کا نام (انگریزی) *')}
+                  {t('NTN Registration No.', 'این ٹی این نمبر')}
                 </label>
                 <input
                   type="text"
-                  required
-                  placeholder="e.g. Star Petroleum GT Road"
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
+                  placeholder="e.g. NTN-4839210-9"
+                  value={formNtn}
+                  onChange={(e) => setFormNtn(e.target.value)}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
-                  {t('Station Name (Urdu)', 'اسٹیشن کا نام (اردو)')}
+                  {t('Owner Contact / Phone', 'رابطہ نمبر')}
                 </label>
                 <input
                   type="text"
-                  placeholder="مثال: اسٹار پٹرولیم جی ٹی روڈ"
-                  value={formUrduName}
-                  onChange={(e) => setFormUrduName(e.target.value)}
-                  dir="rtl"
+                  placeholder="e.g. 0300-1234567"
+                  value={formContact}
+                  onChange={(e) => setFormContact(e.target.value)}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
                 />
               </div>
+            </div>
 
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
-                  {t('Address', 'اسٹیشن کا پتہ')}
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Plot 104, Main GT Road, Lahore"
-                  value={formAddress}
-                  onChange={(e) => setFormAddress(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
-                    {t('NTN Registration No.', 'این ٹی این نمبر')}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. NTN-4839210-9"
-                    value={formNtn}
-                    onChange={(e) => setFormNtn(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
-                    {t('Owner Contact / Phone', 'رابطہ نمبر')}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. 0300-1234567"
-                    value={formContact}
-                    onChange={(e) => setFormContact(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={handleCloseEditModal}
-                  className="rounded-lg px-4 py-2 font-sans text-xs font-bold text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer"
-                >
-                  {t('Cancel', 'منسوخ کریں')}
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-lg bg-orange-600 px-4 py-2 font-sans text-xs font-bold text-white hover:bg-orange-700 transition-colors shadow-xs cursor-pointer"
-                >
-                  {t('Save Changes', 'تبدیلی محفوظ کریں')}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleCloseEditModal}
+                className="rounded-lg px-4 py-2 font-sans text-xs font-bold text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                {t('Cancel', 'منسوخ کریں')}
+              </button>
+              <button
+                type="submit"
+                className="rounded-lg bg-orange-600 px-4 py-2 font-sans text-xs font-bold text-white hover:bg-orange-700 transition-colors shadow-xs cursor-pointer"
+              >
+                {t('Save Changes', 'تبدیلی محفوظ کریں')}
+              </button>
+            </div>
+          </form>
+        </BottomSheet>
       )}
 
       {/* AI Search Result Modal */}

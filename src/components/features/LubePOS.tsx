@@ -563,7 +563,7 @@ const cartItems = useMemo(() => {
                       </div>
                       <button 
                         disabled={product.currentStock <= 0}
-                        className="h-10 w-10 shrink-0 rounded-[14px] bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 group-hover:border-blue-200 transition-colors disabled:opacity-50"
+                        className="h-12 w-10 shrink-0 rounded-[14px] bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 group-hover:border-blue-200 transition-colors disabled:opacity-50"
                       >
                         <ShoppingCart className="h-4 w-4" strokeWidth={2.5} />
                       </button>

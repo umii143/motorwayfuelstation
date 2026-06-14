@@ -219,7 +219,7 @@ export default function SupplierScorecard({ suppliers, batches, supplierClaims, 
 
       {/* Top + Worst Supplier Banner */}
       {metrics.length >= 2 && (
-        <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Primary Recommendation */}
           <div className="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-2xl p-4 text-white shadow-md">
             <div className="flex items-center gap-2 mb-2">

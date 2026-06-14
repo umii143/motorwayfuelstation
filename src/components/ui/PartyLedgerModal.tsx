@@ -19,7 +19,8 @@
 
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
+
+import { ResponsiveTable, TableColumn } from '../shared/ResponsiveTable';
 import {
   X,
   Printer,
@@ -189,6 +190,83 @@ export default function PartyLedgerModal({
 
   const isPositiveBalance = party.balance >= 0;
 
+  const ledgerColumns: TableColumn<LedgerEntry>[] = [
+    {
+      header: 'Date',
+      accessor: (entry) => (
+        <div>
+          <span className="font-mono text-[10.5px] text-[var(--text-muted)] font-semibold block">{entry.date}</span>
+          {entry.time && <span className="font-mono text-[9px] text-[var(--text-muted)]/60 block">{entry.time}</span>}
+        </div>
+      ),
+      isSecondaryMobile: true
+    },
+    {
+      header: 'Description',
+      accessor: (entry) => (
+        <span className="font-sans text-[11.5px] font-semibold text-[var(--text-main)] leading-snug line-clamp-2">{entry.description}</span>
+      ),
+      isPrimaryMobile: true
+    },
+    {
+      header: 'Type',
+      accessor: (entry) => {
+        const isDebit = entry.debit > 0;
+        return entry.tag ? (
+          <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
+            isDebit ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700'
+          }`}>
+            {isDebit ? <ArrowUpRight className="h-2.5 w-2.5 shrink-0" /> : <ArrowDownRight className="h-2.5 w-2.5 shrink-0" />}
+            <span className="truncate">{entry.tag}</span>
+          </span>
+        ) : <span />;
+      }
+    },
+    {
+      header: debitLabel,
+      className: 'text-right',
+      accessor: (entry) => (
+        entry.debit > 0 ? (
+          <span className="font-mono text-[12px] font-bold text-rose-600">
+            {formatCurrency(entry.debit, settings)}
+          </span>
+        ) : (
+          <span className="text-[var(--text-muted)]/30 font-mono text-[10px]">—</span>
+        )
+      )
+    },
+    {
+      header: creditLabel,
+      className: 'text-right',
+      accessor: (entry) => (
+        entry.credit > 0 ? (
+          <span className="font-mono text-[12px] font-bold text-emerald-600">
+            {formatCurrency(entry.credit, settings)}
+          </span>
+        ) : (
+          <span className="text-[var(--text-muted)]/30 font-mono text-[10px]">—</span>
+        )
+      )
+    },
+    {
+      header: 'Balance',
+      className: 'text-right',
+      accessor: (entry) => {
+        const balancePositive = entry.balance >= 0;
+        return (
+          <div>
+            <span className={`font-mono text-[12px] font-extrabold ${balancePositive ? 'text-rose-500' : 'text-emerald-600'}`}>
+              {formatCurrency(Math.abs(entry.balance), settings)}
+            </span>
+            <span className={`block text-[8.5px] font-bold uppercase tracking-wider mt-0.5 ${balancePositive ? 'text-rose-400' : 'text-emerald-400'}`}>
+              {balancePositive ? 'Dr' : 'Cr'}
+            </span>
+          </div>
+        );
+      }
+    }
+  ];
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -315,104 +393,12 @@ export default function PartyLedgerModal({
 
             {/* ─── TRANSACTION TABLE ─── */}
             <div className="flex-1 overflow-auto bg-[var(--bg-card)]">
-              <div className="min-w-[640px]">
-                {/* Header */}
-                <div className="flex items-center bg-[var(--bg-secondary)] border-b border-[var(--border-main)] text-[var(--text-muted)] font-bold select-none text-xs">
-                  <div className="py-3 px-4 w-[15%]">Date</div>
-                  <div className="py-3 px-4 w-[25%]">Description</div>
-                  <div className="py-3 px-2 w-[12%]">Type</div>
-                  <div className="py-3 px-4 text-right w-[16%]">{debitLabel}</div>
-                  <div className="py-3 px-4 text-right w-[16%]">{creditLabel}</div>
-                  <div className="py-3 px-4 text-right w-[16%]">Balance</div>
-                </div>
-
-                {/* Body */}
-                <div className="divide-y divide-[var(--border-main)] text-xs">
-                  {filteredEntries.length === 0 ? (
-                    <div className="py-20 text-center text-[var(--text-muted)] font-sans italic">
-                      No transactions found for selected date range.
-                    </div>
-                  ) : (
-                    <List
-                      itemCount={filteredEntries.length}
-                      itemSize={56}
-                      width="100%"
-                      height={Math.min(filteredEntries.length * 56, 450)}
-                    >
-                      {({ index, style }: ListChildComponentProps) => {
-                        const entry = filteredEntries[index];
-                        const isDebit  = entry.debit  > 0;
-                        const isCredit = entry.credit > 0;
-                        const balancePositive = entry.balance >= 0;
-
-                        return (
-                          <div
-                            style={style}
-                            className={`flex items-center hover:bg-[var(--bg-secondary)]/70 transition-colors border-b border-[var(--border-main)] ${index % 2 === 0 ? 'bg-[var(--bg-card)]' : 'bg-[var(--bg-secondary)]/20'}`}
-                          >
-                            {/* Date */}
-                            <div className="py-3 px-4 w-[15%] truncate">
-                              <span className="font-mono text-[10.5px] text-[var(--text-muted)] font-semibold block">{entry.date}</span>
-                              {entry.time && <span className="font-mono text-[9px] text-[var(--text-muted)]/60 block">{entry.time}</span>}
-                            </div>
-
-                            {/* Description */}
-                            <div className="py-3 px-4 w-[25%] pr-2">
-                              <span className="font-sans text-[11.5px] font-semibold text-[var(--text-main)] leading-snug line-clamp-2">{entry.description}</span>
-                            </div>
-
-                            {/* Tag */}
-                            <div className="py-3 px-2 w-[12%] truncate">
-                              {entry.tag && (
-                                <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
-                                  isDebit
-                                    ? 'bg-rose-50 text-rose-700'
-                                    : 'bg-emerald-50 text-emerald-700'
-                                }`}>
-                                  {isDebit ? <ArrowUpRight className="h-2.5 w-2.5 shrink-0" /> : <ArrowDownRight className="h-2.5 w-2.5 shrink-0" />}
-                                  <span className="truncate">{entry.tag}</span>
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Debit */}
-                            <div className="py-3 px-4 text-right w-[16%] truncate">
-                              {isDebit ? (
-                                <span className="font-mono text-[12px] font-bold text-rose-600">
-                                  {formatCurrency(entry.debit, settings)}
-                                </span>
-                              ) : (
-                                <span className="text-[var(--text-muted)]/30 font-mono text-[10px]">—</span>
-                              )}
-                            </div>
-
-                            {/* Credit */}
-                            <div className="py-3 px-4 text-right w-[16%] truncate">
-                              {isCredit ? (
-                                <span className="font-mono text-[12px] font-bold text-emerald-600">
-                                  {formatCurrency(entry.credit, settings)}
-                                </span>
-                              ) : (
-                                <span className="text-[var(--text-muted)]/30 font-mono text-[10px]">—</span>
-                              )}
-                            </div>
-
-                            {/* Running Balance */}
-                            <div className="py-3 px-4 text-right w-[16%] truncate">
-                              <span className={`font-mono text-[12px] font-extrabold ${balancePositive ? 'text-rose-500' : 'text-emerald-600'}`}>
-                                {formatCurrency(Math.abs(entry.balance), settings)}
-                              </span>
-                              <span className={`block text-[8.5px] font-bold uppercase tracking-wider mt-0.5 ${balancePositive ? 'text-rose-400' : 'text-emerald-400'}`}>
-                                {balancePositive ? 'Dr' : 'Cr'}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      }}
-                    </List>
-                  )}
-                </div>
-              </div>
+              <ResponsiveTable
+                data={filteredEntries}
+                columns={ledgerColumns}
+                keyExtractor={(entry) => entry.id}
+                emptyMessage="No transactions found for selected date range."
+              />
             </div>
 
             {/* ─── TOTALS FOOTER ─── */}

@@ -565,7 +565,7 @@ export default function BankCashPanel({
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
                     {t('Adjustment Action Type:', 'تبدیلی کی نوعیت:')}
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4 text-xs">
                     <button
                       type="button"
                       onClick={() => setAdjustType('deposit')}

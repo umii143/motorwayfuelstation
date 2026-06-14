@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { FixedSizeList as List } from 'react-window';
+import { ResponsiveTable, TableColumn } from '../shared/ResponsiveTable';
 import {
   BookOpen,
   ArrowUpRight,
@@ -17,8 +17,10 @@ import {
   ChevronRight,
   CheckCircle,
   TrendingUp,
-  FileSpreadsheet
+  FileSpreadsheet,
+  X
 } from 'lucide-react';
+import { BottomSheet } from '../shared/BottomSheet';
 import { Customer, Supplier, Shift, Product, GlobalSettings, LubePosSale, JournalEntry } from '../../types';
 import { useFinancialStore } from '../../stores/useFinancialStore';
 import { useStaffStore } from '../../stores/useStaffStore';
@@ -49,6 +51,7 @@ export default function Ledger({
   const [searchQuery, setSearchQuery] = useState('');
   const [partyTypeFilter, setPartyTypeFilter] = useState<'all' | 'receivables' | 'payables'>('all');
   const [selectedParty, setSelectedParty] = useState<{ id: string; type: 'customer' | 'supplier' } | null>(null);
+  const [isLedgerSheetOpen, setIsLedgerSheetOpen] = useState(false);
   const [timeFilter, setTimeFilter] = useState<'all' | 'weekly' | 'monthly' | 'yearly'>('all');
 
   // Time filter checking helper
@@ -363,38 +366,51 @@ export default function Ledger({
     return computed.reverse();
   }, [selectedParty, activePartyDetails, journalEntries]);
 
-  const RenderRow = ({ index, style }: { index: number; style: React.CSSProperties }) => {
-    const log = activePartyLedgerTimeline[index];
-    return (
-      <div
-        style={{
-          ...style,
-          display: 'flex',
-          alignItems: 'center',
-          borderBottom: '1px solid #f1f5f9',
-          fontSize: '11px',
-          color: '#334155'
-        }}
-        className="hover:bg-slate-50/70"
-      >
-        <div style={{ width: '15%', padding: '8px 12px', fontFamily: 'monospace', color: '#94a3b8' }}>
-          {log.date}
-        </div>
-        <div style={{ width: '45%', padding: '8px 12px', fontWeight: 600, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+  const ledgerColumns: TableColumn<any>[] = [
+    {
+      header: t('Date', 'تاریخ'),
+      accessor: (log) => (
+        <span className="font-mono text-[11px] text-slate-500">{log.date}</span>
+      ),
+      isSecondaryMobile: true
+    },
+    {
+      header: t('Description', 'تفصیل'),
+      accessor: (log) => (
+        <span className="font-sans text-[11px] font-semibold text-slate-800 leading-tight block">
           {log.description}
-        </div>
-        <div style={{ width: '13%', padding: '8px 12px', textAlign: 'right', fontFamily: 'monospace', fontWeight: 'bold', color: '#ef4444' }}>
-          {log.debit > 0 ? `Rs. ${log.debit.toLocaleString()}` : '—'}
-        </div>
-        <div style={{ width: '13%', padding: '8px 12px', textAlign: 'right', fontFamily: 'monospace', fontWeight: 'bold', color: '#10b981' }}>
-          {log.credit > 0 ? `Rs. ${log.credit.toLocaleString()}` : '—'}
-        </div>
-        <div style={{ width: '14%', padding: '8px 12px', textAlign: 'right', fontFamily: 'monospace', fontWeight: 'bold', color: '#0f172a' }}>
+        </span>
+      ),
+      isPrimaryMobile: true
+    },
+    {
+      header: t('Debit Amount (+)', 'ڈیمانڈ بل (+)'),
+      className: 'text-right',
+      accessor: (log) => (
+        log.debit > 0 
+          ? <span className="font-mono text-xs font-bold text-red-500">Rs. {log.debit.toLocaleString()}</span> 
+          : <span className="text-slate-300">—</span>
+      )
+    },
+    {
+      header: t('Credit Amount (–)', 'رقم ادائیگی (–)'),
+      className: 'text-right',
+      accessor: (log) => (
+        log.credit > 0 
+          ? <span className="font-mono text-xs font-bold text-emerald-500">Rs. {log.credit.toLocaleString()}</span> 
+          : <span className="text-slate-300">—</span>
+      )
+    },
+    {
+      header: t('Balance', 'بقایا'),
+      className: 'text-right',
+      accessor: (log) => (
+        <span className="font-mono text-xs font-bold text-slate-900">
           Rs. {log.balance.toLocaleString()}
-        </div>
-      </div>
-    );
-  };
+        </span>
+      )
+    }
+  ];
 
 
 
@@ -569,7 +585,10 @@ export default function Ledger({
               return (
                 <button
                   key={`${party.type}_${party.id}`}
-                  onClick={() => setSelectedParty({ id: party.id, type: party.type })}
+                  onClick={() => {
+                    setSelectedParty({ id: party.id, type: party.type });
+                    setIsLedgerSheetOpen(true);
+                  }}
                   className={`relative w-full text-left rounded-xl border p-4 shadow-xs transition-colors flex items-center justify-between cursor-pointer ${
                     isSelected
                       ? 'border-orange-500 bg-orange-50/20'
@@ -605,8 +624,8 @@ export default function Ledger({
           </div>
         </div>
 
-        {/* RIGHT COLUMN (2/3 WIDTH): PARTY HISTORY TIMELINE */}
-        <div className="lg:col-span-2">
+        {/* RIGHT COLUMN (2/3 WIDTH): PARTY HISTORY TIMELINE (DESKTOP) */}
+        <div className="hidden lg:block lg:col-span-2">
           {selectedParty && activePartyDetails ? (
             <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-6">
               
@@ -641,27 +660,12 @@ export default function Ledger({
 
                 <div className="overflow-x-auto rounded-lg border border-slate-200">
                   <div className="min-w-full max-w-[600px]">
-                    <div className="flex bg-slate-50 border-b border-slate-200 text-slate-500 font-bold py-2.5 text-[11px] uppercase tracking-wider select-none">
-                      <div style={{ width: '15%', padding: '0 12px' }}>{t('Date', 'تاریخ')}</div>
-                      <div style={{ width: '45%', padding: '0 12px' }}>{t('Narrative Description', 'تفصیل')}</div>
-                      <div style={{ width: '13%', padding: '0 12px', textAlign: 'right' }}>{t('Debit Amount (+)', 'ڈیمانڈ بل (+)')}</div>
-                      <div style={{ width: '13%', padding: '0 12px', textAlign: 'right' }}>{t('Credit Amount (–)', 'رقم ادائیگی (–)')}</div>
-                      <div style={{ width: '14%', padding: '0 12px', textAlign: 'right' }}>{t('Running Balance', 'بقایا حاصل')}</div>
-                    </div>
-                    {activePartyLedgerTimeline.length === 0 ? (
-                      <div className="py-8 text-center text-slate-400 font-semibold text-xs">
-                        {t('No registered transactions in finalized shifts.', 'سیشنز کے دوران تاحال کوئی انٹری درج نہیں کی گئی ہے۔')}
-                      </div>
-                    ) : (
-                      <List
-                        itemCount={activePartyLedgerTimeline.length}
-                        itemSize={42}
-                        width="100%"
-                        height={400}
-                      >
-                        {RenderRow}
-                      </List>
-                    )}
+                    <ResponsiveTable
+                      data={activePartyLedgerTimeline}
+                      columns={ledgerColumns}
+                      keyExtractor={(_, idx) => idx.toString()}
+                      emptyMessage={t('No registered transactions in finalized shifts.', 'سیشنز کے دوران تاحال کوئی انٹری درج نہیں کی گئی ہے۔')}
+                    />
                   </div>
                 </div>
               </div>
@@ -675,7 +679,47 @@ export default function Ledger({
           )}
         </div>
 
-      </div>
+        </div>
+
+
+      {/* MOBILE BOTTOM SHEET FOR LEDGER DETAILS */}
+      <BottomSheet 
+        isOpen={isLedgerSheetOpen} 
+        onClose={() => setIsLedgerSheetOpen(false)} 
+        title={activePartyDetails ? t(activePartyDetails.name, activePartyDetails.urduName) : ''}
+        snapPoints={['90vh']}
+      >
+        {selectedParty && activePartyDetails && (
+          <div className="space-y-6">
+            <div className="flex flex-col gap-4 items-center border-b border-slate-100 pb-4">
+              <div className="rounded-lg bg-slate-50 border border-slate-100 px-4 py-3 text-center w-full">
+                <span className="font-sans text-[10px] text-slate-400 font-bold uppercase block mb-1">
+                  {selectedParty.type === 'customer' ? t('Owed to Station:', 'کسٹمر بقایا قرض:') : t('Owed by Station:', 'سپلائر بِل بقایا:')}
+                </span>
+                <strong className="font-mono text-2xl font-black text-slate-805 block">Rs. {activePartyDetails.balance.toLocaleString()}</strong>
+              </div>
+            </div>
+
+            {/* TIMELINE LIST */}
+            <div className="space-y-4">
+              <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 block">
+                {t('Chronological Ledger Transactions History', 'تاریخ برقی کاروباری لیجر')}
+              </h4>
+
+              <div className="overflow-x-auto rounded-lg border border-slate-200">
+                <div className="min-w-full max-w-[600px]">
+                  <ResponsiveTable
+                    data={activePartyLedgerTimeline}
+                    columns={ledgerColumns}
+                    keyExtractor={(_, idx) => idx.toString()}
+                    emptyMessage={t('No registered transactions.', 'کوئی انٹری درج نہیں کی گئی ہے۔')}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </BottomSheet>
 
     </div>
   );

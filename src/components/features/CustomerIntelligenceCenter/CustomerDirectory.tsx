@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
+import { ResponsiveTable, TableColumn } from '../../shared/ResponsiveTable';
 import { motion, AnimatePresence } from 'motion/react';
 import { useStation } from '../../../contexts/StationContext';
 import {
@@ -125,83 +125,6 @@ const MemoizedCustomerCard = React.memo(({
          prev.settings.language === next.settings.language;
 });
 
-const CustomerListRow = ({ index, style, data }: ListChildComponentProps) => {
-  const { customers, selectedCustomerId, settings, t, setSelectedCustomerId, openCustomerLedger } = data;
-  const cust = customers[index];
-  return (
-    <div style={{ ...style, paddingBottom: '8px' }}>
-      <MemoizedCustomerCard
-        cust={cust}
-        idx={index}
-        isSelected={selectedCustomerId === cust.id}
-        settings={settings}
-        t={t}
-        onSelect={setSelectedCustomerId}
-        onOpenLedger={openCustomerLedger}
-      />
-    </div>
-  );
-};
-
-const LedgerListRow = ({ index, style, data }: ListChildComponentProps) => {
-  const { ledgerEntries, settings, formatCurrency, t, showConfirm, onDeleteDebitEntry, onDeleteRecoveryEntry } = data;
-  const ent = ledgerEntries[index];
-  
-  return (
-    <div
-      style={{
-        ...style,
-        display: 'flex',
-        alignItems: 'center',
-        borderBottom: '1px solid #f1f5f9',
-        fontSize: '12px',
-        color: '#334155'
-      }}
-      className="hover:bg-slate-50/50"
-    >
-      <div style={{ width: '15%', padding: '0 12px', fontFamily: 'monospace', fontWeight: 500, color: '#64748b' }}>
-        {ent.date}
-      </div>
-      <div style={{ width: '35%', padding: '0 12px', fontWeight: 500, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-        {ent.description}
-      </div>
-      <div style={{ width: '13%', padding: '0 12px', textAlign: 'right', fontFamily: 'monospace', fontWeight: 'bold', color: '#f43f5e' }}>
-        {ent.debit > 0 ? formatCurrency(ent.debit, settings) : '—'}
-      </div>
-      <div style={{ width: '13%', padding: '0 12px', textAlign: 'right', fontFamily: 'monospace', fontWeight: 'bold', color: '#059669' }}>
-        {ent.credit > 0 ? formatCurrency(ent.credit, settings) : '—'}
-      </div>
-      <div style={{ width: '14%', padding: '0 12px', textAlign: 'right', fontFamily: 'monospace', fontWeight: 'bold', color: '#0f172a' }}>
-        {formatCurrency(ent.balance, settings)}
-      </div>
-      <div style={{ width: '10%', padding: '0 12px', textAlign: 'center' }}>
-        {ent.shiftId && ent.entryId && ent.type ? (
-          <button
-            onClick={() => {
-              showConfirm(
-                t('Confirm Entry Deletion', 'انٹری حذف کرنے کی تصدیق'),
-                t(`Delete this ledger entry? This will revert the transaction and update the customer's balance.`, `کیا آپ واقعی اس انٹری کو حذف کرنا چاہتے ہیں؟ اس سے کسٹمر کا بیلنس بھی تبدیل ہو جائے گا۔`),
-                () => {
-                  if (ent.type === 'debit') {
-                    onDeleteDebitEntry(ent.shiftId!, ent.entryId!);
-                  } else {
-                    onDeleteRecoveryEntry(ent.shiftId!, ent.entryId!);
-                  }
-                }
-              );
-            }}
-            className="text-red-500 hover:text-red-750 font-bold cursor-pointer text-xs p-1"
-            title={t('Delete Entry', 'حذف کریں')}
-          >
-            🗑️
-          </button>
-        ) : (
-          <span className="text-slate-300 font-sans text-[10px]">—</span>
-        )}
-      </div>
-    </div>
-  );
-};
 
 export default function CustomerDirectory({
   settings,
@@ -977,22 +900,20 @@ export default function CustomerDirectory({
                 {t('No customers matched filters.', 'کوئی کھاتہ میچ نہیں ہوا۔')}
               </div>
             ) : (
-              <List
-                itemCount={filteredCustomers.length}
-                itemSize={80}
-                width="100%"
-                height={500}
-                itemData={{
-                  customers: filteredCustomers,
-                  selectedCustomerId,
-                  settings,
-                  t,
-                  setSelectedCustomerId,
-                  openCustomerLedger
-                }}
-              >
-                {CustomerListRow}
-              </List>
+              <div className="max-h-[500px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                {filteredCustomers.map((cust, index) => (
+                  <MemoizedCustomerCard
+                    key={cust.id}
+                    cust={cust}
+                    idx={index}
+                    isSelected={selectedCustomerId === cust.id}
+                    settings={settings}
+                    t={t}
+                    onSelect={setSelectedCustomerId}
+                    onOpenLedger={openCustomerLedger}
+                  />
+                ))}
+              </div>
             )}
           </div>
         </div>
@@ -1081,7 +1002,7 @@ export default function CustomerDirectory({
               </div>
 
               {/* Outstanding metrics display & credit limit warning bar */}
-              <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="rounded-lg p-4 bg-slate-50 border border-slate-100 font-sans text-xs flex flex-col justify-between relative overflow-hidden">
                   <div className="absolute top-0 bottom-0 left-0 w-1 bg-red-400"></div>
                   <span className="text-slate-400 font-bold uppercase tracking-wider">{t('Remaining Credit Space:', 'باقی گنجائش بقایا قرض:')}</span>
@@ -1126,7 +1047,7 @@ export default function CustomerDirectory({
                       <button type="button" onClick={() => setIsAddingTxn(false)} className="text-xs font-bold text-slate-400 hover:text-slate-650">Cancel</button>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3.5 sm:grid-cols-2">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3.5 sm:grid-cols-2">
                       <div>
                         <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t('Transaction nature:', 'انٹری کی قسم:')}</label>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
@@ -1222,37 +1143,72 @@ export default function CustomerDirectory({
                 </h4>
 
                 <div className="overflow-x-auto rounded-lg border border-slate-105">
-                  <div className="min-w-full max-w-[800px]">
-                    <div className="flex bg-slate-50 border-b border-slate-150 text-slate-650 font-bold py-2.5 text-[11px] uppercase tracking-wider select-none">
-                      <div style={{ width: '15%', padding: '0 12px' }}>{t('Session Date', 'تاریخ')}</div>
-                      <div style={{ width: '35%', padding: '0 12px' }}>{t('Description / Narrative', 'تفصیل')}</div>
-                      <div style={{ width: '13%', padding: '0 12px', textAlign: 'right' }}>{t('Debit (Dr (+))', 'ڈیمانڈ / منہا (+)')}</div>
-                      <div style={{ width: '13%', padding: '0 12px', textAlign: 'right' }}>{t('Credit (Cr (–))', 'وصول / جمع (–)')}</div>
-                      <div style={{ width: '14%', padding: '0 12px', textAlign: 'right' }}>{t('Running Balance', 'بقایا حاصل')}</div>
-                      <div style={{ width: '10%', padding: '0 12px', textAlign: 'center' }}>{t('Actions', 'اقدامات')}</div>
-                    </div>
+                  <div className="min-w-full">
                     {ledgerEntries.length === 0 ? (
                       <div className="py-8 text-center text-slate-400 font-medium bg-white">
                         {t('No shift transaction ledger cards matched this debtor history.', 'اس گاہک کی پچھلی کوئی انٹری تاحال درج نہیں ہے۔')}
                       </div>
                     ) : (
-                      <List
-                        itemCount={ledgerEntries.length}
-                        itemSize={44}
-                        width="100%"
-                        height={400}
-                        itemData={{
-                          ledgerEntries,
-                          settings,
-                          formatCurrency,
-                          t,
-                          showConfirm,
-                          onDeleteDebitEntry,
-                          onDeleteRecoveryEntry
-                        }}
-                      >
-                        {LedgerListRow}
-                      </List>
+                      <ResponsiveTable
+                        data={ledgerEntries}
+                        columns={[
+                          {
+                            header: t('Session Date', 'تاریخ'),
+                            accessor: 'date',
+                            className: 'font-mono text-slate-500',
+                            isPrimaryMobile: true
+                          },
+                          {
+                            header: t('Description / Narrative', 'تفصیل'),
+                            accessor: 'description',
+                            className: 'font-medium text-slate-800 max-w-[200px] truncate',
+                            isSecondaryMobile: true
+                          },
+                          {
+                            header: t('Debit (Dr (+))', 'ڈیمانڈ / منہا (+)'),
+                            accessor: (ent) => ent.debit > 0 ? formatCurrency(ent.debit, settings) : '—',
+                            className: 'text-right font-mono font-bold text-rose-500'
+                          },
+                          {
+                            header: t('Credit (Cr (-))', 'وصول / جمع (-)'),
+                            accessor: (ent) => ent.credit > 0 ? formatCurrency(ent.credit, settings) : '—',
+                            className: 'text-right font-mono font-bold text-emerald-600'
+                          },
+                          {
+                            header: t('Running Balance', 'بقایا حاصل'),
+                            accessor: (ent) => formatCurrency(ent.balance, settings),
+                            className: 'text-right font-mono font-bold text-slate-900'
+                          },
+                          {
+                            header: t('Actions', 'اقدامات'),
+                            className: 'text-center',
+                            accessor: (ent) => ent.shiftId && ent.entryId && ent.type ? (
+                              <button
+                                onClick={() => {
+                                  showConfirm(
+                                    t('Confirm Entry Deletion', 'انٹری حذف کرنے کی تصدیق'),
+                                    t(`Delete this ledger entry? This will revert the transaction and update the customer's balance.`, `کیا آپ واقعی اس انٹری کو حذف کرنا چاہتے ہیں؟ اس سے کسٹمر کا بیلنس بھی تبدیل ہو جائے گا۔`),
+                                    () => {
+                                      if (ent.type === 'debit') {
+                                        onDeleteDebitEntry(ent.shiftId!, ent.entryId!);
+                                      } else {
+                                        onDeleteRecoveryEntry(ent.shiftId!, ent.entryId!);
+                                      }
+                                    }
+                                  );
+                                }}
+                                className="text-red-500 hover:text-red-700 font-bold cursor-pointer text-xs p-1 bg-red-50 hover:bg-red-100 rounded-md"
+                                title={t('Delete Entry', 'حذف کریں')}
+                              >
+                                🗑️
+                              </button>
+                            ) : (
+                              <span className="text-slate-300 font-sans text-[10px]">—</span>
+                            )
+                          }
+                        ]}
+                        keyExtractor={(ent, idx) => `${ent.shiftId}-${ent.entryId}-${idx}`}
+                      />
                     )}
                   </div>
                 </div>
@@ -1340,7 +1296,7 @@ export default function CustomerDirectory({
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t(`Credit Limit (${getCurrencySymbol(settings)}):`, 'قرض کی انتہائ حد:')}</label>
                     <input
@@ -1415,7 +1371,7 @@ export default function CustomerDirectory({
                 setShowEditModal(false);
                 showToast(t('Customer profile updated!', 'کھاتہ دار معلومات اپڈیٹ ہو گئی!'), 'success');
               }} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Name (English):', 'نام (انگریزی):')}</label>
                     <input type="text" required value={editCustName} onChange={e => setEditCustName(e.target.value)}

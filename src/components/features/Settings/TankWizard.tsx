@@ -120,7 +120,7 @@ export default function TankWizard({ tanks, products, language, onAddTank, onUpd
                 </select>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700">{t('Capacity (Liters)', 'گنجائش (لیٹر)', language)}</label>
                   <input
@@ -166,7 +166,7 @@ export default function TankWizard({ tanks, products, language, onAddTank, onUpd
               <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">
                 {t('Configured Tanks', 'ترتیب دیے گئے ٹینکس', language)}
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                 {tanks.map((tank, index) => (
                   <div
                     key={tank.id}
@@ -208,7 +208,7 @@ export default function TankWizard({ tanks, products, language, onAddTank, onUpd
                         </button>
                       </div>
                     </div>
-                    <div className="ml-11 grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 text-sm pt-3 border-t border-slate-100 mt-3">
+                    <div className="ml-11 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4 text-sm pt-3 border-t border-slate-100 mt-3">
                       <div>
                         <div className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{t('Capacity', 'گنجائش', language)}</div>
                         <div className="font-black text-slate-700">{Number(tank.capacity).toLocaleString()} <span className="text-xs text-slate-400 font-medium">L</span></div>

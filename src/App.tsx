@@ -76,6 +76,7 @@ import { useKeyboardShortcut, SHORTCUTS } from './hooks/useKeyboardShortcut';
 import { buildSearchIndex, rebuildModuleIndex } from './services/searchService';
 import { CrashCenter as ErrorBoundary } from './components/ui/CrashCenter';
 import { RefreshCw, CheckCircle2, AlertTriangle, XCircle, Info, X } from 'lucide-react';
+import { usePullToRefresh } from './hooks/usePullToRefresh';
 
 import {
   Pump,
@@ -89,6 +90,12 @@ function MainApp() {
 
   // Centralized Auth Context connection
   const { user: authenticatedUser, checkingAuth, logout } = useAuth();
+
+  const { isRefreshing, handleTouchStart, handleTouchMove, handleTouchEnd } = usePullToRefresh(async () => {
+    // Short artificial delay for smooth UX and animation
+    await new Promise(resolve => setTimeout(resolve, 800));
+    window.location.reload();
+  });
 
   const handleLoginSuccess = () => {
     window.location.reload();
@@ -862,7 +869,19 @@ function MainApp() {
       />
 
       {/* Main Container Workspace */}
-      <main className="flex-1 w-full lg:pl-64 pt-[65px] pb-24 lg:pb-8 flex flex-col overflow-y-auto scroll-container relative">
+      <main 
+        className="flex-1 w-full lg:pl-64 pt-[65px] pb-24 lg:pb-8 flex flex-col overflow-y-auto scroll-container relative"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {isRefreshing && (
+          <div className="absolute top-16 left-0 right-0 flex justify-center py-4 z-50">
+            <div className="bg-white shadow-xl rounded-full p-2 border border-slate-100 flex items-center justify-center">
+               <RefreshCw className="h-6 w-6 text-orange-600 animate-spin" />
+            </div>
+          </div>
+        )}
         <div className="p-4 lg:p-8 w-full max-w-[1800px] mx-auto flex-1 flex flex-col">
           <div className="flex-grow">
             <PageTransition viewKey={activeView}>

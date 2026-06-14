@@ -5,7 +5,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
+import { ResponsiveTable, TableColumn } from '../shared/ResponsiveTable';
 import {
   FileBarChart2,
   Calendar,
@@ -470,74 +470,6 @@ export default function Reports({
     };
   }, [sortedRows]);
 
-  const RenderReportRow = ({ index, style }: { index: number; style: React.CSSProperties }) => {
-    const row = sortedRows[index];
-    const isEven = index % 2 === 0;
-    const colCount = activeTemplate.headers.length;
-    const colWidth = `${100 / colCount}%`;
-
-    return (
-      <div
-        style={{
-          ...style,
-          display: 'flex',
-          alignItems: 'center',
-          borderBottom: '1px solid #f1f5f9',
-          fontSize: '11px'
-        }}
-        className={`hover:bg-slate-50/70 transition-colors ${isEven ? 'bg-white' : 'bg-slate-50/15'}`}
-      >
-        {activeTemplate.headers.map(h => {
-          const cellValue = row[h.key as keyof ReportRow];
-          const isNumeric = h.isNumeric;
-          
-          if (h.key === 'amount') {
-            const numericAmount = Number(cellValue || 0);
-            const isPositive = numericAmount >= 0;
-            return (
-              <div
-                key={h.key}
-                style={{ width: colWidth, padding: '8px 16px', textAlign: 'right' }}
-                className="font-mono font-bold text-slate-900"
-              >
-                <span className={isPositive ? 'text-slate-900' : 'text-red-500'}>
-                  {formatCurrency(numericAmount, settings)}
-                </span>
-              </div>
-            );
-          }
-
-          let formattedValue = '';
-          if (cellValue !== null && cellValue !== undefined) {
-            const strValue = String(cellValue);
-            if (strValue.includes('Rs.')) {
-              formattedValue = strValue.replace(/Rs\./g, getCurrencySymbol(settings));
-            } else {
-              formattedValue = strValue;
-            }
-          }
-
-          return (
-            <div
-              key={h.key}
-              style={{
-                width: colWidth,
-                padding: '8px 16px',
-                textAlign: isNumeric ? 'right' : 'left',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap'
-              }}
-              className={`font-sans text-slate-800 ${isNumeric ? 'font-mono' : ''}`}
-            >
-              {formattedValue}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
 
   // Export CSV generator
   const triggerCSVExport = () => {
@@ -634,7 +566,7 @@ export default function Reports({
           NEW VIEW: 50+ CORPORATE REPORT GENERATION CONSOLE
           ======================================================== */}
       {activeReportTab === 'corporate_audit' && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
           
           {/* LEFT COLUMN: ACTIVE DIRECTORY ACCORDION OF REPORTS */}
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3 lg:sticky lg:top-5">
@@ -711,7 +643,7 @@ export default function Reports({
                 <span>{t('Advanced Query Filter Controls', 'فلٹرز اور آڈٹ سرچ پینل')}</span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:grid-cols-4 text-xs font-sans">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3 sm:grid-cols-4 text-xs font-sans">
                 {/* Dates picker */}
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">{t('Start Date', 'شروع تاریخ')}</label>
@@ -763,7 +695,7 @@ export default function Reports({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:grid-cols-4 text-xs font-sans pt-1">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3 sm:grid-cols-4 text-xs font-sans pt-1">
                 {/* Customer / Supplier selection */}
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">{t('Party Name', 'پارٹی کھاتہ')}</label>
@@ -889,46 +821,60 @@ export default function Reports({
 
             <div className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
               <div className="overflow-x-auto">
-                <div className="min-w-full max-w-[800px]">
-                  <div className="flex bg-slate-50 border-b border-slate-200 text-slate-700 font-bold py-3 text-[11px] uppercase tracking-wider select-none">
-                    {activeTemplate.headers.map(h => {
-                      const colCount = activeTemplate.headers.length;
-                      const colWidth = `${100 / colCount}%`;
-                      return (
-                        <div
-                          key={h.key}
-                          onClick={() => {
-                            if (sortField === h.key) {
-                              setSortAscending(!sortAscending);
-                            } else {
-                              setSortField(h.key);
-                              setSortAscending(true);
-                            }
-                          }}
-                          style={{ width: colWidth, padding: '0 16px', textAlign: h.isNumeric ? 'right' : 'left', cursor: 'pointer' }}
-                          className="hover:bg-slate-100/50 flex items-center gap-1.5 transition-colors"
-                        >
-                          <div className={`flex items-center gap-1.5 ${h.isNumeric ? 'justify-end w-full' : ''}`}>
-                            <span>{isUrdu ? h.urduLabel : h.label}</span>
-                            <ArrowUpDown className="h-3 w-3 text-slate-400" />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                <div className="min-w-full">
                   {sortedRows.length === 0 ? (
                     <div className="py-24 text-center text-slate-400 font-sans italic text-xs bg-white">
                       {t('No ledger records match the query filter selections.', 'آڈٹ فلٹرز یا تلاش کے معیار کے مطابق کوئی ڈیٹا نہیں ملا۔')}
                     </div>
                   ) : (
-                    <List
-                      itemCount={sortedRows.length}
-                      itemSize={42}
-                      width="100%"
-                      height={500}
-                    >
-                      {RenderReportRow}
-                    </List>
+                    <ResponsiveTable
+                      data={sortedRows}
+                      columns={activeTemplate.headers.map((h, i) => ({
+                        header: (
+                          <div
+                            onClick={() => {
+                              if (sortField === h.key) {
+                                setSortAscending(!sortAscending);
+                              } else {
+                                setSortField(h.key);
+                                setSortAscending(true);
+                              }
+                            }}
+                            className={`flex items-center gap-1.5 cursor-pointer ${h.isNumeric ? 'justify-end w-full' : ''}`}
+                          >
+                            <span>{isUrdu ? h.urduLabel : h.label}</span>
+                            <ArrowUpDown className="h-3 w-3 text-slate-400" />
+                          </div>
+                        ),
+                        accessor: (row: any) => {
+                          const cellValue = row[h.key];
+                          if (h.key === 'amount') {
+                            const numericAmount = Number(cellValue || 0);
+                            const isPositive = numericAmount >= 0;
+                            return (
+                              <span className={isPositive ? 'text-slate-900 font-bold' : 'text-red-500 font-bold'}>
+                                {formatCurrency(numericAmount, settings)}
+                              </span>
+                            );
+                          }
+
+                          let formattedValue = '';
+                          if (cellValue !== null && cellValue !== undefined) {
+                            const strValue = String(cellValue);
+                            if (strValue.includes('Rs.')) {
+                              formattedValue = strValue.replace(/Rs\./g, getCurrencySymbol(settings));
+                            } else {
+                              formattedValue = strValue;
+                            }
+                          }
+                          return formattedValue;
+                        },
+                        className: h.isNumeric ? 'text-right font-mono' : 'text-left font-sans',
+                        isPrimaryMobile: i === 0,
+                        isSecondaryMobile: i === 1,
+                      }))}
+                      keyExtractor={(row, index) => `${row.id || index}`}
+                    />
                   )}
                 </div>
               </div>
@@ -944,7 +890,7 @@ export default function Reports({
         <div className="space-y-6">
           
           {/* Bento box summary widgets row with 5 indicators */}
-          <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 lg:grid-cols-5">
+          <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4 lg:grid-cols-5">
             
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm flex flex-col justify-between">
               <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block leading-snug">{t('Summed Period Sales', 'کل سیشنز فروخت رقم')}</span>
@@ -984,7 +930,7 @@ export default function Reports({
           </div>
 
           {/* DYNAMICAL CHARTS MATRIX */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 lg:grid-cols-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3 lg:grid-cols-2">
             
             {/* 1. Daily Sales timeline charts */}
             <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
@@ -1076,41 +1022,40 @@ export default function Reports({
             </h3>
 
             <div className="overflow-x-auto rounded-lg border border-slate-105">
-              <table className="w-full border-collapse text-left font-sans text-xs">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-150 text-slate-655 font-bold">
-                    <th className="py-2.5 px-4">{t('Party Name', 'نام کھاتہ دار')}</th>
-                    <th className="py-2.5 px-4">{t('Contact Phone', 'موبائل نمبر')}</th>
-                    <th className="py-2.5 px-4">{t('Operational Block Address', 'مقام/پتہ')}</th>
-                    <th className="py-2.5 px-4 text-right">{t('Credit Cap Limit', 'قرض مقرر حد')}</th>
-                    <th className="py-2.5 px-4 text-right">{t('Account Balance', 'بک بقایا رقم')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {customers.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="py-8 text-center text-slate-400 font-medium">
-                        {t('No customers registered yet.', 'توجہ فرمائیں! کوئی پارٹی رجسٹر نہیں کی گئی۔')}
-                      </td>
-                    </tr>
-                  ) : (
-                    customers.map((cust) => {
+              <ResponsiveTable
+                data={customers}
+                columns={[
+                  {
+                    header: t('Party Name', 'نام کھاتہ دار'),
+                    accessor: (cust) => <span className="font-bold text-slate-800">{t(cust.name, cust.urduName)}</span>,
+                    isPrimaryMobile: true
+                  },
+                  {
+                    header: t('Contact Phone', 'موبائل نمبر'),
+                    accessor: (cust) => <span className="font-mono font-semibold text-slate-500">{cust.contact}</span>,
+                    isSecondaryMobile: true
+                  },
+                  {
+                    header: t('Operational Block Address', 'مقام/پتہ'),
+                    accessor: (cust) => <span className="text-slate-400 font-medium">{cust.address || 'Karachi, Pakistan'}</span>
+                  },
+                  {
+                    header: t('Credit Cap Limit', 'قرض مقرر حد'),
+                    className: 'text-right',
+                    accessor: (cust) => <span className="font-mono text-slate-500">{formatCurrency(cust.creditLimit, settings)}</span>
+                  },
+                  {
+                    header: t('Account Balance', 'بک بقایا رقم'),
+                    className: 'text-right',
+                    accessor: (cust) => {
                       const isOwed = cust.balance > 0;
-                      return (
-                        <tr key={cust.id} className="hover:bg-slate-50/50">
-                          <td className="py-3 px-4 font-bold text-slate-800">{t(cust.name, cust.urduName)}</td>
-                          <td className="py-3 px-4 font-mono font-semibold text-slate-500">{cust.contact}</td>
-                          <td className="py-3 px-4 text-slate-400 font-medium">{cust.address || 'Karachi, Pakistan'}</td>
-                          <td className="py-3 px-4 text-right font-mono text-slate-500">{formatCurrency(cust.creditLimit, settings)}</td>
-                          <td className={`py-3 px-4 text-right font-mono font-extrabold ${isOwed ? 'text-red-650' : 'text-emerald-705'}`}>
-                            {formatCurrency(cust.balance, settings)}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
+                      return <span className={`font-mono font-extrabold ${isOwed ? 'text-red-650' : 'text-emerald-705'}`}>{formatCurrency(cust.balance, settings)}</span>;
+                    }
+                  }
+                ]}
+                keyExtractor={(cust) => cust.id}
+                emptyMessage={t('No customers registered yet.', 'توجہ فرمائیں! کوئی پارٹی رجسٹر نہیں کی گئی۔')}
+              />
             </div>
           </div>
 
@@ -1123,7 +1068,7 @@ export default function Reports({
           ======================================================== */}
       {activeReportTab === 'inventory_audit' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-6">
             
             {/* INVENTORY TABLE LEFT PANEL (2/3) */}
             <div className="md:col-span-2 rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
@@ -1132,37 +1077,45 @@ export default function Reports({
               </h3>
 
               <div className="overflow-x-auto rounded-lg border border-slate-105">
-                <table className="w-full border-collapse text-left font-sans text-xs">
-                  <thead>
-                    <tr className="bg-slate-50 border-b border-slate-150 text-slate-650 font-bold">
-                      <th className="py-2.5 px-4">{t('Product Grade Name', 'پراڈکٹ ٹائپ')}</th>
-                      <th className="py-2.5 px-4">{t('Fuel/Lube Category', 'قسم')}</th>
-                      <th className="py-2.5 px-4 text-right">{t('Current Active Stock', 'موجودہ اسٹاک والیم')}</th>
-                      <th className="py-2.5 px-4 text-right">{t('Low Alert Threshold', 'کم سے کم الرٹ حد')}</th>
-                      <th className="py-2.5 px-4 text-right">{t('Max Storage Capacity', 'زیادہ سے زیادہ گنجائش')}</th>
-                      <th className="py-2.5 px-4 text-right">{t('Unit rate (PKR)', 'موجودہ ریٹ فی لیٹر')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 text-slate-700">
-                    {products.map((prod) => {
-                      const isLow = prod.currentStock <= prod.minStock;
-                      return (
-                        <tr key={prod.id} className="hover:bg-slate-50/50">
-                          <td className="py-3 px-4 font-bold text-slate-800">{t(prod.name, prod.urduName)}</td>
-                          <td className="py-3 px-4 font-semibold text-slate-400 capitalize">{prod.type}</td>
-                          <td className={`py-3 px-4 text-right font-mono font-bold ${isLow ? 'text-rose-600 font-extrabold' : 'text-slate-800'}`}>
-                            {prod.currentStock.toLocaleString()} {prod.unit}
-                          </td>
-                          <td className="py-3 px-4 text-right font-mono text-slate-400">{prod.minStock.toLocaleString()} {prod.unit}</td>
-                          <td className="py-3 px-4 text-right font-mono text-slate-500">
-                            {prod.capacity ? `${prod.capacity.toLocaleString()} ${prod.unit}` : 'N/A'}
-                          </td>
-                          <td className="py-3 px-4 text-right font-mono font-bold text-emerald-700">{formatCurrency(prod.rate, settings)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                <ResponsiveTable
+                  data={products}
+                  columns={[
+                    {
+                      header: t('Product Grade Name', 'پراڈکٹ ٹائپ'),
+                      accessor: (prod) => <span className="font-bold text-slate-800">{t(prod.name, prod.urduName)}</span>,
+                      isPrimaryMobile: true
+                    },
+                    {
+                      header: t('Fuel/Lube Category', 'قسم'),
+                      accessor: (prod) => <span className="font-semibold text-slate-400 capitalize">{prod.type}</span>,
+                      isSecondaryMobile: true
+                    },
+                    {
+                      header: t('Current Active Stock', 'موجودہ اسٹاک والیم'),
+                      className: 'text-right',
+                      accessor: (prod) => {
+                        const isLow = prod.currentStock <= prod.minStock;
+                        return <span className={`font-mono font-bold ${isLow ? 'text-rose-600 font-extrabold' : 'text-slate-800'}`}>{prod.currentStock.toLocaleString()} {prod.unit}</span>;
+                      }
+                    },
+                    {
+                      header: t('Low Alert Threshold', 'کم سے کم الرٹ حد'),
+                      className: 'text-right',
+                      accessor: (prod) => <span className="font-mono text-slate-400">{prod.minStock.toLocaleString()} {prod.unit}</span>
+                    },
+                    {
+                      header: t('Max Storage Capacity', 'زیادہ سے زیادہ گنجائش'),
+                      className: 'text-right',
+                      accessor: (prod) => <span className="font-mono text-slate-500">{prod.capacity ? `${prod.capacity.toLocaleString()} ${prod.unit}` : 'N/A'}</span>
+                    },
+                    {
+                      header: t('Unit rate (PKR)', 'موجودہ ریٹ فی لیٹر'),
+                      className: 'text-right',
+                      accessor: (prod) => <span className="font-mono font-bold text-emerald-700">{formatCurrency(prod.rate, settings)}</span>
+                    }
+                  ]}
+                  keyExtractor={(prod) => prod.id}
+                />
               </div>
             </div>
 
@@ -1273,7 +1226,7 @@ export default function Reports({
                 </div>
 
                 {/* Sub Metadata rows */}
-                <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 border-b border-slate-100 pb-4 text-xs font-sans text-slate-600">
+                <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4 border-b border-slate-100 pb-4 text-xs font-sans text-slate-600">
                   <div>
                     <span className="block font-bold">Shift ID: <span className="font-mono font-semibold">#{activeShiftToReceipt.id}</span></span>
                     <span className="block mt-1">Date: <span className="font-semibold">{activeShiftToReceipt.date}</span></span>
@@ -1292,7 +1245,7 @@ export default function Reports({
                     {t('Final Cash Audit Sheet Summary', 'حتمی کیش گوشوارہ پڑتال')}
                   </strong>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 text-xs font-sans">
+                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4 text-xs font-sans">
                     <div className="rounded-lg bg-slate-50 p-3 space-y-1.5 border border-slate-105">
                       <span className="text-slate-400 font-semibold block">{t('EXPECTED COMPUTED CASH:', 'حسابی کیش ہونا چاہیۓ تھا:')}</span>
                       <strong className="font-mono text-sm font-bold text-slate-800">{formatCurrency(activeShiftToReceipt.expectedCash, settings)}</strong>
@@ -1397,76 +1350,97 @@ export default function Reports({
             {shifts.length === 0 ? (
               <p className="text-center py-10 font-sans text-xs text-slate-400">{t('No finalized shifts recorded in system.', 'سسٹم میں کوئی شفٹ لاگ درج نہیں ملا۔')}</p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left font-sans text-xs border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50 border-b border-slate-150 text-slate-500 uppercase font-bold tracking-wider text-[10px]">
-                      <th className="py-2.5 px-3">{t('Shift Date & ID', 'تاریخ و شفٹ')}</th>
-                      <th className="py-2.5 px-3">{t('Supervisor', 'سپروائزر')}</th>
-                      <th className="py-2.5 px-3 text-right">{t('Shift Digital Payments (A)', 'ڈیجیٹل والٹ وصولی (A)' )}</th>
-                      <th className="py-2.5 px-3 text-right">{t('Shift Bank Deposits (B)', 'بینک ڈیپازٹ رقم (B)')}</th>
-                      <th className="py-2.5 px-3 text-right">{t('Audit Gap / Variance (A - B)', 'حساب میں فرق')}</th>
-                      <th className="py-2.5 px-3 text-center">{t('Status', 'اسٹیٹس')}</th>
-                      <th className="py-2.5 px-3 text-right">{t('Verification Settle', 'آڈٹ ایکشن')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-150 text-slate-700 font-medium font-sans">
-                    {shifts.map((s) => {
-                      const totalDigital = (s.digitalCashEntries || []).reduce((sum, dc) => sum + dc.amount, 0);
-                      const totalBank = (s.bankCashEntries || []).reduce((sum, bc) => sum + bc.amount, 0);
-                      const variance = totalDigital - totalBank;
-                      const isReconciled = reconciledShiftIds.includes(s.id);
-
-                      return (
-                        <tr key={s.id} className="hover:bg-slate-50/50">
-                          <td className="py-3.5 px-3">
-                            <span className="font-mono text-[11px] text-slate-400 block">{s.date}</span>
-                            <strong className="text-slate-800 text-xs">SH-{s.id}</strong>
-                          </td>
-                          <td className="py-3.5 px-3 text-slate-600 truncate max-w-full max-w-[120px]" title={s.staffId}>
-                            {s.staffId?.toUpperCase()}
-                          </td>
-                          <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-800">
-                            {formatCurrency(totalDigital, settings)}
-                          </td>
-                          <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-800">
-                            {formatCurrency(totalBank, settings)}
-                          </td>
-                          <td className={`py-3.5 px-3 text-right font-mono font-extrabold text-[12px] ${variance === 0 ? 'text-slate-500' : 'text-rose-600'}`}>
-                            {formatCurrency(variance, settings)}
-                          </td>
-                          <td className="py-3.5 px-3 text-center">
-                            {isReconciled ? (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700 leading-none">
-                                ✓ {t('Reconciled', 'تصفیہ مکمل')}
-                              </span>
-                            ) : variance === 0 ? (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700 leading-none">
-                                ⚠ {t('Pending Verification', 'آڈٹ زیر التواء')}
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-1 text-[10px] font-bold text-rose-700 leading-none">
-                                ✕ {t('Discrepancy Variance', 'حساب میں فرق')}
-                              </span>
-                            )}
-                          </td>
-                          <td className="py-3.5 px-3 text-right">
-                            <button
-                              onClick={() => handleToggleReconcile(s.id)}
-                              className={`text-[10.5px] font-bold px-3 py-1 rounded-md transition-all cursor-pointer ${
-                                isReconciled
-                                  ? 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                                  : 'bg-orange-600 text-white hover:bg-orange-700'
-                              }`}
-                            >
-                              {isReconciled ? t('Un-reconcile', 'دوبارہ آڈٹ کریں') : t('Mark Reconciled', 'توازن منظور کریں')}
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              <div className="w-full">
+                <ResponsiveTable
+                  data={shifts}
+                  columns={[
+                    {
+                      header: t('Shift Date & ID', 'تاریخ و شفٹ'),
+                      accessor: (s) => (
+                        <>
+                          <span className="font-mono text-[11px] text-slate-400 block">{s.date}</span>
+                          <strong className="text-slate-800 text-xs">SH-{s.id}</strong>
+                        </>
+                      ),
+                      isSecondaryMobile: true
+                    },
+                    {
+                      header: t('Supervisor', 'سپروائزر'),
+                      accessor: (s) => <span className="text-slate-600 truncate max-w-[120px]" title={s.staffId}>{s.staffId?.toUpperCase()}</span>,
+                      isPrimaryMobile: true
+                    },
+                    {
+                      header: t('Shift Digital Payments (A)', 'ڈیجیٹل والٹ وصولی (A)' ),
+                      className: 'text-right',
+                      accessor: (s) => {
+                        const totalDigital = (s.digitalCashEntries || []).reduce((sum, dc) => sum + dc.amount, 0);
+                        return <span className="font-mono font-bold text-slate-800">{formatCurrency(totalDigital, settings)}</span>;
+                      }
+                    },
+                    {
+                      header: t('Shift Bank Deposits (B)', 'بینک ڈیپازٹ رقم (B)'),
+                      className: 'text-right',
+                      accessor: (s) => {
+                        const totalBank = (s.bankCashEntries || []).reduce((sum, bc) => sum + bc.amount, 0);
+                        return <span className="font-mono font-bold text-slate-800">{formatCurrency(totalBank, settings)}</span>;
+                      }
+                    },
+                    {
+                      header: t('Audit Gap / Variance (A - B)', 'حساب میں فرق'),
+                      className: 'text-right',
+                      accessor: (s) => {
+                        const totalDigital = (s.digitalCashEntries || []).reduce((sum, dc) => sum + dc.amount, 0);
+                        const totalBank = (s.bankCashEntries || []).reduce((sum, bc) => sum + bc.amount, 0);
+                        const variance = totalDigital - totalBank;
+                        return <span className={`font-mono font-extrabold text-[12px] ${variance === 0 ? 'text-slate-500' : 'text-rose-600'}`}>{formatCurrency(variance, settings)}</span>;
+                      }
+                    },
+                    {
+                      header: t('Status', 'اسٹیٹس'),
+                      className: 'text-center',
+                      accessor: (s) => {
+                        const totalDigital = (s.digitalCashEntries || []).reduce((sum, dc) => sum + dc.amount, 0);
+                        const totalBank = (s.bankCashEntries || []).reduce((sum, bc) => sum + bc.amount, 0);
+                        const variance = totalDigital - totalBank;
+                        const isReconciled = reconciledShiftIds.includes(s.id);
+                        return isReconciled ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700 leading-none">
+                            ✓ {t('Reconciled', 'تصفیہ مکمل')}
+                          </span>
+                        ) : variance === 0 ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700 leading-none">
+                            ⚠ {t('Pending Verification', 'آڈٹ زیر التواء')}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-1 text-[10px] font-bold text-rose-700 leading-none">
+                            ✕ {t('Discrepancy Variance', 'حساب میں فرق')}
+                          </span>
+                        );
+                      }
+                    },
+                    {
+                      header: t('Verification Settle', 'آڈٹ ایکشن'),
+                      className: 'text-right',
+                      accessor: (s) => {
+                        const isReconciled = reconciledShiftIds.includes(s.id);
+                        return (
+                          <button
+                            onClick={() => handleToggleReconcile(s.id)}
+                            className={`text-[10.5px] font-bold px-3 py-1 rounded-md transition-all cursor-pointer ${
+                              isReconciled
+                                ? 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                                : 'bg-orange-600 text-white hover:bg-orange-700'
+                            }`}
+                          >
+                            {isReconciled ? t('Un-reconcile', 'دوبارہ آڈٹ کریں') : t('Mark Reconciled', 'توازن منظور کریں')}
+                          </button>
+                        );
+                      }
+                    }
+                  ]}
+                  keyExtractor={(s) => s.id}
+                  emptyMessage={t('No finalized shifts recorded in system.', 'سسٹم میں کوئی شفٹ لاگ درج نہیں ملا۔')}
+                />
               </div>
             )}
           </div>

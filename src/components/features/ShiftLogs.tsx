@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { FixedSizeList as List } from 'react-window';
+
 import {
   History,
   Filter,
@@ -130,35 +130,50 @@ export default function ShiftLogs({
     }, 0);
   };
 
-  const RenderRow = ({ index, style }: { index: number; style: React.CSSProperties }) => {
-    const shift = filteredShifts[index];
-    return (
-      <div
-        style={{
-          ...style,
-          display: 'flex',
-          alignItems: 'center',
-          borderBottom: '1px solid #f1f5f9',
-        }}
-        className="hover:bg-slate-50 transition-colors bg-white text-sm"
-      >
-        <div style={{ width: '15%', padding: '0 16px' }}>
+  const shiftColumns: TableColumn<Shift>[] = [
+    {
+      header: t('Date & Time', 'تاریخ اور وقت'),
+      accessor: (shift) => (
+        <div>
           <div className="font-medium text-slate-800">{shift.date}</div>
           <div className="text-xs text-slate-500">
             {shift.startTime} {shift.endTime ? `- ${shift.endTime}` : ''}
           </div>
         </div>
-        <div style={{ width: '15%', padding: '0 16px' }} className="font-medium text-slate-800">
-          {getStaffName(shift.staffId)}
+      ),
+      isPrimaryMobile: true
+    },
+    {
+      header: t('Salesman', 'سیلزمین'),
+      accessor: (shift) => (
+        <div>
+          <div className="font-medium text-slate-800">{getStaffName(shift.staffId)}</div>
           <div className="text-xs text-slate-500 capitalize">{shift.type} Shift</div>
         </div>
-        <div style={{ width: '15%', padding: '0 16px' }} className="text-slate-800 font-medium">
+      ),
+      isSecondaryMobile: true
+    },
+    {
+      header: t('Fuel Sold', 'فروخت شدہ تیل (لیٹر)'),
+      accessor: (shift) => (
+        <span className="text-slate-800 font-medium">
           {calculateTotalFuelSoldLiters(shift).toFixed(2)} L
-        </div>
-        <div style={{ width: '15%', padding: '0 16px' }} className="text-slate-800 font-medium">
+        </span>
+      ),
+      isHiddenMobile: true
+    },
+    {
+      header: t('Cash Submitted', 'جمع شدہ کیش'),
+      accessor: (shift) => (
+        <span className="text-slate-800 font-medium">
           {formatCurrency(shift.submittedCash || 0)}
-        </div>
-        <div style={{ width: '15%', padding: '0 16px' }}>
+        </span>
+      )
+    },
+    {
+      header: t('Shortage/Overage', 'کمی/زیادتی'),
+      accessor: (shift) => (
+        <div>
           {shift.shortage > 0 ? (
             <span className="inline-flex items-center gap-1 text-red-600 font-medium bg-red-50 px-2.5 py-0.5 rounded-full text-sm">
               <TrendingDown className="w-3.5 h-3.5" />
@@ -173,52 +188,45 @@ export default function ShiftLogs({
             <span className="text-slate-400 font-medium">-</span>
           )}
         </div>
-        <div style={{ width: '10%', padding: '0 16px', textAlign: 'center' }}>
-          <div className="flex flex-col items-center gap-1.5">
+      )
+    },
+    {
+      header: t('Status', 'سٹیٹس'),
+      accessor: (shift) => (
+        <div className="flex flex-col gap-1.5">
             {shift.status === 'active' ? (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 w-max">
                 <Clock className="w-3.5 h-3.5" />
                 {t('Active', 'جاری ہے')}
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700 w-max">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 {t('Closed', 'بند ہو گئی')}
               </span>
             )}
-            {/* Data Integrity Badges */}
             {shift.status === 'closed' && (
               shift.shortage > 0 ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700 w-max">
                   <AlertTriangle className="w-3 h-3" />
                   {t('Issue Detected', 'مسئلہ پایا گیا')}
                 </span>
               ) : shift.overage > 0 ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 w-max">
                   <AlertTriangle className="w-3 h-3" />
                   {t('Review Required', 'جائزہ درکار ہے')}
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 w-max">
                   <CheckCircle2 className="w-3 h-3" />
                   {t('Verified', 'تصدیق شدہ')}
                 </span>
               )
             )}
-          </div>
         </div>
-        <div style={{ width: '15%', padding: '0 16px', textAlign: 'right' }}>
-          <button
-            onClick={() => setSelectedShift(shift)}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-50 hover:border-indigo-200 transition-colors shadow-xs cursor-pointer"
-          >
-            <Eye className="w-4 h-4" />
-            {t('View Details', 'تفصیلات دیکھیں')}
-          </button>
-        </div>
-      </div>
-    );
-  };
+      )
+    }
+  ];
 
   return (
     <div className="pb-12">
@@ -321,7 +329,7 @@ export default function ShiftLogs({
           </button>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">
               {t('Date', 'تاریخ')}
@@ -380,40 +388,22 @@ export default function ShiftLogs({
       </div>
 
       {/* Main Table */}
-      <div className="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <div className="min-w-[1000px]">
-            {/* Header row */}
-            <div className="flex bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-semibold py-4">
-              <div style={{ width: '15%', padding: '0 16px' }}>{t('Date & Time', 'تاریخ اور وقت')}</div>
-              <div style={{ width: '15%', padding: '0 16px' }}>{t('Salesman', 'سیلزمین')}</div>
-              <div style={{ width: '15%', padding: '0 16px' }}>{t('Fuel Sold (Liters)', 'فروخت شدہ تیل (لیٹر)')}</div>
-              <div style={{ width: '15%', padding: '0 16px' }}>{t('Cash Submitted', 'جمع شدہ کیش')}</div>
-              <div style={{ width: '15%', padding: '0 16px' }}>{t('Shortage/Overage', 'کمی/زیادتی')}</div>
-              <div style={{ width: '10%', padding: '0 16px', textAlign: 'center' }}>{t('Status', 'سٹیٹس')}</div>
-              <div style={{ width: '15%', padding: '0 16px', textAlign: 'right' }}>{t('Actions', 'ایکشنز')}</div>
-            </div>
-            
-            {/* Body */}
-            <div>
-              {filteredShifts.length === 0 ? (
-                <div className="p-8 text-center text-slate-500">
-                  {t('No shifts found matching the filters.', 'فلٹرز کے مطابق کوئی شفٹ نہیں ملی۔')}
-                </div>
-              ) : (
-                <List
-                  itemCount={filteredShifts.length}
-                  itemSize={88}
-                  width="100%"
-                  height={Math.min(filteredShifts.length * 88, 600)}
-                  overscanCount={5}
-                >
-                  {RenderRow}
-                </List>
-              )}
-            </div>
-          </div>
-        </div>
+      <div className="mb-8">
+        <ResponsiveTable
+          data={filteredShifts}
+          columns={shiftColumns}
+          keyExtractor={(shift) => shift.id}
+          emptyMessage={t('No shifts found matching the filters.', 'فلٹرز کے مطابق کوئی شفٹ نہیں ملی۔')}
+          renderActions={(shift) => (
+            <button
+              onClick={() => setSelectedShift(shift)}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-50 hover:border-indigo-200 transition-colors shadow-xs cursor-pointer w-full md:w-auto"
+            >
+              <Eye className="w-4 h-4" />
+              {t('View Details', 'تفصیلات دیکھیں')}
+            </button>
+          )}
+        />
       </div>
 
       {/* Selected Shift Drawer Placeholder */}
@@ -676,7 +666,7 @@ function ShiftAuditDrawer({
               </span>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="bg-gradient-to-br from-orange-50 to-orange-100/30 rounded-xl border border-orange-200 p-5 shadow-sm flex flex-col justify-between relative overflow-hidden">
                 <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-orange-200/50 to-transparent"></div>
                 <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-2 relative z-10">{t('Petrol Sold', 'پٹرول فروخت')}</span>
@@ -703,7 +693,7 @@ function ShiftAuditDrawer({
                 {t('Transaction Intelligence Drill-Downs', 'ٹرانزیکشن کی تفصیلات')}
               </h3>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
               
               <DrillDownCard
                 icon={TrendingUp}
@@ -980,49 +970,52 @@ function DrillDownCard({ icon: Icon, title, count, amount, formatCurrency, onCli
   );
 }
 
+import { BottomSheet } from '../shared/BottomSheet';
+import { ResponsiveTable, TableColumn } from '../shared/ResponsiveTable';
+
 function TransactionModal({ title, onClose, items, columns }: any) {
+  const tableColumns: TableColumn<any>[] = columns.map((col: any, idx: number) => ({
+    header: col.label,
+    accessor: col.render,
+    isPrimaryMobile: idx === 0,
+    isSecondaryMobile: idx === 1
+  }));
+
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
-        <div className="flex items-center justify-between p-5 border-b border-slate-200">
-          <h3 className="text-lg font-bold text-slate-800">{title}</h3>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        <div className="overflow-auto p-0">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-slate-50 sticky top-0 z-10">
-              <tr>
-                {columns.map((col: any, idx: number) => (
-                  <th key={idx} className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
-                    {col.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {items.length === 0 ? (
-                <tr>
-                  <td colSpan={columns.length} className="p-8 text-center text-slate-500">
-                    No records found.
-                  </td>
-                </tr>
-              ) : (
-                items.map((item: any, idx: number) => (
-                  <tr key={item.id || idx} className="hover:bg-slate-50">
-                    {columns.map((col: any, colIdx: number) => (
-                      <td key={colIdx} className="p-4 text-sm text-slate-800 font-medium">
-                        {col.render(item)}
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+    <>
+      {/* Desktop Modal View */}
+      <div className="hidden lg:flex fixed inset-0 z-[60] items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
+          <div className="flex items-center justify-between p-5 border-b border-slate-200">
+            <h3 className="text-lg font-bold text-slate-800">{title}</h3>
+            <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="overflow-auto p-4 bg-slate-50/50">
+            <ResponsiveTable
+              data={items}
+              columns={tableColumns}
+              keyExtractor={(item, idx) => item.id || idx.toString()}
+              emptyMessage="No records found."
+            />
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Mobile Bottom Sheet View */}
+      <div className="lg:hidden">
+        <BottomSheet isOpen={true} onClose={onClose} title={title} snapPoints={['85vh']} allowFullscreen={true}>
+          <div className="pb-8">
+            <ResponsiveTable
+              data={items}
+              columns={tableColumns}
+              keyExtractor={(item, idx) => item.id || idx.toString()}
+              emptyMessage="No records found."
+            />
+          </div>
+        </BottomSheet>
+      </div>
+    </>
   );
 }

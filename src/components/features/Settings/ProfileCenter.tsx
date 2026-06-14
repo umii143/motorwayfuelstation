@@ -102,7 +102,7 @@ export default function ProfileCenter({ settings }: { settings: GlobalSettings }
             
             <div className="p-6">
               <form onSubmit={handleSave} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('Full Name', 'پورا نام')}</label>
                     <div className="relative">

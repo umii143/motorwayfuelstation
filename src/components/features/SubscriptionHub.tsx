@@ -246,7 +246,7 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
               <p className="text-sm text-slate-500">{t('Choose your preferred method for seamless transactions in Pakistan.', 'پاکستان میں ہموار لین دین کے لیے اپنا پسندیدہ طریقہ منتخب کریں۔')}</p>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3">
               {[
                 { id: 'safepay', name: 'Safepay', desc: 'Cards / Bank' },
                 { id: 'jazzcash', name: 'JazzCash', desc: 'Mobile Wallet' },
@@ -281,7 +281,7 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
           </div>
 
           {/* Pricing Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4 items-center">
+          <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-6 pt-4 items-center">
             {plans.map(plan => {
               const Icon = plan.icon;
               return (

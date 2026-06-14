@@ -96,7 +96,7 @@ export const BIDashboard: React.FC = () => {
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-2 lg:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
             <h3 className="text-base font-bold text-slate-900 mb-6">7-Day Revenue Trend</h3>
             <LineChart 

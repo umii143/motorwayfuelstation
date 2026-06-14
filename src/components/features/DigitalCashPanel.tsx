@@ -13,7 +13,7 @@ import {
   CheckCircle,
   SmartphoneNfc
 } from 'lucide-react';
-import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
+import { ResponsiveTable, TableColumn } from '../shared/ResponsiveTable';
 import { DigitalAccount, Shift, GlobalSettings, LubePosSale } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
@@ -385,44 +385,45 @@ export default function DigitalCashPanel({
                 {t('No automated shift digital entries recorded yet.', 'شفٹ کے دوران ڈیجیٹل یا موبائل والٹ پر کوئی رقم موصول نہیں ہوئی۔')}
               </p>
             ) : (
-              <div className="overflow-x-auto">
-                <div className="min-w-[800px]">
-                  <div className="flex items-center bg-slate-50 border-b border-slate-150 text-[10px] font-bold uppercase tracking-wider text-slate-500 py-2.5 px-3">
-                    <div className="w-[15%] text-left">{t('Date', 'تاریخ')}</div>
-                    <div className="w-[25%] text-left">{t('Shift ID & Operator', 'شفٹ اور کیشئر')}</div>
-                    <div className="w-[20%] text-left">{t('Method / Wallet', 'طریقہ کار')}</div>
-                    <div className="w-[25%] text-left">{t('Transaction/SMS ID', 'ٹرانزیکشن ID')}</div>
-                    <div className="w-[15%] text-right">{t('Amount Received', 'وصول شدہ رقم')}</div>
-                  </div>
-                  
-                  <div className="divide-y divide-slate-100">
-                    <List
-                      itemCount={compiledShiftDigitalEntries.length}
-                      itemSize={56}
-                      width="100%"
-                      height={Math.min(compiledShiftDigitalEntries.length * 56, 400)}
-                    >
-                      {({ index, style }: ListChildComponentProps) => {
-                        const item = compiledShiftDigitalEntries[index];
-                        return (
-                          <div style={style} className="flex items-center hover:bg-slate-50/50 border-b border-slate-100 px-3">
-                            <div className="w-[15%] text-slate-550 font-mono text-[11px] truncate">{item.date}</div>
-                            <div className="w-[25%]">
-                              <div className="font-semibold text-slate-800 truncate">{item.shiftId}</div>
-                              <div className="text-[10px] text-slate-400 truncate mt-0.5">{item.operator.toUpperCase()}</div>
-                            </div>
-                            <div className="w-[20%] text-slate-700 font-semibold truncate pr-2">{item.methodName}</div>
-                            <div className="w-[25%] text-slate-500 font-mono text-[11.5px] truncate pr-2">{item.transactionId}</div>
-                            <div className="w-[15%] text-right font-mono text-emerald-600 font-extrabold text-[12px] truncate">
-                              +{formatCurrency(item.amount, settings)}
-                            </div>
-                          </div>
-                        );
-                      }}
-                    </List>
-                  </div>
-                </div>
-              </div>
+              <ResponsiveTable
+                data={compiledShiftDigitalEntries}
+                columns={[
+                  {
+                    header: t('Date', 'تاریخ'),
+                    accessor: (item) => <span className="text-slate-550 font-mono text-[11px] truncate">{item.date}</span>,
+                    isSecondaryMobile: true
+                  },
+                  {
+                    header: t('Shift ID & Operator', 'شفٹ اور کیشئر'),
+                    accessor: (item) => (
+                      <div>
+                        <div className="font-semibold text-slate-800 truncate">{item.shiftId}</div>
+                        <div className="text-[10px] text-slate-400 truncate mt-0.5">{item.operator.toUpperCase()}</div>
+                      </div>
+                    ),
+                    isPrimaryMobile: true
+                  },
+                  {
+                    header: t('Method / Wallet', 'طریقہ کار'),
+                    accessor: (item) => <span className="text-slate-700 font-semibold truncate pr-2">{item.methodName}</span>
+                  },
+                  {
+                    header: t('Transaction/SMS ID', 'ٹرانزیکشن ID'),
+                    accessor: (item) => <span className="text-slate-500 font-mono text-[11.5px] truncate pr-2">{item.transactionId}</span>
+                  },
+                  {
+                    header: t('Amount Received', 'وصول شدہ رقم'),
+                    className: 'text-right',
+                    accessor: (item) => (
+                      <span className="font-mono text-emerald-600 font-extrabold text-[12px] truncate">
+                        +{formatCurrency(item.amount, settings)}
+                      </span>
+                    )
+                  }
+                ]}
+                keyExtractor={(item) => item.id}
+                emptyMessage=""
+              />
             )}
           </div>
         </div>
@@ -566,7 +567,7 @@ export default function DigitalCashPanel({
                   <label className="block text-xs font-bold text-slate-555 uppercase tracking-wider mb-1">
                     {t('Adjustment Action Type:', 'تبدیلی کی نوعیت:')}
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4 text-xs">
                     <button
                       type="button"
                       onClick={() => setAdjustType('deposit')}

@@ -155,7 +155,7 @@ export const ExecutiveDashboard: React.FC = () => {
               </div>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
               {health.recommendations.map((rec, idx) => {
                 const isCritical = rec.type === 'critical';
                 const isWarning = rec.type === 'warning';
@@ -358,7 +358,7 @@ export const ExecutiveDashboard: React.FC = () => {
         </div>
 
         {/* Secondary Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
           
           {/* Inventory Insights */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex items-center justify-between">

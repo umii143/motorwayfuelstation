@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Station, GlobalSettings, ToastConfig, ConfirmConfig } from '../types';
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 interface StationState {
   activeStationId: string;
@@ -52,6 +53,19 @@ export const useStationStore = create<StationState>((set, get) => {
         clearTimeout(toastTimeout);
       }
       set({ toast: { message, type, visible: true } });
+      
+      try {
+        if (type === 'error') {
+          Haptics.impact({ style: ImpactStyle.Heavy });
+        } else if (type === 'success') {
+          Haptics.impact({ style: ImpactStyle.Medium });
+        } else {
+          Haptics.impact({ style: ImpactStyle.Light });
+        }
+      } catch (err) {
+         // ignore on web
+      }
+
       toastTimeout = setTimeout(() => {
         set((state) => ({ toast: { ...state.toast, visible: false } }));
       }, 3000);

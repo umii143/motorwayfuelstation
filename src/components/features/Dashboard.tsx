@@ -132,17 +132,7 @@ export default React.memo(function Dashboard({
 
   const fuelStocks = useMemo(() => {
     if (isLube) return products;
-    // Always prefer real tanks array if present
-    if (tanks && tanks.length > 0) return tanks;
-    
-    // Fallback to legacy behavior if tanks not set up
-    return products.filter(p => {
-      const type = (p.type || '').toLowerCase();
-      const cat = (p.category || '').toLowerCase();
-      const name = (p.name || '').toLowerCase();
-      return type === 'fuel' || type === 'petrol' || type === 'diesel' || cat === 'fuel' || name.includes('diesel') || name.includes('petrol') || name.includes('fuel') || (p.capacity !== undefined && p.capacity > 0);
-    });
-
+    return tanks || [];
   }, [products, isLube, tanks]);
 
   const displayTanks = useMemo(() => {
@@ -250,7 +240,7 @@ export default React.memo(function Dashboard({
 
         {/* SHIFT CTA (Moved to top) */}
         {!isLube && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-4 px-1">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3 mb-4 px-1">
             {activeShift ? (
               <>
                 <motion.button
@@ -364,56 +354,67 @@ export default React.memo(function Dashboard({
         </div>
 
         {/* TANK LEVELS BARS */}
-        <div className="mt-4 px-1">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Tank Levels</h3>
-            <button className="text-xs text-orange-600 font-bold" onClick={() => { haptic.light(); onNavigate('inventory'); }}>View All</button>
-          </div>
-          
-          <div className="flex flex-col gap-3">
-            {displayTanks.length > 0 ? (
-              displayTanks.map((tank: any) => {
-                const capacity = tank.capacity || 25000;
-                const current = tank.currentStock !== undefined ? tank.currentStock : (tank.volume || 0);
-                const pct = (current / capacity) * 100;
-                const isLow = pct < 20;
-                const isCritical = pct < 5;
-                const color = (tank.id === 'diesel' || tank.id === 'dummy_diesel' || tank.name?.toLowerCase().includes('diesel')) ? '#3B82F6' : '#22C55E';
+        {!isLube && (
+          <div className="mt-4 px-1">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Tank Levels</h3>
+              <button className="text-xs text-orange-600 font-bold" onClick={() => { haptic.light(); onNavigate('inventory'); }}>View All</button>
+            </div>
+            
+            <div className="flex flex-col gap-3">
+              {displayTanks.length > 0 ? (
+                displayTanks.map((tank: any) => {
+                  const capacity = tank.capacity || 25000;
+                  let current = tank.currentStock !== undefined ? tank.currentStock : (tank.volume || 0);
+                  
+                  // Connect dummy or uninitialized tanks to the actual product stock
+                  if (current === 0 && tank.productId) {
+                    const linkedProduct = products.find(p => p.id === tank.productId);
+                    if (linkedProduct) {
+                      current = linkedProduct.currentStock || 0;
+                    }
+                  }
+                  const pct = (current / Math.max(capacity, 1)) * 100;
+                  const isLow = pct < 20;
+                  const isCritical = pct < 5;
+                  const color = (tank.id === 'diesel' || tank.id === 'dummy_diesel' || tank.name?.toLowerCase().includes('diesel')) ? '#3B82F6' : '#22C55E';
 
-                return (
-                  <motion.div key={tank.id} className="bg-theme-card rounded-xl p-3 border border-theme-main" whileTap={{ scale: 0.98 }} onClick={() => haptic.light()}>
-                    <div className="flex justify-between items-center mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-theme-main">{tank.name}</span>
-                        {isCritical && <span className="px-1.5 py-0.5 bg-red-500 text-white text-[9px] font-bold rounded">CRITICAL</span>}
-                        {isLow && !isCritical && <span className="px-1.5 py-0.5 bg-orange-500 text-white text-[9px] font-bold rounded">LOW</span>}
+                  return (
+                    <motion.div key={tank.id} className="bg-theme-card rounded-xl p-3 border border-theme-main" whileTap={{ scale: 0.98 }} onClick={() => haptic.light()}>
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-theme-main">{tank.name}</span>
+                          {isCritical && <span className="px-1.5 py-0.5 bg-red-500 text-white text-[9px] font-bold rounded">CRITICAL</span>}
+                          {isLow && !isCritical && <span className="px-1.5 py-0.5 bg-orange-500 text-white text-[9px] font-bold rounded">LOW</span>}
+                        </div>
+                        <span className="text-xs font-bold" style={{ color }}>{pct.toFixed(1)}%</span>
                       </div>
-                      <span className="text-xs font-bold" style={{ color }}>{pct.toFixed(1)}%</span>
-                    </div>
-                    <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                      <motion.div
-                        className="h-full rounded-full"
-                        style={{ backgroundColor: isCritical ? '#EF4444' : isLow ? '#F97316' : color }}
-                        initial={{ width: 0 }}
-                        animate={{ width: `${Math.max(pct, 2)}%` }}
-                        transition={{ duration: 0.8, ease: 'easeOut' }}
-                      />
-                    </div>
-                    <div className="mt-1.5 text-right">
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
-                        {current.toLocaleString('en-PK')} / {(capacity/1000).toFixed(0)}K L
-                      </span>
-                    </div>
-                  </motion.div>
-                );
-              })
-            ) : (
-              <div className="p-4 border border-dashed border-theme-main rounded-xl flex items-center justify-center">
-                <span className="text-xs text-[var(--text-muted)] font-medium">No Tanks Configured</span>
-              </div>
-            )}
+                      <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <motion.div
+                          className="h-full rounded-full"
+                          style={{ backgroundColor: isCritical ? '#EF4444' : isLow ? '#F97316' : color }}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.max(pct, 2)}%` }}
+                          transition={{ duration: 0.8, ease: 'easeOut' }}
+                        />
+                      </div>
+                      <div className="mt-1.5 text-right">
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
+                          {current.toLocaleString('en-PK')} / {(capacity/1000).toFixed(0)}K L
+                        </span>
+                      </div>
+                    </motion.div>
+                  );
+                })
+              ) : (
+                <div className="flex flex-col items-center justify-center py-6 text-slate-400 bg-theme-card border border-theme-main border-dashed rounded-xl">
+                  <Fuel className="h-8 w-8 mb-2 opacity-50" />
+                  <p className="text-xs font-bold uppercase tracking-wider">{t('No Tanks Configured', 'کوئی ٹینک موجود نہیں')}</p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* SHIFT CTA WAS HERE */}
 
@@ -443,7 +444,7 @@ export default React.memo(function Dashboard({
                 }}
               >
                 <div
-                  className="w-10 h-10 shrink-0 rounded-full flex items-center justify-center border mb-2"
+                  className="w-10 h-12 shrink-0 rounded-full flex items-center justify-center border mb-2"
                   style={{ backgroundColor: action.color + '20', borderColor: action.color + '40', color: action.color }}
                 >
                   {action.icon}

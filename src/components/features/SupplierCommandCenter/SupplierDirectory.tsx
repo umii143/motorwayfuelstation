@@ -34,6 +34,7 @@ import AIDocumentScanner from '../../ui/AIDocumentScanner';
 import PartyLedgerModal, { LedgerEntry, PartyInfo } from '../../ui/PartyLedgerModal';
 import SupplierPayments from './SupplierPayments';
 import SupplierLiabilityDrillDownModal from '../ExecutiveDashboard/SupplierLiabilityDrillDownModal';
+import { ResponsiveTable } from '../../shared/ResponsiveTable';
 import { Supplier, Shift, Product, GlobalSettings, BankAccount } from '../../../types';
 import { formatCurrency, getCurrencySymbol } from '../../../lib/currency';
 import { t as translate } from '../../../lib/translations';
@@ -778,10 +779,10 @@ export default function SupplierDirectory({
                       {t('Auto-Fill with Invoice Scanner', 'بل سکین کر کے آٹو فل کریں')}
                     </button>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3.5 sm:grid-cols-2">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3.5 sm:grid-cols-2">
                       <div>
                         <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t('Transaction Nature:', 'انٹری کی قسم:')}</label>
-                        <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                           <button
                             type="button"
                             onClick={() => setAdjustNature('invoice')}
@@ -866,45 +867,37 @@ export default function SupplierDirectory({
                   </div>
                 </div>
 
-                <div className="overflow-x-auto rounded-lg border border-slate-105">
-                  <table className="w-full border-collapse text-left font-sans text-xs">
-                    <thead>
-                      <tr className="bg-slate-50 border-b border-slate-150 text-slate-650 font-bold">
-                        <th className="py-2.5 px-3">{t('Date', 'تاریخ')}</th>
-                        <th className="py-2.5 px-3">{t('Description', 'تفصیل')}</th>
-                        {activeTab !== 'payments' && <th className="py-2.5 px-3 text-right">{t('Purchase (+)', 'خریداری (+)')}</th>}
-                        {activeTab !== 'purchases' && <th className="py-2.5 px-3 text-right">{t('Payment (-)', 'ادائیگی (-)')}</th>}
-                        {activeTab === 'ledger' && <th className="py-2.5 px-3 text-right">{t('Balance', 'بیلنس')}</th>}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 text-slate-705">
-                      {vendorLedgerLogs.filter(v => 
-                        activeTab === 'ledger' || 
-                        (activeTab === 'purchases' && v.credit > 0) || 
-                        (activeTab === 'payments' && v.debit > 0)
-                      ).length === 0 ? (
-                        <tr>
-                          <td colSpan={5} className="py-8 text-center text-slate-400 font-medium">
-                            {t('No records found for the selected view.', 'کوئی ریکارڈ نہیں ملا۔')}
-                          </td>
-                        </tr>
-                      ) : (
-                        vendorLedgerLogs.filter(v => 
-                          activeTab === 'ledger' || 
-                          (activeTab === 'purchases' && v.credit > 0) || 
-                          (activeTab === 'payments' && v.debit > 0)
-                        ).map(v => (
-                          <tr key={v.id} className="hover:bg-slate-55/40">
-                            <td className="py-3 px-3 font-mono font-medium text-slate-500">{v.date}</td>
-                            <td className="py-3 px-3 font-semibold text-slate-800 leading-tight pr-4">{v.description}</td>
-                            {activeTab !== 'payments' && <td className="py-3 px-3 text-right font-mono font-bold text-red-550">{v.credit > 0 ? `${formatCurrency(v.credit, settings)}` : '—'}</td>}
-                            {activeTab !== 'purchases' && <td className="py-3 px-3 text-right font-mono font-bold text-emerald-600">{v.debit > 0 ? `${formatCurrency(v.debit, settings)}` : '—'}</td>}
-                            {activeTab === 'ledger' && <td className="py-3 px-3 text-right font-mono font-bold text-slate-900">{formatCurrency(v.balance, settings)}</td>}
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+                {/* Removed native table and replaced with ResponsiveTable */}
+                <div className="bg-white rounded-xl shadow-xs">
+                  <ResponsiveTable
+                    data={vendorLedgerLogs.filter(v => 
+                      activeTab === 'ledger' || 
+                      (activeTab === 'purchases' && v.credit > 0) || 
+                      (activeTab === 'payments' && v.debit > 0)
+                    )}
+                    columns={[
+                      { header: t('Date', 'تاریخ'), accessor: 'date', isPrimaryMobile: false, isSecondaryMobile: false },
+                      { header: t('Description', 'تفصیل'), accessor: 'description', isPrimaryMobile: true },
+                      ...(activeTab !== 'payments' ? [{ 
+                        header: t('Purchase (+)', 'خریداری (+)'), 
+                        accessor: (row: any) => row.credit > 0 ? <span className="text-red-550 font-bold">{formatCurrency(row.credit, settings)}</span> : '—',
+                        className: 'text-right'
+                      }] : []),
+                      ...(activeTab !== 'purchases' ? [{ 
+                        header: t('Payment (-)', 'ادائیگی (-)'), 
+                        accessor: (row: any) => row.debit > 0 ? <span className="text-emerald-600 font-bold">{formatCurrency(row.debit, settings)}</span> : '—',
+                        className: 'text-right'
+                      }] : []),
+                      ...(activeTab === 'ledger' ? [{ 
+                        header: t('Balance', 'بیلنس'), 
+                        accessor: (row: any) => <span className="text-slate-900 font-bold">{formatCurrency(row.balance, settings)}</span>,
+                        className: 'text-right',
+                        isSecondaryMobile: true
+                      }] : [])
+                    ]}
+                    keyExtractor={(row) => row.id}
+                    emptyMessage={t('No records found for the selected view.', 'کوئی ریکارڈ نہیں ملا۔')}
+                  />
                 </div>
               </div>
 

@@ -204,5 +204,58 @@ export const firestoreDb = {
       // Not queueing batch migrations for now, as they are typically run when strictly online
       throw err;
     }
+  },
+
+  // Completely wipe all data for a station (Factory Reset)
+  wipeStationData: async (orgId: string, stationId: string) => {
+    try {
+      const collectionsToWipe = [
+        'fuelpro_settings', 'fuelpro_staff', 'fuelpro_products', 'fuelpro_pumps',
+        'fuelpro_nozzles', 'fuelpro_customers', 'fuelpro_suppliers', 'fuelpro_shifts',
+        'fuelpro_banks', 'fuelpro_digital_accounts', 'fuelpro_stock_txns', 'fuelpro_tanks',
+        'fuelpro_rate_history', 'fuelpro_staff_finance', 'fuelpro_attendance',
+        'fuelpro_standalone_expenses', 'fuelpro_reconciled_shifts', 'fuelpro_settings_audit_trail',
+        'fuelpro_lube_pos_sales', 'fuelpro_fleet_accounts', 'fuelpro_fleet_vehicles',
+        'fuelpro_fleet_drivers', 'fuelpro_fleet_transactions', 'fuelpro_tanker_schedules',
+        'fuelpro_tanker_deliveries', 'fuelpro_variance_incidents', 'fuelpro_assets',
+        'fuelpro_maintenance_records', 'fuelpro_loyalty_members', 'fuelpro_reward_transactions',
+        'fuelpro_inventory_movements', 'fuelpro_journal_entries', 'fuelpro_stock_batches',
+        'fuelpro_cogs_records', 'fuelpro_dealer_margin_settings', 'fuelpro_tenant_documents',
+        'fuelpro_salary_transactions', 'fuelpro_staff_loans', 'fuelpro_salary_advances',
+        'fuelpro_inventory_snapshots', 'fuelpro_cash_accounts', 'fuelpro_treasury_transactions',
+        'fuelpro_owner_drawings', 'fuelpro_cash_reconciliations', 'fuelpro_fifo_deductions',
+        'fuelpro_supplier_claims', 'fuelpro_inventory_revaluations', 'fuelpro_supplier_performance'
+      ];
+
+      for (const colName of collectionsToWipe) {
+        const colRef = getCollectionRef(orgId, stationId, colName);
+        const snapshot = await getDocs(query(colRef));
+        
+        // Delete in batches of 500 (Firestore limit)
+        const batches = [];
+        let currentBatch = writeBatch(dbFS);
+        let count = 0;
+
+        snapshot.docs.forEach((docSnap) => {
+          currentBatch.delete(docSnap.ref);
+          count++;
+          if (count === 500) {
+            batches.push(currentBatch.commit());
+            currentBatch = writeBatch(dbFS);
+            count = 0;
+          }
+        });
+
+        if (count > 0) {
+          batches.push(currentBatch.commit());
+        }
+
+        await Promise.all(batches);
+      }
+      console.log(`[Factory Reset] Successfully wiped all collections for station: ${stationId}`);
+    } catch (err) {
+      console.error('[Factory Reset] Error wiping Firestore data:', err);
+      throw err;
+    }
   }
 };

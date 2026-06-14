@@ -349,7 +349,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
             </h4>
             <button onClick={() => setShowAddForm(false)} className="text-red-200 hover:text-white">✕</button>
           </div>
-          <div className="p-5 grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="p-5 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">{t('Linked Batch *', 'منسلک بیچ *')}</label>
               <select value={newClaim.batchId || ''} onChange={e => {

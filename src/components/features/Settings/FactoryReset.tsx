@@ -84,16 +84,22 @@ export default function FactoryReset({ settings, activeStationId }: { settings: 
       // For UX we just show the message
       showToast(t('Final Backup Generated.', 'حتمی بیک اپ بن گیا۔'), 'info');
 
-      // 2. Wipe Backend DB First
-      try {
-        await fetchWithAuth('/api/security/factory-reset', { method: 'POST' });
-      } catch (backendErr) {
-        console.error("Backend reset failed:", backendErr);
-        showToast(t('Backend wipe failed, proceeding with local wipe...', 'بیک اینڈ صاف کرنے میں ناکامی، لوکل صفائی جاری ہے...'), 'error');
+      // 2. Wipe Backend DB (Firestore)
+      if (user?.orgId) {
+        try {
+          const { firestoreDb } = await import('../../../data/firestore');
+          await firestoreDb.wipeStationData(user.orgId, activeStationId);
+          showToast(t('Cloud Data Wiped Successfully.', 'کلاؤڈ ڈیٹا کامیابی سے حذف ہو گیا۔'), 'success');
+        } catch (backendErr) {
+          console.error("Firestore wipe failed:", backendErr);
+          showToast(t('Cloud wipe failed, proceeding with local wipe...', 'کلاؤڈ ڈیٹا حذف کرنے میں ناکامی، لوکل صفائی جاری ہے...'), 'error');
+        }
       }
 
       // 3. Wipe Local DB and Reload
       setTimeout(async () => {
+        localStorage.clear();
+        localStorage.setItem('fuelpro_fresh_v5_nodummies', 'true');
         await db.resetToDefault();
         showToast(t('System Reset Complete. Reloading...', 'سسٹم ری سیٹ مکمل۔ ری لوڈ ہو رہا ہے...'), 'success');
       }, 2000);
@@ -147,7 +153,7 @@ export default function FactoryReset({ settings, activeStationId }: { settings: 
               {t('Dry Run Analysis', 'ڈرائی رن کا تجزیہ')}
             </h3>
             
-            <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
               <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Records to Delete</p>
                 <p className="text-3xl font-mono font-bold text-rose-600">{recordsCount.toLocaleString()}</p>

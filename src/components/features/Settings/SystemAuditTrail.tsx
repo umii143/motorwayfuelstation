@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, Search, Shield, Trash2, Clock } from 'lucide-react';
-import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
+import { ResponsiveTable, TableColumn } from '../../shared/ResponsiveTable';
 import { t as translate } from '../../../lib/translations';
 import { db } from '../../../data/db';
 import { AuditTrailEntry } from '../../../types';
@@ -95,54 +95,51 @@ export default function SystemAuditTrail({ language, stationId }: SystemAuditTra
       </div>
 
       {/* TIMELINE LIST */}
-      <div className="overflow-x-auto">
-        <div className="min-w-[800px]">
-          {/* List Header */}
-          <div className="flex items-center bg-slate-50 border-b border-slate-150 text-[10px] font-bold uppercase tracking-wider text-slate-400 py-2.5 px-3">
-            <div className="w-[18%] text-left">{t('Timestamp', 'طبعی وقت')}</div>
-            <div className="w-[15%] text-left">{t('Category', 'شعبہ')}</div>
-            <div className="w-[20%] text-left">{t('Trigger Event', 'سرگرمی')}</div>
-            <div className="w-[32%] text-left">{t('Alteration Narrative Details', 'تفصیلات')}</div>
-            <div className="w-[15%] text-right">{t('Authorized Operator', 'تبدیلی کا مجاز شخص')}</div>
-          </div>
-          
-          {/* List Body */}
-          <div className="divide-y divide-slate-100">
-            {filteredLogs.length === 0 ? (
-              <div className="py-8 text-center text-slate-400 font-sans text-xs">
-                {t('No audit trail entries found matching filter terms.', 'فلٹر قوانین کے مطابق کوئی آڈٹ ہسٹری نہیں ملی۔')}
+      <ResponsiveTable
+        data={filteredLogs}
+        columns={[
+          {
+            header: t('Timestamp', 'طبعی وقت'),
+            accessor: (lg) => (
+              <div className="flex items-center gap-1 font-mono text-slate-500">
+                <Clock className="h-3 w-3 text-slate-400 shrink-0" />
+                <span className="whitespace-nowrap">{lg.timestamp}</span>
               </div>
-            ) : (
-              <List
-                itemCount={filteredLogs.length}
-                itemSize={44}
-                width="100%"
-                height={Math.min(filteredLogs.length * 44, 500)}
-              >
-                {({ index, style }: ListChildComponentProps) => {
-                  const lg = filteredLogs[index];
-                  return (
-                    <div style={style} className="flex items-center hover:bg-slate-50/20 text-[11px] text-slate-700 border-b border-slate-100 px-3">
-                      <div className="w-[18%] flex items-center gap-1 font-mono text-slate-500 whitespace-nowrap overflow-hidden">
-                        <Clock className="h-3 w-3 text-slate-400 shrink-0" />
-                        <span className="truncate">{lg.timestamp}</span>
-                      </div>
-                      <div className="w-[15%]">
-                        <span className="bg-slate-100 text-slate-650 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-tight">
-                          {lg.category}
-                        </span>
-                      </div>
-                      <div className="w-[20%] font-bold text-slate-800 truncate pr-2">{lg.action}</div>
-                      <div className="w-[32%] text-slate-600 truncate pr-2" title={lg.details}>{lg.details}</div>
-                      <div className="w-[15%] text-right text-sm font-medium text-slate-800 truncate">{lg.user}</div>
-                    </div>
-                  );
-                }}
-              </List>
-            )}
-          </div>
-        </div>
-      </div>
+            ),
+            isSecondaryMobile: true
+          },
+          {
+            header: t('Category', 'شعبہ'),
+            accessor: (lg) => (
+              <span className="bg-slate-100 text-slate-650 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-tight">
+                {lg.category}
+              </span>
+            )
+          },
+          {
+            header: t('Trigger Event', 'سرگرمی'),
+            accessor: (lg) => (
+              <span className="font-bold text-slate-800">{lg.action}</span>
+            ),
+            isPrimaryMobile: true
+          },
+          {
+            header: t('Alteration Narrative Details', 'تفصیلات'),
+            accessor: (lg) => (
+              <span className="text-slate-600" title={lg.details}>{lg.details}</span>
+            )
+          },
+          {
+            header: t('Authorized Operator', 'تبدیلی کا مجاز شخص'),
+            className: 'text-right',
+            accessor: (lg) => (
+              <span className="text-sm font-medium text-slate-800">{lg.user}</span>
+            )
+          }
+        ]}
+        keyExtractor={(_, idx) => idx.toString()}
+        emptyMessage={t('No audit trail entries found matching filter terms.', 'فلٹر قوانین کے مطابق کوئی آڈٹ ہسٹری نہیں ملی۔')}
+      />
     </div>
   );
 }

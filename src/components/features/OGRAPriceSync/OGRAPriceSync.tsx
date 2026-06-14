@@ -176,7 +176,7 @@ export default function OGRAPriceSync({ settings, products, onApplyRates }: OGRA
             </div>
 
             {/* Price Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
               {ogra.prices.map(price => {
                 const matchedProductId = selectedMatches[price.productId];
                 const matchedProduct = products.find(p => p.id === matchedProductId);

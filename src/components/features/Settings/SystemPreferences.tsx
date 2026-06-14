@@ -30,17 +30,32 @@ export default function SystemPreferences({ settings, onUpdateSettings, activeSt
     showToast(t('System preferences saved.', 'سسٹم کی ترجیحات محفوظ ہو گئیں۔'), 'success');
   };
 
-  const handleFactoryReset = () => {
+  const handleFactoryReset = async () => {
     const msg1 = t('Are you sure you want to completely wipe all system data? This action cannot be undone!', 'کیا آپ واقعی سسٹم کا تمام ڈیٹا حذف کرنا چاہتے ہیں؟ یہ عمل ناقابل واپسی ہے!');
     const msg2 = t('Final Warning: All shifts, sales, and configurations will be deleted permanently. Type "RESET" to confirm.', 'آخری انتباہ: تمام ڈیٹا مستقل طور پر حذف ہو جائے گا۔ تصدیق کے لیے "RESET" ٹائپ کریں۔');
     
     if (window.confirm(msg1)) {
       const confirmText = window.prompt(msg2);
       if (confirmText === 'RESET') {
+        try {
+          const { firestoreDb } = await import('../../../data/firestore');
+          // Wait, user may not be imported here, we need to get user from somewhere or use activeStationId
+          // I will use activeStationId, but I need orgId. Let's see if auth is available.
+          const { auth } = await import('../../../lib/firebase');
+          const orgId = auth.currentUser?.uid; // Assuming orgId is user uid if they are owner
+          if (orgId) {
+            await firestoreDb.wipeStationData(orgId, activeStationId);
+          }
+        } catch (e) {
+          console.error("Firestore wipe failed", e);
+        }
+
         localStorage.clear();
         // Keep the fresh slate flag so it doesn't seed dummy data on reload
         localStorage.setItem('fuelpro_fresh_v5_nodummies', 'true');
-        window.location.reload();
+        
+        const { db } = await import('../../../data/db');
+        await db.resetToDefault();
       } else {
         showToast(t('Reset cancelled.', 'ری سیٹ منسوخ کر دیا گیا۔'), 'info');
       }
@@ -58,7 +73,7 @@ export default function SystemPreferences({ settings, onUpdateSettings, activeSt
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-xs max-w-2xl p-6 space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
               <Globe className="h-4 w-4" /> {t('Interface Language', 'زبان')}

@@ -5,7 +5,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { FixedSizeList as List } from 'react-window';
+import { ResponsiveTable, TableColumn } from '../shared/ResponsiveTable';
 import { motion, AnimatePresence } from 'motion/react';
 import { useStation } from '../../contexts/StationContext';
 import {
@@ -41,6 +41,7 @@ import { Product, StockTransaction, Supplier, GlobalSettings, Tank, RateHistoryE
 import { fetchWithAuth } from '../../lib/api';
 import { ModuleSearchBar } from '../shared/ModuleSearchBar';
 import { ExportToolbar } from '../shared/ExportToolbar';
+import { BottomSheet } from '../shared/BottomSheet';
 import StockInForm from './StockInForm';
 import BatchHistory from './BatchHistory';
 import { useInventoryStore } from '../../stores/useInventoryStore';
@@ -106,6 +107,7 @@ export default function Inventory({
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'fuel' | 'lube' | 'low'>('all');
   const [isInventoryDrillDownOpen, setIsInventoryDrillDownOpen] = useState(false);
+  const [isAuditSheetOpen, setIsAuditSheetOpen] = useState(false);
 
   // Interactive Calibrator Calculator
   const [calcTankId, setCalcTankId] = useState('');
@@ -592,7 +594,7 @@ export default function Inventory({
       />
 
       {/* BEN-TO ROW INVENTORY STATS OVERVIEWS */}
-      <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 ${isLube ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+      <div className={`grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3 sm:gap-4 ${isLube ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
         {/* Total Fuels — hidden for lube businesses */}
         {!isLube && (
         <div 
@@ -785,8 +787,19 @@ export default function Inventory({
               </div>
             </div>
 
-            {/* List items */}
-            <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {/* Mobile Actions: Show Audit Log */}
+            <div className="lg:hidden w-full flex justify-end mb-4">
+              <button
+                onClick={() => setIsAuditSheetOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl shadow-xs border border-slate-200"
+              >
+                <History className="w-4 h-4" />
+                {t('View Audit Logs', 'آڈٹ لاگز دیکھیں')}
+              </button>
+            </div>
+
+            {/* PRODUCT LISTING CARD GRID */}
+            <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
               <AnimatePresence>
                 {filteredProducts.map((prod, idx) => {
                   const capacity = prod.capacity || 100;
@@ -880,7 +893,7 @@ export default function Inventory({
           </div>
 
           {/* RIGHT SIDEBAR (1/3 WIDTH): DETAILED LIVE REAL-TIME STOCK TRANSACTION LEDGER */}
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-4">
+          <div className="hidden lg:block rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-4">
             <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
               <History className="h-4 w-4 text-slate-450" />
               <span>{t('Inventory Transaction Audits', 'اسٹاک فلو آڈٹ ٹرانزیکشنز')}</span>
@@ -892,24 +905,17 @@ export default function Inventory({
                   {t('No inventory transactions logged yet.', 'اسٹاک کی کوئی انٹری اس شیٹ میں موجود نہیں۔')}
                 </p>
               ) : (
-                <div style={{ height: 360, width: '100%' }}>
-                  <List
-                    height={360}
-                    itemCount={stockTransactions.length}
-                    itemSize={60}
-                    width="100%"
-                    overscanCount={5}
-                  >
-                    {({ index, style }) => {
-                      // Reverse index to show latest first
-                      const txn = stockTransactions[stockTransactions.length - 1 - index];
-                      const prod = products.find(p => p.id === txn.itemId);
-                      const isRec = txn.type === 'receipt';
-                      const isSale = txn.type === 'sale';
-
-                      return (
-                        <div style={style} key={txn.id}>
-                          <div className="flex justify-between items-start text-xs border-b border-slate-50 pb-3 pr-2 h-full">
+                <div className="w-full">
+                  <ResponsiveTable
+                    data={[...stockTransactions].reverse()}
+                    columns={[
+                      {
+                        header: t('Item', 'آئٹم'),
+                        accessor: (txn) => {
+                          const prod = products.find(p => p.id === txn.itemId);
+                          const isRec = txn.type === 'receipt';
+                          const isSale = txn.type === 'sale';
+                          return (
                             <div className="flex gap-2 items-center">
                               <div className={`rounded-full p-1.5 flex-shrink-0 ${isRec ? 'bg-teal-50 text-teal-650' : isSale ? 'bg-orange-50 text-orange-650' : 'bg-amber-50 text-amber-650'}`}>
                                 {isRec ? <ArrowUpRight className="h-3 w-3" /> : isSale ? <ArrowDownRight className="h-3 w-3" /> : <Wrench className="h-3 w-3" />}
@@ -921,8 +927,19 @@ export default function Inventory({
                                 <span className="text-[10px] text-slate-400 block mt-0.5">{txn.date} • {txn.by}</span>
                               </div>
                             </div>
-
-                            <div className="text-right flex flex-col justify-center">
+                          );
+                        },
+                        isPrimaryMobile: true
+                      },
+                      {
+                        header: t('Quantity', 'تعداد/مقدار'),
+                        className: 'text-right',
+                        accessor: (txn) => {
+                          const prod = products.find(p => p.id === txn.itemId);
+                          const isRec = txn.type === 'receipt';
+                          const isSale = txn.type === 'sale';
+                          return (
+                            <div className="flex flex-col justify-center text-right">
                               <strong className={`font-mono text-[11.5px] block ${isRec ? 'text-teal-600' : isSale ? 'text-slate-700' : txn.quantity > 0 ? 'text-teal-600' : 'text-red-500'}`}>
                                 {isRec ? '+' : isSale ? '-' : txn.quantity > 0 ? '+' : ''}
                                 {txn.quantity.toLocaleString()} {prod?.unit || 'Ltr'}
@@ -931,11 +948,14 @@ export default function Inventory({
                                 <span className="text-[10px] text-slate-450 font-mono block mt-0.5">Rs. {txn.amount.toLocaleString()}</span>
                               )}
                             </div>
-                          </div>
-                        </div>
-                      );
-                    }}
-                  </List>
+                          );
+                        },
+                        isSecondaryMobile: true
+                      }
+                    ]}
+                    keyExtractor={(txn) => txn.id}
+                    emptyMessage={t('No inventory transactions logged yet.', 'اسٹاک کی کوئی انٹری اس شیٹ میں موجود نہیں۔')}
+                  />
                 </div>
               )}
             </div>
@@ -943,11 +963,75 @@ export default function Inventory({
         </div>
       )}
 
+      {/* MOBILE BOTTOM SHEET FOR AUDIT LOGS */}
+      <BottomSheet isOpen={isAuditSheetOpen} onClose={() => setIsAuditSheetOpen(false)} title={t('Inventory Transaction Audits', 'اسٹاک فلو آڈٹ ٹرانزیکشنز')} snapPoints={['80vh']}>
+        <div className="space-y-3.5 max-h-[70vh] overflow-y-auto pr-1">
+          {stockTransactions.length === 0 ? (
+            <p className="py-12 text-center text-slate-400 text-xs font-sans">
+              {t('No inventory transactions logged yet.', 'اسٹاک کی کوئی انٹری اس شیٹ میں موجود نہیں۔')}
+            </p>
+          ) : (
+            <div className="w-full pb-8">
+              <ResponsiveTable
+                data={[...stockTransactions].reverse()}
+                columns={[
+                  {
+                    header: t('Item', 'آئٹم'),
+                    accessor: (txn) => {
+                      const prod = products.find(p => p.id === txn.itemId);
+                      const isRec = txn.type === 'receipt';
+                      const isSale = txn.type === 'sale';
+                      return (
+                        <div className="flex gap-3 items-center">
+                          <div className={`rounded-xl p-2 flex-shrink-0 ${isRec ? 'bg-teal-50 text-teal-600' : isSale ? 'bg-orange-50 text-orange-600' : 'bg-amber-50 text-amber-600'}`}>
+                            {isRec ? <ArrowUpRight className="h-4 w-4" /> : isSale ? <ArrowDownRight className="h-4 w-4" /> : <Wrench className="h-4 w-4" />}
+                          </div>
+                          <div className="flex flex-col justify-center">
+                            <strong className="text-slate-800 block text-sm">
+                              {prod ? t(prod.name, prod.urduName) : txn.itemId}
+                            </strong>
+                            <span className="text-[11px] text-slate-400 block mt-0.5">{txn.date} • {txn.by}</span>
+                          </div>
+                        </div>
+                      );
+                    },
+                    isPrimaryMobile: true
+                  },
+                  {
+                    header: t('Quantity', 'تعداد/مقدار'),
+                    className: 'text-right',
+                    accessor: (txn) => {
+                      const prod = products.find(p => p.id === txn.itemId);
+                      const isRec = txn.type === 'receipt';
+                      const isSale = txn.type === 'sale';
+                      return (
+                        <div className="text-right flex flex-col justify-center">
+                          <strong className={`font-mono text-sm block ${isRec ? 'text-teal-600' : isSale ? 'text-slate-700' : txn.quantity > 0 ? 'text-teal-600' : 'text-red-500'}`}>
+                            {isRec ? '+' : isSale ? '-' : txn.quantity > 0 ? '+' : ''}
+                            {txn.quantity.toLocaleString()} {prod?.unit || 'Ltr'}
+                          </strong>
+                          {txn.amount && (
+                            <span className="text-xs text-slate-400 font-mono block mt-1">Rs. {txn.amount.toLocaleString()}</span>
+                          )}
+                        </div>
+                      );
+                    },
+                    isSecondaryMobile: true
+                  }
+                ]}
+                keyExtractor={(txn) => txn.id}
+                emptyMessage={t('No inventory transactions logged yet.', 'اسٹاک کی کوئی انٹری اس شیٹ میں موجود نہیں۔')}
+              />
+            </div>
+          )}
+        </div>
+      </BottomSheet>
+
       {/* ==========================================
           TAB 2: TANKS CALIBRATION MODULE (MODULE B2/B3/D2)
           ========================================== */}
       {activeTab === 'tanks_calibration' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-6">
           {/* TANKS LIST BOARD WITH CYLINDERS */}
           <div className="md:col-span-2 space-y-4">
             <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
@@ -960,7 +1044,7 @@ export default function Inventory({
                 {t('No storage tanks has been configured in Settings yet.', 'ٹھیکیدار کی ترجیحات میں کوئی سٹوریج ٹینک نہیں پایا گیا۔ پہلے ٹینکس ترتیب کھڑا کریں۔')}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                 {tanks.map(tnk => {
                   const prod = products.find(p => p.id === tnk.productId);
                   const fillPct = Math.round((tnk.currentStock / tnk.capacity) * 100);
@@ -1102,59 +1186,60 @@ export default function Inventory({
             </div>
           </div>
 
-          <div className="overflow-x-auto text-xs font-sans">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-150 text-slate-500 font-bold uppercase tracking-wider text-[10px] text-center">
-                  <th className="py-2.5 px-3 text-left">{t('Audit Timestamp', 'تاریخ')}</th>
-                  <th className="py-2.5 px-2 text-left">{t('Product Grade', 'پراڈکٹ')}</th>
-                  <th className="py-2.5 px-2">{t('Old Tariff Rate', 'کلو ز ریٹ')}</th>
-                  <th className="py-2.5 px-2">{t('New Tariff Revised', 'نیا نافذ ریٹ')}</th>
-                  <th className="py-2.5 px-2">{t('Revision Diff', 'ریٹ میں تبدیلی')}</th>
-                  <th className="py-2.5 px-2">{t('Stock Volume at Revision', 'موجودہ والیم')}</th>
-                  <th className="py-2.5 px-2">{t('Audit P&L Impact', 'ویلیویشن منافع/نقصان')}</th>
-                  <th className="py-2.5 px-3 text-right">{t('Revision Trigger Narrative', 'ترمیم ریمارکس')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-center text-slate-700">
-                {rateHistory.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="py-12 text-center text-slate-400">
-                      {t('No price revisions logged. Use Settings panel to revise fuel grades pricing rates.', 'قیمتیں تبدیل کرنے کا کوئی سابقہ ریکارڈ نہیں ملا۔ تبدیلی کیلئے سیٹنگز پینل استعمال کریں۔')}
-                    </td>
-                  </tr>
-                ) : (
-                  [...rateHistory].reverse().map(log => {
+          <div className="w-full">
+            <ResponsiveTable
+              data={[...rateHistory].reverse()}
+              columns={[
+                {
+                  header: t('Audit Timestamp', 'تاریخ'),
+                  accessor: (log) => <span className="font-mono text-slate-500 whitespace-nowrap">{log.date}</span>,
+                  isSecondaryMobile: true
+                },
+                {
+                  header: t('Product Grade', 'پراڈکٹ'),
+                  accessor: (log) => {
                     const prod = products.find(p => p.id === log.productId);
+                    return <span className="font-bold text-slate-800">{prod ? t(prod.name, prod.urduName) : log.productId.toUpperCase()}</span>;
+                  },
+                  isPrimaryMobile: true
+                },
+                {
+                  header: t('Old Tariff Rate', 'کلو ز ریٹ'),
+                  accessor: (log) => <span className="font-mono text-slate-500">Rs. {log.oldRate.toFixed(2)}</span>
+                },
+                {
+                  header: t('New Tariff Revised', 'نیا نافذ ریٹ'),
+                  accessor: (log) => <span className="font-mono font-bold text-slate-800">Rs. {log.newRate.toFixed(2)}</span>
+                },
+                {
+                  header: t('Revision Diff', 'ریٹ میں تبدیلی'),
+                  accessor: (log) => <span className={`font-mono font-semibold ${log.change >= 0 ? 'text-teal-605' : 'text-red-500'}`}>{log.change >= 0 ? `+${log.change.toFixed(2)}` : log.change.toFixed(2)}</span>
+                },
+                {
+                  header: t('Stock Volume at Revision', 'موجودہ والیم'),
+                  accessor: (log) => <span className="font-mono font-bold text-slate-800">{log.stockAtTime.toLocaleString()} Ltr</span>
+                },
+                {
+                  header: t('Audit P&L Impact', 'ویلیویشن منافع/نقصان'),
+                  accessor: (log) => {
                     const isGain = log.impactAmount >= 0;
-
-                    return (
-                      <tr key={log.id} className="hover:bg-slate-50/50">
-                        <td className="py-3 px-3 text-left font-mono text-slate-500 whitespace-nowrap">{log.date}</td>
-                        <td className="py-3 px-2 text-left font-bold text-slate-800">
-                          {prod ? t(prod.name, prod.urduName) : log.productId.toUpperCase()}
-                        </td>
-                        <td className="py-3 px-2 font-mono text-slate-500">Rs. {log.oldRate.toFixed(2)}</td>
-                        <td className="py-3 px-2 font-mono font-bold text-slate-800">Rs. {log.newRate.toFixed(2)}</td>
-                        <td className={`py-3 px-2 font-mono font-semibold ${log.change >= 0 ? 'text-teal-605' : 'text-red-500'}`}>
-                          {log.change >= 0 ? `+${log.change.toFixed(2)}` : log.change.toFixed(2)}
-                        </td>
-                        <td className="py-3 px-2 font-mono font-bold text-slate-800">
-                          {log.stockAtTime.toLocaleString()} Ltr
-                        </td>
-                        <td className={`py-3 px-2 font-mono font-extrabold ${isGain ? 'text-teal-600' : 'text-red-500'}`}>
-                          {isGain ? '+' : '-'}Rs. {Math.abs(log.impactAmount).toLocaleString()}
-                        </td>
-                        <td className="py-3 px-3 text-right text-slate-450 font-medium whitespace-nowrap overflow-hidden max-w-xs text-ellipsis">
-                          <span className="block font-semibold text-slate-700">{log.reason}</span>
-                          <span className="block text-[9px] text-slate-400 font-mono">By: {log.changedBy}</span>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                    return <span className={`font-mono font-extrabold ${isGain ? 'text-teal-600' : 'text-red-500'}`}>{isGain ? '+' : '-'}Rs. {Math.abs(log.impactAmount).toLocaleString()}</span>;
+                  }
+                },
+                {
+                  header: t('Revision Trigger Narrative', 'ترمیم ریمارکس'),
+                  className: 'text-right',
+                  accessor: (log) => (
+                    <div className="text-right whitespace-nowrap overflow-hidden max-w-[150px] text-ellipsis">
+                      <span className="block font-semibold text-slate-700 truncate">{log.reason}</span>
+                      <span className="block text-[9px] text-slate-400 font-mono">By: {log.changedBy}</span>
+                    </div>
+                  )
+                }
+              ]}
+              keyExtractor={(log) => log.id}
+              emptyMessage={t('No price revisions logged. Use Settings panel to revise fuel grades pricing rates.', 'قیمتیں تبدیل کرنے کا کوئی سابقہ ریکارڈ نہیں ملا۔ تبدیلی کیلئے سیٹنگز پینل استعمال کریں۔')}
+            />
           </div>
         </div>
       )}
@@ -1351,7 +1436,7 @@ export default function Inventory({
               </div>
 
               <form onSubmit={handleProductModalSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Product Name (English):', 'نام (انگریزی):')}</label>
                     <input type="text" required value={prodName} onChange={e => setProdName(e.target.value)}

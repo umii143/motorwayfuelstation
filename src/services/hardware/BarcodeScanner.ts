@@ -60,8 +60,8 @@ export class NativeBarcodeScanner {
   static async toggleTorch(): Promise<void> {
     if (!Capacitor.isNativePlatform()) return;
     try {
-      const { isEnabled } = await MLKitScanner.isTorchEnabled();
-      if (isEnabled) {
+      const res = await MLKitScanner.isTorchEnabled() as any;
+      if (res.enabled || res.isEnabled) {
         await MLKitScanner.disableTorch();
       } else {
         await MLKitScanner.enableTorch();

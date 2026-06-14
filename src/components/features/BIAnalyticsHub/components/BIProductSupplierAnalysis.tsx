@@ -13,7 +13,7 @@ export function BIProductSupplierAnalysis({ metrics }: any) {
     new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', minimumFractionDigits: 0 }).format(val);
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
       {/* Product Analysis */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
@@ -23,7 +23,7 @@ export function BIProductSupplierAnalysis({ metrics }: any) {
           </div>
         </div>
         <div className="p-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
             {Object.keys(productSales).length === 0 ? (
               <div className="col-span-3 text-center py-8 text-slate-400 text-sm">No sales data for the selected period.</div>
             ) : (

@@ -149,7 +149,7 @@ export default function PriceImpactSimulatorModal({
             <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">
               {t('Immediate Inventory Revaluation', 'فوری انوینٹری ریویلیویشن', language)}
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3">
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <p className="text-xs text-slate-500 font-bold mb-1">Current Stock</p>
                 <p className="text-lg font-black text-slate-800">{totalStock.toLocaleString()} L</p>
