@@ -81,14 +81,14 @@ export default function ShiftSettings({ settings, onUpdateSettings, activeStatio
               onChange={handleChange}
               min={1}
               max={24}
-              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              className="w-full px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px].5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             />
           </div>
 
           <div className="pt-6 border-t border-slate-100">
             <button 
               onClick={handleSave}
-              className="px-6 py-2.5 bg-slate-900 text-white rounded-lg text-sm font-bold shadow-xs hover:bg-slate-800 transition-colors flex items-center gap-2"
+              className="px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px].5 bg-slate-900 text-white rounded-lg text-sm font-bold shadow-xs hover:bg-slate-800 transition-colors flex items-center gap-2"
             >
               <Save className="h-4 w-4" />
               {t('Save Settings', 'ترتیبات محفوظ کریں')}

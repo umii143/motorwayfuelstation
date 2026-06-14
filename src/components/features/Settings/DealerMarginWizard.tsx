@@ -79,7 +79,7 @@ export default function DealerMarginWizard({ language, onLogAudit, stationId }: 
 
       {isAdding && (
         <form onSubmit={handleSave} className="bg-orange-50 border border-orange-100 rounded-xl p-4 animate-in slide-in-from-top-2">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-600 mb-1">{t('Fuel Type', 'پراڈکٹ', language)} *</label>
               <select
@@ -127,7 +127,7 @@ export default function DealerMarginWizard({ language, onLogAudit, stationId }: 
             </div>
           </div>
           <div className="flex justify-end mt-4">
-             <button type="submit" className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm">
+             <button type="submit" className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm">
                <Save className="h-3.5 w-3.5" />
                {t('Save New Margin Rate', 'محفوظ کریں', language)}
              </button>
@@ -135,7 +135,7 @@ export default function DealerMarginWizard({ language, onLogAudit, stationId }: 
         </form>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
         {products.map(prod => {
           const settingsForProd = dealerMarginSettings
             .filter(s => s.productType === prod)

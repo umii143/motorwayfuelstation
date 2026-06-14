@@ -65,7 +65,7 @@ export default function NotificationsConfig({ settings, onUpdateSettings, active
         </div>
 
         <div className="pt-4 border-t border-slate-100">
-          <button onClick={handleSave} className="px-6 py-2.5 bg-slate-900 text-white rounded-lg text-sm font-bold flex items-center gap-2">
+          <button onClick={handleSave} className="px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px].5 bg-slate-900 text-white rounded-lg text-sm font-bold flex items-center gap-2">
             <Save className="h-4 w-4" /> {t('Save Preferences', 'محفوظ کریں')}
           </button>
         </div>

@@ -134,7 +134,7 @@ export const RiskCenter: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Inventory Risk Card */}
           <div className="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden flex flex-col">

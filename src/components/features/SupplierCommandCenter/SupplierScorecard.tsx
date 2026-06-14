@@ -198,7 +198,7 @@ export default function SupplierScorecard({ suppliers, batches, supplierClaims, 
   return (
     <div className="space-y-6">
       {/* Fleet Overview Bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: t('Rated Suppliers', 'رینک شدہ سپلائرز'), value: metrics.length, icon: Truck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
           { label: t('Total Exposure', 'کل خرید رقم'), value: `Rs.${(totalExposure / 1000000).toFixed(1)}M`, icon: BarChart2, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -219,7 +219,7 @@ export default function SupplierScorecard({ suppliers, batches, supplierClaims, 
 
       {/* Top + Worst Supplier Banner */}
       {metrics.length >= 2 && (
-        <div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {/* Primary Recommendation */}
           <div className="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-2xl p-4 text-white shadow-md">
             <div className="flex items-center gap-2 mb-2">
@@ -346,7 +346,7 @@ export default function SupplierScorecard({ suppliers, batches, supplierClaims, 
               {/* Expanded detail */}
               {isExpanded && (
                 <div className="border-t border-slate-100 bg-slate-50 p-4">
-                  <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
                     {[
                       { label: 'Total Delivered', value: `${m.totalQtyDelivered.toLocaleString()}L`, color: 'text-blue-700', bg: 'bg-blue-50 border-blue-100' },
                       { label: 'Qty Short', value: `${m.totalQtyShort.toLocaleString()}L`, color: m.totalQtyShort > 0 ? 'text-red-700' : 'text-emerald-700', bg: m.totalQtyShort > 0 ? 'bg-red-50 border-red-100' : 'bg-emerald-50 border-emerald-100' },

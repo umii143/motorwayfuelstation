@@ -133,9 +133,9 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
   const renderPinManagement = () => {
     if (pinMode === 'idle') {
       return (
-        <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl gap-4">
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${hasMasterPin ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
+            <div className={`p-2 rounded-lg shrink-0 ${hasMasterPin ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
               <Key className="h-5 w-5" />
             </div>
             <div>
@@ -149,12 +149,12 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             {hasMasterPin ? (
               <button
                 type="button"
                 onClick={() => setPinMode('change')}
-                className="px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg text-xs font-bold transition-colors shadow-sm"
+                className="w-full sm:w-auto px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg text-xs font-bold transition-colors shadow-sm"
               >
                 {t('Change PIN', 'پن تبدیل کریں')}
               </button>
@@ -162,7 +162,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
               <button
                 type="button"
                 onClick={() => setPinMode('setup')}
-                className="px-4 py-2 bg-slate-900 text-white hover:bg-slate-800 rounded-lg text-xs font-bold transition-colors shadow-sm"
+                className="w-full sm:w-auto px-4 py-2 bg-slate-900 text-white hover:bg-slate-800 rounded-lg text-xs font-bold transition-colors shadow-sm"
               >
                 {t('Setup Master PIN', 'ماسٹر پن سیٹ کریں')}
               </button>
@@ -186,7 +186,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
             {t('To reset your PIN, please verify your identity using one of the methods below.', 'اپنا پن ری سیٹ کرنے کے لیے، درج ذیل میں سے کسی ایک طریقے کا استعمال کر کے اپنی شناخت کی تصدیق کریں۔')}
           </p>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             <button
               type="button"
               onClick={() => setForgotMethod('password')}
@@ -299,7 +299,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
             </div>
           )}
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-bold text-slate-500 uppercase">{t('New PIN', 'نیا پن')}</label>
               <input 
@@ -333,7 +333,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
               type="button"
               onClick={handlePinSave}
               disabled={newPin.length !== 6 || confirmPin.length !== 6 || (pinMode === 'change' && currentPin.length !== 6)}
-              className="px-6 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold shadow-xs hover:bg-slate-800 disabled:opacity-50 transition-colors"
+              className="px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px] bg-slate-900 text-white rounded-lg text-sm font-bold shadow-xs hover:bg-slate-800 disabled:opacity-50 transition-colors"
             >
               {t('Save Master PIN', 'ماسٹر پن محفوظ کریں')}
             </button>
@@ -362,7 +362,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
         )}
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           
           {/* PIN Management Section */}
@@ -435,7 +435,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
                 <div className="pt-4 border-t border-slate-100">
                   <h4 className="text-sm font-bold text-slate-800 mb-4">{t('Session & Biometrics', 'سیشن اور بائیو میٹرکس')}</h4>
                   
-                  <div className="grid grid-cols-2 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('Auto-Lock Timeout', 'آٹو لاک ٹائم آؤٹ')}</label>
                       <div className="relative">

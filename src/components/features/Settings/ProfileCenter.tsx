@@ -34,7 +34,7 @@ export default function ProfileCenter({ settings }: { settings: GlobalSettings }
         <p className="text-sm text-slate-500 mt-1">{t('Manage your personal information and login credentials.', 'اپنی ذاتی معلومات اور لاگ ان کی تفصیلات کا نظم کریں۔')}</p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Profile Card */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-6 text-center relative overflow-hidden">
@@ -102,7 +102,7 @@ export default function ProfileCenter({ settings }: { settings: GlobalSettings }
             
             <div className="p-6">
               <form onSubmit={handleSave} className="space-y-4">
-                <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('Full Name', 'پورا نام')}</label>
                     <div className="relative">
@@ -178,7 +178,7 @@ export default function ProfileCenter({ settings }: { settings: GlobalSettings }
                     </button>
                     <button 
                       type="submit" 
-                      className="px-4 py-2 text-sm font-bold text-white bg-orange-600 rounded-lg hover:bg-orange-700 transition-colors flex items-center gap-2 shadow-xs"
+                      className="px-4 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] text-sm font-bold text-white bg-orange-600 rounded-lg hover:bg-orange-700 transition-colors flex items-center gap-2 shadow-xs"
                     >
                       <Save className="h-4 w-4" />
                       {t('Save Changes', 'محفوظ کریں')}
@@ -205,7 +205,7 @@ export default function ProfileCenter({ settings }: { settings: GlobalSettings }
                 </div>
                 <button 
                   onClick={handleChangePassword}
-                  className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg shadow-xs hover:bg-slate-50 hover:border-slate-300 transition-all shrink-0"
+                  className="px-4 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg shadow-xs hover:bg-slate-50 hover:border-slate-300 transition-all shrink-0"
                 >
                   {t('Change Password', 'پاس ورڈ تبدیل کریں')}
                 </button>

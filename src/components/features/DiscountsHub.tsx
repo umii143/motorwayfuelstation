@@ -116,7 +116,7 @@ export default function DiscountsHub({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
           <span className="text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider block">
             {t('Total Discounts Value', 'کل رعیاتی ڈسکاؤنٹ')}
@@ -192,7 +192,7 @@ export default function DiscountsHub({
             </select>
           </div>
 
-          <button className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-sm font-bold text-slate-600 bg-white hover:bg-slate-50 w-full md:w-auto justify-center cursor-pointer">
+          <button className="flex items-center gap-2 px-4 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] border border-slate-300 rounded-lg text-sm font-bold text-slate-600 bg-white hover:bg-slate-50 w-full md:w-auto justify-center cursor-pointer">
             <Download className="w-4 h-4" /> Export CSV
           </button>
         </div>

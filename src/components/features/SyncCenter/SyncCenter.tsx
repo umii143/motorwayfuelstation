@@ -56,7 +56,7 @@ export default function SyncCenter({ settings }: { settings: GlobalSettings }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
@@ -95,7 +95,7 @@ export default function SyncCenter({ settings }: { settings: GlobalSettings }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
         <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
           <div className="px-5 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
             <h3 className="font-semibold text-slate-800">Current Mutation Queue</h3>

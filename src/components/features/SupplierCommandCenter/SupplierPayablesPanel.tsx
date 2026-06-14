@@ -86,7 +86,7 @@ function PaymentModal({
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Payment Mode</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {(['cash', 'bank', 'cheque'] as const).map(m => (
                 <button
                   key={m}
@@ -204,7 +204,7 @@ export default function SupplierPayablesPanel({
   return (
     <div className="space-y-5">
       {/* Summary Header */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: t('Total Payable', 'کل ادائیگی'), value: `Rs.${(totalPayable / 1000000).toFixed(2)}M`, icon: Wallet, color: 'text-slate-700', bg: 'bg-slate-50 border-slate-200' },
           { label: t('Overdue', 'مدت گزر گئی'), value: `Rs.${(overduePayable / 1000).toFixed(0)}K`, icon: AlertTriangle, color: 'text-red-700', bg: overduePayable > 0 ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-200' },

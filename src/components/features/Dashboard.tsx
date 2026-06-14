@@ -145,14 +145,8 @@ export default React.memo(function Dashboard({
 
   }, [products, isLube, tanks]);
 
-  // Fallback to dummy data if completely empty, just so the user can see the new UI
   const displayTanks = useMemo(() => {
-    if (fuelStocks.length > 0) return fuelStocks;
-    if (isLube) return [];
-    return [
-      { id: 'dummy_diesel', name: 'High Speed Diesel (HSD)', capacity: 50000, currentStock: 32500 },
-      { id: 'dummy_petrol', name: 'Super Petrol (PMG)', capacity: 30000, currentStock: 3500 }
-    ];
+    return fuelStocks;
   }, [fuelStocks, isLube]);
 
   const activeShift = useMemo(() => {
@@ -256,7 +250,7 @@ export default React.memo(function Dashboard({
 
         {/* SHIFT CTA (Moved to top) */}
         {!isLube && (
-          <div className="grid grid-cols-2 gap-3 mb-4 px-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-4 px-1">
             {activeShift ? (
               <>
                 <motion.button

@@ -130,7 +130,7 @@ export default function BatchHistory({ batches, products, language }: BatchHisto
         </div>
 
         {/* Summary Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Active Batches', value: stats.activeBatches, icon: Package, color: 'text-indigo-600' },
             { label: 'Total Remaining', value: `${stats.totalRemaining.toLocaleString()}L`, icon: Droplets, color: 'text-blue-600' },
@@ -305,7 +305,7 @@ export default function BatchHistory({ batches, products, language }: BatchHisto
                     {isExpanded && (
                       <tr className="bg-slate-50/80">
                         <td colSpan={9} className="px-4 pb-4 pt-2">
-                          <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 xl:grid-cols-6 gap-3 text-xs">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 xl:grid-cols-6 gap-3 text-xs">
                             {[
                               { label: 'Invoice Total', value: batch.invoiceTotalAmount ? `Rs. ${batch.invoiceTotalAmount.toLocaleString('en-PK', { maximumFractionDigits: 0 })}` : '—' },
                               { label: 'Total Landed', value: batch.totalLandedCost ? `Rs. ${batch.totalLandedCost.toLocaleString('en-PK', { maximumFractionDigits: 0 })}` : '—' },

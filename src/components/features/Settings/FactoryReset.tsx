@@ -93,8 +93,8 @@ export default function FactoryReset({ settings, activeStationId }: { settings: 
       }
 
       // 3. Wipe Local DB and Reload
-      setTimeout(() => {
-        db.resetToDefault();
+      setTimeout(async () => {
+        await db.resetToDefault();
         showToast(t('System Reset Complete. Reloading...', 'سسٹم ری سیٹ مکمل۔ ری لوڈ ہو رہا ہے...'), 'success');
       }, 2000);
 
@@ -147,7 +147,7 @@ export default function FactoryReset({ settings, activeStationId }: { settings: 
               {t('Dry Run Analysis', 'ڈرائی رن کا تجزیہ')}
             </h3>
             
-            <div className="grid grid-cols-2 md:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-8">
               <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Records to Delete</p>
                 <p className="text-3xl font-mono font-bold text-rose-600">{recordsCount.toLocaleString()}</p>

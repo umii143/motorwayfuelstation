@@ -245,7 +245,7 @@ export default function BankCashPanel({
       </div>
 
       {/* DYNAMIC KPI CARDS SECTION */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* AMBER CARD - TOTAL IN BANKS */}
         <div 
           onClick={() => setIsDrillDownOpen(true)}
@@ -323,7 +323,7 @@ export default function BankCashPanel({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* LEFT COLUMN (2/3): BANKS DIRECTORY & MANUAL ADJUSTMENTS */}
         <div className="lg:col-span-2 space-y-6">
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
@@ -565,7 +565,7 @@ export default function BankCashPanel({
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
                     {t('Adjustment Action Type:', 'تبدیلی کی نوعیت:')}
                   </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 text-xs">
                     <button
                       type="button"
                       onClick={() => setAdjustType('deposit')}

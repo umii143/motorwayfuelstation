@@ -19,7 +19,7 @@ export function BISmartMetrics({ metrics }: any) {
   // For actual turnover we'd need average inventory / COGS
   
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
       
       {/* Cash Leakage (Test Liters) */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">

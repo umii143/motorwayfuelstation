@@ -571,7 +571,7 @@ export default function SupplierDirectory({
       />
 
       {/* DYNAMIC KPI CARDS SECTION */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         {/* AMBER CARD - TOTAL PAYABLES */}
         <div 
           onClick={() => setIsDrillDownOpen(true)}
@@ -649,7 +649,7 @@ export default function SupplierDirectory({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         
         {/* LEFT COLUMN: LIST OF OIL VENDORS */}
         <div className="space-y-4">
@@ -778,10 +778,10 @@ export default function SupplierDirectory({
                       {t('Auto-Fill with Invoice Scanner', 'بل سکین کر کے آٹو فل کریں')}
                     </button>
 
-                    <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3.5 sm:grid-cols-2">
                       <div>
                         <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t('Transaction Nature:', 'انٹری کی قسم:')}</label>
-                        <div className="grid grid-cols-2 sm:grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                           <button
                             type="button"
                             onClick={() => setAdjustNature('invoice')}

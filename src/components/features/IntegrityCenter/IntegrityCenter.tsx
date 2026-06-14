@@ -162,7 +162,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
       </div>
 
       {/* ── Top KPI Row ──────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
           { label: 'Shifts Processed', value: stats?.totalShiftsProcessed ?? 0, icon: Activity, color: 'text-indigo-600', bg: 'bg-indigo-50' },
           { label: 'Validated', value: stats?.validatedShifts ?? 0, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
@@ -188,7 +188,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
       </div>
 
       {/* ── Main Body ─────────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* LEFT: Integrity Score + Migration Gate */}
         <div className="space-y-4">
@@ -297,7 +297,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
         <div className="lg:col-span-2 space-y-4">
 
           {/* Drift Widgets */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3">
             {(['bank', 'cash', 'customer', 'supplier', 'digital_wallet', 'inventory', 'treasury', 'shift_variance'] as const).map((mod) => {
               const drift = driftByModule[mod] ?? 0;
               const cfg = MODULE_CONFIG[mod];
@@ -426,7 +426,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
                 </div>
 
                 {/* Values Comparison */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-center">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
                   <div className="p-3 bg-slate-50 rounded-xl">
                     <div className="text-xs font-bold text-slate-500 mb-1">Legacy Value</div>
                     <div className="text-lg font-black text-slate-800">Rs {Math.round(selectedLog.legacyValue).toLocaleString()}</div>
@@ -442,7 +442,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
                 </div>
 
                 {/* Details */}
-                <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 text-xs text-slate-600">
+                <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 text-xs text-slate-600">
                   <div><span className="font-bold text-slate-800">Shift: </span>{selectedLog.shiftId}</div>
                   <div><span className="font-bold text-slate-800">Module: </span>{MODULE_CONFIG[selectedLog.module]?.label || selectedLog.module}</div>
                   <div><span className="font-bold text-slate-800">Detected: </span>{new Date(selectedLog.timestamp).toLocaleString()}</div>

@@ -371,7 +371,7 @@ export default function Expenses({
       />
 
       {/* DYNAMIC KPI CARDS SECTION */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         {/* AMBER CARD - TOTAL SPEND */}
         <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
           <div className="flex items-start justify-between">
@@ -446,14 +446,14 @@ export default function Expenses({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         
         {/* LEFT COMPEX: TIMELINES & DETAIL LIST OF EXPENDITURES */}
         <div className="lg:col-span-2 space-y-4">
           
           {/* SEARCH & FILTER CONTROLS CARD */}
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3.5">
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
 
               <div>
                 <select
@@ -629,7 +629,7 @@ export default function Expenses({
 
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Paid From Account:', 'رقم کہاں سے ادا کی گئی:')}</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                     <button
                       type="button"
                       onClick={() => setFormPaidFrom('cash')}

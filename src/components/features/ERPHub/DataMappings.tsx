@@ -53,7 +53,7 @@ export default function DataMappings({ settings, stationId }: DataMappingsProps)
                   <input 
                     type="text" 
                     defaultValue={map.external}
-                    className="w-full bg-white border border-slate-200 px-3 py-2 rounded text-sm font-mono text-slate-800 focus:ring-2 focus:ring-rose-500 outline-none"
+                    className="w-full bg-white border border-slate-200 px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded text-sm font-mono text-slate-800 focus:ring-2 focus:ring-rose-500 outline-none"
                   />
                 </div>
                 <div className="col-span-2 text-right">
@@ -66,7 +66,7 @@ export default function DataMappings({ settings, stationId }: DataMappingsProps)
           </div>
           
           <div className="mt-8 pt-4 border-t border-slate-100 flex justify-end">
-            <button className="flex items-center gap-2 bg-rose-600 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-rose-700 transition">
+            <button className="flex items-center gap-2 bg-rose-600 text-white px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded-lg text-sm font-bold hover:bg-rose-700 transition">
               <Save className="h-4 w-4" /> Save Mappings
             </button>
           </div>

@@ -126,7 +126,7 @@ export default function AccountsManager({ settings, stationId }: AccountsManager
         </button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-3 gap-4">
         {filteredAccounts.map(account => (
           <div key={account.id} className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition">
             <div className="flex justify-between items-start mb-3">
@@ -193,7 +193,7 @@ export default function AccountsManager({ settings, stationId }: AccountsManager
             </div>
             
             <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Company Name *</label>
                   <input type="text" value={companyName} onChange={e => setCompanyName(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="e.g. DHL Express" />
@@ -231,7 +231,7 @@ export default function AccountsManager({ settings, stationId }: AccountsManager
 
             <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
               <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition">Cancel</button>
-              <button onClick={handleSave} className="bg-orange-600 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-orange-700 transition shadow-md shadow-orange-500/20">
+              <button onClick={handleSave} className="bg-orange-600 text-white px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded-lg text-sm font-bold hover:bg-orange-700 transition shadow-md shadow-orange-500/20">
                 Save Account
               </button>
             </div>

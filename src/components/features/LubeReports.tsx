@@ -417,7 +417,7 @@ export default function LubeReports({
       </div>
 
       {/* KPI CARDS ROW */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {[
           { label: t('Total Revenue', 'کل آمدنی'),    value: formatCurrency(kpis.totalRevenue, settings),     icon: DollarSign,   color: 'text-violet-600' },
           { label: t('Invoices Issued', 'انوائسز'),   value: String(kpis.totalInvoices),                      icon: Receipt,      color: 'text-sky-600' },
@@ -489,7 +489,7 @@ export default function LubeReports({
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 lg:grid-cols-2">
 
             {/* Product Revenue Pie */}
             <div className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] p-5 shadow-sm space-y-4">
@@ -616,7 +616,7 @@ export default function LubeReports({
                 <Filter className="h-3.5 w-3.5 text-violet-500" />
                 <span>{t('Filter & Search Controls', 'فلٹر اور تلاش')}</span>
               </div>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 text-xs font-sans">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:grid-cols-4 text-xs font-sans">
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-[var(--text-muted)] mb-1">{t('Start Date', 'شروع تاریخ')}</label>
                   <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
@@ -679,7 +679,7 @@ export default function LubeReports({
                   <span>{t('AI Analysis', 'اے آئی تجزیہ')}</span>
                 </button>
                 <button onClick={triggerCSVExport}
-                  className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2 font-sans text-xs font-bold text-white shadow-sm hover:bg-orange-700 transition-colors cursor-pointer">
+                  className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] font-sans text-xs font-bold text-white shadow-sm hover:bg-orange-700 transition-colors cursor-pointer">
                   <Download className="h-4 w-4" />
                   <span>{copiedCSV ? t('Downloaded!', 'ڈاؤنلوڈ مکمل!') : t('Export CSV', 'ایکسل ڈاؤنلوڈ')}</span>
                 </button>
@@ -895,7 +895,7 @@ export default function LubeReports({
         <div className="space-y-6">
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             {[
               { label: t('Gross Revenue', 'خام آمدنی'),       value: financialPeriod.totalRevenue,   color: 'text-violet-600',  bg: 'bg-violet-50' },
               { label: t('Product Returns', 'واپسی'),          value: -financialPeriod.totalReturns,  color: 'text-rose-600',    bg: 'bg-rose-50' },

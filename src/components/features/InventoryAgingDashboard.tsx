@@ -180,7 +180,7 @@ export default function InventoryAgingDashboard({
           <BarChart2 className="size-5 text-orange-400" />
           <h3 className="font-bold text-sm uppercase tracking-widest text-slate-300">{t('Inventory Exposure Engine', 'انوینٹری ایکسپوژر انجن')}</h3>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: t('Current Stock Value', 'موجودہ اسٹاک قیمت'), value: `Rs.${(exposure.totalStockValue / 1000000).toFixed(2)}M`, sub: 'Landed Cost × Qty Remaining', color: 'text-blue-300' },
             { label: t('Potential Revenue', 'ممکنہ آمدنی'), value: `Rs.${(exposure.totalPotentialRevenue / 1000000).toFixed(2)}M`, sub: 'OGRA Price × Qty Remaining', color: 'text-emerald-300' },
@@ -197,7 +197,7 @@ export default function InventoryAgingDashboard({
       </div>
 
       {/* Tier Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3">
         {tierStats.map(ts => {
           const TierIcon = ts.icon;
           return (
@@ -340,7 +340,7 @@ export default function InventoryAgingDashboard({
 
                   {isExpanded && (
                     <div className="px-4 pb-4 pt-0">
-                      <div className="bg-white rounded-xl border border-slate-200 p-3 grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                      <div className="bg-white rounded-xl border border-slate-200 p-3 grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                         {[
                           { label: 'Invoice #', value: b.invoiceNumber || '—' },
                           { label: 'Received', value: `${b.qtyReceived.toLocaleString()}L` },

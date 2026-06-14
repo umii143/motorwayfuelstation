@@ -149,9 +149,11 @@ export default function SettingsPanel({
     {
       title: t('Hardware & Inventory', 'ہارڈویئر اور انوینٹری'),
       items: [
-        { id: 'tanks', label: t('Tanks & Storage', 'ٹینک اور اسٹوریج'), icon: Database },
-        { id: 'nozzles', label: t('Dispenser Nozzles', 'ڈسپینسر نوزلز'), icon: Fuel },
-        { id: 'meter', label: t('Meter Management', 'میٹر مینجمنٹ'), icon: Activity },
+        ...(isLube ? [] : [
+          { id: 'tanks', label: t('Tanks & Storage', 'ٹینک اور اسٹوریج'), icon: Database },
+          { id: 'nozzles', label: t('Dispenser Nozzles', 'ڈسپینسر نوزلز'), icon: Fuel },
+          { id: 'meter', label: t('Meter Management', 'میٹر مینجمنٹ'), icon: Activity },
+        ]),
         { id: 'products', label: t('Products', 'مصنوعات'), icon: Package },
       ]
     },
@@ -159,7 +161,9 @@ export default function SettingsPanel({
       title: t('Financial & Pricing', 'مالیاتی اور قیمتوں کا تعین'),
       items: [
         { id: 'price', label: t('Price Settings', 'قیمت کی ترتیبات'), icon: Tag },
-        { id: 'margins', label: t('Dealer Margin', 'ڈیلر مارجن'), icon: Percent },
+        ...(isLube ? [] : [
+          { id: 'margins', label: t('Dealer Margin', 'ڈیلر مارجن'), icon: Percent },
+        ]),
         { id: 'treasury', label: t('Treasury Settings', 'ٹریژری سیٹنگز'), icon: Landmark },
         { id: 'accounts', label: t('Banks & Wallets', 'بینک اور کیش'), icon: Wallet },
       ]
@@ -169,7 +173,9 @@ export default function SettingsPanel({
       items: [
         { id: 'security', label: t('Security Center', 'سیکیورٹی سینٹر'), icon: Shield },
         { id: 'emergency', label: t('Emergency Access', 'ہنگامی رسائی'), icon: Siren },
-        { id: 'shift', label: t('Shift Settings', 'شفٹ سیٹنگز'), icon: Clock },
+        ...(isLube ? [] : [
+          { id: 'shift', label: t('Shift Settings', 'شفٹ سیٹنگز'), icon: Clock },
+        ]),
         { id: 'integrity', label: t('Data Integrity', 'ڈیٹا کی درستگی'), icon: Activity },
         { id: 'audit', label: t('Settings Audit Center', 'آڈٹ سینٹر'), icon: FileSearch },
       ]
@@ -263,20 +269,14 @@ export default function SettingsPanel({
   return (
     <div className="flex flex-col h-full min-h-[calc(100dvh-120px)] overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-white">
       {/* HEADER */}
-      <div className="flex items-center justify-between border-b border-slate-200 bg-white p-4 shadow-xs shrink-0">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-200 bg-white p-4 shadow-xs shrink-0 gap-4">
         <div className="flex items-center gap-3">
-          <button 
-            className="lg:hidden p-2 -ml-2 rounded-lg text-slate-500 hover:bg-slate-100"
-            onClick={() => setIsMobileSidebarOpen(true)}
-          >
-            <Menu className="h-5 w-5" />
-          </button>
           <div>
-            <h2 className="font-sans text-xl sm:text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-              <Settings className="h-6 w-6 text-orange-600" />
-              <span>{t('Enterprise Command Center', 'انٹرپرائز کمانڈ سینٹر')}</span>
+            <h2 className="font-sans text-lg sm:text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+              <Settings className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600 shrink-0" />
+              <span className="truncate">{t('Enterprise Command Center', 'انٹرپرائز کمانڈ سینٹر')}</span>
             </h2>
-            <p className="font-sans text-xs text-slate-500 mt-0.5">
+            <p className="font-sans text-xs text-slate-500 mt-0.5 truncate">
               {t('Secure governance, hardware setup, and business configuration.', 'سیکیورٹی، ہارڈویئر سیٹ اپ اور کاروباری ترتیبات۔')}
             </p>
           </div>
@@ -285,20 +285,34 @@ export default function SettingsPanel({
 
       <SetupBanner activeViewId={activeTab === 'price' ? 'setup_rates' : activeTab === 'accounts' ? 'setup_accounts' : activeTab === 'audit' ? 'setup_audit' : activeTab === 'margins' ? 'setup_margins' : `setup_${activeTab}`} />
 
-      <div className="flex flex-1 overflow-hidden bg-slate-50 relative">
-        {/* SIDEBAR NAVIGATION */}
-        <div className={`
-          absolute lg:static inset-y-0 left-0 z-40 w-72 bg-white border-r border-slate-200 flex flex-col 
-          transform transition-transform duration-300 ease-in-out
-          ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        `}>
-          <div className="flex items-center justify-between p-4 border-b border-slate-100 lg:hidden">
-            <span className="font-bold text-slate-700 text-sm uppercase">Menu</span>
-            <button onClick={() => setIsMobileSidebarOpen(false)} className="p-1 rounded-lg hover:bg-slate-100 text-slate-500">
-              <X className="h-5 w-5" />
-            </button>
+      <div className="flex flex-1 overflow-hidden bg-slate-50 relative flex-col lg:flex-row">
+        {/* MOBILE HORIZONTAL TAB BAR */}
+        <div className="lg:hidden w-full bg-white border-b border-slate-200 shrink-0">
+          <div className="flex overflow-x-auto no-scrollbar p-3 gap-2 items-center">
+            {SIDEBAR_SECTIONS.flatMap(s => s.items).map(item => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              const isDanger = item.isDanger;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleTabChange(item.id as SettingsView)}
+                  className={`shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    isActive 
+                      ? (isDanger ? 'bg-red-50 text-red-700 border border-red-200 shadow-sm' : 'bg-orange-600 text-white shadow-md shadow-orange-500/20')
+                      : (isDanger ? 'text-slate-600 bg-slate-50 border border-slate-200 hover:bg-red-50 hover:text-red-600' : 'text-slate-600 bg-slate-50 border border-slate-200 hover:bg-slate-100')
+                  }`}
+                >
+                  <Icon className={`h-4 w-4 ${isActive ? (isDanger ? 'text-red-600' : 'text-white') : 'text-slate-400'}`} />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
           </div>
+        </div>
 
+        {/* SIDEBAR NAVIGATION (DESKTOP ONLY) */}
+        <div className="hidden lg:flex inset-y-0 left-0 z-40 w-72 bg-white border-r border-slate-200 flex-col shrink-0">
           <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-6">
             {SIDEBAR_SECTIONS.map((section, idx) => (
               <div key={idx}>
@@ -335,14 +349,6 @@ export default function SettingsPanel({
             Powered by Umar Ali ⚡
           </div>
         </div>
-
-        {/* MOBILE OVERLAY */}
-        {isMobileSidebarOpen && (
-          <div 
-            className="absolute inset-0 bg-slate-900/20 backdrop-blur-xs z-30 lg:hidden"
-            onClick={() => setIsMobileSidebarOpen(false)}
-          />
-        )}
 
         {/* MAIN CONTENT AREA */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-6 pb-24">

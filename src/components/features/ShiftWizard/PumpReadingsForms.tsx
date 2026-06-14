@@ -91,7 +91,7 @@ export function OpeningReadingsForm({
         </button>
         <button
           onClick={handleConfirmOpenings}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all shadow-sm"
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px].5 rounded-lg font-bold flex items-center gap-2 transition-all shadow-sm"
         >
           {t("Confirm Openings & Start Shift", "کنفرم کریں اور شفٹ شروع کریں")}
           <ArrowRight className="h-4 w-4" />
@@ -202,7 +202,7 @@ export function ClosingReadingsForm({
         </button>
         <button
           onClick={handleConfirmClosings}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all shadow-sm"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px].5 rounded-lg font-bold flex items-center gap-2 transition-all shadow-sm"
         >
           {t("Confirm Closings", "اختتامی ریڈنگز کنفرم کریں")}
           <ArrowRight className="h-4 w-4" />

@@ -184,7 +184,7 @@ export default function BackupRecovery({ settings, activeStationId }: { settings
         </p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
         {/* EXPORT SECTION */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col">
           <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
@@ -276,7 +276,7 @@ export default function BackupRecovery({ settings, activeStationId }: { settings
                   <button 
                     onClick={handleRestore}
                     disabled={isRestoring}
-                    className="w-full px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold shadow-xs hover:bg-slate-800 transition-colors disabled:opacity-70"
+                    className="w-full px-4 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] bg-slate-900 text-white rounded-lg text-sm font-bold shadow-xs hover:bg-slate-800 transition-colors disabled:opacity-70"
                   >
                     {isRestoring ? t('Restoring...', 'بحال ہو رہا ہے...') : t('Restore Database', 'ڈیٹا بیس بحال کریں')}
                   </button>

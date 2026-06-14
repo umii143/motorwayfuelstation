@@ -561,7 +561,7 @@ export default function Inventory({
           {isLube && (
           <button
             onClick={openAddProduct}
-            className="shrink-0 flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 sm:px-4 sm:py-2.5 font-sans text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all cursor-pointer"
+            className="shrink-0 flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] sm:px-4 sm:py-2.5 font-sans text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all cursor-pointer"
           >
             <PlusCircle className="h-4 w-4" />
             <span>{t('Add Product', 'نئی پروڈکٹ')}</span>
@@ -592,7 +592,7 @@ export default function Inventory({
       />
 
       {/* BEN-TO ROW INVENTORY STATS OVERVIEWS */}
-      <div className={`grid grid-cols-2 gap-2 sm:gap-4 ${isLube ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+      <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 ${isLube ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
         {/* Total Fuels — hidden for lube businesses */}
         {!isLube && (
         <div 
@@ -757,7 +757,7 @@ export default function Inventory({
 
       {/* CORE ACTIVE WORKSPACE MODULES */}
       {activeTab === 'inventory' && (
-        <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* LEFT PANEL (2/3 WIDTH): PRODUCTS DATABASE DETAIL BOARD */}
           <div className="lg:col-span-2 space-y-4">
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs flex flex-col gap-3.5 sm:flex-row items-center sm:justify-between">
@@ -765,7 +765,7 @@ export default function Inventory({
               <div className="flex flex-wrap gap-1.5">
                 {[
                   { id: 'all', label: 'All Stock', urdu: 'کل اسٹاک', show: true },
-                  { id: 'fuel', label: 'Fuels Only', urdu: 'صرف پیٹرولیم', show: true },
+                  { id: 'fuel', label: 'Fuels Only', urdu: 'صرف پیٹرولیم', show: !isLube },
                   // Lubes & Oils filter only visible in Lube business
                   { id: 'lube', label: 'Lubes & Oils', urdu: 'انجن آئل', show: isLube },
                   { id: 'low', label: 'Low Alert', urdu: 'انتباہی اسٹاک', show: true }
@@ -786,7 +786,7 @@ export default function Inventory({
             </div>
 
             {/* List items */}
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
               <AnimatePresence>
                 {filteredProducts.map((prod, idx) => {
                   const capacity = prod.capacity || 100;
@@ -947,7 +947,7 @@ export default function Inventory({
           TAB 2: TANKS CALIBRATION MODULE (MODULE B2/B3/D2)
           ========================================== */}
       {activeTab === 'tanks_calibration' && (
-        <div className="grid grid-cols-2 gap-6 md:grid-cols-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* TANKS LIST BOARD WITH CYLINDERS */}
           <div className="md:col-span-2 space-y-4">
             <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
@@ -960,7 +960,7 @@ export default function Inventory({
                 {t('No storage tanks has been configured in Settings yet.', 'ٹھیکیدار کی ترجیحات میں کوئی سٹوریج ٹینک نہیں پایا گیا۔ پہلے ٹینکس ترتیب کھڑا کریں۔')}
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                 {tanks.map(tnk => {
                   const prod = products.find(p => p.id === tnk.productId);
                   const fillPct = Math.round((tnk.currentStock / tnk.capacity) * 100);
@@ -1351,7 +1351,7 @@ export default function Inventory({
               </div>
 
               <form onSubmit={handleProductModalSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Product Name (English):', 'نام (انگریزی):')}</label>
                     <input type="text" required value={prodName} onChange={e => setProdName(e.target.value)}

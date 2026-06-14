@@ -162,7 +162,7 @@ export default function DriversManager({ settings, stationId }: DriversManagerPr
         </div>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-3 gap-4">
         {filteredDrivers.map(driver => (
           <div key={driver.id} className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition">
             <div className="flex justify-between items-start mb-3">
@@ -229,7 +229,7 @@ export default function DriversManager({ settings, stationId }: DriversManagerPr
             </div>
             
             <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Corporate Account *</label>
                   <select 
@@ -278,7 +278,7 @@ export default function DriversManager({ settings, stationId }: DriversManagerPr
 
             <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
               <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition">Cancel</button>
-              <button onClick={handleSave} className="bg-orange-600 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-orange-700 transition shadow-md shadow-orange-500/20">
+              <button onClick={handleSave} className="bg-orange-600 text-white px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded-lg text-sm font-bold hover:bg-orange-700 transition shadow-md shadow-orange-500/20">
                 Save Driver
               </button>
             </div>

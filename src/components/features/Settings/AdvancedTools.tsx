@@ -72,7 +72,7 @@ export default function AdvancedTools({ settings, activeStationId }: { settings:
         </p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
         {tools.map(tool => {
           const isRunning = activeTool === tool.id;
           const isCompleted = completedTools.includes(tool.id) && !isRunning;
@@ -92,7 +92,7 @@ export default function AdvancedTools({ settings, activeStationId }: { settings:
                 <button 
                   onClick={tool.action}
                   disabled={isRunning}
-                  className="w-full flex justify-center items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-bold shadow-xs hover:bg-slate-100 transition-colors disabled:opacity-70"
+                  className="w-full flex justify-center items-center gap-2 px-4 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px].5 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-bold shadow-xs hover:bg-slate-100 transition-colors disabled:opacity-70"
                 >
                   {isRunning ? (
                     <>

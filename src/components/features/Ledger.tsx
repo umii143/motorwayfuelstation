@@ -437,7 +437,7 @@ export default function Ledger({
       </div>
 
       {/* DYNAMIC KPI CARDS SECTION */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* AMBER CARD - NET LIQUIDITY */}
         <div className={`rounded-2xl border p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden transition-all duration-300 ${
           netBookBalance >= 0 
@@ -522,7 +522,7 @@ export default function Ledger({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         
         {/* LEFT COLUMN: ACTIVE PARTIES DATABASE */}
         <div className="space-y-4">

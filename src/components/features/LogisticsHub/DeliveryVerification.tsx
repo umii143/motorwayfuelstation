@@ -262,7 +262,7 @@ export default function DeliveryVerification({ settings, stationId }: DeliveryVe
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Select Tanker Schedule (PO) *</label>
                   <select value={scheduleId} onChange={e => setScheduleId(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white">
@@ -286,7 +286,7 @@ export default function DeliveryVerification({ settings, stationId }: DeliveryVe
                   <input type="date" value={actualDeliveryDate} onChange={e => setActualDeliveryDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
                 </div>
                 
-                <div className="border-t border-slate-100 pt-4 md:col-span-2 grid grid-cols-2 md:grid-cols-2 gap-4">
+                <div className="border-t border-slate-100 pt-4 md:col-span-2 grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Invoice Quantity (Liters) *</label>
                     <input type="number" value={invoiceQuantity} onChange={e => setInvoiceQuantity(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="e.g. 20000" />
@@ -297,7 +297,7 @@ export default function DeliveryVerification({ settings, stationId }: DeliveryVe
                   </div>
                 </div>
 
-                <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                   {parseFloat(invoiceQuantity) - parseFloat(actualDipQuantity) > 0 && (
                     <div className="col-span-1">
                       <label className="block text-xs font-bold text-rose-700 mb-1">Shortage Amount Value ({settings.currency})</label>
@@ -332,7 +332,7 @@ export default function DeliveryVerification({ settings, stationId }: DeliveryVe
 
             <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
               <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition">Cancel</button>
-              <button onClick={handleSave} className="bg-rose-600 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-rose-700 transition shadow-md shadow-rose-500/20">
+              <button onClick={handleSave} className="bg-rose-600 text-white px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded-lg text-sm font-bold hover:bg-rose-700 transition shadow-md shadow-rose-500/20">
                 Log Delivery
               </button>
             </div>

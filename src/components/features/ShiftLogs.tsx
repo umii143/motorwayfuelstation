@@ -236,7 +236,7 @@ export default function ShiftLogs({
       </div>
       
       {/* ENTERPRISE KPI ROW */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div 
           onClick={() => setIsShiftDrillDownOpen(true)}
           className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/30 transition-colors group"
@@ -321,7 +321,7 @@ export default function ShiftLogs({
           </button>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">
               {t('Date', 'تاریخ')}
@@ -642,7 +642,7 @@ function ShiftAuditDrawer({
               </span>
             </div>
             
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
               <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('Expected Cash', 'متوقع کیش')}</span>
                 <span className="text-2xl font-black text-slate-800 truncate">{formatCurrency(shift.expectedCash || 0)}</span>
@@ -676,7 +676,7 @@ function ShiftAuditDrawer({
               </span>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="bg-gradient-to-br from-orange-50 to-orange-100/30 rounded-xl border border-orange-200 p-5 shadow-sm flex flex-col justify-between relative overflow-hidden">
                 <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-orange-200/50 to-transparent"></div>
                 <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-2 relative z-10">{t('Petrol Sold', 'پٹرول فروخت')}</span>
@@ -703,7 +703,7 @@ function ShiftAuditDrawer({
                 {t('Transaction Intelligence Drill-Downs', 'ٹرانزیکشن کی تفصیلات')}
               </h3>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-3 gap-4">
               
               <DrillDownCard
                 icon={TrendingUp}

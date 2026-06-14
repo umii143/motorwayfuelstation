@@ -181,7 +181,7 @@ export function BIAIInsights({ metrics }: any) {
         <button 
           onClick={generateGeminiReport}
           disabled={loadingAi}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-sm"
+          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-700 text-white px-4 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded-lg text-sm font-bold transition-all shadow-sm"
         >
           {loadingAi ? <Loader2 className="w-4 h-4 animate-spin" /> : <BrainCircuit className="w-4 h-4" />}
           {loadingAi ? "Analyzing..." : "Ask Gemini AI"}
@@ -199,7 +199,7 @@ export function BIAIInsights({ metrics }: any) {
         </div>
       )}
       
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {insights.map((insight, index) => (
           <div key={index} className="bg-white/10 rounded-xl p-4 border border-white/10 hover:bg-white/20 transition-colors cursor-default">
             <div className="flex items-start gap-3">

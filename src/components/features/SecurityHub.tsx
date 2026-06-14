@@ -126,7 +126,7 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
         transition={{ duration: 0.2 }}
       >
         {activeTab === 'overview' && (
-          <div className="grid grid-cols-2 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {/* MFA Setup Card */}
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
               <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
@@ -227,7 +227,7 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
               </div>
               <button 
                 onClick={handleRevokeAllSessions}
-                className="flex items-center gap-2 px-4 py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl text-sm font-bold transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl text-sm font-bold transition-colors"
               >
                 <LogOut className="h-4 w-4" />
                 {t('Revoke All Others', 'باقی تمام منسوخ کریں')}

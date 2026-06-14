@@ -17,7 +17,7 @@ export default function Integrations({ settings, activeStationId }: { settings: 
         <p className="text-sm text-slate-500 mt-1">Connect FuelPro to external APIs, ATG systems, and third-party accounting.</p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
         <div className="bg-white rounded-xl border border-slate-200 p-6 flex flex-col items-center justify-center text-center opacity-70">
           <Server className="h-10 w-10 text-slate-400 mb-3" />
           <h3 className="font-bold text-slate-800">Automatic Tank Gauging (ATG)</h3>

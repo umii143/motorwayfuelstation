@@ -136,7 +136,7 @@ export default function MidShiftRateModal({
         <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
           <button
             onClick={onCancel}
-            className="px-6 py-2.5 rounded-xl font-medium text-slate-600 hover:bg-slate-200 transition-colors"
+            className="px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px].5 rounded-xl font-medium text-slate-600 hover:bg-slate-200 transition-colors"
           >
             {t('Cancel', 'منسوخ کریں', language)}
           </button>

@@ -68,7 +68,7 @@ export function ShiftDebtors({
         </span>
       </h3>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
         <div>
           <div className="flex justify-between items-center mb-1.5">
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">
@@ -96,7 +96,7 @@ export function ShiftDebtors({
               />
               <button
                 type="submit"
-                className="bg-orange-600 text-white px-3 py-2 rounded-lg font-bold text-xs uppercase shadow-sm"
+                className="bg-orange-600 text-white px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded-lg font-bold text-xs uppercase shadow-sm"
               >
                 {t("Save", "سیو")}
               </button>

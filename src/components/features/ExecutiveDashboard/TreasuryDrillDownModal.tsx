@@ -282,7 +282,7 @@ export default function TreasuryDrillDownModal({
                   <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-slate-50" />
                 </div>
                 <div className="flex gap-2">
-                  <button className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-bold transition-colors">
+                  <button className="px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-bold transition-colors">
                     <Download className="h-4 w-4" />
                   </button>
                 </div>

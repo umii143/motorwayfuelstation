@@ -711,7 +711,7 @@ export default function Reports({
                 <span>{t('Advanced Query Filter Controls', 'فلٹرز اور آڈٹ سرچ پینل')}</span>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 text-xs font-sans">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:grid-cols-4 text-xs font-sans">
                 {/* Dates picker */}
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">{t('Start Date', 'شروع تاریخ')}</label>
@@ -763,7 +763,7 @@ export default function Reports({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 text-xs font-sans pt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:grid-cols-4 text-xs font-sans pt-1">
                 {/* Customer / Supplier selection */}
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">{t('Party Name', 'پارٹی کھاتہ')}</label>
@@ -867,7 +867,7 @@ export default function Reports({
                 {/* CSV downloads simulation */}
                 <button
                   onClick={triggerCSVExport}
-                  className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2 font-sans text-xs font-bold text-white shadow-sm hover:bg-orange-700 transition-colors cursor-pointer"
+                  className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] font-sans text-xs font-bold text-white shadow-sm hover:bg-orange-700 transition-colors cursor-pointer"
                 >
                   <Download className="h-4 w-4" />
                   <span>{copiedCSV ? t('Downloaded! (CSV)', 'ڈاؤنلوڈ مکمل!') : t('Export CSV', 'ایکسل ڈاؤنلوڈ')}</span>
@@ -944,7 +944,7 @@ export default function Reports({
         <div className="space-y-6">
           
           {/* Bento box summary widgets row with 5 indicators */}
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 lg:grid-cols-5">
             
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm flex flex-col justify-between">
               <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block leading-snug">{t('Summed Period Sales', 'کل سیشنز فروخت رقم')}</span>
@@ -984,7 +984,7 @@ export default function Reports({
           </div>
 
           {/* DYNAMICAL CHARTS MATRIX */}
-          <div className="grid grid-cols-2 gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 lg:grid-cols-2">
             
             {/* 1. Daily Sales timeline charts */}
             <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
@@ -1123,7 +1123,7 @@ export default function Reports({
           ======================================================== */}
       {activeReportTab === 'inventory_audit' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             
             {/* INVENTORY TABLE LEFT PANEL (2/3) */}
             <div className="md:col-span-2 rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
@@ -1214,7 +1214,7 @@ export default function Reports({
           REPORT VIEW 4: FINALIZED SHIFT STATEMENT INVOICES / RECEIPTS
           ======================================================== */}
       {activeReportTab === 'shift_sheets' && (
-        <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           
           {/* List of past shifts archived */}
           <div className="space-y-3.5">
@@ -1273,7 +1273,7 @@ export default function Reports({
                 </div>
 
                 {/* Sub Metadata rows */}
-                <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 border-b border-slate-100 pb-4 text-xs font-sans text-slate-600">
+                <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 border-b border-slate-100 pb-4 text-xs font-sans text-slate-600">
                   <div>
                     <span className="block font-bold">Shift ID: <span className="font-mono font-semibold">#{activeShiftToReceipt.id}</span></span>
                     <span className="block mt-1">Date: <span className="font-semibold">{activeShiftToReceipt.date}</span></span>
@@ -1292,7 +1292,7 @@ export default function Reports({
                     {t('Final Cash Audit Sheet Summary', 'حتمی کیش گوشوارہ پڑتال')}
                   </strong>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 text-xs font-sans">
+                  <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 text-xs font-sans">
                     <div className="rounded-lg bg-slate-50 p-3 space-y-1.5 border border-slate-105">
                       <span className="text-slate-400 font-semibold block">{t('EXPECTED COMPUTED CASH:', 'حسابی کیش ہونا چاہیۓ تھا:')}</span>
                       <strong className="font-mono text-sm font-bold text-slate-800">{formatCurrency(activeShiftToReceipt.expectedCash, settings)}</strong>
@@ -1367,7 +1367,7 @@ export default function Reports({
           </div>
 
           {/* Aggregated indicators */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white p-4 rounded-xl border border-slate-200">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block leading-snug">{t('Total Shifts Logged', 'کل شفٹ ریکارڈز')}</span>
               <strong className="font-mono text-lg font-bold text-slate-800 block mt-1">{shifts.length}</strong>

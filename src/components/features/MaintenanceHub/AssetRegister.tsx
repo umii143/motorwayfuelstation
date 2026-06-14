@@ -226,7 +226,7 @@ export default function AssetRegister({ settings, stationId }: AssetRegisterProp
             </div>
             
             <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Asset Name *</label>
                   <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="e.g. Dispenser Pump #1" />
@@ -246,7 +246,7 @@ export default function AssetRegister({ settings, stationId }: AssetRegisterProp
                   <input type="text" value={serialNumber} onChange={e => setSerialNumber(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono" placeholder="XYZ-987654321" />
                 </div>
 
-                <div className="border-t border-slate-100 pt-4 md:col-span-2 grid grid-cols-2 md:grid-cols-2 gap-4">
+                <div className="border-t border-slate-100 pt-4 md:col-span-2 grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Installation Date *</label>
                     <input type="date" value={installationDate} onChange={e => setInstallationDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
@@ -282,7 +282,7 @@ export default function AssetRegister({ settings, stationId }: AssetRegisterProp
 
             <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
               <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition">Cancel</button>
-              <button onClick={handleSave} className="bg-rose-600 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-rose-700 transition shadow-md shadow-rose-500/20">
+              <button onClick={handleSave} className="bg-rose-600 text-white px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded-lg text-sm font-bold hover:bg-rose-700 transition shadow-md shadow-rose-500/20">
                 Save Asset
               </button>
             </div>

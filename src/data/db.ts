@@ -810,8 +810,12 @@ export const db = {
     });
   },
 
-  resetToDefault: () => {
-    (memoryCache = {}, localforage.clear());
+  resetToDefault: async () => {
+    memoryCache = {};
+    if (typeof localStorage !== 'undefined') {
+      localStorage.clear();
+    }
+    await localforage.clear();
     window.location.reload();
   }
 };

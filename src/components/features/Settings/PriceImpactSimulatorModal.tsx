@@ -149,7 +149,7 @@ export default function PriceImpactSimulatorModal({
             <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">
               {t('Immediate Inventory Revaluation', 'فوری انوینٹری ریویلیویشن', language)}
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <p className="text-xs text-slate-500 font-bold mb-1">Current Stock</p>
                 <p className="text-lg font-black text-slate-800">{totalStock.toLocaleString()} L</p>
@@ -179,7 +179,7 @@ export default function PriceImpactSimulatorModal({
                 <Activity className="size-4" />
                 {t('Projected 30-Day Margin Impact', 'متوقع 30 دن کا مارجن امپیکٹ', language)}
               </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-sm">
                   <p className="text-xs text-slate-500 font-bold mb-2">Conservative (30d Avg)</p>
                   <p className={`text-lg font-black ${forecast.conservative >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
@@ -277,14 +277,14 @@ export default function PriceImpactSimulatorModal({
         <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 sticky bottom-0">
           <button
             onClick={onCancel}
-            className="px-6 py-2.5 rounded-xl font-medium text-slate-600 hover:bg-slate-200 transition-colors"
+            className="px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px].5 rounded-xl font-medium text-slate-600 hover:bg-slate-200 transition-colors"
           >
             {t('Cancel', 'منسوخ کریں', language)}
           </button>
           <button
             onClick={handleConfirm}
             disabled={!reason}
-            className="px-6 py-2.5 rounded-xl font-bold text-white bg-slate-800 hover:bg-slate-900 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px].5 rounded-xl font-bold text-white bg-slate-800 hover:bg-slate-900 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <CheckCircle className="size-5" />
             {t('Apply Final Rate', 'فائنل ریٹ لاگو کریں', language)}

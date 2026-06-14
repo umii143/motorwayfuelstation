@@ -104,11 +104,11 @@ export default function WhatsAppAlerts({ settings, onUpdateSettings }: Props) {
             </ol>
             
             {waStatus.ready ? (
-              <button onClick={handleLogoutWA} className="mt-4 px-6 py-2.5 bg-red-50 text-red-600 rounded-lg font-bold text-sm border border-red-200 hover:bg-red-100 transition flex items-center gap-2">
+              <button onClick={handleLogoutWA} className="mt-4 px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px].5 bg-red-50 text-red-600 rounded-lg font-bold text-sm border border-red-200 hover:bg-red-100 transition flex items-center gap-2">
                 <LogOut className="h-4 w-4" /> Disconnect Device
               </button>
             ) : !waStatus.qr && !waStatus.initializing && (
-              <button onClick={handleInitWA} className="mt-4 px-6 py-2.5 bg-emerald-600 text-white rounded-lg font-bold text-sm shadow hover:bg-emerald-700 transition flex items-center gap-2">
+              <button onClick={handleInitWA} className="mt-4 px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px].5 bg-emerald-600 text-white rounded-lg font-bold text-sm shadow hover:bg-emerald-700 transition flex items-center gap-2">
                 <QrCode className="h-4 w-4" /> Generate QR Code
               </button>
             )}
@@ -184,7 +184,7 @@ export default function WhatsAppAlerts({ settings, onUpdateSettings }: Props) {
               {t('Event Triggers', 'ایونٹ ٹرگرز')}
             </h4>
             
-            <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
               {[
                 { 
                   id: 'shiftClose', 

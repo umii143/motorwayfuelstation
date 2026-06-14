@@ -91,7 +91,7 @@ export default function StationIdentity({ settings, onUpdateSettings, activeStat
                   value={formData.tagline}
                   onChange={handleChange}
                   placeholder="e.g. Quality Fuel, Premium Service"
-                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px].5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
 
@@ -111,7 +111,7 @@ export default function StationIdentity({ settings, onUpdateSettings, activeStat
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('Phone Number', 'فون نمبر')}</label>
                   <div className="relative">
@@ -152,14 +152,14 @@ export default function StationIdentity({ settings, onUpdateSettings, activeStat
                   name="ntn"
                   value={formData.ntn}
                   onChange={handleChange}
-                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-mono text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 uppercase"
+                  className="w-full px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px].5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-mono text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 uppercase"
                 />
               </div>
 
               <div className="pt-6">
                 <button 
                   onClick={handleSave}
-                  className="px-6 py-2.5 bg-slate-900 text-white rounded-lg text-sm font-bold shadow-xs hover:bg-slate-800 transition-colors flex items-center gap-2"
+                  className="px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px].5 bg-slate-900 text-white rounded-lg text-sm font-bold shadow-xs hover:bg-slate-800 transition-colors flex items-center gap-2"
                 >
                   <Save className="h-4 w-4" />
                   {t('Save Identity Settings', 'شناخت کی ترتیبات محفوظ کریں')}
