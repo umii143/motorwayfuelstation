@@ -68,7 +68,7 @@ export const BIDashboard: React.FC = () => {
         </div>
 
         {/* Top KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <KPICard 
             title="MTD Revenue" 
             value={`${kpis.revenue.mtd.toLocaleString()} PKR`} 
@@ -96,7 +96,7 @@ export const BIDashboard: React.FC = () => {
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-2 gap-6">
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
             <h3 className="text-base font-bold text-slate-900 mb-6">7-Day Revenue Trend</h3>
             <LineChart 
@@ -122,7 +122,7 @@ export const BIDashboard: React.FC = () => {
 
         {/* Demand Forecasting section */}
         <h2 className="text-xl font-black text-slate-900 tracking-tight mt-8">Fuel Demand Forecast</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {forecasts.map(forecast => (
             <div key={forecast.tankId} className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -162,7 +162,7 @@ export const BIDashboard: React.FC = () => {
 };
 
 // Mini component for KPI cards
-const KPICard = ({ title, value, icon: Icon, benchmark, subValue }: any) => {
+const KPICard = React.memo(({ title, value, icon: Icon, benchmark, subValue }: any) => {
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
       <div className="flex items-center justify-between mb-4">
@@ -194,6 +194,6 @@ const KPICard = ({ title, value, icon: Icon, benchmark, subValue }: any) => {
       )}
     </div>
   );
-};
+});
 
 export default BIDashboard;

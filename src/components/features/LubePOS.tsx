@@ -74,7 +74,7 @@ export default function LubePOS({
   const isUrdu = settings.language === 'ur';
 
   const sellableProducts = useMemo(
-    () => products.filter((product) => product.type !== 'fuel'),
+    () => products.filter((product) => product.type === 'lube'),
     [products]
   );
 
@@ -427,7 +427,7 @@ const cartItems = useMemo(() => {
           </div>
           <div className="space-y-3">
             {lubePosSales.slice().reverse().map((sale) => (
-              <div key={sale.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:border-blue-200 transition-colors">
+              <div key={sale.id} className="flex flex-row items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:border-blue-200 transition-colors">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <strong className="text-sm font-black text-slate-900">{sale.invoiceNo}</strong>
@@ -522,7 +522,7 @@ const cartItems = useMemo(() => {
 
           {/* Product Grid */}
           <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 pb-10">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-4 pb-10">
               <AnimatePresence>
                 {filteredProducts.map((product) => (
                   <motion.div
@@ -710,7 +710,7 @@ const cartItems = useMemo(() => {
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
                   <span className="text-slate-800">🔒</span> CHOOSE LEDGER POSTING TYPE
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-2">
                   <button onClick={() => setPaymentMode('cash')} className={`py-3 px-2 rounded-[14px] text-[10px] font-black uppercase tracking-wider transition-all border shadow-sm ${paymentMode === 'cash' ? 'bg-emerald-500 border-emerald-600 text-white' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>Cash</button>
                   <button onClick={() => setPaymentMode('credit')} className={`py-3 px-2 rounded-[14px] text-[10px] font-black uppercase tracking-wider transition-all border shadow-sm ${paymentMode === 'credit' ? 'bg-blue-500 border-blue-600 text-white' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>Credit</button>
                   <button onClick={() => setPaymentMode('bank')} className={`py-3 px-2 rounded-[14px] text-[10px] font-black uppercase tracking-wider transition-all border shadow-sm ${paymentMode === 'bank' ? 'bg-purple-500 border-purple-600 text-white' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>Bank</button>

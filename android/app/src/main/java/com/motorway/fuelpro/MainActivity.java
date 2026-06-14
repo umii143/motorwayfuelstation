@@ -1,0 +1,5 @@
+package com.motorway.fuelpro;
+
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {}

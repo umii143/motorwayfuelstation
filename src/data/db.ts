@@ -3,6 +3,50 @@
  * SPDX-License-Identifier: Apache-2.5
  */
 
+import localforage from 'localforage';
+
+let memoryCache: Record<string, string> = {};
+let dbInitialized = false;
+
+export async function initDatabase() {
+  if (dbInitialized) return;
+  try {
+    await localforage.ready();
+    const keys = await localforage.keys();
+    for (const key of keys) {
+      const val = await localforage.getItem(key);
+      if (val !== null) {
+        memoryCache[key] = val as string;
+      }
+    }
+    // Fallback migration from localStorage to IndexedDB if it has data but localforage is empty
+    if (keys.length === 0 && typeof window !== 'undefined' && localStorage.length > 0) {
+       console.log('Migrating localStorage to localforage...');
+       for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key) {
+             const val = (memoryCache[key] ?? null);
+             if (val !== null) {
+               memoryCache[key] = val;
+               await localforage.setItem(key, val);
+             }
+          }
+       }
+    }
+    dbInitialized = true;
+  } catch (err) {
+    console.error('Error initializing IndexedDB:', err);
+  }
+}
+
+function flushToIndexedDB(key: string, value: string | null) {
+  if (value === null) {
+    localforage.removeItem(key).catch(console.error);
+  } else {
+    localforage.setItem(key, value).catch(console.error);
+  }
+}
+
 import {
   Staff,
   Product,
@@ -120,9 +164,9 @@ const SPECIAL_STORAGE_KEYS = {
 };
 
 // Clear trigger for clean slate if needed
-if (typeof window !== 'undefined' && !localStorage.getItem('fuelpro_fresh_v5_nodummies')) {
-  localStorage.clear();
-  localStorage.setItem('fuelpro_fresh_v5_nodummies', 'true');
+if (typeof window !== 'undefined' && !(memoryCache['fuelpro_fresh_v5_nodummies'] ?? null)) {
+  (memoryCache = {}, localforage.clear());
+  ((memoryCache['fuelpro_fresh_v5_nodummies'] = 'true'), flushToIndexedDB('fuelpro_fresh_v5_nodummies', 'true'));
 }
 
 const DEFAULT_STATION_ID = DEFAULT_FUEL_STATION_ID;
@@ -289,35 +333,35 @@ function migrateLegacyStationScope(): void {
     return;
   }
 
-  if (localStorage.getItem(STATION_SCOPE_MIGRATION_KEY)) {
+  if ((memoryCache[STATION_SCOPE_MIGRATION_KEY] ?? null)) {
     return;
   }
 
   STATION_DATA_BASE_KEYS.forEach((baseKey) => {
     const scopedKey = buildScopedStorageKey(DEFAULT_STATION_ID, baseKey);
     const legacyKey = buildLegacyStorageKey(DEFAULT_STATION_ID, baseKey);
-    const scopedValue = localStorage.getItem(scopedKey);
-    const legacyValue = localStorage.getItem(legacyKey);
+    const scopedValue = (memoryCache[scopedKey] ?? null);
+    const legacyValue = (memoryCache[legacyKey] ?? null);
 
     if (legacyKey !== scopedKey && scopedValue === null && legacyValue !== null) {
-      localStorage.setItem(scopedKey, legacyValue);
+      ((memoryCache[scopedKey] = legacyValue), flushToIndexedDB(scopedKey, legacyValue));
     }
 
     if (legacyKey !== scopedKey && legacyValue !== null) {
-      localStorage.removeItem(legacyKey);
+      (delete memoryCache[legacyKey], flushToIndexedDB(legacyKey, null));
     }
   });
 
-  localStorage.setItem(STATION_SCOPE_MIGRATION_KEY, 'true');
+  ((memoryCache[STATION_SCOPE_MIGRATION_KEY] = 'true'), flushToIndexedDB(STATION_SCOPE_MIGRATION_KEY, 'true'));
 }
 
 migrateLegacyStationScope();
 
 function getStorageItem<T>(key: string, seed: T): T {
   try {
-    const item = localStorage.getItem(key);
+    const item = (memoryCache[key] ?? null);
     if (!item) {
-      localStorage.setItem(key, JSON.stringify(seed));
+      ((memoryCache[key] = JSON.stringify(seed)), flushToIndexedDB(key, JSON.stringify(seed)));
       return seed;
     }
     return JSON.parse(item) as T;
@@ -329,7 +373,7 @@ function getStorageItem<T>(key: string, seed: T): T {
 
 function setStorageItem<T>(key: string, data: T): void {
   try {
-    localStorage.setItem(key, JSON.stringify(data));
+    ((memoryCache[key] = JSON.stringify(data)), flushToIndexedDB(key, JSON.stringify(data)));
   } catch (error) {
     console.error(`Error writing ${key} to storage:`, error);
   }
@@ -394,13 +438,13 @@ export const db = {
 
   getStationsList: (): Station[] => {
     try {
-      const list = localStorage.getItem('fuelpro_stations');
+      const list = (memoryCache['fuelpro_stations'] ?? null);
       if (!list) {
         const defaultList = [
           withBusinessScope(SEED_FUEL_STATION, DEFAULT_STATION_ID),
           withBusinessScope(SEED_LUBE_STATION, LUBE_STATION_ID)
         ];
-        localStorage.setItem('fuelpro_stations', JSON.stringify(defaultList));
+        ((memoryCache['fuelpro_stations'] = JSON.stringify(defaultList)), flushToIndexedDB('fuelpro_stations', JSON.stringify(defaultList)));
         return defaultList;
       }
       const parsed = JSON.parse(list) as Station[];
@@ -411,7 +455,7 @@ export const db = {
         parsed.push(SEED_LUBE_STATION);
       }
       const scopedStations = parsed.map((station) => withBusinessScope(station, station.id));
-      localStorage.setItem('fuelpro_stations', JSON.stringify(scopedStations));
+      ((memoryCache['fuelpro_stations'] = JSON.stringify(scopedStations)), flushToIndexedDB('fuelpro_stations', JSON.stringify(scopedStations)));
       return scopedStations;
     } catch {
       return [
@@ -422,14 +466,14 @@ export const db = {
   },
 
   saveStationsList: (stations: Station[]) => {
-    localStorage.setItem('fuelpro_stations', JSON.stringify(stations));
+    ((memoryCache['fuelpro_stations'] = JSON.stringify(stations)), flushToIndexedDB('fuelpro_stations', JSON.stringify(stations)));
   },
 
   getActiveStationId: (): string => {
     try {
-      const active = localStorage.getItem('fuelpro_active_station_id');
+      const active = (memoryCache['fuelpro_active_station_id'] ?? null);
       if (!active) {
-        localStorage.setItem('fuelpro_active_station_id', DEFAULT_STATION_ID);
+        ((memoryCache['fuelpro_active_station_id'] = DEFAULT_STATION_ID), flushToIndexedDB('fuelpro_active_station_id', DEFAULT_STATION_ID));
         return DEFAULT_STATION_ID;
       }
       return active;
@@ -439,27 +483,27 @@ export const db = {
   },
 
   setActiveStationId: (id: string) => {
-    localStorage.setItem('fuelpro_active_station_id', id);
+    ((memoryCache['fuelpro_active_station_id'] = id), flushToIndexedDB('fuelpro_active_station_id', id));
   },
 
   getSettings: (stationId: string): GlobalSettings => {
     const key = db.getStationStorageKey(stationId, STORAGE_KEYS.SETTINGS);
-    const item = localStorage.getItem(key);
+    const item = (memoryCache[key] ?? null);
     if (!item) {
       const isLube = stationId === LUBE_STATION_ID;
       const initialSettings = withBusinessScope(isLube ? SEED_LUBE_SETTINGS : SEED_FUEL_SETTINGS, stationId);
-      localStorage.setItem(key, JSON.stringify(initialSettings));
+      ((memoryCache[key] = JSON.stringify(initialSettings)), flushToIndexedDB(key, JSON.stringify(initialSettings)));
       return initialSettings;
     }
     const scopedSettings = withBusinessScope(JSON.parse(item) as GlobalSettings, stationId);
     if (JSON.stringify(JSON.parse(item)) !== JSON.stringify(scopedSettings)) {
-      localStorage.setItem(key, JSON.stringify(scopedSettings));
+      ((memoryCache[key] = JSON.stringify(scopedSettings)), flushToIndexedDB(key, JSON.stringify(scopedSettings)));
     }
     return scopedSettings;
   },
   
   saveSettings: (stationId: string, settings: GlobalSettings) => 
-    localStorage.setItem(db.getStationStorageKey(stationId, STORAGE_KEYS.SETTINGS), JSON.stringify(withBusinessScope(settings, stationId))),
+    ((memoryCache[db.getStationStorageKey(stationId, STORAGE_KEYS.SETTINGS)] = JSON.stringify(withBusinessScope(settings, stationId))), flushToIndexedDB(db.getStationStorageKey(stationId, STORAGE_KEYS.SETTINGS), JSON.stringify(withBusinessScope(settings, stationId)))),
 
   getStaffList: (stationId: string): Staff[] => {
     const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_STAFF : SEED_FUEL_STAFF;
@@ -749,9 +793,9 @@ export const db = {
   clearSettingsAuditTrail: (stationId: string) => {
     const scopedKey = db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL);
     const legacyKey = buildLegacyStorageKey(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL);
-    localStorage.removeItem(scopedKey);
+    (delete memoryCache[scopedKey], flushToIndexedDB(scopedKey, null));
     if (legacyKey !== scopedKey) {
-      localStorage.removeItem(legacyKey);
+      (delete memoryCache[legacyKey], flushToIndexedDB(legacyKey, null));
     }
   },
 
@@ -759,15 +803,15 @@ export const db = {
     STATION_DATA_BASE_KEYS.forEach((baseKey) => {
       const scopedKey = db.getStationStorageKey(stationId, baseKey);
       const legacyKey = buildLegacyStorageKey(stationId, baseKey);
-      localStorage.removeItem(scopedKey);
+      (delete memoryCache[scopedKey], flushToIndexedDB(scopedKey, null));
       if (legacyKey !== scopedKey) {
-        localStorage.removeItem(legacyKey);
+        (delete memoryCache[legacyKey], flushToIndexedDB(legacyKey, null));
       }
     });
   },
 
   resetToDefault: () => {
-    localStorage.clear();
+    (memoryCache = {}, localforage.clear());
     window.location.reload();
   }
 };

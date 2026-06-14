@@ -47,6 +47,7 @@ import {
   Bell,
   HelpCircle,
   Search,
+  Play,
   Package,
   AlertTriangle,
   Clock,
@@ -72,6 +73,9 @@ import { fetchWithAuth } from '../../lib/api';
 import { useSetupProgress } from '../../hooks/useSetupProgress';
 import { PoweredByUmarAli } from '../shared/PoweredByUmarAli';
 import { ConfigSidebarItem } from './ConfigSidebarItem';
+import { motion } from 'framer-motion';
+import { haptic } from '../../utils/haptics';
+import { BottomSheet } from '../shared/BottomSheet';
 
 interface NavigationProps {
   activeView: string;
@@ -90,7 +94,7 @@ interface NavigationProps {
   onToggleSidebar?: (collapsed: boolean) => void;
 }
 
-export default function Navigation({
+const Navigation = React.memo(function Navigation({
   activeView,
   onViewChange,
   settings,
@@ -174,7 +178,8 @@ export default function Navigation({
     // SYSTEM
     { id: 'security_hub', section: 'system', icon: Shield, label: 'Security & Roles', urdu: 'سیکیورٹی ہب', showInLube: true },
     { id: 'subscription_hub', section: 'system', icon: CreditCard, label: 'Subscription & Billing', urdu: 'بلنگ اور پلان', showInLube: true },
-    { id: 'communication_center', section: 'system', icon: MessageCircle, label: 'Communication Center', urdu: 'مواصلاتی مرکز', showInLube: true }
+    { id: 'communication_center', section: 'system', icon: MessageCircle, label: 'Communication Center', urdu: 'مواصلاتی مرکز', showInLube: true },
+    { id: 'sync_center', section: 'system', icon: Database, label: 'Sync Center', urdu: 'سنک سینٹر', showInLube: true }
   ];
 
   // Filter menu items based on business type
@@ -805,11 +810,11 @@ export default function Navigation({
           </button>
           
           {user ? (
-            <div className="hidden items-center gap-2 border-l border-slate-200 pl-3 md:flex">
+            <div className="flex items-center gap-2 border-l border-slate-200 pl-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 text-orange-600 font-mono font-bold text-xs font-medium">
                 {user.role?.substring(0, 2).toUpperCase()}
               </div>
-              <div className="flex flex-col text-left">
+              <div className="hidden sm:flex flex-col text-left">
                 <span className="font-sans text-xs font-bold text-slate-800 leading-none truncate max-w-full max-w-[120px]" title={user.email}>
                   {user.email.split('@')[0]}
                 </span>
@@ -828,9 +833,9 @@ export default function Navigation({
               )}
             </div>
           ) : (
-            <div className="hidden items-center gap-2 border-l border-slate-200 pl-3 md:flex">
+            <div className="flex items-center gap-2 border-l border-slate-200 pl-3">
               <UserCircle className="h-8 w-8 text-slate-400" />
-              <div className="flex flex-col text-left">
+              <div className="hidden sm:flex flex-col text-left">
                 <span className="font-sans text-xs font-bold text-slate-800 leading-none">
                   {t('Owner / Admin', 'مالک / ایڈمن')}
                 </span>
@@ -1018,175 +1023,189 @@ export default function Navigation({
       </aside>
 
       {/* MOBILE POPUP DRAWER */}
-      {mobileMenuOpen && (
-        <>
-          {/* Backdrop Overlay */}
-          <div
-            onClick={() => setMobileMenuOpen(false)}
-            className="fixed inset-0 z-45 bg-slate-900/40 lg:hidden"
-          />
+      <BottomSheet isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} title={t("Menu", "مینو")}>
+        {/* MOBILE SEGMENTED SWITCH */}
+        <div className="mb-4 shrink-0 select-none">
+          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <button
+              type="button"
+              onClick={() => handlePerformSwitch('st_default')}
+              className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 px-1 text-center font-sans text-xs font-bold transition-all cursor-pointer ${
+                activeStationId === 'st_default'
+                  ? 'bg-orange-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Fuel className="h-3.5 w-3.5 shrink-0" />
+              <span>{t('Fuel Station', 'فیول')}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handlePerformSwitch('st_lube')}
+              className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 px-1 text-center font-sans text-xs font-bold transition-all cursor-pointer ${
+                activeStationId === 'st_lube'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Wrench className="h-3.5 w-3.5 shrink-0" />
+              <span>{t('Lube Biz', 'لیوب')}</span>
+            </button>
+          </div>
+        </div>
 
-          {/* Drawer Container */}
-          <div className="fixed bottom-0 top-[65px] left-0 z-50 w-64 border-r border-slate-200 bg-white py-4 shadow-xl flex flex-col justify-between lg:hidden overflow-hidden">
-            
-            {/* MOBILE SEGMENTED SWITCH */}
-            <div className="px-3 mb-4 shrink-0 select-none">
-              <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
-                <button
-                  type="button"
-                  onClick={() => handlePerformSwitch('st_default')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 px-1 text-center font-sans text-xs font-bold transition-all cursor-pointer ${
-                    activeStationId === 'st_default'
-                      ? 'bg-orange-600 text-white shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  <Fuel className="h-3.5 w-3.5 shrink-0" />
-                  <span>{t('Fuel Station', 'فیول')}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handlePerformSwitch('st_lube')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 px-1 text-center font-sans text-xs font-bold transition-all cursor-pointer ${
-                    activeStationId === 'st_lube'
-                      ? 'bg-blue-600 text-white shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  <Wrench className="h-3.5 w-3.5 shrink-0" />
-                  <span>{t('Lube Biz', 'لیوب')}</span>
-                </button>
-              </div>
-            </div>
+        <nav className="space-y-1 overflow-y-auto">
+          {['main', 'operations', 'analytics', 'setup', 'system'].map(sectionKey => {
+            const sectionItems = menuItems.filter(item => item.section === sectionKey);
+            if (sectionItems.length === 0) return null;
 
-            <nav className="space-y-1 px-3 flex-1 overflow-y-auto">
-              {['main', 'operations', 'analytics', 'setup', 'system'].map(sectionKey => {
-
-
-                const sectionItems = menuItems.filter(item => item.section === sectionKey);
-                if (sectionItems.length === 0) return null;
-
-                return (
-                  <div key={`mobile_section_${sectionKey}`} className="space-y-1">
-                    <div className="px-3 py-2 mt-4 flex items-center">
-                      <div className="h-px bg-slate-200 flex-1"></div>
-                      <span className="px-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">
-                        {t(sectionKey.toUpperCase(), sectionKey === 'main' ? 'مین' : sectionKey === 'operations' ? 'آپریشنز' : sectionKey === 'analytics' ? 'رپورٹس' : 'سسٹم')}
-                      </span>
-                      <div className="h-px bg-slate-200 flex-1"></div>
-                    </div>
-                    {sectionItems.map((item) => {
-                      const Icon = item.icon;
-                      
-                      if (item.children) {
-                        const isChildActive = item.children.some(child => activeView === child.id);
-                        const expanded = expandedMenus[item.id] !== undefined ? expandedMenus[item.id] : isChildActive;
-                        
-                        return (
-                          <div key={item.id} className="space-y-1">
-                            <button
-                              onClick={() => setExpandedMenus(prev => ({ ...prev, [item.id]: !expanded }))}
-                              className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
-                                isChildActive
-                                  ? isLube
-                                    ? 'bg-blue-50 text-blue-600 font-bold border-l-4 border-blue-600'
-                                    : 'bg-orange-50 text-orange-600 font-bold border-l-4 border-orange-600'
-                                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent'
-                              }`}
-                            >
-                              <div className="flex items-center gap-3">
-                                <Icon className={`h-5 w-5 ${isChildActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
-                                <span className="flex-1 text-left">{t(item.label, item.urdu)}</span>
-                              </div>
-                              <ChevronDown className={`h-4 w-4 transition-transform ${expanded ? 'rotate-180' : ''} ${isChildActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
-                            </button>
-                            
-                            {expanded && (
-                              <div className="pl-9 pr-2 space-y-1 mt-1 mb-2 animate-in slide-in-from-top-2 duration-200">
-                                {item.children.filter(child => isLube ? child.showInLube : true).map(child => {
-                                  const ChildIcon = child.icon;
-                                  const isChildItemActive = activeView === child.id;
-                                  return (
-                                    <button
-                                      key={child.id}
-                                      onClick={() => handleItemClick(child.id)}
-                                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 font-sans text-xs font-semibold transition-all cursor-pointer ${
-                                        isChildItemActive
-                                          ? isLube
-                                            ? 'bg-blue-50 text-blue-700 font-bold'
-                                            : 'bg-orange-50 text-orange-700 font-bold'
-                                          : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                                      }`}
-                                    >
-                                      <ChildIcon className={`h-4 w-4 ${isChildItemActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
-                                      <span className="flex-1 text-left">{t(child.label, child.urdu)}</span>
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      }
-
-                      const isActive = activeView === item.id || (item.id === 'configuration' && (activeView === 'settings' || activeView.startsWith('setup_')));
-                      return (
+            return (
+              <div key={`mobile_section_${sectionKey}`} className="space-y-1">
+                <div className="py-2 mt-4 flex items-center">
+                  <div className="h-px bg-slate-200 flex-1"></div>
+                  <span className="px-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                    {t(sectionKey.toUpperCase(), sectionKey === 'main' ? 'مین' : sectionKey === 'operations' ? 'آپریشنز' : sectionKey === 'analytics' ? 'رپورٹس' : 'سسٹم')}
+                  </span>
+                  <div className="h-px bg-slate-200 flex-1"></div>
+                </div>
+                {sectionItems.map((item) => {
+                  const Icon = item.icon;
+                  
+                  if (item.children) {
+                    const isChildActive = item.children.some(child => activeView === child.id);
+                    const expanded = expandedMenus[item.id] !== undefined ? expandedMenus[item.id] : isChildActive;
+                    
+                    return (
+                      <div key={item.id} className="space-y-1">
                         <button
-                          key={item.id}
-                          onClick={() => handleItemClick(item.id)}
-                          className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
-                            isActive
+                          onClick={() => setExpandedMenus(prev => ({ ...prev, [item.id]: !expanded }))}
+                          className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
+                            isChildActive
                               ? isLube
                                 ? 'bg-blue-50 text-blue-600 font-bold border-l-4 border-blue-600'
                                 : 'bg-orange-50 text-orange-600 font-bold border-l-4 border-orange-600'
                               : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent'
                           }`}
                         >
-                          <Icon className={`h-5 w-5 ${isActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
-                          <span className="flex-1 text-left">{t(item.label, item.urdu)}</span>
+                          <div className="flex items-center gap-3">
+                            <Icon className={`h-5 w-5 ${isChildActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                            <span className="flex-1 text-left">{t(item.label, item.urdu)}</span>
+                          </div>
+                          <ChevronDown className={`h-4 w-4 transition-transform ${expanded ? 'rotate-180' : ''} ${isChildActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
                         </button>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-            </nav>
-            <div className="p-3 border-t border-slate-100 bg-slate-50">
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  handleItemClick('configuration');
-                }}
-                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-bold cursor-pointer ${
-                  activeView === 'configuration' || activeView === 'settings'
-                    ? 'bg-indigo-50 text-indigo-700'
-                    : 'text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                <Settings className={`h-5 w-5 ${activeView === 'configuration' || activeView === 'settings' ? 'text-indigo-600' : 'text-slate-400'}`} />
-                <span>{t("Settings", "ترتیبات")}</span>
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+                        
+                        {expanded && (
+                          <div className="pl-9 pr-2 space-y-1 mt-1 mb-2">
+                            {item.children.filter(child => isLube ? child.showInLube : true).map(child => {
+                              const ChildIcon = child.icon;
+                              const isChildItemActive = activeView === child.id;
+                              return (
+                                <button
+                                  key={child.id}
+                                  onClick={() => {
+                                    handleItemClick(child.id);
+                                    setMobileMenuOpen(false);
+                                  }}
+                                  className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 font-sans text-xs font-semibold transition-all cursor-pointer ${
+                                    isChildItemActive
+                                      ? isLube
+                                        ? 'bg-blue-50 text-blue-700 font-bold'
+                                        : 'bg-orange-50 text-orange-700 font-bold'
+                                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                                  }`}
+                                >
+                                  <ChildIcon className={`h-4 w-4 ${isChildItemActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                                  <span className="flex-1 text-left">{t(child.label, child.urdu)}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  const isActive = activeView === item.id || (item.id === 'configuration' && (activeView === 'settings' || activeView.startsWith('setup_')));
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        handleItemClick(item.id);
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
+                        isActive
+                          ? isLube
+                            ? 'bg-blue-50 text-blue-600 font-bold border-l-4 border-blue-600'
+                            : 'bg-orange-50 text-orange-600 font-bold border-l-4 border-orange-600'
+                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent'
+                      }`}
+                    >
+                      <Icon className={`h-5 w-5 ${isActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
+                      <span className="flex-1 text-left">{t(item.label, item.urdu)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </nav>
+        <div className="pt-3 mt-3 border-t border-slate-100">
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              handleItemClick('configuration');
+            }}
+            className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-bold cursor-pointer ${
+              activeView === 'configuration' || activeView === 'settings'
+                ? 'bg-indigo-50 text-indigo-700'
+                : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <Settings className={`h-5 w-5 ${activeView === 'configuration' || activeView === 'settings' ? 'text-indigo-600' : 'text-slate-400'}`} />
+            <span>{t("Settings", "ترتیبات")}</span>
+          </button>
+        </div>
+      </BottomSheet>
 
       {/* MOBILE BOTTOM NAVIGATION */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-border glass py-1 shadow-lg lg:hidden">
-        <div className="flex justify-around items-center">
-          {menuItems.slice(0, 4).concat(menuItems.slice(-1)).map((item) => {
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-[#0F172A] py-1 shadow-[0_-4px_10px_rgba(0,0,0,0.3)] lg:hidden pb-safe">
+        <div className="flex justify-around items-center px-2">
+          {[
+            { id: 'dashboard', icon: LayoutDashboard, label: t('Home', 'ہوم') },
+            { id: isLube ? 'lube_pos' : 'shift_wizard', icon: isLube ? RefreshCw : Play, label: isLube ? t('POS', 'پی او ایس') : t('Shift', 'شفٹ') },
+            { id: 'customers', icon: Users, label: t('Khata', 'کھاتہ') },
+            { id: 'inventory', icon: isLube ? Wrench : Fuel, label: t('Stock', 'اسٹاک') },
+            { id: 'menu', icon: Menu, label: t('More', 'مزید') }
+          ].map((item) => {
             const Icon = item.icon;
             const isActive = activeView === item.id;
             return (
               <button
                 key={item.id}
-                onClick={() => onViewChange(item.id)}
-                className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-lg transition-colors cursor-pointer ${
-                  isActive ? 'text-orange-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+                onClick={async () => {
+                  await haptic.light();
+                  if (item.id === 'menu') {
+                    setMobileMenuOpen(true);
+                  } else {
+                    onViewChange(item.id);
+                  }
+                }}
+                className={`relative flex flex-col items-center justify-center w-16 py-1.5 rounded-xl transition-all cursor-pointer ${
+                  isActive ? 'text-orange-500' : 'text-slate-400 hover:text-slate-300'
                 }`}
               >
-                <Icon className={`h-5 w-5 ${isActive ? 'text-orange-600' : 'text-slate-400'}`} />
-                <span className="text-[10px] sm:text-xs mt-1 leading-none">{t(item.label.split(' ')[0], item.urdu.split(' ')[0])}</span>
+                {isActive && (
+                  <motion.div
+                    layoutId="nav-pill"
+                    className="absolute inset-0 bg-slate-800 rounded-xl -z-10"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <Icon className={`h-6 w-6 mb-1 ${isActive ? 'animate-bounce-short' : ''}`} />
+                <span className={`text-[10px] font-bold tracking-tight ${isActive ? 'opacity-100' : 'opacity-70'}`}>
+                  {item.label}
+                </span>
               </button>
             );
           })}
@@ -1468,4 +1487,6 @@ export default function Navigation({
       />
     </>
   );
-}
+});
+
+export default Navigation;

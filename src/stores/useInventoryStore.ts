@@ -21,6 +21,9 @@ interface InventoryState {
   supplierClaims: SupplierClaim[];
   supplierPerformance: SupplierPerformanceScore[];
 
+  getFuelProducts: () => Product[];
+  getLubeProducts: () => Product[];
+
   setProducts: (products: Product[]) => void;
   setTanks: (tanks: Tank[]) => void;
   setNozzles: (nozzles: Nozzle[]) => void;
@@ -77,6 +80,13 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   fifoDeductions: db.getFIFODeductions(db.getActiveStationId()),
   supplierClaims: db.getSupplierClaims(db.getActiveStationId()),
   supplierPerformance: db.getSupplierPerformance(db.getActiveStationId()),
+
+  getFuelProducts: () => {
+    return get().products.filter(p => p.type === 'fuel');
+  },
+  getLubeProducts: () => {
+    return get().products.filter(p => p.type === 'lube');
+  },
 
   setProducts: (products) => {
     const sId = db.getActiveStationId();

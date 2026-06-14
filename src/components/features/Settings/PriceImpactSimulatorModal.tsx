@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Product, RateChangeReason, Attachment, Tank } from '../../../types';
-import { X, TrendingUp, TrendingDown, Upload, File as FileIcon, XCircle, AlertCircle, Info } from 'lucide-react';
+import { X, TrendingUp, TrendingDown, Upload, File as FileIcon, XCircle, AlertCircle, Info, Activity, CheckCircle } from 'lucide-react';
 import { t } from '../../../lib/translations';
 import { forecastImpactEngine, ForecastImpactResult } from '../../../services/priceManagement/forecastImpactEngine';
 import { storage } from '../../../services/storage/localProvider';
@@ -149,7 +149,7 @@ export default function PriceImpactSimulatorModal({
             <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">
               {t('Immediate Inventory Revaluation', 'فوری انوینٹری ریویلیویشن', language)}
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <p className="text-xs text-slate-500 font-bold mb-1">Current Stock</p>
                 <p className="text-lg font-black text-slate-800">{totalStock.toLocaleString()} L</p>
@@ -179,7 +179,7 @@ export default function PriceImpactSimulatorModal({
                 <Activity className="size-4" />
                 {t('Projected 30-Day Margin Impact', 'متوقع 30 دن کا مارجن امپیکٹ', language)}
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-sm">
                   <p className="text-xs text-slate-500 font-bold mb-2">Conservative (30d Avg)</p>
                   <p className={`text-lg font-black ${forecast.conservative >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>

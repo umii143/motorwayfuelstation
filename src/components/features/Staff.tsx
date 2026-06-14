@@ -294,7 +294,7 @@ export default function StaffPanel({
     <div className="space-y-6 pb-20 lg:pb-5">
 
       {/* COMPACT BILINGUAL HEADER */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-4">
+      <div className="flex flex-col gap-4 sm:flex-row items-center sm:justify-between border-b border-slate-200 pb-4">
         <div>
           <h2 className="font-sans text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
             <Users className="h-6 w-6 text-orange-600" />
@@ -326,7 +326,7 @@ export default function StaffPanel({
       />
 
       {/* CORE HIGHLIGHT CARDS ROW */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 sm:grid-cols-3">
         {/* Payroll burden */}
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 bottom-0 left-0 w-1 bg-red-500"></div>
@@ -431,7 +431,7 @@ export default function StaffPanel({
       </div>
 
       {/* SUB-PANELS WORKSPACE */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-3 space-y-6">
 
           {/* ==========================================
@@ -561,7 +561,7 @@ export default function StaffPanel({
           {activeTab === 'attendance' && (
             <div className="space-y-6">
               <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
+                <div className="flex flex-row items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
                   <div>
                     <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-orange-600" />
@@ -736,7 +736,7 @@ export default function StaffPanel({
                   <span>{t('Duty Attendance Historical Records log', 'گزشتہ حاضری ہسٹری لاگز')}</span>
                 </h3>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3">
                   {Array.from(new Set(attendance.map(a => a.date))).map(dtKey => {
                     const dayRecs = attendance.filter(a => a.date === dtKey);
                     const prs = dayRecs.filter(r => r.status === 'present').length;
@@ -958,7 +958,7 @@ export default function StaffPanel({
           {activeTab === 'performance' && (
             <div className="space-y-6">
               {/* KPIs Header */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-white p-4 rounded-xl border border-slate-200">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">{t('Total Shifts Conducted', 'کل شفٹیں برپا کی گئیں')}</span>
                   <strong className="font-mono text-lg font-bold text-slate-800 block mt-1">{shifts.length}</strong>
@@ -987,7 +987,7 @@ export default function StaffPanel({
 
               {/* Main Performance auditing board */}
               <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
+                <div className="flex flex-row items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
                   <div>
                     <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
                       <TrendingDown className="h-4 w-4 text-orange-600" />
@@ -1081,7 +1081,7 @@ export default function StaffPanel({
             <div className="space-y-6">
               {/* Report Controls Options */}
               <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
+                <div className="flex flex-row items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
                   <div>
                     <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-orange-600" />
@@ -1475,7 +1475,7 @@ export default function StaffPanel({
               </div>
 
               <form onSubmit={handleCreateStaffSubmit} className="space-y-4 font-sans text-xs">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-slate-505 font-bold mb-1">{t('Staff Name (English):', 'اسٹاف کا نام انگریزی میں:')}</label>
                     <input

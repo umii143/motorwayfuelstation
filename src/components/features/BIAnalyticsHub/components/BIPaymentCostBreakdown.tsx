@@ -39,7 +39,7 @@ export function BIPaymentCostBreakdown({ metrics }: any) {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div className="grid grid-cols-2 lg:grid-cols-2 gap-6 mb-6">
       {/* Payment Method Breakdown */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
         <div className="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">

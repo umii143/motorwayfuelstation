@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { List } from 'react-window';
+import { FixedSizeList as List } from 'react-window';
 import {
   BookOpen,
   ArrowUpRight,
@@ -403,7 +403,7 @@ export default function Ledger({
     <div className="space-y-6 pb-16 lg:pb-0">
 
       {/* HEADER ROW WITH INTEGRATED DYNAMIC TIME FILTER */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-slate-200 pb-4">
+      <div className="flex flex-row flex-wrap items-start items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
           <span className="font-mono text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-0.5">OPERATIONS</span>
           <h2 className="font-sans text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
@@ -437,7 +437,7 @@ export default function Ledger({
       </div>
 
       {/* DYNAMIC KPI CARDS SECTION */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* AMBER CARD - NET LIQUIDITY */}
         <div className={`rounded-2xl border p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden transition-all duration-300 ${
           netBookBalance >= 0 
@@ -522,7 +522,7 @@ export default function Ledger({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
         
         {/* LEFT COLUMN: ACTIVE PARTIES DATABASE */}
         <div className="space-y-4">
@@ -610,7 +610,7 @@ export default function Ledger({
           {selectedParty && activePartyDetails ? (
             <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-6">
               
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-4">
+              <div className="flex flex-col gap-4 sm:flex-row items-center sm:justify-between border-b border-slate-100 pb-4">
                 <div className="flex gap-3 items-center">
                   <div className={`flex h-11 w-11 items-center justify-center rounded-xl text-white ${selectedParty.type === 'customer' ? 'bg-emerald-500' : 'bg-rose-500'}`}>
                     {selectedParty.type === 'customer' ? <Users className="h-5.5 w-5.5" /> : <Truck className="h-5.5 w-5.5" />}
@@ -653,13 +653,14 @@ export default function Ledger({
                         {t('No registered transactions in finalized shifts.', 'سیشنز کے دوران تاحال کوئی انٹری درج نہیں کی گئی ہے۔')}
                       </div>
                     ) : (
-                      <List<any>
-                        rowCount={activePartyLedgerTimeline.length}
-                        rowHeight={42}
-                        rowComponent={RenderRow}
-                        rowProps={{}}
-                        style={{ height: 400, width: '100%' }}
-                      />
+                      <List
+                        itemCount={activePartyLedgerTimeline.length}
+                        itemSize={42}
+                        width="100%"
+                        height={400}
+                      >
+                        {RenderRow}
+                      </List>
                     )}
                   </div>
                 </div>

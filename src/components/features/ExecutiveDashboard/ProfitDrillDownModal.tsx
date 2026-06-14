@@ -140,7 +140,7 @@ export default function ProfitDrillDownModal({
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
 
             {/* EXECUTIVE KPI HEADER */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Total Gross Profit</span>
                 <h3 className="text-2xl font-black text-slate-900">{formatCurrency(totalGrossProfit, settings)}</h3>
@@ -208,7 +208,7 @@ export default function ProfitDrillDownModal({
             </div>
 
             {/* TOGGLES & TABS */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-2">
+            <div className="flex flex-row items-center justify-between gap-4 border-b border-slate-200 pb-2">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setActiveTab('overview')}
@@ -235,7 +235,7 @@ export default function ProfitDrillDownModal({
 
             {/* CONTENT VIEWS */}
             {activeTab === 'overview' && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-2 gap-6">
                 
                 {/* Category Profit Chart */}
                 <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">

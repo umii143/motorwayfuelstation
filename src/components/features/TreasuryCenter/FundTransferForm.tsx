@@ -3,12 +3,26 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { useTreasuryStore } from '../../../stores/useTreasuryStore';
 import { useFinancialStore } from '../../../stores/useFinancialStore';
 import { useAuthStore } from '../../../stores/useAuthStore';
+import { useShallow } from 'zustand/react/shallow';
 import { ArrowRightLeft, AlertCircle, CheckCircle } from 'lucide-react';
 
 export default function FundTransferForm() {
-  const { cashAccounts, recordTransaction, handleUpdateCashAccount } = useTreasuryStore();
-  const { banks, digitalAccounts, handleUpdateBanks, handleUpdateDigitalAccounts } = useFinancialStore();
-  const { user, orgId, stationId } = useAuthStore();
+  const { cashAccounts, recordTransaction, handleUpdateCashAccount } = useTreasuryStore(useShallow(state => ({
+    cashAccounts: state.cashAccounts,
+    recordTransaction: state.recordTransaction,
+    handleUpdateCashAccount: state.handleUpdateCashAccount
+  })));
+  const { banks, digitalAccounts, handleUpdateBanks, handleUpdateDigitalAccounts } = useFinancialStore(useShallow(state => ({
+    banks: state.banks,
+    digitalAccounts: state.digitalAccounts,
+    handleUpdateBanks: state.handleUpdateBanks,
+    handleUpdateDigitalAccounts: state.handleUpdateDigitalAccounts
+  })));
+  const { user, orgId, stationId } = useAuthStore(useShallow(state => ({
+    user: state.user,
+    orgId: state.orgId,
+    stationId: state.stationId
+  })));
 
   const [sourceId, setSourceId] = useState('');
   const [destId, setDestId] = useState('');
@@ -137,7 +151,7 @@ export default function FundTransferForm() {
         )}
 
         <form onSubmit={handleTransfer} className="space-y-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-5">
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Source Account</label>
               <select

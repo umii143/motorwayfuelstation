@@ -308,20 +308,23 @@ export default function Expenses({
     <div className="space-y-6 pb-16 lg:pb-0">
 
       {/* HEADER ROW WITH INTEGRATED DYNAMIC TIME FILTER */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-slate-200 pb-4">
-        <div>
-          <span className="font-mono text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-0.5">OPERATIONS</span>
-          <h2 className="font-sans text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
-            <Coins className="h-6 w-6 text-orange-600" />
-            <span>{t('Operational Expenses', 'اخراجات اور کاروباری بلنگ')}</span>
-          </h2>
-          <p className="font-sans text-xs text-slate-500 mt-1">
-            {t('Audit and document stationary purchases, machinery calibrations, meals and overheads.', 'اسٹیشن کے تمام آپریشنل اور ذاتی اخراجات، تنخواہیں اور مرمت کے بلوں کی مانیٹرنگ۔')}
-          </p>
+      {/* HEADER ROW WITH INTEGRATED DYNAMIC TIME FILTER */}
+      <div className="flex flex-col gap-4 border-b border-slate-200 pb-4">
+        <div className="flex flex-row items-center justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <span className="font-mono text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-0.5">OPERATIONS</span>
+            <h2 className="font-sans text-xl sm:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+              <Coins className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600 shrink-0" />
+              <span className="truncate">{t('Operational Expenses', 'اخراجات اور کاروباری بلنگ')}</span>
+            </h2>
+            <p className="font-sans text-xs text-slate-500 mt-1 hidden sm:block">
+              {t('Audit and document stationary purchases, machinery calibrations, meals and overheads.', 'اسٹیشن کے تمام آپریشنل اور ذاتی اخراجات، تنخواہیں اور مرمت کے بلوں کی مانیٹرنگ۔')}
+            </p>
+          </div>
         </div>
 
         {/* TIME FILTER & TRIGGER ROW */}
-        <div className="flex flex-wrap items-center gap-2 lg:self-center">
+        <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-1 sm:pb-0 w-full">
           <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200 shadow-sm shrink-0">
             {(['all', 'weekly', 'monthly', 'yearly'] as const).map((filter) => (
               <button
@@ -343,7 +346,7 @@ export default function Expenses({
 
           <button
             onClick={() => setShowManageCategories(true)}
-            className="flex items-center justify-center gap-1.5 rounded-lg bg-slate-100 border border-slate-200 px-3 py-2.5 font-sans text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-200 transition-all cursor-pointer"
+            className="shrink-0 flex items-center justify-center gap-1.5 rounded-lg bg-slate-100 border border-slate-200 px-3 py-2 sm:px-4 sm:py-2.5 font-sans text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-200 transition-all cursor-pointer"
           >
             <Settings2 className="h-4 w-4" />
             <span>{t('Categories', 'کیٹیگریز')}</span>
@@ -351,7 +354,7 @@ export default function Expenses({
           
           <button
             onClick={() => setShowAddExpense(true)}
-            className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2.5 font-sans text-xs font-bold text-white shadow-md shadow-orange-500/10 hover:bg-orange-700 transition-all cursor-pointer"
+            className="shrink-0 flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-3 py-2 sm:px-4 sm:py-2.5 font-sans text-xs font-bold text-white shadow-md shadow-orange-500/10 hover:bg-orange-700 transition-all cursor-pointer"
           >
             <PlusCircle className="h-4 w-4" />
             <span>{t('+ Log Expense', 'نیا خرچہ لکھیں')}</span>
@@ -368,7 +371,7 @@ export default function Expenses({
       />
 
       {/* DYNAMIC KPI CARDS SECTION */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         {/* AMBER CARD - TOTAL SPEND */}
         <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
           <div className="flex items-start justify-between">
@@ -443,14 +446,14 @@ export default function Expenses({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
         
         {/* LEFT COMPEX: TIMELINES & DETAIL LIST OF EXPENDITURES */}
         <div className="lg:col-span-2 space-y-4">
           
           {/* SEARCH & FILTER CONTROLS CARD */}
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3.5">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2">
 
               <div>
                 <select
@@ -626,7 +629,7 @@ export default function Expenses({
 
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Paid From Account:', 'رقم کہاں سے ادا کی گئی:')}</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 gap-2">
                     <button
                       type="button"
                       onClick={() => setFormPaidFrom('cash')}

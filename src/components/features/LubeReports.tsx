@@ -397,7 +397,7 @@ export default function LubeReports({
     <div className="space-y-6 pb-20 lg:pb-5">
 
       {/* HEADER */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-[var(--border-main)] pb-4">
+      <div className="flex flex-col gap-4 sm:flex-row items-center sm:justify-between border-b border-[var(--border-main)] pb-4">
         <div>
           <h2 className="font-sans text-2xl font-bold tracking-tight text-[var(--text-main)] flex items-center gap-2">
             <FileBarChart2 className="h-6 w-6 text-violet-600" />
@@ -417,7 +417,7 @@ export default function LubeReports({
       </div>
 
       {/* KPI CARDS ROW */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {[
           { label: t('Total Revenue', 'کل آمدنی'),    value: formatCurrency(kpis.totalRevenue, settings),     icon: DollarSign,   color: 'text-violet-600' },
           { label: t('Invoices Issued', 'انوائسز'),   value: String(kpis.totalInvoices),                      icon: Receipt,      color: 'text-sky-600' },
@@ -489,7 +489,7 @@ export default function LubeReports({
             )}
           </div>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-2 gap-6 lg:grid-cols-2">
 
             {/* Product Revenue Pie */}
             <div className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] p-5 shadow-sm space-y-4">
@@ -550,7 +550,7 @@ export default function LubeReports({
           TAB 2: INVOICE LEDGER (Corporate Report Console)
           ================================================ */}
       {activeTab === 'invoice_ledger' && (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 items-start">
 
           {/* LEFT: Report Directory */}
           <div className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] p-4 shadow-xs space-y-3 lg:sticky lg:top-5">
@@ -616,7 +616,7 @@ export default function LubeReports({
                 <Filter className="h-3.5 w-3.5 text-violet-500" />
                 <span>{t('Filter & Search Controls', 'فلٹر اور تلاش')}</span>
               </div>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-4 text-xs font-sans">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 text-xs font-sans">
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-[var(--text-muted)] mb-1">{t('Start Date', 'شروع تاریخ')}</label>
                   <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
@@ -656,7 +656,7 @@ export default function LubeReports({
             </div>
 
             {/* Aggregates + Export Bar */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-slate-900 rounded-xl p-4 text-white font-sans text-xs shadow-xs">
+            <div className="flex flex-col gap-3 sm:flex-row items-center sm:justify-between bg-slate-900 rounded-xl p-4 text-white font-sans text-xs shadow-xs">
               <div className="flex items-center gap-4">
                 <div>
                   <span className="text-slate-400 block text-[9px] uppercase tracking-wider">{t('MATCHED RECORDS', 'کل ریکارڈز')}</span>
@@ -895,7 +895,7 @@ export default function LubeReports({
         <div className="space-y-6">
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {[
               { label: t('Gross Revenue', 'خام آمدنی'),       value: financialPeriod.totalRevenue,   color: 'text-violet-600',  bg: 'bg-violet-50' },
               { label: t('Product Returns', 'واپسی'),          value: -financialPeriod.totalReturns,  color: 'text-rose-600',    bg: 'bg-rose-50' },

@@ -63,7 +63,7 @@ export async function dispatchShiftToOperationalCore(
           quantity: d.quantity,
           rate: d.rate,
           amount: d.amount,
-          note: d.notes || ''
+          note: d.note || ''
         }, date);
       }
     }

@@ -58,7 +58,7 @@ export default function SystemPreferences({ settings, onUpdateSettings, activeSt
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-xs max-w-2xl p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-2 gap-6">
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
               <Globe className="h-4 w-4" /> {t('Interface Language', 'زبان')}

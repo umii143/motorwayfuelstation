@@ -3,12 +3,13 @@ import { ShieldAlert, Sparkles, AlertTriangle, Info, BrainCircuit, Loader2 } fro
 import { useCustomerStore } from '../../../../stores/useCustomerStore';
 import { useInventoryStore } from '../../../../stores/useInventoryStore';
 import { useSupplierStore } from '../../../../stores/useSupplierStore';
+import { useShallow } from 'zustand/react/shallow';
 import { fetchWithAuth } from '../../../../lib/api';
 
 export function BIAIInsights({ metrics }: any) {
-  const { customers = [] } = useCustomerStore();
-  const { products = [] } = useInventoryStore();
-  const { suppliers = [] } = useSupplierStore();
+  const customers = useCustomerStore(useShallow(state => state.customers || []));
+  const products = useInventoryStore(useShallow(state => state.products || []));
+  const suppliers = useSupplierStore(useShallow(state => state.suppliers || []));
   
   const [aiReport, setAiReport] = useState<string | null>(null);
   const [loadingAi, setLoadingAi] = useState(false);
@@ -198,7 +199,7 @@ export function BIAIInsights({ metrics }: any) {
         </div>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {insights.map((insight, index) => (
           <div key={index} className="bg-white/10 rounded-xl p-4 border border-white/10 hover:bg-white/20 transition-colors cursor-default">
             <div className="flex items-start gap-3">

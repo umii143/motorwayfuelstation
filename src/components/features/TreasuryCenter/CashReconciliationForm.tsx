@@ -2,11 +2,19 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../ui/Card';
 import { useTreasuryStore } from '../../../stores/useTreasuryStore';
 import { useAuthStore } from '../../../stores/useAuthStore';
+import { useShallow } from 'zustand/react/shallow';
 import { Scale, AlertCircle, CheckCircle, Calculator } from 'lucide-react';
 
 export default function CashReconciliationForm() {
-  const { cashAccounts, recordReconciliation } = useTreasuryStore();
-  const { user, orgId, stationId } = useAuthStore();
+  const { cashAccounts, recordReconciliation } = useTreasuryStore(useShallow(state => ({
+    cashAccounts: state.cashAccounts,
+    recordReconciliation: state.recordReconciliation
+  })));
+  const { user, orgId, stationId } = useAuthStore(useShallow(state => ({
+    user: state.user,
+    orgId: state.orgId,
+    stationId: state.stationId
+  })));
 
   const [accountId, setAccountId] = useState('');
   const [physicalCash, setPhysicalCash] = useState('');
@@ -95,7 +103,7 @@ export default function CashReconciliationForm() {
           </div>
 
           {selectedAccount && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                 <p className="text-sm text-gray-500 dark:text-gray-400">Expected (System)</p>
                 <p className="text-2xl font-bold font-mono text-gray-900 dark:text-white mt-1">

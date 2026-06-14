@@ -7,6 +7,7 @@ import { dbFS } from './lib/firebase';
 import { fetchWithAuth } from './lib/api';
 import { migrateAccountsPayable } from './utils/migrations';
 import { getBusinessTypeForStation, resolveViewForBusiness } from './lib/businessScope';
+import { initDatabase } from './data/db';
 
 /**
  * @license
@@ -18,19 +19,28 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Toaster } from 'react-hot-toast';
 import { PoweredByUmarAli } from './components/shared/PoweredByUmarAli';
 import Navigation from './components/layouts/Navigation';
+import { SyncEngine } from './services/core/SyncEngine';
+import OfflineIndicator from './components/ui/OfflineIndicator';
+
+// Start the enterprise offline-first sync engine immediately
+SyncEngine.start().catch(console.error);
 const Dashboard = React.lazy(() => import('./components/features/Dashboard'));
 const ShiftWizard = React.lazy(() => import('./components/features/ShiftWizard'));
 const ShiftLogs = React.lazy(() => import('./components/features/ShiftLogs'));
-const Customers = React.lazy(() => import('./components/features/Customers'));
-const Suppliers = React.lazy(() => import('./components/features/Suppliers'));
+const CustomerIntelligenceCenter = React.lazy(() => import('./components/features/CustomerIntelligenceCenter/CustomerIntelligenceCenter'));
+const SupplierCommandCenter = React.lazy(() => import('./components/features/SupplierCommandCenter/SupplierCommandCenter'));
 const Ledger = React.lazy(() => import('./components/features/Ledger'));
 const Inventory = React.lazy(() => import('./components/features/Inventory'));
 const Expenses = React.lazy(() => import('./components/features/Expenses'));
 const LubePOS = React.lazy(() => import('./components/features/LubePOS'));
 const Reports = React.lazy(() => import('./components/features/Reports'));
 const LubeReports = React.lazy(() => import('./components/features/LubeReports'));
-const LoadingScreen = React.lazy(() => import('./components/ui/LoadingScreen'));
+import LoadingScreen from './components/ui/LoadingScreen';
 const DiscountsHub = React.lazy(() => import('./components/features/DiscountsHub'));
+import { SplashSequence } from './components/features/SplashSequence';
+import { NativeAuthProvider, useNativeAuth } from './contexts/NativeAuthContext';
+import { SecurityScreen } from './components/features/SecurityScreen';
+import { mobileEngine } from './services/mobile/MobileExperienceEngine';
 
 const StaffPanel = React.lazy(() => import('./components/features/Staff'));
 const SettingsPanel = React.lazy(() => import('./components/features/Settings'));
@@ -46,18 +56,21 @@ const EnterpriseHub = React.lazy(() => import('./components/features/EnterpriseH
 const DipCalculator = React.lazy(() => import('./components/features/DipCalculator/DipCalculator'));
 const OGRAPriceSync = React.lazy(() => import('./components/features/OGRAPriceSync/OGRAPriceSync'));
 const AIAssistant = React.lazy(() => import('./components/features/AIAssistant/AIAssistant'));
-const AIAnalyticsHub = React.lazy(() => import('./components/features/AIAnalyticsHub/AIAnalyticsHub'));
 const CommunicationDashboard = React.lazy(() => import('./components/features/CommunicationCenter/CommunicationDashboard'));
-
 const BIDashboard = React.lazy(() => import('./components/features/BIAnalytics/BIDashboard'));
+const SyncCenter = React.lazy(() => import('./components/features/SyncCenter/SyncCenter'));
+
+// AI Hub
+const AIAnalyticsHub = React.lazy(() => import('./components/features/AIAnalyticsHub/AIAnalyticsHub'));
 const RiskCenter = React.lazy(() => import('./components/features/RiskCenter/RiskCenter'));
 const ExecutiveDashboard = React.lazy(() => import('./components/features/ExecutiveDashboard/ExecutiveDashboard'));
 const TreasuryCenter = React.lazy(() => import('./components/features/TreasuryCenter/TreasuryCenter'));
+import { PageTransition } from './components/shared/PageTransition';
 import { GlobalSearchModal } from './components/shared/GlobalSearchModal';
 import { SmartSuggestions } from './components/shared/SmartSuggestions';
 import { useKeyboardShortcut, SHORTCUTS } from './hooks/useKeyboardShortcut';
 import { buildSearchIndex, rebuildModuleIndex } from './services/searchService';
-import { ErrorBoundary } from './components/ui/ErrorBoundary';
+import { CrashCenter as ErrorBoundary } from './components/ui/CrashCenter';
 import { RefreshCw, CheckCircle2, AlertTriangle, XCircle, Info, X } from 'lucide-react';
 
 import {
@@ -167,17 +180,27 @@ function MainApp() {
     closeConfirm
   } = useStation();
 
+  const { requireBiometric } = useNativeAuth();
+
   // Single source of truth — always use activeStationId, never product sniffing
   const isLubeBusiness = activeStationId === 'st_lube';
   const resolveActiveView = React.useCallback(
     (view: string) => resolveViewForBusiness(view, activeStationId),
     [activeStationId]
   );
+  
   const handleViewChange = React.useCallback(
-    (view: string) => {
+    async (view: string) => {
+      // Protected Views
+      const protectedViews = ['treasury', 'configuration', 'setup_profile', 'setup_audit', 'security_hub'];
+      if (protectedViews.includes(view)) {
+        const authorized = await requireBiometric(`Access ${view.replace('_', ' ')}`);
+        if (!authorized) return;
+      }
+      
       setActiveView(resolveActiveView(view));
     },
-    [resolveActiveView]
+    [resolveActiveView, requireBiometric]
   );
 
   // Reset navigation to dashboard whenever the user switches stations
@@ -218,6 +241,16 @@ function MainApp() {
   React.useEffect(() => { rebuildModuleIndex('batches', stockTxns); }, [stockTxns]);
   React.useEffect(() => { rebuildModuleIndex('expenses', standaloneExpenses); }, [standaloneExpenses]);
   React.useEffect(() => { rebuildModuleIndex('staff', staff); }, [staff]);
+
+  // Prevent screen sleep during active shifts
+  React.useEffect(() => {
+    const hasActiveShift = shifts.some(s => s.status === 'active');
+    if (hasActiveShift || activeView === 'lube_pos') {
+      mobileEngine.keepScreenAwake();
+    } else {
+      mobileEngine.allowScreenSleep();
+    }
+  }, [shifts, activeView]);
 
   // ==========================================
   // ROUTING VIEW CONTROLS
@@ -322,7 +355,7 @@ function MainApp() {
 
       case 'customers':
         return (
-          <Customers
+          <CustomerIntelligenceCenter
             settings={settings}
             activeStationId={activeStationId}
             customers={customers}
@@ -340,7 +373,7 @@ function MainApp() {
 
       case 'suppliers':
         return (
-          <Suppliers
+          <SupplierCommandCenter
             settings={settings}
             suppliers={suppliers}
             shifts={shifts}
@@ -642,6 +675,13 @@ function MainApp() {
           />
         );
 
+      case 'sync_center':
+        return (
+          <React.Suspense fallback={<LoadingScreen />}>
+            <SyncCenter settings={settings} />
+          </React.Suspense>
+        );
+
       default:
         return (
           <div className="flex h-64 items-center justify-center font-sans text-xs text-slate-400">
@@ -670,7 +710,8 @@ function MainApp() {
 
   // 3. Authenticated FuelPro active workspace
   return (
-    <div className={`min-h-screen w-full overflow-x-hidden bg-background text-foreground selection:bg-orange-500/10 selection:text-orange-600 pb-10 transition-colors duration-500 theme-${settings.theme || 'light'}`}>
+    <div className={`h-[100dvh] w-full overflow-hidden flex flex-col bg-background text-foreground selection:bg-orange-500/10 selection:text-orange-600 transition-colors duration-500 theme-${settings.theme || 'light'}`}>
+      <OfflineIndicator />
       <LocalStorageMigrationWizard />
       {/* ALWAYS SHOW ONBOARDING WIZARD IF REQUESTED MANUALLY OR IF NEVER COMPLETED */}
       {(showOnboarding || activeView === 'onboarding') && (
@@ -801,24 +842,16 @@ function MainApp() {
       />
 
       {/* Main Container Workspace */}
-      <main className="flex-1 w-full lg:pl-64 pt-[65px] flex flex-col min-h-screen">
+      <main className="flex-1 w-full lg:pl-64 pt-[65px] pb-24 lg:pb-8 flex flex-col overflow-y-auto scroll-container relative">
         <div className="p-4 lg:p-8 w-full max-w-[1800px] mx-auto flex-1 flex flex-col">
           <div className="flex-grow">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeView}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.18, ease: "easeOut" }}
-              >
-                <ErrorBoundary>
-                  <React.Suspense fallback={<LoadingScreen />}>
-                    {renderActiveComponent()}
-                  </React.Suspense>
-                </ErrorBoundary>
-              </motion.div>
-            </AnimatePresence>
+            <PageTransition viewKey={activeView}>
+              <ErrorBoundary>
+                <React.Suspense fallback={<LoadingScreen />}>
+                  {renderActiveComponent()}
+                </React.Suspense>
+              </ErrorBoundary>
+            </PageTransition>
           </div>
 
           {/* COMPLIANT FOOTER LAYOUT */}
@@ -1023,12 +1056,44 @@ function MainApp() {
   );
 }
 
-export default function App() {
+const SecureApp = ({ children }: { children: React.ReactNode }) => {
+  const { isLocked } = useNativeAuth();
   return (
-    <AuthProvider>
-      <StationProvider>
-        <MainApp />
-      </StationProvider>
-    </AuthProvider>
+    <>
+      {isLocked && <SecurityScreen />}
+      <div style={{ display: isLocked ? 'none' : 'block', height: '100%', width: '100%' }}>
+        {children}
+      </div>
+    </>
+  );
+};
+
+export default function App() {
+  const [dbReady, setDbReady] = useState(false);
+  const [splashDone, setSplashDone] = useState(false);
+
+  useEffect(() => {
+    initDatabase().then(() => setDbReady(true)).catch(console.error);
+    mobileEngine.initialize();
+  }, []);
+
+  return (
+    <>
+      {!splashDone && <SplashSequence onComplete={() => setSplashDone(true)} />}
+      
+      {splashDone && !dbReady && <LoadingScreen />}
+      
+      {splashDone && dbReady && (
+        <NativeAuthProvider>
+          <SecureApp>
+            <AuthProvider>
+              <StationProvider>
+                <MainApp />
+              </StationProvider>
+            </AuthProvider>
+          </SecureApp>
+        </NativeAuthProvider>
+      )}
+    </>
   );
 }

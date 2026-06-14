@@ -4,6 +4,8 @@
  */
 
 import React, { useState, useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
+import { FixedSizeList as List } from 'react-window';
 import { motion, AnimatePresence } from 'motion/react';
 import { useStation } from '../../contexts/StationContext';
 import {
@@ -45,9 +47,9 @@ import { useInventoryStore } from '../../stores/useInventoryStore';
 import { useSupplierStore } from '../../stores/useSupplierStore';
 import InventoryDrillDownModal from './ExecutiveDashboard/InventoryDrillDownModal';
 import InventoryAgingDashboard from './InventoryAgingDashboard';
-import SupplierScorecard from './SupplierScorecard';
-import SupplierPayablesPanel from './SupplierPayablesPanel';
-import SupplierClaimsPanel from './SupplierClaimsPanel';
+import SupplierScorecard from './SupplierCommandCenter/SupplierScorecard';
+import SupplierPayablesPanel from './SupplierCommandCenter/SupplierPayablesPanel';
+import SupplierClaimsPanel from './SupplierCommandCenter/SupplierClaimsPanel';
 
 interface InventoryProps {
   settings: GlobalSettings;
@@ -84,10 +86,14 @@ export default function Inventory({
 
   // Single source of truth: use activeStationId, not product-type heuristic
   const isLube = activeStationId === 'st_lube';
-  const stockBatches = useInventoryStore(state => state.stockBatches);
-  const supplierClaims = useInventoryStore(state => state.supplierClaims);
-  const storeSuppliers = useSupplierStore(state => state.suppliers);
-  const handleUpdateSupplier = useSupplierStore(state => state.handleUpdateSupplier);
+  const { stockBatches, supplierClaims } = useInventoryStore(useShallow(state => ({
+    stockBatches: state.stockBatches,
+    supplierClaims: state.supplierClaims
+  })));
+  const { suppliers: storeSuppliers, handleUpdateSupplier } = useSupplierStore(useShallow(state => ({
+    suppliers: state.suppliers,
+    handleUpdateSupplier: state.handleUpdateSupplier
+  })));
 
   // Merge passed-in suppliers with store (store is source of truth for balances)
   const allSuppliers = useMemo(() => {
@@ -503,59 +509,62 @@ export default function Inventory({
       )}
 
       {/* HEADER SECTION */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-4">
-        <div>
-          <h2 className="font-sans text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-            <Package className="h-6 w-6 text-orange-600" />
-            <span>{isLube
-              ? t('Product & Parts Inventory', 'پروڈکٹ اور پارٹس انوینٹری')
-              : t('Inventory, Price Revisions & Tanks Calibration', 'ٹینکس اسٹاک، قیمت تبدیلی اور کیلیبریشن')}
-            </span>
-          </h2>
-          <p className="font-sans text-xs text-slate-500 mt-1">
-            {isLube
-              ? t('Manage lubricant stock, register supplier deliveries, and track price revisions.', 'لیوبریکنٹ اسٹاک، سپلائر ڈیلیوری اور قیمتوں کی تبدیلی کا انتظام۔')
-              : t('Audit fuel tank dip measurements, register lubricant wholesale receipts, and track revaluation gain/loss.', 'پٹرولیم ٹینکوں، موبل آئل کی وصولی، قیمتوں میں فلو تبدیلیاں مانیٹرنگ اور فزیکل اسٹاک ایڈجسٹمنٹ کھاتا۔')}
-          </p>
+      <div className="flex flex-col gap-4 border-b border-slate-200 pb-4">
+        <div className="flex flex-row items-center justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <span className="font-mono text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-0.5">OPERATIONS</span>
+            <h2 className="font-sans text-xl sm:text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+              <Package className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600 shrink-0" />
+              <span className="truncate">{isLube
+                ? t('Product & Parts Inventory', 'پروڈکٹ اور پارٹس انوینٹری')
+                : t('Inventory, Price Revisions & Tanks Calibration', 'ٹینکس اسٹاک، قیمت تبدیلی اور کیلیبریشن')}
+              </span>
+            </h2>
+            <p className="font-sans text-xs text-slate-500 mt-1 hidden sm:block">
+              {isLube
+                ? t('Manage lubricant stock, register supplier deliveries, and track price revisions.', 'لیوبریکنٹ اسٹاک، سپلائر ڈیلیوری اور قیمتوں کی تبدیلی کا انتظام۔')
+                : t('Audit fuel tank dip measurements, register lubricant wholesale receipts, and track revaluation gain/loss.', 'پٹرولیم ٹینکوں، موبل آئل کی وصولی، قیمتوں میں فلو تبدیلیاں مانیٹرنگ اور فزیکل اسٹاک ایڈجسٹمنٹ کھاتا۔')}
+            </p>
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-1 sm:pb-0 w-full">
           <button
             onClick={generateAIStockInsights}
             disabled={isGeneratingAiInsights || products.length === 0}
-            className={`flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 font-sans text-xs font-bold text-white shadow-md hover:bg-indigo-700 transition-all cursor-pointer ${isGeneratingAiInsights ? 'opacity-50' : ''}`}
+            className={`shrink-0 flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 sm:px-4 sm:py-2.5 font-sans text-xs font-bold text-white shadow-md shadow-indigo-500/10 hover:bg-indigo-700 transition-all cursor-pointer ${isGeneratingAiInsights ? 'opacity-50' : ''}`}
           >
             <Sparkles className={`h-4 w-4 ${isGeneratingAiInsights ? 'animate-spin' : ''}`} />
-            <span>{t('AI Stock Analysis', 'اے آئی اسٹاک تجزیہ')}</span>
+            <span>{t('AI Insights', 'اے آئی تجزیہ')}</span>
           </button>
 
           <button
             onClick={() => setShowReconcileModal(true)}
-            className="flex items-center justify-center gap-1.5 rounded-lg border border-orange-200 bg-orange-50 px-3.5 py-2 font-sans text-xs font-bold text-orange-700 hover:bg-orange-100 transition-all cursor-pointer"
+            className="shrink-0 flex items-center justify-center gap-1.5 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 sm:px-4 sm:py-2.5 font-sans text-xs font-bold text-orange-700 hover:bg-orange-100 transition-all cursor-pointer"
           >
             <CheckCircle className="h-4 w-4" />
             <span>{isLube
-              ? t('Physical Stock Count', 'جسمانی اسٹاک گنتی')
-              : t('Reconcile Stock (Dip Check)', 'فزیکل ٹینک ڈپ پڑتال')}
+              ? t('Physical Count', 'جسمانی اسٹاک')
+              : t('Reconcile (Dip)', 'فزیکل ٹینک ڈپ')}
             </span>
           </button>
 
           <button
             onClick={() => setShowAddStockModal(true)}
-            className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2 font-sans text-xs font-bold text-white shadow-md hover:bg-orange-700 transition-all cursor-pointer"
+            className="shrink-0 flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-3 py-2 sm:px-4 sm:py-2.5 font-sans text-xs font-bold text-white shadow-md shadow-orange-500/10 hover:bg-orange-700 transition-all cursor-pointer"
           >
             <PlusCircle className="h-4 w-4" />
-            <span>{t('Supplier Stock Receipt', 'نیا اسٹاک وصول کریں')}</span>
+            <span>{t('Stock Receipt', 'نیا اسٹاک')}</span>
           </button>
 
           {/* Register Product — only shown for Lube businesses */}
           {isLube && (
           <button
             onClick={openAddProduct}
-            className="flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-2 font-sans text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all cursor-pointer"
+            className="shrink-0 flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 sm:px-4 sm:py-2.5 font-sans text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all cursor-pointer"
           >
             <PlusCircle className="h-4 w-4" />
-            <span>{t('Register Product', 'نئی پروڈکٹ شامل کریں')}</span>
+            <span>{t('Add Product', 'نئی پروڈکٹ')}</span>
           </button>
           )}
         </div>
@@ -583,7 +592,7 @@ export default function Inventory({
       />
 
       {/* BEN-TO ROW INVENTORY STATS OVERVIEWS */}
-      <div className={`grid grid-cols-1 gap-4 ${isLube ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+      <div className={`grid grid-cols-2 gap-2 sm:gap-4 ${isLube ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
         {/* Total Fuels — hidden for lube businesses */}
         {!isLube && (
         <div 
@@ -637,10 +646,10 @@ export default function Inventory({
       </div>
 
       {/* SUBTABS BAR */}
-      <div className="flex items-center gap-2 border-b border-slate-200">
+      <div className="flex overflow-x-auto hide-scrollbar gap-2 border-b border-slate-200 pb-1">
         <button
           onClick={() => setActiveTab('inventory')}
-          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer ${
+          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'inventory'
               ? 'border-orange-600 text-orange-600 font-extrabold'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -652,7 +661,7 @@ export default function Inventory({
         {!isLube && (
         <button
           onClick={() => setActiveTab('tanks_calibration')}
-          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer ${
+          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'tanks_calibration'
               ? 'border-orange-600 text-orange-600 font-extrabold'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -664,7 +673,7 @@ export default function Inventory({
 
         <button
           onClick={() => setActiveTab('pricing_logs')}
-          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer ${
+          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'pricing_logs'
               ? 'border-orange-600 text-orange-600 font-extrabold'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -675,7 +684,7 @@ export default function Inventory({
 
         <button
           onClick={() => setActiveTab('batch_history')}
-          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer ${
+          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'batch_history'
               ? 'border-orange-600 text-orange-600 font-extrabold'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -687,7 +696,7 @@ export default function Inventory({
         {!isLube && (
         <button
           onClick={() => setActiveTab('aging')}
-          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer ${
+          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'aging'
               ? 'border-orange-600 text-orange-600 font-extrabold'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -748,10 +757,10 @@ export default function Inventory({
 
       {/* CORE ACTIVE WORKSPACE MODULES */}
       {activeTab === 'inventory' && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
           {/* LEFT PANEL (2/3 WIDTH): PRODUCTS DATABASE DETAIL BOARD */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs flex flex-col gap-3.5 sm:flex-row items-center sm:justify-between">
               {/* Categorization controls */}
               <div className="flex flex-wrap gap-1.5">
                 {[
@@ -777,7 +786,7 @@ export default function Inventory({
             </div>
 
             {/* List items */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-2">
               <AnimatePresence>
                 {filteredProducts.map((prod, idx) => {
                   const capacity = prod.capacity || 100;
@@ -883,38 +892,51 @@ export default function Inventory({
                   {t('No inventory transactions logged yet.', 'اسٹاک کی کوئی انٹری اس شیٹ میں موجود نہیں۔')}
                 </p>
               ) : (
-                [...stockTransactions].reverse().map(txn => {
-                  const prod = products.find(p => p.id === txn.itemId);
-                  const isRec = txn.type === 'receipt';
-                  const isSale = txn.type === 'sale';
-                  const isAdj = txn.type === 'adjustment';
+                <div style={{ height: 360, width: '100%' }}>
+                  <List
+                    height={360}
+                    itemCount={stockTransactions.length}
+                    itemSize={60}
+                    width="100%"
+                    overscanCount={5}
+                  >
+                    {({ index, style }) => {
+                      // Reverse index to show latest first
+                      const txn = stockTransactions[stockTransactions.length - 1 - index];
+                      const prod = products.find(p => p.id === txn.itemId);
+                      const isRec = txn.type === 'receipt';
+                      const isSale = txn.type === 'sale';
 
-                  return (
-                    <div key={txn.id} className="flex justify-between items-start text-xs border-b border-slate-50 pb-3">
-                      <div className="flex gap-2">
-                        <div className={`mt-0.5 rounded-full p-1 ${isRec ? 'bg-teal-50 text-teal-650' : isSale ? 'bg-orange-50 text-orange-650' : 'bg-amber-50 text-amber-650'}`}>
-                          {isRec ? <ArrowUpRight className="h-3 w-3" /> : isSale ? <ArrowDownRight className="h-3 w-3" /> : <Wrench className="h-3 w-3" />}
-                        </div>
-                        <div>
-                          <strong className="text-slate-800 leading-normal block">
-                            {prod ? t(prod.name, prod.urduName) : txn.itemId}
-                          </strong>
-                          <span className="text-[10px] text-slate-400 block mt-0.5">{txn.date} • {txn.by}</span>
-                        </div>
-                      </div>
+                      return (
+                        <div style={style} key={txn.id}>
+                          <div className="flex justify-between items-start text-xs border-b border-slate-50 pb-3 pr-2 h-full">
+                            <div className="flex gap-2 items-center">
+                              <div className={`rounded-full p-1.5 flex-shrink-0 ${isRec ? 'bg-teal-50 text-teal-650' : isSale ? 'bg-orange-50 text-orange-650' : 'bg-amber-50 text-amber-650'}`}>
+                                {isRec ? <ArrowUpRight className="h-3 w-3" /> : isSale ? <ArrowDownRight className="h-3 w-3" /> : <Wrench className="h-3 w-3" />}
+                              </div>
+                              <div className="flex flex-col justify-center">
+                                <strong className="text-slate-800 block truncate max-w-[120px]">
+                                  {prod ? t(prod.name, prod.urduName) : txn.itemId}
+                                </strong>
+                                <span className="text-[10px] text-slate-400 block mt-0.5">{txn.date} • {txn.by}</span>
+                              </div>
+                            </div>
 
-                      <div className="text-right">
-                        <strong className={`font-mono text-[11.5px] block ${isRec ? 'text-teal-600' : isSale ? 'text-slate-700' : txn.quantity > 0 ? 'text-teal-600' : 'text-red-500'}`}>
-                          {isRec ? '+' : isSale ? '-' : txn.quantity > 0 ? '+' : ''}
-                          {txn.quantity.toLocaleString()} {prod?.unit || 'Ltr'}
-                        </strong>
-                        {txn.amount && (
-                          <span className="text-[10px] text-slate-450 font-mono block">Cost: Rs. {txn.amount.toLocaleString()}</span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })
+                            <div className="text-right flex flex-col justify-center">
+                              <strong className={`font-mono text-[11.5px] block ${isRec ? 'text-teal-600' : isSale ? 'text-slate-700' : txn.quantity > 0 ? 'text-teal-600' : 'text-red-500'}`}>
+                                {isRec ? '+' : isSale ? '-' : txn.quantity > 0 ? '+' : ''}
+                                {txn.quantity.toLocaleString()} {prod?.unit || 'Ltr'}
+                              </strong>
+                              {txn.amount && (
+                                <span className="text-[10px] text-slate-450 font-mono block mt-0.5">Rs. {txn.amount.toLocaleString()}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }}
+                  </List>
+                </div>
               )}
             </div>
           </div>
@@ -925,7 +947,7 @@ export default function Inventory({
           TAB 2: TANKS CALIBRATION MODULE (MODULE B2/B3/D2)
           ========================================== */}
       {activeTab === 'tanks_calibration' && (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="grid grid-cols-2 gap-6 md:grid-cols-3">
           {/* TANKS LIST BOARD WITH CYLINDERS */}
           <div className="md:col-span-2 space-y-4">
             <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
@@ -938,7 +960,7 @@ export default function Inventory({
                 {t('No storage tanks has been configured in Settings yet.', 'ٹھیکیدار کی ترجیحات میں کوئی سٹوریج ٹینک نہیں پایا گیا۔ پہلے ٹینکس ترتیب کھڑا کریں۔')}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
                 {tanks.map(tnk => {
                   const prod = products.find(p => p.id === tnk.productId);
                   const fillPct = Math.round((tnk.currentStock / tnk.capacity) * 100);
@@ -1329,7 +1351,7 @@ export default function Inventory({
               </div>
 
               <form onSubmit={handleProductModalSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Product Name (English):', 'نام (انگریزی):')}</label>
                     <input type="text" required value={prodName} onChange={e => setProdName(e.target.value)}

@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent } from '../ui/Card';
+import { Card, CardContent } from '../../ui/Card';
 import { Landmark, ArrowRightLeft, UserMinus, Scale, ShieldCheck } from 'lucide-react';
 import { useTreasuryStore } from '../../../stores/useTreasuryStore';
 import { useAuthStore } from '../../../stores/useAuthStore';
+import { useShallow } from 'zustand/react/shallow';
 import TreasuryDashboard from './TreasuryDashboard';
 import FundTransferForm from './FundTransferForm';
 import CashReconciliationForm from './CashReconciliationForm';
 import OwnerDrawingsForm from './OwnerDrawingsForm';
 
 export default function TreasuryCenter() {
-  const { stationId } = useAuthStore();
-  const { loadTreasuryData, cashAccounts, handleAddCashAccount } = useTreasuryStore();
+  const stationId = useAuthStore(state => state.stationId);
+  const { loadTreasuryData, cashAccounts, handleAddCashAccount } = useTreasuryStore(useShallow(state => ({
+    loadTreasuryData: state.loadTreasuryData,
+    cashAccounts: state.cashAccounts,
+    handleAddCashAccount: state.handleAddCashAccount
+  })));
   const [activeTab, setActiveTab] = useState<'dashboard' | 'transfers' | 'reconciliation' | 'drawings'>('dashboard');
 
   useEffect(() => {

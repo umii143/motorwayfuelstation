@@ -1,18 +1,19 @@
 import React from 'react';
 import { PackageOpen, Truck } from 'lucide-react';
 import { useInventoryStore } from '../../../../stores/useInventoryStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useSupplierStore } from '../../../../stores/useSupplierStore';
 
 export function BIProductSupplierAnalysis({ metrics }: any) {
   const { productSales, supplierPerformance } = metrics;
-  const { products } = useInventoryStore();
-  const { suppliers } = useSupplierStore();
+  const { products } = useInventoryStore(useShallow(state => ({ products: state.products })));
+  const { suppliers } = useSupplierStore(useShallow(state => ({ suppliers: state.suppliers })));
 
   const formatCurrency = (val: number) => 
     new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', minimumFractionDigits: 0 }).format(val);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div className="grid grid-cols-2 lg:grid-cols-2 gap-6 mb-6">
       {/* Product Analysis */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
@@ -22,7 +23,7 @@ export function BIProductSupplierAnalysis({ metrics }: any) {
           </div>
         </div>
         <div className="p-5">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {Object.keys(productSales).length === 0 ? (
               <div className="col-span-3 text-center py-8 text-slate-400 text-sm">No sales data for the selected period.</div>
             ) : (

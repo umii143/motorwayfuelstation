@@ -3,12 +3,26 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { useTreasuryStore } from '../../../stores/useTreasuryStore';
 import { useFinancialStore } from '../../../stores/useFinancialStore';
 import { useAuthStore } from '../../../stores/useAuthStore';
+import { useShallow } from 'zustand/react/shallow';
 import { UserMinus, AlertCircle, CheckCircle } from 'lucide-react';
 
 export default function OwnerDrawingsForm() {
-  const { cashAccounts, recordOwnerDrawing, handleUpdateCashAccount } = useTreasuryStore();
-  const { banks, digitalAccounts, handleUpdateBanks, handleUpdateDigitalAccounts } = useFinancialStore();
-  const { user, orgId, stationId } = useAuthStore();
+  const { cashAccounts, recordOwnerDrawing, handleUpdateCashAccount } = useTreasuryStore(useShallow(state => ({
+    cashAccounts: state.cashAccounts,
+    recordOwnerDrawing: state.recordOwnerDrawing,
+    handleUpdateCashAccount: state.handleUpdateCashAccount
+  })));
+  const { banks, digitalAccounts, handleUpdateBanks, handleUpdateDigitalAccounts } = useFinancialStore(useShallow(state => ({
+    banks: state.banks,
+    digitalAccounts: state.digitalAccounts,
+    handleUpdateBanks: state.handleUpdateBanks,
+    handleUpdateDigitalAccounts: state.handleUpdateDigitalAccounts
+  })));
+  const { user, orgId, stationId } = useAuthStore(useShallow(state => ({
+    user: state.user,
+    orgId: state.orgId,
+    stationId: state.stationId
+  })));
 
   const [sourceId, setSourceId] = useState('');
   const [amount, setAmount] = useState('');

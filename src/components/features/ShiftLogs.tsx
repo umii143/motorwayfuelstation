@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
+import { FixedSizeList as List } from 'react-window';
 import {
   History,
   Filter,
@@ -129,8 +130,98 @@ export default function ShiftLogs({
     }, 0);
   };
 
+  const RenderRow = ({ index, style }: { index: number; style: React.CSSProperties }) => {
+    const shift = filteredShifts[index];
+    return (
+      <div
+        style={{
+          ...style,
+          display: 'flex',
+          alignItems: 'center',
+          borderBottom: '1px solid #f1f5f9',
+        }}
+        className="hover:bg-slate-50 transition-colors bg-white text-sm"
+      >
+        <div style={{ width: '15%', padding: '0 16px' }}>
+          <div className="font-medium text-slate-800">{shift.date}</div>
+          <div className="text-xs text-slate-500">
+            {shift.startTime} {shift.endTime ? `- ${shift.endTime}` : ''}
+          </div>
+        </div>
+        <div style={{ width: '15%', padding: '0 16px' }} className="font-medium text-slate-800">
+          {getStaffName(shift.staffId)}
+          <div className="text-xs text-slate-500 capitalize">{shift.type} Shift</div>
+        </div>
+        <div style={{ width: '15%', padding: '0 16px' }} className="text-slate-800 font-medium">
+          {calculateTotalFuelSoldLiters(shift).toFixed(2)} L
+        </div>
+        <div style={{ width: '15%', padding: '0 16px' }} className="text-slate-800 font-medium">
+          {formatCurrency(shift.submittedCash || 0)}
+        </div>
+        <div style={{ width: '15%', padding: '0 16px' }}>
+          {shift.shortage > 0 ? (
+            <span className="inline-flex items-center gap-1 text-red-600 font-medium bg-red-50 px-2.5 py-0.5 rounded-full text-sm">
+              <TrendingDown className="w-3.5 h-3.5" />
+              {formatCurrency(shift.shortage)}
+            </span>
+          ) : shift.overage > 0 ? (
+            <span className="inline-flex items-center gap-1 text-emerald-600 font-medium bg-emerald-50 px-2.5 py-0.5 rounded-full text-sm">
+              <TrendingUp className="w-3.5 h-3.5" />
+              {formatCurrency(shift.overage)}
+            </span>
+          ) : (
+            <span className="text-slate-400 font-medium">-</span>
+          )}
+        </div>
+        <div style={{ width: '10%', padding: '0 16px', textAlign: 'center' }}>
+          <div className="flex flex-col items-center gap-1.5">
+            {shift.status === 'active' ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                <Clock className="w-3.5 h-3.5" />
+                {t('Active', 'جاری ہے')}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                {t('Closed', 'بند ہو گئی')}
+              </span>
+            )}
+            {/* Data Integrity Badges */}
+            {shift.status === 'closed' && (
+              shift.shortage > 0 ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700">
+                  <AlertTriangle className="w-3 h-3" />
+                  {t('Issue Detected', 'مسئلہ پایا گیا')}
+                </span>
+              ) : shift.overage > 0 ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700">
+                  <AlertTriangle className="w-3 h-3" />
+                  {t('Review Required', 'جائزہ درکار ہے')}
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700">
+                  <CheckCircle2 className="w-3 h-3" />
+                  {t('Verified', 'تصدیق شدہ')}
+                </span>
+              )
+            )}
+          </div>
+        </div>
+        <div style={{ width: '15%', padding: '0 16px', textAlign: 'right' }}>
+          <button
+            onClick={() => setSelectedShift(shift)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-50 hover:border-indigo-200 transition-colors shadow-xs cursor-pointer"
+          >
+            <Eye className="w-4 h-4" />
+            {t('View Details', 'تفصیلات دیکھیں')}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="max-w-7xl mx-auto pb-12">
+    <div className="pb-12">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
@@ -145,7 +236,7 @@ export default function ShiftLogs({
       </div>
       
       {/* ENTERPRISE KPI ROW */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
         <div 
           onClick={() => setIsShiftDrillDownOpen(true)}
           className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/30 transition-colors group"
@@ -230,7 +321,7 @@ export default function ShiftLogs({
           </button>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">
               {t('Date', 'تاریخ')}
@@ -291,107 +382,37 @@ export default function ShiftLogs({
       {/* Main Table */}
       <div className="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-semibold">
-                <th className="p-4">{t('Date & Time', 'تاریخ اور وقت')}</th>
-                <th className="p-4">{t('Salesman', 'سیلزمین')}</th>
-                <th className="p-4">{t('Fuel Sold (Liters)', 'فروخت شدہ تیل (لیٹر)')}</th>
-                <th className="p-4">{t('Cash Submitted', 'جمع شدہ کیش')}</th>
-                <th className="p-4">{t('Shortage/Overage', 'کمی/زیادتی')}</th>
-                <th className="p-4 text-center">{t('Status', 'سٹیٹس')}</th>
-                <th className="p-4 text-right">{t('Actions', 'ایکشنز')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
+          <div className="min-w-[1000px]">
+            {/* Header row */}
+            <div className="flex bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-semibold py-4">
+              <div style={{ width: '15%', padding: '0 16px' }}>{t('Date & Time', 'تاریخ اور وقت')}</div>
+              <div style={{ width: '15%', padding: '0 16px' }}>{t('Salesman', 'سیلزمین')}</div>
+              <div style={{ width: '15%', padding: '0 16px' }}>{t('Fuel Sold (Liters)', 'فروخت شدہ تیل (لیٹر)')}</div>
+              <div style={{ width: '15%', padding: '0 16px' }}>{t('Cash Submitted', 'جمع شدہ کیش')}</div>
+              <div style={{ width: '15%', padding: '0 16px' }}>{t('Shortage/Overage', 'کمی/زیادتی')}</div>
+              <div style={{ width: '10%', padding: '0 16px', textAlign: 'center' }}>{t('Status', 'سٹیٹس')}</div>
+              <div style={{ width: '15%', padding: '0 16px', textAlign: 'right' }}>{t('Actions', 'ایکشنز')}</div>
+            </div>
+            
+            {/* Body */}
+            <div>
               {filteredShifts.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="p-8 text-center text-slate-500">
-                    {t('No shifts found matching the filters.', 'فلٹرز کے مطابق کوئی شفٹ نہیں ملی۔')}
-                  </td>
-                </tr>
+                <div className="p-8 text-center text-slate-500">
+                  {t('No shifts found matching the filters.', 'فلٹرز کے مطابق کوئی شفٹ نہیں ملی۔')}
+                </div>
               ) : (
-                filteredShifts.map((shift) => (
-                  <tr key={shift.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="p-4">
-                      <div className="font-medium text-slate-800">{shift.date}</div>
-                      <div className="text-xs text-slate-500">
-                        {shift.startTime} {shift.endTime ? `- ${shift.endTime}` : ''}
-                      </div>
-                    </td>
-                    <td className="p-4 font-medium text-slate-800">
-                      {getStaffName(shift.staffId)}
-                      <div className="text-xs text-slate-500 capitalize">{shift.type} Shift</div>
-                    </td>
-                    <td className="p-4 text-slate-800 font-medium">
-                      {calculateTotalFuelSoldLiters(shift).toFixed(2)} L
-                    </td>
-                    <td className="p-4 text-slate-800 font-medium">
-                      {formatCurrency(shift.submittedCash || 0)}
-                    </td>
-                    <td className="p-4">
-                      {shift.shortage > 0 ? (
-                        <span className="inline-flex items-center gap-1 text-red-600 font-medium bg-red-50 px-2.5 py-0.5 rounded-full text-sm">
-                          <TrendingDown className="w-3.5 h-3.5" />
-                          {formatCurrency(shift.shortage)}
-                        </span>
-                      ) : shift.overage > 0 ? (
-                        <span className="inline-flex items-center gap-1 text-emerald-600 font-medium bg-emerald-50 px-2.5 py-0.5 rounded-full text-sm">
-                          <TrendingUp className="w-3.5 h-3.5" />
-                          {formatCurrency(shift.overage)}
-                        </span>
-                      ) : (
-                        <span className="text-slate-400 font-medium">-</span>
-                      )}
-                    </td>
-                    <td className="p-4 text-center">
-                      <div className="flex flex-col items-center gap-1.5">
-                        {shift.status === 'active' ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
-                            <Clock className="w-3.5 h-3.5" />
-                            {t('Active', 'جاری ہے')}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            {t('Closed', 'بند ہو گئی')}
-                          </span>
-                        )}
-                        {/* Data Integrity Badges */}
-                        {shift.status === 'closed' && (
-                          shift.shortage > 0 ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700">
-                              <AlertTriangle className="w-3 h-3" />
-                              {t('Issue Detected', 'مسئلہ پایا گیا')}
-                            </span>
-                          ) : shift.overage > 0 ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700">
-                              <AlertTriangle className="w-3 h-3" />
-                              {t('Review Required', 'جائزہ درکار ہے')}
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700">
-                              <CheckCircle2 className="w-3 h-3" />
-                              {t('Verified', 'تصدیق شدہ')}
-                            </span>
-                          )
-                        )}
-                      </div>
-                    </td>
-                    <td className="p-4 text-right">
-                      <button
-                        onClick={() => setSelectedShift(shift)}
-                        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-50 hover:border-indigo-200 transition-colors shadow-xs"
-                      >
-                        <Eye className="w-4 h-4" />
-                        {t('View Details', 'تفصیلات دیکھیں')}
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                <List
+                  itemCount={filteredShifts.length}
+                  itemSize={88}
+                  width="100%"
+                  height={Math.min(filteredShifts.length * 88, 600)}
+                  overscanCount={5}
+                >
+                  {RenderRow}
+                </List>
               )}
-            </tbody>
-          </table>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -541,11 +562,11 @@ function ShiftAuditDrawer({
   const totalNetProfit = totalGrossProfit - totalExpenses + shiftRevaluation;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-end items-center justify-center p-0 sm:p-6 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-200">
       <div className="w-full sm:w-[95vw] md:w-[85vw] lg:w-[1200px] max-w-full h-[95vh] bg-slate-50 rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
         
         {/* ENTERPRISE HEADER */}
-        <div className="flex-none bg-slate-900 border-b border-slate-800 px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between z-10 shadow-2xl relative overflow-hidden">
+        <div className="flex-none bg-slate-900 border-b border-slate-800 px-6 py-5 flex flex-row items-start items-center justify-between z-10 shadow-2xl relative overflow-hidden">
           {/* Subtle background glow */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
@@ -621,7 +642,7 @@ function ShiftAuditDrawer({
               </span>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
               <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('Expected Cash', 'متوقع کیش')}</span>
                 <span className="text-2xl font-black text-slate-800 truncate">{formatCurrency(shift.expectedCash || 0)}</span>
@@ -655,7 +676,7 @@ function ShiftAuditDrawer({
               </span>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="bg-gradient-to-br from-orange-50 to-orange-100/30 rounded-xl border border-orange-200 p-5 shadow-sm flex flex-col justify-between relative overflow-hidden">
                 <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-orange-200/50 to-transparent"></div>
                 <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-2 relative z-10">{t('Petrol Sold', 'پٹرول فروخت')}</span>
@@ -682,7 +703,7 @@ function ShiftAuditDrawer({
                 {t('Transaction Intelligence Drill-Downs', 'ٹرانزیکشن کی تفصیلات')}
               </h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
               
               <DrillDownCard
                 icon={TrendingUp}

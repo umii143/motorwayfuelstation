@@ -2,12 +2,13 @@ import React from 'react';
 import { TableProperties } from 'lucide-react';
 import { useInventoryStore } from '../../../../stores/useInventoryStore';
 import { useShiftStore } from '../../../../stores/useShiftStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useFinancialStore } from '../../../../stores/useFinancialStore';
 
 export function BIDetailedAnalyticsTable({ filter }: any) {
-  const { stockBatches: batches = [] } = useInventoryStore();
-  const { shifts = [] } = useShiftStore();
-  const { standaloneExpenses = [] } = useFinancialStore();
+  const { stockBatches: batches = [] } = useInventoryStore(useShallow(state => ({ stockBatches: state.stockBatches })));
+  const { shifts = [] } = useShiftStore(useShallow(state => ({ shifts: state.shifts })));
+  const { standaloneExpenses = [] } = useFinancialStore(useShallow(state => ({ standaloneExpenses: state.standaloneExpenses })));
 
   const formatCurrency = (val: number) => 
     new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', minimumFractionDigits: 0 }).format(val);

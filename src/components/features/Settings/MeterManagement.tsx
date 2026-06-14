@@ -164,7 +164,7 @@ export default function MeterManagement({ settings, activeStationId }: { setting
 
               {selectedNozzleId && (
                 <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('Current Reading', 'موجودہ ریڈنگ')}</label>
                       <input 
@@ -235,7 +235,7 @@ export default function MeterManagement({ settings, activeStationId }: { setting
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs text-center">
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Difference</p>
                   <p className="text-2xl font-mono font-bold text-slate-800">

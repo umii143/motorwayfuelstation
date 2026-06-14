@@ -94,7 +94,7 @@ export default function ProductWizard({ products, language, onUpdateProducts, on
             <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">
               {t('Quick Add', 'جلدی شامل کریں', language)}
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {PRESET_PRODUCTS.map((preset) => (
                 <button
                   key={preset.name}

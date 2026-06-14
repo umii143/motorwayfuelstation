@@ -147,7 +147,7 @@ export async function deductFIFO(
       realizedMargin: newRealizedMargin,
       realizedMarginPerLiter: newRealizedMarginPerLiter,
       status: newBatchStatus,
-      batchStatus: newBatchStatus === 'depleted' ? 'exhausted' : newBatchStatus,
+      batchStatus: newBatchStatus,
     };
 
     // Update in local array

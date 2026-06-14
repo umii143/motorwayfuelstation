@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { GlobalSettings, FleetVehicle, FleetAccount } from '../../../types';
 import { db } from '../../../data/db';
 import { Plus, CarFront, Tag, Search, XCircle, AlertTriangle, Building2, BatteryWarning } from 'lucide-react';
+import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
 
 interface VehiclesManagerProps {
   settings: GlobalSettings;
@@ -118,8 +119,8 @@ export default function VehiclesManager({ settings, stationId }: VehiclesManager
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
-        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto flex-1">
+      <div className="flex flex-row justify-between items-start items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
+        <div className="flex flex-row gap-4 w-full sm:w-auto flex-1">
           <div className="relative w-full sm:w-80">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input 
@@ -163,91 +164,99 @@ export default function VehiclesManager({ settings, stationId }: VehiclesManager
 
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider font-bold">
-                <th className="px-4 py-3">Vehicle Details</th>
-                <th className="px-4 py-3">Corporate Account</th>
-                <th className="px-4 py-3">RFID Tag</th>
-                <th className="px-4 py-3">Monthly Limit / Used</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-sm">
-              {filteredVehicles.map(vehicle => {
-                const consumptionPct = vehicle.monthlyFuelLimit > 0 
-                  ? (vehicle.currentMonthConsumption / vehicle.monthlyFuelLimit) * 100 
-                  : 0;
-                  
-                return (
-                  <tr key={vehicle.id} className="hover:bg-slate-50/50 transition">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-slate-100 rounded-lg text-slate-600">
-                          <CarFront className="h-5 w-5" />
+          <div className="min-w-[800px]">
+            {/* Header */}
+            <div className="flex items-center bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider font-bold">
+              <div className="px-4 py-3 w-[25%]">Vehicle Details</div>
+              <div className="px-4 py-3 w-[20%]">Corporate Account</div>
+              <div className="px-4 py-3 w-[15%]">RFID Tag</div>
+              <div className="px-4 py-3 w-[20%]">Monthly Limit / Used</div>
+              <div className="px-4 py-3 w-[10%]">Status</div>
+              <div className="px-4 py-3 w-[10%] text-right">Actions</div>
+            </div>
+
+            {/* Body */}
+            <div className="divide-y divide-slate-100 text-sm">
+              {filteredVehicles.length === 0 ? (
+                <div className="px-4 py-8 text-center text-slate-500 text-sm">
+                  No vehicles found matching your criteria.
+                </div>
+              ) : (
+                <List
+                  itemCount={filteredVehicles.length}
+                  itemSize={72}
+                  width="100%"
+                  height={Math.min(filteredVehicles.length * 72, 450)}
+                >
+                  {({ index, style }: ListChildComponentProps) => {
+                    const vehicle = filteredVehicles[index];
+                    const consumptionPct = vehicle.monthlyFuelLimit > 0 
+                      ? (vehicle.currentMonthConsumption / vehicle.monthlyFuelLimit) * 100 
+                      : 0;
+
+                    return (
+                      <div style={style} className="flex items-center hover:bg-slate-50/50 transition border-b border-slate-100">
+                        <div className="px-4 w-[25%]">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-slate-100 rounded-lg text-slate-600 shrink-0">
+                              <CarFront className="h-5 w-5" />
+                            </div>
+                            <div className="truncate">
+                              <div className="font-bold text-slate-900 font-mono text-base truncate">{vehicle.registrationNumber}</div>
+                              <div className="text-xs text-slate-500 truncate">{vehicle.make} {vehicle.model} • {vehicle.category}</div>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="font-bold text-slate-900 font-mono text-base">{vehicle.registrationNumber}</div>
-                          <div className="text-xs text-slate-500">{vehicle.make} {vehicle.model} • {vehicle.category}</div>
+                        <div className="px-4 w-[20%]">
+                          <div className="flex items-center gap-2 truncate">
+                            <Building2 className="h-4 w-4 text-slate-400 shrink-0" />
+                            <span className="font-medium text-slate-700 truncate">{getAccountName(vehicle.accountId)}</span>
+                          </div>
+                        </div>
+                        <div className="px-4 w-[15%] truncate">
+                          {vehicle.rfidTag ? (
+                            <div className="flex items-center gap-1.5 bg-indigo-50 text-indigo-700 px-2 py-1 rounded-md w-max border border-indigo-100 max-w-full">
+                              <Tag className="h-3 w-3 shrink-0" />
+                              <span className="font-mono text-xs font-bold truncate">{vehicle.rfidTag}</span>
+                            </div>
+                          ) : (
+                            <span className="text-slate-400 text-xs italic">No tag assigned</span>
+                          )}
+                        </div>
+                        <div className="px-4 w-[20%]">
+                          <div className="flex flex-col gap-1 pr-4">
+                            <div className="flex justify-between text-xs">
+                              <span className="font-bold text-slate-700">{vehicle.currentMonthConsumption} L</span>
+                              <span className="text-slate-500">/ {vehicle.monthlyFuelLimit} L</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden shrink-0">
+                              <div 
+                                className={`h-full rounded-full ${consumptionPct > 90 ? 'bg-rose-500' : consumptionPct > 75 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                                style={{ width: `${Math.min(100, consumptionPct)}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="px-4 w-[10%]">
+                          <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${vehicle.status === 'active' ? 'bg-emerald-100 text-emerald-700' : vehicle.status === 'maintenance' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'}`}>
+                            {vehicle.status}
+                          </span>
+                        </div>
+                        <div className="px-4 w-[10%] text-right flex justify-end">
+                          <button 
+                            onClick={() => handleOpenModal(vehicle)}
+                            className="text-orange-600 hover:text-orange-800 font-bold text-xs bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded-lg transition"
+                          >
+                            Edit
+                          </button>
                         </div>
                       </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Building2 className="h-4 w-4 text-slate-400" />
-                        <span className="font-medium text-slate-700">{getAccountName(vehicle.accountId)}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      {vehicle.rfidTag ? (
-                        <div className="flex items-center gap-1.5 bg-indigo-50 text-indigo-700 px-2 py-1 rounded-md w-max border border-indigo-100">
-                          <Tag className="h-3 w-3" />
-                          <span className="font-mono text-xs font-bold">{vehicle.rfidTag}</span>
-                        </div>
-                      ) : (
-                        <span className="text-slate-400 text-xs italic">No tag assigned</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col gap-1">
-                        <div className="flex justify-between text-xs">
-                          <span className="font-bold text-slate-700">{vehicle.currentMonthConsumption} L</span>
-                          <span className="text-slate-500">/ {vehicle.monthlyFuelLimit} L</span>
-                        </div>
-                        <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                          <div 
-                            className={`h-full rounded-full ${consumptionPct > 90 ? 'bg-rose-500' : consumptionPct > 75 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                            style={{ width: `${Math.min(100, consumptionPct)}%` }}
-                          />
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${vehicle.status === 'active' ? 'bg-emerald-100 text-emerald-700' : vehicle.status === 'maintenance' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'}`}>
-                        {vehicle.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <button 
-                        onClick={() => handleOpenModal(vehicle)}
-                        className="text-orange-600 hover:text-orange-800 font-bold text-xs bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded-lg transition"
-                      >
-                        Edit
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-              {filteredVehicles.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-slate-500 text-sm">
-                    No vehicles found matching your criteria.
-                  </td>
-                </tr>
+                    );
+                  }}
+                </List>
               )}
-            </tbody>
-          </table>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -265,7 +274,7 @@ export default function VehiclesManager({ settings, stationId }: VehiclesManager
             </div>
             
             <div className="p-6 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Corporate Account *</label>
                   <select value={accountId} onChange={e => setAccountId(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">

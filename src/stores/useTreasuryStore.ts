@@ -76,7 +76,7 @@ export const useTreasuryStore = create<TreasuryState>((set, get) => ({
       description,
       performedBy: user,
       status: 'completed'
-    }, orgId, stationId);
+    } as TreasuryTransaction, orgId, stationId);
 
     txn.createdAt = Date.now();
     txn.updatedAt = Date.now();
@@ -115,7 +115,7 @@ export const useTreasuryStore = create<TreasuryState>((set, get) => ({
       sourceAccountType: sourceAcc.type,
       description,
       withdrawnBy: user,
-    }, orgId, stationId);
+    } as OwnerDrawing, orgId, stationId);
 
     drawing.createdAt = Date.now();
     drawing.updatedAt = Date.now();
@@ -131,7 +131,7 @@ export const useTreasuryStore = create<TreasuryState>((set, get) => ({
       performedBy: user,
       referenceId: drawing.id,
       status: 'completed'
-    }, orgId, stationId);
+    } as TreasuryTransaction, orgId, stationId);
 
     txn.createdAt = Date.now();
     txn.updatedAt = Date.now();
@@ -172,7 +172,7 @@ export const useTreasuryStore = create<TreasuryState>((set, get) => ({
       variance,
       notes,
       reconciledBy: user
-    }, orgId, stationId);
+    } as CashReconciliation, orgId, stationId);
 
     rec.createdAt = Date.now();
     rec.updatedAt = Date.now();
@@ -190,7 +190,7 @@ export const useTreasuryStore = create<TreasuryState>((set, get) => ({
         performedBy: user,
         referenceId: rec.id,
         status: 'completed'
-      }, orgId, stationId);
+      } as TreasuryTransaction, orgId, stationId);
       txn.createdAt = Date.now();
       txn.updatedAt = Date.now();
     }

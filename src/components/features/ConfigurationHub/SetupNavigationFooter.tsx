@@ -25,7 +25,7 @@ export function SetupNavigationFooter({ activeViewId, onNavigate }: SetupNavigat
   const isCurrentCompleted = currentStep.status === 'completed';
 
   return (
-    <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-200 pt-6">
+    <div className="mt-8 flex flex-row items-center justify-between gap-4 border-t border-slate-200 pt-6">
       <div>
         {prevStep ? (
           <button

@@ -107,7 +107,7 @@ export default function OGRAPriceSync({ settings, products, onApplyRates }: OGRA
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 bg-gradient-to-br from-emerald-600 to-teal-700 p-6 rounded-2xl text-white shadow-xl shadow-emerald-500/20 relative overflow-hidden">
+      <div className="flex flex-row items-center justify-between gap-4 bg-gradient-to-br from-emerald-600 to-teal-700 p-6 rounded-2xl text-white shadow-xl shadow-emerald-500/20 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-2 right-8 w-40 h-40 rounded-full bg-white" />
           <div className="absolute -bottom-10 -left-4 w-48 h-48 rounded-full bg-white" />
@@ -176,7 +176,7 @@ export default function OGRAPriceSync({ settings, products, onApplyRates }: OGRA
             </div>
 
             {/* Price Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
               {ogra.prices.map(price => {
                 const matchedProductId = selectedMatches[price.productId];
                 const matchedProduct = products.find(p => p.id === matchedProductId);
@@ -274,7 +274,7 @@ export default function OGRAPriceSync({ settings, products, onApplyRates }: OGRA
 
             {/* Apply Button */}
             {onApplyRates && (
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-2xl bg-amber-50 border border-amber-200">
+              <div className="flex flex-row items-start items-center gap-4 p-5 rounded-2xl bg-amber-50 border border-amber-200">
                 <div className="flex items-start gap-3 flex-1">
                   <Clock className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
                   <div>

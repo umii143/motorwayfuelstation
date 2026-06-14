@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, Search, Shield, Trash2, Clock } from 'lucide-react';
+import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
 import { t as translate } from '../../../lib/translations';
 import { db } from '../../../data/db';
 import { AuditTrailEntry } from '../../../types';
@@ -46,7 +47,7 @@ export default function SystemAuditTrail({ language, stationId }: SystemAuditTra
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
       {/* HEADER COMPONENT */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b pb-3 gap-2">
+      <div className="flex flex-row items-center sm:justify-between border-b pb-3 gap-2">
         <h3 className="font-sans text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
           <Shield className="h-4.5 w-4.5 text-orange-655 text-orange-600" />
           <span>{t('Central System Alteration Audit Trail Ledger', 'مرکزی دفتری سسٹم آڈٹ لاگ لیجر')}</span>
@@ -63,7 +64,7 @@ export default function SystemAuditTrail({ language, stationId }: SystemAuditTra
       </div>
 
       {/* FILTER BUTTONS AND SEARCH BAR */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-row gap-3">
         <div className="relative flex-1">
           <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400">
             <Search className="h-4 w-4" />
@@ -95,45 +96,52 @@ export default function SystemAuditTrail({ language, stationId }: SystemAuditTra
 
       {/* TIMELINE LIST */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left font-sans text-xs">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-150 text-[10px] font-bold uppercase tracking-wider text-slate-400 text-center">
-              <th className="py-2.5 px-3 text-left">{t('Timestamp', 'طبعی وقت')}</th>
-              <th className="py-2.5 px-2 text-left">{t('Category', 'شعبہ')}</th>
-              <th className="py-2.5 px-2 text-left">{t('Trigger Event', 'سرگرمی')}</th>
-              <th className="py-2.5 px-3 text-left">{t('Alteration Narrative Details', 'تفصیلات')}</th>
-              <th className="py-2.5 px-2 text-right">{t('Authorized Operator', 'تبدیلی کا مجاز شخص')}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
+        <div className="min-w-[800px]">
+          {/* List Header */}
+          <div className="flex items-center bg-slate-50 border-b border-slate-150 text-[10px] font-bold uppercase tracking-wider text-slate-400 py-2.5 px-3">
+            <div className="w-[18%] text-left">{t('Timestamp', 'طبعی وقت')}</div>
+            <div className="w-[15%] text-left">{t('Category', 'شعبہ')}</div>
+            <div className="w-[20%] text-left">{t('Trigger Event', 'سرگرمی')}</div>
+            <div className="w-[32%] text-left">{t('Alteration Narrative Details', 'تفصیلات')}</div>
+            <div className="w-[15%] text-right">{t('Authorized Operator', 'تبدیلی کا مجاز شخص')}</div>
+          </div>
+          
+          {/* List Body */}
+          <div className="divide-y divide-slate-100">
             {filteredLogs.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="py-8 text-center text-slate-400">
-                  {t('No audit trail entries found matching filter terms.', 'فلٹر قوانین کے مطابق کوئی آڈٹ ہسٹری نہیں ملی۔')}
-                </td>
-              </tr>
+              <div className="py-8 text-center text-slate-400 font-sans text-xs">
+                {t('No audit trail entries found matching filter terms.', 'فلٹر قوانین کے مطابق کوئی آڈٹ ہسٹری نہیں ملی۔')}
+              </div>
             ) : (
-              filteredLogs.map(lg => (
-                <tr key={lg.id} className="hover:bg-slate-50/20 text-[11px] text-slate-700">
-                  <td className="py-3 px-3 text-left font-mono text-slate-500 whitespace-nowrap leading-none flex items-center gap-1">
-                    <Clock className="h-3 w-3 text-slate-400 shrink-0" />
-                    <span>{lg.timestamp}</span>
-                  </td>
-                  <td className="py-3 px-2 text-left">
-                    <span className="bg-slate-100 text-slate-650 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-tight">
-                      {lg.category}
-                    </span>
-                  </td>
-                  <td className="py-3 px-2 font-bold text-slate-800 text-left">{lg.action}</td>
-                  <td className="py-3 px-3 text-left max-w-sm whitespace-normal leading-relaxed text-slate-600">{lg.details}</td>
-                  <td className="py-3 px-2 text-right">
-                    <div className="text-sm font-medium text-slate-800">{lg.user}</div>
-                  </td>
-                </tr>
-              ))
+              <List
+                itemCount={filteredLogs.length}
+                itemSize={44}
+                width="100%"
+                height={Math.min(filteredLogs.length * 44, 500)}
+              >
+                {({ index, style }: ListChildComponentProps) => {
+                  const lg = filteredLogs[index];
+                  return (
+                    <div style={style} className="flex items-center hover:bg-slate-50/20 text-[11px] text-slate-700 border-b border-slate-100 px-3">
+                      <div className="w-[18%] flex items-center gap-1 font-mono text-slate-500 whitespace-nowrap overflow-hidden">
+                        <Clock className="h-3 w-3 text-slate-400 shrink-0" />
+                        <span className="truncate">{lg.timestamp}</span>
+                      </div>
+                      <div className="w-[15%]">
+                        <span className="bg-slate-100 text-slate-650 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-tight">
+                          {lg.category}
+                        </span>
+                      </div>
+                      <div className="w-[20%] font-bold text-slate-800 truncate pr-2">{lg.action}</div>
+                      <div className="w-[32%] text-slate-600 truncate pr-2" title={lg.details}>{lg.details}</div>
+                      <div className="w-[15%] text-right text-sm font-medium text-slate-800 truncate">{lg.user}</div>
+                    </div>
+                  );
+                }}
+              </List>
             )}
-          </tbody>
-        </table>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -91,7 +91,7 @@ export function ModuleSearchBar({
   };
 
   return (
-    <div className={`flex flex-col sm:flex-row gap-3 items-center justify-between bg-[var(--bg-card)] border border-[var(--border-main)] rounded-xl p-2 sm:p-3 shadow-sm ${className}`}>
+    <div className={`flex flex-row gap-2 items-center justify-between bg-[var(--bg-card)] border border-[var(--border-main)] rounded-xl p-2 sm:p-3 shadow-sm ${className}`}>
       {/* Search Input */}
       <div className="relative w-full sm:max-w-md lg:max-w-lg flex-1">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)]" />
@@ -121,7 +121,7 @@ export function ModuleSearchBar({
       </div>
 
       {/* Action Buttons */}
-      <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 overflow-x-auto pb-1 sm:pb-0">
+      <div className="flex items-center gap-2 w-auto shrink-0 overflow-x-auto">
         {onFilter && (
           <button
             onClick={onFilter}

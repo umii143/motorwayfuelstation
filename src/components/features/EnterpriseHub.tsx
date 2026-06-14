@@ -26,7 +26,8 @@ import {
   Camera,
   Network,
   Beaker,
-  ShieldCheck
+  ShieldCheck,
+  Zap
 } from "lucide-react";
 
 interface EnterpriseHubProps {

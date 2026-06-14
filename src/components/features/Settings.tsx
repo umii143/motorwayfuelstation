@@ -10,6 +10,7 @@ import {
 import { GlobalSettings, Product, Nozzle, Pump, Tank, RateHistoryEntry, AuditTrailEntry } from '../../types';
 import { db } from '../../data/db';
 import { useStation } from '../../contexts/StationContext';
+import { useNativeAuth } from '../../contexts/NativeAuthContext';
 
 import RateWizard from './Settings/RateWizard';
 import TankWizard from './Settings/TankWizard';
@@ -98,6 +99,7 @@ export default function SettingsPanel({
   onNavigate
 }: SettingsProps) {
   const { showToast, showAlert, showConfirm } = useStation();
+  const { requireBiometric } = useNativeAuth();
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
 
@@ -185,7 +187,11 @@ export default function SettingsPanel({
     }
   ];
 
-  const handleTabChange = (id: SettingsView) => {
+  const handleTabChange = async (id: SettingsView) => {
+    if (id === 'factory_reset' || id === 'meter' || id === 'security' || id === 'users') {
+      const auth = await requireBiometric(`Access ${id}`);
+      if (!auth) return;
+    }
     setActiveTab(id);
     setIsMobileSidebarOpen(false);
   };

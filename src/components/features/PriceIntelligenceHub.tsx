@@ -65,7 +65,7 @@ export default function PriceIntelligenceHub({ settings }: PriceIntelligenceHubP
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-row items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-800 font-sans tracking-tight flex items-center gap-2">
             <Zap className="h-6 w-6 text-yellow-500" />

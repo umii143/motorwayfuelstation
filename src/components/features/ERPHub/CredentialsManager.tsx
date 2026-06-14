@@ -32,7 +32,7 @@ export default function CredentialsManager({ settings, stationId }: CredentialsM
         </div>
         <div className="divide-y divide-slate-100">
           {credentials.map(cred => (
-            <div key={cred.id} className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50 transition">
+            <div key={cred.id} className="p-6 flex flex-row items-center justify-between gap-4 hover:bg-slate-50 transition">
               <div>
                 <div className="font-bold text-slate-900 text-sm flex items-center gap-2">
                   {cred.name}
@@ -69,7 +69,7 @@ export default function CredentialsManager({ settings, stationId }: CredentialsM
           <p className="text-xs text-slate-500 mt-1">Configure endpoints to receive real-time events when data changes.</p>
         </div>
         <div className="p-6 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Endpoint URL</label>
               <input type="url" placeholder="https://api.yourcompany.com/webhooks/fuel" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500" />

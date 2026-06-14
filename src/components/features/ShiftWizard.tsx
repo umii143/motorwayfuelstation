@@ -4,6 +4,11 @@
  */
 
 import React, { useState, useMemo, useEffect } from "react";
+import { useShallow } from 'zustand/react/shallow';
+import { motion, AnimatePresence } from "motion/react";
+import { format } from "date-fns";
+import { v4 as uuidv4 } from "uuid";
+import { useNativeAuth } from '../../contexts/NativeAuthContext';
 import {
   Play,
   RotateCcw,
@@ -48,6 +53,11 @@ import {
   EXPENSE_CATEGORIES,
   GlobalSettings,
 } from "../../types";
+import ExpenseEntryTab from "./ShiftWizard/ExpenseEntryTab";
+import { OpeningReadingsForm, ClosingReadingsForm } from "./ShiftWizard/PumpReadingsForms";
+import { ShiftWastage } from "./ShiftWizard/ShiftWastage";
+import { ShiftDebtors } from "./ShiftWizard/ShiftDebtors";
+import { ShiftNozzleReadings } from "./ShiftWizard/ShiftNozzleReadings";
 import { db } from "../../data/db";
 import { fetchWithAuth } from "../../lib/api";
 import { useStation } from "../../contexts/StationContext";
@@ -126,6 +136,7 @@ interface ShiftWizardProps {
     expenseId: string,
   ) => void;
   onDeleteShiftSalaryPayment?: (expenseId: string) => void;
+  onNavigate?: (viewId: string) => void;
 }
 
 export default function ShiftWizard({
@@ -147,8 +158,10 @@ export default function ShiftWizard({
   onAddBank,
   onAddShiftSalaryPayment,
   onDeleteShiftSalaryPayment,
+  onNavigate,
 }: ShiftWizardProps) {
   const { showToast, showConfirm, showAlert, tanks } = useStation();
+  const { requireBiometric } = useNativeAuth();
   const isUrdu = settings.language === "ur";
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
 
@@ -365,8 +378,10 @@ export default function ShiftWizard({
   // ==========================================
   const [fifoResults, setFifoResults] = useState<{ productId: string; productName: string; result: FIFOResult }[]>([]);
   const [fifoLoading, setFifoLoading] = useState(false);
-  const stockBatches = useInventoryStore(state => state.stockBatches);
-  const supplierClaimsStore = useInventoryStore(state => state.supplierClaims);
+  const { stockBatches, supplierClaims: supplierClaimsStore } = useInventoryStore(useShallow(state => ({
+    stockBatches: state.stockBatches,
+    supplierClaims: state.supplierClaims
+  })));
 
   // ==========================================
   // VALIDATORS / ALERT FLAGS
@@ -1303,7 +1318,7 @@ export default function ShiftWizard({
         showToast(
           t(`Supplier payment of Rs ${amount.toLocaleString()} requires approval. Request sent to Manager/Owner.`,
             `Rs ${amount.toLocaleString()} کی سپلائر ادائیگی کے لیے منظوری درکار ہے۔`),
-          'warning'
+          'info'
         );
       }
     }).catch((err: Error) => console.warn('[EOC] Supplier payment pipeline:', err.message));
@@ -1332,14 +1347,17 @@ export default function ShiftWizard({
   const handleCaptureSnapshot = async (productId: string) => {
     if (!activeShift) return;
 
-    // Validate PIN if override
+    // Validate Auth if override
     if (snapshotOverride) {
-      if (snapshotPin !== settings.security?.priceOverridePin) {
-        showToast(
-          settings.language === "ur" ? "غلط پن کوڈ" : "Invalid PIN code",
-          "error"
-        );
-        return;
+      const authorized = await requireBiometric("Price Override Authorization");
+      if (!authorized) {
+        if (snapshotPin !== settings.security?.priceOverridePin) {
+          showToast(
+            settings.language === "ur" ? "غلط پن کوڈ" : "Invalid PIN code",
+            "error"
+          );
+          return;
+        }
       }
     }
 
@@ -1761,7 +1779,7 @@ export default function ShiftWizard({
   return (
     <div className="space-y-6 pb-16 lg:pb-0">
       {/* HEADER ROW BAR */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-4">
+      <div className="flex flex-col gap-4 sm:flex-row items-center sm:justify-between border-b border-slate-200 pb-4">
         <div>
           <h2 className="font-sans text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
             <RotateCcw className="h-6 w-6 text-orange-600 animate-spin-slow" />
@@ -1846,7 +1864,7 @@ export default function ShiftWizard({
               <label className="mb-2 block font-sans text-xs font-bold text-slate-500 uppercase tracking-wide">
                 {t("Choose Shift Type:", "شفٹ کی قسم:")}
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setShiftType("day")}
@@ -1873,7 +1891,7 @@ export default function ShiftWizard({
             </div>
 
             {/* Date and Time Details */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-2 block font-sans text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5 text-slate-400" />
@@ -1920,158 +1938,25 @@ export default function ShiftWizard({
           STEP 2: OPENING NOZZLES METER CORRELATION
           ========================================== */}
       {wizardStep === 2 && (
-        <div className="mx-auto max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-3 border-b border-slate-100 pb-4 mb-5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
-              <Activity className="h-5 w-5" />
-            </div>
-            <div>
-              <h3 className="font-sans text-base font-bold text-slate-900">
-                {t(
-                  "Configure Opening Nozzle Meter Readings",
-                  "ابتدائی میٹر ریڈنگز درج کریں",
-                )}
-              </h3>
-              <p className="font-sans text-xs text-slate-400 mt-0.5">
-                {t(
-                  "Check current readings before start. Previous shift values linked in gray below.",
-                  "اوپننگ میٹر ریڈنگز لکھیں۔ پچھلی کلوزنگ ریڈنگ سرمئی فونٹ میں ظاہر ہے۔",
-                )}
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <button
-              onClick={() => setIsOpeningScannerOpen(true)}
-              className="w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 font-sans text-xs font-bold py-2.5 hover:bg-indigo-100 transition-colors cursor-pointer shadow-xs"
-            >
-              <Sparkles className="h-4 w-4" />
-              {t('Auto-Fill with Meter Scanner', 'میٹر سکین کر کے آٹو فل کریں')}
-            </button>
-            {/* Split nozzles per products types */}
-            {["petrol", "diesel", "cng"].map((prodId) => {
-              const matchedNozzles = nozzles.filter(
-                (n) => getFuelCategory(n.productId, products) === prodId,
-              );
-              if (matchedNozzles.length === 0) return null;
-
-              const isPet = prodId === "petrol";
-              const isDie = prodId === "diesel";
-              const isCng = prodId === "cng";
-
-              const titleEn = prodId.toUpperCase();
-              const titleUr = isPet ? "پٹرول" : isDie ? "ڈیزل" : "سی این جی";
-
-              const prodRate =
-                fuelRates[prodId as "petrol" | "diesel" | "cng"] || 0;
-
-              let themeBg = "bg-slate-50/40";
-              let themeBorder = "border-slate-100";
-              let themeTitle = "text-slate-400";
-              let inputBorderFocus = "focus:border-orange-500";
-
-              if (isPet) {
-                themeBg = "bg-emerald-50/50";
-                themeBorder = "border-emerald-200";
-                themeTitle = "text-emerald-700";
-                inputBorderFocus = "focus:border-emerald-500";
-              } else if (isDie) {
-                themeBg = "bg-slate-100";
-                themeBorder = "border-slate-300";
-                themeTitle = "text-slate-600";
-                inputBorderFocus = "focus:border-slate-500";
-              } else if (isCng) {
-                themeBg = "bg-sky-50/60";
-                themeBorder = "border-sky-200";
-                themeTitle = "text-sky-700";
-                inputBorderFocus = "focus:border-sky-500";
-              }
-
-              return (
-                <div
-                  key={prodId}
-                  className="space-y-3.5 border-b border-dashed border-slate-200 pb-5 last:border-0 last:pb-0"
-                >
-                  <div className="flex items-center gap-2">
-                    <h4
-                      className={`font-sans text-sm font-black tracking-wider uppercase ${themeTitle}`}
-                    >
-                      {t(titleEn, titleUr)}
-                    </h4>
-                    <span
-                      className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border ${themeBorder} ${themeTitle}`}
-                    >
-                      Rate: Rs. {prodRate.toFixed(2)}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {matchedNozzles.map((noz) => {
-                      const prevVal =
-                        previousClosingReadings[
-                          noz.id as keyof typeof previousClosingReadings
-                        ] || noz.currentReading || noz.startReading || 0;
-                      return (
-                        <div
-                          key={noz.id}
-                          className={`rounded-xl border ${themeBorder} p-3 ${themeBg} shadow-inner`}
-                        >
-                          <label className="block font-sans text-[11px] font-black text-slate-700 mb-2 uppercase tracking-wide">
-                            {noz.name}
-                          </label>
-                          <div className="relative">
-                            <input
-                              type="number"
-                              step="any"
-                              value={openingReadings[noz.id] || ""}
-                              onChange={(e) =>
-                                setOpeningReadings({
-                                  ...openingReadings,
-                                  [noz.id]: e.target.value,
-                                })
-                              }
-                              placeholder={String(prevVal)}
-                              className={`w-full rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-20 font-mono text-sm font-bold text-slate-800 ${inputBorderFocus} focus:outline-hidden transition-colors shadow-xs`}
-                            />
-                            <span className="absolute inset-y-0 right-0 py-2.5 pr-3 text-[10px] font-mono font-bold text-slate-400 pointer-events-none select-none flex items-center bg-white rounded-r-lg border-l border-slate-100 px-2 my-[1px] mr-[1px]">
-                              Prev: {prevVal}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-
-            <div className="flex gap-3 pt-4 border-t border-slate-100">
-              <button
-                onClick={() => setWizardStep(1)}
-                className="w-1/3 py-3 rounded-lg border border-slate-200 bg-white text-slate-600 font-sans text-xs font-bold hover:bg-slate-50 transition-colors cursor-pointer"
-              >
-                {t("← Back", "← واپس جائیں")}
-              </button>
-              <button
-                onClick={handleConfirmOpenings}
-                className="flex-1 py-3 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 shadow-md shadow-orange-500/10 transition-all cursor-pointer"
-              >
-                {t(
-                  "Confirm & Open Shift →",
-                  "میٹر ریڈنگز تصدیق کریں اور شفٹ شروع کریں →",
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
+        <OpeningReadingsForm
+          t={t}
+          setIsOpeningScannerOpen={setIsOpeningScannerOpen}
+          nozzles={nozzles}
+          products={products}
+          fuelRates={fuelRates}
+          previousClosingReadings={previousClosingReadings}
+          openingReadings={openingReadings}
+          setOpeningReadings={setOpeningReadings}
+          setWizardStep={setWizardStep}
+          handleConfirmOpenings={handleConfirmOpenings}
+        />
       )}
 
       {/* ==========================================
           STEP 3: ACTIVE SHIFT HUB DRAWERS
           ========================================== */}
       {wizardStep === 3 && activeShift && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
           {/* Active Shift Info Sidebar */}
           <div className="space-y-4">
             <div className="rounded-xl border border-orange-200 bg-orange-55/10 p-5 shadow-xs">
@@ -2170,8 +2055,8 @@ export default function ShiftWizard({
 
           {/* CRITICAL PRICE REVISION BANNER */}
           {activeShift?.activeMidShiftAlert && (
-            <div className="col-span-1 lg:col-span-3 mb-4 rounded-lg bg-red-50 border-l-4 border-red-500 p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-start sm:items-center gap-3">
+            <div className="col-span-1 lg:col-span-3 mb-4 rounded-lg bg-red-50 border-l-4 border-red-500 p-4 shadow-sm flex flex-row items-center justify-between gap-4">
+              <div className="flex items-start items-center gap-3">
                 <AlertCircle className="w-6 h-6 text-red-600 animate-pulse shrink-0 mt-0.5 sm:mt-0" />
                 <div>
                   <h3 className="font-bold text-red-800">
@@ -2224,244 +2109,30 @@ export default function ShiftWizard({
             <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
               {/* TAB 1: DEBITS (CREDIT SALES) */}
               {activeTab === "debit" && (
-                <div className="space-y-4">
-                  <h3 className="font-sans text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4 flex items-center justify-between">
-                    <span>
-                      {t(
-                        "💳 Ledger Credit Sales (Debit Entry)",
-                        "قرض پر فروخت کی انٹری",
-                      )}
-                    </span>
-                    <span className="text-[11px] text-slate-400 normal-case font-normal">
-                      {t(
-                        "Adds directly to customer balance",
-                        "گاہک کے کھاتے میں جمع ہوگا",
-                      )}
-                    </span>
-                  </h3>
-
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div>
-                      <div className="flex justify-between items-center mb-1.5">
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">
-                          {t("Select Credit Customer:", "کھاتیدار گاہک:")}
-                        </label>
-                        {onAddCustomer && (
-                          <button
-                            onClick={() => setShowQuickCustomer(true)}
-                            className="text-[9px] font-bold text-orange-600 uppercase tracking-widest bg-orange-50 px-2 py-0.5 rounded-full hover:bg-orange-100 transition-colors pointer-events-auto"
-                          >
-                            + {t("Quick Add", "نئی انٹری")}
-                          </button>
-                        )}
-                      </div>
-
-                      {showQuickCustomer ? (
-                        <form
-                          onSubmit={handleQuickAddCustomer}
-                          className="flex gap-2"
-                        >
-                          <input
-                            autoFocus
-                            type="text"
-                            placeholder={t("Enter Name...", "گاہک کا نام...")}
-                            value={quickCustomerName}
-                            onChange={(e) =>
-                              setQuickCustomerName(e.target.value)
-                            }
-                            className="w-full rounded-lg border border-orange-300 bg-white px-3 py-2 font-sans text-sm text-slate-800 shadow-xs focus:border-orange-500 outline-none"
-                          />
-                          <button
-                            type="submit"
-                            className="bg-orange-600 text-white px-3 py-2 rounded-lg font-bold text-xs uppercase shadow-sm"
-                          >
-                            {t("Save", "سیو")}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setShowQuickCustomer(false)}
-                            className="bg-slate-200 text-slate-600 px-3 py-2 rounded-lg font-bold text-xs uppercase"
-                          >
-                            X
-                          </button>
-                        </form>
-                      ) : (
-                        <select
-                          value={debCustId}
-                          onChange={(e) => setDebCustId(e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm text-slate-800 shadow-xs focus:border-orange-500"
-                        >
-                          <option value="">
-                            {t("-- Search Customer --", "-- گاہک کا نام --")}
-                          </option>
-                          {effectiveCustomers.map((c) => (
-                            <option key={c.id} value={c.id}>
-                              {settings.language === "en" ? c.name : c.urduName}{" "}
-                              (
-                              {t(
-                                `Bal: Rs. ${c.effectiveBalance}`,
-                                `بقایا: ${c.effectiveBalance} روپے`,
-                              )}
-                              )
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t("Select Fuel / Product:", "تیل کا انتخاب:")}
-                      </label>
-                      <select
-                        value={debProdId}
-                        onChange={(e) => setDebProdId(e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm text-slate-800 shadow-xs focus:border-orange-500"
-                      >
-                        {products.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {settings.language === "en" ? p.name : p.urduName} (
-                            {t(
-                              `Rs. ${p.rate}/${p.unit}`,
-                              `${p.rate} روپے فی ${p.unit}`,
-                            )}
-                            )
-                          </option>
-                        ))}
-                        <option value="general_debit">
-                          ⚡{" "}
-                          {t(
-                            "Cash Loan / General Debit",
-                            "جنرل ڈیبٹ / نقد قرض",
-                          )}
-                        </option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {debProdId === "general_debit"
-                          ? t("Amount (Rs.):", "رقم (روپے):")
-                          : t(
-                              `Quantity (${products.find((p) => p.id === debProdId)?.unit || "Litres"}):`,
-                              `تعداد (${products.find((p) => p.id === debProdId)?.unit || "لیٹر"}):`,
-                            )}
-                      </label>
-                      <input
-                        type="number"
-                        value={debQty}
-                        onChange={(e) => setDebQty(e.target.value)}
-                        placeholder={
-                          debProdId === "general_debit"
-                            ? "e.g. 5000"
-                            : "e.g. 50"
-                        }
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono text-sm focus:border-orange-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t("Reference Note / Driver:", "حوالہ ترسیل / نوٹ:")}
-                      </label>
-                      <input
-                        type="text"
-                        value={debNote}
-                        onChange={(e) => setDebNote(e.target.value)}
-                        placeholder={
-                          debProdId === "general_debit"
-                            ? "e.g. Cash Loan / Expense"
-                            : "e.g. Mazda Truck S-98"
-                        }
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-sans text-sm focus:border-orange-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mt-2 flex justify-between items-center bg-slate-50 p-3 rounded-lg border border-slate-200 border-dashed">
-                    <span className="font-sans text-xs font-semibold text-slate-500">
-                      {t(
-                        "Auto-calculated invoice:",
-                        "حساب کردہ بننے والی رقم:",
-                      )}
-                    </span>
-                    <span className="font-mono text-base font-bold text-slate-800">
-                      Rs.{" "}
-                      {(
-                        (Number(debQty) || 0) *
-                        (debProdId === "general_debit"
-                          ? 1
-                          : products.find((p) => p.id === debProdId)?.rate || 0)
-                      ).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={handleAddDebit}
-                    className="w-full py-2.5 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 cursor-pointer shadow-md shadow-orange-500/10 flex items-center justify-center gap-1.5"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>{t("ADD DEBIT ENTRY", "قرض انٹری شامل کریں")}</span>
-                  </button>
-
-                  {/* Registered Debits Lists */}
-                  <div className="mt-4 border-t border-slate-100 pt-4">
-                    <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                      {t(
-                        "Added Debits This Shift:",
-                        "اس شفٹ میں شامل کردہ قرضے:",
-                      )}
-                    </h4>
-                    {activeShift.debitEntries.length === 0 ? (
-                      <p className="text-center py-4 font-sans text-xs text-slate-400 border border-slate-100 border-dashed rounded-lg bg-slate-50/50">
-                        {t(
-                          "No debit transactions added yet.",
-                          "ابھی تک کوئی انٹری نہیں لکھی گئی۔",
-                        )}
-                      </p>
-                    ) : (
-                      <div className="space-y-2 max-h-40 overflow-y-auto">
-                        {activeShift.debitEntries.map((d) => {
-                          const cName =
-                            customers.find((c) => c.id === d.customerId)
-                              ?.name || "Debtor";
-                          const isGen = d.productId === "general_debit";
-                          const pName = isGen
-                            ? t("General Debit / Loan", "جنرل ڈیبٹ / نقد قرض")
-                            : products.find((p) => p.id === d.productId)
-                                ?.name || "Fuel";
-                          const unitStr = isGen
-                            ? "Rs."
-                            : products.find((p) => p.id === d.productId)
-                                ?.unit || "L";
-                          return (
-                            <div
-                              key={d.id}
-                              className="flex justify-between items-center text-xs p-2 rounded-lg border border-slate-100 bg-slate-50/20"
-                            >
-                              <div className="font-sans text-slate-700 pr-4">
-                                <span className="font-bold">{cName}</span> —{" "}
-                                {isGen ? "" : `${d.quantity} ${unitStr}`}{" "}
-                                {pName} {d.note && `(${d.note})`}
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <span className="font-mono font-bold text-rose-500">
-                                  Rs. {d.amount.toLocaleString()}
-                                </span>
-                                <button
-                                  onClick={() => handleDeleteDebit(d.id)}
-                                  className="text-red-500 hover:text-red-700 cursor-pointer"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <ShiftDebtors
+                  t={t}
+                  settings={settings}
+                  activeShift={activeShift}
+                  customers={customers}
+                  effectiveCustomers={effectiveCustomers}
+                  products={products}
+                  debCustId={debCustId}
+                  setDebCustId={setDebCustId}
+                  debProdId={debProdId}
+                  setDebProdId={setDebProdId}
+                  debQty={debQty}
+                  setDebQty={setDebQty}
+                  debNote={debNote}
+                  setDebNote={setDebNote}
+                  showQuickCustomer={showQuickCustomer}
+                  setShowQuickCustomer={setShowQuickCustomer}
+                  quickCustomerName={quickCustomerName}
+                  setQuickCustomerName={setQuickCustomerName}
+                  onAddCustomer={onAddCustomer}
+                  handleQuickAddCustomer={handleQuickAddCustomer}
+                  handleAddDebit={handleAddDebit}
+                  handleDeleteDebit={handleDeleteDebit}
+                />
               )}
 
               {/* TAB 2: RECOVERIES (CREDIT RECOVERIES) */}
@@ -2476,7 +2147,7 @@ export default function ShiftWizard({
                     </span>
                   </h3>
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-2">
                     <div>
                       <div className="flex justify-between items-center mb-1.5">
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">
@@ -2568,7 +2239,7 @@ export default function ShiftWizard({
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
                         {t("Payment Mode / Option:", "طریقہ ادائیگی:")}
                       </label>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         {["cash", "cheque", "transfer"].map((m) => (
                           <button
                             key={m}
@@ -2667,201 +2338,20 @@ export default function ShiftWizard({
 
               {/* TAB 3: EXPENSES */}
               {activeTab === "expense" && (
-                <div className="space-y-4">
-                  <h3 className="font-sans text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4 flex items-center justify-between">
-                    <span>
-                      {t(
-                        "💸 Shift Operational Expenses Logging",
-                        "شفٹ کے آپریشنل اخراجات",
-                      )}
-                    </span>
-                  </h3>
-
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t("Select Category:", "خانہ / کیٹیگری منتخب کریں:")}
-                      </label>
-                      <select
-                        value={expCategory}
-                        onChange={(e) => setExpCategory(e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm text-slate-800 shadow-xs focus:border-orange-500"
-                      >
-                        {EXPENSE_CATEGORIES.map((cat) => (
-                          <option key={cat.id} value={cat.id}>
-                            {cat.icon}{" "}
-                            {settings.language === "en" ? cat.label : cat.urdu}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {expCategory === "salary" && (
-                      <div className="sm:col-span-2 bg-orange-50/40 p-3 rounded-lg border border-orange-200/60 transition-all">
-                        <label className="block text-xs font-bold text-orange-805 uppercase tracking-wide mb-1.5 flex items-center gap-1">
-                          <span>👷</span>{" "}
-                          {t(
-                            "Select Paid Staff Member:",
-                            "ادائیگی وصول کنندہ ملازم منتخب کریں:",
-                          )}
-                        </label>
-                        <select
-                          value={expStaffId}
-                          onChange={(e) => setExpStaffId(e.target.value)}
-                          className="w-full rounded-lg border border-orange-300 bg-white px-3 py-2 font-sans text-sm text-slate-800 shadow-xs focus:border-orange-500 font-medium"
-                        >
-                          <option value="">
-                            {t(
-                              "-- Choose active staff member --",
-                              "-- فعال ملازم منتخب کریں --",
-                            )}
-                          </option>
-                          {staff
-                            .filter((st) => st.active)
-                            .map((st) => (
-                              <option key={st.id} value={st.id}>
-                                {settings.language === "en"
-                                  ? st.name
-                                  : st.urduName}{" "}
-                                ({st.role.toUpperCase()}) —{" "}
-                                {t(
-                                  `Advances: Rs. ${st.advances || 0}`,
-                                  `ایڈوانس: ${st.advances || 0} روپے`,
-                                )}
-                              </option>
-                            ))}
-                        </select>
-                        <p className="text-[10px] text-orange-700/80 mt-1">
-                          ℹ️{" "}
-                          {t(
-                            "This transaction will automatically sync and log to this staff member's ledger log & update basic advances balance outstanding.",
-                            "یہ انٹری خودکار طور پر اس ملازم کے تنخواہ لیجر اور ایڈوانس اکاؤنٹ بک میں ریکارڈ ہو جائے گی۔",
-                          )}
-                        </p>
-                      </div>
-                    )}
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t("Amount:", "رقم (روپے):")}
-                      </label>
-                      <input
-                        type="number"
-                        value={expAmount}
-                        onChange={(e) => setExpAmount(e.target.value)}
-                        placeholder="e.g. 1200"
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono text-sm focus:border-orange-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t("Sourced From:", "ادائیگی کا منبع:")}
-                      </label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setExpPaidFrom("cash")}
-                          className={`py-2 rounded-lg border font-sans text-xs font-bold cursor-pointer transition-all ${
-                            expPaidFrom === "cash"
-                              ? "border-orange-500 bg-orange-50 text-orange-700"
-                              : "border-slate-200 bg-white text-slate-500"
-                          }`}
-                        >
-                          💸 {t("Shift Cash Drawer", "سیشن کیش دراز")}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setExpPaidFrom("bank")}
-                          className={`py-2 rounded-lg border font-sans text-xs font-bold cursor-pointer transition-all ${
-                            expPaidFrom === "bank"
-                              ? "border-orange-500 bg-orange-50 text-orange-700"
-                              : "border-slate-200 bg-white text-slate-500"
-                          }`}
-                        >
-                          🏦 {t("Bank Account", "بینک اکاؤنٹ")}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t("Specific Description / Notes:", "تفصیل / نوٹ:")}
-                      </label>
-                      <input
-                        type="text"
-                        value={expDesc}
-                        onChange={(e) => setExpDesc(e.target.value)}
-                        placeholder="e.g. Lunch tea for staff"
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-sans text-sm focus:border-orange-500"
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={handleAddExpense}
-                    className="w-full py-2.5 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 cursor-pointer shadow-md shadow-orange-500/10 flex items-center justify-center gap-1.5"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>{t("ADD EXPENSE ENTRY", "خرچہ کا اندراج کریں")}</span>
-                  </button>
-
-                  {/* Registered Expenses List */}
-                  <div className="mt-4 border-t border-slate-100 pt-4">
-                    <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                      {t("Expenses This Shift:", "اس شفٹ میں اخراجات:")}
-                    </h4>
-                    {activeShift.expenseEntries.length === 0 ? (
-                      <p className="text-center py-4 font-sans text-xs text-slate-400 border border-slate-100 border-dashed rounded-lg bg-slate-50/50">
-                        {t(
-                          "No expense records logged in this session.",
-                          "ابھی کوئی خرچہ درج نہیں۔",
-                        )}
-                      </p>
-                    ) : (
-                      <div className="space-y-2 max-h-40 overflow-y-auto">
-                        {activeShift.expenseEntries.map((e) => (
-                          <div
-                            key={e.id}
-                            className="flex justify-between items-center text-xs p-2 rounded-lg border border-slate-100 bg-slate-50/20"
-                          >
-                            <div className="font-sans text-slate-700 pr-4 flex-1 flex flex-wrap items-center gap-0.5">
-                              <span className="font-bold uppercase tracking-tight text-[10px] bg-red-50 text-red-650 px-1.5 py-0.5 rounded-sm mr-2">
-                                {e.category}
-                              </span>
-                              <span className="text-slate-800 font-medium">
-                                {e.description}
-                              </span>
-                              {e.staffId && (
-                                <span className="ml-2 inline-flex items-center gap-0.5 text-[9px] font-bold text-orange-700 bg-orange-50 border border-orange-200 px-1.5 py-0.5 rounded-sm">
-                                  <span>👤</span>
-                                  <span>
-                                    {settings.language === "en"
-                                      ? staff.find((st) => st.id === e.staffId)
-                                          ?.name || "Staff"
-                                      : staff.find((st) => st.id === e.staffId)
-                                          ?.urduName || "ملازم"}
-                                  </span>
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <span className="font-mono font-bold text-red-550">
-                                Rs. {e.amount.toLocaleString()}
-                              </span>
-                              <button
-                                onClick={() => handleDeleteExpense(e.id)}
-                                className="text-red-500 hover:text-red-700 cursor-pointer"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <ExpenseEntryTab
+                  t={t}
+                  settings={settings}
+                  activeShift={activeShift}
+                  activeStationId={activeStationId}
+                  staff={staff}
+                  EXPENSE_CATEGORIES={EXPENSE_CATEGORIES}
+                  showToast={showToast}
+                  onUpdateShift={onUpdateShift}
+                  processExpense={processExpense}
+                  processReversal={processReversal}
+                  onAddShiftSalaryPayment={onAddShiftSalaryPayment}
+                  onDeleteShiftSalaryPayment={onDeleteShiftSalaryPayment}
+                />
               )}
 
               {/* TAB 4: BANK CASH DEPOSITS */}
@@ -2876,7 +2366,7 @@ export default function ShiftWizard({
                     </span>
                   </h3>
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-2">
                     <div>
                       <div className="flex justify-between items-center mb-1.5">
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">
@@ -3082,7 +2572,7 @@ export default function ShiftWizard({
                     </span>
                   </h3>
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-2">
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
                         {t("Digital Method:", "والٹ / کارڈ نیٹ ورک:")}
@@ -3212,7 +2702,7 @@ export default function ShiftWizard({
                     </span>
                   </h3>
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-2">
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
                         {t("Discount Amount (Rs.):", "رقم (روپے میں):")}
@@ -3245,7 +2735,7 @@ export default function ShiftWizard({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-2">
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
                         {t("Customer Name:", "گاہک کا نام:")}
@@ -3272,7 +2762,7 @@ export default function ShiftWizard({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-2">
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
                         {t("Product / Fuel:", "ایندھن کی قسم (آپشنل):")}
@@ -3386,7 +2876,7 @@ export default function ShiftWizard({
                     </span>
                   </h3>
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-2">
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
                         {t("Select Lubricant Lube:", "موبل آئل منتخب کریں:")}
@@ -3508,7 +2998,7 @@ export default function ShiftWizard({
                     </span>
                   </h3>
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-2">
                     <div>
                       <div className="flex justify-between items-center mb-1.5">
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">
@@ -3599,7 +3089,7 @@ export default function ShiftWizard({
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
                         {t("Clearance Mode:", "طریقہ ادائیگی:")}
                       </label>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         {["cash", "cheque", "transfer"].map((m) => (
                           <button
                             key={m}
@@ -3726,80 +3216,19 @@ export default function ShiftWizard({
               )}
               {/* TAB: RATE CHANGE (MID-SHIFT REVISION) */}
               {activeTab === "rateChange" && activeShift?.pendingPriceRevisions && (
-                <div className="space-y-4">
-                  <h3 className="font-sans text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4 flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      <Zap className="h-5 w-5 text-red-500" />
-                      {t("Mid-Shift Price Revision Snapshot", "قیمت میں تبدیلی کا سنیپ شاٹ")}
-                    </span>
-                  </h3>
-                  
-                  {activeShift.pendingPriceRevisions.map(rev => {
-                    const prod = products.find(p => p.id === rev.productId);
-                    const prodNozzles = nozzles.filter(n => activeShift.openingReadings[n.id] !== undefined && n.productId === rev.productId);
-                    if (!prod) return null;
-
-                    return (
-                      <div key={rev.id} className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-2 sm:gap-0">
-                          <div>
-                            <h4 className="font-bold text-red-800 text-sm">{prod.name}</h4>
-                            <p className="text-xs text-red-600">Old: Rs {rev.oldRate} → New: Rs {rev.newRate}</p>
-                          </div>
-                          <div className="text-left sm:text-right text-xs text-red-500">
-                            Effective: {new Date(rev.effectiveAt).toLocaleTimeString()}
-                          </div>
-                        </div>
-
-                        <div className="space-y-3">
-                          {prodNozzles.map(nz => (
-                            <div key={nz.id} className="flex flex-col sm:flex-row sm:items-center gap-2">
-                              <span className="font-medium text-sm text-slate-700 w-24">{nz.name}</span>
-                              <input
-                                type="number"
-                                className="flex-1 w-full rounded-md border-slate-200 text-sm"
-                                placeholder={t("Current Meter Reading", "موجودہ میٹر ریڈنگ")}
-                                value={snapshotReadings[nz.id] || ""}
-                                onChange={(e) => setSnapshotReadings({ ...snapshotReadings, [nz.id]: e.target.value })}
-                              />
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="mt-4 pt-4 border-t border-red-200">
-                          <label className="flex items-center gap-2 text-sm text-red-800 font-medium mb-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={snapshotOverride}
-                              onChange={(e) => setSnapshotOverride(e.target.checked)}
-                              className="rounded border-red-300 text-red-600 focus:ring-red-500"
-                            />
-                            {t("Owner Override (Apply new rate to entire shift without snapshot)", "مالک کا اوور رائیڈ (نئی قیمت پوری شفٹ پر لاگو کریں)")}
-                          </label>
-
-                          {snapshotOverride && (
-                            <input
-                              type="password"
-                              placeholder={t("Owner Price Override PIN", "قیمت اوور رائیڈ پن")}
-                              value={snapshotPin}
-                              onChange={(e) => setSnapshotPin(e.target.value)}
-                              className="mt-2 w-full sm:w-auto rounded-md border-slate-200 text-sm"
-                            />
-                          )}
-                        </div>
-
-                        <div className="mt-4 flex sm:justify-end">
-                          <button
-                            onClick={() => handleCaptureSnapshot(rev.productId)}
-                            className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-bold text-sm"
-                          >
-                            {t("Save Snapshot & Apply", "سنیپ شاٹ محفوظ کریں")}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                <ShiftNozzleReadings
+                  t={t}
+                  activeShift={activeShift}
+                  products={products}
+                  nozzles={nozzles}
+                  snapshotReadings={snapshotReadings}
+                  setSnapshotReadings={setSnapshotReadings}
+                  snapshotOverride={snapshotOverride}
+                  setSnapshotOverride={setSnapshotOverride}
+                  snapshotPin={snapshotPin}
+                  setSnapshotPin={setSnapshotPin}
+                  handleCaptureSnapshot={handleCaptureSnapshot}
+                />
               )}
             </div>
           </div>
@@ -3807,255 +3236,38 @@ export default function ShiftWizard({
       )}
 
       {/* ==========================================
-          STEP 4: CLOSING NOZZLE DIALS ENTRY
+          STEP 4: CLOSING NOZZLES METER CORRELATION
           ========================================== */}
       {wizardStep === 4 && activeShift && (
-        <div className="mx-auto max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-3 border-b border-slate-100 pb-4 mb-5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
-              <CheckCircle className="h-5 w-5" />
-            </div>
-            <div>
-              <h3 className="font-sans text-base font-bold text-slate-900">
-                {t(
-                  "Configure Closing Nozzle Readings",
-                  "حتمی میٹر ریڈنگز درج کریں",
-                )}
-              </h3>
-              <p className="font-sans text-xs text-slate-400 mt-0.5">
-                {t(
-                  "Closing readings must be higher than or equal to current opening scores.",
-                  "نوڈ سے حاصل شدہ فائنل میٹر ریڈنگز لکھیں۔ یہ اوپننگ میٹر ریڈنگ سے زیادہ ہونی چاہئیں۔",
-                )}
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <button
-              onClick={() => setIsClosingScannerOpen(true)}
-              className="w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 font-sans text-xs font-bold py-2.5 hover:bg-indigo-100 transition-colors cursor-pointer shadow-xs"
-            >
-              <Sparkles className="h-4 w-4" />
-              {t('Auto-Fill with Meter Scanner', 'میٹر سکین کر کے آٹو فل کریں')}
-            </button>
-            {["petrol", "diesel", "cng"].map((prodId) => {
-              const matchedNozzles = nozzles.filter(
-                (n) => getFuelCategory(n.productId, products) === prodId,
-              );
-              if (matchedNozzles.length === 0) return null;
-
-              const isPet = prodId === "petrol";
-              const isDie = prodId === "diesel";
-              const isCng = prodId === "cng";
-
-              const titleEn = prodId.toUpperCase();
-              const titleUr = isPet ? "پٹرول" : isDie ? "ڈیزل" : "سی این جی";
-
-              const prodRate =
-                fuelRates[prodId as "petrol" | "diesel" | "cng"] || 0;
-
-              let themeBg = "bg-slate-50/40";
-              let themeBorder = "border-slate-100";
-              let themeTitle = "text-slate-400";
-              let inputBorderFocus = "focus:border-orange-500";
-
-              if (isPet) {
-                themeBg = "bg-emerald-50/50";
-                themeBorder = "border-emerald-200";
-                themeTitle = "text-emerald-700";
-                inputBorderFocus = "focus:border-emerald-500";
-              } else if (isDie) {
-                themeBg = "bg-slate-100";
-                themeBorder = "border-slate-300";
-                themeTitle = "text-slate-600";
-                inputBorderFocus = "focus:border-slate-500";
-              } else if (isCng) {
-                themeBg = "bg-sky-50/60";
-                themeBorder = "border-sky-200";
-                themeTitle = "text-sky-700";
-                inputBorderFocus = "focus:border-sky-500";
-              }
-
-              return (
-                <div
-                  key={prodId}
-                  className="space-y-3.5 border-b border-dashed border-slate-200 pb-5 last:border-0 last:pb-0"
-                >
-                  <div className="flex items-center gap-2">
-                    <h4
-                      className={`font-sans text-sm font-black tracking-wider uppercase ${themeTitle}`}
-                    >
-                      {t(titleEn, titleUr)}
-                    </h4>
-                    <span
-                      className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border ${themeBorder} ${themeTitle}`}
-                    >
-                      Rate: Rs. {prodRate.toFixed(2)}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {matchedNozzles.map((noz) => {
-                      const openVal = activeShift.openingReadings[noz.id] || 0;
-                      return (
-                        <div
-                          key={noz.id}
-                          className={`rounded-xl border ${themeBorder} p-3 ${themeBg} shadow-inner flex flex-col justify-between`}
-                        >
-                          <div>
-                            <label className="block font-sans text-[11px] font-black text-slate-700 mb-2 uppercase tracking-wide">
-                              {noz.name}
-                            </label>
-                            <div className="relative">
-                              <input
-                                type="number"
-                                step="any"
-                                value={closingReadings[noz.id] || ""}
-                                onChange={(e) =>
-                                  setClosingReadings({
-                                    ...closingReadings,
-                                    [noz.id]: e.target.value,
-                                  })
-                                }
-                                placeholder={String(openVal)}
-                                className={`w-full rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-24 font-mono text-sm font-bold text-slate-800 ${inputBorderFocus} focus:outline-hidden transition-colors shadow-xs`}
-                              />
-                              <span className="absolute inset-y-0 right-0 py-2.5 pr-3 text-[10px] font-mono font-bold text-slate-400 pointer-events-none select-none flex items-center bg-white rounded-r-lg border-l border-slate-100 px-2 my-[1px] mr-[1px]">
-                                {t("Opening:", "اوپننگ:")} {openVal}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div
-                            className={`mt-2.5 rounded-md bg-white border ${themeBorder} px-2 py-1.5 flex justify-between items-center`}
-                          >
-                            <span className="font-sans text-[9px] font-bold text-slate-500 tracking-wide uppercase">
-                              {t("Volume sold:", "فروخت شدہ حجم:")}
-                            </span>
-                            <span
-                              className={`font-mono text-sm font-black ${themeTitle}`}
-                            >
-                              {Math.max(
-                                0,
-                                Number(closingReadings[noz.id] || 0) - openVal,
-                              ).toLocaleString()}{" "}
-                              <span className="text-[10px]">
-                                {products.find((p) => p.id === noz.productId)
-                                  ?.unit || "L"}
-                              </span>
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-
-            <div className="flex gap-3 pt-4 border-t border-slate-100">
-              <button
-                onClick={() => setWizardStep(3)}
-                className="w-1/3 py-3 rounded-lg border border-slate-200 bg-white text-slate-600 font-sans text-xs font-bold hover:bg-slate-50"
-              >
-                {t("← Back", "← واپس جائیں")}
-              </button>
-              <button
-                onClick={handleConfirmClosings}
-                className="flex-1 py-3 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 shadow-md shadow-orange-500/10 transition-all cursor-pointer"
-              >
-                {t("Confirm Closings →", "کلوزنگ میٹر ریڈنگز کنفرم کریں →")}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ClosingReadingsForm
+          t={t}
+          setIsClosingScannerOpen={setIsClosingScannerOpen}
+          nozzles={nozzles}
+          products={products}
+          fuelRates={fuelRates}
+          activeShift={activeShift}
+          closingReadings={closingReadings}
+          setClosingReadings={setClosingReadings}
+          setWizardStep={setWizardStep}
+          handleConfirmClosings={handleConfirmClosings}
+        />
       )}
 
       {/* ==========================================
           STEP 5: WASTAGE / TESTING DEDUCTIONS
           ========================================== */}
       {wizardStep === 5 && activeShift && (
-        <div className="mx-auto max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-3 border-b border-slate-100 pb-4 mb-5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600 animate-pulse">
-              <Activity className="h-5 w-5" />
-            </div>
-            <div>
-              <h3 className="font-sans text-base font-bold text-slate-900">
-                {t(
-                  "Configure Wastage / Test Litres",
-                  "مرمت ٹیسٹنگ اور ضیاع ایڈجسٹمنٹ",
-                )}
-              </h3>
-              <p className="font-sans text-xs text-slate-400 mt-0.5">
-                {t(
-                  "Volume pumped for calibrations testing (not billed to customers).",
-                  "پمپ کیلیبریشن یا مرمت کے دوران نکالا گیا تیل جودر حقیقت فروخت نہیں ہوا۔",
-                )}
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block font-sans text-xs font-bold text-slate-500 uppercase mb-1.5">
-                {t("Super Petrol Test (Litres):", "پٹرول ٹیسٹنگ مقدار (لیٹر):")}
-              </label>
-              <input
-                type="number"
-                value={testPetrol}
-                onChange={(e) => setTestPetrol(e.target.value)}
-                placeholder="0"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
-              />
-            </div>
-
-            <div>
-              <label className="block font-sans text-xs font-bold text-slate-500 uppercase mb-1.5">
-                {t("Diesel Test (Litres):", "ڈیزل ٹیسٹنگ مقدار (لیٹر):")}
-              </label>
-              <input
-                type="number"
-                value={testDiesel}
-                onChange={(e) => setTestDiesel(e.target.value)}
-                placeholder="0"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
-              />
-            </div>
-
-            <div>
-              <label className="block font-sans text-xs font-bold text-slate-500 uppercase mb-1.5">
-                {t(
-                  "CNG Flow Calibration test (KG):",
-                  "سی این جی ٹیسٹنگ مقدار (کلو گرام):",
-                )}
-              </label>
-              <input
-                type="number"
-                value={testCNG}
-                onChange={(e) => setTestCNG(e.target.value)}
-                placeholder="0"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
-              />
-            </div>
-
-            <div className="flex gap-3 pt-4 border-t border-slate-100">
-              <button
-                onClick={() => setWizardStep(4)}
-                className="w-1/3 py-3 rounded-lg border border-slate-200 bg-white text-slate-600 font-sans text-xs font-bold hover:bg-slate-50"
-              >
-                {t("← Back", "← واپس جائیں")}
-              </button>
-              <button
-                onClick={handleConfirmTests}
-                className="flex-1 py-3 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 shadow-md shadow-orange-500/10 transition-all cursor-pointer"
-              >
-                {t("Proceed to Cash Audit →", "کیش فلو اکاؤنٹنگ پر جائیں →")}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ShiftWastage
+          t={t}
+          testPetrol={testPetrol}
+          setTestPetrol={setTestPetrol}
+          testDiesel={testDiesel}
+          setTestDiesel={setTestDiesel}
+          testCNG={testCNG}
+          setTestCNG={setTestCNG}
+          setWizardStep={setWizardStep}
+          handleConfirmTests={handleConfirmTests}
+        />
       )}
 
       {/* ==========================================
@@ -4331,7 +3543,7 @@ export default function ShiftWizard({
 
           <div className="p-6 space-y-5 font-sans">
             {/* Metadata Rows */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs border-b border-dashed border-slate-100 pb-3 pt-0.5">
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 text-xs border-b border-dashed border-slate-100 pb-3 pt-0.5">
               <div>
                 <span className="text-slate-400 block">
                   {t("Operator In-charge:", "ڈیوٹی آپریٹر:")}
@@ -4392,7 +3604,7 @@ export default function ShiftWizard({
             </div>
 
             {/* Outlays balances */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5 text-xs border-b border-slate-100 pb-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-x-6 gap-y-2.5 text-xs border-b border-slate-100 pb-4">
               <div className="flex justify-between">
                 <span className="text-slate-450">
                   {t("Debits (Receivables):", "گاہکوں کا بل:")}
@@ -4625,7 +3837,7 @@ export default function ShiftWizard({
                             </span>
                           </div>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-4 divide-x divide-slate-100 text-xs">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-slate-100 text-xs">
                           {[
                             { label: 'Liters', value: `${result.totalLiters.toLocaleString('en-PK', { maximumFractionDigits: 0 })}L`, color: 'text-slate-700' },
                             { label: 'Avg Landed', value: `Rs.${avgLandedCost.toFixed(2)}`, color: 'text-blue-700' },
@@ -4669,7 +3881,7 @@ export default function ShiftWizard({
 
                   {/* Totals */}
                   <div className="bg-slate-800 rounded-lg p-3 text-white">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                       {[
                         { label: 'Total Revenue', value: `Rs.${fifoResults.reduce((s,r) => s + r.result.totalRevenue, 0).toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, color: 'text-blue-300' },
                         { label: 'Total COGS', value: `Rs.${fifoResults.reduce((s,r) => s + r.result.totalCOGS, 0).toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, color: 'text-amber-300' },

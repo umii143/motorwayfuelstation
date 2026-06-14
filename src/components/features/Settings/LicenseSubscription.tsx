@@ -16,7 +16,7 @@ export default function LicenseSubscription({ settings }: { settings: GlobalSett
         <p className="text-sm text-slate-500 mt-1">Manage your FuelPro Enterprise licensing and billing details.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl border-2 border-emerald-100 shadow-sm p-6 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-3 bg-emerald-100 rounded-bl-xl">
             <ShieldCheck className="h-6 w-6 text-emerald-600" />

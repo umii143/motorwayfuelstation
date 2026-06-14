@@ -3,6 +3,7 @@ import { useBIAggregator, BIFilter } from '../../../lib/bi/biAggregator';
 import { useInventoryStore } from '../../../stores/useInventoryStore';
 import { useShiftStore } from '../../../stores/useShiftStore';
 import { useFinancialStore } from '../../../stores/useFinancialStore';
+import { useShallow } from 'zustand/react/shallow';
 import { BIDateFilter } from './components/BIDateFilter';
 import { BIMasterKPIs } from './components/BIMasterKPIs';
 import { BIInvestmentChart } from './components/BIInvestmentChart';
@@ -14,9 +15,12 @@ import { BIAIInsights } from './components/BIAIInsights';
 import { TrendingUp } from 'lucide-react';
 
 export default function BusinessIntelligenceDashboard() {
-  const { products = [], stockBatches: batches = [] } = useInventoryStore();
-  const { shifts = [] } = useShiftStore();
-  const { standaloneExpenses = [] } = useFinancialStore();
+  const { products = [], stockBatches: batches = [] } = useInventoryStore(useShallow(state => ({
+    products: state.products,
+    stockBatches: state.stockBatches
+  })));
+  const { shifts = [] } = useShiftStore(useShallow(state => ({ shifts: state.shifts })));
+  const { standaloneExpenses = [] } = useFinancialStore(useShallow(state => ({ standaloneExpenses: state.standaloneExpenses })));
 
   const [filter, setFilter] = useState<BIFilter>(() => {
     // Default to 'This Month'
@@ -32,7 +36,7 @@ export default function BusinessIntelligenceDashboard() {
   const metrics = useBIAggregator(filter);
 
   return (
-    <div className="max-w-7xl mx-auto pb-20">
+    <div className="pb-20">
       <div className="mb-6">
         <h1 className="text-3xl font-black text-slate-900 tracking-tight">Owner's Financial Command Center</h1>
         <p className="text-slate-500 font-medium mt-1">Real-time business intelligence, capital tracking, and profitability analytics.</p>
@@ -44,7 +48,7 @@ export default function BusinessIntelligenceDashboard() {
       <BIMasterKPIs metrics={metrics} settings={{}} />
 
       {/* ROW 2: Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
         <div className="lg:col-span-2">
           <BIInvestmentChart shifts={shifts} batches={batches} expenses={standaloneExpenses} filter={filter} />
         </div>

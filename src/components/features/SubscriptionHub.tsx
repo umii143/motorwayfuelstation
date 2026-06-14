@@ -164,9 +164,9 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
   const isExpired = organization?.subscriptionStatus === 'expired' || (organization?.subscriptionStatus === 'trialing' && daysRemaining === 0);
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-12">
+    <div className="space-y-8 pb-12">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+      <div className="flex flex-row items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
         {/* Decorative background element */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-orange-100 to-transparent rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/4"></div>
         
@@ -246,7 +246,7 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
               <p className="text-sm text-slate-500">{t('Choose your preferred method for seamless transactions in Pakistan.', 'پاکستان میں ہموار لین دین کے لیے اپنا پسندیدہ طریقہ منتخب کریں۔')}</p>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { id: 'safepay', name: 'Safepay', desc: 'Cards / Bank' },
                 { id: 'jazzcash', name: 'JazzCash', desc: 'Mobile Wallet' },
@@ -281,7 +281,7 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
           </div>
 
           {/* Pricing Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 items-center">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6 pt-4 items-center">
             {plans.map(plan => {
               const Icon = plan.icon;
               return (

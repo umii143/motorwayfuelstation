@@ -36,7 +36,7 @@ export default function LossDashboard({ settings, stationId }: LossDashboardProp
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <div className="bg-white p-5 rounded-xl border border-rose-200 shadow-sm shadow-rose-100 relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-rose-50 rounded-full group-hover:scale-110 transition-transform"></div>
           <div className="relative">

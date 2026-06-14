@@ -121,7 +121,7 @@ export default function DipCalculator({ settings, tanks }: DipCalculatorProps) {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-main)] shadow-sm">
+      <div className="flex flex-row items-center justify-between gap-4 bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-main)] shadow-sm">
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-lg shadow-blue-500/30">
             <Droplets className="h-7 w-7" />
@@ -269,7 +269,7 @@ export default function DipCalculator({ settings, tanks }: DipCalculatorProps) {
               </div>
 
               {/* Breakdown Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
                 <div className="bg-[var(--bg-card)] rounded-xl border border-[var(--border-main)] p-4">
                   <p className="font-mono text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-1">Raw Volume</p>
                   <p className="font-mono text-2xl font-black text-[var(--text-main)]">{result.rawLiters.toLocaleString()} L</p>
@@ -302,7 +302,7 @@ export default function DipCalculator({ settings, tanks }: DipCalculatorProps) {
                       Variance vs System Stock
                     </h4>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-center">
                     <div>
                       <p className="font-mono text-lg font-black text-[var(--text-main)]">{selectedTank.currentStock.toLocaleString()}</p>
                       <p className="font-sans text-[10px] text-[var(--text-muted)]">System Stock</p>

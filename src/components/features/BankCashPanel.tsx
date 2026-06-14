@@ -127,9 +127,6 @@ export default function BankCashPanel({
     return list.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
   }, [shifts, banks, timeFilter, lubePosSales, settings]);
 
-  const totalBankBalances = useMemo(() => {
-    return banks.reduce((sum, b) => sum + b.balance, 0);
-  }, [banks]);
 
   const handleCreateBank = (e: React.FormEvent) => {
     e.preventDefault();
@@ -204,7 +201,7 @@ export default function BankCashPanel({
   return (
     <div className="space-y-6 pb-20 lg:pb-5">
       {/* HEADER ROW WITH INTEGRATED DYNAMIC TIME FILTER */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-slate-200 pb-4">
+      <div className="flex flex-row flex-wrap items-start items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
           <span className="font-mono text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-0.5">OPERATIONS</span>
           <h2 className="font-sans text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
@@ -248,7 +245,7 @@ export default function BankCashPanel({
       </div>
 
       {/* DYNAMIC KPI CARDS SECTION */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* AMBER CARD - TOTAL IN BANKS */}
         <div 
           onClick={() => setIsDrillDownOpen(true)}
@@ -326,11 +323,11 @@ export default function BankCashPanel({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 items-start">
         {/* LEFT COLUMN (2/3): BANKS DIRECTORY & MANUAL ADJUSTMENTS */}
         <div className="lg:col-span-2 space-y-6">
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex flex-row items-center sm:justify-between gap-3">
               <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider">
                 {t('Registered Banking Institutions Directory', 'بینک اکاؤنٹ معلوماتی فہرست')}
               </h3>
@@ -568,7 +565,7 @@ export default function BankCashPanel({
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
                     {t('Adjustment Action Type:', 'تبدیلی کی نوعیت:')}
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 text-xs">
                     <button
                       type="button"
                       onClick={() => setAdjustType('deposit')}

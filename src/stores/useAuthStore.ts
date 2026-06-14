@@ -33,6 +33,8 @@ export interface UserSession {
 interface AuthState {
   user: UserSession | null;
   isAuthenticated: boolean;
+  orgId?: string;
+  stationId?: string;
   login: (user: UserSession) => void;
   logout: () => void;
   verifyPin: (pin: string) => boolean; // For security hardening

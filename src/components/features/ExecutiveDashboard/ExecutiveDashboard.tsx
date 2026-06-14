@@ -48,7 +48,7 @@ export const ExecutiveDashboard: React.FC = () => {
 
   return (
     <RoleGuard allowedRoles={['Owner', 'Manager']} fallbackMessage="Executive Dashboard is strictly restricted.">
-      <div className="space-y-6 animate-fade-in pb-12 max-w-7xl mx-auto">
+      <div className="space-y-6 animate-fade-in pb-12">
         <div className="flex items-center justify-between gap-3 mb-8">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-lg">
@@ -122,7 +122,7 @@ export const ExecutiveDashboard: React.FC = () => {
 
             <div className="flex-1 w-full bg-white/5 p-6 rounded-2xl backdrop-blur-sm border border-white/10">
               <h3 className="text-sm font-bold text-slate-300 mb-4">Health Factors</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 gap-x-8 gap-y-4">
                 {health.factors.map(f => (
                   <div key={f.name} className="flex flex-col gap-1.5">
                     <div className="flex items-center justify-between">
@@ -155,7 +155,7 @@ export const ExecutiveDashboard: React.FC = () => {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {health.recommendations.map((rec, idx) => {
                 const isCritical = rec.type === 'critical';
                 const isWarning = rec.type === 'warning';
@@ -200,7 +200,7 @@ export const ExecutiveDashboard: React.FC = () => {
         )}
 
         {/* Core KPI Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mt-8">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4 mt-8">
           
           {/* Revenue */}
           <div 
@@ -358,7 +358,7 @@ export const ExecutiveDashboard: React.FC = () => {
         </div>
 
         {/* Secondary Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
           
           {/* Inventory Insights */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex items-center justify-between">

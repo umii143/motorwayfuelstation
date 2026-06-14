@@ -282,7 +282,7 @@ export default function LocalStorageMigrationWizard() {
 
               {/* Actions */}
               {migrationState === 'idle' && (
-                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <div className="flex flex-row gap-3 pt-2">
                   <button
                     onClick={() => {
                       localStorage.setItem('fuelpro_migrated_to_cloud', 'true');

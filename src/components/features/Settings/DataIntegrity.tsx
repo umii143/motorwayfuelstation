@@ -96,7 +96,7 @@ export default function DataIntegrity({ settings, activeStationId, onNavigate }:
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
           <div className="flex items-center gap-2 text-sm font-bold text-slate-500 mb-2">
             <CheckCircle2 className="h-4 w-4 text-emerald-500" />

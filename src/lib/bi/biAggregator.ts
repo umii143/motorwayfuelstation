@@ -3,6 +3,7 @@ import { useInventoryStore } from '../../stores/useInventoryStore';
 import { useShiftStore } from '../../stores/useShiftStore';
 import { useFinancialStore } from '../../stores/useFinancialStore';
 import { useSupplierStore } from '../../stores/useSupplierStore';
+import { useShallow } from 'zustand/react/shallow';
 
 export interface BIFilter {
   startDate: string;
@@ -11,10 +12,14 @@ export interface BIFilter {
 }
 
 export function useBIAggregator(filter: BIFilter) {
-  const { products = [], stockBatches: batches = [], rateHistory = [] } = useInventoryStore();
-  const { shifts = [] } = useShiftStore();
-  const { standaloneExpenses = [] } = useFinancialStore();
-  const { suppliers = [] } = useSupplierStore();
+  const { products = [], stockBatches: batches = [], rateHistory = [] } = useInventoryStore(useShallow(state => ({
+    products: state.products,
+    stockBatches: state.stockBatches,
+    rateHistory: state.rateHistory
+  })));
+  const { shifts = [] } = useShiftStore(useShallow(state => ({ shifts: state.shifts })));
+  const { standaloneExpenses = [] } = useFinancialStore(useShallow(state => ({ standaloneExpenses: state.standaloneExpenses })));
+  const { suppliers = [] } = useSupplierStore(useShallow(state => ({ suppliers: state.suppliers })));
 
   const metrics = useMemo(() => {
     let totalInvested = 0;

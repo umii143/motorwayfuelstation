@@ -83,7 +83,7 @@ export default function RateWizard({
     const update = rateUpdateQueue[0];
     
     // Call useShiftStore handleMidShiftSplit
-    await useShiftStore.getState().handleMidShiftSplit(update.productId, readings);
+    await useShiftStore.getState().handleMidShiftSplit(update.productId, readings, new Date().toISOString());
     
     // Now update the product rate
     onUpdateProductRate(update.productId, update.newRate, update.reason, update.author, undefined, undefined, undefined, undefined, update.attachments);
@@ -195,7 +195,7 @@ export default function RateWizard({
           {products.filter(p => p.type === 'fuel').map((product) => (
             <div 
               key={product.id}
-              className="p-5 border border-slate-200 rounded-2xl bg-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+              className="p-5 border border-slate-200 rounded-2xl bg-white shadow-sm flex flex-row items-center justify-between gap-4"
             >
               <div className="flex items-center gap-4">
                 <div className="size-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0">

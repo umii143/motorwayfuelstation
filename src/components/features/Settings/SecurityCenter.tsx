@@ -186,7 +186,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
             {t('To reset your PIN, please verify your identity using one of the methods below.', 'اپنا پن ری سیٹ کرنے کے لیے، درج ذیل میں سے کسی ایک طریقے کا استعمال کر کے اپنی شناخت کی تصدیق کریں۔')}
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
             <button
               type="button"
               onClick={() => setForgotMethod('password')}
@@ -299,7 +299,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-xs font-bold text-slate-500 uppercase">{t('New PIN', 'نیا پن')}</label>
               <input 
@@ -362,7 +362,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           
           {/* PIN Management Section */}
@@ -435,7 +435,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
                 <div className="pt-4 border-t border-slate-100">
                   <h4 className="text-sm font-bold text-slate-800 mb-4">{t('Session & Biometrics', 'سیشن اور بائیو میٹرکس')}</h4>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-2 md:grid-cols-2 gap-6">
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('Auto-Lock Timeout', 'آٹو لاک ٹائم آؤٹ')}</label>
                       <div className="relative">

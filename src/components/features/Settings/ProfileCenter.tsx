@@ -34,7 +34,7 @@ export default function ProfileCenter({ settings }: { settings: GlobalSettings }
         <p className="text-sm text-slate-500 mt-1">{t('Manage your personal information and login credentials.', 'اپنی ذاتی معلومات اور لاگ ان کی تفصیلات کا نظم کریں۔')}</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Profile Card */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-6 text-center relative overflow-hidden">
@@ -102,7 +102,7 @@ export default function ProfileCenter({ settings }: { settings: GlobalSettings }
             
             <div className="p-6">
               <form onSubmit={handleSave} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('Full Name', 'پورا نام')}</label>
                     <div className="relative">
@@ -198,7 +198,7 @@ export default function ProfileCenter({ settings }: { settings: GlobalSettings }
             </div>
             
             <div className="p-6 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border border-slate-200 rounded-lg bg-slate-50/50">
+              <div className="flex flex-row items-center justify-between gap-4 p-4 border border-slate-200 rounded-lg bg-slate-50/50">
                 <div>
                   <h4 className="text-sm font-bold text-slate-800">{t('Account Password', 'اکاؤنٹ کا پاس ورڈ')}</h4>
                   <p className="text-xs text-slate-500 mt-0.5">{t('Change your password regularly to keep your account secure.', 'اپنے اکاؤنٹ کو محفوظ رکھنے کے لیے پاس ورڈ تبدیل کریں۔')}</p>
@@ -211,7 +211,7 @@ export default function ProfileCenter({ settings }: { settings: GlobalSettings }
                 </button>
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border border-slate-200 rounded-lg bg-slate-50/50">
+              <div className="flex flex-row items-center justify-between gap-4 p-4 border border-slate-200 rounded-lg bg-slate-50/50">
                 <div>
                   <div className="flex items-center gap-2">
                     <h4 className="text-sm font-bold text-slate-800">{t('Two-Factor Authentication', 'دوہری تصدیق (2FA)')}</h4>

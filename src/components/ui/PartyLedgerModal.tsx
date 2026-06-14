@@ -19,6 +19,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
 import {
   X,
   Printer,
@@ -313,101 +314,105 @@ export default function PartyLedgerModal({
             </div>
 
             {/* ─── TRANSACTION TABLE ─── */}
-            <div className="flex-1 overflow-auto">
-              <table className="w-full border-collapse text-left font-sans text-xs min-w-full max-w-[640px]">
-                <thead className="sticky top-0 z-10">
-                  <tr className="bg-[var(--bg-secondary)] border-b border-[var(--border-main)] text-[var(--text-muted)] font-bold select-none">
-                    <th className="py-3 px-4 w-full max-w-[100px]">Date</th>
-                    <th className="py-3 px-4">Description</th>
-                    <th className="py-3 px-2 w-full max-w-[80px]">Type</th>
-                    <th className="py-3 px-4 text-right w-full max-w-[120px]">{debitLabel}</th>
-                    <th className="py-3 px-4 text-right w-full max-w-[120px]">{creditLabel}</th>
-                    <th className="py-3 px-4 text-right w-full max-w-[130px]">Balance</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[var(--border-main)]">
+            <div className="flex-1 overflow-auto bg-[var(--bg-card)]">
+              <div className="min-w-[640px]">
+                {/* Header */}
+                <div className="flex items-center bg-[var(--bg-secondary)] border-b border-[var(--border-main)] text-[var(--text-muted)] font-bold select-none text-xs">
+                  <div className="py-3 px-4 w-[15%]">Date</div>
+                  <div className="py-3 px-4 w-[25%]">Description</div>
+                  <div className="py-3 px-2 w-[12%]">Type</div>
+                  <div className="py-3 px-4 text-right w-[16%]">{debitLabel}</div>
+                  <div className="py-3 px-4 text-right w-[16%]">{creditLabel}</div>
+                  <div className="py-3 px-4 text-right w-[16%]">Balance</div>
+                </div>
+
+                {/* Body */}
+                <div className="divide-y divide-[var(--border-main)] text-xs">
                   {filteredEntries.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="py-20 text-center text-[var(--text-muted)] font-sans italic">
-                        No transactions found for selected date range.
-                      </td>
-                    </tr>
+                    <div className="py-20 text-center text-[var(--text-muted)] font-sans italic">
+                      No transactions found for selected date range.
+                    </div>
                   ) : (
-                    filteredEntries.map((entry, idx) => {
-                      const isDebit  = entry.debit  > 0;
-                      const isCredit = entry.credit > 0;
-                      const balancePositive = entry.balance >= 0;
+                    <List
+                      itemCount={filteredEntries.length}
+                      itemSize={56}
+                      width="100%"
+                      height={Math.min(filteredEntries.length * 56, 450)}
+                    >
+                      {({ index, style }: ListChildComponentProps) => {
+                        const entry = filteredEntries[index];
+                        const isDebit  = entry.debit  > 0;
+                        const isCredit = entry.credit > 0;
+                        const balancePositive = entry.balance >= 0;
 
-                      return (
-                        <motion.tr
-                          key={entry.id}
-                          initial={{ opacity: 0, x: -6 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: Math.min(idx * 0.02, 0.25) }}
-                          className={`hover:bg-[var(--bg-secondary)]/70 transition-colors ${idx % 2 === 0 ? 'bg-[var(--bg-card)]' : 'bg-[var(--bg-secondary)]/20'}`}
-                        >
-                          {/* Date */}
-                          <td className="py-3 px-4">
-                            <span className="font-mono text-[10.5px] text-[var(--text-muted)] font-semibold block">{entry.date}</span>
-                            {entry.time && <span className="font-mono text-[9px] text-[var(--text-muted)]/60 block">{entry.time}</span>}
-                          </td>
+                        return (
+                          <div
+                            style={style}
+                            className={`flex items-center hover:bg-[var(--bg-secondary)]/70 transition-colors border-b border-[var(--border-main)] ${index % 2 === 0 ? 'bg-[var(--bg-card)]' : 'bg-[var(--bg-secondary)]/20'}`}
+                          >
+                            {/* Date */}
+                            <div className="py-3 px-4 w-[15%] truncate">
+                              <span className="font-mono text-[10.5px] text-[var(--text-muted)] font-semibold block">{entry.date}</span>
+                              {entry.time && <span className="font-mono text-[9px] text-[var(--text-muted)]/60 block">{entry.time}</span>}
+                            </div>
 
-                          {/* Description */}
-                          <td className="py-3 px-4">
-                            <span className="font-sans text-[11.5px] font-semibold text-[var(--text-main)] leading-snug">{entry.description}</span>
-                          </td>
+                            {/* Description */}
+                            <div className="py-3 px-4 w-[25%] pr-2">
+                              <span className="font-sans text-[11.5px] font-semibold text-[var(--text-main)] leading-snug line-clamp-2">{entry.description}</span>
+                            </div>
 
-                          {/* Tag */}
-                          <td className="py-3 px-2">
-                            {entry.tag && (
-                              <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
-                                isDebit
-                                  ? 'bg-rose-50 text-rose-700'
-                                  : 'bg-emerald-50 text-emerald-700'
-                              }`}>
-                                {isDebit ? <ArrowUpRight className="h-2.5 w-2.5" /> : <ArrowDownRight className="h-2.5 w-2.5" />}
-                                {entry.tag}
+                            {/* Tag */}
+                            <div className="py-3 px-2 w-[12%] truncate">
+                              {entry.tag && (
+                                <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
+                                  isDebit
+                                    ? 'bg-rose-50 text-rose-700'
+                                    : 'bg-emerald-50 text-emerald-700'
+                                }`}>
+                                  {isDebit ? <ArrowUpRight className="h-2.5 w-2.5 shrink-0" /> : <ArrowDownRight className="h-2.5 w-2.5 shrink-0" />}
+                                  <span className="truncate">{entry.tag}</span>
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Debit */}
+                            <div className="py-3 px-4 text-right w-[16%] truncate">
+                              {isDebit ? (
+                                <span className="font-mono text-[12px] font-bold text-rose-600">
+                                  {formatCurrency(entry.debit, settings)}
+                                </span>
+                              ) : (
+                                <span className="text-[var(--text-muted)]/30 font-mono text-[10px]">—</span>
+                              )}
+                            </div>
+
+                            {/* Credit */}
+                            <div className="py-3 px-4 text-right w-[16%] truncate">
+                              {isCredit ? (
+                                <span className="font-mono text-[12px] font-bold text-emerald-600">
+                                  {formatCurrency(entry.credit, settings)}
+                                </span>
+                              ) : (
+                                <span className="text-[var(--text-muted)]/30 font-mono text-[10px]">—</span>
+                              )}
+                            </div>
+
+                            {/* Running Balance */}
+                            <div className="py-3 px-4 text-right w-[16%] truncate">
+                              <span className={`font-mono text-[12px] font-extrabold ${balancePositive ? 'text-rose-500' : 'text-emerald-600'}`}>
+                                {formatCurrency(Math.abs(entry.balance), settings)}
                               </span>
-                            )}
-                          </td>
-
-                          {/* Debit */}
-                          <td className="py-3 px-4 text-right">
-                            {isDebit ? (
-                              <span className="font-mono text-[12px] font-bold text-rose-600">
-                                {formatCurrency(entry.debit, settings)}
+                              <span className={`block text-[8.5px] font-bold uppercase tracking-wider mt-0.5 ${balancePositive ? 'text-rose-400' : 'text-emerald-400'}`}>
+                                {balancePositive ? 'Dr' : 'Cr'}
                               </span>
-                            ) : (
-                              <span className="text-[var(--text-muted)]/30 font-mono text-[10px]">—</span>
-                            )}
-                          </td>
-
-                          {/* Credit */}
-                          <td className="py-3 px-4 text-right">
-                            {isCredit ? (
-                              <span className="font-mono text-[12px] font-bold text-emerald-600">
-                                {formatCurrency(entry.credit, settings)}
-                              </span>
-                            ) : (
-                              <span className="text-[var(--text-muted)]/30 font-mono text-[10px]">—</span>
-                            )}
-                          </td>
-
-                          {/* Running Balance */}
-                          <td className="py-3 px-4 text-right">
-                            <span className={`font-mono text-[12px] font-extrabold ${balancePositive ? 'text-rose-500' : 'text-emerald-600'}`}>
-                              {formatCurrency(Math.abs(entry.balance), settings)}
-                            </span>
-                            <span className={`block text-[8.5px] font-bold uppercase tracking-wider mt-0.5 ${balancePositive ? 'text-rose-400' : 'text-emerald-400'}`}>
-                              {balancePositive ? 'Dr' : 'Cr'}
-                            </span>
-                          </td>
-                        </motion.tr>
-                      );
-                    })
+                            </div>
+                          </div>
+                        );
+                      }}
+                    </List>
                   )}
-                </tbody>
-              </table>
+                </div>
+              </div>
             </div>
 
             {/* ─── TOTALS FOOTER ─── */}

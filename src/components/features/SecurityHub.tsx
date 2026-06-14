@@ -78,9 +78,9 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
   ];
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div className="flex flex-row items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-lg">
             <Shield className="h-7 w-7" />
@@ -126,7 +126,7 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
         transition={{ duration: 0.2 }}
       >
         {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-6">
             {/* MFA Setup Card */}
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
               <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
@@ -218,7 +218,7 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
 
         {activeTab === 'sessions' && (
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="p-6 border-b border-slate-200 flex flex-row items-center justify-between gap-4">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">{t('Active Device Sessions', 'فعال ڈیوائس سیشنز')}</h3>
                 <p className="text-sm text-slate-500">

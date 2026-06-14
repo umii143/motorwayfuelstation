@@ -13,6 +13,7 @@ import {
   CheckCircle,
   SmartphoneNfc
 } from 'lucide-react';
+import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
 import { DigitalAccount, Shift, GlobalSettings, LubePosSale } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
@@ -118,9 +119,6 @@ export default function DigitalCashPanel({
     return list.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
   }, [shifts, timeFilter, lubePosSales, settings]);
 
-  const totalDigitalBalances = useMemo(() => {
-    return digitalAccounts.reduce((sum, d) => sum + d.balance, 0);
-  }, [digitalAccounts]);
 
   const handleCreateAccount = (e: React.FormEvent) => {
     e.preventDefault();
@@ -195,7 +193,7 @@ export default function DigitalCashPanel({
   return (
     <div className="space-y-6 pb-20 lg:pb-5">
       {/* HEADER SECTION WITH INTEGRATED DYNAMIC TIME FILTER */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-slate-200 pb-4">
+      <div className="flex flex-row flex-wrap items-start items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
           <span className="font-mono text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-0.5">OPERATIONS</span>
           <h2 className="font-sans text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
@@ -239,7 +237,7 @@ export default function DigitalCashPanel({
       </div>
 
       {/* DYNAMIC KPI CARDS SECTION */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* AMBER CARD - TOTAL IN DIGITAL */}
         <div 
           onClick={() => setIsDrillDownOpen(true)}
@@ -317,11 +315,11 @@ export default function DigitalCashPanel({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 items-start">
         {/* LEFT COLUMN: WALLETS AND TRANSACTIONS HISTORY */}
         <div className="lg:col-span-2 space-y-6">
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex flex-row items-center sm:justify-between gap-3">
               <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider">
                 {t('Mobile Wallets & Electronic Merchant Accounts', 'موبائل والٹس اور POS ڈائریکٹری')}
               </h3>
@@ -388,33 +386,42 @@ export default function DigitalCashPanel({
               </p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left font-sans text-xs border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50 border-b border-slate-150 text-slate-500 uppercase font-bold tracking-wider text-[10px]">
-                      <th className="py-2.5 px-3">{t('Date', 'تاریخ')}</th>
-                      <th className="py-2.5 px-3">{t('Shift ID & Operator', 'شفٹ اور کیشئر')}</th>
-                      <th className="py-2.5 px-3">{t('Method / Wallet', 'طریقہ کار')}</th>
-                      <th className="py-2.5 px-3">{t('Transaction/SMS ID', 'ٹرانزیکشن ID')}</th>
-                      <th className="py-2.5 px-3 text-right">{t('Amount Received', 'وصول شدہ رقم')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 font-medium">
-                    {compiledShiftDigitalEntries.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50/50">
-                        <td className="py-3 px-3 text-slate-550 font-mono text-[11px]">{item.date}</td>
-                        <td className="py-3 px-3">
-                          <div className="font-semibold text-slate-800">{item.shiftId}</div>
-                          <span className="text-[10px] text-slate-400 block mt-0.5">{item.operator.toUpperCase()}</span>
-                        </td>
-                        <td className="py-3 px-3 text-slate-700 font-semibold">{item.methodName}</td>
-                        <td className="py-3 px-3 text-slate-500 font-mono text-[11.5px]">{item.transactionId}</td>
-                        <td className="py-3 px-3 text-right font-mono text-emerald-600 font-extrabold text-[12px]">
-                          +{formatCurrency(item.amount, settings)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <div className="min-w-[800px]">
+                  <div className="flex items-center bg-slate-50 border-b border-slate-150 text-[10px] font-bold uppercase tracking-wider text-slate-500 py-2.5 px-3">
+                    <div className="w-[15%] text-left">{t('Date', 'تاریخ')}</div>
+                    <div className="w-[25%] text-left">{t('Shift ID & Operator', 'شفٹ اور کیشئر')}</div>
+                    <div className="w-[20%] text-left">{t('Method / Wallet', 'طریقہ کار')}</div>
+                    <div className="w-[25%] text-left">{t('Transaction/SMS ID', 'ٹرانزیکشن ID')}</div>
+                    <div className="w-[15%] text-right">{t('Amount Received', 'وصول شدہ رقم')}</div>
+                  </div>
+                  
+                  <div className="divide-y divide-slate-100">
+                    <List
+                      itemCount={compiledShiftDigitalEntries.length}
+                      itemSize={56}
+                      width="100%"
+                      height={Math.min(compiledShiftDigitalEntries.length * 56, 400)}
+                    >
+                      {({ index, style }: ListChildComponentProps) => {
+                        const item = compiledShiftDigitalEntries[index];
+                        return (
+                          <div style={style} className="flex items-center hover:bg-slate-50/50 border-b border-slate-100 px-3">
+                            <div className="w-[15%] text-slate-550 font-mono text-[11px] truncate">{item.date}</div>
+                            <div className="w-[25%]">
+                              <div className="font-semibold text-slate-800 truncate">{item.shiftId}</div>
+                              <div className="text-[10px] text-slate-400 truncate mt-0.5">{item.operator.toUpperCase()}</div>
+                            </div>
+                            <div className="w-[20%] text-slate-700 font-semibold truncate pr-2">{item.methodName}</div>
+                            <div className="w-[25%] text-slate-500 font-mono text-[11.5px] truncate pr-2">{item.transactionId}</div>
+                            <div className="w-[15%] text-right font-mono text-emerald-600 font-extrabold text-[12px] truncate">
+                              +{formatCurrency(item.amount, settings)}
+                            </div>
+                          </div>
+                        );
+                      }}
+                    </List>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -559,7 +566,7 @@ export default function DigitalCashPanel({
                   <label className="block text-xs font-bold text-slate-555 uppercase tracking-wider mb-1">
                     {t('Adjustment Action Type:', 'تبدیلی کی نوعیت:')}
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 text-xs">
                     <button
                       type="button"
                       onClick={() => setAdjustType('deposit')}

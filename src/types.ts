@@ -201,6 +201,7 @@ export interface SupplierPayment extends TenantDocument {
   bankAccountId?: string;
   reference: string;
   notes?: string;
+  paymentMode?: string;
 }
 
 export interface DiscountEntry extends TenantDocument {
@@ -431,10 +432,11 @@ export interface StockBatch extends TenantDocument {
   lastRevaluationAt?: string;
 
   // ─── STATUS ───────────────────────────────────────────────────
-  status: 'active' | 'depleted' | 'partial' | 'exhausted'; // 'depleted' kept for compat
-  batchStatus?: 'active' | 'partial' | 'exhausted';
+  status: 'active' | 'depleted' | 'partial' | 'exhausted' | 'quarantined' | 'pending_qa';
+  batchStatus?: 'active' | 'partial' | 'exhausted' | 'depleted' | 'quarantined' | 'pending_qa';
   qualityStatus?: 'clear' | 'under_review' | 'quarantined';
   notes?: string;
+  supplierName?: string;
 }
 
 export interface CogsRecord extends TenantDocument {
@@ -609,6 +611,9 @@ export interface GlobalSettings extends TenantDocument {
     priceOverridePin?: string;
     sessionTimeoutMinutes?: number;
     biometricEnabled?: boolean;
+    enforceShiftHours?: boolean;
+    autoCloseShifts?: boolean;
+    maxShiftDurationHours?: number;
   };
   treasury?: {
     cashVarianceThreshold?: number;
@@ -618,6 +623,10 @@ export interface GlobalSettings extends TenantDocument {
     defaultOwnerSafe?: string;
   };
   customExpenseCategories?: { id: string; label: string; urdu: string }[];
+  phone?: string;
+  email?: string;
+  tagline?: string;
+  logoUrl?: string;
 }
 
 export const EXPENSE_CATEGORIES = [
@@ -720,6 +729,9 @@ export interface RateHistoryEntry extends TenantDocument {
   stockAtChange?: number;
   gainLoss?: number;
   changedAt?: number;
+  timestamp?: number;
+  revaluationImpact?: number;
+  stockOnHand?: number;
 }
 
 export interface StaffFinanceEntry extends TenantDocument {
@@ -982,7 +994,7 @@ export interface JournalEntry extends TenantDocument {
   id: string;
   date: string; // ISO DateTime string
   partyId?: string; // customerId, supplierId, bankId, digitalId, or staffId
-  partyType?: 'customer' | 'supplier' | 'bank' | 'digital' | 'staff' | 'expense' | 'revenue';
+  partyType?: 'customer' | 'supplier' | 'bank' | 'digital' | 'staff' | 'expense' | 'revenue' | 'shift' | 'asset';
   partyName?: string;
   type: 'debit' | 'credit';
   amount: number;

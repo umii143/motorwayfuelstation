@@ -61,7 +61,7 @@ export function RatesStep({ products, onUpdate, onContinue, language }: Props) {
             {products.map((product, index) => (
               <div 
                 key={product.id}
-                className="p-5 border border-slate-200 rounded-2xl bg-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-bottom-4"
+                className="p-5 border border-slate-200 rounded-2xl bg-white shadow-sm flex flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-bottom-4"
                 style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'both' }}
               >
                 <div className="flex items-center gap-4">

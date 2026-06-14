@@ -45,7 +45,7 @@ export default function BillingAndReports({ settings, stationId }: BillingAndRep
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-center">
           <span className="text-xs font-bold text-slate-500 uppercase">Total Billed</span>
           <span className="text-2xl font-black font-mono text-rose-600 mt-1">{settings.currency} {totalConsumption.toLocaleString()}</span>
@@ -62,8 +62,8 @@ export default function BillingAndReports({ settings, stationId }: BillingAndRep
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
-        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto flex-1">
+      <div className="flex flex-row justify-between items-start items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
+        <div className="flex flex-row gap-4 w-full sm:w-auto flex-1">
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-slate-400" />
             <select 

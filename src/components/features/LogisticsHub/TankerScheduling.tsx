@@ -139,7 +139,7 @@ export default function TankerScheduling({ settings, stationId }: TankerScheduli
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
+      <div className="flex flex-row justify-between items-start items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
         <div className="relative w-full sm:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input 
@@ -160,7 +160,7 @@ export default function TankerScheduling({ settings, stationId }: TankerScheduli
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredSchedules.map(schedule => (
           <div key={schedule.id} className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition">
             <div className="flex justify-between items-start mb-3">
@@ -233,7 +233,7 @@ export default function TankerScheduling({ settings, stationId }: TankerScheduli
             </div>
             
             <div className="p-6 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">OMC / Supplier *</label>
                   <select value={supplierId} onChange={e => setSupplierId(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white">
@@ -269,7 +269,7 @@ export default function TankerScheduling({ settings, stationId }: TankerScheduli
                 
                 <div className="md:col-span-2 pt-4 border-t border-slate-100">
                   <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Logistics Details (Optional)</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">Tanker Reg No.</label>
                       <input type="text" value={vehicleRegNo} onChange={e => setVehicleRegNo(e.target.value.toUpperCase())} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono uppercase" placeholder="TTR-123" />

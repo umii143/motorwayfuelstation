@@ -1,12 +1,13 @@
 import React from 'react';
 import { ShieldAlert, Droplets, Receipt, Activity } from 'lucide-react';
 import { useInventoryStore } from '../../../../stores/useInventoryStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useCustomerStore } from '../../../../stores/useCustomerStore';
 
 export function BISmartMetrics({ metrics }: any) {
   const { smartMetrics } = metrics;
-  const { products = [] } = useInventoryStore();
-  const { customers = [] } = useCustomerStore();
+  const { products = [] } = useInventoryStore(useShallow(state => ({ products: state.products })));
+  const customers = useCustomerStore(useShallow(state => state.customers || []));
 
   const formatCurrency = (val: number) => 
     new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', minimumFractionDigits: 0 }).format(val);
@@ -18,7 +19,7 @@ export function BISmartMetrics({ metrics }: any) {
   // For actual turnover we'd need average inventory / COGS
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-6">
       
       {/* Cash Leakage (Test Liters) */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">

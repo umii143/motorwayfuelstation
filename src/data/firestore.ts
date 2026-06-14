@@ -15,6 +15,8 @@ import {
   isRecordInBusinessScope,
   withBusinessScope
 } from '../lib/businessScope';
+// Lazy import SyncEngine to avoid circular dependency issues at boot
+import { SyncEngine } from '../services/core/SyncEngine';
 
 // Helper to construct references
 const getCollectionRef = (orgId: string, stationId: string, collectionName: string) => {
@@ -42,7 +44,34 @@ const createMetadata = (orgId: string, stationId: string, businessType: 'fuel_st
 };
 
 export const firestoreDb = {
-  // Generic single save/update
+  // Raw save used by SyncEngine when internet is restored
+  _rawSaveDocument: async (
+    orgId: string, 
+    stationId: string, 
+    businessType: 'fuel_station' | 'cng' | 'lube',
+    collectionName: string, 
+    docId: string, 
+    data: any
+  ) => {
+    const enforcedBusinessType = getBusinessTypeForStation(stationId);
+    const docRef = getDocumentRef(orgId, stationId, collectionName, docId);
+    const docSnap = await getDoc(docRef);
+    
+    const meta = docSnap.exists() 
+      ? {
+          orgId,
+          stationId,
+          businessId: stationId,
+          businessType: enforcedBusinessType,
+          updatedBy: auth.currentUser?.uid || 'system',
+          updatedAt: new Date().toISOString()
+        } 
+      : createMetadata(orgId, stationId, businessType);
+
+    await setDoc(docRef, { ...withBusinessScope(data, stationId, orgId), ...meta }, { merge: true });
+  },
+
+  // Generic single save/update (intercepted by Sync Engine)
   saveDocument: async (
     orgId: string, 
     stationId: string, 
@@ -52,36 +81,54 @@ export const firestoreDb = {
     data: any
   ) => {
     try {
-      const enforcedBusinessType = getBusinessTypeForStation(stationId);
-      const docRef = getDocumentRef(orgId, stationId, collectionName, docId);
-      const docSnap = await getDoc(docRef);
-      
-      const meta = docSnap.exists() 
-        ? {
-            orgId,
-            stationId,
-            businessId: stationId,
-            businessType: enforcedBusinessType,
-            updatedBy: auth.currentUser?.uid || 'system',
-            updatedAt: new Date().toISOString()
-          } 
-        : createMetadata(orgId, stationId, businessType);
-
-      await setDoc(docRef, { ...withBusinessScope(data, stationId, orgId), ...meta }, { merge: true });
+      if (!SyncEngine.getQueueStatus().isOnline) {
+        throw new Error('Offline mode active - enqueueing mutation');
+      }
+      await firestoreDb._rawSaveDocument(orgId, stationId, businessType, collectionName, docId, data);
     } catch (err) {
-      console.error(`Error saving document in ${collectionName}:`, err);
-      throw err;
+      console.log(`[Offline Sync] Queueing save for ${collectionName}/${docId}`);
+      await SyncEngine.enqueue({
+        entityType: collectionName as any,
+        operation: 'update',
+        payload: data,
+        referenceId: docId,
+        priority: (collectionName === 'shifts' || collectionName === 'treasury') ? 'critical' : 'high',
+        orgId,
+        stationId,
+        businessType,
+        collectionName,
+        docId
+      });
     }
   },
 
-  // Generic single delete
+  // Raw delete used by SyncEngine
+  _rawDeleteDocument: async (orgId: string, stationId: string, collectionName: string, docId: string) => {
+    const docRef = getDocumentRef(orgId, stationId, collectionName, docId);
+    await deleteDoc(docRef);
+  },
+
+  // Generic single delete (intercepted by Sync Engine)
   deleteDocument: async (orgId: string, stationId: string, collectionName: string, docId: string) => {
     try {
-      const docRef = getDocumentRef(orgId, stationId, collectionName, docId);
-      await deleteDoc(docRef);
+      if (!SyncEngine.getQueueStatus().isOnline) {
+        throw new Error('Offline mode active - enqueueing deletion');
+      }
+      await firestoreDb._rawDeleteDocument(orgId, stationId, collectionName, docId);
     } catch (err) {
-      console.error(`Error deleting document in ${collectionName}:`, err);
-      throw err;
+      console.log(`[Offline Sync] Queueing delete for ${collectionName}/${docId}`);
+      await SyncEngine.enqueue({
+        entityType: collectionName as any,
+        operation: 'delete',
+        payload: null,
+        referenceId: docId,
+        priority: 'high',
+        orgId,
+        stationId,
+        businessType: getBusinessTypeForStation(stationId) as any,
+        collectionName,
+        docId
+      });
     }
   },
 
@@ -154,6 +201,7 @@ export const firestoreDb = {
       await setDoc(doc(dbFS, 'auditLogs', auditLog.id), auditLog);
     } catch (err) {
       console.error(`Error executing batch save in ${collectionName}:`, err);
+      // Not queueing batch migrations for now, as they are typically run when strictly online
       throw err;
     }
   }
