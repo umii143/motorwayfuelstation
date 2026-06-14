@@ -7,6 +7,7 @@ interface NativeAuthContextType {
   unlock: () => Promise<boolean>;
   requireBiometric: (reason: string) => Promise<boolean>;
   lockApp: () => void;
+  forceUnlock: () => void;
 }
 
 const NativeAuthContext = createContext<NativeAuthContextType | undefined>(undefined);
@@ -70,8 +71,12 @@ export const NativeAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setIsLocked(true);
   };
 
+  const forceUnlock = () => {
+    setIsLocked(false);
+  };
+
   return (
-    <NativeAuthContext.Provider value={{ isLocked, unlock, requireBiometric, lockApp }}>
+    <NativeAuthContext.Provider value={{ isLocked, unlock, requireBiometric, lockApp, forceUnlock }}>
       {children}
     </NativeAuthContext.Provider>
   );

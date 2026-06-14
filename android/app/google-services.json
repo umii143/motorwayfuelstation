@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "652067090194",
+    "project_id": "vyaparfuelstation-50a00",
+    "storage_bucket": "vyaparfuelstation-50a00.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:652067090194:android:60517b94a9f1d89ef30dcb",
+        "android_client_info": {
+          "package_name": "com.motorway.fuelpro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "652067090194-0s3aaalg24j3lk4p51n3dopb1rj0otql.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.motorway.fuelpro",
+            "certificate_hash": "833ee99cafb7cdc0e9c3f7ef2b35e825111bf30d"
+          }
+        },
+        {
+          "client_id": "652067090194-jkqmkv40m35lmhlp42srkisc1vfip008.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBBrNq07BEC67oJ25rKF3USKjur4xBsgBc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "652067090194-jkqmkv40m35lmhlp42srkisc1vfip008.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

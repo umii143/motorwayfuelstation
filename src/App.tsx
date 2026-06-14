@@ -1,6 +1,8 @@
 import { StationProvider, useStation } from './contexts/StationContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ScannerProvider } from './contexts/ScannerContext';
 import LocalStorageMigrationWizard from './components/features/LocalStorageMigrationWizard';
+import { AutoUpdatePrompt } from './components/shared/AutoUpdatePrompt';
 import { firestoreDb } from './data/firestore';
 import { writeBatch, doc, setDoc } from 'firebase/firestore';
 import { dbFS } from './lib/firebase';
@@ -38,6 +40,8 @@ const LubeReports = React.lazy(() => import('./components/features/LubeReports')
 import LoadingScreen from './components/ui/LoadingScreen';
 const DiscountsHub = React.lazy(() => import('./components/features/DiscountsHub'));
 import { SplashSequence } from './components/features/SplashSequence';
+import { LanguageSelect } from './components/features/Onboarding/LanguageSelect';
+import { WelcomeCarousel } from './components/features/Onboarding/WelcomeCarousel';
 import { NativeAuthProvider, useNativeAuth } from './contexts/NativeAuthContext';
 import { SecurityScreen } from './components/features/SecurityScreen';
 import { mobileEngine } from './services/mobile/MobileExperienceEngine';
@@ -218,6 +222,21 @@ function MainApp() {
       setActiveView(nextView);
     }
   }, [activeView, resolveActiveView]);
+
+  // Synchronize theme to document.documentElement (html tag)
+  React.useEffect(() => {
+    const root = document.documentElement;
+    // Remove all previous theme classes
+    root.classList.remove('theme-light', 'theme-dark', 'theme-blue', 'theme-emerald', 'theme-orange', 'dark');
+    
+    const theme = settings.theme || 'light';
+    root.classList.add(`theme-${theme}`);
+    
+    // Add the "dark" class if it's not the light theme, to enable Tailwind's dark: variants
+    if (theme !== 'light') {
+      root.classList.add('dark');
+    }
+  }, [settings.theme]);
 
   // Ctrl+K opens global search
   useKeyboardShortcut(SHORTCUTS.GLOBAL_SEARCH, () => setSearchOpen(true));
@@ -710,8 +729,9 @@ function MainApp() {
 
   // 3. Authenticated FuelPro active workspace
   return (
-    <div className={`h-[100dvh] w-full overflow-hidden flex flex-col bg-background text-foreground selection:bg-orange-500/10 selection:text-orange-600 transition-colors duration-500 theme-${settings.theme || 'light'}`}>
+    <div className={`h-[100dvh] w-full overflow-hidden flex flex-col bg-[var(--bg-app)] text-[var(--text-main)] selection:bg-[var(--color-accent)]/20 selection:text-[var(--color-accent)] transition-colors duration-500`}>
       <OfflineIndicator />
+      <AutoUpdatePrompt />
       <LocalStorageMigrationWizard />
       {/* ALWAYS SHOW ONBOARDING WIZARD IF REQUESTED MANUALLY OR IF NEVER COMPLETED */}
       {(showOnboarding || activeView === 'onboarding') && (
@@ -1071,28 +1091,60 @@ const SecureApp = ({ children }: { children: React.ReactNode }) => {
 export default function App() {
   const [dbReady, setDbReady] = useState(false);
   const [splashDone, setSplashDone] = useState(false);
+  const [languageSelected, setLanguageSelected] = useState(false);
+  const [carouselDone, setCarouselDone] = useState(false);
+  const [preferredLang, setPreferredLang] = useState<'en'|'ur'>('ur');
 
   useEffect(() => {
     initDatabase().then(() => setDbReady(true)).catch(console.error);
     mobileEngine.initialize();
+
+    const savedLang = localStorage.getItem('fuelpro_language');
+    if (savedLang) {
+      setPreferredLang(savedLang as 'en'|'ur');
+      setLanguageSelected(true);
+    }
+    const seenCarousel = localStorage.getItem('fuelpro_seen_carousel');
+    if (seenCarousel) setCarouselDone(true);
   }, []);
+
+  const handleLanguageSelect = (lang: 'en'|'ur') => {
+    localStorage.setItem('fuelpro_language', lang);
+    setPreferredLang(lang);
+    setLanguageSelected(true);
+  };
+
+  const handleCarouselComplete = () => {
+    localStorage.setItem('fuelpro_seen_carousel', 'true');
+    setCarouselDone(true);
+  };
 
   return (
     <>
       {!splashDone && <SplashSequence onComplete={() => setSplashDone(true)} />}
       
-      {splashDone && !dbReady && <LoadingScreen />}
+      {splashDone && !languageSelected && (
+         <LanguageSelect onSelect={handleLanguageSelect} />
+      )}
+
+      {splashDone && languageSelected && !carouselDone && (
+         <WelcomeCarousel language={preferredLang} onComplete={handleCarouselComplete} />
+      )}
+
+      {splashDone && languageSelected && carouselDone && !dbReady && <LoadingScreen />}
       
-      {splashDone && dbReady && (
-        <NativeAuthProvider>
-          <SecureApp>
-            <AuthProvider>
-              <StationProvider>
-                <MainApp />
-              </StationProvider>
-            </AuthProvider>
-          </SecureApp>
-        </NativeAuthProvider>
+      {splashDone && languageSelected && carouselDone && dbReady && (
+        <AuthProvider>
+          <NativeAuthProvider>
+            <ScannerProvider>
+              <SecureApp>
+                <StationProvider>
+                  <MainApp />
+                </StationProvider>
+              </SecureApp>
+            </ScannerProvider>
+          </NativeAuthProvider>
+        </AuthProvider>
       )}
     </>
   );

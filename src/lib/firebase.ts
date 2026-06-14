@@ -10,12 +10,17 @@ import { initializeApp } from 'firebase/app';
 import {
   getAuth,
   signInWithPopup,
+  signInWithCredential,
   GoogleAuthProvider,
   onAuthStateChanged,
   signOut,
+  signInWithCustomToken,
   type User
 } from 'firebase/auth';
 import { getFirestore, initializeFirestore } from 'firebase/firestore';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import { Capacitor } from '@capacitor/core';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 
 // Firebase project configuration
 const firebaseConfig = {
@@ -36,6 +41,7 @@ const auth = getAuth(app);
 const dbFS = initializeFirestore(app, {
   experimentalForceLongPolling: true
 });
+const functions = getFunctions(app);
 const googleProvider = new GoogleAuthProvider();
 
 // Request email and profile scopes
@@ -48,12 +54,22 @@ googleProvider.addScope('profile');
  */
 export async function signInWithGoogle(): Promise<{ user: User, token: string }> {
   try {
-    const result = await signInWithPopup(auth, googleProvider);
-    const credential = GoogleAuthProvider.credentialFromResult(result);
-    const token = credential?.accessToken || "";
-    return { user: result.user, token };
+    if (Capacitor.isNativePlatform()) {
+      const result = await FirebaseAuthentication.signInWithGoogle();
+      if (result.credential?.idToken) {
+        const credential = GoogleAuthProvider.credential(result.credential.idToken);
+        const fbResult = await signInWithCredential(auth, credential);
+        return { user: fbResult.user, token: result.credential.idToken };
+      }
+      throw new Error("No credential returned from native Google Sign-in");
+    } else {
+      const result = await signInWithPopup(auth, googleProvider);
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential?.accessToken || "";
+      return { user: result.user, token };
+    }
   } catch (error: any) {
-    console.error("[Google Auth] Error during popup sign in:", error);
+    console.error("[Google Auth] Error during sign in:", error);
     throw error;
   }
 }
@@ -105,5 +121,9 @@ export function onFirebaseAuthChange(callback: (user: User | null) => void) {
   return onAuthStateChanged(auth, callback);
 }
 
-export { auth, app, dbFS };
+// Cloud Functions for OTP
+export const sendEmailOTP = httpsCallable<{ email: string }, { success: boolean }>(functions, 'sendEmailOTP');
+export const verifyEmailOTP = httpsCallable<{ email: string, otp: string }, { success: boolean, token: string }>(functions, 'verifyEmailOTP');
+
+export { auth, app, dbFS, functions };
 export type { User as FirebaseUser };

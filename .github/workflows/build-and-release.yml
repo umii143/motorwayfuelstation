@@ -1,0 +1,65 @@
+on:
+  push:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed for creating releases
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Build Web Assets
+        run: npm run build
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Extract Version
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          FULL_VERSION="$VERSION.${{ github.run_number }}"
+          echo "APP_VERSION=$FULL_VERSION" >> $GITHUB_ENV
+          
+          # Update build.gradle with the new version code and name
+          sed -i "s/versionCode [0-9]*/versionCode ${{ github.run_number }}/g" android/app/build.gradle
+          sed -i "s/versionName \".*\"/versionName \"$FULL_VERSION\"/g" android/app/build.gradle
+
+      - name: Make gradlew executable
+        working-directory: ./android
+        run: chmod +x ./gradlew
+
+      - name: Build Android APK
+        working-directory: ./android
+        run: ./gradlew assembleDebug
+
+      - name: Create Release and Upload APK
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ env.APP_VERSION }}
+          name: FuelPro Enterprise v${{ env.APP_VERSION }}
+          body: "Automated build of FuelPro from branch main."
+          files: android/app/build/outputs/apk/debug/app-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

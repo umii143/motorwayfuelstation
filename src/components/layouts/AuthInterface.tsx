@@ -20,6 +20,7 @@ import {
 import { GlobalSettings } from "../../types";
 import { useStation } from "../../contexts/StationContext";
 import { PoweredByUmarAli } from "../shared/PoweredByUmarAli";
+import { NativeHaptics } from '../../services/hardware/Haptics';
 
 interface AuthInterfaceProps {
   settings: GlobalSettings;
@@ -27,42 +28,30 @@ interface AuthInterfaceProps {
 }
 
 type AuthMode =
-  | "login"
-  | "signup"
-  | "verify_email_pending"
-  | "forgot_password"
-  | "mfa_challenge"
-  | "reset_password";
+  | "email_otp_request"
+  | "email_otp_verify"
+  | "mfa_challenge";
 
 export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfaceProps) {
   const { showAlert } = useStation();
   const {
-    loginWithEmail,
     loginWithGoogle,
-    signUpUser,
     verifyTOTPChallenge,
-    sendPasswordReset,
-    confirmPasswordReset,
-    resendVerificationEmail,
-    checkEmailVerified,
-    pendingVerification
+    requestOTP,
+    verifyOTP
   } = useAuth();
   const isUrdu = settings.language === "ur";
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
 
-  const [authMode, setAuthMode] = useState<AuthMode>("login");
+  const [authMode, setAuthMode] = useState<AuthMode>("email_otp_request");
 
   // Core inputs
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [otpCode, setOtpCode] = useState("");
   const [totpCode, setTotpCode] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Token state
   const [tempToken, setTempToken] = useState("");
-  const [resetToken, setResetToken] = useState("");
 
   // UX feedback
   const [isLoading, setIsLoading] = useState(false);
@@ -72,34 +61,13 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
   const [verifiedEmail, setVerifiedEmail] = useState("");
 
 
-  // Detect ?verified=1 redirect from Firebase verification link
   useEffect(() => {
+    // Clear URL params if any leftover from old flows
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get("verified") === "1") {
-      setSuccessMsg(t(
-        "Email verified! Please sign in to activate your account.",
-        "ای میل تصدیق ہو گئی! براہ کرم لاگ ان کریں۔"
-      ));
+    if (urlParams.get("verified") || urlParams.get("token")) {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-
-    const token = urlParams.get("token");
-    if (token) {
-      setResetToken(token);
-      setAuthMode("reset_password");
-      setSuccessMsg(t(
-        "Reset link recognized. Enter your new password below.",
-        "لنک سے ریکوری ٹوکن موصول ہو گیا۔ نیا پاسورڈ درج کریں۔"
-      ));
-    }
   }, []);
-
-  // If the context reports a pending verification (e.g., after page refresh), show that screen
-  useEffect(() => {
-    if (pendingVerification) {
-      setAuthMode("verify_email_pending");
-    }
-  }, [pendingVerification]);
 
   const resetFeedback = () => {
     setErrorMsg("");
@@ -107,32 +75,50 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
   };
 
   // ─────────────────────────────────────────────────────────────────────────
-  // LOGIN
+  // EMAIL OTP FLOW
   // ─────────────────────────────────────────────────────────────────────────
-  const handleLoginSubmit = async (e: React.FormEvent) => {
+  const handleRequestOTP = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      setErrorMsg(t("Please fill in all credentials.", "براہ کرم تمام معلومات درج کریں۔"));
+    if (!email) {
+      setErrorMsg(t("Please enter your email.", "براہ کرم اپنی ای میل درج کریں۔"));
+      NativeHaptics.error();
       return;
     }
     resetFeedback();
     setIsLoading(true);
     try {
-      const data = await loginWithEmail(email, password);
-      if (data?.emailNotVerified) {
-        setVerifiedEmail(email);
-        setAuthMode("verify_email_pending");
-        setSuccessMsg(t(
-          "A new verification email has been sent. Please check your inbox.",
-          "نئی تصدیقی ای میل بھیج دی گئی۔ براہ کرم ان باکس چیک کریں۔"
-        ));
-      } else if (data?.mfaRequired) {
-        setTempToken(data.tempMfaToken);
-        setAuthMode("mfa_challenge");
-      }
-      // onAuthStateChanged handles the rest (profile load → onLoginSuccess)
+      await requestOTP(email);
+      setAuthMode("email_otp_verify");
+      setSuccessMsg(t(
+        `A 6-digit OTP has been sent to ${email}.`,
+        `آپ کی ای میل پر ایک 6 ہندسوں کا OTP بھیج دیا گیا ہے۔`
+      ));
+      NativeHaptics.success();
     } catch (err: any) {
-      setErrorMsg(err.message || "Authentication failed.");
+      setErrorMsg(err.message || "Failed to send OTP.");
+      NativeHaptics.error();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpCode || otpCode.length !== 6) {
+      setErrorMsg(t("Please enter the 6-digit OTP.", "براہ کرم 6 ہندسوں کا OTP درج کریں۔"));
+      NativeHaptics.error();
+      return;
+    }
+    resetFeedback();
+    setIsLoading(true);
+    try {
+      // The verifyOTP function uses signInWithCustomToken internally
+      // and onAuthStateChanged will handle the rest.
+      await verifyOTP(email, otpCode);
+      NativeHaptics.success();
+    } catch (err: any) {
+      setErrorMsg(err.message || "Invalid OTP or expired.");
+      NativeHaptics.error();
     } finally {
       setIsLoading(false);
     }
@@ -145,6 +131,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
     e.preventDefault();
     if (!totpCode || totpCode.length < 6) {
       setErrorMsg(t("Enter 6-digit OTP code.", "براہ کرم 6 ہندسوں کا کوڈ درج کریں۔"));
+      NativeHaptics.error();
       return;
     }
     resetFeedback();
@@ -152,146 +139,10 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
     try {
       const data = await verifyTOTPChallenge(totpCode, tempToken);
       onLoginSuccess(data.user, data.token);
+      NativeHaptics.success();
     } catch (err: any) {
       setErrorMsg(err.message || "TOTP Code authentication error.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // SIGNUP — Firebase Email Verification
-  // ─────────────────────────────────────────────────────────────────────────
-  const handleSignupSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) {
-      setErrorMsg(t("Please enter a valid email and password.", "براہ کرم ای میل اور پاس ورڈ درج کریں۔"));
-      return;
-    }
-    if (password.length < 6) {
-      setErrorMsg(t("Password must be at least 6 characters.", "پاس ورڈ کم از کم 6 حروف کا ہونا ضروری ہے۔"));
-      return;
-    }
-    if (password !== confirmPassword) {
-      setErrorMsg(t("Passwords do not match.", "پاس ورڈ یکساں نہیں ہیں۔"));
-      return;
-    }
-    resetFeedback();
-    setIsLoading(true);
-    try {
-      const data = await signUpUser(email, password);
-      if (data?.verificationEmailSent) {
-        setVerifiedEmail(data.email);
-        setAuthMode("verify_email_pending");
-        setSuccessMsg(t(
-          `Verification email sent to ${data.email}. Click the link in your inbox to activate your account.`,
-          `تصدیقی ای میل ${data.email} پر بھیج دی گئی۔ اپنے ان باکس میں لنک پر کلک کریں۔`
-        ));
-      }
-    } catch (err: any) {
-      setErrorMsg(err.message || "Sign up failed.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // EMAIL VERIFICATION PENDING SCREEN — actions
-  // ─────────────────────────────────────────────────────────────────────────
-  const handleResendVerification = async () => {
-    setIsLoading(true);
-    resetFeedback();
-    try {
-      await resendVerificationEmail();
-      setSuccessMsg(t(
-        "Verification email resent. Check your Gmail inbox (and spam folder).",
-        "تصدیقی ای میل دوبارہ بھیج دی گئی۔ ان باکس اور اسپام چیک کریں۔"
-      ));
-    } catch (err: any) {
-      setErrorMsg(err.message || "Could not resend verification email.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleCheckVerification = async () => {
-    setIsCheckingVerification(true);
-    resetFeedback();
-    try {
-      const verified = await checkEmailVerified();
-      if (verified) {
-        setSuccessMsg(t(
-          "Email verified! Signing you in…",
-          "ای میل تصدیق ہو گئی! لاگ ان ہو رہا ہے…"
-        ));
-        // onAuthStateChanged will fire automatically after the user signs back in.
-        // Just show the login form so they can sign in with their credentials.
-        setTimeout(() => {
-          setAuthMode("login");
-          setSuccessMsg(t(
-            "✅ Email verified! Please sign in with your credentials.",
-            "✅ ای میل تصدیق ہو گئی! اب لاگ ان کریں۔"
-          ));
-        }, 1500);
-      } else {
-        setErrorMsg(t(
-          "Email not yet verified. Please click the link in your Gmail inbox first.",
-          "ای میل ابھی تصدیق نہیں ہوئی۔ براہ کرم پہلے ان باکس میں لنک پر کلک کریں۔"
-        ));
-      }
-    } catch (err: any) {
-      setErrorMsg(err.message || "Verification check failed.");
-    } finally {
-      setIsCheckingVerification(false);
-    }
-  };
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // FORGOT PASSWORD — Firebase native reset email
-  // ─────────────────────────────────────────────────────────────────────────
-  const handleForgotSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) {
-      setErrorMsg(t("Enter your registered email address.", "براہ کرم ای میل درج کریں۔"));
-      return;
-    }
-    resetFeedback();
-    setIsLoading(true);
-    try {
-      await sendPasswordReset(email);
-      setSuccessMsg(t(
-        `Password reset email sent to ${email}. Click the link in your Gmail inbox to set a new password.`,
-        `${email} پر پاسورڈ ری سیٹ ای میل بھیج دی گئی۔ ان باکس میں لنک پر کلک کریں۔`
-      ));
-    } catch (err: any) {
-      setErrorMsg(err.message || "Forgot Password request failed.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // RESET PASSWORD (from link ?token=...)
-  // ─────────────────────────────────────────────────────────────────────────
-  const handleResetSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!password || password.length < 6) {
-      setErrorMsg(t("Password must be at least 6 characters.", "پاس ورڈ کم از کم 6 حروف کا ہونا ضروری ہے۔"));
-      return;
-    }
-    if (password !== confirmPassword) {
-      setErrorMsg(t("Passwords do not match.", "پاس ورڈ یکساں نہیں ہیں۔"));
-      return;
-    }
-    resetFeedback();
-    setIsLoading(true);
-    try {
-      await confirmPasswordReset(resetToken, password);
-      setSuccessMsg(t("Password updated successfully! Please sign in.", "پاس ورڈ کامیابی سے بدل گیا۔ لاگ ان کریں۔"));
-      setAuthMode("login");
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } catch (err: any) {
-      setErrorMsg(err.message || "Password reset failed.");
+      NativeHaptics.error();
     } finally {
       setIsLoading(false);
     }
@@ -306,8 +157,10 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
     try {
       const data = await loginWithGoogle();
       onLoginSuccess(data.user, data.token || "");
+      NativeHaptics.success();
     } catch (err: any) {
       setErrorMsg(err.message || "Google sign-in failed.");
+      NativeHaptics.error();
     } finally {
       setIsLoading(false);
     }
@@ -338,7 +191,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
         <motion.div
           animate={{ opacity: [0.05, 0.15, 0.05] }}
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute top-[30%] -left-[10%] w-[60%] h-[60%] rounded-full bg-cyan-600 blur-[160px]"
+          className="absolute top-[30%] -left-[10%] w-[60%] h-[60%] rounded-full bg-amber-600 blur-[160px]"
         />
       </div>
 
@@ -388,12 +241,12 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
           )}
         </AnimatePresence>
 
-        {/* ── A. LOGIN ── */}
-        {authMode === "login" && (
-          <form onSubmit={handleLoginSubmit} className="space-y-4">
+        {/* ── A. EMAIL OTP REQUEST ── */}
+        {authMode === "email_otp_request" && (
+          <form onSubmit={handleRequestOTP} className="space-y-4">
             <div className="space-y-1.5">
               <label className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider">
-                {t("Admin Account Email", "ای میل ایڈریس")}
+                {t("Email Address", "ای میل ایڈریس")}
               </label>
               <div className="relative">
                 <input
@@ -407,34 +260,6 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <div className="flex justify-between items-center">
-                <label className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  {t("Password", "پاس ورڈ")}
-                </label>
-                <button
-                  type="button"
-                  onClick={() => { resetFeedback(); setAuthMode("forgot_password"); }}
-                  className="font-sans text-xs font-semibold text-orange-500 hover:underline"
-                >
-                  {t("Forgot Password?", "پاس ورڈ بھول گیا؟")}
-                </button>
-              </div>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  placeholder="••••••••••••"
-                  onChange={e => setPassword(e.target.value)}
-                  className="w-full bg-white/5 backdrop-blur-md rounded-xl border border-white/10 p-3.5 pl-11 pr-11 font-mono text-xs text-white focus:outline-none focus:border-orange-500 focus:bg-white/10 transition-all placeholder:text-slate-500"
-                />
-                <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-500" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-3.5 text-slate-500 hover:text-slate-300">
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
             <button
               type="submit"
               disabled={isLoading}
@@ -442,7 +267,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
             >
               {isLoading
                 ? <RefreshCw className="h-4 w-4 animate-spin" />
-                : <><span>{t("Sign In", "لاگ ان کریں")}</span><ArrowRight className="h-4 w-4" /></>
+                : <><span>{t("Continue with Email", "ای میل کے ساتھ جاری رکھیں")}</span><ArrowRight className="h-4 w-4" /></>
               }
             </button>
 
@@ -470,283 +295,58 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
                 {t("Sign in with Google", "گوگل سے لاگ ان کریں")}
               </span>
             </button>
-
-            <div className="mt-6 text-center">
-              <p className="font-sans text-xs text-slate-400">
-                {t("New station owner? ", "پہلی بار آئے ہیں؟ ")}
-                <button
-                  type="button"
-                  onClick={() => { resetFeedback(); setEmail(""); setPassword(""); setConfirmPassword(""); setAuthMode("signup"); }}
-                  className="font-bold text-orange-500 hover:underline"
-                >
-                  {t("Create Account", "اکاؤنٹ بنائیں")}
-                </button>
-              </p>
-            </div>
           </form>
         )}
 
-        {/* ── B. SIGNUP ── */}
-        {authMode === "signup" && (
-          <form onSubmit={handleSignupSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider">
-                {t("Email Address", "ای میل ایڈریس")}
-              </label>
-              <div className="relative">
-                <input
-                  type="email"
-                  value={email}
-                  placeholder="owner@yourstation.com"
-                  onChange={e => setEmail(e.target.value)}
-                  className="w-full bg-white/5 backdrop-blur-md rounded-xl border border-white/10 p-3.5 pl-11 font-mono text-xs text-white focus:outline-none focus:border-orange-500 focus:bg-white/10 transition-all placeholder:text-slate-500"
-                />
-                <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-500" />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider">
-                {t("Password", "پاس ورڈ")}
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  placeholder="Min. 6 characters"
-                  onChange={e => setPassword(e.target.value)}
-                  className="w-full bg-white/5 backdrop-blur-md rounded-xl border border-white/10 p-3.5 pl-11 pr-11 font-mono text-xs text-white focus:outline-none focus:border-orange-500 focus:bg-white/10 transition-all placeholder:text-slate-500"
-                />
-                <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-500" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-3.5 text-slate-500 hover:text-slate-300">
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider">
-                {t("Confirm Password", "پاس ورڈ دوبارہ")}
-              </label>
-              <div className="relative">
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  placeholder="••••••••••••"
-                  onChange={e => setConfirmPassword(e.target.value)}
-                  className="w-full bg-white/5 backdrop-blur-md rounded-xl border border-white/10 p-3.5 pl-11 pr-11 font-mono text-xs text-white focus:outline-none focus:border-orange-500 focus:bg-white/10 transition-all placeholder:text-slate-500"
-                />
-                <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-500" />
-                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3.5 top-3.5 text-slate-500 hover:text-slate-300">
-                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
-            {/* Info notice */}
-            <div className="rounded-xl bg-blue-950/30 border border-blue-900/50 p-3.5 text-[11px] text-blue-300 font-sans leading-relaxed flex items-start gap-2.5">
-              <MailCheck className="h-4 w-4 shrink-0 mt-0.5 text-blue-400" />
-              <span>
-                {t(
-                  "After signing up, a verification link will be sent to your Gmail. Click it to activate your account — no OTP needed.",
-                  "اکاؤنٹ بنانے کے بعد آپ کی جی میل پر ایک تصدیقی لنک بھیجا جائے گا۔ اسے کلک کریں اور اکاؤنٹ فعال کریں۔"
-                )}
-              </span>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full mt-2 bg-orange-600 hover:bg-orange-500 disabled:bg-slate-700 text-white font-sans text-xs font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all uppercase tracking-wider"
-            >
-              {isLoading
-                ? <RefreshCw className="h-4 w-4 animate-spin" />
-                : <><span>{t("Create Account & Send Verification", "اکاؤنٹ بنائیں")}</span><SendHorizontal className="h-4 w-4" /></>
-              }
-            </button>
-
-            <button
-              type="button"
-              onClick={() => { resetFeedback(); setAuthMode("login"); }}
-              className="w-full py-2 font-sans text-xs font-bold text-slate-400 hover:text-white flex items-center justify-center gap-1 mt-2"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              <span>{t("Back to Login", "لاگ ان پر واپس")}</span>
-            </button>
-          </form>
-        )}
-
-        {/* ── C. EMAIL VERIFICATION PENDING ── */}
-        {authMode === "verify_email_pending" && (
-          <div className="space-y-6">
-            <div className="text-center space-y-3">
-              <motion.div
-                animate={{ y: [0, -6, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-950/40 border border-orange-700/50 text-orange-400 mx-auto"
-              >
-                <MailCheck className="h-8 w-8" />
-              </motion.div>
-              <h3 className="font-sans text-base font-bold text-white">
-                {t("Check Your Gmail Inbox", "اپنا جی میل ان باکس چیک کریں")}
-              </h3>
-              <p className="font-sans text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
-                {t(
-                  "We sent a verification link to your email address. Click the link to activate your FuelPro account.",
-                  "آپ کی ای میل پر ایک تصدیقی لنک بھیجا گیا ہے۔ اپنا اکاؤنٹ فعال کرنے کے لیے لنک پر کلک کریں۔"
-                )}
-              </p>
-              {verifiedEmail && (
-                <div className="inline-flex items-center gap-2 bg-slate-800/60 rounded-xl px-4 py-2 border border-slate-700/50">
-                  <Mail className="h-3.5 w-3.5 text-orange-400" />
-                  <span className="font-mono text-xs text-orange-300 font-bold">{verifiedEmail}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Steps */}
-            <div className="space-y-2.5">
-              {[
-                t("Open your Gmail inbox", "اپنا جی میل ان باکس کھولیں"),
-                t('Find the email from "FuelPro ERP" or "noreply@…"', '"FuelPro ERP" کی ای میل تلاش کریں'),
-                t("Click the verification link inside the email", "ای میل میں تصدیقی لنک پر کلک کریں"),
-                t('Return here and click "I\'ve Verified My Email"', 'واپس آ کر نیچے بٹن دبائیں')
-              ].map((step, i) => (
-                <div key={i} className="flex items-center gap-3 bg-slate-800/40 rounded-xl px-4 py-2.5 border border-slate-700/30">
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-600 text-white text-[10px] font-black flex items-center justify-center">{i + 1}</span>
-                  <span className="font-sans text-[11px] text-slate-300">{step}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Primary CTA */}
-            <button
-              onClick={handleCheckVerification}
-              disabled={isCheckingVerification}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 text-white font-sans text-xs font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all uppercase tracking-wider"
-            >
-              {isCheckingVerification
-                ? <><RefreshCw className="h-4 w-4 animate-spin" /><span>{t("Checking…", "جانچ ہو رہی ہے…")}</span></>
-                : <><CheckCircle className="h-4 w-4" /><span>{t("I've Verified My Email", "میں نے تصدیق کر لی")}</span></>
-              }
-            </button>
-
-            {/* Resend */}
-            <button
-              onClick={handleResendVerification}
-              disabled={isLoading}
-              className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white font-sans text-xs font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all"
-            >
-              {isLoading
-                ? <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                : <SendHorizontal className="h-3.5 w-3.5" />
-              }
-              <span>{t("Resend Verification Email", "تصدیقی ای میل دوبارہ بھیجیں")}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => { resetFeedback(); setAuthMode("login"); }}
-              className="w-full py-2 font-sans text-xs font-bold text-slate-500 hover:text-slate-300 flex items-center justify-center gap-1"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              <span>{t("Back to Login", "لاگ ان پر واپس")}</span>
-            </button>
-          </div>
-        )}
-
-        {/* ── D. MFA CHALLENGE (existing TOTP users) ── */}
-        {authMode === "mfa_challenge" && (
-          <form onSubmit={handleMfaSubmit} className="space-y-4">
+        {/* ── B. EMAIL OTP VERIFY ── */}
+        {authMode === "email_otp_verify" && (
+          <form onSubmit={handleVerifyOTP} className="space-y-4">
             <div className="text-center space-y-2 mb-6">
-              <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-orange-950/40 text-orange-400 mb-2 border border-orange-900/50">
-                <Fingerprint className="h-6 w-6" />
+              <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-950/40 text-emerald-400 mb-2 border border-emerald-900/50">
+                <MailCheck className="h-6 w-6" />
               </div>
               <h3 className="font-sans text-sm font-bold text-slate-200 uppercase tracking-wider">
-                {t("Two-Factor Authentication", "دو مرحلہ تصدیق")}
+                {t("Check Your Inbox", "اپنا ان باکس چیک کریں")}
               </h3>
               <p className="font-sans text-[11px] text-slate-400 max-w-xs mx-auto leading-relaxed">
-                {t("Enter the 6-digit code from your Authenticator app.", "مستند میکر ایپ سے 6 ہندسوں کا کوڈ درج کریں۔")}
+                {t(`Enter the 6-digit code sent to ${email}`, `${email} پر بھیجا گیا 6 ہندسوں کا کوڈ درج کریں`)}
               </p>
             </div>
+
             <div className="space-y-1.5">
               <input
                 type="text"
                 maxLength={6}
-                value={totpCode}
+                value={otpCode}
                 placeholder="000000"
-                onChange={e => setTotpCode(e.target.value.replace(/\D/g, ""))}
+                onChange={e => setOtpCode(e.target.value.replace(/\D/g, ""))}
                 className="w-full bg-slate-800 rounded-xl border border-slate-700 p-3 text-center font-mono text-2xl text-white tracking-widest focus:outline-none focus:border-orange-500 font-extrabold"
               />
             </div>
-            <button type="submit" disabled={isLoading} className="w-full bg-orange-600 hover:bg-orange-500 disabled:bg-slate-700 text-white font-sans text-xs font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all uppercase tracking-wider">
-              {isLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <><span>{t("Verify", "تصدیق کریں")}</span><KeyRound className="h-4 w-4" /></>}
+
+            <button
+              type="submit"
+              disabled={isLoading || otpCode.length !== 6}
+              className="w-full mt-2 bg-orange-600 hover:bg-orange-500 disabled:bg-slate-700 text-white font-sans text-xs font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all uppercase tracking-wider"
+            >
+              {isLoading
+                ? <RefreshCw className="h-4 w-4 animate-spin" />
+                : <><span>{t("Verify OTP", "او ٹی پی کی تصدیق کریں")}</span><CheckCircle className="h-4 w-4" /></>
+              }
             </button>
-            <button type="button" onClick={() => { resetFeedback(); setAuthMode("login"); }} className="w-full py-2 font-sans text-xs font-bold text-slate-400 hover:text-white flex items-center justify-center gap-1">
-              <ChevronLeft className="h-4 w-4" /><span>{t("Cancel", "منسوخ")}</span>
+
+            <button
+              type="button"
+              onClick={() => { resetFeedback(); setAuthMode("email_otp_request"); setOtpCode(""); }}
+              className="w-full py-2 font-sans text-xs font-bold text-slate-400 hover:text-white flex items-center justify-center gap-1 mt-2"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <span>{t("Change Email", "ای میل تبدیل کریں")}</span>
             </button>
           </form>
         )}
 
-        {/* ── E. FORGOT PASSWORD ── */}
-        {authMode === "forgot_password" && (
-          <form onSubmit={handleForgotSubmit} className="space-y-4">
-            <div className="text-center space-y-1 mb-6">
-              <h3 className="font-sans text-sm font-bold text-slate-200 uppercase tracking-wider">
-                {t("Reset Password", "پاس ورڈ ری سیٹ کریں")}
-              </h3>
-              <p className="font-sans text-[11px] text-slate-400 leading-relaxed">
-                {t(
-                  "Enter your registered email. Firebase will send a secure password reset link to your Gmail.",
-                  "اپنی رجسٹرڈ ای میل درج کریں۔ فائربیس آپ کی جی میل پر ری سیٹ لنک بھیجے گا۔"
-                )}
-              </p>
-            </div>
-            <div className="space-y-1.5">
-              <label className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider">{t("Registered Email", "رجسٹرڈ ای میل")}</label>
-              <div className="relative">
-                <input type="email" value={email} placeholder="owner@fuelpro.com" onChange={e => setEmail(e.target.value)} className="w-full bg-slate-800 rounded-xl border border-slate-700 p-3.5 pl-11 font-mono text-xs text-white focus:outline-none focus:border-orange-500 transition-colors" />
-                <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-500" />
-              </div>
-            </div>
-            <button type="submit" disabled={isLoading} className="w-full mt-2 bg-orange-600 hover:bg-orange-500 disabled:bg-slate-700 text-white font-sans text-xs font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all uppercase tracking-wider">
-              {isLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <><span>{t("Send Reset Link to Gmail", "ری سیٹ لنک بھیجیں")}</span><SendHorizontal className="h-4 w-4" /></>}
-            </button>
-            <button type="button" onClick={() => { resetFeedback(); setAuthMode("login"); }} className="w-full py-2 font-sans text-xs font-bold text-slate-400 hover:text-white flex items-center justify-center gap-1 mt-2">
-              <ChevronLeft className="h-4 w-4" /><span>{t("Back to Login", "لاگ ان پر واپس")}</span>
-            </button>
-          </form>
-        )}
 
-        {/* ── F. RESET PASSWORD (from link) ── */}
-        {authMode === "reset_password" && (
-          <form onSubmit={handleResetSubmit} className="space-y-4">
-            <div className="text-center space-y-1 mb-6">
-              <h3 className="font-sans text-sm font-bold text-slate-200 uppercase tracking-wider">
-                {t("Set New Password", "نیا پاس ورڈ درج کریں")}
-              </h3>
-            </div>
-            <div className="space-y-1.5">
-              <label className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider">{t("New Password", "نیا پاس ورڈ")}</label>
-              <div className="relative">
-                <input type={showPassword ? "text" : "password"} value={password} placeholder="••••••••••••" onChange={e => setPassword(e.target.value)} className="w-full bg-slate-800 rounded-xl border border-slate-700 p-3.5 pl-11 pr-11 font-mono text-xs text-white focus:outline-none focus:border-orange-500 transition-colors" />
-                <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-500" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-3.5 text-slate-500 hover:text-slate-300">{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <label className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider">{t("Confirm Password", "پاس ورڈ کی تصدیق")}</label>
-              <div className="relative">
-                <input type={showConfirmPassword ? "text" : "password"} value={confirmPassword} placeholder="••••••••••••" onChange={e => setConfirmPassword(e.target.value)} className="w-full bg-slate-800 rounded-xl border border-slate-700 p-3.5 pl-11 pr-11 font-mono text-xs text-white focus:outline-none focus:border-orange-500 transition-colors" />
-                <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-500" />
-                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3.5 top-3.5 text-slate-500 hover:text-slate-300">{showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>
-              </div>
-            </div>
-            <button type="submit" disabled={isLoading} className="w-full mt-2 bg-orange-600 hover:bg-orange-500 disabled:bg-slate-700 text-white font-sans text-xs font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all uppercase tracking-wider">
-              {isLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <><span>{t("Update Password", "پاس ورڈ اپ ڈیٹ کریں")}</span><CheckCircle className="h-4 w-4" /></>}
-            </button>
-          </form>
-        )}
       </motion.div>
 
       {/* FOOTER */}

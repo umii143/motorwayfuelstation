@@ -202,7 +202,7 @@ export default function ShiftWizard({
     for (const noz of nozzles) {
       const match = data[noz.name] || data[`Nozzle ${noz.name}`] || data[noz.name.replace(/ /g, '')];
       if (match) {
-        newOpenings[noz.id] = String(match).replace(/[^0-9.]/g, '');
+        newOpenings[noz.id] = Number(String(match).replace(/[^0-9.]/g, ''));
       }
     }
     setOpeningReadings(newOpenings);
@@ -217,7 +217,7 @@ export default function ShiftWizard({
     for (const noz of nozzles) {
       const match = data[noz.name] || data[`Nozzle ${noz.name}`] || data[noz.name.replace(/ /g, '')];
       if (match) {
-        newClosings[noz.id] = String(match).replace(/[^0-9.]/g, '');
+        newClosings[noz.id] = Number(String(match).replace(/[^0-9.]/g, ''));
       }
     }
     setClosingReadings(newClosings);
@@ -272,9 +272,7 @@ export default function ShiftWizard({
     };
   }, [shifts]);
 
-  const [openingReadings, setOpeningReadings] = useState<{
-    [nozzleId: string]: string;
-  }>({});
+  const [openingReadings, setOpeningReadings] = useState<Record<string, number>>({});
 
   // ==========================================
   // STEP 3 OPERATIONAL TABS DRAWERS
@@ -352,9 +350,7 @@ export default function ShiftWizard({
   // ==========================================
   // STEP 4 FORM STATE: CLOSING READINGS
   // ==========================================
-  const [closingReadings, setClosingReadings] = useState<{
-    [nozzleId: string]: string;
-  }>({});
+  const [closingReadings, setClosingReadings] = useState<Record<string, number>>({});
 
   // ==========================================
   // STEP 5 FORM STATE: TESTING / DEDUCTIONS
@@ -650,14 +646,14 @@ export default function ShiftWizard({
     }
 
     // Fill in standard openings inside localized state variables
-    const initialOpenings: { [nozzleId: string]: string } = {};
+    const initialOpenings: { [nozzleId: string]: number } = {};
     nozzles.forEach((noz) => {
       // Map reference values
       const refVal =
         previousClosingReadings[
           noz.id as keyof typeof previousClosingReadings
         ] || noz.currentReading || noz.startReading || 0;
-      initialOpenings[noz.id] = String(refVal);
+      initialOpenings[noz.id] = Number(refVal);
     });
     setOpeningReadings(initialOpenings);
     setWizardStep(2);
@@ -1406,10 +1402,10 @@ export default function ShiftWizard({
       return;
     }
     // Pre-populate closing reading fields with initial openings as baseline
-    const baselineClosing: { [nozzleId: string]: string } = {};
+    const baselineClosing: { [nozzleId: string]: number } = {};
     nozzles.forEach((noz) => {
       const open = activeShift.openingReadings[noz.id] || 0;
-      baselineClosing[noz.id] = String(open);
+      baselineClosing[noz.id] = Number(open);
     });
     setClosingReadings(baselineClosing);
     setWizardStep(4);

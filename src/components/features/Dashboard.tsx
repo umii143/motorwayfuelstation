@@ -209,8 +209,8 @@ export default React.memo(function Dashboard({
     // Only map actual real-time timestamped transactions (POS sales)
     // Avoid creating dummy flat-lines for metered fuel.
     lubePosSales.forEach(sale => {
-      if (sale.date === selectedDate && sale.timestamp) {
-         const saleHour = new Date(sale.timestamp).getHours();
+      if (sale.date === selectedDate && sale.createdAt) {
+         const saleHour = new Date(sale.createdAt).getHours();
          const index = saleHour - 6;
          if (index >= 0 && index < trend.length) {
            trend[index].sales += sale.total;

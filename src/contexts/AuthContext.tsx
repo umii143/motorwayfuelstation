@@ -10,7 +10,8 @@ import {
   signOut,
   onAuthStateChanged,
   EmailAuthProvider,
-  reauthenticateWithCredential
+  reauthenticateWithCredential,
+  signInWithCustomToken
 } from 'firebase/auth';
 import {
   doc,
@@ -24,7 +25,9 @@ import {
   auth,
   dbFS,
   signInWithGoogle as googleSignIn,
-  withFirestoreRetry
+  withFirestoreRetry,
+  sendEmailOTP,
+  verifyEmailOTP
 } from '../lib/firebase';
 
 export interface UserSession {
@@ -81,6 +84,8 @@ export interface AuthContextType {
   sendPasswordReset: (email: string) => Promise<void>;
   confirmPasswordReset: (token: string, newPass: string) => Promise<void>;
   reauthenticateWithPassword: (password: string) => Promise<boolean>;
+  requestOTP: (email: string) => Promise<void>;
+  verifyOTP: (email: string, otp: string) => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -488,6 +493,37 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // ─────────────────────────────────────────────────────────────────────────
+  // EMAIL OTP (New Flow)
+  // ─────────────────────────────────────────────────────────────────────────
+  const requestOTP = async (email: string) => {
+    try {
+      await sendEmailOTP({ email });
+    } catch (err: any) {
+      console.error("requestOTP error:", err);
+      throw new Error(err.message || "Failed to send OTP");
+    }
+  };
+
+  const verifyOTP = async (email: string, otp: string) => {
+    try {
+      const response = await verifyEmailOTP({ email, otp });
+      const { token } = response.data;
+      if (token) {
+        const credential = await signInWithCustomToken(auth, token);
+        const { profile, orgProfile } = await loadUserProfile(credential.user);
+        setUser(profile);
+        setOrganization(orgProfile);
+        await syncSessionState(credential.user, profile.orgId);
+        return { user: profile, token };
+      }
+      throw new Error("No token returned");
+    } catch (err: any) {
+      console.error("verifyOTP error:", err);
+      throw new Error(err.message || "Invalid OTP");
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────
   // LOGOUT
   // ─────────────────────────────────────────────────────────────────────────
   const logout = async () => {
@@ -566,7 +602,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       registerVerify2FA,
       sendPasswordReset,
       confirmPasswordReset,
-      reauthenticateWithPassword
+      reauthenticateWithPassword,
+      requestOTP,
+      verifyOTP
     }}>
       {children}
     </AuthContext.Provider>
