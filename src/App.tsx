@@ -892,6 +892,7 @@ function MainApp() {
           const nextIndex = (currentIndex + 1) % themes.length;
           setSettings({ ...settings, theme: themes[nextIndex] as any });
         }}
+        onLogout={handleLogout}
       />
 
       <GlobalSearchModal

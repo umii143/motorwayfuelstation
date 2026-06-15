@@ -4,7 +4,7 @@ import {
   BookOpen, Landmark, Smartphone, Fuel, TrendingDown, 
   FileBarChart, Building, Wrench, DollarSign, Settings,
   Shield, CreditCard, MessageCircle, Database, AlertTriangle,
-  Sun, Moon, Globe
+  Sun, Moon, Globe, LogOut
 } from 'lucide-react';
 import { GlobalSettings } from '../../types';
 import { t } from '../../lib/translations';
@@ -18,6 +18,7 @@ interface SidebarDrawerProps {
   isLubeBusiness: boolean;
   onLanguageToggle: () => void;
   onThemeToggle: () => void;
+  onLogout: () => void;
 }
 
 export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({ 
@@ -28,7 +29,8 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
   settings,
   isLubeBusiness,
   onLanguageToggle,
-  onThemeToggle
+  onThemeToggle,
+  onLogout
 }) => {
   if (!isOpen) return null;
 
@@ -117,20 +119,29 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
           })}
         </div>
         {/* Bottom Toggles */}
-        <div className="border-t border-slate-100 dark:border-white/5 p-4 shrink-0 bg-slate-50 dark:bg-white/5 flex gap-2">
+        <div className="border-t border-slate-100 dark:border-white/5 p-4 shrink-0 bg-slate-50 dark:bg-white/5 flex flex-col gap-2">
+          <div className="flex gap-2">
+            <button
+              onClick={onLanguageToggle}
+              className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-white/10 px-3 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-orange-600 hover:border-orange-200 transition-colors shadow-xs"
+            >
+              <Globe className="w-4 h-4 text-slate-400" />
+              {settings.language === 'ur' ? 'اردو' : 'English'}
+            </button>
+            <button
+              onClick={onThemeToggle}
+              className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-white/10 px-3 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-orange-600 hover:border-orange-200 transition-colors shadow-xs"
+            >
+              {settings.theme === 'dark' ? <Sun className="w-4 h-4 text-slate-400" /> : <Moon className="w-4 h-4 text-slate-400" />}
+              {t('Theme', 'تھیم', settings)}
+            </button>
+          </div>
           <button
-            onClick={onLanguageToggle}
-            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-white/10 px-3 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-orange-600 hover:border-orange-200 transition-colors shadow-xs"
+            onClick={onLogout}
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 px-3 py-2.5 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors shadow-xs"
           >
-            <Globe className="w-4 h-4 text-slate-400" />
-            {settings.language === 'ur' ? 'اردو' : 'English'}
-          </button>
-          <button
-            onClick={onThemeToggle}
-            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-white/10 px-3 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-orange-600 hover:border-orange-200 transition-colors shadow-xs"
-          >
-            {settings.theme === 'dark' ? <Sun className="w-4 h-4 text-slate-400" /> : <Moon className="w-4 h-4 text-slate-400" />}
-            {t('Theme', 'تھیم', settings)}
+            <LogOut className="w-4 h-4" />
+            {t('Sign Out', 'لاگ آؤٹ', settings)}
           </button>
         </div>
 

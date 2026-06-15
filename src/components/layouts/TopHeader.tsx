@@ -88,7 +88,15 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         <div className="hidden md:block w-px h-6 bg-slate-200 dark:bg-white/10 mx-1"></div>
 
         {/* Profile */}
-        <button className="flex items-center gap-2.5 hover:bg-slate-50 dark:hover:bg-white/5 p-1 rounded-full md:rounded-xl md:pr-3 transition-colors">
+        <button 
+          onClick={async () => {
+            if (window.confirm('Are you sure you want to sign out?')) {
+               const { firebaseSignOut } = await import('../../lib/firebase');
+               await firebaseSignOut();
+               window.location.reload();
+            }
+          }}
+          className="flex items-center gap-2.5 hover:bg-slate-50 dark:hover:bg-white/5 p-1 rounded-full md:rounded-xl md:pr-3 transition-colors">
           <div className="relative">
             <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#1A1A24] border border-slate-200 dark:border-white/10 flex items-center justify-center text-xs font-bold text-slate-600 dark:text-slate-300">
               UA
