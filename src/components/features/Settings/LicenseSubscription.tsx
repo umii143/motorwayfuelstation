@@ -17,7 +17,7 @@ export default function LicenseSubscription({ settings }: { settings: GlobalSett
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border-2 border-emerald-100 shadow-sm p-6 relative overflow-hidden">
+        <div className="premium-card border-2 border-emerald-100 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-3 bg-emerald-100 rounded-bl-xl">
             <ShieldCheck className="h-6 w-6 text-emerald-600" />
           </div>
@@ -53,7 +53,7 @@ export default function LicenseSubscription({ settings }: { settings: GlobalSett
             <button className="w-full flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px].5 bg-white border border-slate-300 text-slate-700 rounded-lg text-sm font-bold shadow-xs hover:bg-slate-50 transition-colors">
               <CreditCard className="h-4 w-4" /> Manage Billing Profile
             </button>
-            <button className="w-full flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px].5 bg-indigo-600 text-white rounded-lg text-sm font-bold shadow-xs hover:bg-indigo-700 transition-colors">
+            <button className="w-full flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px].5 premium-button text-sm font-bold shadow-xs hover:bg-indigo-700 transition-colors">
               <ExternalLink className="h-4 w-4" /> Explore Cloud Plans
             </button>
           </div>

@@ -120,6 +120,8 @@ export default function AIAssistant({
     }
   };
 
+  const [isVisible, setIsVisible] = useState(true);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -127,25 +129,45 @@ export default function AIAssistant({
     }
   };
 
+  if (!isVisible) return null;
+
   return (
     <>
       {/* Floating Trigger Button */}
       <AnimatePresence>
         {!isOpen && (
-          <motion.button
+          <motion.div
+            drag
+            dragConstraints={{ left: -window.innerWidth + 80, right: 0, top: -window.innerHeight + 80, bottom: 0 }}
+            dragElastic={0.1}
+            dragMomentum={false}
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setIsOpen(true)}
-            id="ai_assistant_trigger"
-            className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-2xl shadow-violet-500/40 hover:shadow-violet-500/60 transition-shadow"
-            title="FuelPro AI Assistant"
+            className="fixed bottom-28 lg:bottom-10 right-6 z-[250] flex flex-col items-end gap-1 cursor-grab active:cursor-grabbing"
+            style={{ touchAction: 'none' }}
           >
-            <Sparkles className="h-6 w-6" />
-            <span className="absolute h-14 w-14 rounded-full bg-violet-500/30 animate-ping" />
-          </motion.button>
+            {/* Tiny Close Button to hide the AI */}
+            <button
+              onClick={(e) => { e.stopPropagation(); setIsVisible(false); }}
+              className="absolute -top-1 -right-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-slate-800 text-slate-300 shadow-md hover:bg-slate-700 hover:text-white transition-colors"
+              title="Hide AI Assistant"
+            >
+              <X className="h-3 w-3" />
+            </button>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsOpen(true)}
+              id="ai_assistant_trigger"
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-2xl shadow-violet-500/40 hover:shadow-violet-500/60 transition-shadow"
+              title="FuelPro AI Assistant"
+            >
+              <Sparkles className="h-6 w-6 pointer-events-none" />
+              <span className="absolute h-14 w-14 rounded-full bg-violet-500/30 animate-ping pointer-events-none" />
+            </motion.button>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -157,7 +179,7 @@ export default function AIAssistant({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 40, scale: 0.9 }}
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            className="fixed bottom-6 right-6 z-50 flex flex-col w-[calc(100vw-2rem)] max-w-md h-[580px] rounded-2xl bg-[var(--bg-card)] border border-[var(--border-main)] shadow-2xl shadow-black/20 overflow-hidden"
+            className="fixed bottom-24 lg:bottom-10 right-6 z-[260] flex flex-col w-[calc(100vw-2rem)] max-w-md h-[580px] max-h-[80vh] rounded-2xl bg-[var(--bg-card)] border border-[var(--border-main)] shadow-2xl shadow-black/20 overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white shrink-0">

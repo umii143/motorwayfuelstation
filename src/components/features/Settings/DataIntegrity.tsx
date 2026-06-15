@@ -97,7 +97,7 @@ export default function DataIntegrity({ settings, activeStationId, onNavigate }:
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+        <div className="premium-card border border-slate-200">
           <div className="flex items-center gap-2 text-sm font-bold text-slate-500 mb-2">
             <CheckCircle2 className="h-4 w-4 text-emerald-500" />
             {t('Validated Shifts', 'تصدیق شدہ شِفٹس')}
@@ -105,7 +105,7 @@ export default function DataIntegrity({ settings, activeStationId, onNavigate }:
           <div className="text-2xl font-black text-slate-900">{stats?.validatedShifts || 0}</div>
         </div>
         
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+        <div className="premium-card border border-slate-200">
           <div className="flex items-center gap-2 text-sm font-bold text-slate-500 mb-2">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
             {t('Open Warnings', 'انتباہات')}
@@ -113,7 +113,7 @@ export default function DataIntegrity({ settings, activeStationId, onNavigate }:
           <div className="text-2xl font-black text-amber-600">{openDrift - criticalDrift}</div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+        <div className="premium-card border border-slate-200">
           <div className="flex items-center gap-2 text-sm font-bold text-slate-500 mb-2">
             <XCircle className="h-4 w-4 text-rose-500" />
             {t('Critical Issues', 'اہم مسائل')}

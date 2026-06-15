@@ -229,11 +229,11 @@ export default function RevaluationDrillDownModal({
           
           {/* Executive KPI Header */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+            <div className="premium-card p-4 border">
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Gain</p>
               <p className="text-2xl font-black text-emerald-600">+{formatCurrency(stats.totalGain, settings)}</p>
             </div>
-            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+            <div className="premium-card p-4 border">
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Loss</p>
               <p className="text-2xl font-black text-rose-600">-{formatCurrency(stats.totalLoss, settings)}</p>
             </div>
@@ -244,11 +244,11 @@ export default function RevaluationDrillDownModal({
                 {stats.netImpact >= 0 ? '+' : ''}{formatCurrency(stats.netImpact, settings)}
               </p>
             </div>
-            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+            <div className="premium-card p-4 border">
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Events Count</p>
               <p className="text-2xl font-black text-slate-800">{stats.eventsCount}</p>
             </div>
-            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+            <div className="premium-card p-4 border">
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Avg Impact / Event</p>
               <p className="text-2xl font-black text-blue-600">{formatCurrency(stats.avgImpact, settings)}</p>
             </div>
@@ -260,7 +260,7 @@ export default function RevaluationDrillDownModal({
             <div className="space-y-6">
               
               {/* Advanced Filters */}
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+              <div className="premium-card border border-slate-200">
                 <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
                   <Filter className="h-4 w-4 text-blue-600" /> Advanced Filters
                 </h3>
@@ -268,20 +268,20 @@ export default function RevaluationDrillDownModal({
                   <div>
                     <label className="text-xs font-bold text-slate-500 mb-1 block">Date Range</label>
                     <div className="flex gap-2">
-                      <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-slate-50" />
-                      <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-slate-50" />
+                      <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="premium-input text-xs p-2 bg-slate-50" />
+                      <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="premium-input text-xs p-2 bg-slate-50" />
                     </div>
                   </div>
                   <div>
                     <label className="text-xs font-bold text-slate-500 mb-1 block">Product</label>
-                    <select value={productFilter} onChange={e => setProductFilter(e.target.value)} className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-slate-50 font-semibold">
+                    <select value={productFilter} onChange={e => setProductFilter(e.target.value)} className="premium-input text-xs p-2 bg-slate-50 font-semibold">
                       <option value="all">All Products</option>
                       {uniqueProducts.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="text-xs font-bold text-slate-500 mb-1 block">Impact Type</label>
-                    <select value={impactFilter} onChange={e => setImpactFilter(e.target.value as ImpactFilter)} className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-slate-50 font-semibold">
+                    <select value={impactFilter} onChange={e => setImpactFilter(e.target.value as ImpactFilter)} className="premium-input text-xs p-2 bg-slate-50 font-semibold">
                       <option value="all">All Impacts</option>
                       <option value="gain">Gain Only</option>
                       <option value="loss">Loss Only</option>
@@ -289,14 +289,14 @@ export default function RevaluationDrillDownModal({
                   </div>
                   <div>
                     <label className="text-xs font-bold text-slate-500 mb-1 block">Reason</label>
-                    <select value={reasonFilter} onChange={e => setReasonFilter(e.target.value)} className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-slate-50 font-semibold">
+                    <select value={reasonFilter} onChange={e => setReasonFilter(e.target.value)} className="premium-input text-xs p-2 bg-slate-50 font-semibold">
                       <option value="all">All Reasons</option>
                       {uniqueReasons.map(r => <option key={r} value={r}>{r}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="text-xs font-bold text-slate-500 mb-1 block">Changed By</label>
-                    <select value={changedByFilter} onChange={e => setChangedByFilter(e.target.value)} className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-slate-50 font-semibold">
+                    <select value={changedByFilter} onChange={e => setChangedByFilter(e.target.value)} className="premium-input text-xs p-2 bg-slate-50 font-semibold">
                       <option value="all">All Users</option>
                       {uniqueUsers.map(u => <option key={u} value={u}>{u}</option>)}
                     </select>
@@ -325,7 +325,7 @@ export default function RevaluationDrillDownModal({
               </div>
 
               {/* Executive Mini Analytics */}
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-4">
+              <div className="premium-card border border-slate-200 space-y-4">
                 <h3 className="text-sm font-bold text-slate-800 mb-2 flex items-center gap-2">
                   <BarChart3 className="h-4 w-4 text-emerald-600" /> Key Extremes
                 </h3>
@@ -358,7 +358,7 @@ export default function RevaluationDrillDownModal({
               
               {/* Visual Analytics */}
               <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm h-72">
+                <div className="premium-card p-5 border h-72">
                   <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 text-center">Impact Distribution (Gain/Loss by Product)</h4>
                   <ResponsiveContainer width="100%" height="100%">
                     <RechartsPieChart>
@@ -372,7 +372,7 @@ export default function RevaluationDrillDownModal({
                     </RechartsPieChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm h-72">
+                <div className="premium-card p-5 border h-72">
                   <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 text-center">Monthly Net Revaluation Trend</h4>
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={stats.trendData}>
@@ -387,7 +387,7 @@ export default function RevaluationDrillDownModal({
               </div>
 
               {/* Enterprise Ledger Grid */}
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[600px]">
+              <div className="premium-card border overflow-hidden flex flex-col h-[600px]">
                 <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 shrink-0">
                   <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
                     <Layers className="h-4 w-4 text-slate-500" /> Enterprise Revaluation Ledger

@@ -124,7 +124,7 @@ export default function FactoryReset({ settings, activeStationId }: { settings: 
         </p>
       </div>
 
-      <div className="bg-white rounded-xl border-2 border-rose-100 shadow-sm overflow-hidden">
+      <div className="premium-card border-2 border-rose-100 overflow-hidden">
         {step === 1 && (
           <div className="p-8 text-center animate-in fade-in">
             <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-rose-100">

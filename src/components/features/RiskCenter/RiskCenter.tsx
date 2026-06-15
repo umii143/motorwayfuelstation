@@ -85,7 +85,7 @@ export const RiskCenter: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-4">
-            <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-200 flex items-center gap-3">
+            <div className="premium-card px-4 py-2 border border-slate-200 flex items-center ga">
               <div className="text-right">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Enterprise Health</p>
                 <p className={`text-lg font-black ${riskScore < 50 ? 'text-red-600' : riskScore < 80 ? 'text-orange-500' : 'text-emerald-600'}`}>
@@ -152,7 +152,7 @@ export const RiskCenter: React.FC = () => {
             
             <div className="p-5 flex-1 space-y-6 bg-slate-50/50">
               {inventoryRisks.map(r => (
-                <div key={r.tankId} className="bg-white p-4 rounded-xl shadow-sm border border-orange-100 relative overflow-hidden group hover:shadow-md transition-shadow">
+                <div key={r.tankId} className="premium-card p-4 border-orange-100 relative overflow-hidden group hover:shadow-md transition-shadow">
                   <div className="absolute top-0 left-0 w-1 h-full bg-orange-500"></div>
                   <div className="flex justify-between items-start mb-3">
                     <div>
@@ -220,7 +220,7 @@ export const RiskCenter: React.FC = () => {
                 const utilization = Math.min(100, (balance / limit) * 100);
                 
                 return (
-                <div key={c.id} className="bg-white p-4 rounded-xl shadow-sm border border-red-100 relative overflow-hidden hover:shadow-md transition-shadow">
+                <div key={c.id} className="premium-card p-4 border-red-100 relative overflow-hidden hover:shadow-md transition-shadow">
                   <div className="absolute top-0 left-0 w-1 h-full bg-red-500"></div>
                   <div className="flex justify-between items-start mb-3">
                     <div>
@@ -285,7 +285,7 @@ export const RiskCenter: React.FC = () => {
             
             <div className="p-5 flex-1 space-y-6 bg-slate-50/50">
               {operationalRisks.map(s => (
-                <div key={s.id} className="bg-white p-4 rounded-xl shadow-sm border border-purple-100 relative overflow-hidden hover:shadow-md transition-shadow">
+                <div key={s.id} className="premium-card p-4 border-purple-100 relative overflow-hidden hover:shadow-md transition-shadow">
                   <div className="absolute top-0 left-0 w-1 h-full bg-purple-500"></div>
                   
                   <div className="flex justify-between items-start mb-3">

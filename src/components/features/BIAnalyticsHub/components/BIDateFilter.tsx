@@ -49,7 +49,7 @@ export function BIDateFilter({ filter, setFilter, products }: BIDateFilterProps)
   };
 
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6">
+    <div className="flex flex-col md:flex-row md:items-center justify-between ga premium-card p-4 border mb-6">
       <div className="flex items-center gap-2">
         <Calendar className="w-5 h-5 text-slate-400" />
         <div className="flex bg-slate-100 p-1 rounded-lg">

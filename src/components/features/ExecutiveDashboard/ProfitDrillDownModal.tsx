@@ -141,7 +141,7 @@ export default function ProfitDrillDownModal({
 
             {/* EXECUTIVE KPI HEADER */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+              <div className="premium-card border border-slate-200">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Total Gross Profit</span>
                 <h3 className="text-2xl font-black text-slate-900">{formatCurrency(totalGrossProfit, settings)}</h3>
                 <div className="mt-2 flex items-center gap-1.5 text-xs font-bold text-slate-500">
@@ -238,7 +238,7 @@ export default function ProfitDrillDownModal({
               <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                 
                 {/* Category Profit Chart */}
-                <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                <div className="premium-card border border-slate-200">
                   <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4">
                     Gross Profit By Category
                   </h3>
@@ -270,7 +270,7 @@ export default function ProfitDrillDownModal({
                 </div>
 
                 {/* Profit Waterfall / Reconciliation */}
-                <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex flex-col h-full">
+                <div className="premium-card border border-slate-200 flex flex-col h-full">
                   <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex-none">
                     Profit Waterfall
                   </h3>
@@ -302,7 +302,7 @@ export default function ProfitDrillDownModal({
             )}
 
             {activeTab === 'products' && (
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+              <div className="premium-card border overflow-hidden flex flex-col">
                 <div className="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                   <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Product Margins Ledger</h3>
                 </div>

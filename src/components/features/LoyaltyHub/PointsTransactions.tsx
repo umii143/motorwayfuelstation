@@ -115,7 +115,7 @@ export default function PointsTransactions({ settings, stationId }: PointsTransa
         </button>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="premium-card border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>

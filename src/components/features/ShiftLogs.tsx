@@ -338,7 +338,7 @@ export default function ShiftLogs({
               type="date"
               value={filterDateStr}
               onChange={(e) => setFilterDateStr(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              className="premium-input border px-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             />
           </div>
           <div>
@@ -348,7 +348,7 @@ export default function ShiftLogs({
             <select
               value={filterStaffId}
               onChange={(e) => setFilterStaffId(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              className="premium-input border px-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             >
               <option value="all">{t('All Staff', 'تمام اسٹاف')}</option>
               {staff.map((s) => (
@@ -365,7 +365,7 @@ export default function ShiftLogs({
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value as any)}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              className="premium-input border px-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             >
               <option value="all">{t('All Shifts', 'تمام شفٹیں')}</option>
               <option value="active">{t('Active', 'جاری ہے')}</option>
@@ -633,7 +633,7 @@ function ShiftAuditDrawer({
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between">
+              <div className="premium-card border border-slate-200 flex flex-col justify-between">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('Expected Cash', 'متوقع کیش')}</span>
                 <span className="text-2xl font-black text-slate-800 truncate">{formatCurrency(shift.expectedCash || 0)}</span>
               </div>
@@ -677,7 +677,7 @@ function ShiftAuditDrawer({
                 <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2 relative z-10">{t('Diesel Sold', 'ڈیزل فروخت')}</span>
                 <span className="text-3xl font-black text-blue-700 truncate relative z-10">{dieselSold.toFixed(2)} L</span>
               </div>
-              <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between relative overflow-hidden">
+              <div className="premium-card border border-slate-200 flex flex-col justify-between relative overflow-hidden">
                 <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-slate-100 to-transparent"></div>
                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 relative z-10">{t('Total Fuel Sold', 'کل فیول فروخت')}</span>
                 <span className="text-3xl font-black text-slate-800 truncate relative z-10">{totalFuelSold.toFixed(2)} L</span>

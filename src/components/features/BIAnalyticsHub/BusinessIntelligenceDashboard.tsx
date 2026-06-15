@@ -52,7 +52,7 @@ export default function BusinessIntelligenceDashboard() {
         <div className="lg:col-span-2">
           <BIInvestmentChart shifts={shifts} batches={batches} expenses={standaloneExpenses} filter={filter} />
         </div>
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-col justify-center items-center text-center">
+        <div className="premium-card p-5 border mb-6 flex flex-col justify-center items-center text-center">
           <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-4">
             <TrendingUp className="w-8 h-8" />
           </div>

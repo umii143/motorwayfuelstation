@@ -164,7 +164,7 @@ export default function VehiclesManager({ settings, stationId }: VehiclesManager
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="premium-card border overflow-hidden">
         <ResponsiveTable
           data={filteredVehicles}
           columns={[
@@ -311,7 +311,7 @@ export default function VehiclesManager({ settings, stationId }: VehiclesManager
                         const result = await scanBarcode({ title: "Scan Vehicle RFID / Barcode" });
                         if (result) setRfidTag(result);
                       }}
-                      className="flex-shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-lg transition"
+                      className="flex-shrink-0 premium-button hover:bg-indigo-700 p-2 transition"
                       title="Scan Barcode"
                     >
                       <ScanLine className="h-5 w-5" />

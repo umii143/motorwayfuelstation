@@ -49,7 +49,7 @@ export function BIDetailedAnalyticsTable({ filter }: any) {
   const sortedMonths = Object.keys(monthlyData).sort((a,b) => b.localeCompare(a)); // Descending
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+    <div className="premium-card border overflow-hidden mb-6">
       <div className="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <TableProperties className="w-5 h-5 text-slate-600" />

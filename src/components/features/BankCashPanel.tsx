@@ -494,7 +494,7 @@ export default function BankCashPanel({
                     placeholder="e.g. Meezan Bank Ltd"
                     value={newBankName}
                     onChange={(e) => setNewBankName(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-white px-3 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
                   />
                 </div>
 
@@ -508,7 +508,7 @@ export default function BankCashPanel({
                     placeholder="e.g. PK83MEZN000109283910"
                     value={newAccountNo}
                     onChange={(e) => setNewAccountNo(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-xs focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-white px-3 font-mono text-xs focus:border-orange-500 focus:outline-hidden"
                   />
                 </div>
 
@@ -521,7 +521,7 @@ export default function BankCashPanel({
                     placeholder="e.g. 500000"
                     value={newBalance}
                     onChange={(e) => setNewBalance(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-white px-3 .5 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
                   />
                 </div>
 
@@ -601,7 +601,7 @@ export default function BankCashPanel({
                     placeholder="e.g. 25000"
                     value={adjustAmount}
                     onChange={(e) => setAdjustAmount(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-white px-3 .5 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
                   />
                 </div>
 
@@ -615,7 +615,7 @@ export default function BankCashPanel({
                     placeholder="e.g. Interbank Profit Credit"
                     value={adjustReason}
                     onChange={(e) => setAdjustReason(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-white px-3 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
                   />
                 </div>
 

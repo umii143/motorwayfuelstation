@@ -496,7 +496,7 @@ export default function DigitalCashPanel({
                     placeholder="e.g. EasyPaisa Merchant"
                     value={newAccountName}
                     onChange={(e) => setNewAccountName(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-white px-3 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
                   />
                 </div>
 
@@ -510,7 +510,7 @@ export default function DigitalCashPanel({
                     placeholder="e.g. 03168432329"
                     value={newAccountNo}
                     onChange={(e) => setNewAccountNo(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-xs focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-white px-3 font-mono text-xs focus:border-orange-500 focus:outline-hidden"
                   />
                 </div>
 
@@ -523,7 +523,7 @@ export default function DigitalCashPanel({
                     placeholder="e.g. 15000"
                     value={newBalance}
                     onChange={(e) => setNewBalance(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-white px-3 .5 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
                   />
                 </div>
 
@@ -603,7 +603,7 @@ export default function DigitalCashPanel({
                     placeholder="e.g. 5000"
                     value={adjustAmount}
                     onChange={(e) => setAdjustAmount(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-white px-3 .5 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
                   />
                 </div>
 
@@ -617,7 +617,7 @@ export default function DigitalCashPanel({
                     placeholder="reconciling transfer"
                     value={adjustReason}
                     onChange={(e) => setAdjustReason(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-white px-3 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
                   />
                 </div>
 

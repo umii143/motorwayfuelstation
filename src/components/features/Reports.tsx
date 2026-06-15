@@ -651,7 +651,7 @@ export default function Reports({
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500"
+                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500"
                   />
                 </div>
                 <div>
@@ -660,7 +660,7 @@ export default function Reports({
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500"
+                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500"
                   />
                 </div>
 
@@ -670,7 +670,7 @@ export default function Reports({
                   <select
                     value={filterStaffId}
                     onChange={(e) => setFilterStaffId(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500"
+                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500"
                   >
                     <option value="all">{t('— All Staff Members —', 'تمام عملہ')}</option>
                     {staff.map(st => (
@@ -685,7 +685,7 @@ export default function Reports({
                   <select
                     value={filterProductId}
                     onChange={(e) => setFilterProductId(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500"
+                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500"
                   >
                     <option value="all">{t('— All Products —', 'تمام مصنوعات')}</option>
                     {products.map(p => (
@@ -702,7 +702,7 @@ export default function Reports({
                   <select
                     value={filterEntityName}
                     onChange={(e) => setFilterEntityName(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500"
+                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500"
                   >
                     <option value="all">{t('— All Accounts —', 'تمام بقایا پارٹیاں')}</option>
                     {customers.map(c => (
@@ -720,7 +720,7 @@ export default function Reports({
                   <select
                     value={filterShiftType}
                     onChange={(e) => setFilterShiftType(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500"
+                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500"
                   >
                     <option value="all">{t('All Shift types', 'تمام اوقات')}</option>
                     <option value="day">{t('Day (08:00 AM - 04:00 PM)', 'دن')}</option>
@@ -738,7 +738,7 @@ export default function Reports({
                       placeholder={t('Type voucher ID, operator, names...', 'آپریٹر، رقم یا واؤچر کوڈ درج کریں...')}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-8 rounded-lg border border-slate-200 bg-white p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500"
+                      className="premium-input pl-8 border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500"
                     />
                   </div>
                 </div>

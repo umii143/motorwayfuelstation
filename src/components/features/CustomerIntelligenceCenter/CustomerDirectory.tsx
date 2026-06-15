@@ -736,7 +736,7 @@ export default function CustomerDirectory({
         </div>
 
         {/* TIME FILTER ROW */}
-        <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200 shadow-sm overflow-x-auto hide-scrollbar sm:w-max">
+        <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200 shadow-sm overflow-x-auto no-scrollbar sm:w-max">
           {(['all', 'weekly', 'monthly', 'yearly'] as const).map((filter) => (
             <button
               key={filter}
@@ -1242,7 +1242,7 @@ export default function CustomerDirectory({
                     value={addName}
                     onChange={(e) => setAddName(e.target.value)}
                     placeholder="e.g. Umar Ali"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-orange-500 outline-hidden"
+                    className="premium-input border bg-white px-3 font-sans text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
 
@@ -1253,7 +1253,7 @@ export default function CustomerDirectory({
                     value={addUrduName}
                     onChange={(e) => setAddUrduName(e.target.value)}
                     placeholder="مثال: حسیب روڈ ملز"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-orange-500 outline-hidden"
+                    className="premium-input border bg-white px-3 font-sans text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
 
@@ -1264,7 +1264,7 @@ export default function CustomerDirectory({
                     value={addContact}
                     onChange={(e) => setAddContact(e.target.value)}
                     placeholder="e.g. 03168432329"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-orange-500 outline-hidden"
+                    className="premium-input border bg-white px-3 font-mono text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
 
@@ -1275,7 +1275,7 @@ export default function CustomerDirectory({
                     value={addAddress}
                     onChange={(e) => setAddAddress(e.target.value)}
                     placeholder="e.g. Plot 10-A, Korangi, Karachi"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-orange-500 outline-hidden"
+                    className="premium-input border bg-white px-3 font-sans text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
 
@@ -1287,7 +1287,7 @@ export default function CustomerDirectory({
                       value={addLimit}
                       onChange={(e) => setAddLimit(e.target.value)}
                       placeholder="e.g. 200000"
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono text-sm focus:border-orange-500 outline-hidden"
+                      className="premium-input border bg-white px-3 .5 font-mono text-sm focus:border-orange-500 outline-hidden"
                     />
                   </div>
                   <div>
@@ -1297,7 +1297,7 @@ export default function CustomerDirectory({
                       value={addOpeningBal}
                       onChange={(e) => setAddOpeningBal(e.target.value)}
                       placeholder="0"
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono text-sm focus:border-orange-500 outline-hidden"
+                      className="premium-input border bg-white px-3 .5 font-mono text-sm focus:border-orange-500 outline-hidden"
                     />
                   </div>
                 </div>
@@ -1358,27 +1358,27 @@ export default function CustomerDirectory({
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Name (English):', 'نام (انگریزی):')}</label>
                     <input type="text" required value={editCustName} onChange={e => setEditCustName(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-blue-500 outline-none" />
+                      className="premium-input border bg-white px-3 font-sans text-sm focus:border-blue-500 outline-none" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Name (Urdu):', 'نام (اردو):')}</label>
                     <input type="text" value={editCustUrduName} onChange={e => setEditCustUrduName(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-blue-500 outline-none" />
+                      className="premium-input border bg-white px-3 font-sans text-sm focus:border-blue-500 outline-none" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Contact:', 'رابطہ:')}</label>
                     <input type="text" value={editCustContact} onChange={e => setEditCustContact(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-blue-500 outline-none" />
+                      className="premium-input border bg-white px-3 font-sans text-sm focus:border-blue-500 outline-none" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Address:', 'پتہ:')}</label>
                     <input type="text" value={editCustAddress} onChange={e => setEditCustAddress(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-blue-500 outline-none" />
+                      className="premium-input border bg-white px-3 font-sans text-sm focus:border-blue-500 outline-none" />
                   </div>
                   <div className="sm:col-span-2">
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Credit Limit (Rs):', 'ادھار حد (روپے):')}</label>
                     <input type="number" min="0" value={editCustLimit} onChange={e => setEditCustLimit(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-blue-500 outline-none" />
+                      className="premium-input border bg-white px-3 font-mono text-sm focus:border-blue-500 outline-none" />
                   </div>
                 </div>
                 <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-sans text-sm font-bold tracking-wider rounded-lg shadow-md cursor-pointer">

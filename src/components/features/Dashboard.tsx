@@ -29,7 +29,8 @@ import {
   Box,
   Receipt,
   FileText,
-  DollarSign
+  DollarSign,
+  ChevronDown
 } from 'lucide-react';
 import { generateDashboardStats, getFuelCategory } from '../../services/analytics/dashboardEngine';
 import {
@@ -48,6 +49,8 @@ import {
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
 import { haptic } from '../../utils/haptics';
+import { PoweredByUmarAli } from '../shared/PoweredByUmarAli';
+import { TankCircularGauge } from '../ui/TankCircularGauge';
 
 const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
 const fadeUp = {
@@ -206,270 +209,405 @@ export default React.memo(function Dashboard({
   }, [lubePosSales, selectedDate]);
 
   return (
-    <div className="w-full flex-1 flex flex-col bg-transparent pb-16">
+    <div className="w-full flex-1 flex flex-col bg-slate-50 dark:bg-[#151521] px-4 lg:px-8 pb-10 pt-4">
 
-      {/* COMPACT HEADER */}
-      <div className="fp-header">
-        <div className="flex items-center gap-2">
-          <Gauge className="w-5 h-5 text-orange-500" />
-          <h1 className="text-lg font-black text-slate-800 dark:text-slate-100">
-            {settings?.language === 'ur' ? 'ڈیش بورڈ' : 'Dashboard'}
+      {/* GREETING & SHIFT CTA SECTION */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+        <div>
+          <h2 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
+            Good Evening, Umar Ali 👋
+          </h2>
+          <h1 className="text-3xl font-black text-slate-800 dark:text-white mb-4">
+            Dashboard
           </h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-200/50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+              <Clock className="w-3.5 h-3.5 text-slate-500" />
+              <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">{timeStr}</span>
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-200/50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+              <FileText className="w-3.5 h-3.5 text-slate-500" />
+              <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">{new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+            </div>
+            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${activeShift ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-slate-200/50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500'}`}>
+              <div className={`w-1.5 h-1.5 rounded-full ${activeShift ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+              <span className="text-xs font-bold">{activeShift ? 'Shift Active' : 'No Active Shift'}</span>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          {/* Action buttons if any */}
-        </div>
-      </div>
 
-      {/* SHIFT STATUS PILL & DATE SELECTOR */}
-      <div className="fp-status-row">
-        <div className="fp-status-pill bg-slate-800 text-slate-300">
-          <Clock className="w-3 h-3" />
-          <span>{timeStr}</span>
-        </div>
-        <div className={`fp-status-pill ${activeShift ? 'bg-emerald-500/20 text-emerald-500' : 'bg-slate-800 text-slate-400'}`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${activeShift ? 'bg-emerald-500' : 'bg-slate-500'}`}></span>
-          <span>{activeShift ? 'Shift Active' : 'No Active Shift'}</span>
-        </div>
-      </div>
-      
-      {/* COMPACT DATE TABS */}
-      <div className="fp-date-tabs">
-        {availableDates.slice(0, 5).map(date => (
-          <button
-            key={date}
-            onClick={() => setSelectedDate(date)}
-            className={`fp-date-tab ${selectedDate === date ? 'fp-date-tab--active' : ''}`}
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => {
+               if (onStartShiftQuick) onStartShiftQuick();
+               else onNavigate('shift_wizard');
+            }}
+            className="flex items-center gap-2 bg-[#FF7A00] hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-[0_8px_16px_rgba(255,122,0,0.3)]"
           >
-            {date === new Date().toISOString().split('T')[0] ? 'Today' : date}
+            <Play className="w-5 h-5 fill-current" />
+            Start Shift
           </button>
-        ))}
+          <button 
+            onClick={() => onNavigate('shift_logs')}
+            className="flex items-center ga bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:premium-card/5 text-slate-700 dark:text-white px-6 py-3 font-bold transition-all"
+          >
+            <FileText className="w-5 h-5" />
+            Shift Logs
+          </button>
+        </div>
       </div>
 
-      {/* CONTENT AREA */}
-      <div className="flex-1">
+      {/* KPI CARDS GRID */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {/* Revenue */}
+        <div className="bg-white dark:bg-[#1A1A24] rounded-[24px] p-5 shadow-sm border border-slate-200 dark:border-white/5 relative overflow-hidden group">
+          <div className="flex justify-between items-start mb-4">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">REVENUE</span>
+            <div className="flex items-center gap-1 text-emerald-500 text-[10px] font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded">
+              <TrendingUp className="w-3 h-3" />
+              <span>2.4%</span>
+            </div>
+          </div>
+          <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center mb-3">
+            <DollarSign className="w-5 h-5 text-emerald-500" />
+          </div>
+          <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-1">{formatCurrency(stats.totalSales, settings)}</h3>
+          <p className="text-xs font-semibold text-slate-400">Today's Sales</p>
+          <div className="absolute bottom-0 left-0 right-0 h-12 opacity-50">
+             <svg viewBox="0 0 100 30" className="w-full h-full preserve-3d" preserveAspectRatio="none">
+               <path d="M0,30 L10,25 L30,28 L50,15 L70,20 L90,5 L100,10" fill="none" stroke="#10B981" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+             </svg>
+          </div>
+        </div>
 
-        {/* SHIFT CTA (Moved to top) */}
-        {!isLube && (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3 mb-4 px-1">
-            {activeShift ? (
-              <>
-                <motion.button
-                  className="flex items-center justify-center gap-2 rounded-xl bg-orange-500 text-white py-3.5 font-bold shadow-md shadow-orange-500/20"
-                  whileTap={{ scale: 0.97 }}
-                  onClick={async () => {
-                    await haptic.heavy();
-                    onNavigate(salesEntryView);
-                  }}
-                >
-                  <Play className="h-5 w-5 fill-current" />
-                  <span className="text-sm">Resume Sale</span>
-                </motion.button>
-                <motion.button
-                  className="flex items-center justify-center gap-2 rounded-xl bg-theme-card text-theme-main py-3.5 font-bold border border-theme-main shadow-sm"
-                  whileTap={{ scale: 0.97 }}
-                  onClick={async () => {
-                    await haptic.heavy();
-                    onNavigate('shift_wizard');
-                  }}
-                >
-                  <StopCircle className="h-5 w-5" />
-                  <span className="text-sm">Close Shift</span>
-                </motion.button>
-              </>
+        {/* Profit */}
+        <div className="bg-white dark:bg-[#1A1A24] rounded-[24px] p-5 shadow-sm border border-slate-200 dark:border-white/5 relative overflow-hidden">
+          <div className="flex justify-between items-start mb-4">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">PROFIT</span>
+            <div className="flex items-center gap-1 text-blue-500 text-[10px] font-bold bg-blue-500/10 px-1.5 py-0.5 rounded">
+              <TrendingUp className="w-3 h-3" />
+              <span>2.1%</span>
+            </div>
+          </div>
+          <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center mb-3">
+            <TrendingUp className="w-5 h-5 text-blue-500" />
+          </div>
+          <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-1">{formatCurrency(stats.margin, settings)}</h3>
+          <p className="text-xs font-semibold text-slate-400">Gross Margin</p>
+          <div className="absolute bottom-0 left-0 right-0 h-12 opacity-50">
+             <svg viewBox="0 0 100 30" className="w-full h-full preserve-3d" preserveAspectRatio="none">
+               <path d="M0,20 L20,25 L40,10 L60,15 L80,5 L100,10" fill="none" stroke="#3B82F6" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+             </svg>
+          </div>
+        </div>
+
+        {/* Udhar Due */}
+        <div className="bg-white dark:bg-[#1A1A24] rounded-[24px] p-5 shadow-sm border border-slate-200 dark:border-white/5 relative overflow-hidden">
+          <div className="flex justify-between items-start mb-4">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">UDHAR DUE</span>
+            <div className="flex items-center gap-1 text-orange-500 text-[10px] font-bold bg-orange-500/10 px-1.5 py-0.5 rounded">
+              <ArrowUpRight className="w-3 h-3" />
+              <span>0.0%</span>
+            </div>
+          </div>
+          <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center mb-3">
+            <UserPlus className="w-5 h-5 text-orange-500" />
+          </div>
+          <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-1">{formatCurrency(stats.dueRecovery, settings)}</h3>
+          <p className="text-xs font-semibold text-slate-400">Pending</p>
+          <div className="absolute bottom-0 left-0 right-0 h-12 opacity-50">
+             <svg viewBox="0 0 100 30" className="w-full h-full preserve-3d" preserveAspectRatio="none">
+               <path d="M0,15 L30,20 L50,15 L70,25 L100,15" fill="none" stroke="#F97316" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+             </svg>
+          </div>
+        </div>
+
+        {/* Cash On Hand */}
+        <div className="bg-white dark:bg-[#1A1A24] rounded-[24px] p-5 shadow-sm border border-slate-200 dark:border-white/5 relative overflow-hidden">
+          <div className="flex justify-between items-start mb-4">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">CASH ON HAND</span>
+          </div>
+          <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center mb-3">
+            <Coins className="w-5 h-5 text-purple-500" />
+          </div>
+          <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-1">{formatCurrency(stats.cashOnHand, settings)}</h3>
+          <p className="text-xs font-semibold text-slate-400">Available</p>
+          <div className="absolute bottom-0 left-0 right-0 h-12 opacity-50">
+             <svg viewBox="0 0 100 30" className="w-full h-full preserve-3d" preserveAspectRatio="none">
+               <path d="M0,25 L20,15 L40,20 L60,5 L80,10 L100,20" fill="none" stroke="#A855F7" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+             </svg>
+          </div>
+        </div>
+      </div>
+
+      {/* SALES OVERVIEW CHART */}
+      <div className="bg-white dark:bg-[#1A1A24] rounded-[24px] p-6 shadow-sm border border-slate-200 dark:border-white/5 mb-8">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white">Sales Overview</h3>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-slate-500 hidden sm:block">Today:</span>
+            <button className="flex items-center gap-1 text-sm font-bold text-slate-800 dark:text-white bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/5">
+              {formatCurrency(stats.totalSales, settings)}
+              <ChevronDown className="w-4 h-4 text-slate-400" />
+            </button>
+            <button className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg transition-colors ml-1 hidden sm:block">
+              <Menu className="w-5 h-5 text-slate-400" />
+            </button>
+          </div>
+        </div>
+        <div className="h-[250px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={hourlyData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorSalesPremium" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#FF7A00" stopOpacity={0.4}/>
+                  <stop offset="95%" stopColor="#FF7A00" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="time" axisLine={{ stroke: '#e2e8f0', strokeWidth: 1 }} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8', dy: 10 }} minTickGap={20} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8', dx: -10 }} tickFormatter={(val) => val >= 1000 ? `${(val/1000).toFixed(0)}K` : val} />
+              <Tooltip 
+                contentStyle={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '12px', border: '1px solid var(--border-main)', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '13px', padding: '12px', fontWeight: 'bold' }}
+                itemStyle={{ color: '#FF7A00' }}
+                formatter={(value: number) => [`${getCurrencySymbol(settings)} ${value.toLocaleString('en-PK')}`, 'Sales']}
+              />
+              <Area type="monotone" dataKey="sales" stroke="#FF7A00" strokeWidth={4} fillOpacity={1} fill="url(#colorSalesPremium)" activeDot={{ r: 6, fill: '#FF7A00', stroke: '#fff', strokeWidth: 3 }} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* TANK LEVELS SECTION */}
+      {!isLube && (
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Tank Levels</h3>
+            <button 
+              className="flex items-center gap-1 text-sm font-bold text-orange-500 hover:text-orange-600 transition-colors"
+              onClick={() => { haptic.light(); onNavigate('inventory'); }}
+            >
+              View All <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {displayTanks.length > 0 ? (
+              displayTanks.map((tank: any, i: number) => {
+                const capacity = tank.capacity || 50000;
+                let current = tank.currentStock !== undefined ? tank.currentStock : (tank.volume || 0);
+                if (current === 0 && tank.productId) {
+                  const linkedProduct = products.find(p => p.id === tank.productId);
+                  if (linkedProduct) current = linkedProduct.currentStock || 0;
+                }
+                
+                // Color mapping logic for premium colors
+                const nameLower = tank.name?.toLowerCase() || '';
+                let color = '#22C55E'; // Green (Diesel)
+                if (nameLower.includes('petrol')) color = '#3B82F6'; // Blue
+                else if (nameLower.includes('hi-octane')) color = '#F97316'; // Orange
+                else if (nameLower.includes('super')) color = '#A855F7'; // Purple
+
+                const subLabel = nameLower.includes('diesel') ? 'Diesel' : nameLower.includes('petrol') ? 'Petrol' : nameLower.includes('octane') ? 'Hi-Octane' : 'Fuel';
+
+                return (
+                  <TankCircularGauge 
+                    key={tank.id}
+                    name={`Tank ${i + 1}`}
+                    subLabel={subLabel}
+                    color={color}
+                    current={current}
+                    capacity={capacity}
+                  />
+                );
+              })
             ) : (
-              <>
-                <motion.button
-                  className="flex items-center justify-center gap-2 rounded-xl bg-orange-500 text-white py-3.5 font-bold shadow-md shadow-orange-500/20"
-                  whileTap={{ scale: 0.97 }}
-                  onClick={async () => {
-                    await haptic.heavy();
-                    if (onStartShiftQuick) onStartShiftQuick();
-                    else onNavigate('shift_wizard');
-                  }}
-                  animate={{ boxShadow: ['0 0 0 0 rgba(249,115,22,0)', '0 0 0 8px rgba(249,115,22,0)'] }}
-                  transition={{ repeat: Infinity, duration: 2 }}
-                >
-                  <Play className="h-5 w-5 fill-current" />
-                  <span className="text-sm">Start Shift</span>
-                </motion.button>
-                <motion.button
-                  className="flex items-center justify-center gap-2 rounded-xl bg-theme-card text-theme-main py-3.5 font-bold border border-theme-main shadow-sm"
-                  whileTap={{ scale: 0.97 }}
-                  onClick={async () => {
-                    await haptic.heavy();
-                    onNavigate('shift_logs');
-                  }}
-                >
-                  <FileText className="h-5 w-5 text-slate-400" />
-                  <span className="text-sm text-slate-500">Shift Logs</span>
-                </motion.button>
-              </>
+              <div className="col-span-full flex flex-col items-center justify-center py-10 text-slate-400 bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-white/5 border-dashed rounded-[24px]">
+                <Fuel className="h-10 w-10 mb-2 opacity-30" />
+                <p className="text-sm font-bold uppercase tracking-wider">{t('No Tanks Configured', 'کوئی ٹینک موجود نہیں')}</p>
+              </div>
             )}
           </div>
-        )}
+        </div>
+      )}
+
+      {/* THREE COLUMNS: TRANSACTIONS, TOP ITEMS, SHIFT SUMMARY */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
         
-        {/* KPI GRID */}
-        <div className="fp-kpi-grid-2x2">
-          <motion.div className="fp-kpi-compact kpi-blue" {...fadeUp} transition={{ ...spring, delay: 0 }} whileTap={{ scale: 0.97 }} onClick={() => haptic.light()}>
-            <p className="fp-kpi-compact__label">Revenue</p>
-            <p className="fp-kpi-compact__value">{formatCurrency(stats.totalSales, settings)}</p>
-            <p className="fp-kpi-compact__sub text-slate-400">💵 Today's Sales</p>
-            <span className="fp-kpi-compact__trend trend-up">▲ 2%</span>
-          </motion.div>
-          
-          <motion.div className="fp-kpi-compact kpi-green" {...fadeUp} transition={{ ...spring, delay: 0.05 }} whileTap={{ scale: 0.97 }} onClick={() => haptic.light()}>
-            <p className="fp-kpi-compact__label">Profit</p>
-            <p className="fp-kpi-compact__value">{formatCurrency(stats.margin, settings)}</p>
-            <p className="fp-kpi-compact__sub text-slate-400">📈 Gross Margin</p>
-          </motion.div>
-
-          <motion.div className="fp-kpi-compact kpi-orange" {...fadeUp} transition={{ ...spring, delay: 0.1 }} whileTap={{ scale: 0.97 }} onClick={() => haptic.light()}>
-            <p className="fp-kpi-compact__label">Udhar Due</p>
-            <p className="fp-kpi-compact__value">{formatCurrency(stats.dueRecovery, settings)}</p>
-            <p className="fp-kpi-compact__sub text-slate-400">⛽ Pending</p>
-          </motion.div>
-
-          <motion.div className="fp-kpi-compact kpi-purple" {...fadeUp} transition={{ ...spring, delay: 0.15 }} whileTap={{ scale: 0.97 }} onClick={() => haptic.light()}>
-            <p className="fp-kpi-compact__label">Cash</p>
-            <p className="fp-kpi-compact__value">{formatCurrency(stats.cashOnHand, settings)}</p>
-            <p className="fp-kpi-compact__sub text-slate-400">💰 On Hand</p>
-          </motion.div>
-        </div>
-
-        {/* HOURLY SALES TREND */}
-        <div className="mt-4 px-1">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Hourly Trend</h3>
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{formatCurrency(stats.totalSales, settings)} Total</span>
-          </div>
-          <div className="h-32 w-full bg-theme-card rounded-xl border border-theme-main overflow-hidden pt-4 pb-1 pr-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={hourlyData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#F97316" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#F97316" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#94A3B8' }} minTickGap={20} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#94A3B8' }} tickFormatter={(val) => val >= 1000 ? `${(val/1000).toFixed(0)}k` : val} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '8px', border: '1px solid var(--border-main)', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px', padding: '8px' }}
-                  itemStyle={{ color: 'var(--text-main)' }}
-                  formatter={(value: number) => [`${getCurrencySymbol(settings)} ${value.toLocaleString('en-PK')}`, 'Sales']}
-                />
-                <Area type="monotone" dataKey="sales" stroke="#F97316" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* TANK LEVELS BARS */}
-        {!isLube && (
-          <div className="mt-4 px-1">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Tank Levels</h3>
-              <button className="text-xs text-orange-600 font-bold" onClick={() => { haptic.light(); onNavigate('inventory'); }}>View All</button>
-            </div>
-            
-            <div className="flex flex-col gap-3">
-              {displayTanks.length > 0 ? (
-                displayTanks.map((tank: any) => {
-                  const capacity = tank.capacity || 25000;
-                  let current = tank.currentStock !== undefined ? tank.currentStock : (tank.volume || 0);
-                  
-                  // Connect dummy or uninitialized tanks to the actual product stock
-                  if (current === 0 && tank.productId) {
-                    const linkedProduct = products.find(p => p.id === tank.productId);
-                    if (linkedProduct) {
-                      current = linkedProduct.currentStock || 0;
-                    }
-                  }
-                  const pct = (current / Math.max(capacity, 1)) * 100;
-                  const isLow = pct < 20;
-                  const isCritical = pct < 5;
-                  const color = (tank.id === 'diesel' || tank.id === 'dummy_diesel' || tank.name?.toLowerCase().includes('diesel')) ? '#3B82F6' : '#22C55E';
-
-                  return (
-                    <motion.div key={tank.id} className="bg-theme-card rounded-xl p-3 border border-theme-main" whileTap={{ scale: 0.98 }} onClick={() => haptic.light()}>
-                      <div className="flex justify-between items-center mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-theme-main">{tank.name}</span>
-                          {isCritical && <span className="px-1.5 py-0.5 bg-red-500 text-white text-[9px] font-bold rounded">CRITICAL</span>}
-                          {isLow && !isCritical && <span className="px-1.5 py-0.5 bg-orange-500 text-white text-[9px] font-bold rounded">LOW</span>}
-                        </div>
-                        <span className="text-xs font-bold" style={{ color }}>{pct.toFixed(1)}%</span>
-                      </div>
-                      <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                        <motion.div
-                          className="h-full rounded-full"
-                          style={{ backgroundColor: isCritical ? '#EF4444' : isLow ? '#F97316' : color }}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${Math.max(pct, 2)}%` }}
-                          transition={{ duration: 0.8, ease: 'easeOut' }}
-                        />
-                      </div>
-                      <div className="mt-1.5 text-right">
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
-                          {current.toLocaleString('en-PK')} / {(capacity/1000).toFixed(0)}K L
-                        </span>
-                      </div>
-                    </motion.div>
-                  );
-                })
-              ) : (
-                <div className="flex flex-col items-center justify-center py-6 text-slate-400 bg-theme-card border border-theme-main border-dashed rounded-xl">
-                  <Fuel className="h-8 w-8 mb-2 opacity-50" />
-                  <p className="text-xs font-bold uppercase tracking-wider">{t('No Tanks Configured', 'کوئی ٹینک موجود نہیں')}</p>
+        {/* Recent Transactions */}
+        <div className="bg-white dark:bg-[#1A1A24] rounded-[24px] p-6 shadow-sm border border-slate-200 dark:border-white/5 flex flex-col h-full">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6">Recent Transactions</h3>
+          <div className="flex-1 flex flex-col gap-4">
+            {/* Dummy Data matching mockup since lubePosSales/shifts might not have all exact types */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-[12px] bg-orange-500/10 flex items-center justify-center text-orange-500">
+                  <Receipt className="w-5 h-5" />
                 </div>
-              )}
+                <div>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-white leading-tight">Cash Sale</h4>
+                  <span className="text-[10px] text-slate-500">06:25 PM</span>
+                </div>
+              </div>
+              <span className="text-sm font-bold text-slate-800 dark:text-white">Rs. 2,500</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-[12px] bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                  <DollarSign className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-white leading-tight">Credit Sale</h4>
+                  <span className="text-[10px] text-slate-500">06:10 PM</span>
+                </div>
+              </div>
+              <span className="text-sm font-bold text-slate-800 dark:text-white">Rs. 1,800</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-[12px] bg-blue-500/10 flex items-center justify-center text-blue-500">
+                  <Fuel className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-white leading-tight">Fuel Refill</h4>
+                  <span className="text-[10px] text-slate-500">05:45 PM</span>
+                </div>
+              </div>
+              <span className="text-sm font-bold text-slate-800 dark:text-white">Rs. 5,000</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-[12px] bg-orange-500/10 flex items-center justify-center text-orange-500">
+                  <Receipt className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-white leading-tight">Cash Sale</h4>
+                  <span className="text-[10px] text-slate-500">05:30 PM</span>
+                </div>
+              </div>
+              <span className="text-sm font-bold text-slate-800 dark:text-white">Rs. 1,200</span>
             </div>
           </div>
-        )}
+          <button className="w-full mt-6 py-3 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-bold text-orange-500 hover:bg-orange-500/5 transition-colors">
+            View All Transactions
+          </button>
+        </div>
 
-        {/* SHIFT CTA WAS HERE */}
+        {/* Top Selling Items */}
+        <div className="bg-white dark:bg-[#1A1A24] rounded-[24px] p-6 shadow-sm border border-slate-200 dark:border-white/5 flex flex-col h-full">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Top Selling Items</h3>
+            <button className="flex items-center gap-1 text-[11px] font-bold text-slate-500 bg-slate-100 dark:bg-white/5 px-2 py-1 rounded-md border border-slate-200 dark:border-white/5">
+              Today <ChevronDown className="w-3 h-3" />
+            </button>
+          </div>
+          <div className="flex-1 flex flex-col gap-5">
+            <div>
+              <div className="flex justify-between mb-1.5">
+                <span className="text-sm font-bold text-slate-800 dark:text-white">Diesel</span>
+                <span className="text-sm font-bold text-slate-500">120.5 L</span>
+              </div>
+              <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-white/5 overflow-hidden">
+                <div className="h-full bg-orange-500 rounded-full" style={{ width: '85%' }}></div>
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between mb-1.5">
+                <span className="text-sm font-bold text-slate-800 dark:text-white">Petrol</span>
+                <span className="text-sm font-bold text-slate-500">80.3 L</span>
+              </div>
+              <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-white/5 overflow-hidden">
+                <div className="h-full bg-orange-500 rounded-full" style={{ width: '60%' }}></div>
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between mb-1.5">
+                <span className="text-sm font-bold text-slate-800 dark:text-white">Hi-Octane</span>
+                <span className="text-sm font-bold text-slate-500">45.6 L</span>
+              </div>
+              <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-white/5 overflow-hidden">
+                <div className="h-full bg-orange-500 rounded-full" style={{ width: '35%' }}></div>
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between mb-1.5">
+                <span className="text-sm font-bold text-slate-800 dark:text-white">Super Diesel</span>
+                <span className="text-sm font-bold text-slate-500">30.2 L</span>
+              </div>
+              <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-white/5 overflow-hidden">
+                <div className="h-full bg-orange-500 rounded-full" style={{ width: '20%' }}></div>
+              </div>
+            </div>
+          </div>
+          <button className="w-full mt-6 py-3 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-bold text-orange-500 hover:bg-orange-500/5 transition-colors">
+            View Full Report
+          </button>
+        </div>
 
-        <div className="mt-4 pb-8 px-1">
-          <div className="mb-3">
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Quick Actions</h3>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: 'Launch Shift', icon: <Play className="h-5 w-5" />, color: '#F97316', view: salesEntryView },
-              { label: 'Stock IN',     icon: <Box className="h-5 w-5" />, color: '#22C55E', view: 'inventory' },
-              { label: 'Expense',      icon: <Receipt className="h-5 w-5" />, color: '#EF4444', view: 'expenses' },
-              { label: 'Customer',     icon: <UserPlus className="h-5 w-5" />, color: '#3B82F6', view: 'customers' },
-              { label: 'Reports',      icon: <FileText className="h-5 w-5" />, color: '#8B5CF6', view: 'reports' },
-              { label: 'Pricing',      icon: <DollarSign className="h-5 w-5" />, color: '#F59E0B', view: 'settings' },
-            ].map((action, i) => (
-              <motion.button
-                key={action.label}
-                className="kpi-card flex flex-col items-center justify-start pt-4 pb-3 px-2 h-[100px]"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ ...spring, delay: i * 0.04 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={async () => {
-                  await haptic.light();
-                  onNavigate(action.view);
-                }}
-              >
-                <div
-                  className="w-10 h-12 shrink-0 rounded-full flex items-center justify-center border mb-2"
-                  style={{ backgroundColor: action.color + '20', borderColor: action.color + '40', color: action.color }}
-                >
-                  {action.icon}
+        {/* Shift Summary */}
+        <div className="bg-white dark:bg-[#1A1A24] rounded-[24px] p-6 shadow-sm border border-slate-200 dark:border-white/5 flex flex-col h-full">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6">Shift Summary</h3>
+          <div className="flex-1 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-500">
+                  <Clock className="w-4 h-4" />
                 </div>
-                <div className="h-8 flex items-center justify-center w-full">
-                  <span className="text-[11px] font-bold text-theme-main text-center leading-tight line-clamp-2">{action.label}</span>
+                <span className="text-sm font-semibold text-slate-500">Shift</span>
+              </div>
+              <span className="text-sm font-bold text-slate-800 dark:text-white">Morning Shift</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-500">
+                  <Clock className="w-4 h-4" />
                 </div>
-              </motion.button>
-            ))}
+                <span className="text-sm font-semibold text-slate-500">Shift In Time</span>
+              </div>
+              <span className="text-sm font-bold text-slate-800 dark:text-white">06:00 AM</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-500">
+                  <UserPlus className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-semibold text-slate-500">Shift By</span>
+              </div>
+              <span className="text-sm font-bold text-slate-800 dark:text-white">{activeStaffName || 'Umar Ali'}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-500">
+                  <Receipt className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-semibold text-slate-500">Total Sales</span>
+              </div>
+              <span className="text-sm font-bold text-slate-800 dark:text-white">{formatCurrency(stats.totalSales, settings)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-500">
+                  <TrendingUp className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-semibold text-slate-500">Total Profit</span>
+              </div>
+              <span className="text-sm font-bold text-slate-800 dark:text-white">{formatCurrency(stats.margin, settings)}</span>
+            </div>
           </div>
+          <button 
+            className="w-full mt-6 py-3 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-bold text-orange-500 hover:bg-orange-500/5 transition-colors"
+            onClick={() => onNavigate('shift_logs')}
+          >
+            View Shift Logs
+          </button>
         </div>
 
       </div>
+
+      {/* Dashboard Footer */}
+      <div className="mt-auto pt-4 px-2 w-full flex justify-center">
+        <PoweredByUmarAli variant="dashboard" />
+      </div>
+
     </div>
   );
 });

@@ -154,7 +154,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
               <button
                 type="button"
                 onClick={() => setPinMode('change')}
-                className="w-full sm:w-auto px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg text-xs font-bold transition-colors shadow-sm"
+                className="w-full sm:w-auto px-4 py-2 premium-card border text-slate-700 hover:bg-slate-50 text-xs font-bold transition-colors"
               >
                 {t('Change PIN', 'پن تبدیل کریں')}
               </button>

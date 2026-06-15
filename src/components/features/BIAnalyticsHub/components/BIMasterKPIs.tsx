@@ -24,7 +24,7 @@ export function BIMasterKPIs({ metrics, settings }: BIMasterKPIsProps) {
     <div className="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-6">
       
       {/* 1. Total Invested */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between">
+      <div className="premium-card border border-slate-200 flex flex-col justify-between">
         <div className="flex justify-between items-start mb-2">
           <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
             <Database className="w-5 h-5" />
@@ -38,7 +38,7 @@ export function BIMasterKPIs({ metrics, settings }: BIMasterKPIsProps) {
       </div>
 
       {/* 2. Total Revenue */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between">
+      <div className="premium-card border border-slate-200 flex flex-col justify-between">
         <div className="flex justify-between items-start mb-2">
           <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
             <TrendingUp className="w-5 h-5" />
@@ -52,7 +52,7 @@ export function BIMasterKPIs({ metrics, settings }: BIMasterKPIsProps) {
       </div>
 
       {/* 3. Net Profit */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between">
+      <div className="premium-card border border-slate-200 flex flex-col justify-between">
         <div className="flex justify-between items-start mb-2">
           <div className={`p-2 rounded-lg ${kpi.netProfit >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
             <Activity className="w-5 h-5" />
@@ -69,7 +69,7 @@ export function BIMasterKPIs({ metrics, settings }: BIMasterKPIsProps) {
       </div>
 
       {/* 4. ROI */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between">
+      <div className="premium-card border border-slate-200 flex flex-col justify-between">
         <div className="flex justify-between items-start mb-2">
           <div className="p-2 bg-purple-50 rounded-lg text-purple-600">
             <Target className="w-5 h-5" />
@@ -86,7 +86,7 @@ export function BIMasterKPIs({ metrics, settings }: BIMasterKPIsProps) {
       </div>
 
       {/* 5. Working Capital (simplified proxy for now) */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between">
+      <div className="premium-card border border-slate-200 flex flex-col justify-between">
         <div className="flex justify-between items-start mb-2">
           <div className="p-2 bg-amber-50 rounded-lg text-amber-600">
             <Wallet className="w-5 h-5" />
@@ -100,7 +100,7 @@ export function BIMasterKPIs({ metrics, settings }: BIMasterKPIsProps) {
       </div>
 
       {/* 6. Stock Valuation */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between">
+      <div className="premium-card border border-slate-200 flex flex-col justify-between">
         <div className="flex justify-between items-start mb-2">
           <div className="p-2 bg-slate-100 rounded-lg text-slate-600">
             <CircleDollarSign className="w-5 h-5" />

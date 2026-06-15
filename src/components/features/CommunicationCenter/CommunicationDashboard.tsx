@@ -79,7 +79,7 @@ export const CommunicationDashboard: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
         
         {/* EOD Summary Card */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 hover:shadow-md transition-shadow">
+        <div className="premium-card border border-slate-200 hover:shadow-md transition-shadow">
           <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center mb-4">
             <Send className="w-6 h-6 text-indigo-600" />
           </div>
@@ -97,7 +97,7 @@ export const CommunicationDashboard: React.FC = () => {
         </div>
 
         {/* Bulk Reminders Card */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 hover:shadow-md transition-shadow">
+        <div className="premium-card border border-slate-200 hover:shadow-md transition-shadow">
           <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center mb-4">
             <Users className="w-6 h-6 text-orange-600" />
           </div>

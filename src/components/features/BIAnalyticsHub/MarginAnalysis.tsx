@@ -75,7 +75,7 @@ export default function MarginAnalysis({ settings, stationId }: MarginAnalysisPr
 
   return (
     <div className="space-y-4">
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+      <div className="premium-card p-6 border">
         <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-emerald-500" />
           Gross Margin Analysis by Fuel Grade

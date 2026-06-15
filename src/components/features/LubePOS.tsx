@@ -490,7 +490,7 @@ const cartItems = useMemo(() => {
             </div>
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
               {sellableProducts.slice().sort((a, b) => b.currentStock - a.currentStock).slice(0, 4).map(product => (
-                <div key={'fast_'+product.id} className="flex-shrink-0 flex items-center justify-between w-full max-w-[220px] bg-white border border-slate-200/80 rounded-2xl p-3 shadow-sm hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group" onClick={() => addToCart(product.id)}>
+                <div key={'fast_'+product.id} className="flex-shrink-0 flex items-center justify-between w-full max-w-[220px] premium-card border border-slate-200/80 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group" onClick={() => addToCart(product.id)}>
                   <div className="pr-2">
                     <h5 className="text-[11px] font-bold text-slate-700 leading-snug line-clamp-2">{isUrdu ? product.urduName : product.name}</h5>
                     <span className="text-xs font-black text-emerald-600 mt-1 block">Rs {formatCurrency(product.rate, settings)}</span>
@@ -657,7 +657,7 @@ const cartItems = useMemo(() => {
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-[10px] font-black tracking-widest text-emerald-600 bg-emerald-50 px-2 py-1 rounded">Rs {formatCurrency(item.product.rate, settings)} / {item.product.unit}</span>
-                          <div className="flex items-center gap-2 bg-white rounded-xl p-1 border border-slate-200 shadow-sm">
+                          <div className="flex items-center ga premium-card p-1 border">
                             <button onClick={() => updateCartQty(item.productId, item.quantity - 1)} className="w-7 h-7 flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-700 rounded-lg transition-all">
                               <Minus className="h-3 w-3" strokeWidth={3} />
                             </button>
@@ -732,7 +732,7 @@ const cartItems = useMemo(() => {
                     </select>
                   )}
                   {paymentMode !== 'credit' && (
-                    <div className="flex items-center justify-between bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm">
+                    <div className="flex items-center justify-between premium-card border px-4 py-3">
                       <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">{t('Amount Received', 'وصول شدہ رقم')}</span>
                       <input value={amountReceived} onChange={(e) => setAmountReceived(e.target.value)} placeholder={totals.total.toString()} className="w-28 text-right font-black text-base text-slate-800 bg-transparent focus:outline-none" />
                     </div>

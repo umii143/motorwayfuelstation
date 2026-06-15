@@ -113,7 +113,7 @@ export default function ExecutiveDashboard({ settings, stationId }: ExecutiveDas
       </div>
 
       {/* Monthly Trend Mock Chart */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <div className="premium-card border border-slate-200">
         <h3 className="font-bold text-slate-800 mb-6 flex items-center justify-between">
           <span>Revenue vs Target Trend</span>
           <button className="text-xs text-rose-600 font-bold flex items-center hover:text-rose-700">View Full Report <ChevronRight className="h-3 w-3 ml-1"/></button>

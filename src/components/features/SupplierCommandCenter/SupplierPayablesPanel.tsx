@@ -264,7 +264,7 @@ export default function SupplierPayablesPanel({
 
       {/* Supplier Payable List */}
       {payables.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
+        <div className="premium-card border border-slate-200 text-center">
           <CheckCircle className="size-12 mx-auto text-emerald-400 mb-3" />
           <p className="font-bold text-slate-400 text-lg">{t('No outstanding payables', 'کوئی واجب الادا رقم نہیں')}</p>
           <p className="text-xs text-slate-400 mt-1">{t('All supplier balances are settled.', 'تمام سپلائر بیلنس صاف ہیں۔')}</p>

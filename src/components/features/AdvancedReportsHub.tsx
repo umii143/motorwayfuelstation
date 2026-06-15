@@ -884,7 +884,7 @@ export default function AdvancedReportsHub({
 
       {/* KPI Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+        <div className="premium-card border border-slate-200">
           <span className="text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider block">
             Total Reports
           </span>
@@ -944,7 +944,7 @@ export default function AdvancedReportsHub({
             placeholder="Search 100+ reports by name, module, or keyword..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-hidden focus:border-orange-500 shadow-sm transition-colors"
+            className="w-full pl-10 pr-4 py-3 premium-card border text-sm font-semibold text-slate-700 focus:outline-hidden focus:border-orange-500 transition-colors"
           />
         </div>
 
@@ -968,7 +968,7 @@ export default function AdvancedReportsHub({
 
       {/* Dynamic Report Matrix */}
       {filteredModules.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-sm">
+        <div className="premium-card border border-slate-200 text-center">
           <Search className="w-12 h-12 text-slate-200 mx-auto mb-3" />
           <h3 className="text-slate-800 font-bold mb-1">No reports found</h3>
           <p className="text-slate-500 text-sm">

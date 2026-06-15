@@ -74,7 +74,7 @@ export default function TreasuryCenter() {
         </h1>
       </div>
 
-      <div className="flex overflow-x-auto bg-white dark:bg-gray-800 rounded-lg p-1 shadow-sm border border-gray-100 dark:border-gray-700">
+      <div className="flex overflow-x-auto premium-card dark:bg-gray-800 p-1 border-gray-100 dark:border-gray-700">
         <button
           onClick={() => setActiveTab('dashboard')}
           className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-md transition-colors ${

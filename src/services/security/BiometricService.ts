@@ -21,16 +21,16 @@ export class BiometricService {
    */
   static async authenticate(reason: string = 'Please authenticate to continue'): Promise<boolean> {
     if (!Capacitor.isNativePlatform()) {
-      // On web, we could fallback to a PIN prompt or just allow it if in dev mode
-      console.warn("Biometrics requested on non-native platform");
-      return true; // Auto-pass for web testing
+      // Force PIN fallback on web instead of dummy true
+      console.warn("Biometrics requested on non-native platform. Falling back to PIN.");
+      return false;
     }
 
     try {
       await BiometricAuth.authenticate({
         reason: reason,
-        cancelTitle: 'Cancel',
-        allowDeviceCredential: true, // Allow fallback to device PIN
+        cancelTitle: 'Use PIN',
+        allowDeviceCredential: false, // Strict fingerprint/face requirement
       });
       return true;
     } catch (error: any) {

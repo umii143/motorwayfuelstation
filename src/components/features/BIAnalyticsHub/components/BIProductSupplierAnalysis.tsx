@@ -15,7 +15,7 @@ export function BIProductSupplierAnalysis({ metrics }: any) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
       {/* Product Analysis */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="premium-card border overflow-hidden">
         <div className="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <PackageOpen className="w-5 h-5 text-indigo-600" />
@@ -67,7 +67,7 @@ export function BIProductSupplierAnalysis({ metrics }: any) {
       </div>
 
       {/* Supplier Analysis */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="premium-card border overflow-hidden">
         <div className="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Truck className="w-5 h-5 text-orange-600" />

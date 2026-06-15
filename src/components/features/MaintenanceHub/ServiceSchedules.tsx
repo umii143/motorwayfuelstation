@@ -157,7 +157,7 @@ export default function ServiceSchedules({ settings, stationId }: ServiceSchedul
 
       <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
         {filteredRecords.map(record => (
-          <div key={record.id} className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition">
+          <div key={record.id} className="premium-card border border-slate-200 hover:shadow-md transition">
             <div className="flex justify-between items-start mb-3">
               <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-lg ${record.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : record.status === 'in_progress' ? 'bg-amber-50 text-amber-600' : record.status === 'scheduled' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-600'}`}>

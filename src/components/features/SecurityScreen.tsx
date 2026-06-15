@@ -78,15 +78,17 @@ export const SecurityScreen: React.FC = () => {
               
               <button 
                 onClick={() => {
-                  if (pin === '123456') { // Mock PIN validation
+                  const savedPin = localStorage.getItem('fuelpro_device_pin') || '123456';
+                  if (pin === savedPin) { 
                     NativeHaptics.success();
                     forceUnlock();
                     setPin('');
                     setError('');
                   } else {
+                    NativeHaptics.heavyClick();
                     NativeHaptics.error();
-                    NativeHaptics.vibrate(300);
-                    setError('Invalid PIN');
+                    NativeHaptics.vibrate(500); // Emphasize failure
+                    setError('Invalid PIN. Please try again.');
                     setPin('');
                   }
                 }}

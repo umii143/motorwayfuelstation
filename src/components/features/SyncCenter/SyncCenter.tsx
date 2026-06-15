@@ -57,7 +57,7 @@ export default function SyncCenter({ settings }: { settings: GlobalSettings }) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <div className="premium-card p-5 border">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
               <Database className="h-5 w-5" />
@@ -66,7 +66,7 @@ export default function SyncCenter({ settings }: { settings: GlobalSettings }) {
           </div>
           <p className="text-3xl font-bold text-slate-900">{status.queue.length}</p>
         </div>
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <div className="premium-card p-5 border">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-yellow-50 text-yellow-600 rounded-lg">
               <Clock className="h-5 w-5" />
@@ -75,7 +75,7 @@ export default function SyncCenter({ settings }: { settings: GlobalSettings }) {
           </div>
           <p className="text-3xl font-bold text-slate-900">{status.pending}</p>
         </div>
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <div className="premium-card p-5 border">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-red-50 text-red-600 rounded-lg">
               <AlertTriangle className="h-5 w-5" />
@@ -84,7 +84,7 @@ export default function SyncCenter({ settings }: { settings: GlobalSettings }) {
           </div>
           <p className="text-3xl font-bold text-slate-900">{status.failed}</p>
         </div>
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <div className="premium-card p-5 border">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-orange-50 text-orange-600 rounded-lg">
               <XCircle className="h-5 w-5" />
@@ -96,7 +96,7 @@ export default function SyncCenter({ settings }: { settings: GlobalSettings }) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+        <div className="premium-card border overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
             <h3 className="font-semibold text-slate-800">Current Mutation Queue</h3>
           </div>
@@ -134,7 +134,7 @@ export default function SyncCenter({ settings }: { settings: GlobalSettings }) {
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+        <div className="premium-card border overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
             <h3 className="font-semibold text-slate-800">Integrity Drift Logs</h3>
             {driftLogs.length > 0 && (

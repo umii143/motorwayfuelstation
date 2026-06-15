@@ -32,7 +32,7 @@ export function DashboardLiquidAssetsGraph({ cashOnHand, banks, dueRecovery }: P
   }, [cashOnHand, banks, dueRecovery]);
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 h-[380px] flex flex-col">
+    <div className="premium-card p-6 border h-[380px] flex flex-col">
       <div className="flex justify-between items-start mb-4">
         <div>
           <h3 className="font-bold text-slate-900 text-lg">Liquid Assets & Receivables</h3>

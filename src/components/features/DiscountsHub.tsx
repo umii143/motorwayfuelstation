@@ -117,7 +117,7 @@ export default function DiscountsHub({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+        <div className="premium-card border border-slate-200">
           <span className="text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider block">
             {t('Total Discounts Value', 'کل رعیاتی ڈسکاؤنٹ')}
           </span>
@@ -128,7 +128,7 @@ export default function DiscountsHub({
             {t('In current filter range', 'حالیہ فلٹر رینج')}
           </span>
         </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+        <div className="premium-card border border-slate-200">
           <span className="text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider block">
             {t('Discounts Issued', 'مجموعی جاری کردہ ڈسکاؤنٹ')}
           </span>
@@ -139,7 +139,7 @@ export default function DiscountsHub({
             {t('Total transactions', 'مجموعی کارروائیاں')}
           </span>
         </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+        <div className="premium-card border border-slate-200">
           <span className="text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider block">
             {t('Avg. Discount', 'اوسط رعایت')}
           </span>
@@ -150,7 +150,7 @@ export default function DiscountsHub({
             Per transaction mean
           </span>
         </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm relative overflow-hidden">
+        <div className="premium-card border border-slate-200 relative overflow-hidden">
           <LineChart className="absolute -right-4 -bottom-4 w-20 h-20 text-slate-50 opacity-50" />
           <span className="text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider block z-10 relative">
             Top Category
@@ -166,7 +166,7 @@ export default function DiscountsHub({
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="premium-card border overflow-hidden">
         <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row gap-4 items-center justify-between">
           <div className="flex gap-2 w-full md:w-auto">
             <div className="relative flex-1 md:w-64">

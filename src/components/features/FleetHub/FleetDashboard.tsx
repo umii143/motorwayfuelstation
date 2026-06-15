@@ -94,7 +94,7 @@ export default function FleetDashboard({ settings, stationId }: FleetDashboardPr
 
       <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Alerts / Credit Limits */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="premium-card border overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <h3 className="font-bold text-sm text-slate-800 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-rose-500" />
@@ -129,7 +129,7 @@ export default function FleetDashboard({ settings, stationId }: FleetDashboardPr
         </div>
 
         {/* Top Consumers */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="premium-card border overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <h3 className="font-bold text-sm text-slate-800 flex items-center gap-2">
               <UsersRound className="h-4 w-4 text-indigo-500" />

@@ -523,7 +523,7 @@ export default function Inventory({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar w-full sm:w-auto">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full sm:w-auto">
           <button
             onClick={generateAIStockInsights}
             disabled={isGeneratingAiInsights || products.length === 0}
@@ -1352,7 +1352,7 @@ export default function Inventory({
                   <select
                     value={reconProductId}
                     onChange={(e) => setReconProductId(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 font-sans text-sm focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-white px-2.5 font-sans text-sm focus:border-orange-500 focus:outline-hidden"
                   >
                     {products.map(p => <option key={p.id} value={p.id}>{p.name} ({p.currentStock} {p.unit} in hand)</option>)}
                   </select>
@@ -1366,7 +1366,7 @@ export default function Inventory({
                     value={reconActualQty}
                     onChange={(e) => setReconActualQty(e.target.value)}
                     placeholder="e.g. 14200"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-white px-3 .5 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
                   />
                 </div>
 
@@ -1378,7 +1378,7 @@ export default function Inventory({
                     value={reconReason}
                     onChange={(e) => setReconReason(e.target.value)}
                     placeholder="e.g. Weekly physical calibration check correction"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-white px-3 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
                   />
                 </div>
 
@@ -1429,24 +1429,24 @@ export default function Inventory({
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Product Name (English):', 'نام (انگریزی):')}</label>
                     <input type="text" required value={prodName} onChange={e => setProdName(e.target.value)}
                       placeholder="e.g. Mobil 1 5W-30"
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-emerald-500 outline-none" />
+                      className="premium-input border bg-white px-3 font-sans text-sm focus:border-emerald-500 outline-none" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Product Name (Urdu):', 'نام (اردو):')}</label>
                     <input type="text" value={prodUrduName} onChange={e => setProdUrduName(e.target.value)}
                       placeholder="مثال: موبل ون"
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-emerald-500 outline-none" />
+                      className="premium-input border bg-white px-3 font-sans text-sm focus:border-emerald-500 outline-none" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Selling Rate (Rs):', 'فروخت قیمت (روپے):')}</label>
                     <input type="number" required min="0" step="0.01" value={prodRate} onChange={e => setProdRate(e.target.value)}
                       placeholder="e.g. 1500"
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-emerald-500 outline-none" />
+                      className="premium-input border bg-white px-3 font-mono text-sm focus:border-emerald-500 outline-none" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Unit of Measure:', 'پیمائش کی اکائی:')}</label>
                     <select value={prodUnit} onChange={e => setProdUnit(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-emerald-500 outline-none">
+                      className="premium-input border bg-white px-3 font-sans text-sm focus:border-emerald-500 outline-none">
                       <option value="Pcs">Pcs (Pieces)</option>
                       <option value="Ltr">Ltr (Litres)</option>
                       <option value="Kg">Kg (Kilogram)</option>
@@ -1477,14 +1477,14 @@ export default function Inventory({
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Min Stock Alert Level:', 'انتباہی اسٹاک حد:')}</label>
                     <input type="number" min="0" value={prodMinStock} onChange={e => setProdMinStock(e.target.value)}
                       placeholder="e.g. 10"
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-emerald-500 outline-none" />
+                      className="premium-input border bg-white px-3 font-mono text-sm focus:border-emerald-500 outline-none" />
                   </div>
                   {!editingProduct && (
                     <div className="sm:col-span-2">
                       <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Opening Stock Quantity:', 'ابتدائی اسٹاک مقدار:')}</label>
                       <input type="number" min="0" value={prodOpeningStock} onChange={e => setProdOpeningStock(e.target.value)}
                         placeholder="e.g. 50"
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-emerald-500 outline-none" />
+                        className="premium-input border bg-white px-3 font-mono text-sm focus:border-emerald-500 outline-none" />
                     </div>
                   )}
                 </div>

@@ -153,7 +153,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
           <button
             onClick={refresh}
             disabled={isRefreshing}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm"
+            className="flex items-center ga.5 px-3 py-1.5 premium-card border text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors"
           >
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin text-indigo-600' : ''}`} />
             Refresh
@@ -176,7 +176,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            className="bg-white rounded-xl border border-slate-200 shadow-sm p-4"
+            className="premium-card border border-slate-200"
           >
             <div className={`w-8 h-8 ${kpi.bg} rounded-lg flex items-center justify-center mb-2`}>
               <kpi.icon className={`h-4 w-4 ${kpi.color}`} />
@@ -194,7 +194,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
         <div className="space-y-4">
 
           {/* Score Gauge */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 text-center">
+          <div className="premium-card border border-slate-200 text-center">
             <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">System Integrity Score</h3>
             <div className="relative w-44 h-44 mx-auto">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
@@ -241,7 +241,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
           </div>
 
           {/* Migration Confidence + Gate */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+          <div className="premium-card border border-slate-200">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
                 <Lock className="h-4 w-4 text-indigo-500" />
@@ -326,7 +326,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
           </div>
 
           {/* Drift Log Table */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="premium-card border overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
               <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
                 <FileText className="h-4 w-4 text-slate-400" />

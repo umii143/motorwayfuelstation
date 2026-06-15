@@ -166,7 +166,7 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
   return (
     <div className="space-y-8 pb-12">
       {/* Header */}
-      <div className="flex flex-row items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+      <div className="flex flex-row items-center justify-between ga premium-card p-6 border relative overflow-hidden">
         {/* Decorative background element */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-orange-100 to-transparent rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/4"></div>
         
@@ -240,7 +240,7 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
       {!paymentSuccess && (
         <>
           {/* Payment Gateway Selection */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="premium-card p-6 border">
             <div className="mb-4">
               <h3 className="font-bold text-slate-900">{t('Select Payment Gateway', 'ادائیگی کا طریقہ منتخب کریں')}</h3>
               <p className="text-sm text-slate-500">{t('Choose your preferred method for seamless transactions in Pakistan.', 'پاکستان میں ہموار لین دین کے لیے اپنا پسندیدہ طریقہ منتخب کریں۔')}</p>

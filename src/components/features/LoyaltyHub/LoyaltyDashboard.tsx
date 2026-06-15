@@ -43,7 +43,7 @@ export default function LoyaltyDashboard({ settings, stationId }: LoyaltyDashboa
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
+        <div className="premium-card p-5 border relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-50 rounded-full group-hover:scale-110 transition-transform"></div>
           <div className="relative">
             <div className="flex justify-between items-start mb-2">
@@ -57,7 +57,7 @@ export default function LoyaltyDashboard({ settings, stationId }: LoyaltyDashboa
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
+        <div className="premium-card p-5 border relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-amber-50 rounded-full group-hover:scale-110 transition-transform"></div>
           <div className="relative">
             <div className="flex justify-between items-start mb-2">
@@ -71,7 +71,7 @@ export default function LoyaltyDashboard({ settings, stationId }: LoyaltyDashboa
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
+        <div className="premium-card p-5 border relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-50 rounded-full group-hover:scale-110 transition-transform"></div>
           <div className="relative">
             <div className="flex justify-between items-start mb-2">
@@ -85,7 +85,7 @@ export default function LoyaltyDashboard({ settings, stationId }: LoyaltyDashboa
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
+        <div className="premium-card p-5 border relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-rose-50 rounded-full group-hover:scale-110 transition-transform"></div>
           <div className="relative">
             <div className="flex justify-between items-start mb-2">
@@ -102,7 +102,7 @@ export default function LoyaltyDashboard({ settings, stationId }: LoyaltyDashboa
 
       <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Top Members */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="premium-card border overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <h3 className="font-bold text-sm text-slate-800 flex items-center gap-2">
               <Award className="h-4 w-4 text-amber-500" />
@@ -135,7 +135,7 @@ export default function LoyaltyDashboard({ settings, stationId }: LoyaltyDashboa
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="premium-card border overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <h3 className="font-bold text-sm text-slate-800 flex items-center gap-2">
               <Coins className="h-4 w-4 text-blue-500" />

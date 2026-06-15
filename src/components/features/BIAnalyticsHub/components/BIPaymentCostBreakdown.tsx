@@ -41,7 +41,7 @@ export function BIPaymentCostBreakdown({ metrics }: any) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
       {/* Payment Method Breakdown */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+      <div className="premium-card border overflow-hidden flex flex-col">
         <div className="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CreditCard className="w-5 h-5 text-sky-600" />
@@ -75,7 +75,7 @@ export function BIPaymentCostBreakdown({ metrics }: any) {
       </div>
 
       {/* Cost Breakdown */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+      <div className="premium-card border overflow-hidden flex flex-col">
         <div className="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <PieChart className="w-5 h-5 text-rose-600" />

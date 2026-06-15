@@ -30,7 +30,7 @@ export function DashboardRealtimeGauges({ settings, products = [], tanks = [], a
         const isLow = actualStock <= tank.criticalLevel;
         
         return (
-          <div key={tank.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 relative overflow-hidden group">
+          <div key={tank.id} className="premium-card p-6 border relative overflow-hidden group">
             <div className="absolute inset-x-0 bottom-0 bg-slate-100 h-2">
               <div 
                 className={`h-full transition-all duration-1000 ease-in-out ${isLow ? 'bg-rose-500' : 'bg-emerald-500'}`}

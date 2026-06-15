@@ -3,6 +3,7 @@ import { User, Shield, Key, Mail, Phone, Calendar, BadgeCheck, Save, Edit3, Smar
 import { useAuth } from '../../../contexts/AuthContext';
 import { useStation } from '../../../contexts/StationContext';
 import { GlobalSettings } from '../../../types';
+import { PoweredByUmarAli } from '../../../components/shared/PoweredByUmarAli';
 
 export default function ProfileCenter({ settings }: { settings: GlobalSettings }) {
   const { user, session } = useAuth();
@@ -234,6 +235,24 @@ export default function ProfileCenter({ settings }: { settings: GlobalSettings }
                   {user.totpEnabled ? t('Disable 2FA', '2FA غیر فعال کریں') : t('Enable 2FA', '2FA فعال کریں')}
                 </button>
               </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200">
+              <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+                <Globe className="h-5 w-5 text-slate-400" />
+                {t('About FuelPro', 'فیول پرو کے بارے میں')}
+              </h3>
+            </div>
+            <div className="p-6 text-center space-y-4 bg-slate-50">
+              <div>
+                <p className="text-sm font-bold text-slate-700">FuelPro Enterprise Command Center</p>
+                <p className="text-xs text-slate-500 mt-1">Version 2.0 (Gold Medal Edition)</p>
+              </div>
+              <div className="flex flex-col items-center justify-center gap-2 mt-4">
+                <PoweredByUmarAli variant="full" />
+              </div>
+              <p className="text-[10px] text-slate-400 font-mono mt-4">© 2026 {settings.stationName}. All rights reserved.</p>
             </div>
           </div>
         </div>

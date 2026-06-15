@@ -56,7 +56,7 @@ export function ShiftWastage({
             value={testPetrol}
             onChange={(e) => setTestPetrol(e.target.value)}
             placeholder="0"
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
+            className="premium-input border bg-white px-3 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
           />
         </div>
 
@@ -69,7 +69,7 @@ export function ShiftWastage({
             value={testDiesel}
             onChange={(e) => setTestDiesel(e.target.value)}
             placeholder="0"
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
+            className="premium-input border bg-white px-3 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
           />
         </div>
 
@@ -85,7 +85,7 @@ export function ShiftWastage({
             value={testCNG}
             onChange={(e) => setTestCNG(e.target.value)}
             placeholder="0"
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
+            className="premium-input border bg-white px-3 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
           />
         </div>
 

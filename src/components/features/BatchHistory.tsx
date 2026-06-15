@@ -168,7 +168,7 @@ export default function BatchHistory({ batches, products, language }: BatchHisto
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto hide-scrollbar">
+      <div className="overflow-x-auto no-scrollbar">
         <table className="w-full text-left font-sans">
           <thead>
             <tr className="bg-theme-main text-slate-500 text-[10px] uppercase tracking-wider">

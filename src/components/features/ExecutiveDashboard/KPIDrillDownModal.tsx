@@ -64,7 +64,7 @@ export const KPIDrillDownModal: React.FC<KPIDrillDownModalProps> = ({ isOpen, on
               </p>
             </div>
           </div>
-          <div className="bg-white border-2 border-slate-200 rounded-2xl p-6 shadow-sm">
+          <div className="premium-card border-2 border-slate-200">
             <h3 className="text-lg font-black text-slate-800 mb-2">Inventory Revaluation</h3>
             <p className="text-sm text-slate-600 mb-4">
               Inventory Revaluation gains and losses are isolated from operational profit. They are calculated dynamically by taking a snapshot of physical stock levels at the precise moment a price change occurs.
@@ -105,7 +105,7 @@ export const KPIDrillDownModal: React.FC<KPIDrillDownModalProps> = ({ isOpen, on
               </div>
             </div>
 
-            <div className="bg-white border-2 border-slate-200 rounded-2xl p-6 shadow-sm">
+            <div className="premium-card border-2 border-slate-200">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-black text-slate-800">Reconciliation Engine</h3>
                 {isRevenueReconciled && isProfitReconciled && isExpenseReconciled ? (
@@ -277,7 +277,7 @@ export const KPIDrillDownModal: React.FC<KPIDrillDownModalProps> = ({ isOpen, on
         return (
           <div className="space-y-6">
             <h3 className="text-lg font-black text-slate-800">Historical Trend Analysis</h3>
-            <div className="h-80 w-full bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+            <div className="h-80 w-full premium-card border border-slate-200">
               {breakdowns.trendData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={breakdowns.trendData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>

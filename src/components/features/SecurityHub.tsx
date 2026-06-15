@@ -80,7 +80,7 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-row items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div className="flex flex-row items-center justify-between ga premium-card p-6 border">
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-lg">
             <Shield className="h-7 w-7" />
@@ -97,7 +97,7 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
       </div>
 
       {/* Tabs */}
-      <div className="flex overflow-x-auto hide-scrollbar gap-2 pb-2">
+      <div className="flex overflow-x-auto no-scrollbar gap-2 pb-2">
         {tabs.map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -128,7 +128,7 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
         {activeTab === 'overview' && (
           <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
             {/* MFA Setup Card */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div className="premium-card p-6 border space-y-4">
               <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
                 <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
                   <Smartphone className="h-6 w-6" />
@@ -168,7 +168,7 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
             </div>
 
             {/* Profile Security Status */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div className="premium-card p-6 border space-y-4">
               <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
                 <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
                   <Lock className="h-6 w-6" />
@@ -217,7 +217,7 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
         )}
 
         {activeTab === 'sessions' && (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="premium-card border overflow-hidden">
             <div className="p-6 border-b border-slate-200 flex flex-row items-center justify-between gap-4">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">{t('Active Device Sessions', 'فعال ڈیوائس سیشنز')}</h3>
@@ -270,7 +270,7 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
         )}
 
         {activeTab === 'audit' && (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="premium-card border overflow-hidden">
             <div className="p-6 border-b border-slate-200 flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">{t('Security Audit Logs', 'سیکیورٹی آڈٹ لاگز')}</h3>

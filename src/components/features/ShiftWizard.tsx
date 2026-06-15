@@ -1826,7 +1826,7 @@ export default function ShiftWizard({
               <select
                 value={selectedStaffId}
                 onChange={(e) => setSelectedStaffId(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 font-sans text-sm text-slate-800 shadow-xs focus:border-orange-500 focus:outline-hidden"
+                className="premium-input border bg-white px-3 .5 font-sans text-sm text-slate-800 shadow-xs focus:border-orange-500 focus:outline-hidden"
               >
                 <option value="">
                   {t("-- Select Staff operator --", "-- سیلزمین منتخب کریں --")}
@@ -1884,7 +1884,7 @@ export default function ShiftWizard({
                   type="date"
                   value={shiftDate}
                   onChange={(e) => setShiftDate(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm text-slate-800 shadow-xs focus:border-orange-500 focus:outline-hidden"
+                  className="premium-input border bg-white px-3 font-mono text-sm text-slate-800 shadow-xs focus:border-orange-500 focus:outline-hidden"
                 />
               </div>
 
@@ -1897,7 +1897,7 @@ export default function ShiftWizard({
                   type="time"
                   value={shiftTime}
                   onChange={(e) => setShiftTime(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm text-slate-800 shadow-xs focus:border-orange-500 focus:outline-hidden"
+                  className="premium-input border bg-white px-3 font-mono text-sm text-slate-800 shadow-xs focus:border-orange-500 focus:outline-hidden"
                 />
               </div>
             </div>
@@ -3306,7 +3306,7 @@ export default function ShiftWizard({
                     value={submittedCash}
                     onChange={(e) => setSubmittedCash(e.target.value)}
                     placeholder="e.g. 80000"
-                    className="w-full rounded-lg border border-slate-200 bg-white py-3 pl-3 pr-10 font-mono text-base font-bold text-slate-800 focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-white pl-3 pr-10 font-mono text-base font-bold text-slate-800 focus:border-orange-500 focus:outline-hidden"
                   />
                   <span className="absolute inset-y-0 right-0 py-3.5 pr-3 text-slate-450 font-mono text-sm">
                     Rs

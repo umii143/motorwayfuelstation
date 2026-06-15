@@ -90,7 +90,7 @@ export default function PriceManagement(props: PriceManagementProps) {
       )}
 
       {activeTab === 'timeline' && (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="premium-card dark:bg-gray-800 p-6 border-gray-100 dark:border-gray-700">
           <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Price Change Timeline</h3>
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
@@ -119,7 +119,7 @@ export default function PriceManagement(props: PriceManagementProps) {
       )}
 
       {activeTab === 'ledger' && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div className="premium-card dark:bg-gray-800 border-gray-100 dark:border-gray-700 overflow-hidden">
           <div className="p-4 border-b border-gray-100 dark:border-gray-700">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Price Changes & Revaluation Ledger</h3>
           </div>

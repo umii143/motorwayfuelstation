@@ -59,7 +59,7 @@ export default function SupplierCommandCenter({
   return (
     <div className="space-y-6 pb-16 lg:pb-0">
       {/* Header */}
-      <div className="flex flex-row items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div className="flex flex-row items-center justify-between ga premium-card p-6 border">
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-lg">
             <Truck className="h-7 w-7" />
@@ -76,7 +76,7 @@ export default function SupplierCommandCenter({
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex overflow-x-auto hide-scrollbar gap-2 pb-2">
+      <div className="flex overflow-x-auto no-scrollbar gap-2 pb-2">
         {tabs.map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;

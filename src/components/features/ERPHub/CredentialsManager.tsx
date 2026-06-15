@@ -20,7 +20,7 @@ export default function CredentialsManager({ settings, stationId }: CredentialsM
         <strong>Security Notice:</strong> API keys provide full read/write access to your station's data. Never share them publicly. Key values are masked after creation for security.
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="premium-card border overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
           <h3 className="font-bold text-slate-800 flex items-center gap-2">
             <Key className="h-4 w-4 text-slate-500" />
@@ -63,7 +63,7 @@ export default function CredentialsManager({ settings, stationId }: CredentialsM
       </div>
 
       {/* Webhook Configuration Mock */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="premium-card border overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
           <h3 className="font-bold text-slate-800">Outgoing Webhooks</h3>
           <p className="text-xs text-slate-500 mt-1">Configure endpoints to receive real-time events when data changes.</p>

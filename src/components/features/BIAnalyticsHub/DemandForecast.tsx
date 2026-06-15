@@ -94,7 +94,7 @@ export default function DemandForecast({ settings, stationId }: DemandForecastPr
           const forecast = generateMockForecast(type);
 
           return (
-            <div key={type} className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition">
+            <div key={type} className="premium-card border border-slate-200 hover:shadow-md transition">
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h4 className="font-black text-lg text-slate-900">{type}</h4>

@@ -124,7 +124,7 @@ export default function WhatsAppAlerts({ settings, onUpdateSettings }: Props) {
                 <p className="text-xs text-slate-500 mt-1">Ready to send alerts.</p>
               </div>
             ) : waStatus.qr ? (
-              <div className="bg-white p-2 rounded-xl border border-slate-100 shadow-sm inline-block">
+              <div className="premium-card p-2 border-slate-100 inline-block">
                 <QRCodeSVG 
                   value={waStatus.qr} 
                   size={200} 

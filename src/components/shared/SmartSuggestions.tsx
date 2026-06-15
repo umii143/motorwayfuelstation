@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Lightbulb, AlertTriangle, ArrowRight, X } from 'lucide-react';
 import { useStation } from '../../contexts/StationContext';
+import { PoweredByUmarAli } from './PoweredByUmarAli';
 
 
 interface SmartSuggestionsProps {
@@ -129,8 +130,8 @@ export const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ onClose }) =
             </div>
           ))}
         </div>
-        <div className="bg-slate-50 px-4 py-2 border-t border-slate-100 text-[10px] text-slate-400 font-medium text-center uppercase tracking-widest">
-          Powered by Umar Ali ⚡
+        <div className="bg-slate-50 px-4 py-3 border-t border-slate-100 flex justify-center">
+          <PoweredByUmarAli variant="compact" />
         </div>
       </div>
     </div>

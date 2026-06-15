@@ -76,7 +76,7 @@ export default function PriceIntelligenceHub({ settings }: PriceIntelligenceHubP
           </p>
         </div>
         
-        <div className="bg-white px-5 py-3 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4 w-full sm:w-auto">
+        <div className="premium-card px-5 py-3 border border-slate-200 flex items-center ga w-full sm:w-auto">
           <div>
             <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">{t("Compliance Score", "کمپلائنس اسکور")}</p>
             <div className="flex items-center gap-2 mt-1">
@@ -92,7 +92,7 @@ export default function PriceIntelligenceHub({ settings }: PriceIntelligenceHubP
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="premium-card border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-slate-200 text-sm">
             <thead className="bg-slate-50">

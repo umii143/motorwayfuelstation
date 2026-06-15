@@ -205,7 +205,7 @@ export default function SupplierScorecard({ suppliers, batches, supplierClaims, 
           { label: t('Total Qty Short', 'کل کم وصول'), value: `${totalShortLiters.toLocaleString()}L`, icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50' },
           { label: t('Open Claims', 'کھلے کلیمز'), value: openClaims, icon: ShieldCheck, color: 'text-orange-600', bg: 'bg-orange-50' },
         ].map((s, i) => (
-          <div key={i} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex items-center gap-3">
+          <div key={i} className="premium-card border border-slate-200 p-4 flex items-center ga">
             <div className={`size-10 rounded-xl ${s.bg} flex items-center justify-center shrink-0`}>
               <s.icon className={`size-5 ${s.color}`} />
             </div>
@@ -283,7 +283,7 @@ export default function SupplierScorecard({ suppliers, batches, supplierClaims, 
           const qualityScore = m.qualityIssues === 0 ? 100 : Math.max(0, 100 - m.qualityIssues * 20);
 
           return (
-            <div key={m.supplier.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+            <div key={m.supplier.id} className="premium-card border overflow-hidden hover:shadow-md transition-shadow">
               {/* Main row */}
               <div
                 className="p-4 flex items-center gap-4 cursor-pointer"

@@ -20,7 +20,9 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Toaster } from 'react-hot-toast';
 import { PoweredByUmarAli } from './components/shared/PoweredByUmarAli';
-import Navigation from './components/layouts/Navigation';
+import { TopHeader } from './components/layouts/TopHeader';
+import { BottomNavigation } from './components/layouts/BottomNavigation';
+import { SidebarDrawer } from './components/layouts/SidebarDrawer';
 import { SyncEngine } from './services/core/SyncEngine';
 import OfflineIndicator from './components/ui/OfflineIndicator';
 
@@ -87,6 +89,7 @@ function MainApp() {
   // Navigation active view routing
   const [activeView, setActiveView] = useState<string>('dashboard');
   const [searchOpen, setSearchOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Centralized Auth Context connection
   const { user: authenticatedUser, checkingAuth, logout } = useAuth();
@@ -542,6 +545,7 @@ function MainApp() {
           <TreasuryCenter />
         );
 
+      case 'settings':
       case 'configuration':
       case 'setup_products':
       case 'setup_nozzles':
@@ -558,6 +562,7 @@ function MainApp() {
             case 'setup_rates': return 'tariff';
             case 'setup_accounts': return 'accounts';
             case 'setup_audit': return 'audit';
+            case 'settings':
             case 'configuration':
             case 'setup_profile':
             default: return 'profile';
@@ -628,8 +633,9 @@ function MainApp() {
       case 'integrity_center':
       case 'cctv':
       case 'api_gateway':
+      case 'enterprise_hub':
         // Let EnterpriseHub handle the internal tab selection using the activeView
-        return <EnterpriseHub settings={settings} activeModule={activeView} onNavigate={handleViewChange} stationId={activeStationId} />;
+        return <EnterpriseHub settings={settings} activeModule={activeView === 'enterprise_hub' ? 'fleet' : activeView} onNavigate={handleViewChange} stationId={activeStationId} />;
 
       case 'dip_calculator':
         return (
@@ -844,20 +850,44 @@ function MainApp() {
         </React.Suspense>
       )}
 
-      {/* Dynamic Bilingual Header and Responsive Drawer */}
-      <Navigation
-        activeView={activeView}
-        onViewChange={handleViewChange}
+      {/* Dynamic Premium Top Header */}
+      <TopHeader
         settings={settings}
-        onSettingsUpdate={handleUpdateSettings}
-        user={authenticatedUser}
-        onLogout={handleLogout}
-        stations={stations}
-        activeStationId={activeStationId}
-        onSwitchStation={handleSwitchStation}
-        onAddStation={handleAddStation}
-        onEditStation={handleEditStation}
-        onDeleteStation={handleDeleteStation}
+        onMenuClick={() => {
+          setIsSidebarOpen(true);
+        }}
+        onLanguageToggle={() => {
+          const languages: ('en' | 'ur' | 'ar' | 'es' | 'zh')[] = ['en', 'ur', 'ar', 'es', 'zh'];
+          const currentIndex = languages.indexOf(settings.language || 'en');
+          const nextIndex = (currentIndex + 1) % languages.length;
+          setSettings({ ...settings, language: languages[nextIndex] });
+        }}
+        onThemeToggle={() => {
+          const newTheme = settings.theme === 'light' ? 'dark' : 'light';
+          setSettings({ ...settings, theme: newTheme as any });
+        }}
+        onSettingsClick={() => {
+          handleViewChange('configuration');
+        }}
+      />
+
+      <SidebarDrawer
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        onViewChange={handleViewChange}
+        activeView={activeView}
+        settings={settings}
+        isLubeBusiness={isLubeBusiness}
+        onLanguageToggle={() => {
+          const languages: ('en' | 'ur' | 'ar' | 'es' | 'zh')[] = ['en', 'ur', 'ar', 'es', 'zh'];
+          const currentIndex = languages.indexOf(settings.language || 'en');
+          const nextIndex = (currentIndex + 1) % languages.length;
+          setSettings({ ...settings, language: languages[nextIndex] });
+        }}
+        onThemeToggle={() => {
+          const newTheme = settings.theme === 'light' ? 'dark' : 'light';
+          setSettings({ ...settings, theme: newTheme as any });
+        }}
       />
 
       <GlobalSearchModal
@@ -870,7 +900,7 @@ function MainApp() {
 
       {/* Main Container Workspace */}
       <main 
-        className="flex-1 w-full lg:pl-64 pt-[65px] pb-24 lg:pb-8 flex flex-col overflow-y-auto scroll-container relative"
+        className="flex-1 w-full pt-[64px] pb-[80px] lg:pb-0 flex flex-col overflow-y-auto scroll-container relative bg-slate-50 dark:bg-[#151521]"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -893,28 +923,16 @@ function MainApp() {
             </PageTransition>
           </div>
 
-          {/* COMPLIANT FOOTER LAYOUT */}
-          <footer className="mt-16 pt-6 border-t border-border/30 text-center font-sans text-xs text-muted-foreground flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              © 2026 {settings.stationName}. All rights reserved.
-            </div>
-            <div className="flex items-center justify-center gap-1.5 font-semibold">
-              <PoweredByUmarAli variant="compact" />
-              <a
-                href="https://wa.me/923168432329"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-emerald-500 hover:text-emerald-400 font-bold ml-1.5 transition-colors"
-              >
-                <svg className="h-4 w-4 fill-emerald-500" viewBox="0 0 24 24">
-                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.058 5.348 5.4 0 12.008 0c3.2 0 6.21 1.244 8.475 3.512 2.262 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.346 12.003-11.95 12.003-2.002-.001-3.968-.5-5.713-1.448L0 24zm6.59-4.817c1.661.988 3.287 1.477 4.912 1.478 5.483 0 9.95-4.466 9.953-9.95 0-2.657-1.035-5.155-2.914-7.034C16.711 1.797 14.198.761 11.53.761c-5.485 0-9.952 4.467-9.955 9.953-.001 1.944.512 3.844 1.487 5.534l-.98 3.578 3.665-.961zm11.332-6.526c-.347-.174-2.054-1.014-2.372-1.129-.317-.116-.549-.174-.78.174-.23.348-.895 1.129-1.096 1.359-.202.232-.404.261-.751.087-.348-.174-1.468-.541-2.798-1.728-1.034-.922-1.731-2.06-1.933-2.408-.202-.348-.022-.536.152-.709.157-.156.347-.406.52-.609.174-.203.232-.348.348-.58.116-.232.058-.435-.028-.609-.087-.174-.78-1.884-1.069-2.58-.282-.677-.568-.584-.78-.595-.201-.01-.433-.012-.664-.012-.231 0-.606.087-.923.435-.317.348-1.211 1.188-1.211 2.9s1.24 3.362 1.413 3.593c.174.232 2.44 3.725 5.911 5.225.824.356 1.468.57 1.969.729.829.263 1.583.226 2.18.136.664-.1 2.053-.84 2.34-1.652.287-.812.287-1.507.202-1.651-.086-.144-.316-.231-.663-.405z"/>
-                </svg>
-                <span>WhatsApp Support</span>
-              </a>
-            </div>
-          </footer>
+
         </div>
       </main>
+
+      {/* Dynamic Mobile Bottom Navigation */}
+      <BottomNavigation 
+        activeView={activeView} 
+        onNavigate={handleViewChange}
+        onMenuClick={() => setIsSidebarOpen(true)}
+      />
 
       {/* Premium Global Toast Popup Container */}
       <div className="fixed top-6 left-1/2 -translate-x-1/2 sm:left-auto sm:right-6 sm:translate-x-0 w-[calc(100%-2rem)] sm:w-full sm:max-w-sm z-55 pointer-events-none">
@@ -960,7 +978,7 @@ function MainApp() {
                   </p>
                   <div className="mt-2.5 flex items-center justify-between border-t border-[var(--border-main)]/40 pt-2 text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-widest">
                     <span>{settings.language === 'ur' ? 'کامیابی سے مکمل ہوا' : 'Successfully processed'}</span>
-                    <span className="font-black text-orange-500"><PoweredByUmarAli variant="compact" /></span>
+                    <PoweredByUmarAli variant="compact" />
                   </div>
                 </div>
               </div>
@@ -1022,9 +1040,9 @@ function MainApp() {
               
               {/* Footer Divider & Actions */}
               <div className="mt-6 pt-4 border-t border-[var(--border-main)]/60 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-                <span className="font-mono text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-widest flex items-center">
+                <div className="font-mono text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-widest flex items-center justify-center w-full sm:w-auto mb-2 sm:mb-0">
                   <PoweredByUmarAli variant="compact" />
-                </span>
+                </div>
                 
                 <div className="flex items-center justify-end gap-2 w-full sm:w-auto">
                   {!confirmDialog.isAlert && (
@@ -1107,6 +1125,8 @@ const SecureApp = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+import { NativeFeedbackProvider } from './components/providers/NativeFeedbackProvider';
+
 export default function App() {
   const [dbReady, setDbReady] = useState(false);
   const [splashDone, setSplashDone] = useState(false);
@@ -1153,18 +1173,21 @@ export default function App() {
       {splashDone && languageSelected && carouselDone && !dbReady && <LoadingScreen />}
       
       {splashDone && languageSelected && carouselDone && dbReady && (
-        <AuthProvider>
-          <NativeAuthProvider>
-            <ScannerProvider>
-              <SecureApp>
-                <StationProvider>
-                  <MainApp />
-                </StationProvider>
-              </SecureApp>
-            </ScannerProvider>
-          </NativeAuthProvider>
-        </AuthProvider>
+        <NativeFeedbackProvider>
+          <AuthProvider>
+            <NativeAuthProvider>
+              <ScannerProvider>
+                <SecureApp>
+                  <StationProvider>
+                    <MainApp />
+                  </StationProvider>
+                </SecureApp>
+              </ScannerProvider>
+            </NativeAuthProvider>
+          </AuthProvider>
+        </NativeFeedbackProvider>
       )}
     </>
   );
 }
+

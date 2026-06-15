@@ -160,7 +160,7 @@ export default function CashReconciliationForm() {
           <div className="pt-4">
             <button
               type="submit"
-              className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition-colors focus:ring-4 focus:ring-indigo-500/50 flex justify-center items-center space-x-2"
+              className="w-full py-3 px-4 premium-button hover:bg-indigo-700 font-bold transition-colors focus:ring-4 focus:ring-indigo-500/50 flex justify-center items-center space-x-2"
             >
               <Calculator className="h-5 w-5" />
               <span>Log Reconciliation & Lock Variance</span>

@@ -62,7 +62,7 @@ export function BIInvestmentChart({ shifts = [], batches = [], expenses = [], fi
   };
 
   return (
-    <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6">
+    <div className="premium-card p-5 border mb-6">
       <div className="mb-4">
         <h3 className="font-sans text-lg font-bold text-slate-900">Investment vs Revenue (Cumulative)</h3>
         <p className="text-xs text-slate-500">Track the breakeven point and total capital deployed over time.</p>

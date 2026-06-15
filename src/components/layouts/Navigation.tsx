@@ -1002,10 +1002,7 @@ const Navigation = React.memo(function Navigation({
             })}
           </nav>
           
-          <div className="p-3 border-t border-slate-100 bg-slate-50/50">
-            <div className="mb-3 px-1">
-              <PoweredByUmarAli variant="compact" />
-            </div>
+          <div className="p-3 border-t border-white/5 mt-auto">
             <button
               onClick={() => handleItemClick('configuration')}
               className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 font-sans text-sm font-bold transition-colors cursor-pointer ${
@@ -1202,43 +1199,52 @@ const Navigation = React.memo(function Navigation({
         </div>
       </BottomSheet>
 
-      {/* MOBILE BOTTOM NAVIGATION */}
+      {/* NATIVE MOBILE BOTTOM NAVIGATION */}
       <nav className="fp-bottom-nav lg:hidden">
-        <div
+        <motion.div
+          whileTap={{ scale: 0.9 }}
           onClick={async () => { await haptic.light(); onViewChange('dashboard'); }}
           className={`fp-nav-item ${activeView === 'dashboard' ? 'fp-nav-item--active' : ''} cursor-pointer`}
         >
           <LayoutDashboard className="fp-nav-icon" />
           <span className="fp-nav-label">{t('Home', 'ہوم')}</span>
-        </div>
-        <div
+        </motion.div>
+        <motion.div
+          whileTap={{ scale: 0.9 }}
           onClick={async () => { await haptic.light(); onViewChange('shift_logs'); }}
           className={`fp-nav-item ${activeView === 'shift_logs' ? 'fp-nav-item--active' : ''} cursor-pointer`}
         >
           <History className="fp-nav-icon" />
           <span className="fp-nav-label">{t('Logs', 'لاگز')}</span>
+        </motion.div>
+        
+        {/* CENTER FLOATING ACTION BUTTON (FAB) */}
+        <div className="fp-fab-center-container cursor-pointer" onClick={async () => { await haptic.medium(); onViewChange(isLube ? 'lube_pos' : 'shift_wizard'); }}>
+          <motion.div 
+            whileTap={{ scale: 0.9, y: 5 }}
+            className="fp-fab-center"
+          >
+            <PlusCircle style={{ width: '28px', height: '28px', color: '#FFF' }} strokeWidth={2.5} />
+          </motion.div>
+          <span className="fp-nav-label mt-1">{t('Sale', 'سیل')}</span>
         </div>
-        <div
-          onClick={async () => { await haptic.light(); onViewChange(isLube ? 'lube_pos' : 'shift_wizard'); }}
-          className="fp-nav-item cursor-pointer"
-        >
-          <PlusCircle style={{ color: '#F97316', width: '32px', height: '32px' }} />
-          <span className="fp-nav-label" style={{ color: '#F97316' }}>{t('Sale', 'سیل')}</span>
-        </div>
-        <div
+
+        <motion.div
+          whileTap={{ scale: 0.9 }}
           onClick={async () => { await haptic.light(); onViewChange('ledger'); }}
           className={`fp-nav-item ${activeView === 'ledger' ? 'fp-nav-item--active' : ''} cursor-pointer`}
         >
           <BookOpen className="fp-nav-icon" />
           <span className="fp-nav-label">{t('Ledger', 'کھاتہ')}</span>
-        </div>
-        <div
+        </motion.div>
+        <motion.div
+          whileTap={{ scale: 0.9 }}
           onClick={async () => { await haptic.light(); setMobileMenuOpen(true); }}
           className="fp-nav-item cursor-pointer"
         >
           <Menu className="fp-nav-icon" />
           <span className="fp-nav-label">{t('Menu', 'مزید')}</span>
-        </div>
+        </motion.div>
       </nav>
 
       {/* REGISTER STATION MODAL */}
@@ -1259,7 +1265,7 @@ const Navigation = React.memo(function Navigation({
               placeholder="e.g. Star Petroleum GT Road"
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+              className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
             />
           </div>
 
@@ -1273,7 +1279,7 @@ const Navigation = React.memo(function Navigation({
               value={formUrduName}
               onChange={(e) => setFormUrduName(e.target.value)}
               dir="rtl"
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+              className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
             />
           </div>
 
@@ -1286,7 +1292,7 @@ const Navigation = React.memo(function Navigation({
               placeholder="e.g. Plot 104, Main GT Road, Lahore"
               value={formAddress}
               onChange={(e) => setFormAddress(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+              className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
             />
           </div>
 
@@ -1300,7 +1306,7 @@ const Navigation = React.memo(function Navigation({
                 placeholder="e.g. NTN-4839210-9"
                 value={formNtn}
                 onChange={(e) => setFormNtn(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+                className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
               />
             </div>
 
@@ -1313,7 +1319,7 @@ const Navigation = React.memo(function Navigation({
                 placeholder="e.g. 0300-1234567"
                 value={formContact}
                 onChange={(e) => setFormContact(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+                className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
               />
             </div>
           </div>
@@ -1355,7 +1361,7 @@ const Navigation = React.memo(function Navigation({
                 placeholder="e.g. Star Petroleum GT Road"
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+                className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
               />
             </div>
 
@@ -1369,7 +1375,7 @@ const Navigation = React.memo(function Navigation({
                 value={formUrduName}
                 onChange={(e) => setFormUrduName(e.target.value)}
                 dir="rtl"
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+                className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
               />
             </div>
 
@@ -1382,7 +1388,7 @@ const Navigation = React.memo(function Navigation({
                 placeholder="e.g. Plot 104, Main GT Road, Lahore"
                 value={formAddress}
                 onChange={(e) => setFormAddress(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+                className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
               />
             </div>
 
@@ -1396,7 +1402,7 @@ const Navigation = React.memo(function Navigation({
                   placeholder="e.g. NTN-4839210-9"
                   value={formNtn}
                   onChange={(e) => setFormNtn(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+                  className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
                 />
               </div>
 
@@ -1409,7 +1415,7 @@ const Navigation = React.memo(function Navigation({
                   placeholder="e.g. 0300-1234567"
                   value={formContact}
                   onChange={(e) => setFormContact(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+                  className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
                 />
               </div>
             </div>

@@ -98,7 +98,7 @@ export default function FuelQualityHub({ settings }: FuelQualityHubProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div className="premium-card border overflow-hidden">
       <div className="flex border-b border-slate-200">
         <button
           onClick={() => setActiveTab('density')}
@@ -230,14 +230,14 @@ export default function FuelQualityHub({ settings }: FuelQualityHubProps) {
               </div>
               
               <div className="space-y-4">
-                <div className="bg-white rounded-lg p-4 shadow-sm border border-slate-100">
+                <div className="premium-card p-4 border-slate-100">
                   <p className="font-sans text-xs font-bold text-slate-500 uppercase">Converted Density @ 15°C</p>
                   <p className="font-mono text-2xl font-black text-slate-800 mt-1">
                     {densityResult.converted_density_15C.toFixed(4)}
                   </p>
                 </div>
 
-                <div className="bg-white rounded-lg p-4 shadow-sm border border-slate-100">
+                <div className="premium-card p-4 border-slate-100">
                   <p className="font-sans text-xs font-bold text-slate-500 uppercase">Variance</p>
                   <p className="font-mono text-2xl font-black text-slate-800 mt-1">
                     {densityResult.variance.toFixed(4)}
@@ -370,7 +370,7 @@ export default function FuelQualityHub({ settings }: FuelQualityHubProps) {
                 <button
                   onClick={calculateVolumeVariation}
                   disabled={!invoiceLiters || !invoiceTempC || !actualTempC || !actualDipLiters}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-sans font-bold py-3 rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full premium-button hover:bg-indigo-700 font-sans font-bold py-3 shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {t('Calculate Variation', 'تبدیلی چیک کریں')}
                 </button>
@@ -393,14 +393,14 @@ export default function FuelQualityHub({ settings }: FuelQualityHubProps) {
                     </div>
                     
                     <div className="space-y-4">
-                      <div className="bg-white rounded-lg p-4 shadow-sm border border-slate-100">
+                      <div className="premium-card p-4 border-slate-100">
                         <p className="font-sans text-xs font-bold text-slate-500 uppercase">Expected Liters</p>
                         <p className="font-mono text-2xl font-black text-slate-800 mt-1">
                           {volumeResult.expected_liters.toFixed(2)}
                         </p>
                       </div>
 
-                      <div className="bg-white rounded-lg p-4 shadow-sm border border-slate-100">
+                      <div className="premium-card p-4 border-slate-100">
                         <p className="font-sans text-xs font-bold text-slate-500 uppercase">Temperature Variation (Liters)</p>
                         <p className="font-mono text-2xl font-black text-slate-800 mt-1">
                           {volumeResult.temperature_variation_liters > 0 ? '+' : ''}{volumeResult.temperature_variation_liters.toFixed(2)}

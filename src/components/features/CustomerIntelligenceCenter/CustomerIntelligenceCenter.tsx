@@ -52,7 +52,7 @@ export default function CustomerIntelligenceCenter({
   return (
     <div className="space-y-6 pb-16 lg:pb-0">
       {/* Navigation Tabs (Optional if only one exists for now, but kept for future scale) */}
-      <div className="flex overflow-x-auto hide-scrollbar gap-2 pb-2">
+      <div className="flex overflow-x-auto no-scrollbar gap-2 pb-2">
         {tabs.map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;

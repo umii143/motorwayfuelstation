@@ -28,7 +28,7 @@ export function OpeningReadingsForm({
   handleConfirmOpenings
 }: OpeningReadingsFormProps) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+    <div className="premium-card border border-slate-200">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
           <Play className="h-5 w-5 text-emerald-500" />
@@ -63,7 +63,7 @@ export function OpeningReadingsForm({
                     <div className="flex-1">
                       <input
                         type="number"
-                        className="w-full rounded-lg border-slate-200 text-sm focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+                        className="premium-input text-sm focus:ring-emerald-500 focus:border-emerald-500"
                         placeholder={t("Opening Reading", "ابتدائی ریڈنگ")}
                         value={openingReadings[nz.id] || ""}
                         onChange={(e) => setOpeningReadings({ ...openingReadings, [nz.id]: Number(e.target.value) })}
@@ -128,7 +128,7 @@ export function ClosingReadingsForm({
   handleConfirmClosings
 }: ClosingReadingsFormProps) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+    <div className="premium-card border border-slate-200">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
           <CheckCircle className="h-5 w-5 text-indigo-500" />
@@ -167,7 +167,7 @@ export function ClosingReadingsForm({
                       <div className="flex-1">
                         <input
                           type="number"
-                          className="w-full rounded-lg border-slate-200 text-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                          className="premium-input text-sm focus:ring-indigo-500 focus:border-indigo-500"
                           placeholder={t("Closing Reading", "اختتامی ریڈنگ")}
                           value={closingReadings[nz.id] || ""}
                           onChange={(e) => setClosingReadings({ ...closingReadings, [nz.id]: Number(e.target.value) })}
@@ -202,7 +202,7 @@ export function ClosingReadingsForm({
         </button>
         <button
           onClick={handleConfirmClosings}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px].5 rounded-lg font-bold flex items-center gap-2 transition-all shadow-sm"
+          className="premium-button hover:bg-indigo-700 px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px].5 font-bold flex items-center gap-2 transition-all shadow-sm"
         >
           {t("Confirm Closings", "اختتامی ریڈنگز کنفرم کریں")}
           <ArrowRight className="h-4 w-4" />

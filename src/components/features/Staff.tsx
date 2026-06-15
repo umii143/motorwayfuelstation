@@ -1334,7 +1334,7 @@ export default function StaffPanel({
                     <select
                       value={financeType}
                       onChange={(e: any) => setFinanceType(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 outline-hidden focus:border-orange-500"
+                      className="premium-input border bg-white px-3 outline-hidden focus:border-orange-500"
                     >
                       <option value="advance">{t('Lent Short-term Advance', '💵 نیا ایڈوانس پے کریں')}</option>
                       <option value="loan">{t('Issue Long-term Loan', '🏦 نیا قرضہ دیں')}</option>
@@ -1350,7 +1350,7 @@ export default function StaffPanel({
                       required
                       value={financeDate}
                       onChange={(e) => setFinanceDate(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500 font-mono"
+                      className="premium-input border px-3 outline-hidden focus:border-orange-500 font-mono"
                     />
                   </div>
 
@@ -1362,7 +1362,7 @@ export default function StaffPanel({
                         required
                         value={salaryMonth}
                         onChange={(e) => setSalaryMonth(e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500 font-mono"
+                        className="premium-input border px-3 outline-hidden focus:border-orange-500 font-mono"
                       />
                     </div>
                   )}
@@ -1375,7 +1375,7 @@ export default function StaffPanel({
                       placeholder="e.g. 5000"
                       value={financeAmount}
                       onChange={(e) => setFinanceAmount(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500 font-mono"
+                      className="premium-input border px-3 outline-hidden focus:border-orange-500 font-mono"
                     />
                   </div>
 
@@ -1388,7 +1388,7 @@ export default function StaffPanel({
                         placeholder="e.g. 1000"
                         value={loanInstallment}
                         onChange={(e) => setLoanInstallment(e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500 font-mono"
+                        className="premium-input border px-3 outline-hidden focus:border-orange-500 font-mono"
                       />
                     </div>
                   )}
@@ -1399,7 +1399,7 @@ export default function StaffPanel({
                       <select
                         value={financeMode}
                         onChange={(e: any) => setFinanceMode(e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 outline-hidden focus:border-orange-500"
+                        className="premium-input border bg-white px-3 outline-hidden focus:border-orange-500"
                       >
                         <option value="cash">{t('Station Daily Cash Box Outflow', 'روزانہ کیش فلو دراز')}</option>
                         <option value="bank">{t('Certified Corporate Bank Remittance', 'سرکاری اکاؤنٹ بینک ٹرانسفر')}</option>
@@ -1415,7 +1415,7 @@ export default function StaffPanel({
                       placeholder={t('e.g. Description or Reference', 'مثال: معلومات یا حوالہ')}
                       value={financeNote}
                       onChange={(e) => setFinanceNote(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500"
+                      className="premium-input border px-3 outline-hidden focus:border-orange-500"
                     />
                   </div>
                 </div>
@@ -1484,7 +1484,7 @@ export default function StaffPanel({
                       placeholder="e.g. Abdul Rehman"
                       value={addName}
                       onChange={(e) => setAddName(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500 font-sans text-slate-800"
+                      className="premium-input border px-3 outline-hidden focus:border-orange-500 font-sans text-slate-800"
                     />
                   </div>
 
@@ -1495,7 +1495,7 @@ export default function StaffPanel({
                       placeholder="e.g. عبد الرحمٰن"
                       value={addUrduName}
                       onChange={(e) => setAddUrduName(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500 font-sans text-right text-slate-800"
+                      className="premium-input border px-3 outline-hidden focus:border-orange-500 font-sans text-right text-slate-800"
                     />
                   </div>
 
@@ -1504,7 +1504,7 @@ export default function StaffPanel({
                     <select
                       value={addRole}
                       onChange={(e: any) => setAddRole(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 outline-hidden focus:border-orange-500 font-sans text-slate-800"
+                      className="premium-input border bg-white px-3 outline-hidden focus:border-orange-500 font-sans text-slate-800"
                     >
                       <option value="salesman">{t('Nozzle Salesman / Operator', 'سیلزمین / نوزل آپریٹر')}</option>
                       <option value="cashier">{t('Cashier / Accountant', 'کیشیئر / کیش گننے والا')}</option>
@@ -1520,7 +1520,7 @@ export default function StaffPanel({
                       placeholder="e.g. 25000"
                       value={addSalary}
                       onChange={(e) => setAddSalary(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500 font-mono text-slate-800"
+                      className="premium-input border px-3 outline-hidden focus:border-orange-500 font-mono text-slate-800"
                     />
                   </div>
 
@@ -1531,7 +1531,7 @@ export default function StaffPanel({
                       placeholder="e.g. 03001234567"
                       value={addPhone}
                       onChange={(e) => setAddPhone(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500 font-mono text-slate-800"
+                      className="premium-input border px-3 outline-hidden focus:border-orange-500 font-mono text-slate-800"
                     />
                   </div>
 
@@ -1542,7 +1542,7 @@ export default function StaffPanel({
                       placeholder="e.g. 35201-1234567-1"
                       value={addCnic}
                       onChange={(e) => setAddCnic(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500 font-mono text-slate-800"
+                      className="premium-input border px-3 outline-hidden focus:border-orange-500 font-mono text-slate-800"
                     />
                   </div>
 

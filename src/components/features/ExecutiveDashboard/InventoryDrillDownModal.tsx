@@ -174,7 +174,7 @@ export default function InventoryDrillDownModal({
 
             {/* EXECUTIVE KPI HEADER */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+              <div className="premium-card border border-slate-200">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Current Stock Value</span>
                 <h3 className="text-2xl font-black text-slate-900">{formatCurrency(currentStockValue, settings)}</h3>
                 <div className="mt-2 flex items-center gap-1.5 text-xs font-bold text-slate-500">
@@ -266,7 +266,7 @@ export default function InventoryDrillDownModal({
               </div>
 
               <div className="flex items-center gap-3">
-                <label className="flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 border border-slate-200 rounded-lg shadow-sm hover:bg-slate-50 transition-colors">
+                <label className="flex items-center ga cursor-pointer premium-card px-3 py-1.5 border hover:bg-slate-50 transition-colors">
                   <input 
                     type="checkbox" 
                     checked={excludeManual} 
@@ -283,7 +283,7 @@ export default function InventoryDrillDownModal({
               <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                 
                 {/* Product Impact Breakdown */}
-                <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                <div className="premium-card border border-slate-200">
                   <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
                     <Layers className="h-4 w-4 text-slate-400" />
                     Revaluation Impact by Product
@@ -334,7 +334,7 @@ export default function InventoryDrillDownModal({
             )}
 
             {activeTab === 'revaluation_ledger' && (
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+              <div className="premium-card border overflow-hidden flex flex-col">
                 <div className="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                   <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Comprehensive Price Revision Ledger</h3>
                   <div className="relative">

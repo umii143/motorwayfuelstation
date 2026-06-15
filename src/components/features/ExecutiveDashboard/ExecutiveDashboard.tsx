@@ -71,7 +71,7 @@ export const ExecutiveDashboard: React.FC = () => {
         </div>
 
         {/* Global Date Filters */}
-        <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center gap-4 mb-6">
+        <div className="premium-card p-4 border border-slate-200 flex flex-wrap items-center ga mb-6">
           <div className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-indigo-500" />
             <span className="text-sm font-bold text-slate-700">Analysis Period:</span>
@@ -204,7 +204,7 @@ export const ExecutiveDashboard: React.FC = () => {
           
           {/* Revenue */}
           <div 
-            className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer group"
+            className="premium-card p-6 border hover:shadow-md hover:border-blue-300 transition-all cursor-pointer group"
             onClick={() => setActiveDrillDown('revenue')}
           >
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center justify-between">
@@ -231,7 +231,7 @@ export const ExecutiveDashboard: React.FC = () => {
 
           {/* Operational Profit */}
           <div 
-            className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-md hover:border-emerald-300 transition-all cursor-pointer group"
+            className="premium-card p-6 border hover:shadow-md hover:border-emerald-300 transition-all cursor-pointer group"
             onClick={() => setActiveDrillDown('profit')}
           >
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center justify-between">
@@ -258,7 +258,7 @@ export const ExecutiveDashboard: React.FC = () => {
 
           {/* Inventory Revaluation */}
           <div 
-            className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-md hover:border-purple-300 transition-all cursor-pointer group"
+            className="premium-card p-6 border hover:shadow-md hover:border-purple-300 transition-all cursor-pointer group"
             onClick={() => setIsInventoryDrillDownOpen(true)}
           >
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center justify-between">
@@ -283,7 +283,7 @@ export const ExecutiveDashboard: React.FC = () => {
 
           {/* Expenses */}
           <div 
-            className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-md hover:border-amber-300 transition-all cursor-pointer group"
+            className="premium-card p-6 border hover:shadow-md hover:border-amber-300 transition-all cursor-pointer group"
             onClick={() => setActiveDrillDown('expenses')}
           >
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center justify-between">
@@ -309,7 +309,7 @@ export const ExecutiveDashboard: React.FC = () => {
           </div>
 
           {/* Cash Position */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+          <div className="premium-card p-6 border hover:shadow-md transition-shadow">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Cash Position</h3>
             <div className="space-y-4">
               <div 
@@ -361,7 +361,7 @@ export const ExecutiveDashboard: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
           
           {/* Inventory Insights */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex items-center justify-between">
+          <div className="premium-card p-6 border flex items-center justify-between">
             <div>
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Inventory Value</h3>
               <p className="text-3xl font-black text-slate-900">Rs {kpis.inventory.value.toLocaleString(undefined, {maximumFractionDigits:0})}</p>
@@ -376,7 +376,7 @@ export const ExecutiveDashboard: React.FC = () => {
           </div>
 
           {/* Credit Risk */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex items-center justify-between">
+          <div className="premium-card p-6 border flex items-center justify-between">
             <div>
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Credit Risk Engine</h3>
               <p className={`text-3xl font-black ${
@@ -397,7 +397,7 @@ export const ExecutiveDashboard: React.FC = () => {
 
           {/* Salary Analytics */}
           <div 
-            className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-md hover:border-purple-300 transition-all cursor-pointer group"
+            className="premium-card p-6 border hover:shadow-md hover:border-purple-300 transition-all cursor-pointer group"
             onClick={() => setActiveDrillDown('expenses')}
           >
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">

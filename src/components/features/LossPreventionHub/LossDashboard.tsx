@@ -37,7 +37,7 @@ export default function LossDashboard({ settings, stationId }: LossDashboardProp
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-5 rounded-xl border border-rose-200 shadow-sm shadow-rose-100 relative overflow-hidden group">
+        <div className="premium-card p-5 border-rose-200 shadow-rose-100 relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-rose-50 rounded-full group-hover:scale-110 transition-transform"></div>
           <div className="relative">
             <div className="flex justify-between items-start mb-2">
@@ -51,7 +51,7 @@ export default function LossDashboard({ settings, stationId }: LossDashboardProp
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
+        <div className="premium-card p-5 border relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-slate-50 rounded-full group-hover:scale-110 transition-transform"></div>
           <div className="relative">
             <div className="flex justify-between items-start mb-2">
@@ -65,7 +65,7 @@ export default function LossDashboard({ settings, stationId }: LossDashboardProp
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
+        <div className="premium-card p-5 border relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-rose-50 rounded-full group-hover:scale-110 transition-transform"></div>
           <div className="relative">
             <div className="flex justify-between items-start mb-2">
@@ -80,7 +80,7 @@ export default function LossDashboard({ settings, stationId }: LossDashboardProp
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="premium-card border overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <h3 className="font-bold text-sm text-slate-800">Critical & High Priority Incidents</h3>
         </div>

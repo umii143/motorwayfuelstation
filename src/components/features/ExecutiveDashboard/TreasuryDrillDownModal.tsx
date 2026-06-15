@@ -191,7 +191,7 @@ export default function TreasuryDrillDownModal({
               </div>
             </div>
             
-            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div className="premium-card p-4 border flex flex-col justify-between">
               <div className="flex justify-between items-start">
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Physical Cash</p>
                 <Wallet className="h-4 w-4 text-slate-400" />
@@ -199,7 +199,7 @@ export default function TreasuryDrillDownModal({
               <p className="text-xl font-black text-slate-800">{formatCurrency(stats.totalCash, settings)}</p>
             </div>
             
-            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div className="premium-card p-4 border flex flex-col justify-between">
               <div className="flex justify-between items-start">
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Bank Balance</p>
                 <Building2 className="h-4 w-4 text-slate-400" />
@@ -207,7 +207,7 @@ export default function TreasuryDrillDownModal({
               <p className="text-xl font-black text-slate-800">{formatCurrency(stats.totalBank, settings)}</p>
             </div>
             
-            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div className="premium-card p-4 border flex flex-col justify-between">
               <div className="flex justify-between items-start">
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Digital Wallets</p>
                 <Smartphone className="h-4 w-4 text-slate-400" />
@@ -240,7 +240,7 @@ export default function TreasuryDrillDownModal({
               </div>
 
               {/* Recommended Actions */}
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+              <div className="premium-card border border-slate-200">
                 <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
                   <ShieldCheck className="h-4 w-4 text-emerald-500" /> Strategic Recommendations
                 </h3>
@@ -259,13 +259,13 @@ export default function TreasuryDrillDownModal({
             <div className="xl:col-span-3 flex flex-col space-y-4">
               
               {/* Grid Filters */}
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex flex-wrap gap-4 items-end shrink-0">
+              <div className="premium-card border border-slate-200 p-4 flex flex-wrap ga items-end shrink-0">
                 <div className="flex-1 min-w-full max-w-[200px]">
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Filter Source</label>
                   <select 
                     value={sourceFilter} 
                     onChange={e => setSourceFilter(e.target.value)}
-                    className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-slate-50 font-semibold"
+                    className="premium-input text-xs p-2 bg-slate-50 font-semibold"
                   >
                     <option value="all">All Sources</option>
                     <option value="cash">Physical Cash</option>
@@ -275,11 +275,11 @@ export default function TreasuryDrillDownModal({
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">From</label>
-                  <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-slate-50" />
+                  <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="premium-input text-xs p-2 bg-slate-50" />
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">To</label>
-                  <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-slate-50" />
+                  <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="premium-input text-xs p-2 bg-slate-50" />
                 </div>
                 <div className="flex gap-2">
                   <button className="px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-bold transition-colors">
@@ -289,7 +289,7 @@ export default function TreasuryDrillDownModal({
               </div>
 
               {/* Grid Data */}
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex-1 overflow-hidden flex flex-col min-h-[400px]">
+              <div className="premium-card border flex-1 overflow-hidden flex flex-col min-h-[400px]">
                 <div className="flex-1 overflow-auto">
                   <table className="w-full text-left border-collapse">
                     <thead className="bg-slate-100 text-[10px] uppercase font-black text-slate-500 sticky top-0 z-10 shadow-sm">

@@ -97,7 +97,7 @@ export const BIDashboard: React.FC = () => {
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <div className="premium-card p-6 border">
             <h3 className="text-base font-bold text-slate-900 mb-6">7-Day Revenue Trend</h3>
             <LineChart 
               data={last7Days} 
@@ -106,7 +106,7 @@ export const BIDashboard: React.FC = () => {
               height={300} 
             />
           </div>
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <div className="premium-card p-6 border">
             <h3 className="text-base font-bold text-slate-900 mb-6">Profit vs Revenue</h3>
             <BarChart 
               data={last7Days} 
@@ -164,7 +164,7 @@ export const BIDashboard: React.FC = () => {
 // Mini component for KPI cards
 const KPICard = React.memo(({ title, value, icon: Icon, benchmark, subValue }: any) => {
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+    <div className="premium-card p-5 border">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-bold text-slate-500">{title}</h3>
         <div className="p-2 rounded-lg bg-slate-50 text-slate-600">

@@ -297,7 +297,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
       </div>
 
       {/* Intelligence Recovery Bar */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+      <div className="premium-card border border-slate-200">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{t('Claim Recovery Pipeline', 'کلیم وصولی')}</span>
           <span className="text-xs font-black text-emerald-700">
@@ -342,7 +342,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
 
       {/* Add Claim Form */}
       {showAddForm && (
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <div className="premium-card border overflow-hidden">
           <div className="bg-gradient-to-r from-red-600 to-rose-700 px-5 py-3 flex items-center justify-between">
             <h4 className="font-black text-white flex items-center gap-2">
               <Plus className="size-4" /> {t('New Claim', 'نئی کلیم')}
@@ -420,7 +420,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
 
       {/* ─── ANALYTICS VIEW ─────────────────────────────────────────────────── */}
       {activeView === 'analytics' && (
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 space-y-4">
+        <div className="premium-card border border-slate-200 space-y-4">
           <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
             <BarChart2 className="size-4" />
             {t('Claims by Supplier', 'سپلائر کے مطابق کلیمز')}
@@ -482,7 +482,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
 
       {/* ─── LIST VIEW ──────────────────────────────────────────────────────── */}
       {activeView === 'list' && (
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <div className="premium-card border overflow-hidden">
           {/* Filters */}
           <div className="px-4 py-3 border-b border-slate-100 flex flex-row gap-2 items-center">
             <div className="flex flex-wrap gap-1.5">

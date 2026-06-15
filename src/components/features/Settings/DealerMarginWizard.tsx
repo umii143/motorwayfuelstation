@@ -144,7 +144,7 @@ export default function DealerMarginWizard({ language, onLogAudit, stationId }: 
           const currentMargin = settingsForProd.length > 0 ? settingsForProd[0].marginPerLiter : 0;
             
           return (
-            <div key={prod} className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+            <div key={prod} className="premium-card border overflow-hidden">
                <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex justify-between items-center">
                  <h4 className="font-bold text-slate-800 uppercase">{prod}</h4>
                  <span className="text-xs font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full">Current: Rs. {currentMargin.toFixed(2)}</span>

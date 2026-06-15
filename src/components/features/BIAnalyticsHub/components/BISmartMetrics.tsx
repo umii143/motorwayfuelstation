@@ -22,7 +22,7 @@ export function BISmartMetrics({ metrics }: any) {
     <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
       
       {/* Cash Leakage (Test Liters) */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+      <div className="premium-card border overflow-hidden flex flex-col">
         <div className="p-4 border-b border-slate-100 bg-rose-50 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Droplets className="w-5 h-5 text-rose-600" />
@@ -42,7 +42,7 @@ export function BISmartMetrics({ metrics }: any) {
       </div>
 
       {/* Credit Exposure */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+      <div className="premium-card border overflow-hidden flex flex-col">
         <div className="p-4 border-b border-slate-100 bg-amber-50 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Receipt className="w-5 h-5 text-amber-600" />
@@ -62,7 +62,7 @@ export function BISmartMetrics({ metrics }: any) {
       </div>
 
       {/* Stock Intelligence */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+      <div className="premium-card border overflow-hidden flex flex-col">
         <div className="p-4 border-b border-slate-100 bg-indigo-50 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Activity className="w-5 h-5 text-indigo-600" />

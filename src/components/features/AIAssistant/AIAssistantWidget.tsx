@@ -143,7 +143,7 @@ export const AIAssistantWidget: React.FC = () => {
               
               {isTyping && (
                 <div className="flex items-start">
-                  <div className="bg-white border border-slate-200 text-slate-500 rounded-2xl rounded-bl-none px-4 py-3 shadow-sm flex items-center gap-2 text-sm font-medium">
+                  <div className="premium-card border border-slate-200 text-slate-500 rounded-bl-none px-4 py-3 flex items-center ga text-sm font-medium">
                     <Loader2 className="w-4 h-4 animate-spin text-indigo-600" />
                     Generating Receipt...
                   </div>

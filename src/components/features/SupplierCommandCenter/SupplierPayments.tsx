@@ -130,7 +130,7 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
               required
               value={selectedSupplierId}
               onChange={(e) => setSelectedSupplierId(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-emerald-500 outline-none"
+              className="premium-input border bg-white px-3 font-sans text-sm focus:border-emerald-500 outline-none"
             >
               <option value="">{t('-- Select Supplier --', '-- سپلائر منتخب کریں --')}</option>
               {suppliers.map(s => (
@@ -155,7 +155,7 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
                 setPaymentMode(e.target.value as any);
                 setAccountId('');
               }}
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-emerald-500 outline-none"
+              className="premium-input border bg-white px-3 font-sans text-sm focus:border-emerald-500 outline-none"
             >
               <option value="bank">{t('Bank Transfer', 'بینک ٹرانسفر')}</option>
               <option value="cash">{t('Cash / Safe', 'نقد')}</option>
@@ -168,7 +168,7 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
             <select
               value={accountId}
               onChange={(e) => setAccountId(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-emerald-500 outline-none"
+              className="premium-input border bg-white px-3 font-sans text-sm focus:border-emerald-500 outline-none"
             >
               <option value="">{t('-- Select Account --', '-- اکاؤنٹ منتخب کریں --')}</option>
               {paymentMode === 'bank' && banks.map(b => (
@@ -196,7 +196,7 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
-                className="w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 font-mono text-sm focus:border-emerald-500 outline-none"
+                className="premium-input border bg-white pl-9 pr-3 font-mono text-sm focus:border-emerald-500 outline-none"
               />
             </div>
           </div>
@@ -209,7 +209,7 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
                  required
                  value={date}
                  onChange={(e) => setDate(e.target.value)}
-                 className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-emerald-500 outline-none"
+                 className="premium-input border bg-white px-3 font-sans text-sm focus:border-emerald-500 outline-none"
                />
              </div>
              <div>
@@ -219,7 +219,7 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
                  value={reference}
                  onChange={(e) => setReference(e.target.value)}
                  placeholder="e.g. CHQ-293"
-                 className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-emerald-500 outline-none"
+                 className="premium-input border bg-white px-3 font-sans text-sm focus:border-emerald-500 outline-none"
                />
              </div>
           </div>

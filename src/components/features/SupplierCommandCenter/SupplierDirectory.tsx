@@ -504,7 +504,7 @@ export default function SupplierDirectory({
         </div>
 
         {/* TIME FILTER SELECTOR & TRIGGER ROW */}
-        <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-1 sm:pb-0 w-full">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0 w-full">
           <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200 shadow-sm shrink-0">
             {(['all', 'weekly', 'monthly', 'yearly'] as const).map((filter) => (
               <button
@@ -928,7 +928,7 @@ export default function SupplierDirectory({
                     value={addName}
                     onChange={(e) => setAddName(e.target.value)}
                     placeholder="e.g. Umar Ali"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-orange-500 outline-hidden"
+                    className="premium-input border bg-white px-3 font-sans text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
 
@@ -939,7 +939,7 @@ export default function SupplierDirectory({
                     value={addUrduName}
                     onChange={(e) => setAddUrduName(e.target.value)}
                     placeholder="مثال: شیل پیٹرولیم پاکستان"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-orange-500 outline-hidden"
+                    className="premium-input border bg-white px-3 font-sans text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
 
@@ -950,7 +950,7 @@ export default function SupplierDirectory({
                     value={addContact}
                     onChange={(e) => setAddContact(e.target.value)}
                     placeholder="e.g. 03168432329"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-orange-500 outline-hidden"
+                    className="premium-input border bg-white px-3 font-mono text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
 
@@ -961,7 +961,7 @@ export default function SupplierDirectory({
                     value={addAccount}
                     onChange={(e) => setAddAccount(e.target.value)}
                     placeholder="e.g. HBL-ONLINE-9923"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-orange-500 outline-hidden"
+                    className="premium-input border bg-white px-3 font-mono text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
 
@@ -972,7 +972,7 @@ export default function SupplierDirectory({
                     value={addOpeningBal}
                     onChange={(e) => setAddOpeningBal(e.target.value)}
                     placeholder="0"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono text-sm focus:border-orange-500 outline-hidden"
+                    className="premium-input border bg-white px-3 .5 font-mono text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
 
@@ -1021,7 +1021,7 @@ export default function SupplierDirectory({
                     value={editSuppName}
                     onChange={(e) => setEditSuppName(e.target.value)}
                     placeholder="e.g. Umar Ali"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-orange-500 outline-hidden"
+                    className="premium-input border bg-white px-3 font-sans text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
 
@@ -1032,7 +1032,7 @@ export default function SupplierDirectory({
                     value={editSuppUrduName}
                     onChange={(e) => setEditSuppUrduName(e.target.value)}
                     placeholder="مثال: شیل پیٹرولیم پاکستان"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-orange-500 outline-hidden"
+                    className="premium-input border bg-white px-3 font-sans text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
 
@@ -1043,7 +1043,7 @@ export default function SupplierDirectory({
                     value={editSuppContact}
                     onChange={(e) => setEditSuppContact(e.target.value)}
                     placeholder="e.g. 03168432329"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-orange-500 outline-hidden"
+                    className="premium-input border bg-white px-3 font-mono text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
 
@@ -1054,7 +1054,7 @@ export default function SupplierDirectory({
                     value={editSuppAccountNo}
                     onChange={(e) => setEditSuppAccountNo(e.target.value)}
                     placeholder="e.g. HBL-ONLINE-9923"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm focus:border-orange-500 outline-hidden"
+                    className="premium-input border bg-white px-3 font-mono text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
 

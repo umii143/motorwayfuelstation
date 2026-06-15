@@ -147,7 +147,7 @@ export default function TankWizard({ tanks, products, language, onAddTank, onUpd
                 <button 
                   onClick={handleSave} 
                   disabled={!name || !productId || !capacity || !currentStock}
-                  className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md"
+                  className="flex-1 h-12 premium-button hover:bg-blue-700 font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md"
                 >
                   {editingTankId ? t('Update Tank', 'ٹینک اپڈیٹ کریں', language) : t('Save Tank', 'ٹینک محفوظ کریں', language)}
                 </button>

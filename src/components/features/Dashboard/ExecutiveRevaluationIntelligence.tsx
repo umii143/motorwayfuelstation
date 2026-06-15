@@ -126,7 +126,7 @@ export default function ExecutiveRevaluationIntelligence({
         {/* Annual Impact */}
         <div 
           onClick={() => openDrillDown('ytd')}
-          className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 cursor-pointer hover:border-emerald-400 hover:shadow-md transition-all"
+          className="premium-card p-5 border cursor-pointer hover:border-emerald-400 hover:shadow-md transition-all"
         >
           <p className="text-sm font-bold text-slate-500 mb-2 flex items-center gap-2">
             <Calendar className="size-4" />
@@ -140,7 +140,7 @@ export default function ExecutiveRevaluationIntelligence({
         {/* Monthly Impact */}
         <div 
           onClick={() => openDrillDown('month')}
-          className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 cursor-pointer hover:border-emerald-400 hover:shadow-md transition-all"
+          className="premium-card p-5 border cursor-pointer hover:border-emerald-400 hover:shadow-md transition-all"
         >
           <p className="text-sm font-bold text-slate-500 mb-2 flex items-center gap-2">
             <Calendar className="size-4" />
@@ -154,7 +154,7 @@ export default function ExecutiveRevaluationIntelligence({
         {/* Extreems */}
         <div 
           onClick={() => openDrillDown('extremes')}
-          className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between cursor-pointer hover:border-emerald-400 hover:shadow-md transition-all"
+          className="premium-card p-5 border flex flex-col justify-between cursor-pointer hover:border-emerald-400 hover:shadow-md transition-all"
         >
           <div>
             <p className="text-xs font-bold text-slate-500 mb-1 flex items-center gap-1">
@@ -172,7 +172,7 @@ export default function ExecutiveRevaluationIntelligence({
       </div>
 
       {/* HEATMAP / BAR CHART */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+      <div className="premium-card p-6 border">
         <h3 className="text-sm font-bold text-slate-800 mb-6 uppercase tracking-wider">
           {t('6-Month Revaluation Trend (Heatmap)', '6 ماہ کا ریویلیویشن ٹرینڈ', language)}
         </h3>

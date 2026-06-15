@@ -324,7 +324,7 @@ export default function Expenses({
         </div>
 
         {/* TIME FILTER & TRIGGER ROW */}
-        <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-1 sm:pb-0 w-full">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0 w-full">
           <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200 shadow-sm shrink-0">
             {(['all', 'weekly', 'monthly', 'yearly'] as const).map((filter) => (
               <button
@@ -590,7 +590,7 @@ export default function Expenses({
                   <select
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 font-sans text-sm focus:border-red-500 focus:outline-hidden"
+                    className="premium-input border bg-white px-2.5 font-sans text-sm focus:border-red-500 focus:outline-hidden"
                   >
                     {expenseCategories.filter(c => c.id !== 'salary').map(c => (
                       <option key={c.id} value={c.id}>{isUrdu ? c.urdu : c.label}</option>
@@ -606,7 +606,7 @@ export default function Expenses({
                     value={formAmount}
                     onChange={(e) => setFormAmount(e.target.value)}
                     placeholder="e.g. 1500"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono text-sm focus:border-red-500 focus:outline-hidden"
+                    className="premium-input border bg-white px-3 .5 font-mono text-sm focus:border-red-500 focus:outline-hidden"
                   />
                 </div>
 
@@ -642,7 +642,7 @@ export default function Expenses({
                     value={formDescription}
                     onChange={(e) => setFormDescription(e.target.value)}
                     placeholder="e.g. Weekly tea and biscuits for shift workers"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-xs focus:border-red-500 focus:outline-hidden"
+                    className="premium-input border bg-white px-3 font-sans text-xs focus:border-red-500 focus:outline-hidden"
                   />
                 </div>
 
@@ -714,7 +714,7 @@ export default function Expenses({
                     value={newCatLabel}
                     onChange={(e) => setNewCatLabel(e.target.value)}
                     placeholder={t("Category Name (English)", "انگلش نام")}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-indigo-500 focus:outline-hidden mb-3"
+                    className="premium-input border bg-white px-3 font-sans text-sm focus:border-indigo-500 focus:outline-hidden mb-3"
                   />
                   <input
                     type="text"
@@ -723,12 +723,12 @@ export default function Expenses({
                     onChange={(e) => setNewCatUrdu(e.target.value)}
                     dir="rtl"
                     placeholder={t("Category Name (Urdu)", "اردو نام")}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm focus:border-indigo-500 focus:outline-hidden mb-3"
+                    className="premium-input border bg-white px-3 font-sans text-sm focus:border-indigo-500 focus:outline-hidden mb-3"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-sans text-xs font-bold tracking-wider rounded-lg shadow-md cursor-pointer"
+                  className="w-full py-2.5 premium-button hover:bg-indigo-700 font-sans text-xs font-bold tracking-wider shadow-md cursor-pointer"
                 >
                   {t('+ ADD CATEGORY', 'کیٹیگری شامل کریں')}
                 </button>
