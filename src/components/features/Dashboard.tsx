@@ -29,8 +29,7 @@ import {
   Box,
   Receipt,
   FileText,
-  DollarSign,
-  LayoutDashboard
+  DollarSign
 } from 'lucide-react';
 import { generateDashboardStats, getFuelCategory } from '../../services/analytics/dashboardEngine';
 import {
@@ -212,7 +211,7 @@ export default React.memo(function Dashboard({
       {/* COMPACT HEADER */}
       <div className="fp-header">
         <div className="flex items-center gap-2">
-          <LayoutDashboard className="w-5 h-5 text-orange-500" />
+          <Gauge className="w-5 h-5 text-orange-500" />
           <h1 className="text-lg font-black text-slate-800 dark:text-slate-100">
             {settings?.language === 'ur' ? 'ڈیش بورڈ' : 'Dashboard'}
           </h1>

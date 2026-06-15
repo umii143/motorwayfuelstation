@@ -120,25 +120,20 @@ export default function ExpenseEntryTab({
   };
 
   return (
-    <div className="space-y-4">
-      <h3 className="font-sans text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4 flex items-center justify-between">
-        <span>
-          {t(
-            "💸 Shift Operational Expenses Logging",
-            "شفٹ کے آپریشنل اخراجات",
-          )}
-        </span>
+    <div className="space-y-3">
+      <h3 className="font-sans text-xs font-bold text-slate-800 border-b border-slate-100 pb-1.5 mb-3">
+        {t("💸 Operational Expenses", "آپریشنل اخراجات")}
       </h3>
 
-      <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
-        <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-            {t("Select Category:", "خانہ / کیٹیگری منتخب کریں:")}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="col-span-2 sm:col-span-1">
+          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+            {t("Category:", "کیٹیگری:")}
           </label>
           <select
             value={expCategory}
             onChange={(e) => setExpCategory(e.target.value)}
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm text-slate-800 shadow-xs focus:border-orange-500"
+            className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500"
           >
             {EXPENSE_CATEGORIES.map((cat) => (
               <option key={cat.id} value={cat.id}>
@@ -150,113 +145,93 @@ export default function ExpenseEntryTab({
         </div>
 
         {expCategory === "salary" && (
-          <div className="sm:col-span-2 bg-orange-50/40 p-3 rounded-lg border border-orange-200/60 transition-all">
-            <label className="block text-xs font-bold text-orange-805 uppercase tracking-wide mb-1.5 flex items-center gap-1">
+          <div className="col-span-2 bg-orange-50/40 p-2 rounded-md border border-orange-200/60 transition-all">
+            <label className="block text-[10px] font-bold text-orange-805 uppercase tracking-wide mb-1 flex items-center gap-1">
               <span>👷</span>{" "}
-              {t(
-                "Select Paid Staff Member:",
-                "ادائیگی وصول کنندہ ملازم منتخب کریں:",
-              )}
+              {t("Staff Member:", "ملازم:")}
             </label>
             <select
               value={expStaffId}
               onChange={(e) => setExpStaffId(e.target.value)}
-              className="w-full rounded-lg border border-orange-300 bg-white px-3 py-2 font-sans text-sm text-slate-800 shadow-xs focus:border-orange-500 font-medium"
+              className="w-full rounded-md border border-orange-300 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500 font-medium"
             >
               <option value="">
-                {t(
-                  "-- Choose active staff member --",
-                  "-- فعال ملازم منتخب کریں --",
-                )}
+                {t("-- Choose --", "-- منتخب کریں --")}
               </option>
               {staff
                 .filter((st) => st.active)
                 .map((st) => (
                   <option key={st.id} value={st.id}>
-                    {settings.language === "en"
-                      ? st.name
-                      : st.urduName}{" "}
-                    ({st.role.toUpperCase()}) —{" "}
-                    {t(
-                      `Advances: Rs. ${st.advances || 0}`,
-                      `ایڈوانس: ${st.advances || 0} روپے`,
-                    )}
+                    {settings.language === "en" ? st.name : st.urduName} ({st.role.toUpperCase()}) — {t(`Adv: Rs. ${st.advances || 0}`, `ایڈوانس: ${st.advances || 0} روپے`)}
                   </option>
                 ))}
             </select>
-            <p className="text-[10px] text-orange-700/80 mt-1">
-              ℹ️{" "}
-              {t(
-                "This transaction will automatically sync and log to this staff member's ledger log & update basic advances balance outstanding.",
-                "یہ انٹری خودکار طور پر اس ملازم کے تنخواہ لیجر اور ایڈوانس اکاؤنٹ بک میں ریکارڈ ہو جائے گی۔",
-              )}
-            </p>
           </div>
         )}
 
-        <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-            {t("Amount:", "رقم (روپے):")}
+        <div className="col-span-2 sm:col-span-1">
+          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+            {t("Amount:", "رقم:")}
           </label>
           <input
             type="number"
             value={expAmount}
             onChange={(e) => setExpAmount(e.target.value)}
             placeholder="e.g. 1200"
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono text-sm focus:border-orange-500"
+            className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-mono text-xs focus:border-orange-500"
           />
         </div>
 
-        <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-            {t("Sourced From:", "ادائیگی کا منبع:")}
+        <div className="col-span-2 sm:col-span-1">
+          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+            {t("Sourced From:", "منبع:")}
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-1">
             <button
               type="button"
               onClick={() => setExpPaidFrom("cash")}
-              className={`py-2 rounded-lg border font-sans text-xs font-bold cursor-pointer transition-all ${
+              className={`py-1.5 rounded-md border font-sans text-[10px] font-bold cursor-pointer transition-all ${
                 expPaidFrom === "cash"
                   ? "border-orange-500 bg-orange-50 text-orange-700"
                   : "border-slate-200 bg-white text-slate-500"
               }`}
             >
-              💸 {t("Shift Cash Drawer", "سیشن کیش دراز")}
+              💸 {t("Cash", "کیش")}
             </button>
             <button
               type="button"
               onClick={() => setExpPaidFrom("bank")}
-              className={`py-2 rounded-lg border font-sans text-xs font-bold cursor-pointer transition-all ${
+              className={`py-1.5 rounded-md border font-sans text-[10px] font-bold cursor-pointer transition-all ${
                 expPaidFrom === "bank"
                   ? "border-orange-500 bg-orange-50 text-orange-700"
                   : "border-slate-200 bg-white text-slate-500"
               }`}
             >
-              🏦 {t("Bank Account", "بینک اکاؤنٹ")}
+              🏦 {t("Bank", "بینک")}
             </button>
           </div>
         </div>
 
-        <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-            {t("Specific Description / Notes:", "تفصیل / نوٹ:")}
+        <div className="col-span-2">
+          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+            {t("Notes:", "نوٹ:")}
           </label>
           <input
             type="text"
             value={expDesc}
             onChange={(e) => setExpDesc(e.target.value)}
             placeholder="e.g. Lunch tea for staff"
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-sans text-sm focus:border-orange-500"
+            className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500"
           />
         </div>
       </div>
 
       <button
         onClick={handleAddExpense}
-        className="w-full py-2.5 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 cursor-pointer shadow-md shadow-orange-500/10 flex items-center justify-center gap-1.5"
+        className="w-full py-2 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 cursor-pointer shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
       >
-        <Plus className="h-4 w-4" />
-        <span>{t("ADD EXPENSE ENTRY", "خرچہ کا اندراج کریں")}</span>
+        <Plus className="h-3 w-3" />
+        <span>{t("ADD EXPENSE", "خرچہ درج کریں")}</span>
       </button>
 
       {/* Registered Expenses List */}

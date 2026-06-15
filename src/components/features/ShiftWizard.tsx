@@ -1773,30 +1773,25 @@ export default function ShiftWizard({
   };
 
   return (
-    <div className="space-y-6 pb-16 lg:pb-0">
+    <div className="space-y-3 pb-16 lg:pb-0">
       {/* HEADER ROW BAR */}
-      <div className="flex flex-col gap-4 sm:flex-row items-center sm:justify-between border-b border-slate-200 pb-4">
-        <div>
-          <h2 className="font-sans text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-            <RotateCcw className="h-6 w-6 text-orange-600 animate-spin-slow" />
-            <span>{t("Operational Shift Wizard", "شفٹ کنٹرول وزرڈ")}</span>
+      <div className="flex flex-row items-center justify-between border-b border-slate-200 pb-2">
+        <div className="flex items-center gap-2">
+          <RotateCcw className="h-5 w-5 text-orange-600 animate-spin-slow" />
+          <h2 className="font-sans text-lg font-bold tracking-tight text-slate-900">
+            {t("Operational Shift Wizard", "شفٹ کنٹرول وزرڈ")}
           </h2>
-          <p className="font-sans text-xs text-slate-500 mt-1">
-            {t(
-              "Daily logs, nozzle parameters, debtors recovery, cash reconciliation and summaries.",
-              "روزانہ اسٹیشن نوڈ کام، بقایاجات، اور اخراجات کا تفصیلی نظام۔",
-            )}
-          </p>
         </div>
 
         {/* Abandon activeShift Button */}
         {activeShift && wizardStep >= 3 && (
           <button
             onClick={handleAbandoneShift}
-            className="flex items-center justify-center gap-1 mt-2 sm:mt-0 rounded-lg border border-red-200 bg-red-50 px-3.5 py-1.5 font-sans text-xs font-bold text-red-600 hover:bg-red-100 transition-colors cursor-pointer self-start sm:self-center"
+            className="flex items-center justify-center gap-1 rounded-lg border border-red-200 bg-red-50 px-2 py-1 font-sans text-[10px] font-bold text-red-600 hover:bg-red-100 transition-colors cursor-pointer active:scale-95"
           >
-            <Trash2 className="h-3.5 w-3.5" />
-            <span>{t("Cancel / Abandon Shift", "شفٹ منسوخ کریں")}</span>
+            <Trash2 className="h-3 w-3" />
+            <span className="hidden sm:inline">{t("Cancel / Abandon Shift", "شفٹ منسوخ کریں")}</span>
+            <span className="sm:hidden">{t("Cancel", "منسوخ")}</span>
           </button>
         )}
       </div>
@@ -1812,22 +1807,14 @@ export default function ShiftWizard({
           STEP 1: SHIFT SETUP & INITIALS
           ========================================== */}
       {wizardStep === 1 && (
-        <div className="mx-auto max-w-lg rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-3 border-b border-slate-100 pb-4 mb-5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
-              <Play className="h-5 w-5" />
+        <div className="mx-auto max-w-lg rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-3 border-b border-slate-100 pb-3 mb-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 text-orange-600">
+              <Play className="h-4 w-4" />
             </div>
-            <div>
-              <h3 className="font-sans text-base font-bold text-slate-900">
-                {t("Initiate New Shift Session", "نئی کاروباری شفٹ شروع کریں")}
-              </h3>
-              <p className="font-sans text-xs text-slate-400 mt-0.5">
-                {t(
-                  "Setup operator name and duty type.",
-                  "ڈیوٹی افسر اور شفٹ کی قسم مقرر کریں۔",
-                )}
-              </p>
-            </div>
+            <h3 className="font-sans text-base font-bold text-slate-900">
+              {t("Initiate New Shift Session", "نئی کاروباری شفٹ شروع کریں")}
+            </h3>
           </div>
 
           <div className="space-y-4">
@@ -1952,42 +1939,42 @@ export default function ShiftWizard({
           STEP 3: ACTIVE SHIFT HUB DRAWERS
           ========================================== */}
       {wizardStep === 3 && activeShift && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           {/* Active Shift Info Sidebar */}
-          <div className="space-y-4">
-            <div className="rounded-xl border border-orange-200 bg-orange-55/10 p-5 shadow-xs">
-              <div className="flex items-center gap-2 font-sans text-xs text-orange-600 font-bold uppercase tracking-wider">
-                <span className="relative flex h-2.5 w-2.5">
+          <div className="space-y-3">
+            <div className="rounded-xl border border-orange-200 bg-orange-50/50 p-4 shadow-xs">
+              <div className="flex items-center gap-2 font-sans text-[10px] text-orange-600 font-bold uppercase tracking-wider">
+                <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75"></span>
-                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-orange-500"></span>
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-orange-500"></span>
                 </span>
                 <span>
-                  {t("Active Session Running", "کاروباری شفٹ جاری ہے")}
+                  {t("Active Session", "جاری شفٹ")}
                 </span>
               </div>
 
-              <h3 className="font-sans text-lg font-bold text-slate-900 mt-2">
+              <h3 className="font-sans text-base font-bold text-slate-900 mt-1">
                 {activeStaffMember
                   ? settings.language === "en"
                     ? activeStaffMember.name
                     : activeStaffMember.urduName
                   : "Salesman"}
               </h3>
-              <p className="font-sans text-xs text-slate-400 mt-0.5">
+              <p className="font-sans text-[10px] text-slate-500 mt-0.5">
                 {t(
-                  `Shift Type: ${activeShift.type.toUpperCase()}`,
-                  `شفٹ کی قسم: ${activeShift.type === "day" ? "دن" : "رات"}`,
+                  `Type: ${activeShift.type.toUpperCase()}`,
+                  `شفٹ: ${activeShift.type === "day" ? "دن" : "رات"}`,
                 )}
               </p>
 
-              <div className="mt-4 divide-y divide-slate-100 border-t border-slate-100 pt-3 text-xs font-sans text-slate-500 space-y-2">
-                <div className="flex justify-between pt-1.5">
+              <div className="mt-3 divide-y divide-slate-100 border-t border-slate-100 pt-2 text-[10px] font-sans text-slate-500 space-y-1">
+                <div className="flex justify-between pt-1">
                   <span>{t("Started on:", "آغاز تاریخ:")}</span>
                   <span className="font-mono font-bold text-slate-800">
                     {activeShift.date}
                   </span>
                 </div>
-                <div className="flex justify-between pt-1.5">
+                <div className="flex justify-between pt-1">
                   <span>{t("Start Time:", "آغاز کا وقت:")}</span>
                   <span className="font-mono font-bold text-slate-800">
                     {activeShift.startTime}
@@ -1997,51 +1984,51 @@ export default function ShiftWizard({
 
               <button
                 onClick={handleGoToClosings}
-                className="w-full py-3.5 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 shadow-lg shadow-orange-500/10 tracking-wider mt-5 flex items-center justify-center gap-1 transition-all cursor-pointer"
+                className="w-full py-2.5 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 shadow-md shadow-orange-500/10 tracking-wider mt-4 flex items-center justify-center gap-1 transition-colors cursor-pointer active:scale-95"
               >
                 <span>
                   {isLubeBusiness
                     ? t("PROCEED TO CASH CLOSE →", "کیش کلوز پر جائیں ←")
-                    : t("PROCEED TO SHIFT CLOSE →", "کلوزنگ ریڈنگز پر جائیں ←")}
+                    : t("PROCEED TO CLOSE →", "کلوزنگ پر جائیں ←")}
                 </span>
               </button>
             </div>
 
             {/* Multi-Tab Running Session Accrual Counters */}
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
-              <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-3">
-                {t("Shift Accrual Stats", "حساب کتاب کی موجودہ پوزیشن")}
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+              <h4 className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1.5 mb-2">
+                {t("Accrual Stats", "موجودہ پوزیشن")}
               </h4>
-              <div className="space-y-3 font-sans text-xs">
+              <div className="space-y-2 font-sans text-xs">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">
-                    {t("Total Customers Debt:", "گاہکوں کا کل ادھار:")}
+                  <span className="text-slate-500">
+                    {t("Customers Debt:", "ادھار:")}
                   </span>
                   <span className="font-mono font-bold text-rose-500">
                     Rs. {expectedTotals?.debits.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">
-                    {t("Total Collect Recovery:", "حاصل شدہ بقایاجات:")}
+                  <span className="text-slate-500">
+                    {t("Recovery:", "وصولی:")}
                   </span>
                   <span className="font-mono font-bold text-emerald-500">
                     Rs. {expectedTotals?.recoveries.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">
-                    {t("Expenses Paid Cash:", "کیش میں اخراجات:")}
+                  <span className="text-slate-500">
+                    {t("Expenses:", "اخراجات:")}
                   </span>
                   <span className="font-mono font-bold text-red-500">
                     Rs. {expectedTotals?.expenses.toLocaleString()}
                   </span>
                 </div>
-                <div className="flex justify-between border-t border-dashed border-slate-105 pt-2.5 font-semibold text-slate-700">
-                  <span>
-                    {t("Liquid cash expected:", "اندازہ کیش پوزیشن:")}
+                <div className="flex justify-between border-t border-dashed border-slate-200 pt-2 font-semibold text-slate-700">
+                  <span className="text-[10px]">
+                    {t("Liquid cash expected:", "کیش پوزیشن:")}
                   </span>
-                  <span className="font-mono font-bold text-indigo-600">
+                  <span className="font-mono font-bold text-indigo-600 text-sm">
                     Rs. {expectedTotals?.expectedCash.toLocaleString()}
                   </span>
                 </div>
@@ -2051,21 +2038,21 @@ export default function ShiftWizard({
 
           {/* CRITICAL PRICE REVISION BANNER */}
           {activeShift?.activeMidShiftAlert && (
-            <div className="col-span-1 lg:col-span-3 mb-4 rounded-lg bg-red-50 border-l-4 border-red-500 p-4 shadow-sm flex flex-row items-center justify-between gap-4">
-              <div className="flex items-start items-center gap-3">
-                <AlertCircle className="w-6 h-6 text-red-600 animate-pulse shrink-0 mt-0.5 sm:mt-0" />
+            <div className="col-span-1 lg:col-span-3 mb-3 rounded-lg bg-red-50 border-l-4 border-red-500 p-3 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-start items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-red-600 animate-pulse shrink-0" />
                 <div>
-                  <h3 className="font-bold text-red-800">
+                  <h3 className="font-bold text-red-800 text-sm">
                     {t("CRITICAL: Rate Revision Pending", "اہم: قیمت کی تبدیلی زیر التواء ہے")}
                   </h3>
-                  <p className="text-sm text-red-600 mt-1 sm:mt-0">
-                    {t("Please capture snapshot readings immediately or use Owner Override.", "براہ کرم فوری طور پر میٹر ریڈنگ درج کریں یا مالک کا پن استعمال کریں۔")}
+                  <p className="text-xs text-red-600 mt-0.5">
+                    {t("Please capture snapshot readings immediately.", "فوری طور پر ریڈنگ درج کریں۔")}
                   </p>
                 </div>
               </div>
               <button 
                 onClick={() => setActiveTab("rateChange")}
-                className="w-full sm:w-auto px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-md shadow-sm transition-colors"
+                className="w-full sm:w-auto px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-md shadow-sm transition-colors active:scale-95"
               >
                 {t("Capture Snapshot", "ریڈنگ درج کریں")}
               </button>
@@ -2073,26 +2060,26 @@ export default function ShiftWizard({
           )}
 
           {/* Operational Entry Cards (TABS) */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 space-y-3">
             {/* Tab selection rail */}
-            <div className="flex border border-slate-200 rounded-lg overflow-x-auto bg-white p-1">
+            <div className="flex border border-slate-200 rounded-lg overflow-x-auto bg-white p-1 scrollbar-hide">
               {[
-                { id: "debit", label: "Debit (Udhar)", urdu: "ادھار قرض " },
-                { id: "recovery", label: "Recovery", urdu: "وصولی رقم " },
-                { id: "expense", label: "Expense", urdu: "اخراجات " },
-                { id: "bank", label: "Bank", urdu: "بینک " },
-                { id: "digital", label: "Digital", urdu: "ڈیجیٹل " },
-                { id: "discount", label: "Discounts", urdu: "ڈسکاؤنٹس " },
-                { id: "lube", label: "Lubes", urdu: "انجن آئل " },
-                { id: "supplier", label: "Supplier", urdu: "سپلائر بل " },
-                ...(activeShift?.activeMidShiftAlert ? [{ id: "rateChange", label: "⚡ Rate Change", urdu: "⚡ قیمت تبدیل" }] : []),
+                { id: "debit", label: "Debit", urdu: "ادھار" },
+                { id: "recovery", label: "Recovery", urdu: "وصولی" },
+                { id: "expense", label: "Expense", urdu: "اخراجات" },
+                { id: "bank", label: "Bank", urdu: "بینک" },
+                { id: "digital", label: "Digital", urdu: "ڈیجیٹل" },
+                { id: "discount", label: "Discounts", urdu: "ڈسکاؤنٹ" },
+                { id: "lube", label: "Lubes", urdu: "انجن آئل" },
+                { id: "supplier", label: "Supplier", urdu: "سپلائر" },
+                ...(activeShift?.activeMidShiftAlert ? [{ id: "rateChange", label: "⚡ Rate", urdu: "⚡ ریٹ" }] : []),
               ].map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex-shrink-0 px-3 py-2 text-xs font-sans font-bold rounded-md transition-all cursor-pointer whitespace-nowrap ${
+                  className={`flex-shrink-0 px-2.5 py-1.5 text-[11px] font-sans font-bold rounded-md transition-all cursor-pointer whitespace-nowrap ${
                     activeTab === tab.id
-                      ? "bg-orange-500 text-white shadow-xs"
+                      ? "bg-slate-900 text-white shadow-xs"
                       : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
                   }`}
                 >
@@ -2133,56 +2120,51 @@ export default function ShiftWizard({
 
               {/* TAB 2: RECOVERIES (CREDIT RECOVERIES) */}
               {activeTab === "recovery" && (
-                <div className="space-y-4">
-                  <h3 className="font-sans text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4 flex items-center justify-between">
-                    <span>
-                      {t(
-                        "💚 Customer Outstanding Recovery Collection",
-                        "بقایا قرض رقم کی وصولی",
-                      )}
-                    </span>
+                <div className="space-y-3">
+                  <h3 className="font-sans text-xs font-bold text-slate-800 border-b border-slate-100 pb-1.5 mb-3">
+                    {t("💚 Outstanding Recovery", "بقایا رقم وصولی")}
                   </h3>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
-                    <div>
-                      <div className="flex justify-between items-center mb-1.5">
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">
-                          {t("Select Outstanding Customer:", "بقایا فیس گاہک:")}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="col-span-2 sm:col-span-1">
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+                          {t("Customer:", "گاہک:")}
                         </label>
                         {onAddCustomer && (
                           <button
                             onClick={() => setShowQuickCustomer(true)}
-                            className="text-[9px] font-bold text-orange-600 uppercase tracking-widest bg-orange-50 px-2 py-0.5 rounded-full hover:bg-orange-100 transition-colors pointer-events-auto"
+                            className="text-[9px] font-bold text-orange-600 uppercase tracking-widest bg-orange-50 px-1.5 py-0.5 rounded hover:bg-orange-100 transition-colors pointer-events-auto"
                           >
-                            + {t("Quick Add", "نئی انٹری")}
+                            + {t("Quick Add", "نیا")}
                           </button>
                         )}
                       </div>
                       {showQuickCustomer ? (
                         <form
                           onSubmit={handleQuickAddCustomer}
-                          className="flex gap-2"
+                          className="flex gap-1"
                         >
                           <input
                             autoFocus
                             type="text"
-                            placeholder={t("Enter Name...", "گاہک کا نام...")}
+                            placeholder={t("Name...", "نام...")}
                             value={quickCustomerName}
                             onChange={(e) =>
                               setQuickCustomerName(e.target.value)
                             }
-                            className="w-full rounded-lg border border-orange-300 bg-white px-3 py-2 font-sans text-sm text-slate-800 shadow-xs focus:border-orange-500 outline-none"
+                            className="w-full rounded-md border border-orange-300 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500 outline-none"
                           />
                           <button
                             type="submit"
-                            className="bg-orange-600 text-white px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded-lg font-bold text-xs uppercase shadow-sm"
+                            className="bg-orange-600 text-white px-2 py-1.5 rounded-md font-bold text-[10px] uppercase shadow-sm"
                           >
                             {t("Save", "سیو")}
                           </button>
                           <button
                             type="button"
                             onClick={() => setShowQuickCustomer(false)}
-                            className="bg-slate-200 text-slate-600 px-3 py-2 rounded-lg font-bold text-xs uppercase"
+                            className="bg-slate-200 text-slate-600 px-2 py-1.5 rounded-md font-bold text-[10px] uppercase"
                           >
                             X
                           </button>
@@ -2191,13 +2173,10 @@ export default function ShiftWizard({
                         <select
                           value={recCustId}
                           onChange={(e) => setRecCustId(e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm text-slate-800 shadow-xs focus:border-orange-500"
+                          className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500"
                         >
                           <option value="">
-                            {t(
-                              "-- Select debtor --",
-                              "-- بقایا گاہک منتخب کریں --",
-                            )}
+                            {t("-- Select --", "-- منتخب کریں --")}
                           </option>
                           {effectiveCustomers
                             .filter((c) => c.effectiveBalance > 0)
@@ -2206,45 +2185,40 @@ export default function ShiftWizard({
                                 {settings.language === "en"
                                   ? c.name
                                   : c.urduName}{" "}
-                                (
-                                {t(
-                                  `Debt: Rs. ${c.effectiveBalance}`,
-                                  `قرض: ${c.effectiveBalance} روپے`,
-                                )}
-                                )
+                                ({t(`Rs. ${c.effectiveBalance}`, `${c.effectiveBalance} روپے`)})
                               </option>
                             ))}
                         </select>
                       )}
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t("Amount Received:", "وصول شدہ کل رقم:")}
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                        {t("Amount:", "رقم:")}
                       </label>
                       <input
                         type="number"
                         value={recAmount}
                         onChange={(e) => setRecAmount(e.target.value)}
                         placeholder="e.g. 15000"
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono text-sm focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-mono text-xs focus:border-orange-500"
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t("Payment Mode / Option:", "طریقہ ادائیگی:")}
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                        {t("Mode:", "طریقہ:")}
                       </label>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div className="grid grid-cols-3 gap-1">
                         {["cash", "cheque", "transfer"].map((m) => (
                           <button
                             key={m}
                             type="button"
                             onClick={() => setRecMode(m as any)}
-                            className={`py-2 rounded-lg border font-sans text-xs font-bold transition-all cursor-pointer ${
+                            className={`py-1.5 rounded-md border font-sans text-[10px] font-bold transition-all cursor-pointer ${
                               recMode === m
-                                ? "border-orange-500 bg-orange-50 text-orange-700 font-bold"
-                                : "border-slate-200 bg-white text-slate-550"
+                                ? "border-orange-500 bg-orange-50 text-orange-700"
+                                : "border-slate-200 bg-white text-slate-500"
                             }`}
                           >
                             {t(m.toUpperCase(), m)}
@@ -2253,32 +2227,27 @@ export default function ShiftWizard({
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t(
-                          "Cheque / Online Reference #:",
-                          "چیک نمبر / آن لائن ریفرنس:",
-                        )}
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                        {t("Reference:", "ریفرنس:")}
                       </label>
                       <input
                         type="text"
                         value={recRef}
                         onChange={(e) => setRecRef(e.target.value)}
-                        placeholder="e.g. CHQ-993829"
+                        placeholder="e.g. CHQ-123"
                         disabled={recMode === "cash"}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-sans text-xs focus:border-orange-500 disabled:bg-slate-50"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500 disabled:bg-slate-50"
                       />
                     </div>
                   </div>
 
                   <button
                     onClick={handleAddRecovery}
-                    className="w-full py-2.5 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 cursor-pointer shadow-md shadow-orange-500/10 flex items-center justify-center gap-1.5"
+                    className="w-full py-2 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 cursor-pointer shadow-sm active:scale-95 flex items-center justify-center gap-1.5 mt-2"
                   >
-                    <Plus className="h-4 w-4" />
-                    <span>
-                      {t("ADD RECOVERY ENTRY", "رقم کی وصولی درج کریں")}
-                    </span>
+                    <Plus className="h-3 w-3" />
+                    <span>{t("ADD RECOVERY", "اندراج کریں")}</span>
                   </button>
 
                   {/* Registered Recoveries List */}
@@ -2352,71 +2321,57 @@ export default function ShiftWizard({
 
               {/* TAB 4: BANK CASH DEPOSITS */}
               {activeTab === "bank" && (
-                <div className="space-y-4">
-                  <h3 className="font-sans text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4 flex items-center justify-between">
-                    <span>
-                      {t(
-                        "🏦 Bank Cash Deposits & Transfers",
-                        "بینک جمع شدہ رقم کی انٹری",
-                      )}
-                    </span>
+                <div className="space-y-3">
+                  <h3 className="font-sans text-xs font-bold text-slate-800 border-b border-slate-100 pb-1.5 mb-3">
+                    {t("🏦 Bank Deposits", "بینک جمع")}
                   </h3>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
-                    <div>
-                      <div className="flex justify-between items-center mb-1.5">
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">
-                          {t(
-                            "Select Bank Name Account:",
-                            "بینک اکاؤنٹ منتخب کریں:",
-                          )}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="col-span-2 sm:col-span-1">
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+                          {t("Bank Account:", "بینک اکاؤنٹ:")}
                         </label>
                         {onAddBank && (
                           <button
                             onClick={() => setShowQuickBank(true)}
-                            className="text-[9px] font-bold text-orange-600 uppercase tracking-widest bg-orange-50 px-2 py-0.5 rounded-full hover:bg-orange-100 transition-colors pointer-events-auto"
+                            className="text-[9px] font-bold text-orange-600 uppercase tracking-widest bg-orange-50 px-1.5 py-0.5 rounded hover:bg-orange-100 transition-colors pointer-events-auto"
                           >
-                            + {t("Quick Add Bank", "نیا بینک انٹری")}
+                            + {t("Add", "نیا")}
                           </button>
                         )}
                       </div>
                       {showQuickBank ? (
-                        <div className="space-y-2 border border-orange-300 bg-orange-50/50 p-2.5 rounded-lg">
+                        <div className="space-y-1.5 border border-orange-300 bg-orange-50/50 p-2 rounded-md">
                           <input
                             autoFocus
                             type="text"
-                            placeholder={t(
-                              "Enter Bank Name...",
-                              "بینک کا نام...",
-                            )}
+                            placeholder={t("Bank Name...", "نام...")}
                             value={quickBankName}
                             onChange={(e) => setQuickBankName(e.target.value)}
-                            className="w-full rounded-md border border-orange-200 bg-white px-2.5 py-1.5 font-sans text-xs text-slate-800 outline-none focus:border-orange-500"
+                            className="w-full rounded-md border border-orange-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 outline-none focus:border-orange-500"
                           />
                           <input
                             type="text"
-                            placeholder={t(
-                              "Enter Account No...",
-                              "اکاؤنٹ نمبر...",
-                            )}
+                            placeholder={t("Account No...", "اکاؤنٹ نمبر...")}
                             value={quickBankAccNo}
                             onChange={(e) => setQuickBankAccNo(e.target.value)}
-                            className="w-full rounded-md border border-orange-200 bg-white px-2.5 py-1.5 font-sans text-xs text-slate-800 outline-none focus:border-orange-500"
+                            className="w-full rounded-md border border-orange-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 outline-none focus:border-orange-500"
                           />
                           <div className="flex gap-1.5 justify-end">
                             <button
                               type="button"
                               onClick={handleQuickAddBank}
-                              className="bg-orange-600 text-white px-2.5 py-1 rounded font-bold text-[10px] uppercase shadow-sm"
+                              className="bg-orange-600 text-white px-2 py-1 rounded-md font-bold text-[10px] uppercase shadow-sm"
                             >
                               {t("Save", "سیو")}
                             </button>
                             <button
                               type="button"
                               onClick={() => setShowQuickBank(false)}
-                              className="bg-slate-200 text-slate-600 px-2.5 py-1 rounded font-bold text-[10px] uppercase"
+                              className="bg-slate-200 text-slate-600 px-2 py-1 rounded-md font-bold text-[10px] uppercase"
                             >
-                              {t("Cancel", "منسوخ")}
+                              X
                             </button>
                           </div>
                         </div>
@@ -2424,10 +2379,10 @@ export default function ShiftWizard({
                         <select
                           value={bankAcctId}
                           onChange={(e) => setBankAcctId(e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm text-slate-800 shadow-xs focus:border-orange-500"
+                          className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500"
                         >
                           <option value="">
-                            {t("-- Choose bank --", "-- بینک اکاؤنٹ --")}
+                            {t("-- Choose --", "-- منتخب کریں --")}
                           </option>
                           {banks.map((b) => (
                             <option key={b.id} value={b.id}>
@@ -2438,52 +2393,43 @@ export default function ShiftWizard({
                       )}
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t("Amount Deposited:", "جمع فیس رقم (روپے):")}
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                        {t("Amount:", "رقم:")}
                       </label>
                       <input
                         type="number"
                         value={bankAmount}
                         onChange={(e) => setBankAmount(e.target.value)}
                         placeholder="e.g. 50000"
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono text-sm focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-mono text-xs focus:border-orange-500"
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t(
-                          "Transaction Reference / ID:",
-                          "ٹرانزیکشن ریفرنس نمبر / چالان:",
-                        )}
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                        {t("Ref / ID:", "چالان:")}
                       </label>
                       <input
                         type="text"
                         value={bankRef}
                         onChange={(e) => setBankRef(e.target.value)}
-                        placeholder="e.g. FT-9938290"
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-sans text-sm focus:border-orange-500"
+                        placeholder="e.g. FT-9938"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500"
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t(
-                          "Link to Customer (Optional):",
-                          "گاہک سے لنک کریں (اختیاری):",
-                        )}
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                        {t("Customer (Optional):", "گاہک:")}
                       </label>
                       <select
                         value={bankCustId}
                         onChange={(e) => setBankCustId(e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm text-slate-800 shadow-xs focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500"
                       >
                         <option value="">
-                          {t(
-                            "-- None / Direct Deposit --",
-                            "-- کوئی گاہک نہیں / براہ راست انٹری --",
-                          )}
+                          {t("-- None --", "-- کوئی نہیں --")}
                         </option>
                         {customers.map((c) => (
                           <option key={c.id} value={c.id}>
@@ -2496,12 +2442,10 @@ export default function ShiftWizard({
 
                   <button
                     onClick={handleAddBank}
-                    className="w-full py-2.5 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 cursor-pointer shadow-md shadow-orange-500/10 flex items-center justify-center gap-1.5"
+                    className="w-full py-2 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 cursor-pointer shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
                   >
-                    <Plus className="h-4 w-4" />
-                    <span>
-                      {t("ADD BANK ENTRY", "بینک جمع شدہ رقم شامل کریں")}
-                    </span>
+                    <Plus className="h-3 w-3" />
+                    <span>{t("ADD BANK ENTRY", "بینک میں جمع کریں")}</span>
                   </button>
 
                   <div className="mt-4 border-t border-slate-100 pt-4">
@@ -2556,27 +2500,21 @@ export default function ShiftWizard({
                 </div>
               )}
 
-              {/* TAB 5: DIGITAL CASH */}
               {activeTab === "digital" && (
-                <div className="space-y-4">
-                  <h3 className="font-sans text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4 flex items-center justify-between">
-                    <span>
-                      {t(
-                        "📱 EasyPaisa / JazzCash / Card POS Machines",
-                        "ڈیجیٹل والٹ اور کارڈ مشین رسیپٹس",
-                      )}
-                    </span>
+                <div className="space-y-3">
+                  <h3 className="font-sans text-xs font-bold text-slate-800 border-b border-slate-100 pb-1.5 mb-3">
+                    {t("📱 Digital Wallets & Cards", "ڈیجیٹل اور کارڈ")}
                   </h3>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t("Digital Method:", "والٹ / کارڈ نیٹ ورک:")}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                        {t("Method:", "نیٹ ورک:")}
                       </label>
                       <select
                         value={digMethod}
                         onChange={(e) => setDigMethod(e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm text-slate-800 shadow-xs focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500"
                       >
                         <option value="EasyPaisa">EasyPaisa</option>
                         <option value="JazzCash">JazzCash</option>
@@ -2588,60 +2526,52 @@ export default function ShiftWizard({
                       </select>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t("Amount Received:", "وصول رقم (روپے):")}
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                        {t("Amount:", "رقم:")}
                       </label>
                       <input
                         type="number"
                         value={digAmount}
                         onChange={(e) => setDigAmount(e.target.value)}
                         placeholder="e.g. 5000"
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono text-sm focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-mono text-xs focus:border-orange-500"
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t(
-                          "Transaction ID / Validation:",
-                          "والٹ ٹرانزیکشن ID نمبر:",
-                        )}
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                        {t("Ref / ID:", "ٹرانزیکشن ID:")}
                       </label>
                       <input
                         type="text"
                         value={digRefId}
                         onChange={(e) => setDigRefId(e.target.value)}
                         placeholder="e.g. TR-2839201"
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-sans text-sm focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500"
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t(
-                          "Account Holder Name (Optional):",
-                          "اکاؤنٹ ہولڈر کا نام (اختیاری):",
-                        )}
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                        {t("Name (Optional):", "نام (اختیاری):")}
                       </label>
                       <input
                         type="text"
                         value={digAccountHolder}
                         onChange={(e) => setDigAccountHolder(e.target.value)}
                         placeholder="e.g. Umar Ali"
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-sans text-sm focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500"
                       />
                     </div>
                   </div>
 
                   <button
                     onClick={handleAddDigital}
-                    className="w-full py-2.5 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 cursor-pointer shadow-md shadow-orange-500/10 flex items-center justify-center gap-1.5"
+                    className="w-full py-2 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 cursor-pointer shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
                   >
-                    <Plus className="h-4 w-4" />
-                    <span>
-                      {t("ADD DIGITAL ENTRY", "ڈیجیٹل رقم شامل کریں")}
-                    </span>
+                    <Plus className="h-3 w-3" />
+                    <span>{t("ADD DIGITAL ENTRY", "ڈیجیٹل رقم شامل کریں")}</span>
                   </button>
 
                   <div className="mt-4 border-t border-slate-100 pt-4">
@@ -2689,88 +2619,77 @@ export default function ShiftWizard({
                 </div>
               )}
 
-              {/* TAB 8: DISCOUNTS */}
               {activeTab === "discount" && (
-                <div className="space-y-4">
-                  <h3 className="font-sans text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4 flex items-center justify-between">
-                    <span>
-                      {t("📉 Discount Management", "ڈسکاؤنٹ مینجمنٹ")}
-                    </span>
+                <div className="space-y-3">
+                  <h3 className="font-sans text-xs font-bold text-slate-800 border-b border-slate-100 pb-1.5 mb-3">
+                    {t("📉 Discount", "ڈسکاؤنٹ")}
                   </h3>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t("Discount Amount (Rs.):", "رقم (روپے میں):")}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                        {t("Amount:", "رقم:")}
                       </label>
                       <input
                         type="number"
                         min="0"
                         value={discAmount}
                         onChange={(e) => setDiscAmount(e.target.value)}
-                        className="w-full font-mono text-lg font-bold text-orange-600 rounded-lg border border-slate-200 bg-white px-3 py-1.5 focus:border-orange-500 shadow-inner"
+                        className="w-full font-mono text-sm font-bold text-orange-600 rounded-md border border-slate-200 bg-white px-2 py-1.5 focus:border-orange-500 shadow-inner"
                       />
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t("Discount Type:", "ڈسکاؤنٹ کی قسم:")}
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                        {t("Type:", "قسم:")}
                       </label>
                       <select
                         value={discType}
                         onChange={(e) => setDiscType(e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm text-slate-800 focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 focus:border-orange-500"
                       >
                         <option value="Percentage">Percentage (%)</option>
                         <option value="Fixed Amount">Fixed Amount (Rs.)</option>
-                        <option value="Volume Based">
-                          Volume Based (Ltrs)
-                        </option>
-                        <option value="Loyalty Program">Loyalty Program</option>
-                        <option value="Other">Other (Special)</option>
+                        <option value="Volume Based">Volume Based (Ltrs)</option>
+                        <option value="Loyalty Program">Loyalty</option>
+                        <option value="Other">Other</option>
                       </select>
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t("Customer Name:", "گاہک کا نام:")}
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                        {t("Customer:", "گاہک:")}
                       </label>
                       <input
                         type="text"
                         value={discCustomer}
                         onChange={(e) => setDiscCustomer(e.target.value)}
-                        placeholder="e.g. Umar Ali"
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-sans text-sm focus:border-orange-500"
+                        placeholder="e.g. Umar"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500"
                       />
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t("Approved By:", "اجازت دینے والا:")}
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                        {t("Approved By:", "اجازت:")}
                       </label>
                       <input
                         type="text"
                         value={discApprovedBy}
                         onChange={(e) => setDiscApprovedBy(e.target.value)}
-                        placeholder="e.g. Umar Ali"
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-sans text-sm focus:border-orange-500"
+                        placeholder="e.g. Ali"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500"
                       />
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t("Product / Fuel:", "ایندھن کی قسم (آپشنل):")}
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                        {t("Product:", "ایندھن:")}
                       </label>
                       <select
                         value={discProduct}
                         onChange={(e) => setDiscProduct(e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm text-slate-800 focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 focus:border-orange-500"
                       >
-                        <option value="">
-                          {t("-- Any --", "-- کوئی بھی --")}
-                        </option>
+                        <option value="">{t("-- Any --", "-- کوئی بھی --")}</option>
                         {products.map((product) => (
                           <option key={product.id} value={product.id}>
                             {settings.language === "en" ? product.name : product.urduName}
@@ -2778,39 +2697,39 @@ export default function ShiftWizard({
                         ))}
                       </select>
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
                         {t("Reason:", "وجہ:")}
                       </label>
                       <input
                         type="text"
                         value={discReason}
                         onChange={(e) => setDiscReason(e.target.value)}
-                        placeholder="e.g. Corporate Rate"
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-sans text-sm outline-none"
+                        placeholder="Corporate"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs outline-none"
+                      />
+                    </div>
+
+                    <div className="col-span-2">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                        {t("Notes:", "نوٹ:")}
+                      </label>
+                      <input
+                        type="text"
+                        value={discNotes}
+                        onChange={(e) => setDiscNotes(e.target.value)}
+                        placeholder="Optional..."
+                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500"
                       />
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                      {t("Remarks / Notes:", "ریمارکس:")}
-                    </label>
-                    <input
-                      type="text"
-                      value={discNotes}
-                      onChange={(e) => setDiscNotes(e.target.value)}
-                      placeholder="Optional notes..."
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-sans text-sm focus:border-orange-500"
-                    />
-                  </div>
-
                   <button
                     onClick={handleAddDiscount}
-                    className="w-full py-2.5 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 cursor-pointer shadow-md shadow-orange-500/10 flex items-center justify-center gap-1.5"
+                    className="w-full py-2 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 cursor-pointer shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
                   >
-                    <Plus className="h-4 w-4" />
-                    <span>{t("ADD DISCOUNT LOG", "ڈسکاؤنٹ شامل کریں")}</span>
+                    <Plus className="h-3 w-3" />
+                    <span>{t("ADD DISCOUNT", "ڈسکاؤنٹ شامل کریں")}</span>
                   </button>
 
                   <div className="mt-4 border-t border-slate-100 pt-4">
@@ -2862,59 +2781,51 @@ export default function ShiftWizard({
 
               {/* TAB 6: LUBRICANTS SALE */}
               {activeTab === "lube" && (
-                <div className="space-y-4">
-                  <h3 className="font-sans text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4 flex items-center justify-between">
-                    <span>
-                      {t(
-                        "🛢️ Itemized Lubricants Shop Cash Registry",
-                        "انجن آئل / موبل آئل کی نقد فروخت",
-                      )}
-                    </span>
+                <div className="space-y-3">
+                  <h3 className="font-sans text-xs font-bold text-slate-800 border-b border-slate-100 pb-1.5 mb-3">
+                    {t("🛢️ Lubricants Sale", "انجن آئل فروخت")}
                   </h3>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t("Select Lubricant Lube:", "موبل آئل منتخب کریں:")}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                        {t("Lubricant:", "موبل آئل:")}
                       </label>
                       <select
                         value={lubeItemId}
                         onChange={(e) => setLubeItemId(e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm text-slate-800 shadow-xs focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500"
                       >
-                        <option value="">
-                          {t("-- Choose lube --", "-- موبل آئل منتخب کریں --")}
-                        </option>
+                        <option value="">{t("-- Choose --", "-- منتخب کریں --")}</option>
                         {products
                           .filter((p) => p.type === "lube")
                           .map((p) => (
                             <option key={p.id} value={p.id}>
-                              {settings.language === "en" ? p.name : p.urduName}{" "}
-                              ({t(`Rs. ${p.rate}/${p.unit}`, `${p.rate} روپے`)})
+                              {settings.language === "en" ? p.name : p.urduName} ({t(`Rs. ${p.rate}`, `${p.rate} روپے`)})
                             </option>
                           ))}
                       </select>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t("Quantity Sold:", "فروخت شدہ تعداد:")}
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                        {t("Quantity:", "تعداد:")}
                       </label>
                       <input
                         type="number"
                         value={lubeQty}
                         onChange={(e) => setLubeQty(e.target.value)}
                         placeholder="e.g. 3"
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono text-sm focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-mono text-xs focus:border-orange-500"
                       />
                     </div>
                   </div>
 
-                  <div className="mt-2 flex justify-between items-center bg-slate-50 p-3 rounded-lg border border-slate-200 border-dashed animate-pulse">
-                    <span className="font-sans text-xs font-semibold text-slate-500">
-                      {t("Auto-calculated price:", "حساب کردہ بننے والی رقم:")}
+                  <div className="mt-2 flex justify-between items-center bg-slate-50 p-2 rounded-md border border-slate-200 border-dashed">
+                    <span className="font-sans text-[10px] font-semibold text-slate-500">
+                      {t("Total:", "کل رقم:")}
                     </span>
-                    <span className="font-mono text-base font-bold text-slate-800">
+                    <span className="font-mono text-sm font-bold text-slate-800">
                       Rs.{" "}
                       {(
                         (Number(lubeQty) || 0) *
@@ -2925,12 +2836,10 @@ export default function ShiftWizard({
 
                   <button
                     onClick={handleAddLube}
-                    className="w-full py-2.5 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 cursor-pointer shadow-md shadow-orange-500/10 flex items-center justify-center gap-1.5"
+                    className="w-full py-2 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 cursor-pointer shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
                   >
-                    <Plus className="h-4 w-4" />
-                    <span>
-                      {t("ADD LUBRICANT SALE", "انجن آئل فروخت شامل کریں")}
-                    </span>
+                    <Plus className="h-3 w-3" />
+                    <span>{t("ADD SALE", "فروخت شامل کریں")}</span>
                   </button>
 
                   <div className="mt-4 border-t border-slate-100 pt-4">
@@ -2984,59 +2893,46 @@ export default function ShiftWizard({
 
               {/* TAB 7: SUPPLIER DEPOT PAYMENTS */}
               {activeTab === "supplier" && (
-                <div className="space-y-4">
-                  <h3 className="font-sans text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4 flex items-center justify-between">
-                    <span>
-                      {t(
-                        "🏭 Wholesale Depot Clearings & Payments",
-                        "آئل مارکیٹنگ کمپنی سپلائر کا چالان",
-                      )}
-                    </span>
+                <div className="space-y-3">
+                  <h3 className="font-sans text-xs font-bold text-slate-800 border-b border-slate-100 pb-1.5 mb-3">
+                    {t("🏭 Supplier Payments", "سپلائر بل کی ادائیگی")}
                   </h3>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
-                    <div>
-                      <div className="flex justify-between items-center mb-1.5">
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">
-                          {t("Select Oil Depot Supplier:", "سپلائر آئل کمپنی:")}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="col-span-2">
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+                          {t("Supplier:", "سپلائر:")}
                         </label>
                         {onAddSupplier && (
                           <button
                             onClick={() => setShowQuickSupplier(true)}
                             className="text-[9px] font-bold text-orange-600 uppercase tracking-widest bg-orange-50 px-2 py-0.5 rounded-full hover:bg-orange-100 transition-colors pointer-events-auto"
                           >
-                            + {t("Quick Add", "نئی انٹری")}
+                            + {t("New", "نئی انٹری")}
                           </button>
                         )}
                       </div>
                       {showQuickSupplier ? (
-                        <form
-                          onSubmit={handleQuickAddSupplier}
-                          className="flex gap-2"
-                        >
+                        <form onSubmit={handleQuickAddSupplier} className="flex gap-1.5">
                           <input
                             autoFocus
                             type="text"
-                            placeholder={t(
-                              "Enter Supplier...",
-                              "سپلائر کا نام...",
-                            )}
+                            placeholder={t("Name...", "نام...")}
                             value={quickSupplierName}
-                            onChange={(e) =>
-                              setQuickSupplierName(e.target.value)
-                            }
-                            className="w-full rounded-lg border border-orange-300 bg-white px-3 py-2 font-sans text-sm text-slate-800 shadow-xs focus:border-orange-500 outline-none"
+                            onChange={(e) => setQuickSupplierName(e.target.value)}
+                            className="w-full rounded-md border border-orange-300 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500 outline-none"
                           />
                           <button
                             type="submit"
-                            className="bg-orange-600 text-white px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded-lg font-bold text-xs uppercase shadow-sm"
+                            className="bg-orange-600 text-white px-2.5 py-1.5 rounded-md font-bold text-[10px] uppercase shadow-sm"
                           >
                             {t("Save", "سیو")}
                           </button>
                           <button
                             type="button"
                             onClick={() => setShowQuickSupplier(false)}
-                            className="bg-slate-200 text-slate-600 px-3 py-2 rounded-lg font-bold text-xs uppercase"
+                            className="bg-slate-200 text-slate-600 px-2.5 py-1.5 rounded-md font-bold text-[10px] uppercase"
                           >
                             X
                           </button>
@@ -3045,83 +2941,64 @@ export default function ShiftWizard({
                         <select
                           value={supId}
                           onChange={(e) => setSupId(e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-sm text-slate-800 shadow-xs focus:border-orange-500"
+                          className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500"
                         >
-                          <option value="">
-                            {t(
-                              "-- Select PSO/Hascol --",
-                              "-- کمپنی منتخب کریں --",
-                            )}
-                          </option>
+                          <option value="">{t("-- Select --", "-- منتخب کریں --")}</option>
                           {suppliers.map((s) => (
                             <option key={s.id} value={s.id}>
-                              {settings.language === "en" ? s.name : s.urduName}{" "}
-                              (
-                              {t(
-                                `Payable: Rs. ${s.balance}`,
-                                `بل: ${s.balance} روپے`,
-                              )}
-                              )
+                              {settings.language === "en" ? s.name : s.urduName} ({t(`Bal: Rs.${s.balance}`, `بل: ${s.balance}`)})
                             </option>
                           ))}
                         </select>
                       )}
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t("Amount Paid:", "ادا رقم (روپے):")}
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                        {t("Amount:", "ادا رقم:")}
                       </label>
                       <input
                         type="number"
                         value={supAmount}
                         onChange={(e) => setSupAmount(e.target.value)}
                         placeholder="e.g. 100000"
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono text-sm focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-mono text-xs focus:border-orange-500"
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                        {t("Clearance Mode:", "طریقہ ادائیگی:")}
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                        {t("Mode:", "طریقہ:")}
                       </label>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div className="flex gap-1">
                         {["cash", "cheque", "transfer"].map((m) => (
                           <button
                             key={m}
                             type="button"
                             onClick={() => setSupMode(m as any)}
-                            className={`py-2 rounded-lg border font-sans text-xs font-bold transition-all cursor-pointer ${
+                            className={`flex-1 py-1.5 rounded-md border font-sans text-[10px] font-bold transition-all cursor-pointer ${
                               supMode === m
                                 ? "border-orange-500 bg-orange-50 text-orange-700"
                                 : "border-slate-200 bg-white text-slate-500"
                             }`}
                           >
-                            {t(m.toUpperCase(), m)}
+                            {t(m.substring(0,4).toUpperCase(), m === "cash" ? "نقد" : m === "cheque" ? "چیک" : "بینک")}
                           </button>
                         ))}
                       </div>
                     </div>
 
                     {supMode === "transfer" ? (
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                          {t(
-                            "Source Station Bank Account:",
-                            "سٹیشن بینک اکاؤنٹ:",
-                          )}
+                      <div className="col-span-2">
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                          {t("Source Bank Account:", "سٹیشن بینک اکاؤنٹ:")}
                         </label>
                         <select
                           value={supBankAcct}
                           onChange={(e) => setSupBankAcct(e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500"
+                          className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500"
                         >
-                          <option value="">
-                            {t(
-                              "-- Choose account --",
-                              "-- اکاؤنٹ منتخب کریں --",
-                            )}
-                          </option>
+                          <option value="">{t("-- Choose --", "-- منتخب کریں --")}</option>
                           {banks.map((bk) => (
                             <option key={bk.id} value={bk.id}>
                               {bk.name}
@@ -3130,19 +3007,16 @@ export default function ShiftWizard({
                         </select>
                       </div>
                     ) : (
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
-                          {t(
-                            "Cheque / Receipt Reference:",
-                            "چیک نمبر / چالان رسید:",
-                          )}
+                      <div className="col-span-2">
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                          {t("Ref / Receipt No:", "چیک/رسید نمبر:")}
                         </label>
                         <input
                           type="text"
                           value={supRef}
                           onChange={(e) => setSupRef(e.target.value)}
                           placeholder="e.g. CHQ-88942"
-                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-sans text-sm focus:border-orange-500"
+                          className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500"
                         />
                       </div>
                     )}
@@ -3150,12 +3024,10 @@ export default function ShiftWizard({
 
                   <button
                     onClick={handleAddSupplier}
-                    className="w-full py-2.5 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 cursor-pointer shadow-md shadow-orange-500/10 flex items-center justify-center gap-1.5"
+                    className="w-full py-2 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 cursor-pointer shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
                   >
-                    <Plus className="h-4 w-4" />
-                    <span>
-                      {t("RECORD SUPPLIER PAYMENT", "ادا شدہ بل شامل کریں")}
-                    </span>
+                    <Plus className="h-3 w-3" />
+                    <span>{t("RECORD PAYMENT", "ادا شدہ بل شامل کریں")}</span>
                   </button>
 
                   <div className="mt-4 border-t border-slate-100 pt-4">
