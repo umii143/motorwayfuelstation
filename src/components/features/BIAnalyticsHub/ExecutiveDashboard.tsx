@@ -55,65 +55,59 @@ export default function ExecutiveDashboard({ settings, stationId }: ExecutiveDas
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/5 rounded-full group-hover:scale-110 transition-transform"></div>
-          <div className="relative">
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-bold text-slate-400 uppercase">MTD Revenue</span>
-              <div className="p-2 bg-slate-800 text-slate-300 rounded-lg">
-                <DollarSign className="h-4 w-4" />
-              </div>
-            </div>
-            <div className="text-2xl font-black font-mono text-white">{settings.currency} {totalRevenue.toLocaleString()}</div>
-            <div className="text-xs text-emerald-400 mt-2 font-medium flex items-center gap-1">
-              <TrendingUp className="h-3 w-3" />
-              Tracking against targets
-            </div>
+      <div className="fp-kpi-grid-2x2 mb-4">
+        <div className="fp-kpi-compact kpi-orange relative overflow-hidden group border border-orange-500/20 shadow-[0_0_15px_rgba(249,115,22,0.1)]">
+          <div className="fp-kpi-compact__label text-orange-400">MTD Revenue</div>
+          <div className="fp-kpi-compact__value">
+            {settings.currency} {totalRevenue.toLocaleString()}
+          </div>
+          <div className="fp-kpi-compact__sub text-orange-300 flex items-center gap-1">
+            <TrendingUp className="h-3 w-3" />
+            Tracking against targets
+          </div>
+          <div className="absolute top-2 right-2 text-orange-500 opacity-20">
+            <DollarSign className="h-8 w-8" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-50 rounded-full group-hover:scale-110 transition-transform"></div>
-          <div className="relative">
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-bold text-slate-500 uppercase">Est. Gross Profit</span>
-              <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
-                <Activity className="h-4 w-4" />
-              </div>
-            </div>
-            <div className="text-2xl font-black font-mono text-emerald-600">{settings.currency} {estimatedProfit.toLocaleString()}</div>
-            <div className="text-xs text-slate-500 mt-2 font-medium">Based on 15% avg margin</div>
+        <div className="fp-kpi-compact kpi-green relative overflow-hidden group">
+          <div className="fp-kpi-compact__label">Est. Gross Profit</div>
+          <div className="fp-kpi-compact__value">
+            {settings.currency} {estimatedProfit.toLocaleString()}
+          </div>
+          <div className="fp-kpi-compact__sub text-emerald-400">
+            Based on 15% avg margin
+          </div>
+          <div className="absolute top-2 right-2 text-emerald-500 opacity-20">
+            <Activity className="h-8 w-8" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-50 rounded-full group-hover:scale-110 transition-transform"></div>
-          <div className="relative">
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-bold text-slate-500 uppercase">Fuel Volume Sold</span>
-              <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
-                <LineChart className="h-4 w-4" />
-              </div>
-            </div>
-            <div className="text-2xl font-black font-mono text-slate-900">{totalVolume.toLocaleString()} L</div>
-            <div className="text-xs text-slate-500 mt-2 font-medium">Month to date</div>
+        <div className="fp-kpi-compact kpi-blue relative overflow-hidden group">
+          <div className="fp-kpi-compact__label">Fuel Volume Sold</div>
+          <div className="fp-kpi-compact__value">
+            {totalVolume.toLocaleString()} L
+          </div>
+          <div className="fp-kpi-compact__sub text-blue-400">
+            Month to date
+          </div>
+          <div className="absolute top-2 right-2 text-blue-500 opacity-20">
+            <LineChart className="h-8 w-8" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-indigo-50 rounded-full group-hover:scale-110 transition-transform"></div>
-          <div className="relative">
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-bold text-slate-500 uppercase">Target Progress</span>
-              <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
-                <TrendingUp className="h-4 w-4" />
-              </div>
+        <div className="fp-kpi-compact kpi-purple relative overflow-hidden group">
+          <div className="fp-kpi-compact__label">Target Progress</div>
+          <div className="fp-kpi-compact__value">
+            {targetAchievedPercent.toFixed(1)}%
+          </div>
+          <div className="fp-kpi-compact__sub w-full mt-1">
+            <div className="w-full bg-slate-800/50 rounded-full h-1">
+              <div className="bg-purple-500 h-1 rounded-full" style={{ width: `${Math.min(targetAchievedPercent, 100)}%` }}></div>
             </div>
-            <div className="text-2xl font-black font-mono text-slate-900">{targetAchievedPercent.toFixed(1)}%</div>
-            <div className="w-full bg-slate-100 rounded-full h-1.5 mt-2">
-              <div className="bg-indigo-500 h-1.5 rounded-full" style={{ width: `${Math.min(targetAchievedPercent, 100)}%` }}></div>
-            </div>
+          </div>
+          <div className="absolute top-2 right-2 text-purple-500 opacity-20">
+            <TrendingUp className="h-8 w-8" />
           </div>
         </div>
       </div>

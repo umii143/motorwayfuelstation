@@ -778,80 +778,63 @@ export default function CustomerDirectory({
       />
 
       {/* DYNAMIC KPI CARDS SECTION */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-        {/* AMBER CARD - TOTAL RECEIVABLES */}
+      <div className="fp-kpi-grid-2x2 mb-4">
+        {/* TOTAL RECEIVABLES */}
         <div 
           onClick={() => setIsDrillDownOpen(true)}
-          className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden cursor-pointer hover:shadow-md transition-shadow group"
+          className="fp-kpi-compact kpi-orange group cursor-pointer"
         >
-          <div className="flex items-start justify-between relative z-10">
-            <div>
-              <span className="font-mono text-[9px] font-black text-amber-800 uppercase tracking-widest block mb-1">TOTAL RECEIVABLES</span>
-              <h3 className="font-sans text-2xl font-black text-amber-900 mt-1 truncate group-hover:scale-105 transition-transform origin-left">
-                {formatCurrency(kpiStats.totalReceivables, settings)}
-              </h3>
-            </div>
-            <div className="rounded-xl bg-amber-100 p-2 text-amber-700 animate-bounce">
-              <Coins className="h-5 w-5" />
-            </div>
+          <div className="fp-kpi-compact__label">TOTAL RECEIVABLES</div>
+          <div className="fp-kpi-compact__value">
+            {formatCurrency(kpiStats.totalReceivables, settings)}
           </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-amber-700 font-bold">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-            <span>{t('Total active loans outstanding', 'فعال ادھار بیلنس')}</span>
+          <div className="fp-kpi-compact__sub text-orange-400">
+            {t('Total active loans outstanding', 'فعال ادھار بیلنس')}
+          </div>
+          <div className="absolute top-2 right-2 text-orange-500 opacity-20">
+            <Coins className="h-8 w-8" />
           </div>
         </div>
 
-        {/* GREEN CARD - ACTIVE DEBTORS */}
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
-          <div className="flex items-start justify-between">
-            <div>
-              <span className="font-mono text-[9px] font-black text-emerald-800 uppercase tracking-widest block mb-1">ACTIVE DEBTORS</span>
-              <h3 className="font-sans text-2xl font-black text-emerald-905 mt-1">
-                {kpiStats.activeDebtorsCount}
-              </h3>
-            </div>
-            <div className="rounded-xl bg-emerald-100 p-2 text-emerald-700">
-              <User className="h-5 w-5" />
-            </div>
+        {/* ACTIVE DEBTORS */}
+        <div className="fp-kpi-compact kpi-green relative overflow-hidden">
+          <div className="fp-kpi-compact__label">ACTIVE DEBTORS</div>
+          <div className="fp-kpi-compact__value">
+            {kpiStats.activeDebtorsCount}
           </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-emerald-700 font-bold">
-            <span>of {customers.length} total active users</span>
+          <div className="fp-kpi-compact__sub text-emerald-400">
+            of {customers.length} total active users
+          </div>
+          <div className="absolute top-2 right-2 text-emerald-500 opacity-20">
+            <User className="h-8 w-8" />
           </div>
         </div>
 
-        {/* CRIMSON CARD - CREDIT EXTENDED */}
-        <div className="rounded-2xl border border-rose-200 bg-rose-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
-          <div className="flex items-start justify-between">
-            <div>
-              <span className="font-mono text-[9px] font-black text-rose-800 uppercase tracking-widest block mb-1">CREDIT EXTENDED</span>
-              <h3 className="font-sans text-2xl font-black text-rose-900 mt-1 text-ellipsis overflow-hidden">
-                {formatCurrency(kpiStats.creditExtendedSum, settings)}
-              </h3>
-            </div>
-            <div className="rounded-xl bg-rose-100 p-2 text-rose-700">
-              <ArrowUpRight className="h-5 w-5" />
-            </div>
+        {/* CREDIT EXTENDED */}
+        <div className="fp-kpi-compact kpi-red relative overflow-hidden">
+          <div className="fp-kpi-compact__label">CREDIT EXTENDED</div>
+          <div className="fp-kpi-compact__value">
+            {formatCurrency(kpiStats.creditExtendedSum, settings)}
           </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-rose-700 font-bold">
-            <span>{t('New Udhar given in this period', 'اس مدت کے دوران دیا گیا نیا ادھار')}</span>
+          <div className="fp-kpi-compact__sub text-rose-400 truncate">
+            {t('New Udhar given in this period', 'اس مدت کے دوران دیا گیا نیا ادھار')}
+          </div>
+          <div className="absolute top-2 right-2 text-rose-500 opacity-20">
+            <ArrowUpRight className="h-8 w-8" />
           </div>
         </div>
 
-        {/* BLUE CARD - TOTAL RECOVERY */}
-        <div className="rounded-2xl border border-blue-200 bg-blue-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
-          <div className="flex items-start justify-between">
-            <div>
-              <span className="font-mono text-[9px] font-black text-blue-800 uppercase tracking-widest block mb-1">TOTAL RECOVERY</span>
-              <h3 className="font-sans text-2xl font-black text-blue-900 mt-1 text-ellipsis overflow-hidden">
-                {formatCurrency(kpiStats.totalRecoverySum, settings)}
-              </h3>
-            </div>
-            <div className="rounded-xl bg-blue-100 p-2 text-blue-700">
-              <ArrowDownRight className="h-5 w-5" />
-            </div>
+        {/* TOTAL RECOVERY */}
+        <div className="fp-kpi-compact kpi-blue relative overflow-hidden">
+          <div className="fp-kpi-compact__label">TOTAL RECOVERY</div>
+          <div className="fp-kpi-compact__value">
+            {formatCurrency(kpiStats.totalRecoverySum, settings)}
           </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-blue-700 font-bold">
-            <span>{t('Total collection from debtors', 'وصول شدہ کل ادھار رقم')}</span>
+          <div className="fp-kpi-compact__sub text-blue-400 truncate">
+            {t('Total collection from debtors', 'وصول شدہ کل ادھار رقم')}
+          </div>
+          <div className="absolute top-2 right-2 text-blue-500 opacity-20">
+            <ArrowDownRight className="h-8 w-8" />
           </div>
         </div>
       </div>

@@ -426,7 +426,7 @@ export default function Ledger({
             <BookOpen className="h-6 w-6 text-orange-600" />
             <span>{t('Consolidated Ledger Book', 'بنیادی یکجا کاروباری کھاتہ روزنامچہ')}</span>
           </h2>
-          <p className="font-sans text-xs text-slate-500 mt-1">
+          <p className="hidden md:block font-sans text-xs text-slate-500 mt-1">
             {t('Unified Vyapar ledger weighing receivables (customers) against payables (wholesale depots).', 'گاہکوں اور آئل کمپنیوں کے بقایاجات، یکساں حساب اور مجموعی کھاتہ چالان کنٹرول پینل۔')}
           </p>
         </div>
@@ -453,88 +453,33 @@ export default function Ledger({
       </div>
 
       {/* DYNAMIC KPI CARDS SECTION */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="fp-kpi-grid-2x2 lg:grid-cols-4 lg:gap-4 lg:px-0">
         {/* AMBER CARD - NET LIQUIDITY */}
-        <div className={`rounded-2xl border p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden transition-all duration-300 ${
-          netBookBalance >= 0 
-            ? 'border-emerald-200 bg-emerald-50/60' 
-            : 'border-rose-200 bg-rose-50/60'
-        }`}>
-          <div className="flex items-start justify-between">
-            <div>
-              <span className="font-mono text-[9px] font-black uppercase tracking-widest block mb-1">NET POSITION</span>
-              <h3 className={`font-sans text-2xl font-black mt-1 whitespace-nowrap ${
-                netBookBalance >= 0 ? 'text-emerald-900' : 'text-rose-900'
-              }`}>
-                Rs. {netBookBalance.toLocaleString()}
-              </h3>
-            </div>
-            <div className={`rounded-xl p-2 ${
-              netBookBalance >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
-            }`}>
-              <Scale className="h-5 w-5" />
-            </div>
-          </div>
-          <div className={`mt-3 flex items-center gap-1 text-[10px] font-bold ${
-            netBookBalance >= 0 ? 'text-emerald-700' : 'text-rose-750'
-          }`}>
-            <span className={`h-1.5 w-1.5 rounded-full ${netBookBalance >= 0 ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-            <span>{t('Overall Khata Liquidity Position', 'خالص بقایا تجارتی پوزیشن')}</span>
-          </div>
+        <div className={`fp-kpi-compact ${netBookBalance >= 0 ? 'kpi-green' : 'kpi-red'}`}>
+          <p className="fp-kpi-compact__label">Net Position</p>
+          <p className="fp-kpi-compact__value">Rs. {netBookBalance.toLocaleString()}</p>
+          <p className="fp-kpi-compact__sub text-slate-400">⚖️ Liquidity</p>
         </div>
 
         {/* GREEN CARD - TOTAL RECEIVABLES */}
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
-          <div className="flex items-start justify-between">
-            <div>
-              <span className="font-mono text-[9px] font-black text-emerald-800 uppercase tracking-widest block mb-1">TOTAL RECEIVABLES</span>
-              <h3 className="font-sans text-2xl font-black text-emerald-900 mt-1">
-                Rs. {receivablesTotal.toLocaleString()}
-              </h3>
-            </div>
-            <div className="rounded-xl bg-emerald-100 p-2 text-emerald-700">
-              <ArrowUpRight className="h-5 w-5" />
-            </div>
-          </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-emerald-700 font-bold">
-            <span>Outstanding customer balances</span>
-          </div>
+        <div className="fp-kpi-compact kpi-green">
+          <p className="fp-kpi-compact__label">Receivables</p>
+          <p className="fp-kpi-compact__value">Rs. {receivablesTotal.toLocaleString()}</p>
+          <p className="fp-kpi-compact__sub text-slate-400">↗️ Due from Customers</p>
         </div>
 
         {/* CRIMSON CARD - TOTAL PAYABLES */}
-        <div className="rounded-2xl border border-rose-200 bg-rose-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
-          <div className="flex items-start justify-between">
-            <div>
-              <span className="font-mono text-[9px] font-black text-rose-800 uppercase tracking-widest block mb-1">TOTAL PAYABLES</span>
-              <h3 className="font-sans text-2xl font-black text-rose-900 mt-1">
-                Rs. {payablesTotal.toLocaleString()}
-              </h3>
-            </div>
-            <div className="rounded-xl bg-rose-100 p-2 text-rose-700">
-              <ArrowDownRight className="h-5 w-5" />
-            </div>
-          </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-rose-700 font-bold">
-            <span>{t('Owed wholesale suppliers', 'سپلائر بل بقایاجات')}</span>
-          </div>
+        <div className="fp-kpi-compact kpi-red">
+          <p className="fp-kpi-compact__label">Payables</p>
+          <p className="fp-kpi-compact__value">Rs. {payablesTotal.toLocaleString()}</p>
+          <p className="fp-kpi-compact__sub text-slate-400">↘️ Owed to Suppliers</p>
         </div>
 
         {/* BLUE CARD - TRANSACTION LOG INDEX */}
-        <div className="rounded-2xl border border-blue-200 bg-blue-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
-          <div className="flex items-start justify-between">
-            <div>
-              <span className="font-mono text-[9px] font-black text-blue-800 uppercase tracking-widest block mb-1">SHIFT TRANSACTIONS</span>
-              <h3 className="font-sans text-2xl font-black text-blue-900 mt-1">
-                {kpiStats.txCount}
-              </h3>
-            </div>
-            <div className="rounded-xl bg-blue-100 p-2 text-blue-700">
-              <Users className="h-5 w-5" />
-            </div>
-          </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-blue-700 font-bold">
-            <span>{t('Consolidated logs in this period', 'مدت کے دوران درج روزنامچہ')}</span>
-          </div>
+        <div className="fp-kpi-compact kpi-blue">
+          <p className="fp-kpi-compact__label">Transactions</p>
+          <p className="fp-kpi-compact__value">{kpiStats.txCount}</p>
+          <p className="fp-kpi-compact__sub text-slate-400">👥 Shift Logs</p>
         </div>
       </div>
 

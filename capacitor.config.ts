@@ -1,40 +1,53 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.motorwaypetroleum.fuelpro',
   appName: 'FuelPro',
   webDir: 'dist',
-  server: {
-    androidScheme: 'https',
-    cleartext: false,
-  },
+
   android: {
-    backgroundColor: '#0F172A',      // matches app background
+    backgroundColor: '#0A0F1E',
     allowMixedContent: false,
-    webContentsDebuggingEnabled: false,  // disable in production
+    webContentsDebuggingEnabled: false,    // DISABLE in production
     loggingBehavior: 'none',
   },
+
+  server: {
+    androidScheme: 'https',
+    cleartext: false,                       // no HTTP
+  },
+
   plugins: {
+    FirebaseAuthentication: {
+      skipNativeAuth: false,
+      providers: ['google.com'],
+    },
     SplashScreen: {
-      launchShowDuration: 2000,
-      launchAutoHide: false,
-      backgroundColor: '#0F172A',
+      launchShowDuration: 1500,
+      launchAutoHide: true,
+      backgroundColor: '#0A0F1E',
       androidSplashResourceName: 'splash',
       showSpinner: false,
+      splashFullScreen: true,
+      splashImmersive: true,
     },
     StatusBar: {
       style: 'DARK',
-      backgroundColor: '#0F172A',
+      backgroundColor: '#0A0F1E',
       overlaysWebView: false,
     },
     Keyboard: {
       resize: 'body',
       resizeOnFullScreen: true,
+      scrollAssist: true,
+    },
+    NavigationBar: {
+      backgroundColor: '#0A0F1E',  // Android bottom bar
+      darkButtons: false,
     },
     Haptics: {
       // enabled by default
     },
   },
 };
-
 export default config;

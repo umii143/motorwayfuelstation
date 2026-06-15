@@ -572,80 +572,63 @@ export default function SupplierDirectory({
       />
 
       {/* DYNAMIC KPI CARDS SECTION */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-        {/* AMBER CARD - TOTAL PAYABLES */}
+      <div className="fp-kpi-grid-2x2 mb-4">
+        {/* TOTAL PAYABLES */}
         <div 
           onClick={() => setIsDrillDownOpen(true)}
-          className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden cursor-pointer hover:bg-amber-100/50 hover:shadow-md transition-all group"
+          className="fp-kpi-compact kpi-orange group cursor-pointer"
         >
-          <div className="flex items-start justify-between">
-            <div>
-              <span className="font-mono text-[9px] font-black text-amber-800 uppercase tracking-widest block mb-1 group-hover:text-amber-900 transition-colors">TOTAL PAYABLES</span>
-              <h3 className="font-sans text-2xl font-black text-amber-900 mt-1 truncate animate-pulse">
-                {formatCurrency(kpiStats.totalPayables, settings)}
-              </h3>
-            </div>
-            <div className="rounded-xl bg-amber-100 p-2 text-amber-700 animate-bounce">
-              <Coins className="h-5 w-5" />
-            </div>
+          <div className="fp-kpi-compact__label">TOTAL PAYABLES</div>
+          <div className="fp-kpi-compact__value">
+            {formatCurrency(kpiStats.totalPayables, settings)}
           </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-amber-700 font-bold">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-            <span>{t('From supplier ledger database', 'لیجر کیلکولیشن کی بنیاد پر')}</span>
+          <div className="fp-kpi-compact__sub text-orange-400">
+            {t('From supplier ledger database', 'لیجر کیلکولیشن کی بنیاد پر')}
+          </div>
+          <div className="absolute top-2 right-2 text-orange-500 opacity-20">
+            <Coins className="h-8 w-8" />
           </div>
         </div>
 
-        {/* GREEN CARD - ACTIVE SUPPLIERS */}
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
-          <div className="flex items-start justify-between">
-            <div>
-              <span className="font-mono text-[9px] font-black text-emerald-800 uppercase tracking-widest block mb-1">ACTIVE SUPPLIERS</span>
-              <h3 className="font-sans text-2xl font-black text-emerald-900 mt-1">
-                {kpiStats.activeCount}
-              </h3>
-            </div>
-            <div className="rounded-xl bg-emerald-100 p-2 text-emerald-700">
-              <Truck className="h-5 w-5" />
-            </div>
+        {/* ACTIVE SUPPLIERS */}
+        <div className="fp-kpi-compact kpi-green relative overflow-hidden">
+          <div className="fp-kpi-compact__label">ACTIVE SUPPLIERS</div>
+          <div className="fp-kpi-compact__value">
+            {kpiStats.activeCount}
           </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-emerald-700 font-bold">
-            <span>of {suppliers.length} total active depots</span>
+          <div className="fp-kpi-compact__sub text-emerald-400">
+            of {suppliers.length} total active depots
+          </div>
+          <div className="absolute top-2 right-2 text-emerald-500 opacity-20">
+            <Truck className="h-8 w-8" />
           </div>
         </div>
 
-        {/* CRIMSON CARD - OVERDUE DEPOT BILLING */}
-        <div className="rounded-2xl border border-rose-200 bg-rose-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
-          <div className="flex items-start justify-between">
-            <div>
-              <span className="font-mono text-[9px] font-black text-rose-800 uppercase tracking-widest block mb-1">OVERDUE</span>
-              <h3 className="font-sans text-2xl font-black text-rose-900 mt-1">
-                {kpiStats.overdueCount}
-              </h3>
-            </div>
-            <div className="rounded-xl bg-rose-100 p-2 text-rose-700">
-              <TrendingUp className="h-5 w-5" />
-            </div>
+        {/* OVERDUE DEPOT BILLING */}
+        <div className="fp-kpi-compact kpi-red relative overflow-hidden">
+          <div className="fp-kpi-compact__label">OVERDUE</div>
+          <div className="fp-kpi-compact__value">
+            {kpiStats.overdueCount}
           </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-rose-700 font-bold">
-            <span>{t('Need urgent payment focus', 'فی الفور ادائیگیوں کی ضرورت')}</span>
+          <div className="fp-kpi-compact__sub text-rose-400">
+            {t('Need urgent payment focus', 'فی الفور ادائیگیوں کی ضرورت')}
+          </div>
+          <div className="absolute top-2 right-2 text-rose-500 opacity-20">
+            <TrendingUp className="h-8 w-8" />
           </div>
         </div>
 
-        {/* BLUE CARD - LEDGER TRANS/PAYMENTS */}
-        <div className="rounded-2xl border border-blue-200 bg-blue-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
-          <div className="flex items-start justify-between">
-            <div>
-              <span className="font-mono text-[9px] font-black text-blue-800 uppercase tracking-widest block mb-1">LEDGER ENTRIES</span>
-              <h3 className="font-sans text-2xl font-black text-blue-900 mt-1">
-                {kpiStats.paymentCount}
-              </h3>
-            </div>
-            <div className="rounded-xl bg-blue-100 p-2 text-blue-700">
-              <PlusCircle className="h-5 w-5" />
-            </div>
+        {/* LEDGER TRANS/PAYMENTS */}
+        <div className="fp-kpi-compact kpi-blue relative overflow-hidden">
+          <div className="fp-kpi-compact__label">LEDGER ENTRIES</div>
+          <div className="fp-kpi-compact__value">
+            {kpiStats.paymentCount}
           </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-blue-700 font-bold text-ellipsis overflow-hidden truncate">
-            <span>Paid: {formatCurrency(kpiStats.paymentAmountSum, settings)}</span>
+          <div className="fp-kpi-compact__sub text-blue-400 truncate">
+            Paid: {formatCurrency(kpiStats.paymentAmountSum, settings)}
+          </div>
+          <div className="absolute top-2 right-2 text-blue-500 opacity-20">
+            <PlusCircle className="h-8 w-8" />
           </div>
         </div>
       </div>

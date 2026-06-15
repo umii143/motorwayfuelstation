@@ -699,3 +699,197 @@ input, textarea {
   background: rgba(0, 0, 0, 0.5);
   z-index: 150;
 }
+
+/* =========================================
+   2050 ENTERPRISE APK MASTER CSS
+   ========================================= */
+
+/* --- 1. GRID SYSTEM ------------------------------------------ */
+.fp-kpi-grid-2x2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px 16px;
+}
+
+.fp-kpi-grid-3col {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 0 16px;
+}
+
+/* --- 2. COMPACT KPI CARDS ------------------------------------ */
+.fp-kpi-compact {
+  background: #141B2D;
+  border: 1px solid #2A3A52;
+  border-radius: 14px;
+  padding: 12px 12px 10px;
+  min-height: 82px;
+  position: relative;
+  overflow: hidden;
+}
+
+.fp-kpi-compact::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+}
+.kpi-orange::before { background: #F97316; }
+.kpi-green::before  { background: #22C55E; }
+.kpi-blue::before   { background: #3B82F6; }
+.kpi-purple::before { background: #8B5CF6; }
+.kpi-red::before    { background: #EF4444; }
+
+.fp-kpi-compact__label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #4A5B75;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 4px;
+}
+.fp-kpi-compact__value {
+  font-size: 20px;
+  font-weight: 800;
+  color: #F8FAFC;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.fp-kpi-compact__sub {
+  font-size: 10px;
+  color: #4A5B75;
+}
+.fp-kpi-compact__trend {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 5px;
+}
+.trend-up   { background: rgba(34,197,94,.15); color: #22C55E; }
+.trend-down { background: rgba(239,68,68,.15); color: #EF4444; }
+
+/* --- 3. TOUCH TARGETS (ANDROID NATIVE) ----------------------- */
+.fp-touch-target {
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- 4. COMPACT HEADERS -------------------------------------- */
+.fp-header {
+  height: 56px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #0A0F1E;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid #1E2A3E;
+}
+
+.fp-status-row {
+  height: 32px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #0A0F1E;
+  border-bottom: 1px solid #1E2A3E;
+}
+
+.fp-status-pill {
+  padding: 3px 8px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* --- 5. COMPACT DATE TABS ------------------------------------ */
+.fp-date-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 8px 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-snap-type: x mandatory;
+}
+.fp-date-tabs::-webkit-scrollbar { display: none; }
+
+.fp-date-tab {
+  padding: 5px 14px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  scroll-snap-align: start;
+  border: 1.5px solid #2A3A52;
+  color: #8B9DC3;
+  background: transparent;
+  min-height: 32px;
+}
+.fp-date-tab--active {
+  background: rgba(249,115,22,.15);
+  border-color: #F97316;
+  color: #F97316;
+}
+
+/* --- 6. BOTTOM NAV (5 TABS) ---------------------------------- */
+.fp-bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 64px;
+  background: #141B2D;
+  border-top: 1px solid #1E2A3E;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 200;
+}
+.fp-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 44px;
+}
+.fp-nav-icon { width: 22px; height: 22px; color: #4A5B75; }
+.fp-nav-label { font-size: 10px; font-weight: 600; color: #4A5B75; }
+.fp-nav-item--active .fp-nav-icon  { color: #F97316; }
+.fp-nav-item--active .fp-nav-label { color: #F97316; }
+
+/* --- 7. ANIMATIONS & PERFORMANCE ----------------------------- */
+.fp-card, .fp-kpi-compact, .fp-bottom-nav, .fp-header {
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.fp-scroll-container {
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scroll-behavior: auto;
+}
+
+.is-scrolling * {
+  transition: none !important;
+  animation: none !important;
+}
+

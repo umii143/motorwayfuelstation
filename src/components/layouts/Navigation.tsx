@@ -61,7 +61,8 @@ import {
   ScanLine,
   Briefcase,
   Beaker,
-  FlaskConical
+  FlaskConical,
+  PlusCircle
 } from 'lucide-react';
 import { GlobalSettings, Station } from '../../types';
 import { t as translate } from '../../lib/translations';
@@ -441,12 +442,12 @@ const Navigation = React.memo(function Navigation({
 
   return (
     <>
-      {/* HEADER BAR */}
-      <header className="fixed top-0 left-0 right-0 h-[65px] z-50 flex items-center justify-between border-b border-border glass px-4 py-3 shadow-md transition-all duration-300">
+      {/* GLOBAL HEADER BAR */}
+      <header className="fixed top-0 left-0 right-0 z-40 flex h-14 sm:h-[65px] items-center justify-between border-b border-slate-200 bg-white/95 px-3 sm:px-4 lg:px-6 backdrop-blur-md shadow-xs transition-colors dark:bg-slate-900/95 dark:border-slate-800">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="rounded-lg p-1 sm:p-1.5 text-slate-600 hover:bg-slate-100 lg:hidden font-medium cursor-pointer shrink-0"
+            className="lg:hidden text-slate-600 cursor-pointer shrink-0"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -474,7 +475,7 @@ const Navigation = React.memo(function Navigation({
                   </div>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span className="font-mono text-[9px] md:text-[10px] text-slate-400">
+                    <span className="font-mono text-[9px] md:text-[10px] text-slate-400 hidden sm:inline">
                       {t('Station Isolation Mode Active', 'مستقل اسٹیشن ڈیٹا سیکیورٹی')}
                     </span>
                   </div>
@@ -595,7 +596,7 @@ const Navigation = React.memo(function Navigation({
         <div className="flex items-center gap-1 sm:gap-3 shrink-0 ml-auto">
           <button
             onClick={() => setIsDocScannerOpen(true)}
-            className="flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-2 sm:px-3 py-1.5 font-sans text-[10px] sm:text-xs font-bold text-indigo-700 shadow-xs hover:bg-indigo-100 hover:border-indigo-300 transition-colors shrink-0"
+            className="hidden md:flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-2 sm:px-3 py-1.5 font-sans text-[10px] sm:text-xs font-bold text-indigo-700 shadow-xs hover:bg-indigo-100 hover:border-indigo-300 transition-colors shrink-0"
             title={t("Scan Receipt", "رسید سکین کریں")}
           >
             <ScanLine className="h-4 w-4" />
@@ -622,13 +623,13 @@ const Navigation = React.memo(function Navigation({
           </button>
           
           {/* Search Dropdown Trigger */}
-          <div className="relative hidden md:block z-[60]">
+          <div className="relative z-[60]">
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/50 px-3 py-1.5 sm:p-2 text-slate-500 hover:bg-white hover:text-orange-600 hover:border-orange-200 transition-all cursor-pointer shadow-xs w-48 xl:w-64"
+              className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/50 px-2 sm:px-3 py-1.5 sm:p-2 text-slate-500 hover:bg-white hover:text-orange-600 hover:border-orange-200 transition-all cursor-pointer shadow-xs w-8 sm:w-48 xl:w-64 justify-center sm:justify-start"
             >
-              <Search className="h-4 w-4" />
-              <span className="text-xs font-semibold">{t("Search global...", "تلاش کریں...")}</span>
+              <Search className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline text-xs font-semibold">{t("Search global...", "تلاش کریں...")}</span>
               <kbd className="ml-auto hidden rounded border border-slate-200 bg-white px-1.5 font-mono text-[10px] font-bold text-slate-400 sm:inline-block">Ctrl K</kbd>
             </button>
 
@@ -709,8 +710,7 @@ const Navigation = React.memo(function Navigation({
             )}
           </div>
           
-          {/* Setup Wizard Dropdown */}
-          <div className="relative z-[60] shrink-0">
+          <div className="relative hidden md:block z-[60] shrink-0">
             <button
               onClick={() => setIsSetupOpen(!isSetupOpen)}
               className="rounded-lg border border-slate-200 bg-white p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors cursor-pointer shadow-xs flex items-center justify-center"
@@ -764,8 +764,7 @@ const Navigation = React.memo(function Navigation({
             )}
           </div>
           
-          {/* Theme Selector Dropdown */}
-          <div className="relative z-[60] shrink-0">
+          <div className="relative hidden md:block z-[60] shrink-0">
             <button
               onClick={() => setIsThemeOpen(!isThemeOpen)}
               className="rounded-lg border border-slate-200 bg-white p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors cursor-pointer shadow-xs flex items-center justify-center"
@@ -803,7 +802,7 @@ const Navigation = React.memo(function Navigation({
 
           <button
             onClick={() => setIsHelpOpen(true)}
-            className="flex items-center justify-center rounded-lg border border-slate-200 bg-white p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors cursor-pointer shadow-xs shrink-0"
+            className="hidden md:flex items-center justify-center rounded-lg border border-slate-200 bg-white p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors cursor-pointer shadow-xs shrink-0"
             title={t('Help Guide', 'یوزر گائیڈ')}
           >
             <HelpCircle className="h-4 w-4" />
@@ -826,7 +825,7 @@ const Navigation = React.memo(function Navigation({
                 <button
                   onClick={onLogout}
                   title={t("Log Out", "لاگ آؤٹ")}
-                  className="ml-2 p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                  className="hidden md:block ml-2 p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
                 >
                   <LogOut className="h-4 w-4" />
                 </button>
@@ -1150,7 +1149,42 @@ const Navigation = React.memo(function Navigation({
             );
           })}
         </nav>
-        <div className="pt-3 mt-3 border-t border-slate-100">
+        <div className="pt-3 mt-3 border-t border-slate-100 space-y-2">
+          {/* Quick Tools for Mobile */}
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            <button
+              onClick={() => { setIsSearchOpen(true); setMobileMenuOpen(false); }}
+              className="flex items-center justify-center gap-2 rounded-lg bg-slate-50 border border-slate-100 p-2 text-xs font-bold text-slate-600 cursor-pointer"
+            >
+              <Search className="h-4 w-4" />
+              <span>{t("Search", "تلاش")}</span>
+            </button>
+            <button
+              onClick={() => { setIsDocScannerOpen(true); setMobileMenuOpen(false); }}
+              className="flex items-center justify-center gap-2 rounded-lg bg-indigo-50 border border-indigo-100 p-2 text-xs font-bold text-indigo-700 cursor-pointer"
+            >
+              <ScanLine className="h-4 w-4" />
+              <span>{t("Scan", "سکین")}</span>
+            </button>
+            <button
+              onClick={toggleLanguage}
+              className="flex items-center justify-center gap-2 rounded-lg bg-slate-50 border border-slate-100 p-2 text-xs font-bold text-slate-600 cursor-pointer"
+            >
+              <Languages className="h-4 w-4" />
+              <span>{settings.language.toUpperCase()}</span>
+            </button>
+            <button
+              onClick={() => {
+                const nextTheme = settings.theme === 'light' ? 'dark' : settings.theme === 'dark' ? 'blue' : 'light';
+                handleSelectTheme(nextTheme);
+              }}
+              className="flex items-center justify-center gap-2 rounded-lg bg-slate-50 border border-slate-100 p-2 text-xs font-bold text-slate-600 cursor-pointer"
+            >
+              {settings.theme === 'light' ? <Sun className="h-4 w-4" /> : settings.theme === 'dark' ? <Moon className="h-4 w-4" /> : <LayoutDashboard className="h-4 w-4" />}
+              <span>{t("Theme", "تھیم")}</span>
+            </button>
+          </div>
+
           <button
             onClick={() => {
               setMobileMenuOpen(false);
@@ -1169,48 +1203,43 @@ const Navigation = React.memo(function Navigation({
       </BottomSheet>
 
       {/* MOBILE BOTTOM NAVIGATION */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--border-main)] bg-[var(--bg-card)]/90 backdrop-blur-xl py-1.5 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] lg:hidden pb-safe">
-        <div className="flex justify-around items-center px-2">
-          {[
-            { id: 'dashboard', icon: LayoutDashboard, label: t('Home', 'ہوم') },
-            { id: isLube ? 'lube_pos' : 'shift_wizard', icon: isLube ? RefreshCw : Play, label: isLube ? t('POS', 'پی او ایس') : t('Shift', 'شفٹ') },
-            { id: 'inventory', icon: isLube ? Wrench : Fuel, label: t('Stock', 'اسٹاک') },
-            { id: 'reports', icon: FileBarChart, label: t('Reports', 'رپورٹس') },
-            { id: 'menu', icon: Menu, label: t('More', 'مزید') }
-          ].map((item) => {
-            const Icon = item.icon;
-            const isActive = activeView === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={async () => {
-                  await haptic.light();
-                  if (item.id === 'menu') {
-                    setMobileMenuOpen(true);
-                  } else {
-                    onViewChange(item.id);
-                  }
-                }}
-                className={`relative flex flex-col items-center justify-center w-[72px] h-[52px] rounded-2xl transition-all cursor-pointer overflow-hidden ${
-                  isActive ? 'text-orange-500' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
-                }`}
-              >
-                {isActive && (
-                  <motion.div
-                    layoutId="nav-pill"
-                    className="absolute inset-0 bg-orange-500/10 rounded-2xl -z-10"
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  />
-                )}
-                <Icon className={`h-5 w-5 mb-0.5 ${isActive ? 'animate-bounce-short stroke-[2.5px]' : 'stroke-2'}`} />
-                <span className={`text-[10px] font-bold tracking-tight ${isActive ? 'opacity-100' : 'opacity-80'}`}>
-                  {item.label}
-                </span>
-              </button>
-            );
-          })}
+      <nav className="fp-bottom-nav lg:hidden">
+        <div
+          onClick={async () => { await haptic.light(); onViewChange('dashboard'); }}
+          className={`fp-nav-item ${activeView === 'dashboard' ? 'fp-nav-item--active' : ''} cursor-pointer`}
+        >
+          <LayoutDashboard className="fp-nav-icon" />
+          <span className="fp-nav-label">{t('Home', 'ہوم')}</span>
         </div>
-      </div>
+        <div
+          onClick={async () => { await haptic.light(); onViewChange('shift_logs'); }}
+          className={`fp-nav-item ${activeView === 'shift_logs' ? 'fp-nav-item--active' : ''} cursor-pointer`}
+        >
+          <History className="fp-nav-icon" />
+          <span className="fp-nav-label">{t('Logs', 'لاگز')}</span>
+        </div>
+        <div
+          onClick={async () => { await haptic.light(); onViewChange(isLube ? 'lube_pos' : 'shift_wizard'); }}
+          className="fp-nav-item cursor-pointer"
+        >
+          <PlusCircle style={{ color: '#F97316', width: '32px', height: '32px' }} />
+          <span className="fp-nav-label" style={{ color: '#F97316' }}>{t('Sale', 'سیل')}</span>
+        </div>
+        <div
+          onClick={async () => { await haptic.light(); onViewChange('ledger'); }}
+          className={`fp-nav-item ${activeView === 'ledger' ? 'fp-nav-item--active' : ''} cursor-pointer`}
+        >
+          <BookOpen className="fp-nav-icon" />
+          <span className="fp-nav-label">{t('Ledger', 'کھاتہ')}</span>
+        </div>
+        <div
+          onClick={async () => { await haptic.light(); setMobileMenuOpen(true); }}
+          className="fp-nav-item cursor-pointer"
+        >
+          <Menu className="fp-nav-icon" />
+          <span className="fp-nav-label">{t('Menu', 'مزید')}</span>
+        </div>
+      </nav>
 
       {/* REGISTER STATION MODAL */}
       <BottomSheet

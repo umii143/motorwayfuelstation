@@ -29,7 +29,8 @@ import {
   Box,
   Receipt,
   FileText,
-  DollarSign
+  DollarSign,
+  LayoutDashboard
 } from 'lucide-react';
 import { generateDashboardStats, getFuelCategory } from '../../services/analytics/dashboardEngine';
 import {
@@ -208,31 +209,42 @@ export default React.memo(function Dashboard({
   return (
     <div className="w-full flex-1 flex flex-col bg-transparent pb-16">
 
-      {/* SHIFT STATUS PILL */}
-      <div className="status-row">
-        <div className="time-pill">
-          <Clock className="w-4 h-4" />
-          <span>{timeStr}</span>
+      {/* COMPACT HEADER */}
+      <div className="fp-header">
+        <div className="flex items-center gap-2">
+          <LayoutDashboard className="w-5 h-5 text-orange-500" />
+          <h1 className="text-lg font-black text-slate-800 dark:text-slate-100">
+            {settings?.language === 'ur' ? 'ڈیش بورڈ' : 'Dashboard'}
+          </h1>
         </div>
         <div className="flex items-center gap-2">
-          <div className={`status-pill ${activeShift ? 'active' : 'inactive'}`}>
-            <span className="dot"></span>
-            <span className="text">{activeShift ? 'Shift Active' : 'No Active Shift'}</span>
-          </div>
+          {/* Action buttons if any */}
         </div>
-        <div className="flex items-center bg-theme-card border border-theme-main rounded-full px-3 py-1.5 shadow-sm ml-auto min-w-[110px]">
-          <select 
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="bg-transparent border-none text-[11px] font-extrabold outline-none focus:ring-0 cursor-pointer text-theme-main w-full py-0 appearance-none text-center uppercase tracking-wide"
+      </div>
+
+      {/* SHIFT STATUS PILL & DATE SELECTOR */}
+      <div className="fp-status-row">
+        <div className="fp-status-pill bg-slate-800 text-slate-300">
+          <Clock className="w-3 h-3" />
+          <span>{timeStr}</span>
+        </div>
+        <div className={`fp-status-pill ${activeShift ? 'bg-emerald-500/20 text-emerald-500' : 'bg-slate-800 text-slate-400'}`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${activeShift ? 'bg-emerald-500' : 'bg-slate-500'}`}></span>
+          <span>{activeShift ? 'Shift Active' : 'No Active Shift'}</span>
+        </div>
+      </div>
+      
+      {/* COMPACT DATE TABS */}
+      <div className="fp-date-tabs">
+        {availableDates.slice(0, 5).map(date => (
+          <button
+            key={date}
+            onClick={() => setSelectedDate(date)}
+            className={`fp-date-tab ${selectedDate === date ? 'fp-date-tab--active' : ''}`}
           >
-            {availableDates.map(date => (
-              <option key={date} value={date} className="bg-[var(--bg-app)] text-theme-main font-sans">
-                {date === new Date().toISOString().split('T')[0] ? 'Today' : date}
-              </option>
-            ))}
-          </select>
-        </div>
+            {date === new Date().toISOString().split('T')[0] ? 'Today' : date}
+          </button>
+        ))}
       </div>
 
       {/* CONTENT AREA */}
@@ -299,29 +311,30 @@ export default React.memo(function Dashboard({
         )}
         
         {/* KPI GRID */}
-        <div className="kpi-grid">
-          <motion.div className="kpi-card kpi-card--blue" {...fadeUp} transition={{ ...spring, delay: 0 }} whileTap={{ scale: 0.97 }} onClick={() => haptic.light()}>
-            <span className="kpi-icon">💵</span>
-            <p className="kpi-value">{formatCurrency(stats.totalSales, settings)}</p>
-            <p className="kpi-label">Today's Revenue</p>
+        <div className="fp-kpi-grid-2x2">
+          <motion.div className="fp-kpi-compact kpi-blue" {...fadeUp} transition={{ ...spring, delay: 0 }} whileTap={{ scale: 0.97 }} onClick={() => haptic.light()}>
+            <p className="fp-kpi-compact__label">Revenue</p>
+            <p className="fp-kpi-compact__value">{formatCurrency(stats.totalSales, settings)}</p>
+            <p className="fp-kpi-compact__sub text-slate-400">💵 Today's Sales</p>
+            <span className="fp-kpi-compact__trend trend-up">▲ 2%</span>
           </motion.div>
           
-          <motion.div className="kpi-card kpi-card--green" {...fadeUp} transition={{ ...spring, delay: 0.05 }} whileTap={{ scale: 0.97 }} onClick={() => haptic.light()}>
-            <span className="kpi-icon">📈</span>
-            <p className="kpi-value">{formatCurrency(stats.margin, settings)}</p>
-            <p className="kpi-label">Gross Profit</p>
+          <motion.div className="fp-kpi-compact kpi-green" {...fadeUp} transition={{ ...spring, delay: 0.05 }} whileTap={{ scale: 0.97 }} onClick={() => haptic.light()}>
+            <p className="fp-kpi-compact__label">Profit</p>
+            <p className="fp-kpi-compact__value">{formatCurrency(stats.margin, settings)}</p>
+            <p className="fp-kpi-compact__sub text-slate-400">📈 Gross Margin</p>
           </motion.div>
 
-          <motion.div className="kpi-card kpi-card--orange" {...fadeUp} transition={{ ...spring, delay: 0.1 }} whileTap={{ scale: 0.97 }} onClick={() => haptic.light()}>
-            <span className="kpi-icon">⛽</span>
-            <p className="kpi-value">{formatCurrency(stats.dueRecovery, settings)}</p>
-            <p className="kpi-label">Udhar Due</p>
+          <motion.div className="fp-kpi-compact kpi-orange" {...fadeUp} transition={{ ...spring, delay: 0.1 }} whileTap={{ scale: 0.97 }} onClick={() => haptic.light()}>
+            <p className="fp-kpi-compact__label">Udhar Due</p>
+            <p className="fp-kpi-compact__value">{formatCurrency(stats.dueRecovery, settings)}</p>
+            <p className="fp-kpi-compact__sub text-slate-400">⛽ Pending</p>
           </motion.div>
 
-          <motion.div className="kpi-card kpi-card--purple" {...fadeUp} transition={{ ...spring, delay: 0.15 }} whileTap={{ scale: 0.97 }} onClick={() => haptic.light()}>
-            <span className="kpi-icon">💰</span>
-            <p className="kpi-value">{formatCurrency(stats.cashOnHand, settings)}</p>
-            <p className="kpi-label">Cash on Hand</p>
+          <motion.div className="fp-kpi-compact kpi-purple" {...fadeUp} transition={{ ...spring, delay: 0.15 }} whileTap={{ scale: 0.97 }} onClick={() => haptic.light()}>
+            <p className="fp-kpi-compact__label">Cash</p>
+            <p className="fp-kpi-compact__value">{formatCurrency(stats.cashOnHand, settings)}</p>
+            <p className="fp-kpi-compact__sub text-slate-400">💰 On Hand</p>
           </motion.div>
         </div>
 

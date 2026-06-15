@@ -16,13 +16,30 @@ export default defineConfig(() => {
         'Cross-Origin-Opener-Policy': 'unsafe-none',
         'Cross-Origin-Embedder-Policy': 'unsafe-none',
       },
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modify—file watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
-      // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {
         ignored: ['**/server_database.enc', '**/.wwebjs_auth/**', '**/.wwebjs_cache/**'],
       },
+    },
+    build: {
+      target: 'es2015',      // Android WebView compatible
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true,   // remove all console.log
+          drop_debugger: true,
+        },
+      },
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom'],
+            animations: ['framer-motion'],
+            charts: ['recharts'],
+          },
+        },
+      },
+      chunkSizeWarningLimit: 1000,
     },
   };
 });

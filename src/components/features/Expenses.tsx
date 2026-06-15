@@ -371,77 +371,60 @@ export default function Expenses({
       />
 
       {/* DYNAMIC KPI CARDS SECTION */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+      <div className="fp-kpi-grid-2x2 mb-4">
         {/* AMBER CARD - TOTAL SPEND */}
-        <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
-          <div className="flex items-start justify-between">
-            <div>
-              <span className="font-mono text-[9px] font-black text-amber-800 uppercase tracking-widest block mb-1">TOTAL SPEND</span>
-              <h3 className="font-sans text-2xl font-black text-amber-900 mt-1 truncate animate-pulse">
-                {formatCurrency(totalAmountSpent, settings)}
-              </h3>
-            </div>
-            <div className="rounded-xl bg-amber-100 p-2 text-amber-700 animate-bounce">
-              <Coins className="h-5 w-5" />
-            </div>
+        <div className="fp-kpi-compact kpi-orange relative overflow-hidden">
+          <div className="fp-kpi-compact__label">TOTAL SPEND</div>
+          <div className="fp-kpi-compact__value">
+            {formatCurrency(totalAmountSpent, settings)}
           </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-amber-700 font-bold">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-            <span>{t('Summed active company expenses', 'مجموعی اخراجات کی رقم')}</span>
+          <div className="fp-kpi-compact__sub text-orange-400">
+            {t('Summed active company expenses', 'مجموعی اخراجات کی رقم')}
+          </div>
+          <div className="absolute top-2 right-2 text-orange-500 opacity-20">
+            <Coins className="h-8 w-8" />
           </div>
         </div>
 
         {/* GREEN CARD - STAFF FOOD & MEALS */}
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
-          <div className="flex items-start justify-between">
-            <div>
-              <span className="font-mono text-[9px] font-black text-emerald-800 uppercase tracking-widest block mb-1">STAFF FOOD & MEALS</span>
-              <h3 className="font-sans text-2xl font-black text-emerald-900 mt-1">
-                {formatCurrency(widgetStats.mealsSum, settings)}
-              </h3>
-            </div>
-            <div className="rounded-xl bg-emerald-100 p-2 text-emerald-700">
-              <Utensils className="h-5 w-5" />
-            </div>
+        <div className="fp-kpi-compact kpi-green relative overflow-hidden">
+          <div className="fp-kpi-compact__label">STAFF FOOD & MEALS</div>
+          <div className="fp-kpi-compact__value">
+            {formatCurrency(widgetStats.mealsSum, settings)}
           </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-emerald-700 font-bold">
-            <span>{t('Welfare & daily lunches cost', 'سٹاف فلاح و بہبود کھانا')}</span>
+          <div className="fp-kpi-compact__sub text-emerald-400">
+            {t('Welfare & daily lunches cost', 'سٹاف فلاح و بہبود کھانا')}
+          </div>
+          <div className="absolute top-2 right-2 text-emerald-500 opacity-20">
+            <Utensils className="h-8 w-8" />
           </div>
         </div>
 
         {/* CRIMSON CARD - PUMP MAINTENANCE */}
-        <div className="rounded-2xl border border-rose-200 bg-rose-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
-          <div className="flex items-start justify-between">
-            <div>
-              <span className="font-mono text-[9px] font-black text-rose-800 uppercase tracking-widest block mb-1">{isLube ? 'SHOP MAINTENANCE' : 'PUMP MAINTENANCE'}</span>
-              <h3 className="font-sans text-2xl font-black text-rose-900 mt-1">
-                {formatCurrency(widgetStats.maintenanceSum, settings)}
-              </h3>
-            </div>
-            <div className="rounded-xl bg-rose-100 p-2 text-rose-700">
-              <Wrench className="h-5 w-5" />
-            </div>
+        <div className="fp-kpi-compact kpi-red relative overflow-hidden">
+          <div className="fp-kpi-compact__label">{isLube ? 'SHOP MAINTENANCE' : 'PUMP MAINTENANCE'}</div>
+          <div className="fp-kpi-compact__value">
+            {formatCurrency(widgetStats.maintenanceSum, settings)}
           </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-rose-700 font-bold">
-            <span>{isLube ? t('Shop repairs & equipment', 'مرمت اور ساز و سامان') : t('Nozzles, calibrations & repairs', 'مرمت اور دیکھ بھال کا خرچہ')}</span>
+          <div className="fp-kpi-compact__sub text-rose-400">
+            {isLube ? t('Shop repairs & equipment', 'مرمت اور ساز و سامان') : t('Nozzles, calibrations & repairs', 'مرمت اور دیکھ بھال کا خرچہ')}
+          </div>
+          <div className="absolute top-2 right-2 text-rose-500 opacity-20">
+            <Wrench className="h-8 w-8" />
           </div>
         </div>
 
         {/* BLUE CARD - OPERATOR WAGES & UTILITIES */}
-        <div className="rounded-2xl border border-blue-200 bg-blue-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
-          <div className="flex items-start justify-between">
-            <div>
-              <span className="font-mono text-[9px] font-black text-blue-800 uppercase tracking-widest block mb-1">WAGES & UTILITIES</span>
-              <h3 className="font-sans text-2xl font-black text-blue-900 mt-1">
-                {formatCurrency(widgetStats.salaryAndUtilSum, settings)}
-              </h3>
-            </div>
-            <div className="rounded-xl bg-blue-100 p-2 text-blue-700">
-              <Lightbulb className="h-5 w-5" />
-            </div>
+        <div className="fp-kpi-compact kpi-blue relative overflow-hidden">
+          <div className="fp-kpi-compact__label">WAGES & UTILITIES</div>
+          <div className="fp-kpi-compact__value">
+            {formatCurrency(widgetStats.salaryAndUtilSum, settings)}
           </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-blue-700 font-bold text-ellipsis overflow-hidden truncate">
-            <span>{t('Power, salaries & gen fuel', 'بجلی بل، تنخواہیں و جنریٹر')}</span>
+          <div className="fp-kpi-compact__sub text-blue-400 truncate">
+            {t('Power, salaries & gen fuel', 'بجلی بل، تنخواہیں و جنریٹر')}
+          </div>
+          <div className="absolute top-2 right-2 text-blue-500 opacity-20">
+            <Lightbulb className="h-8 w-8" />
           </div>
         </div>
       </div>

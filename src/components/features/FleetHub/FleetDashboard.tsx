@@ -38,60 +38,56 @@ export default function FleetDashboard({ settings, stationId }: FleetDashboardPr
   return (
     <div className="space-y-6">
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-orange-50 rounded-full group-hover:scale-110 transition-transform"></div>
-          <div className="relative">
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-bold text-slate-500 uppercase">Total Receivables</span>
-              <div className="p-2 bg-orange-100 text-orange-600 rounded-lg">
-                <Building2 className="h-4 w-4" />
-              </div>
-            </div>
-            <div className="text-2xl font-black font-mono text-slate-900">{settings.currency} {totalReceivables.toLocaleString()}</div>
-            <div className="text-xs text-slate-500 mt-2 font-medium">From {accounts.length} corporate accounts</div>
+      <div className="fp-kpi-grid-2x2">
+        <div className="fp-kpi-compact kpi-orange relative overflow-hidden">
+          <div className="fp-kpi-compact__label">Total Receivables</div>
+          <div className="fp-kpi-compact__value">
+            {settings.currency} {totalReceivables.toLocaleString()}
+          </div>
+          <div className="fp-kpi-compact__sub text-orange-400">
+            From {accounts.length} corporate accounts
+          </div>
+          <div className="absolute top-2 right-2 text-orange-500 opacity-20">
+            <Building2 className="h-8 w-8" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-50 rounded-full group-hover:scale-110 transition-transform"></div>
-          <div className="relative">
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-bold text-slate-500 uppercase">Active Fleet</span>
-              <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
-                <CarFront className="h-4 w-4" />
-              </div>
-            </div>
-            <div className="text-2xl font-black font-mono text-slate-900">{activeVehicles} <span className="text-base text-slate-500 font-sans">/ {totalVehicles}</span></div>
-            <div className="text-xs text-slate-500 mt-2 font-medium">Vehicles currently registered</div>
+        <div className="fp-kpi-compact kpi-green relative overflow-hidden">
+          <div className="fp-kpi-compact__label">Active Fleet</div>
+          <div className="fp-kpi-compact__value">
+            {activeVehicles} <span className="text-base font-sans">/ {totalVehicles}</span>
+          </div>
+          <div className="fp-kpi-compact__sub text-emerald-400">
+            Vehicles currently registered
+          </div>
+          <div className="absolute top-2 right-2 text-emerald-500 opacity-20">
+            <CarFront className="h-8 w-8" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-indigo-50 rounded-full group-hover:scale-110 transition-transform"></div>
-          <div className="relative">
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-bold text-slate-500 uppercase">MTD Volume</span>
-              <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
-                <TrendingUp className="h-4 w-4" />
-              </div>
-            </div>
-            <div className="text-2xl font-black font-mono text-slate-900">{mtdVolume.toLocaleString()} <span className="text-base text-slate-500 font-sans">Liters</span></div>
-            <div className="text-xs text-slate-500 mt-2 font-medium">Fuel consumed this month</div>
+        <div className="fp-kpi-compact kpi-blue relative overflow-hidden">
+          <div className="fp-kpi-compact__label">MTD Volume</div>
+          <div className="fp-kpi-compact__value">
+            {mtdVolume.toLocaleString()} <span className="text-base font-sans">Liters</span>
+          </div>
+          <div className="fp-kpi-compact__sub text-blue-400">
+            Fuel consumed this month
+          </div>
+          <div className="absolute top-2 right-2 text-blue-500 opacity-20">
+            <TrendingUp className="h-8 w-8" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-sky-50 rounded-full group-hover:scale-110 transition-transform"></div>
-          <div className="relative">
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-bold text-slate-500 uppercase">MTD Billing</span>
-              <div className="p-2 bg-sky-100 text-sky-600 rounded-lg">
-                <TrendingUp className="h-4 w-4" />
-              </div>
-            </div>
-            <div className="text-2xl font-black font-mono text-slate-900">{settings.currency} {mtdConsumption.toLocaleString()}</div>
-            <div className="text-xs text-slate-500 mt-2 font-medium">Revenue from fleet sales</div>
+        <div className="fp-kpi-compact kpi-purple relative overflow-hidden">
+          <div className="fp-kpi-compact__label">MTD Billing</div>
+          <div className="fp-kpi-compact__value">
+            {settings.currency} {mtdConsumption.toLocaleString()}
+          </div>
+          <div className="fp-kpi-compact__sub text-purple-400">
+            Revenue from fleet sales
+          </div>
+          <div className="absolute top-2 right-2 text-purple-500 opacity-20">
+            <TrendingUp className="h-8 w-8" />
           </div>
         </div>
       </div>

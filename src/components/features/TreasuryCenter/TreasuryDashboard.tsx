@@ -44,83 +44,59 @@ export default function TreasuryDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="fp-kpi-grid-2x2 mb-4">
         
-        <Card 
-          className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/20 cursor-pointer hover:shadow-lg transition-all"
+        <div 
+          className="fp-kpi-compact kpi-green cursor-pointer relative overflow-hidden group"
           onClick={() => openLedger('main_safe', 'Cash In Hand (Safe)')}
         >
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-green-600 dark:text-green-400">Cash In Hand (Vault)</p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
-                  Rs {cashInHand.toLocaleString()}
-                </p>
-              </div>
-              <div className="p-3 bg-green-500/20 rounded-full">
-                <Wallet className="h-6 w-6 text-green-600 dark:text-green-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          <div className="fp-kpi-compact__label">Cash In Hand (Vault)</div>
+          <div className="fp-kpi-compact__value">
+            Rs {cashInHand.toLocaleString()}
+          </div>
+          <div className="absolute top-2 right-2 text-emerald-500 opacity-20">
+            <Wallet className="h-8 w-8" />
+          </div>
+        </div>
 
-        <Card 
-          className="bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border-blue-500/20 cursor-pointer hover:shadow-lg transition-all"
+        <div 
+          className="fp-kpi-compact kpi-blue cursor-pointer relative overflow-hidden group"
           onClick={() => openLedger('bank', 'Consolidated Bank')}
         >
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Bank Balance</p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
-                  Rs {(position?.bankTotal || 0).toLocaleString()}
-                </p>
-              </div>
-              <div className="p-3 bg-blue-500/20 rounded-full">
-                <Landmark className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          <div className="fp-kpi-compact__label">Bank Balance</div>
+          <div className="fp-kpi-compact__value">
+            Rs {(position?.bankTotal || 0).toLocaleString()}
+          </div>
+          <div className="absolute top-2 right-2 text-blue-500 opacity-20">
+            <Landmark className="h-8 w-8" />
+          </div>
+        </div>
 
-        <Card 
-          className="bg-gradient-to-br from-purple-500/10 to-fuchsia-500/10 border-purple-500/20 cursor-pointer hover:shadow-lg transition-all"
+        <div 
+          className="fp-kpi-compact kpi-purple cursor-pointer relative overflow-hidden group"
           onClick={() => openLedger('pos_terminal', 'Digital Wallets & POS')}
         >
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Digital Wallets & POS</p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
-                  Rs {((position?.jazzCash || 0) + (position?.easyPaisa || 0) + (position?.posTerminal || 0)).toLocaleString()}
-                </p>
-              </div>
-              <div className="p-3 bg-purple-500/20 rounded-full">
-                <Smartphone className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          <div className="fp-kpi-compact__label">Digital Wallets & POS</div>
+          <div className="fp-kpi-compact__value">
+            Rs {((position?.jazzCash || 0) + (position?.easyPaisa || 0) + (position?.posTerminal || 0)).toLocaleString()}
+          </div>
+          <div className="absolute top-2 right-2 text-purple-500 opacity-20">
+            <Smartphone className="h-8 w-8" />
+          </div>
+        </div>
 
-        <Card 
-          className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/20 cursor-pointer hover:shadow-lg transition-all"
+        <div 
+          className="fp-kpi-compact kpi-orange cursor-pointer relative overflow-hidden group"
           onClick={() => openLedger('owner_cash', 'Owner Cash')}
         >
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-amber-600 dark:text-amber-400">Owner Cash</p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
-                  Rs {(position?.ownerCash || 0).toLocaleString()}
-                </p>
-              </div>
-              <div className="p-3 bg-amber-500/20 rounded-full">
-                <ShieldCheck className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          <div className="fp-kpi-compact__label">Owner Cash</div>
+          <div className="fp-kpi-compact__value">
+            Rs {(position?.ownerCash || 0).toLocaleString()}
+          </div>
+          <div className="absolute top-2 right-2 text-orange-500 opacity-20">
+            <ShieldCheck className="h-8 w-8" />
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
