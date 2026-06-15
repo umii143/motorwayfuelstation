@@ -13,7 +13,7 @@ export default function SystemPreferences({ settings, onUpdateSettings, activeSt
     language: settings.language || 'en',
     currency: settings.currency || 'PKR',
     receiptPrinter: 'thermal_80mm',
-    darkMode: false
+    theme: settings.theme || 'light'
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
@@ -25,7 +25,8 @@ export default function SystemPreferences({ settings, onUpdateSettings, activeSt
     onUpdateSettings({ 
       ...settings, 
       language: prefs.language as 'en' | 'ur',
-      currency: prefs.currency
+      currency: prefs.currency,
+      theme: prefs.theme as 'light' | 'dark' | 'blue' | 'emerald' | 'orange' | 'white'
     });
     showToast(t('System preferences saved.', 'سسٹم کی ترجیحات محفوظ ہو گئیں۔'), 'success');
   };
@@ -110,9 +111,13 @@ export default function SystemPreferences({ settings, onUpdateSettings, activeSt
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
               <Monitor className="h-4 w-4" /> {t('UI Theme', 'تھیم')}
             </label>
-            <select name="darkMode" value={prefs.darkMode ? 'dark' : 'light'} onChange={(e) => setPrefs({...prefs, darkMode: e.target.value === 'dark'})} className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800">
-              <option value="light">Light Mode</option>
-              <option value="dark">Dark Mode (Coming Soon)</option>
+            <select name="theme" value={prefs.theme} onChange={handleChange} className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800">
+              <option value="light">Light Mode (Soft)</option>
+              <option value="white">Pure White Theme</option>
+              <option value="dark">Dark Mode</option>
+              <option value="blue">Blue Theme</option>
+              <option value="emerald">Emerald Theme</option>
+              <option value="orange">Orange Theme</option>
             </select>
           </div>
         </div>

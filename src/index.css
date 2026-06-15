@@ -175,6 +175,23 @@ textarea {
 }
 
 /* Custom CSS Variable themed classes */
+.theme-white {
+  --bg-app: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-hover: #F8FAFC;
+  --bg-subtle: #F1F5F9;
+  --text-main: #0F172A;
+  --text-muted: #64748B;
+  --border-main: #E2E8F0;
+  --border-muted: #F1F5F9;
+  --primary-accent: #0F172A;
+  --primary-hover: #1E293B;
+  --color-accent: #F97316;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+}
+
 .theme-dark, .dark {
   --bg-app: #020617; /* Dark Mode Surface */
   --bg-card: #0F172A; /* Dark Mode Surface */

@@ -588,7 +588,7 @@ export interface GlobalSettings extends TenantDocument {
   address: string;
   ntn: string;
   ownerContact: string;
-  theme: 'light' | 'dark' | 'blue' | 'emerald' | 'orange';
+  theme: 'light' | 'dark' | 'blue' | 'emerald' | 'orange' | 'white';
   language: 'en' | 'ur' | 'ar' | 'es' | 'zh';
   currency?: string;
   setupCompleted?: boolean;

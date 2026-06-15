@@ -237,13 +237,13 @@ function MainApp() {
   React.useEffect(() => {
     const root = document.documentElement;
     // Remove all previous theme classes
-    root.classList.remove('theme-light', 'theme-dark', 'theme-blue', 'theme-emerald', 'theme-orange', 'dark');
+    root.classList.remove('theme-light', 'theme-white', 'theme-dark', 'theme-blue', 'theme-emerald', 'theme-orange', 'dark');
     
     const theme = settings.theme || 'light';
     root.classList.add(`theme-${theme}`);
     
-    // Add the "dark" class if it's not the light theme, to enable Tailwind's dark: variants
-    if (theme !== 'light') {
+    // Add the "dark" class if it's a dark-based theme, to enable Tailwind's dark: variants
+    if (theme !== 'light' && theme !== 'white') {
       root.classList.add('dark');
     }
   }, [settings.theme]);
@@ -863,8 +863,10 @@ function MainApp() {
           setSettings({ ...settings, language: languages[nextIndex] });
         }}
         onThemeToggle={() => {
-          const newTheme = settings.theme === 'light' ? 'dark' : 'light';
-          setSettings({ ...settings, theme: newTheme as any });
+          const themes = ['light', 'white', 'dark'];
+          const currentIndex = themes.indexOf(settings.theme || 'light');
+          const nextIndex = (currentIndex + 1) % themes.length;
+          setSettings({ ...settings, theme: themes[nextIndex] as any });
         }}
         onSettingsClick={() => {
           handleViewChange('configuration');
@@ -885,8 +887,10 @@ function MainApp() {
           setSettings({ ...settings, language: languages[nextIndex] });
         }}
         onThemeToggle={() => {
-          const newTheme = settings.theme === 'light' ? 'dark' : 'light';
-          setSettings({ ...settings, theme: newTheme as any });
+          const themes = ['light', 'white', 'dark'];
+          const currentIndex = themes.indexOf(settings.theme || 'light');
+          const nextIndex = (currentIndex + 1) % themes.length;
+          setSettings({ ...settings, theme: themes[nextIndex] as any });
         }}
       />
 
