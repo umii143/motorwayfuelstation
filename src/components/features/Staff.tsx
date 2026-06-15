@@ -439,17 +439,17 @@ export default function StaffPanel({
               ========================================== */}
           {activeTab === 'crew' && (
             <div className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
-              <table className="w-full text-left font-sans text-xs">
+              <table className="premium-table">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100 text-slate-650 font-bold uppercase tracking-wider text-[10px]">
-                    <th className="py-3 px-4">{t('Crew Employee Name', 'ملازم کا نام')}</th>
-                    <th className="py-3 px-4">{t('Designated Station Role', 'عہدہ')}</th>
-                    <th className="py-3 px-4 text-right">{t('Assigned Monthly Salary Rate', 'ماہانہ تنخواہ')}</th>
-                    <th className="py-3 px-4 text-right">{t('Pending Advance Balance', 'ایڈوانس زِمہ واجب')}</th>
-                    <th className="py-3 px-4 text-right">{t('Action Management', 'کھاتہ ایکشنز')}</th>
+                  <tr className="text-slate-650 text-[10px]">
+                    <th>{t('Crew Employee Name', 'ملازم کا نام')}</th>
+                    <th>{t('Designated Station Role', 'عہدہ')}</th>
+                    <th className="text-right">{t('Assigned Monthly Salary Rate', 'ماہانہ تنخواہ')}</th>
+                    <th className="text-right">{t('Pending Advance Balance', 'ایڈوانس زِمہ واجب')}</th>
+                    <th className="text-right">{t('Action Management', 'کھاتہ ایکشنز')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-705">
+                <tbody className="text-slate-705">
                   {staff.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="py-6 bg-slate-50/10">
@@ -476,7 +476,7 @@ export default function StaffPanel({
 
                       return (
                         <tr key={mem.id} className="hover:bg-slate-50/50">
-                          <td className="py-3.5 px-4">
+                          <td className="py-3.5">
                             <div className="flex items-center gap-2">
                               <div className="h-7 w-7 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs uppercase">
                                 {mem.name.substring(0, 2)}
@@ -490,13 +490,13 @@ export default function StaffPanel({
                             </div>
                           </td>
 
-                          <td className="py-3.5 px-4 font-sans">
+                          <td className="py-3.5">
                             <span className="rounded bg-slate-100 px-2.5 py-0.5 text-[10px] text-slate-600 font-bold capitalize select-none">
                               {mem.role}
                             </span>
                           </td>
 
-                          <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-800">
+                          <td className="py-3.5 text-right font-mono">
                             {formatCurrency(mem.salary, settings)}
                           </td>
 
@@ -508,7 +508,7 @@ export default function StaffPanel({
                             </div>
                           </td>
 
-                          <td className="py-3.5 px-4 text-right">
+                          <td className="py-3.5 text-right">
                             <div className="flex flex-wrap justify-end gap-1.5">
                               <button
                                 onClick={() => {
@@ -602,18 +602,18 @@ export default function StaffPanel({
                 <form onSubmit={handleSaveAttendance} className="space-y-4">
                   {/* ATTENDANCE MATRIX BOARD */}
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left font-sans text-xs">
+                    <table className="premium-table">
                       <thead>
-                        <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                        <tr className="text-[10px]">
                           <th className="py-2.5 px-3">{t('Staff Name', 'عملہ ممبر')}</th>
-                          <th className="py-2.5 px-2 text-center">{t('Status', 'ڈیوٹی پوزیشن')}</th>
-                          <th className="py-2.5 px-2 text-center">{t('Absence', 'غیر حاضر')}</th>
-                          <th className="py-2.5 px-2 text-center">{t('On Leave', 'رخصت')}</th>
-                          <th className="py-2.5 px-2">{t('Check-In Time', 'چیک ان وقت')}</th>
-                          <th className="py-2.5 px-2">{t('Check-Out Time', 'چیک آؤٹ وقت')}</th>
+                          <th className="py-2.5 text-center">{t('Status', 'ڈیوٹی پوزیشن')}</th>
+                          <th className="py-2.5 text-center">{t('Absence', 'غیر حاضر')}</th>
+                          <th className="py-2.5 text-center">{t('On Leave', 'رخصت')}</th>
+                          <th className="py-2.5">{t('Check-In Time', 'چیک ان وقت')}</th>
+                          <th className="py-2.5">{t('Check-Out Time', 'چیک آؤٹ وقت')}</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 text-slate-700">
+                      <tbody className="text-slate-700">
                         {staff.map(s => {
                           const current = attendanceStatuses[s.id] || { status: 'present', checkIn: '08:00', checkOut: '17:00' };
 
@@ -646,7 +646,7 @@ export default function StaffPanel({
                               </td>
 
                               {/* PRESENT RADIO */}
-                              <td className="py-3.5 px-2 text-center">
+                              <td className="py-3.5 text-center">
                                 <label className="inline-flex items-center gap-1.5 cursor-pointer">
                                   <input
                                     type="radio"
@@ -660,7 +660,7 @@ export default function StaffPanel({
                               </td>
 
                               {/* ABSENT RADIO */}
-                              <td className="py-3.5 px-2 text-center">
+                              <td className="py-3.5 text-center">
                                 <label className="inline-flex items-center gap-1.5 cursor-pointer">
                                   <input
                                     type="radio"
@@ -674,7 +674,7 @@ export default function StaffPanel({
                               </td>
 
                               {/* LEAVE RADIO */}
-                              <td className="py-3.5 px-2 text-center">
+                              <td className="py-3.5 text-center">
                                 <label className="inline-flex items-center gap-1.5 cursor-pointer">
                                   <input
                                     type="radio"
@@ -688,7 +688,7 @@ export default function StaffPanel({
                               </td>
 
                               {/* CHECK IN INPUT */}
-                              <td className="py-3.5 px-2">
+                              <td className="py-3.5">
                                 <input
                                   type="text"
                                   value={current.checkIn}
@@ -700,7 +700,7 @@ export default function StaffPanel({
                               </td>
 
                               {/* CHECK OUT INPUT */}
-                              <td className="py-3.5 px-2">
+                              <td className="py-3.5">
                                 <input
                                   type="text"
                                   value={current.checkOut}
@@ -773,9 +773,9 @@ export default function StaffPanel({
                   <span>{t('Salary Transactions', 'تنخواہ کی تفصیل')}</span>
                 </h3>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left font-sans text-xs">
+                  <table className="premium-table">
                     <thead>
-                      <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                      <tr className="text-[10px]">
                         <th className="py-2.5 px-3">Date</th>
                         <th className="py-2.5 px-3">Month</th>
                         <th className="py-2.5 px-3">Employee</th>
@@ -784,17 +784,17 @@ export default function StaffPanel({
                         <th className="py-2.5 px-3">Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 text-slate-700">
+                    <tbody className="text-slate-700">
                       {salaryTransactions.length === 0 ? (
                         <tr><td colSpan={6} className="py-4 text-center">No transactions</td></tr>
                       ) : salaryTransactions.map(txn => (
                         <tr key={txn.id}>
-                          <td className="py-3 px-3">{txn.paymentDate}</td>
-                          <td className="py-3 px-3">{txn.month}</td>
-                          <td className="py-3 px-3 font-bold">{txn.employeeName}</td>
-                          <td className="py-3 px-3 text-right">{formatCurrency(txn.amount, settings)}</td>
-                          <td className="py-3 px-3 uppercase">{txn.paymentSource}</td>
-                          <td className="py-3 px-3 uppercase">{txn.status}</td>
+                          <td className="px-3">{txn.paymentDate}</td>
+                          <td className="px-3">{txn.month}</td>
+                          <td className="px-3">{txn.employeeName}</td>
+                          <td className="px-3 text-right">{formatCurrency(txn.amount, settings)}</td>
+                          <td className="px-3">{txn.paymentSource}</td>
+                          <td className="px-3">{txn.status}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -809,9 +809,9 @@ export default function StaffPanel({
                   <span>{t('Staff Loans', 'ملازمین کے قرضے')}</span>
                 </h3>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left font-sans text-xs">
+                  <table className="premium-table">
                     <thead>
-                      <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                      <tr className="text-[10px]">
                         <th className="py-2.5 px-3">Date</th>
                         <th className="py-2.5 px-3">Employee</th>
                         <th className="py-2.5 px-3 text-right">Loan Amount</th>
@@ -820,17 +820,17 @@ export default function StaffPanel({
                         <th className="py-2.5 px-3">Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 text-slate-700">
+                    <tbody className="text-slate-700">
                       {staffLoans.length === 0 ? (
                         <tr><td colSpan={6} className="py-4 text-center">No loans</td></tr>
                       ) : staffLoans.map(loan => (
                         <tr key={loan.id}>
-                          <td className="py-3 px-3">{loan.dateIssued}</td>
-                          <td className="py-3 px-3 font-bold">{loan.employeeName}</td>
-                          <td className="py-3 px-3 text-right">{formatCurrency(loan.loanAmount, settings)}</td>
-                          <td className="py-3 px-3 text-right">{formatCurrency(loan.monthlyInstallment, settings)}</td>
-                          <td className="py-3 px-3 text-right text-rose-600 font-bold">{formatCurrency(loan.remainingBalance, settings)}</td>
-                          <td className="py-3 px-3 uppercase">{loan.status}</td>
+                          <td className="px-3">{loan.dateIssued}</td>
+                          <td className="px-3">{loan.employeeName}</td>
+                          <td className="px-3 text-right">{formatCurrency(loan.loanAmount, settings)}</td>
+                          <td className="px-3 text-right">{formatCurrency(loan.monthlyInstallment, settings)}</td>
+                          <td className="px-3 text-right text-rose-600">{formatCurrency(loan.remainingBalance, settings)}</td>
+                          <td className="px-3">{loan.status}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -845,9 +845,9 @@ export default function StaffPanel({
                   <span>{t('Salary Advances', 'تنخواہ کے ایڈوانس')}</span>
                 </h3>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left font-sans text-xs">
+                  <table className="premium-table">
                     <thead>
-                      <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                      <tr className="text-[10px]">
                         <th className="py-2.5 px-3">Date</th>
                         <th className="py-2.5 px-3">Employee</th>
                         <th className="py-2.5 px-3 text-right">Amount</th>
@@ -855,16 +855,16 @@ export default function StaffPanel({
                         <th className="py-2.5 px-3">Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 text-slate-700">
+                    <tbody className="text-slate-700">
                       {salaryAdvances.length === 0 ? (
                         <tr><td colSpan={5} className="py-4 text-center">No advances</td></tr>
                       ) : salaryAdvances.map(adv => (
                         <tr key={adv.id}>
-                          <td className="py-3 px-3">{adv.dateIssued}</td>
-                          <td className="py-3 px-3 font-bold">{adv.employeeName}</td>
-                          <td className="py-3 px-3 text-right">{formatCurrency(adv.amount, settings)}</td>
-                          <td className="py-3 px-3 text-right">{formatCurrency(adv.recoveredAmount, settings)}</td>
-                          <td className="py-3 px-3 uppercase">{adv.status}</td>
+                          <td className="px-3">{adv.dateIssued}</td>
+                          <td className="px-3">{adv.employeeName}</td>
+                          <td className="px-3 text-right">{formatCurrency(adv.amount, settings)}</td>
+                          <td className="px-3 text-right">{formatCurrency(adv.recoveredAmount, settings)}</td>
+                          <td className="px-3">{adv.status}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -886,19 +886,19 @@ export default function StaffPanel({
                 </h3>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left font-sans text-xs">
+                  <table className="premium-table">
                     <thead>
-                      <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px] text-center">
-                        <th className="py-2.5 px-3 text-left">{t('Post Date', 'تاریخ')}</th>
-                        <th className="py-2.5 px-2 text-left">{t('Crew Employee', 'ملازم کا نام')}</th>
-                        <th className="py-2.5 px-2">{t('Transaction Type', 'لین دین قسم')}</th>
-                        <th className="py-2.5 px-2">{t('Posted Amount', 'رقم (روپے)')}</th>
-                        <th className="py-2.5 px-2">{t('Pay Mode', 'طریقہ کار')}</th>
-                        <th className="py-2.5 px-2">{t('Deducted Advance', 'ایڈوانس کٹوتی')}</th>
+                      <tr className="text-[10px] text-center">
+                        <th className="py-2.5 px-3">{t('Post Date', 'تاریخ')}</th>
+                        <th className="py-2.5">{t('Crew Employee', 'ملازم کا نام')}</th>
+                        <th className="py-2.5">{t('Transaction Type', 'لین دین قسم')}</th>
+                        <th className="py-2.5">{t('Posted Amount', 'رقم (روپے)')}</th>
+                        <th className="py-2.5">{t('Pay Mode', 'طریقہ کار')}</th>
+                        <th className="py-2.5">{t('Deducted Advance', 'ایڈوانس کٹوتی')}</th>
                         <th className="py-2.5 px-3 text-right">{t('Audit Reference / Notes', 'حوالہ / نوٹس')}</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 text-slate-700 text-center">
+                    <tbody className="text-slate-700 text-center">
                       {staffFinance.length === 0 ? (
                         <tr>
                           <td colSpan={7} className="py-6 text-center text-slate-400">
@@ -910,11 +910,11 @@ export default function StaffPanel({
                           const mem = staff.find(s => s.id === sf.staffId);
                           return (
                             <tr key={sf.id} className="hover:bg-slate-50/50">
-                              <td className="py-3 px-3 text-left font-mono text-slate-500 whitespace-nowrap">{sf.date}</td>
-                              <td className="py-3 px-2 text-left font-bold text-slate-800">
+                              <td className="px-3 font-mono">{sf.date}</td>
+                              <td>
                                 {mem ? t(mem.name, mem.urduName) : sf.staffId}
                               </td>
-                              <td className="py-3 px-2">
+                              <td>
                                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase select-none inline-flex items-center gap-1 ${
                                   sf.type === 'accrual'
                                     ? 'bg-purple-50 text-purple-700'
@@ -932,12 +932,12 @@ export default function StaffPanel({
                                   )}
                                 </span>
                               </td>
-                              <td className="py-3 px-2 font-mono font-bold text-slate-800">{formatCurrency(sf.amount, settings)}</td>
-                              <td className="py-3 px-2 capitalize font-semibold text-slate-400">{sf.mode || '—'}</td>
-                              <td className="py-3 px-2 font-mono text-rose-600">
+                              <td className="font-mono">{formatCurrency(sf.amount, settings)}</td>
+                              <td className="capitalize font-semibold">{sf.mode || '—'}</td>
+                              <td className="font-mono text-rose-600">
                                 {sf.deductedAdvance ? `${formatCurrency(sf.deductedAdvance, settings)}` : '—'}
                               </td>
-                              <td className="py-3 px-3 text-right text-slate-500 font-sans leading-relaxed whitespace-nowrap overflow-hidden max-w-xs text-ellipsis">
+                              <td className="px-3 text-right leading-relaxed overflow-hidden max-w-xs text-ellipsis">
                                 <span className="block font-semibold text-slate-700">{sf.note}</span>
                                 <span className="block text-[9px] font-mono text-slate-400">Ref: {sf.reference}</span>
                               </td>
@@ -1014,19 +1014,19 @@ export default function StaffPanel({
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left font-sans text-xs">
+                  <table className="premium-table">
                     <thead>
-                      <tr className="bg-slate-50 border-b border-slate-150 text-slate-500 uppercase font-bold tracking-wider text-[10px]">
+                      <tr className="border-slate-150 text-[10px]">
                         <th className="py-2.5 px-3">{t('Staff Member', 'عملہ ممبر')}</th>
-                        <th className="py-2.5 px-2 text-center">{t('Shifts Logged', 'کل شفٹیں')}</th>
-                        <th className="py-2.5 px-2 text-center">{t('Attendance Rate', 'حاضری شرح')}</th>
+                        <th className="py-2.5 text-center">{t('Shifts Logged', 'کل شفٹیں')}</th>
+                        <th className="py-2.5 text-center">{t('Attendance Rate', 'حاضری شرح')}</th>
                         <th className="py-2.5 px-3 text-right">{t('Salary Handed', 'بنیادی تنخواہ')}</th>
                         <th className="py-2.5 px-3 text-right">{t('Paid Advances', 'جاری ایڈوانس')}</th>
                         <th className="py-2.5 px-3 text-right">{t('Remaining Accruals', 'بقایا جات')}</th>
                         <th className="py-2.5 px-3 text-center">{t('Compliance Level', 'کارکردگی رینکنگ')}</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 text-slate-700 font-medium font-sans">
+                    <tbody className="text-slate-700">
                       {staff
                         .filter(s => selectedPerfStaffId === 'all' || s.id === selectedPerfStaffId)
                         .map(s => {
@@ -1040,20 +1040,20 @@ export default function StaffPanel({
 
                           return (
                             <tr key={s.id} className="hover:bg-slate-50/50">
-                              <td className="py-3 px-3">
+                              <td className="px-3">
                                 <span className="font-bold text-slate-800 text-xs block">{t(s.name, s.urduName)}</span>
                                 <span className="text-[10px] text-slate-450 block capitalize">{s.role} | {s.phone}</span>
                               </td>
-                              <td className="py-3 px-2 text-center font-mono font-bold text-slate-800">{staffShifts.length}</td>
-                              <td className="py-3 px-2 text-center">
+                              <td className="text-center font-mono">{staffShifts.length}</td>
+                              <td className="text-center">
                                 <span className={`font-mono font-bold ${attRate < 80 ? 'text-rose-600' : 'text-emerald-600'}`}>
                                   {attRate}%
                                 </span>
                               </td>
-                              <td className="py-3 px-3 text-right font-mono text-slate-600">{formatCurrency(s.salary, settings)}</td>
-                              <td className="py-3 px-3 text-right font-mono text-rose-600">{formatCurrency(s.advanceBalance || 0, settings)}</td>
-                              <td className="py-3 px-3 text-right font-mono text-purple-650">{formatCurrency(s.salaryBalance || 0, settings)}</td>
-                              <td className="py-3 px-3 text-center">
+                              <td className="px-3 text-right font-mono text-slate-600">{formatCurrency(s.salary, settings)}</td>
+                              <td className="px-3 text-right font-mono text-rose-600">{formatCurrency(s.advanceBalance || 0, settings)}</td>
+                              <td className="px-3 text-right font-mono text-purple-650">{formatCurrency(s.salaryBalance || 0, settings)}</td>
+                              <td className="px-3 text-center">
                                 {varianceCount === 0 ? (
                                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700">
                                     ✓ {t('Perfect Compliance', 'بہترین کارکردگی')}
@@ -1156,23 +1156,23 @@ export default function StaffPanel({
                     {t(`Attendance status on date: ${attendanceDate}`, `روز مرہ حاضری بتاریخ: ${attendanceDate}`)}
                   </h4>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left font-sans text-xs border-collapse">
+                    <table className="premium-table">
                       <thead>
-                        <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                        <tr className="text-[10px]">
                           <th className="py-2.5 px-3">{t('Employee', 'ملازم کا نام')}</th>
                           <th className="py-2.5 px-3 text-center">{t('Duty Status', 'ڈیوٹی اسٹیٹس')}</th>
                           <th className="py-2.5 px-3 text-center">{t('Check-In', 'چیک ان')}</th>
                           <th className="py-2.5 px-3 text-center">{t('Check-Out', 'چیک آؤٹ')}</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 text-slate-700">
+                      <tbody className="text-slate-700">
                         {staff.map(st => {
                           const todayLog = attendance.find(a => a.date === attendanceDate && a.staffId === st.id);
 
                           return (
                             <tr key={st.id} className="hover:bg-slate-50/25">
-                              <td className="py-3 px-3 font-bold text-slate-800">{t(st.name, st.urduName)}</td>
-                              <td className="py-3 px-3 text-center">
+                              <td className="px-3">{t(st.name, st.urduName)}</td>
+                              <td className="px-3 text-center">
                                 {!todayLog ? (
                                   <span className="rounded bg-slate-100 py-0.5 px-2 text-[10px] font-bold text-slate-400 uppercase">{t('No Log', 'غیر نشان زد')}</span>
                                 ) : todayLog.status === 'present' ? (
@@ -1183,8 +1183,8 @@ export default function StaffPanel({
                                   <span className="rounded bg-rose-50 py-0.5 px-2 text-[10px] font-bold text-rose-700 uppercase">{t('Absent', 'غیر حاضر')}</span>
                                 )}
                               </td>
-                              <td className="py-3 px-3 text-center font-mono text-slate-700">{todayLog?.checkIn || '—'}</td>
-                              <td className="py-3 px-3 text-center font-mono text-slate-700">{todayLog?.checkOut || '—'}</td>
+                              <td className="px-3 text-center font-mono text-slate-700">{todayLog?.checkIn || '—'}</td>
+                              <td className="px-3 text-center font-mono text-slate-700">{todayLog?.checkOut || '—'}</td>
                             </tr>
                           );
                         })}
@@ -1200,9 +1200,9 @@ export default function StaffPanel({
                     {t('Roster status matrix of the past 7 days', 'ہفتہ وار ملازمین حاضری گراف شیٹ')}
                   </h4>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left font-sans text-xs border-collapse">
+                    <table className="premium-table">
                       <thead>
-                        <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                        <tr className="text-[10px]">
                           <th className="py-2.5 px-3">{t('Staff Member', 'عملہ')}</th>
                           {Array.from({ length: 7 }).map((_, idx) => {
                             const date = new Date();
@@ -1212,10 +1212,10 @@ export default function StaffPanel({
                           })}
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 text-slate-700">
+                      <tbody className="text-slate-700">
                         {staff.map(st => (
                           <tr key={st.id} className="hover:bg-slate-50/25">
-                            <td className="py-3 px-3 font-bold text-slate-800 whitespace-nowrap">{t(st.name, st.urduName)}</td>
+                            <td className="px-3">{t(st.name, st.urduName)}</td>
                             {Array.from({ length: 7 }).map((_, idx) => {
                               const date = new Date();
                               date.setDate(date.getDate() - idx);
@@ -1248,17 +1248,17 @@ export default function StaffPanel({
                     {t(`Monthly aggregate metrics for: ${attendanceReportMonth}`, `ماہانہ خلاصہ حاضری شیٹ: ${attendanceReportMonth}`)}
                   </h4>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left font-sans text-xs border-collapse">
+                    <table className="premium-table">
                       <thead>
-                        <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                        <tr className="text-[10px]">
                           <th className="py-2.5 px-3">{t('Crew Employee', 'عملہ')}</th>
-                          <th className="py-2.5 px-2 text-center">{t('Duty Days (Present)', 'کل حاضریاں')}</th>
-                          <th className="py-2.5 px-2 text-center">{t('Absent Count', 'کل غیر حاضریاں')}</th>
-                          <th className="py-2.5 px-2 text-center">{t('Approved Leaves (Off)', 'رخصتیں')}</th>
+                          <th className="py-2.5 text-center">{t('Duty Days (Present)', 'کل حاضریاں')}</th>
+                          <th className="py-2.5 text-center">{t('Absent Count', 'کل غیر حاضریاں')}</th>
+                          <th className="py-2.5 text-center">{t('Approved Leaves (Off)', 'رخصتیں')}</th>
                           <th className="py-2.5 px-3 text-right">{t('Attendance Match Rate', 'مجموعی ٹریک شرح %')}</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 text-slate-700">
+                      <tbody className="text-slate-700">
                         {staff.map(st => {
                           const monthLogs = attendance.filter(a => a.date.startsWith(attendanceReportMonth) && a.staffId === st.id);
                           const presents = monthLogs.filter(a => a.status === 'present').length;
@@ -1268,11 +1268,11 @@ export default function StaffPanel({
 
                           return (
                             <tr key={st.id} className="hover:bg-slate-50/25">
-                              <td className="py-3 px-3 font-bold text-slate-800">{t(st.name, st.urduName)}</td>
-                              <td className="py-3 px-2 text-center font-mono font-bold text-slate-700">{presents}</td>
-                              <td className="py-3 px-2 text-center font-mono text-rose-600">{absents}</td>
-                              <td className="py-3 px-2 text-center font-mono text-amber-600">{leaves}</td>
-                              <td className="py-3 px-3 text-right font-mono font-extrabold text-slate-800">{attRate}%</td>
+                              <td className="px-3">{t(st.name, st.urduName)}</td>
+                              <td className="text-center font-mono text-slate-700">{presents}</td>
+                              <td className="text-center font-mono text-rose-600">{absents}</td>
+                              <td className="text-center font-mono text-amber-600">{leaves}</td>
+                              <td className="px-3 text-right font-mono font-extrabold">{attRate}%</td>
                             </tr>
                           );
                         })}

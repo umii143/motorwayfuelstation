@@ -113,7 +113,7 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
+    <div className="premium-modal-overlay">
       <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
           <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-2">

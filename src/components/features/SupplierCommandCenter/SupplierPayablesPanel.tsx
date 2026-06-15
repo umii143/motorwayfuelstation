@@ -66,7 +66,7 @@ function PaymentModal({
   const [mode, setMode] = useState<'cash' | 'bank' | 'cheque'>('cash');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div className="premium-modal-overlay">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
         <div className="bg-gradient-to-r from-slate-800 to-slate-900 p-5 text-white">
           <h3 className="font-black text-lg">💳 Record Payment</h3>

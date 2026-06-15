@@ -221,7 +221,7 @@ export default function SupplierLiabilityDrillDownModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div className="premium-modal-overlay">
       <div className="bg-slate-50 w-full max-w-full max-w-[1400px] h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-700/50">
         
         {/* Header */}
@@ -388,21 +388,21 @@ export default function SupplierLiabilityDrillDownModal({
               {/* Grid Data */}
               <div className="premium-card border flex-1 overflow-hidden flex flex-col">
                 <div className="flex-1 overflow-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead className="bg-slate-100 text-[10px] uppercase font-black text-slate-500 sticky top-0 z-10 shadow-sm">
+                  <table className="premium-table">
+                    <thead className="text-[10px] font-black sticky top-0 z-10 shadow-sm">
                       <tr>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap">Date</th>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap">Supplier</th>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap text-right text-rose-600">Stock Invoice (Cr)</th>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap text-right text-emerald-600">Payment (Dr)</th>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap text-right text-amber-600">Payable Bal</th>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap">Context</th>
+                        <th className="p-3">Date</th>
+                        <th className="p-3">Supplier</th>
+                        <th className="p-3 text-right text-rose-600">Stock Invoice (Cr)</th>
+                        <th className="p-3 text-right text-emerald-600">Payment (Dr)</th>
+                        <th className="p-3 text-right text-amber-600">Payable Bal</th>
+                        <th className="p-3">Context</th>
                       </tr>
                     </thead>
-                    <tbody className="text-xs">
+                    <tbody>
                       {stats.viewTimeline.map(entry => (
                         <tr key={entry.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                          <td className="p-3 align-top whitespace-nowrap">
+                          <td className="p-3 align-top">
                             <p className="font-bold text-slate-800">{entry.date}</p>
                             <p className="text-[10px] text-slate-500">{entry.time}</p>
                           </td>
@@ -410,12 +410,12 @@ export default function SupplierLiabilityDrillDownModal({
                             <p className="font-bold text-slate-800">{entry.supplierName}</p>
                             <p className="text-[10px] text-slate-500 truncate max-w-full max-w-[150px]">{entry.reference}</p>
                           </td>
-                          <td className="p-3 align-top text-right whitespace-nowrap">
+                          <td className="p-3 align-top text-right">
                             {entry.invoiceAmount > 0 ? (
                               <p className="font-bold text-rose-600">+{formatCurrency(entry.invoiceAmount, settings)}</p>
                             ) : '-'}
                           </td>
-                          <td className="p-3 align-top text-right whitespace-nowrap">
+                          <td className="p-3 align-top text-right">
                             {entry.paymentAmount > 0 ? (
                               <div>
                                 <p className="font-bold text-emerald-600">-{formatCurrency(entry.paymentAmount, settings)}</p>
@@ -423,12 +423,12 @@ export default function SupplierLiabilityDrillDownModal({
                               </div>
                             ) : '-'}
                           </td>
-                          <td className="p-3 align-top text-right whitespace-nowrap">
+                          <td className="p-3 align-top text-right">
                             <p className={`font-black ${entry.runningBalance > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
                               {formatCurrency(entry.runningBalance, settings)}
                             </p>
                           </td>
-                          <td className="p-3 align-top whitespace-nowrap">
+                          <td className="p-3 align-top">
                             <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
                               entry.type === 'Purchase' ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'
                             }`}>

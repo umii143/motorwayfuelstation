@@ -202,7 +202,7 @@ export default function CustomerCreditDrillDownModal({
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#f43f5e', '#8b5cf6'];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div className="premium-modal-overlay">
       <div className="bg-slate-50 w-full max-w-full max-w-[1400px] h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-700/50">
         
         {/* Header */}
@@ -402,21 +402,21 @@ export default function CustomerCreditDrillDownModal({
               {/* Grid Data */}
               <div className="premium-card border flex-1 overflow-hidden flex flex-col">
                 <div className="flex-1 overflow-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead className="bg-slate-100 text-[10px] uppercase font-black text-slate-500 sticky top-0 z-10 shadow-sm">
+                  <table className="premium-table">
+                    <thead className="text-[10px] font-black sticky top-0 z-10 shadow-sm">
                       <tr>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap">Date / Ref</th>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap">Customer</th>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap text-right text-rose-600">Sale (Dr)</th>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap text-right text-emerald-600">Recovery (Cr)</th>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap text-right">Balance</th>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap">Context</th>
+                        <th className="p-3">Date / Ref</th>
+                        <th className="p-3">Customer</th>
+                        <th className="p-3 text-right text-rose-600">Sale (Dr)</th>
+                        <th className="p-3 text-right text-emerald-600">Recovery (Cr)</th>
+                        <th className="p-3 text-right">Balance</th>
+                        <th className="p-3">Context</th>
                       </tr>
                     </thead>
-                    <tbody className="text-xs">
+                    <tbody>
                       {stats.viewTimeline.map(entry => (
                         <tr key={entry.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                          <td className="p-3 align-top whitespace-nowrap">
+                          <td className="p-3 align-top">
                             <p className="font-bold text-slate-800">{entry.date}</p>
                             <p className="text-[10px] text-slate-500">{entry.time}</p>
                           </td>
@@ -424,12 +424,12 @@ export default function CustomerCreditDrillDownModal({
                             <p className="font-bold text-slate-800">{entry.customerName}</p>
                             <p className="text-[10px] text-slate-500 truncate max-w-full max-w-[150px]">{entry.reference}</p>
                           </td>
-                          <td className="p-3 align-top text-right whitespace-nowrap">
+                          <td className="p-3 align-top text-right">
                             {entry.debit > 0 ? (
                               <p className="font-bold text-rose-600">{formatCurrency(entry.debit, settings)}</p>
                             ) : '-'}
                           </td>
-                          <td className="p-3 align-top text-right whitespace-nowrap">
+                          <td className="p-3 align-top text-right">
                             {entry.credit > 0 ? (
                               <div>
                                 <p className="font-bold text-emerald-600">{formatCurrency(entry.credit, settings)}</p>
@@ -437,12 +437,12 @@ export default function CustomerCreditDrillDownModal({
                               </div>
                             ) : '-'}
                           </td>
-                          <td className="p-3 align-top text-right whitespace-nowrap">
+                          <td className="p-3 align-top text-right">
                             <p className={`font-black ${entry.runningBalance > 0 ? 'text-slate-900' : 'text-emerald-600'}`}>
                               {formatCurrency(entry.runningBalance, settings)}
                             </p>
                           </td>
-                          <td className="p-3 align-top whitespace-nowrap">
+                          <td className="p-3 align-top">
                             <div className="flex flex-col gap-1">
                               <span className="text-[10px] font-semibold text-slate-500">Oper: {entry.operator?.substring(0, 8)}</span>
                               <span className="text-[10px] font-semibold text-blue-500 cursor-pointer hover:underline">Shift {entry.shiftId?.substring(0,6)}</span>

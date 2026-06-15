@@ -468,17 +468,17 @@ export default function Expenses({
 
           {/* TABLE LOG LISTING */}
           <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-xs">
-            <table className="w-full border-collapse text-left font-sans text-xs">
+            <table className="premium-table">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-150 text-slate-650 font-bold uppercase tracking-wider">
-                  <th className="py-3 px-4">{t('Session Date', 'تاریخ')}</th>
-                  <th className="py-3 px-4">{t('Expenditure details', 'خرچہ تفصیل')}</th>
-                  <th className="py-3 px-4">{t('Category', 'قسم کیٹیگری')}</th>
-                  <th className="py-3 px-4">{t('Payment Type', 'ذریعہ ادائیگی')}</th>
-                  <th className="py-3 px-4 text-right">{t('Amount Used', 'خرچہ رقم')}</th>
+                <tr className="border-slate-150 text-slate-650">
+                  <th>{t('Session Date', 'تاریخ')}</th>
+                  <th>{t('Expenditure details', 'خرچہ تفصیل')}</th>
+                  <th>{t('Category', 'قسم کیٹیگری')}</th>
+                  <th>{t('Payment Type', 'ذریعہ ادائیگی')}</th>
+                  <th className="text-right">{t('Amount Used', 'خرچہ رقم')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
+              <tbody className="text-slate-700">
                 {filteredExpenses.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="py-6 bg-slate-50/10">
@@ -498,19 +498,19 @@ export default function Expenses({
 
                     return (
                       <tr key={exp.id} className="hover:bg-slate-55/40">
-                        <td className="py-3 px-4 font-mono font-medium text-slate-500 whitespace-nowrap">{exp.date}</td>
-                        <td className="py-3 px-4 font-semibold text-slate-800 pr-4">{exp.description}</td>
-                        <td className="py-3 px-4 whitespace-nowrap">
+                        <td className="font-mono">{exp.date}</td>
+                        <td className="font-semibold pr-4">{exp.description}</td>
+                        <td>
                           <span className="rounded-md bg-stone-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
                             {catInfo ? (isUrdu ? catInfo.urdu : catInfo.label) : exp.category}
                           </span>
                         </td>
-                        <td className="py-3 px-4 whitespace-nowrap">
+                        <td>
                           <span className={`rounded-sm border px-1.5 py-0.5 font-bold text-[9px] uppercase ${labelStyle}`}>
                             {exp.paidFrom === 'cash' ? t('CASH BOX', 'کیش کیبن') : t('BANK ONLINE', 'بینک اکاؤنٹ')}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-right font-mono font-bold text-red-600">
+                        <td className="text-right font-mono text-red-600">
                           {formatCurrency(exp.amount, settings)}
                         </td>
                       </tr>
@@ -558,7 +558,7 @@ export default function Expenses({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs"
+            className="premium-modal-overlay"
           >
             <motion.div
               initial={{ scale: 0.95, y: 15, opacity: 0 }}
@@ -662,7 +662,7 @@ export default function Expenses({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4"
+            className="premium-modal-overlay"
           >
             <motion.div
               initial={{ scale: 0.95, y: 15, opacity: 0 }}

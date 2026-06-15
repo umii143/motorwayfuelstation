@@ -350,9 +350,9 @@ export default function InventoryDrillDownModal({
                 </div>
 
                 <div className="overflow-x-auto max-h-[400px]">
-                  <table className="w-full text-left border-collapse">
-                    <thead className="bg-white sticky top-0 z-10 shadow-sm">
-                      <tr className="border-b border-slate-100 text-[10px] uppercase tracking-wider font-black text-slate-400">
+                  <table className="premium-table">
+                    <thead className="sticky top-0 z-10 shadow-sm">
+                      <tr className="text-[10px] font-black">
                         <th className="p-3">Date / Time</th>
                         <th className="p-3">Product</th>
                         <th className="p-3 text-center">Rate Shift</th>
@@ -361,7 +361,7 @@ export default function InventoryDrillDownModal({
                         <th className="p-3">Reason / Authority</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody>
                       {processedRateHistory.length === 0 ? (
                         <tr>
                           <td colSpan={6} className="p-8 text-center text-slate-500 text-sm font-medium">

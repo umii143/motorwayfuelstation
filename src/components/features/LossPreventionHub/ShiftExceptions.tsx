@@ -145,45 +145,45 @@ export default function ShiftExceptions({ settings, stationId }: ShiftExceptions
 
       <div className="premium-card border overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="premium-table">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider font-bold">
-                <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3">Shift Source</th>
-                <th className="px-4 py-3 text-right">Expected Cash</th>
-                <th className="px-4 py-3 text-right">Actual Handed Over</th>
-                <th className="px-4 py-3 text-right">Variance</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3 text-right">Actions</th>
+              <tr>
+                <th>Date</th>
+                <th>Shift Source</th>
+                <th className="text-right">Expected Cash</th>
+                <th className="text-right">Actual Handed Over</th>
+                <th className="text-right">Variance</th>
+                <th>Status</th>
+                <th className="text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-sm">
+            <tbody>
               {filteredIncidents.map(inc => {
                 const isShortage = inc.varianceAmount > 0;
                 return (
                   <tr key={inc.id} className="hover:bg-slate-50/50 transition">
-                    <td className="px-4 py-3">
+                    <td>
                       <div className="font-medium text-slate-900">{new Date(inc.date).toLocaleDateString()}</div>
                       <div className="text-[10px] uppercase font-bold text-slate-500 mt-1 flex items-center gap-1">
                         <AlertTriangle className={`h-3 w-3 ${inc.severity === 'critical' ? 'text-rose-500' : 'text-amber-500'}`} />
                         {inc.severity} Severity
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td>
                       <div className="font-medium text-slate-900">{getShiftDetails(inc.sourceId)}</div>
                     </td>
-                    <td className="px-4 py-3 text-right font-mono text-slate-600">
+                    <td className="text-right font-mono text-slate-600">
                       {settings.currency} {inc.expectedAmount.toLocaleString()}
                     </td>
-                    <td className="px-4 py-3 text-right font-mono font-bold text-slate-800">
+                    <td className="text-right font-mono">
                       {settings.currency} {inc.actualAmount.toLocaleString()}
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="text-right">
                       <span className={`font-mono font-bold ${isShortage ? 'text-rose-600' : 'text-emerald-600'}`}>
                         {isShortage ? '-' : '+'}{settings.currency} {Math.abs(inc.varianceAmount).toLocaleString()}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td>
                       <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
                         inc.status === 'resolved' ? 'bg-emerald-100 text-emerald-700' : 
                         inc.status === 'investigating' ? 'bg-amber-100 text-amber-700' : 
@@ -192,7 +192,7 @@ export default function ShiftExceptions({ settings, stationId }: ShiftExceptions
                         {inc.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="text-right">
                       <button 
                         onClick={() => handleOpenModal(inc)}
                         className="text-rose-600 hover:text-rose-800 font-bold text-xs bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition"
@@ -217,7 +217,7 @@ export default function ShiftExceptions({ settings, stationId }: ShiftExceptions
 
       {/* Form Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+        <div className="premium-modal-overlay">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <h2 className="text-lg font-black font-sans text-slate-800 flex items-center gap-2">

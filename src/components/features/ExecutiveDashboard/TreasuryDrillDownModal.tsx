@@ -145,7 +145,7 @@ export default function TreasuryDrillDownModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div className="premium-modal-overlay">
       <div className="bg-slate-50 w-full max-w-full max-w-[1400px] h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-700/50">
         
         {/* Header */}
@@ -291,21 +291,21 @@ export default function TreasuryDrillDownModal({
               {/* Grid Data */}
               <div className="premium-card border flex-1 overflow-hidden flex flex-col min-h-[400px]">
                 <div className="flex-1 overflow-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead className="bg-slate-100 text-[10px] uppercase font-black text-slate-500 sticky top-0 z-10 shadow-sm">
+                  <table className="premium-table">
+                    <thead className="text-[10px] font-black sticky top-0 z-10 shadow-sm">
                       <tr>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap">Date / Time</th>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap">Type</th>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap">Source / Context</th>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap">Reference</th>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap text-right">Amount</th>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap text-right">User</th>
+                        <th className="p-3">Date / Time</th>
+                        <th className="p-3">Type</th>
+                        <th className="p-3">Source / Context</th>
+                        <th className="p-3">Reference</th>
+                        <th className="p-3 text-right">Amount</th>
+                        <th className="p-3 text-right">User</th>
                       </tr>
                     </thead>
-                    <tbody className="text-xs">
+                    <tbody>
                       {stats.viewTimeline.map((entry, i) => (
                         <tr key={entry.id + i} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                          <td className="p-3 align-top whitespace-nowrap">
+                          <td className="p-3 align-top">
                             <p className="font-bold text-slate-800">{entry.date}</p>
                             <p className="text-[10px] text-slate-500">{entry.time}</p>
                           </td>
@@ -327,7 +327,7 @@ export default function TreasuryDrillDownModal({
                           <td className="p-3 align-top">
                             <p className="font-medium text-slate-700 truncate max-w-full max-w-[200px]">{entry.reference}</p>
                           </td>
-                          <td className="p-3 align-top text-right whitespace-nowrap">
+                          <td className="p-3 align-top text-right">
                             <p className={`font-black ${
                               ['deposit', 'Collection', 'income'].includes(entry.type) ? 'text-emerald-600' : 
                               ['transfer'].includes(entry.type) ? 'text-slate-600' :
@@ -338,7 +338,7 @@ export default function TreasuryDrillDownModal({
                               {formatCurrency(entry.amount, settings)}
                             </p>
                           </td>
-                          <td className="p-3 align-top text-right whitespace-nowrap text-[10px] text-slate-500 font-bold uppercase">
+                          <td className="p-3 align-top text-right text-[10px]">
                             {entry.user}
                           </td>
                         </tr>

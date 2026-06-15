@@ -94,40 +94,40 @@ export default function PriceIntelligenceHub({ settings }: PriceIntelligenceHubP
 
       <div className="premium-card border overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 text-sm">
-            <thead className="bg-slate-50">
+          <table className="premium-table">
+            <thead>
               <tr>
-                <th className="px-4 py-3 text-left font-bold text-slate-600">{t("Shift & Date", "شفٹ اور تاریخ")}</th>
-                <th className="px-4 py-3 text-left font-bold text-slate-600">{t("Product", "پراڈکٹ")}</th>
-                <th className="px-4 py-3 text-left font-bold text-slate-600">{t("Rate Change", "نئی قیمت")}</th>
-                <th className="px-4 py-3 text-left font-bold text-slate-600">{t("Effective", "لاگو وقت")}</th>
-                <th className="px-4 py-3 text-left font-bold text-slate-600">{t("Captured", "درج وقت")}</th>
-                <th className="px-4 py-3 text-left font-bold text-slate-600">{t("Delay", "تاخیر")}</th>
-                <th className="px-4 py-3 text-left font-bold text-slate-600">{t("Status", "سٹیٹس")}</th>
+                <th className="text-slate-600">{t("Shift & Date", "شفٹ اور تاریخ")}</th>
+                <th className="text-slate-600">{t("Product", "پراڈکٹ")}</th>
+                <th className="text-slate-600">{t("Rate Change", "نئی قیمت")}</th>
+                <th className="text-slate-600">{t("Effective", "لاگو وقت")}</th>
+                <th className="text-slate-600">{t("Captured", "درج وقت")}</th>
+                <th className="text-slate-600">{t("Delay", "تاخیر")}</th>
+                <th className="text-slate-600">{t("Status", "سٹیٹس")}</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-slate-100 font-mono">
+            <tbody className="font-mono">
               {priceRevisionEvents.map((ev, i) => (
                 <tr key={i} className="hover:bg-slate-50">
-                  <td className="px-4 py-3 whitespace-nowrap">
+                  <td>
                     <span className="font-sans font-medium text-indigo-600">#{ev.shiftId.slice(-6)}</span>
                     <br/>
                     <span className="text-xs text-slate-500">{new Date(ev.shiftDate).toLocaleDateString()}</span>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap font-sans font-medium">{ev.productName}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">
+                  <td>{ev.productName}</td>
+                  <td>
                     Rs {ev.oldRate} → <span className="text-red-600 font-bold">Rs {ev.newRate}</span>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-slate-600">
+                  <td className="text-slate-600">
                     {new Date(ev.effectiveAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-slate-600">
+                  <td className="text-slate-600">
                     {new Date(ev.capturedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
+                  <td>
                     {ev.delayMinutes} min
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
+                  <td>
                     {ev.delayStatus === 'normal' && <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-xs font-bold text-green-700 font-sans"><CheckCircle className="h-3.5 w-3.5"/> Normal</span>}
                     {ev.delayStatus === 'warning' && <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-50 px-2.5 py-1 text-xs font-bold text-yellow-700 font-sans"><Clock className="h-3.5 w-3.5"/> Warning</span>}
                     {ev.delayStatus === 'critical' && <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 text-xs font-bold text-red-700 font-sans"><ShieldAlert className="h-3.5 w-3.5"/> Critical</span>}

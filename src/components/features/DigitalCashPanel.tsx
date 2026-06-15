@@ -341,24 +341,24 @@ export default function DigitalCashPanel({
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left font-sans text-xs border-collapse">
+                <table className="premium-table">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-slate-150 text-slate-500 uppercase font-bold tracking-wider text-[10px]">
+                    <tr className="border-slate-150 text-[10px]">
                       <th className="py-2.5 px-3">{t('Account/Method Name', 'والٹ کا نام')}</th>
                       <th className="py-2.5 px-3">{t('Account No / Merchant ID', 'موبائل / اکاؤنٹ مرچنٹ آئی ڈی')}</th>
                       <th className="py-2.5 px-3 font-right text-right">{t('Current Active Balance', 'موجودہ والٹ بیلنس')}</th>
                       <th className="py-2.5 px-3 text-right">{t('Actions', 'تبدیلی')}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 font-medium">
+                  <tbody>
                     {filteredAccounts.map((da) => (
                       <tr key={da.id} className="hover:bg-slate-50/50">
-                        <td className="py-3 px-3 text-slate-800 font-bold">{da.name}</td>
-                        <td className="py-3 px-3 text-slate-500 font-mono text-[11px]">{da.accountNo}</td>
-                        <td className="py-3 px-3 text-right font-mono text-slate-900 font-extrabold text-[12px]">
+                        <td className="px-3">{da.name}</td>
+                        <td className="px-3 font-mono text-[11px]">{da.accountNo}</td>
+                        <td className="px-3 text-right font-mono font-extrabold text-[12px]">
                           {formatCurrency(da.balance, settings)}
                         </td>
-                        <td className="py-3 px-3 text-right">
+                        <td className="px-3 text-right">
                           <button
                             onClick={() => setAdjustAccountId(da.id)}
                             className="bg-slate-900 text-white hover:bg-slate-850 text-[10px] font-bold px-3 py-1 rounded-md transition-colors cursor-pointer"
@@ -465,7 +465,7 @@ export default function DigitalCashPanel({
       {/* MODAL 1: ADD NEW WALLET */}
       <AnimatePresence>
         {showAddAccount && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs">
+          <div className="premium-modal-overlay">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -542,7 +542,7 @@ export default function DigitalCashPanel({
       {/* MODAL 2: MANUAL ADJUST wallet BALANCE */}
       <AnimatePresence>
         {adjustAccountId && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs">
+          <div className="premium-modal-overlay">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}

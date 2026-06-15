@@ -13,12 +13,12 @@ export function BIPaymentCostBreakdown({ metrics }: any) {
   const renderPaymentRow = (label: string, amount: number, icon: string, colorClass: string) => {
     const share = totalPayments > 0 ? ((amount / totalPayments) * 100).toFixed(1) : '0.0';
     return (
-      <tr className="hover:bg-slate-50 transition-colors">
-        <td className="py-3 px-5 font-medium flex items-center gap-2">
+      <tr>
+        <td className="px-5 flex items-center gap-2">
           <span className="text-xl">{icon}</span> {label}
         </td>
-        <td className="py-3 px-5 font-bold text-slate-800 text-right">{formatCurrency(amount)}</td>
-        <td className="py-3 px-5 text-right">
+        <td className="px-5 text-right">{formatCurrency(amount)}</td>
+        <td className="px-5 text-right">
           <span className={`text-xs font-bold px-2 py-1 rounded-md ${colorClass}`}>{share}%</span>
         </td>
       </tr>
@@ -28,10 +28,10 @@ export function BIPaymentCostBreakdown({ metrics }: any) {
   const renderCostRow = (label: string, amount: number, colorClass: string) => {
     const share = totalCosts > 0 ? ((amount / totalCosts) * 100).toFixed(1) : '0.0';
     return (
-      <tr className="hover:bg-slate-50 transition-colors">
-        <td className="py-3 px-5 font-medium">{label}</td>
-        <td className="py-3 px-5 font-bold text-slate-800 text-right">{formatCurrency(amount)}</td>
-        <td className="py-3 px-5 text-right">
+      <tr>
+        <td className="px-5">{label}</td>
+        <td className="px-5 text-right">{formatCurrency(amount)}</td>
+        <td className="px-5 text-right">
           <span className={`text-xs font-bold px-2 py-1 rounded-md ${colorClass}`}>{share}%</span>
         </td>
       </tr>
@@ -49,15 +49,15 @@ export function BIPaymentCostBreakdown({ metrics }: any) {
           </div>
         </div>
         <div className="overflow-x-auto flex-1">
-          <table className="w-full text-left text-sm">
+          <table className="premium-table">
             <thead>
-              <tr className="bg-white text-slate-500 border-b border-slate-100">
-                <th className="py-3 px-5 font-semibold">Method</th>
-                <th className="py-3 px-5 font-semibold text-right">Amount</th>
-                <th className="py-3 px-5 font-semibold text-right">Share</th>
+              <tr>
+                <th className="px-5 font-semibold">Method</th>
+                <th className="px-5 font-semibold text-right">Amount</th>
+                <th className="px-5 font-semibold text-right">Share</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {renderPaymentRow('Cash', paymentBreakdown.cash, '💵', 'bg-emerald-50 text-emerald-700')}
               {renderPaymentRow('Bank Transfer', paymentBreakdown.bank, '🏦', 'bg-blue-50 text-blue-700')}
               {renderPaymentRow('Digital Wallet', paymentBreakdown.digital, '📱', 'bg-purple-50 text-purple-700')}
@@ -65,9 +65,9 @@ export function BIPaymentCostBreakdown({ metrics }: any) {
             </tbody>
             <tfoot className="bg-slate-50 font-bold border-t border-slate-200">
               <tr>
-                <td className="py-3 px-5">TOTAL</td>
-                <td className="py-3 px-5 text-right text-sky-700">{formatCurrency(totalPayments)}</td>
-                <td className="py-3 px-5 text-right">100%</td>
+                <td className="px-5">TOTAL</td>
+                <td className="px-5 text-right text-sky-700">{formatCurrency(totalPayments)}</td>
+                <td className="px-5 text-right">100%</td>
               </tr>
             </tfoot>
           </table>
@@ -83,24 +83,24 @@ export function BIPaymentCostBreakdown({ metrics }: any) {
           </div>
         </div>
         <div className="overflow-x-auto flex-1">
-          <table className="w-full text-left text-sm">
+          <table className="premium-table">
             <thead>
-              <tr className="bg-white text-slate-500 border-b border-slate-100">
-                <th className="py-3 px-5 font-semibold">Category</th>
-                <th className="py-3 px-5 font-semibold text-right">Amount</th>
-                <th className="py-3 px-5 font-semibold text-right">Share</th>
+              <tr>
+                <th className="px-5 font-semibold">Category</th>
+                <th className="px-5 font-semibold text-right">Amount</th>
+                <th className="px-5 font-semibold text-right">Share</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {renderCostRow('🛢️ Stock Purchase (COGS)', costs.cogs, 'bg-slate-100 text-slate-700')}
               {renderCostRow('🚛 Carriage / Transport', costs.carriage, 'bg-orange-50 text-orange-700')}
               {renderCostRow('📋 Other Expenses (Staff/Utilities)', costs.otherExpenses, 'bg-rose-50 text-rose-700')}
             </tbody>
             <tfoot className="bg-slate-50 font-bold border-t border-slate-200">
               <tr>
-                <td className="py-3 px-5">TOTAL</td>
-                <td className="py-3 px-5 text-right text-rose-700">{formatCurrency(totalCosts)}</td>
-                <td className="py-3 px-5 text-right">100%</td>
+                <td className="px-5">TOTAL</td>
+                <td className="px-5 text-right text-rose-700">{formatCurrency(totalCosts)}</td>
+                <td className="px-5 text-right">100%</td>
               </tr>
             </tfoot>
           </table>

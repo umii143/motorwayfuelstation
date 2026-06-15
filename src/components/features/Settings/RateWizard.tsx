@@ -251,16 +251,16 @@ export default function RateWizard({
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left font-sans text-sm">
+          <table className="premium-table">
             <thead>
-              <tr className="bg-slate-50 text-slate-500">
-                <th className="py-4 px-6 font-semibold">{t('Date & Time', 'تاریخ و وقت', language)}</th>
-                <th className="py-4 px-6 font-semibold">{t('Product', 'پراڈکٹ', language)}</th>
-                <th className="py-4 px-6 font-semibold">{t('Old Rate', 'پرانا ریٹ', language)}</th>
-                <th className="py-4 px-6 font-semibold">{t('New Rate', 'نیا ریٹ', language)}</th>
+              <tr>
+                <th className="font-semibold">{t('Date & Time', 'تاریخ و وقت', language)}</th>
+                <th className="font-semibold">{t('Product', 'پراڈکٹ', language)}</th>
+                <th className="font-semibold">{t('Old Rate', 'پرانا ریٹ', language)}</th>
+                <th className="font-semibold">{t('New Rate', 'نیا ریٹ', language)}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {rateHistory.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="py-8 text-center text-slate-400">
@@ -272,11 +272,11 @@ export default function RateWizard({
                   const prod = products.find(p => p.id === rh.productId);
                   return (
                     <tr key={rh.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="py-4 px-6 text-slate-600">{rh.date}</td>
-                      <td className="py-4 px-6 font-bold text-slate-800">
+                      <td className="text-slate-600">{rh.date}</td>
+                      <td>
                         {prod ? prod.name : rh.productId}
                       </td>
-                      <td className="py-4 px-6 text-slate-500">
+                      <td>
                         {rh.oldRate === 0 ? (
                           <span className="px-2 py-1 bg-slate-100 text-slate-500 text-xs font-bold rounded-md">
                             {t('Initial Setup', 'ابتدائی سیٹ اپ', language)}
@@ -285,7 +285,7 @@ export default function RateWizard({
                           `Rs. ${rh.oldRate?.toFixed(2)}`
                         )}
                       </td>
-                      <td className="py-4 px-6 font-bold text-emerald-600">Rs. {rh.newRate?.toFixed(2)}</td>
+                      <td className="text-emerald-600">Rs. {rh.newRate?.toFixed(2)}</td>
                     </tr>
                   );
                 })

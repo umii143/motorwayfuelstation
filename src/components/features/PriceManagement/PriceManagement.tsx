@@ -124,18 +124,18 @@ export default function PriceManagement(props: PriceManagementProps) {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Price Changes & Revaluation Ledger</h3>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-gray-50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400">
+            <table className="premium-table">
+              <thead className="dark:bg-gray-800/50 text-gray-600 dark:text-gray-400">
                 <tr>
-                  <th className="px-6 py-3 font-medium">Date & Time</th>
-                  <th className="px-6 py-3 font-medium">Product</th>
-                  <th className="px-6 py-3 font-medium">Rate Change</th>
-                  <th className="px-6 py-3 font-medium">Stock at Change</th>
-                  <th className="px-6 py-3 font-medium">Revaluation Impact</th>
-                  <th className="px-6 py-3 font-medium">Changed By</th>
+                  <th>Date & Time</th>
+                  <th>Product</th>
+                  <th>Rate Change</th>
+                  <th>Stock at Change</th>
+                  <th>Revaluation Impact</th>
+                  <th>Changed By</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+              <tbody className="divide-gray-100 dark:divide-gray-700">
                 {rateHistory.map(entry => {
                   const impact = entry.inventoryImpact ?? entry.impactAmount ?? 0;
                   const isPositive = impact >= 0;
@@ -144,14 +144,14 @@ export default function PriceManagement(props: PriceManagementProps) {
                   
                   return (
                     <tr key={entry.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                      <td className="px-6 py-4">
+                      <td>
                         <div className="font-medium text-gray-900 dark:text-white">{entry.effectiveDate || entry.date}</div>
                         <div className="text-xs text-gray-500">{entry.effectiveTime || ''}</div>
                       </td>
-                      <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                      <td className="text-gray-900 dark:text-white">
                         {entry.productName || products.find(p => p.id === entry.productId)?.name || 'Unknown'}
                       </td>
-                      <td className="px-6 py-4">
+                      <td>
                         <div className="flex items-center space-x-2">
                           <span className="text-gray-500 line-through">Rs {entry.oldPrice ?? entry.oldRate}</span>
                           <span className="text-gray-400">→</span>
@@ -161,16 +161,16 @@ export default function PriceManagement(props: PriceManagementProps) {
                           {isIncrease ? 'Increase' : 'Decrease'} of Rs {Math.abs(diff)}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                      <td className="text-gray-600 dark:text-gray-300">
                         {(entry.stockAtTimeOfChange ?? entry.stockAtTime ?? 0).toLocaleString()} L
                       </td>
-                      <td className="px-6 py-4">
+                      <td>
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium ${isPositive ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'}`}>
                           {isPositive ? '+' : ''}
                           Rs {impact.toLocaleString()}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td>
                         <div className="text-sm text-gray-900 dark:text-white">{entry.changedBy}</div>
                         {entry.approvalStatus && (
                            <span className={`mt-1 inline-block text-xs px-2 py-0.5 rounded-full ${entry.approvalStatus === 'approved' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'}`}>

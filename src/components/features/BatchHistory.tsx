@@ -169,26 +169,26 @@ export default function BatchHistory({ batches, products, language }: BatchHisto
 
       {/* Table */}
       <div className="overflow-x-auto no-scrollbar">
-        <table className="w-full text-left font-sans">
+        <table className="premium-table">
           <thead>
-            <tr className="bg-theme-main text-slate-500 text-[10px] uppercase tracking-wider">
-              <th className="py-2.5 px-3 font-bold">Batch Ref</th>
-              <th className="py-2.5 px-3 font-bold">Date</th>
-              <th className="py-2.5 px-3 font-bold">Product</th>
-              <th className="py-2.5 px-3 font-bold text-right">Received</th>
-              <th className="py-2.5 px-3 font-bold text-right">Remaining</th>
-              <th className="py-2.5 px-3 font-bold text-right">Landed Cost</th>
-              <th className="py-2.5 px-3 font-bold">
+            <tr className="bg-theme-main text-[10px]">
+              <th className="py-2.5 px-3">Batch Ref</th>
+              <th className="py-2.5 px-3">Date</th>
+              <th className="py-2.5 px-3">Product</th>
+              <th className="py-2.5 px-3 text-right">Received</th>
+              <th className="py-2.5 px-3 text-right">Remaining</th>
+              <th className="py-2.5 px-3 text-right">Landed Cost</th>
+              <th className="py-2.5 px-3">
                 <div className="flex flex-col">
                   <span>Expected Margin</span>
                   <span className="text-[9px] text-slate-400 font-normal">Realized Margin</span>
                 </div>
               </th>
-              <th className="py-2.5 px-3 font-bold text-center">Age</th>
-              <th className="py-2.5 px-3 font-bold text-center">Status</th>
+              <th className="py-2.5 px-3 text-center">Age</th>
+              <th className="py-2.5 px-3 text-center">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-theme-main">
+          <tbody className="divide-theme-main">
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={9} className="py-8 text-center text-slate-400 text-xs">
@@ -232,10 +232,10 @@ export default function BatchHistory({ batches, products, language }: BatchHisto
                           {batch.deliveryTime && <span className="text-slate-400 ml-4 text-[9px]">{batch.deliveryTime}</span>}
                         </div>
                       </td>
-                      <td className="py-2.5 px-3 font-bold text-slate-800 dark:text-slate-100 text-xs">
+                      <td className="py-2.5 px-3 dark:text-slate-100">
                         {product ? t(product.name, product.urduName, language) : batch.productId}
                       </td>
-                      <td className="py-2.5 px-3 text-right font-mono font-medium text-slate-600 dark:text-slate-300 text-[11px]">
+                      <td className="py-2.5 px-3 text-right font-mono text-slate-600 dark:text-slate-300 text-[11px]">
                         {batch.qtyReceived.toLocaleString()}
                       </td>
                       <td className="py-2.5 px-3 text-right">

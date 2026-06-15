@@ -199,7 +199,7 @@ export default function RevaluationDrillDownModal({
   const COLORS = ['#10b981', '#34d399', '#6ee7b7', '#f43f5e', '#fb7185', '#fda4af'];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div className="premium-modal-overlay">
       <div className="bg-slate-50 w-full max-w-7xl h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-700/50">
         
         {/* Header */}
@@ -402,19 +402,19 @@ export default function RevaluationDrillDownModal({
                   </div>
                 </div>
                 <div className="flex-1 overflow-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead className="bg-slate-100 text-[10px] uppercase font-black text-slate-500 sticky top-0 z-10 shadow-sm">
+                  <table className="premium-table">
+                    <thead className="text-[10px] font-black sticky top-0 z-10 shadow-sm">
                       <tr>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap">Event Info</th>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap">Product</th>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap">Rate Change</th>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap">Snapshot</th>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap text-right">Net Impact</th>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap">Context</th>
-                        <th className="p-3 border-b border-slate-200 whitespace-nowrap text-center">Actions</th>
+                        <th className="p-3">Event Info</th>
+                        <th className="p-3">Product</th>
+                        <th className="p-3">Rate Change</th>
+                        <th className="p-3">Snapshot</th>
+                        <th className="p-3 text-right">Net Impact</th>
+                        <th className="p-3">Context</th>
+                        <th className="p-3 text-center">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="text-xs">
+                    <tbody>
                       {filteredData.map(entry => {
                         const impact = entry.inventoryImpact ?? entry.impactAmount ?? 0;
                         const isGain = impact > 0;
@@ -425,7 +425,7 @@ export default function RevaluationDrillDownModal({
 
                         return (
                           <tr key={entry.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors group">
-                            <td className="p-3 align-top whitespace-nowrap">
+                            <td className="p-3 align-top">
                               <p className="font-bold text-slate-800">{entry.effectiveDate || entry.date}</p>
                               <p className="text-[10px] text-slate-500">{entry.effectiveTime || '12:00'}</p>
                               <div className="mt-1 flex items-center gap-1">
@@ -433,11 +433,11 @@ export default function RevaluationDrillDownModal({
                                 <p className="text-[10px] font-semibold text-slate-600">{entry.changedBy || 'System'}</p>
                               </div>
                             </td>
-                            <td className="p-3 align-top whitespace-nowrap">
+                            <td className="p-3 align-top">
                               <p className="font-bold text-slate-800">{entry.productName}</p>
                               <span className="inline-block mt-1 px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[9px] font-bold uppercase tracking-wider">Fuel</span>
                             </td>
-                            <td className="p-3 align-top whitespace-nowrap">
+                            <td className="p-3 align-top">
                               <div className="flex items-center gap-2">
                                 <span className="text-slate-500 line-through">{oldRate.toFixed(2)}</span>
                                 <span className="text-slate-400">→</span>
@@ -448,11 +448,11 @@ export default function RevaluationDrillDownModal({
                                 {Math.abs(diff).toFixed(2)} / L
                               </p>
                             </td>
-                            <td className="p-3 align-top whitespace-nowrap">
+                            <td className="p-3 align-top">
                               <p className="font-bold text-slate-800">{stock.toLocaleString()} L</p>
                               <p className="text-[10px] text-slate-500 mt-1">Value B/A: N/A</p> {/* Future Integration */}
                             </td>
-                            <td className="p-3 align-top text-right whitespace-nowrap">
+                            <td className="p-3 align-top text-right">
                               <p className={`font-black text-sm ${isGain ? 'text-emerald-600' : 'text-rose-600'}`}>
                                 {isGain ? '+' : ''}{formatCurrency(impact, settings)}
                               </p>
@@ -466,7 +466,7 @@ export default function RevaluationDrillDownModal({
                               </span>
                               {entry.notes && <p className="text-[10px] text-slate-500 mt-1 truncate max-w-full max-w-[150px]" title={entry.notes}>{entry.notes}</p>}
                             </td>
-                            <td className="p-3 align-top text-center whitespace-nowrap">
+                            <td className="p-3 align-top text-center">
                               <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors" title="View Snapshot">
                                   <Eye className="h-3.5 w-3.5" />

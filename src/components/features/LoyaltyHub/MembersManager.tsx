@@ -134,48 +134,48 @@ export default function MembersManager({ settings, stationId }: MembersManagerPr
 
       <div className="premium-card border overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="premium-table">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider font-bold">
-                <th className="px-4 py-3">Member Details</th>
-                <th className="px-4 py-3">Contact</th>
-                <th className="px-4 py-3">Card No.</th>
-                <th className="px-4 py-3">Tier</th>
-                <th className="px-4 py-3 text-right">Points Balance</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3 text-right">Actions</th>
+              <tr>
+                <th>Member Details</th>
+                <th>Contact</th>
+                <th>Card No.</th>
+                <th>Tier</th>
+                <th className="text-right">Points Balance</th>
+                <th>Status</th>
+                <th className="text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-sm">
+            <tbody>
               {filteredMembers.map(member => (
                 <tr key={member.id} className="hover:bg-slate-50/50 transition">
-                  <td className="px-4 py-3">
+                  <td>
                     <div className="font-bold text-slate-900">{member.name}</div>
                     <div className="text-[10px] text-slate-500 mt-0.5">Joined {new Date(member.joinDate).toLocaleDateString()}</div>
                   </td>
-                  <td className="px-4 py-3">
+                  <td>
                     <div className="text-slate-800 font-medium">{member.phone}</div>
                     {member.email && <div className="text-xs text-slate-500">{member.email}</div>}
                   </td>
-                  <td className="px-4 py-3 font-mono text-slate-600 text-xs">
+                  <td className="font-mono text-slate-600">
                     {member.cardNumber || 'N/A'}
                   </td>
-                  <td className="px-4 py-3">
+                  <td>
                     <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${getTierColor(member.tier)}`}>
                       {member.tier}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-right font-mono font-bold text-slate-900">
+                  <td className="text-right font-mono">
                     {member.pointsBalance.toLocaleString()}
                   </td>
-                  <td className="px-4 py-3">
+                  <td>
                     <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
                       member.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
                     }`}>
                       {member.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="text-right">
                     <button 
                       onClick={() => handleOpenModal(member)}
                       className="text-rose-600 hover:text-rose-800 font-bold text-xs bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition"
@@ -199,7 +199,7 @@ export default function MembersManager({ settings, stationId }: MembersManagerPr
 
       {/* Form Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+        <div className="premium-modal-overlay">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <h2 className="text-lg font-black font-sans text-slate-800 flex items-center gap-2">

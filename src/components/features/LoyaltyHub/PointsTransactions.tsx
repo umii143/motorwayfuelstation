@@ -117,28 +117,28 @@ export default function PointsTransactions({ settings, stationId }: PointsTransa
 
       <div className="premium-card border overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="premium-table">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider font-bold">
-                <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3">Member</th>
-                <th className="px-4 py-3">Activity Type</th>
-                <th className="px-4 py-3">Description</th>
-                <th className="px-4 py-3 text-right">Points</th>
+              <tr>
+                <th>Date</th>
+                <th>Member</th>
+                <th>Activity Type</th>
+                <th>Description</th>
+                <th className="text-right">Points</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-sm">
+            <tbody>
               {filteredTxs.map(tx => {
                 const isPositive = tx.points >= 0;
                 return (
                   <tr key={tx.id} className="hover:bg-slate-50/50 transition">
-                    <td className="px-4 py-3 text-slate-700">
+                    <td className="text-slate-700">
                       {new Date(tx.date).toLocaleString()}
                     </td>
-                    <td className="px-4 py-3">
+                    <td>
                       <div className="font-bold text-slate-900">{getMemberDetails(tx.memberId)}</div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td>
                       <span className={`flex items-center gap-1 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full w-max ${
                         tx.type === 'earn' ? 'bg-emerald-100 text-emerald-700' : 
                         tx.type === 'redeem' ? 'bg-rose-100 text-rose-700' : 
@@ -149,10 +149,10 @@ export default function PointsTransactions({ settings, stationId }: PointsTransa
                         {tx.type}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-slate-600">
+                    <td className="text-slate-600">
                       {tx.description}
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="text-right">
                       <span className={`font-mono font-bold ${isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
                         {isPositive ? '+' : ''}{tx.points}
                       </span>
@@ -174,7 +174,7 @@ export default function PointsTransactions({ settings, stationId }: PointsTransa
 
       {/* Form Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+        <div className="premium-modal-overlay">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <h2 className="text-lg font-black font-sans text-slate-800 flex items-center gap-2">

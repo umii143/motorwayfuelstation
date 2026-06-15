@@ -902,7 +902,7 @@ export default function SupplierDirectory({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs"
+            className="premium-modal-overlay"
           >
             <motion.div
               initial={{ scale: 0.95, y: 15, opacity: 0 }}
@@ -995,7 +995,7 @@ export default function SupplierDirectory({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs"
+            className="premium-modal-overlay"
           >
             <motion.div
               initial={{ scale: 0.95, y: 15, opacity: 0 }}

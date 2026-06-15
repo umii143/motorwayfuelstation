@@ -167,23 +167,23 @@ export const KPIDrillDownModal: React.FC<KPIDrillDownModalProps> = ({ isOpen, on
               </ResponsiveContainer>
             </div>
             <div className="overflow-hidden border border-slate-200 rounded-xl">
-              <table className="w-full text-left border-collapse">
-                <thead className="bg-slate-50 border-b border-slate-200">
+              <table className="premium-table">
+                <thead>
                   <tr>
-                    <th className="py-3 px-4 text-xs font-bold text-slate-500">Product</th>
-                    <th className="py-3 px-4 text-xs font-bold text-slate-500 text-right">{metric === 'profit' ? 'Gross Profit' : 'Revenue'}</th>
-                    <th className="py-3 px-4 text-xs font-bold text-slate-500 text-right">% of Total</th>
+                    <th>Product</th>
+                    <th className="text-right">{metric === 'profit' ? 'Gross Profit' : 'Revenue'}</th>
+                    <th className="text-right">% of Total</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody>
                   {(metric === 'profit' ? productProfitData : productRevenueData).map((d, i) => {
                     const total = metric === 'profit' ? totalProductProfit : totalProductRevenue;
                     const pct = total > 0 ? (d.value / total) * 100 : 0;
                     return (
                       <tr key={i} className="hover:bg-slate-50">
-                        <td className="py-3 px-4 font-semibold text-slate-800">{d.name}</td>
-                        <td className="py-3 px-4 text-right font-bold text-slate-700">{fmt(d.value)}</td>
-                        <td className="py-3 px-4 text-right text-slate-500 text-sm">{pct.toFixed(1)}%</td>
+                        <td className="font-semibold">{d.name}</td>
+                        <td className="text-right text-slate-700">{fmt(d.value)}</td>
+                        <td className="text-right">{pct.toFixed(1)}%</td>
                       </tr>
                     );
                   })}
@@ -220,42 +220,42 @@ export const KPIDrillDownModal: React.FC<KPIDrillDownModalProps> = ({ isOpen, on
             )}
 
             <div className="overflow-hidden border border-slate-200 rounded-xl">
-              <table className="w-full text-left border-collapse">
-                <thead className="bg-slate-50 border-b border-slate-200">
+              <table className="premium-table">
+                <thead>
                   <tr>
-                    <th className="py-3 px-4 text-xs font-bold text-slate-500">Category</th>
-                    <th className="py-3 px-4 text-xs font-bold text-slate-500 text-right">Amount</th>
-                    <th className="py-3 px-4 text-xs font-bold text-slate-500 text-right">% of Total</th>
+                    <th>Category</th>
+                    <th className="text-right">Amount</th>
+                    <th className="text-right">% of Total</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody>
                   {expensesData.map((d, i) => {
                     const pct = totalCategoryExpenses > 0 ? (d.value / totalCategoryExpenses) * 100 : 0;
                     return (
                       <React.Fragment key={i}>
-                        <tr className="hover:bg-slate-50">
-                          <td className="py-3 px-4 font-semibold text-slate-800">{d.name}</td>
-                          <td className="py-3 px-4 text-right font-bold text-slate-700">{fmt(d.value)}</td>
-                          <td className="py-3 px-4 text-right text-slate-500 text-sm">{pct.toFixed(1)}%</td>
+                        <tr>
+                          <td className="font-semibold">{d.name}</td>
+                          <td className="text-right text-slate-700">{fmt(d.value)}</td>
+                          <td className="text-right">{pct.toFixed(1)}%</td>
                         </tr>
                         {d.name === 'salary' && breakdowns.salaryDetails && breakdowns.salaryDetails.length > 0 && (
                           <tr>
                             <td colSpan={3} className="px-4 py-2 bg-slate-50/50">
                               <div className="border border-slate-200 rounded-lg overflow-hidden my-2">
-                                <table className="w-full text-left bg-white">
-                                  <thead className="bg-slate-100/50 border-b border-slate-200">
+                                <table className="premium-table">
+                                  <thead className="bg-slate-100/50">
                                     <tr>
-                                      <th className="py-2 px-3 text-[10px] font-bold text-slate-500 uppercase">Employee</th>
-                                      <th className="py-2 px-3 text-[10px] font-bold text-slate-500 uppercase">Description</th>
-                                      <th className="py-2 px-3 text-[10px] font-bold text-slate-500 uppercase text-right">Amount</th>
+                                      <th className="px-3 text-[10px]">Employee</th>
+                                      <th className="px-3 text-[10px]">Description</th>
+                                      <th className="px-3 text-[10px] text-right">Amount</th>
                                     </tr>
                                   </thead>
-                                  <tbody className="divide-y divide-slate-100">
+                                  <tbody>
                                     {breakdowns.salaryDetails.map((sd, idx) => (
                                       <tr key={idx} className="hover:bg-slate-50">
-                                        <td className="py-2 px-3 text-xs font-semibold text-slate-700">{sd.employeeName}</td>
-                                        <td className="py-2 px-3 text-xs text-slate-500">{sd.description}</td>
-                                        <td className="py-2 px-3 text-xs text-right font-bold text-slate-600">{fmt(sd.amount)}</td>
+                                        <td className="px-3 font-semibold text-slate-700">{sd.employeeName}</td>
+                                        <td className="px-3">{sd.description}</td>
+                                        <td className="px-3 text-right text-slate-600">{fmt(sd.amount)}</td>
                                       </tr>
                                     ))}
                                   </tbody>
@@ -335,21 +335,21 @@ export const KPIDrillDownModal: React.FC<KPIDrillDownModalProps> = ({ isOpen, on
             </div>
             <div className="overflow-hidden border border-slate-200 rounded-xl bg-white shadow-sm">
               <div className="max-h-[500px] overflow-y-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead className="bg-slate-50 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+                <table className="premium-table">
+                  <thead className="sticky top-0 z-10 shadow-sm">
                     <tr>
-                      <th className="py-3 px-4 text-xs font-bold text-slate-500">Date</th>
-                      <th className="py-3 px-4 text-xs font-bold text-slate-500">Source Type</th>
-                      <th className="py-3 px-4 text-xs font-bold text-slate-500">Description</th>
-                      <th className="py-3 px-4 text-xs font-bold text-slate-500 text-right">Impact Amount</th>
+                      <th>Date</th>
+                      <th>Source Type</th>
+                      <th>Description</th>
+                      <th className="text-right">Impact Amount</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody>
                     {breakdowns.ledgerTransactions.length > 0 ? (
                       breakdowns.ledgerTransactions.map((tx, i) => (
                         <tr key={`${tx.id}-${i}`} className="hover:bg-slate-50 transition-colors">
-                          <td className="py-3 px-4 text-sm font-semibold text-slate-700 whitespace-nowrap">{tx.date}</td>
-                          <td className="py-3 px-4 text-sm font-medium text-slate-600">
+                          <td className="font-semibold text-slate-700">{tx.date}</td>
+                          <td className="text-slate-600">
                             <span className={`px-2 py-1 rounded text-xs font-bold ${
                               tx.type.includes('Sales') ? 'bg-blue-100 text-blue-700' :
                               tx.type.includes('Expense') ? 'bg-red-100 text-red-700' :
@@ -358,7 +358,7 @@ export const KPIDrillDownModal: React.FC<KPIDrillDownModalProps> = ({ isOpen, on
                               {tx.type}
                             </span>
                           </td>
-                          <td className="py-3 px-4 text-sm text-slate-600 truncate max-w-xs">{tx.description}</td>
+                          <td className="text-slate-600 truncate max-w-xs">{tx.description}</td>
                           <td className={`py-3 px-4 text-right font-bold whitespace-nowrap ${tx.amount >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                             {tx.amount > 0 ? '+' : ''}{fmt(tx.amount)}
                           </td>

@@ -57,18 +57,18 @@ export function BIDetailedAnalyticsTable({ filter }: any) {
         </div>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
+        <table className="premium-table">
           <thead>
-            <tr className="bg-white text-slate-500 border-b border-slate-100">
-              <th className="py-4 px-5 font-semibold">Month</th>
-              <th className="py-4 px-5 font-semibold text-right">Revenue</th>
-              <th className="py-4 px-5 font-semibold text-right">Invested/Purchases</th>
-              <th className="py-4 px-5 font-semibold text-right">Expenses</th>
-              <th className="py-4 px-5 font-semibold text-right">Net Profit (Est.)</th>
-              <th className="py-4 px-5 font-semibold text-right">ROI</th>
+            <tr>
+              <th className="px-5 font-semibold">Month</th>
+              <th className="px-5 font-semibold text-right">Revenue</th>
+              <th className="px-5 font-semibold text-right">Invested/Purchases</th>
+              <th className="px-5 font-semibold text-right">Expenses</th>
+              <th className="px-5 font-semibold text-right">Net Profit (Est.)</th>
+              <th className="px-5 font-semibold text-right">ROI</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody>
             {sortedMonths.length === 0 ? (
               <tr>
                 <td colSpan={6} className="py-8 text-center text-slate-400">No data available.</td>
@@ -104,14 +104,14 @@ export function BIDetailedAnalyticsTable({ filter }: any) {
 
                 return (
                   <tr key={month} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-4 px-5 font-bold text-slate-800">{monthName} {yearStr}</td>
-                    <td className="py-4 px-5 font-bold text-emerald-700 text-right">{formatCurrency(data.revenue)}</td>
-                    <td className="py-4 px-5 text-slate-700 text-right">{formatCurrency(data.invested)}</td>
-                    <td className="py-4 px-5 text-rose-600 text-right">{formatCurrency(data.expenses)}</td>
+                    <td className="px-5">{monthName} {yearStr}</td>
+                    <td className="px-5 text-emerald-700 text-right">{formatCurrency(data.revenue)}</td>
+                    <td className="px-5 text-slate-700 text-right">{formatCurrency(data.invested)}</td>
+                    <td className="px-5 text-rose-600 text-right">{formatCurrency(data.expenses)}</td>
                     <td className={`py-4 px-5 font-black text-right ${netProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                       {formatCurrency(netProfit)}
                     </td>
-                    <td className="py-4 px-5 text-right">
+                    <td className="px-5 text-right">
                       <span className={`text-xs font-bold px-2 py-1 rounded-md ${roi >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
                         {roi.toFixed(1)}%
                       </span>

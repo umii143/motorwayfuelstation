@@ -349,24 +349,24 @@ export default function BankCashPanel({
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left font-sans text-xs border-collapse">
+                <table className="premium-table">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-slate-150 text-slate-500 uppercase font-bold tracking-wider text-[10px]">
+                    <tr className="border-slate-150 text-[10px]">
                       <th className="py-2.5 px-3">{t('Bank Name', 'بینک کا نام')}</th>
                       <th className="py-2.5 px-3">{t('Account Number', 'اکاؤنٹ نمبر')}</th>
                       <th className="py-2.5 px-3 font-right text-right">{t('Current Active Balance', 'موجودہ بیلنس')}</th>
                       <th className="py-2.5 px-3 text-right">{t('Quick Actions', 'کارروائی')}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 font-medium">
+                  <tbody>
                     {filteredBanks.map((b) => (
                       <tr key={b.id} className="hover:bg-slate-50/50">
-                        <td className="py-3 px-3 text-slate-800 font-bold">{b.name}</td>
-                        <td className="py-3 px-3 text-slate-500 font-mono text-[11px]">{b.accountNo}</td>
-                        <td className="py-3 px-3 text-right font-mono text-slate-900 font-extrabold text-[12px]">
+                        <td className="px-3">{b.name}</td>
+                        <td className="px-3 font-mono text-[11px]">{b.accountNo}</td>
+                        <td className="px-3 text-right font-mono font-extrabold text-[12px]">
                           {formatCurrency(b.balance, settings)}
                         </td>
-                        <td className="py-3 px-3 text-right">
+                        <td className="px-3 text-right">
                           <button
                             onClick={() => setAdjustBankId(b.id)}
                             className="bg-slate-900 text-white hover:bg-slate-850 text-[10px] font-bold px-3 py-1 rounded-md transition-colors cursor-pointer"
@@ -394,9 +394,9 @@ export default function BankCashPanel({
               </p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left font-sans text-xs border-collapse">
+                <table className="premium-table">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-slate-150 text-slate-500 uppercase font-bold tracking-wider text-[10px]">
+                    <tr className="border-slate-150 text-[10px]">
                       <th className="py-2.5 px-3">{t('Date', 'تاریخ')}</th>
                       <th className="py-2.5 px-3">{t('Shift Ref & Operator', 'شفٹ و سیلز مین')}</th>
                       <th className="py-2.5 px-3">{t('Target Bank', 'منتقل بینک')}</th>
@@ -404,17 +404,17 @@ export default function BankCashPanel({
                       <th className="py-2.5 px-3 text-right">{t('Amount Deposited', 'منتقل رقم')}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 font-medium">
+                  <tbody>
                     {compiledShiftDeposits.map((item) => (
                       <tr key={item.id} className="hover:bg-slate-50/50">
-                        <td className="py-3 px-3 text-slate-550 font-mono text-[11px]">{item.date}</td>
-                        <td className="py-3 px-3">
+                        <td className="px-3 text-slate-550 font-mono text-[11px]">{item.date}</td>
+                        <td className="px-3">
                           <div className="font-semibold text-slate-800">{item.shiftId}</div>
                           <span className="text-[10px] text-slate-400 block mt-0.5">{item.operator.toUpperCase()}</span>
                         </td>
-                        <td className="py-3 px-3 text-slate-700 font-semibold">{item.bankName}</td>
-                        <td className="py-3 px-3 text-slate-500">{item.reference}</td>
-                        <td className="py-3 px-3 text-right font-mono text-emerald-600 font-extrabold text-[12px]">
+                        <td className="px-3 text-slate-700 font-semibold">{item.bankName}</td>
+                        <td className="px-3">{item.reference}</td>
+                        <td className="px-3 text-right font-mono text-emerald-600 font-extrabold text-[12px]">
                           +{formatCurrency(item.amount, settings)}
                         </td>
                       </tr>
@@ -463,7 +463,7 @@ export default function BankCashPanel({
       {/* MODAL 1: ADD NEW BANK */}
       <AnimatePresence>
         {showAddBank && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs">
+          <div className="premium-modal-overlay">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -540,7 +540,7 @@ export default function BankCashPanel({
       {/* MODAL 2: MANUAL ADJUST BALANCE */}
       <AnimatePresence>
         {adjustBankId && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs">
+          <div className="premium-modal-overlay">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}

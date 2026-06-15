@@ -75,16 +75,16 @@ export function BIProductSupplierAnalysis({ metrics }: any) {
           </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="premium-table">
             <thead>
-              <tr className="bg-white text-slate-500 border-b border-slate-100">
-                <th className="py-3 px-5 font-semibold">Supplier</th>
-                <th className="py-3 px-5 font-semibold text-right">Batches</th>
-                <th className="py-3 px-5 font-semibold text-right">Liters</th>
-                <th className="py-3 px-5 font-semibold text-right">Spent</th>
+              <tr>
+                <th className="px-5 font-semibold">Supplier</th>
+                <th className="px-5 font-semibold text-right">Batches</th>
+                <th className="px-5 font-semibold text-right">Liters</th>
+                <th className="px-5 font-semibold text-right">Spent</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {Object.keys(supplierPerformance).length === 0 ? (
                 <tr>
                   <td colSpan={4} className="py-8 text-center text-slate-400">No purchases in the selected period.</td>
@@ -96,10 +96,10 @@ export function BIProductSupplierAnalysis({ metrics }: any) {
                     const supp = suppliers.find(s => s.id === supplierId);
                     return (
                       <tr key={supplierId} className="hover:bg-slate-50 transition-colors">
-                        <td className="py-3 px-5 font-bold text-slate-800">{supp?.name || 'Unknown Supplier'}</td>
-                        <td className="py-3 px-5 text-slate-600 text-right">{data.batches}</td>
-                        <td className="py-3 px-5 text-slate-600 text-right">{data.liters.toLocaleString()} L</td>
-                        <td className="py-3 px-5 font-bold text-slate-700 text-right">{formatCurrency(data.spent)}</td>
+                        <td className="px-5">{supp?.name || 'Unknown Supplier'}</td>
+                        <td className="px-5 text-slate-600 text-right">{data.batches}</td>
+                        <td className="px-5 text-slate-600 text-right">{data.liters.toLocaleString()} L</td>
+                        <td className="px-5 text-slate-700 text-right">{formatCurrency(data.spent)}</td>
                       </tr>
                     );
                 })

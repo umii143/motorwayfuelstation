@@ -134,35 +134,35 @@ export default function AssetRegister({ settings, stationId }: AssetRegisterProp
 
       <div className="premium-card border overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="premium-table">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider font-bold">
-                <th className="px-4 py-3">Asset Details</th>
-                <th className="px-4 py-3">Serial No.</th>
-                <th className="px-4 py-3">Installation Date</th>
-                <th className="px-4 py-3">Warranty Status</th>
-                <th className="px-4 py-3">Current Status</th>
-                <th className="px-4 py-3 text-right">Actions</th>
+              <tr>
+                <th>Asset Details</th>
+                <th>Serial No.</th>
+                <th>Installation Date</th>
+                <th>Warranty Status</th>
+                <th>Current Status</th>
+                <th className="text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-sm">
+            <tbody>
               {filteredAssets.map(asset => {
                 const expired = isWarrantyExpired(asset.warrantyExpiryDate);
                 const expiringSoon = isWarrantyExpiringSoon(asset.warrantyExpiryDate);
 
                 return (
                   <tr key={asset.id} className="hover:bg-slate-50/50 transition">
-                    <td className="px-4 py-3">
+                    <td>
                       <div className="font-bold text-slate-900">{asset.name}</div>
                       <div className="text-[10px] uppercase font-bold text-slate-500">{asset.type}</div>
                     </td>
-                    <td className="px-4 py-3 font-mono text-slate-600 text-xs">
+                    <td className="font-mono text-slate-600">
                       {asset.serialNumber || 'N/A'}
                     </td>
-                    <td className="px-4 py-3 text-slate-700">
+                    <td className="text-slate-700">
                       {new Date(asset.installationDate).toLocaleDateString()}
                     </td>
-                    <td className="px-4 py-3">
+                    <td>
                       {!asset.warrantyExpiryDate ? (
                         <span className="text-slate-400 italic text-xs">No Warranty</span>
                       ) : expired ? (
@@ -179,7 +179,7 @@ export default function AssetRegister({ settings, stationId }: AssetRegisterProp
                         <span className="text-emerald-600 text-xs font-bold">Active ({new Date(asset.warrantyExpiryDate).toLocaleDateString()})</span>
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td>
                       <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
                         asset.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 
                         asset.status === 'under_maintenance' ? 'bg-amber-100 text-amber-700' : 
@@ -188,7 +188,7 @@ export default function AssetRegister({ settings, stationId }: AssetRegisterProp
                         {asset.status.replace('_', ' ')}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="text-right">
                       <button 
                         onClick={() => handleOpenModal(asset)}
                         className="text-rose-600 hover:text-rose-800 font-bold text-xs bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition"
@@ -213,7 +213,7 @@ export default function AssetRegister({ settings, stationId }: AssetRegisterProp
 
       {/* Form Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+        <div className="premium-modal-overlay">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <h2 className="text-lg font-black font-sans text-slate-800 flex items-center gap-2">

@@ -1006,3 +1006,90 @@ input, textarea {
   animation: none !important;
 }
 
+
+/* --- PREMIUM UI POLISH --- */
+.premium-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border-main);
+  background: var(--bg-card);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.premium-table th {
+  background: rgba(248, 250, 252, 0.5);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-main);
+}
+.dark .premium-table th { background: rgba(15, 23, 42, 0.5); }
+
+.premium-table td {
+  padding: 16px;
+  font-size: 13px;
+  color: var(--text-main);
+  border-bottom: 1px solid var(--border-main);
+  transition: background-color 0.2s ease;
+}
+.premium-table tr:last-child td { border-bottom: none; }
+.premium-table tr:hover td { background: rgba(248, 250, 252, 0.8); }
+.dark .premium-table tr:hover td { background: rgba(30, 41, 59, 0.5); }
+
+.premium-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.premium-modal {
+  background: var(--bg-card);
+  border-radius: 24px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-main);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modal-pop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.premium-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  background: var(--bg-card);
+  border: 1px dashed var(--border-main);
+  border-radius: 24px;
+}
+.premium-empty-icon {
+  width: 64px; height: 64px;
+  background: rgba(249, 115, 22, 0.1);
+  color: #F97316;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 16px;
+}
+
+@keyframes modal-pop {
+  0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+

@@ -51,7 +51,7 @@ function RecoveryModal({
   const pct = amount && claim.claimAmount > 0 ? ((parseFloat(amount) / claim.claimAmount) * 100).toFixed(1) : '0';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div className="premium-modal-overlay">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
         <div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-4 text-white">
           <h3 className="font-black text-base">💰 Record Recovery</h3>

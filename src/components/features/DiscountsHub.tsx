@@ -198,18 +198,18 @@ export default function DiscountsHub({
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-indigo-50/30 text-indigo-900 border-b border-indigo-100 font-sans uppercase tracking-wider text-[11px]">
+          <table className="premium-table">
+            <thead className="bg-indigo-50/30 text-indigo-900 border-indigo-100 text-[11px]">
               <tr>
-                <th className="p-4 rounded-tl-xl font-bold">{t('Date & Time', 'تاريخ اور وقت')}</th>
-                <th className="p-4 font-bold">{t('Customer / Beneficiary', 'صارف / کھاتہ دار')}</th>
-                <th className="p-4 font-bold">{t('Type', 'قسم')}</th>
-                <th className="p-4 font-bold text-right">{t(`Amount (${getCurrencySymbol(settings)})`, `رقم (${getCurrencySymbol(settings)})`)}</th>
-                <th className="p-4 font-bold">{t('Approval Auth', 'تصدیق کنندہ')}</th>
-                <th className="p-4 rounded-tr-xl font-bold">{t('Reason', 'وجہ')}</th>
+                <th className="rounded-tl-xl">{t('Date & Time', 'تاريخ اور وقت')}</th>
+                <th>{t('Customer / Beneficiary', 'صارف / کھاتہ دار')}</th>
+                <th>{t('Type', 'قسم')}</th>
+                <th className="text-right">{t(`Amount (${getCurrencySymbol(settings)})`, `رقم (${getCurrencySymbol(settings)})`)}</th>
+                <th>{t('Approval Auth', 'تصدیق کنندہ')}</th>
+                <th className="rounded-tr-xl">{t('Reason', 'وجہ')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {filteredDiscounts.length === 0 ? (
                 <tr>
                   <td
@@ -225,7 +225,7 @@ export default function DiscountsHub({
                     key={d.id}
                     className="hover:bg-slate-50 transition-colors"
                   >
-                    <td className="p-4">
+                    <td>
                       <div className="font-mono text-slate-900 font-medium">
                         {new Date(d.timestamp).toLocaleDateString()}
                       </div>
@@ -233,7 +233,7 @@ export default function DiscountsHub({
                         {new Date(d.timestamp).toLocaleTimeString()}
                       </div>
                     </td>
-                    <td className="p-4">
+                    <td>
                       <div className="font-bold text-slate-800">
                         {d.customerName}
                       </div>
@@ -245,22 +245,21 @@ export default function DiscountsHub({
                           : "Any"}
                       </div>
                     </td>
-                    <td className="p-4">
+                    <td>
                       <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700">
                         {d.type}
                       </span>
                     </td>
-                    <td className="p-4 text-right font-mono font-bold text-rose-600">
+                    <td className="text-right font-mono text-rose-600">
                       - {formatCurrency(d.amount, settings)}
                     </td>
-                    <td className="p-4">
+                    <td>
                       <div className="flex items-center gap-1.5 text-xs text-slate-700">
                         <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
                         {d.approvedBy}
                       </div>
                     </td>
-                    <td
-                      className="p-4 max-w-full max-w-[200px] truncate text-slate-600"
+                    <td className="max-w-full max-w-[200px] truncate text-slate-600"
                       title={d.reason}
                     >
                       {d.reason}

@@ -308,15 +308,15 @@ export default function ProfitDrillDownModal({
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead className="bg-white sticky top-0 z-10 shadow-sm">
-                      <tr className="border-b border-slate-100 text-[10px] uppercase tracking-wider font-black text-slate-400">
+                  <table className="premium-table">
+                    <thead className="sticky top-0 z-10 shadow-sm">
+                      <tr className="text-[10px] font-black">
                         <th className="p-3">Product Name</th>
                         <th className="p-3 text-right">Gross Profit Contribution</th>
                         <th className="p-3 text-right">% of Total Margin</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody>
                       {productProfitData.length === 0 ? (
                         <tr>
                           <td colSpan={3} className="p-8 text-center text-slate-500 text-sm font-medium">

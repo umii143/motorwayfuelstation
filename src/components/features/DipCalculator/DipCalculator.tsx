@@ -340,18 +340,18 @@ export default function DipCalculator({ settings, tanks }: DipCalculatorProps) {
               {showChart && selectedTank?.dipChart && (
                 <div className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] overflow-hidden">
                   <div className="max-h-48 overflow-y-auto">
-                    <table className="w-full text-xs">
+                    <table className="premium-table">
                       <thead className="sticky top-0 bg-[var(--bg-hover)]">
                         <tr>
-                          <th className="px-4 py-2 text-left font-bold text-[var(--text-muted)] uppercase tracking-wider">Depth (cm)</th>
-                          <th className="px-4 py-2 text-right font-bold text-[var(--text-muted)] uppercase tracking-wider">Volume (L)</th>
+                          <th className="text-[var(--text-muted)]">Depth (cm)</th>
+                          <th className="text-right text-[var(--text-muted)]">Volume (L)</th>
                         </tr>
                       </thead>
                       <tbody>
                         {selectedTank.dipChart.sort((a, b) => a.cm - b.cm).map((entry, i) => (
                           <tr key={i} className={`border-t border-[var(--border-main)] ${Math.abs(entry.cm - parseFloat(dipCm)) < 2 ? 'bg-blue-50' : ''}`}>
-                            <td className="px-4 py-1.5 font-mono text-[var(--text-main)]">{entry.cm}</td>
-                            <td className="px-4 py-1.5 font-mono text-right text-[var(--text-main)]">{entry.liters}</td>
+                            <td className="py-1.5 font-mono text-[var(--text-main)]">{entry.cm}</td>
+                            <td className="py-1.5 font-mono text-right text-[var(--text-main)]">{entry.liters}</td>
                           </tr>
                         ))}
                       </tbody>
