@@ -156,16 +156,16 @@ export default function InventoryAgingDashboard({
   const activeProducts = products.filter(p => activeProductIds.includes(p.id));
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3">
       {/* Critical alert banner */}
       {hasCritical && (
-        <div className="bg-gradient-to-r from-red-600 to-orange-600 rounded-2xl p-4 text-white shadow-md flex items-center gap-3">
-          <Flame className="size-8 shrink-0 animate-pulse" />
+        <div className="bg-gradient-to-r from-red-600 to-orange-600 rounded-lg p-3 text-white shadow-xs flex items-center gap-3">
+          <Flame className="size-6 shrink-0 animate-pulse" />
           <div className="flex-1">
-            <p className="font-black text-base">
+            <p className="font-black text-sm">
               {t('⚠️ Aging Alert', '⚠️ پرانا اسٹاک')} — {tierStats[2].count + tierStats[3].count} {t('batches require immediate action', 'بیچز فوری توجہ مانگتے ہیں')}
             </p>
-            <p className="text-red-100 text-sm mt-0.5">
+            <p className="text-red-100 text-[10px] mt-0.5">
               {t(`Inventory at risk: Rs.${exposure.inventoryAtRisk.toLocaleString('en-PK', { maximumFractionDigits: 0 })} · ${exposure.atRiskCount} batches over 60 days old.`,
                 `خطرے میں اسٹاک: Rs.${exposure.inventoryAtRisk.toLocaleString('en-PK', { maximumFractionDigits: 0 })} · ${exposure.atRiskCount} بیچز 60 دن سے زیادہ پرانے ہیں۔`
               )}
@@ -175,49 +175,49 @@ export default function InventoryAgingDashboard({
       )}
 
       {/* Exposure Engine */}
-      <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 text-white shadow-lg">
-        <div className="flex items-center gap-2 mb-4">
-          <BarChart2 className="size-5 text-orange-400" />
-          <h3 className="font-bold text-sm uppercase tracking-widest text-slate-300">{t('Inventory Exposure Engine', 'انوینٹری ایکسپوژر انجن')}</h3>
+      <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-3 text-white shadow-xs">
+        <div className="flex items-center gap-2 mb-2">
+          <BarChart2 className="size-4 text-orange-400" />
+          <h3 className="font-bold text-xs uppercase tracking-widest text-slate-300">{t('Inventory Exposure Engine', 'انوینٹری ایکسپوژر انجن')}</h3>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {[
             { label: t('Current Stock Value', 'موجودہ اسٹاک قیمت'), value: `Rs.${(exposure.totalStockValue / 1000000).toFixed(2)}M`, sub: 'Landed Cost × Qty Remaining', color: 'text-blue-300' },
             { label: t('Potential Revenue', 'ممکنہ آمدنی'), value: `Rs.${(exposure.totalPotentialRevenue / 1000000).toFixed(2)}M`, sub: 'OGRA Price × Qty Remaining', color: 'text-emerald-300' },
             { label: t('Expected Margin', 'متوقع منافع'), value: `Rs.${(exposure.expectedMargin / 1000).toFixed(0)}K`, sub: 'Revenue − Landed Cost', color: 'text-yellow-300' },
             { label: t('Inventory At Risk', 'خطرے میں اسٹاک'), value: `Rs.${(exposure.inventoryAtRisk / 1000).toFixed(0)}K`, sub: `${exposure.atRiskCount} batches 60+ days`, color: exposure.inventoryAtRisk > 0 ? 'text-red-300' : 'text-emerald-300' },
           ].map((s, i) => (
-            <div key={i} className="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
-              <p className="text-slate-400 text-[10px] font-semibold uppercase tracking-wide">{s.label}</p>
-              <p className={`text-xl font-black ${s.color} mt-1`}>{s.value}</p>
-              <p className="text-slate-500 text-[10px] mt-0.5">{s.sub}</p>
+            <div key={i} className="bg-white/10 rounded-lg p-2 backdrop-blur-xs">
+              <p className="text-slate-400 text-[9px] font-semibold uppercase tracking-wide">{s.label}</p>
+              <p className={`text-base font-black ${s.color} mt-0.5`}>{s.value}</p>
+              <p className="text-slate-500 text-[9px] mt-0.5 leading-tight">{s.sub}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Tier Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {tierStats.map(ts => {
           const TierIcon = ts.icon;
           return (
             <button
               key={ts.tier}
               onClick={() => setFilterTier(filterTier === ts.tier ? 'all' : ts.tier)}
-              className={`rounded-2xl p-4 border text-left transition-all hover:shadow-md ${
-                filterTier === ts.tier ? `${ts.bgCard} ${ts.borderCard} shadow-md ring-2 ring-offset-1 ${ts.borderCard}` : 'bg-white border-slate-200'
+              className={`rounded-lg p-3 border text-left transition-all hover:shadow-xs ${
+                filterTier === ts.tier ? `${ts.bgCard} ${ts.borderCard} shadow-xs ring-1 ring-offset-1 ${ts.borderCard}` : 'bg-white dark:bg-slate-800 border-theme-main'
               }`}
             >
-              <div className="flex items-center gap-2 mb-2">
-                <TierIcon className={`size-4 ${ts.color} ${ts.pulse ? 'animate-pulse' : ''}`} />
-                <span className={`text-[10px] font-black uppercase tracking-widest ${ts.color}`}>{ts.label}</span>
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <TierIcon className={`size-3.5 ${ts.color} ${ts.pulse ? 'animate-pulse' : ''}`} />
+                <span className={`text-[9px] font-black uppercase tracking-widest ${ts.color}`}>{ts.label}</span>
               </div>
-              <p className="text-2xl font-black text-slate-800">{ts.count}</p>
-              <p className="text-xs text-slate-400 font-semibold">{ts.range}</p>
+              <p className="text-xl font-black text-slate-800 dark:text-slate-100">{ts.count}</p>
+              <p className="text-[10px] text-slate-400 font-semibold">{ts.range}</p>
               {ts.count > 0 && (
                 <>
-                  <p className="text-xs font-bold text-slate-600 mt-1">{ts.totalQty.toLocaleString()}L remaining</p>
-                  <p className="text-[10px] text-slate-400">Rs.{(ts.totalExposure / 1000).toFixed(0)}K exposure</p>
+                  <p className="text-[10px] font-bold text-slate-600 dark:text-slate-400 mt-1">{ts.totalQty.toLocaleString()}L remaining</p>
+                  <p className="text-[9px] text-slate-400">Rs.{(ts.totalExposure / 1000).toFixed(0)}K exposure</p>
                 </>
               )}
             </button>
@@ -226,34 +226,34 @@ export default function InventoryAgingDashboard({
       </div>
 
       {/* Aging By Product */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
-        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-          <Droplets className="size-4" />
+      <div className="kpi-card p-3">
+        <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+          <Droplets className="size-3.5" />
           {t('Aging by Product', 'مصنوع کے مطابق پرانا پن')}
         </h3>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {byProduct.map(({ product, qty, value, maxDays }) => {
             const tier = getTierForDays(maxDays);
             const TierIcon = tier.icon;
             return (
-              <div key={product?.id || 'unknown'} className="flex items-center gap-3">
-                <div className={`size-8 rounded-xl flex items-center justify-center shrink-0 ${tier.badgeBg}`}>
-                  <TierIcon className={`size-4 ${tier.color}`} />
+              <div key={product?.id || 'unknown'} className="flex items-center gap-2">
+                <div className={`size-6 rounded flex items-center justify-center shrink-0 ${tier.badgeBg}`}>
+                  <TierIcon className={`size-3 ${tier.color}`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm font-bold text-slate-800">{product?.name || 'Unknown'}</span>
-                    <span className={`text-xs font-black px-2 py-0.5 rounded-full ${tier.badgeBg} ${tier.badgeText}`}>
+                  <div className="flex justify-between items-center mb-0.5">
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{product?.name || 'Unknown'}</span>
+                    <span className={`text-[9px] font-black px-1.5 py-0.5 rounded ${tier.badgeBg} ${tier.badgeText}`}>
                       Max {maxDays}d — {tier.label}
                     </span>
                   </div>
-                  <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-theme-main rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full ${tier.tier === 'fresh' ? 'bg-emerald-500' : tier.tier === 'watch' ? 'bg-amber-400' : tier.tier === 'critical' ? 'bg-orange-500' : 'bg-red-600'}`}
                       style={{ width: `${Math.min(100, (maxDays / 120) * 100)}%` }}
                     />
                   </div>
-                  <div className="flex justify-between text-[10px] text-slate-400 mt-0.5 font-mono">
+                  <div className="flex justify-between text-[9px] text-slate-400 mt-0.5 font-mono">
                     <span>{qty.toLocaleString()}L remaining</span>
                     <span>Rs.{(value / 1000).toFixed(0)}K exposure</span>
                   </div>
@@ -265,29 +265,29 @@ export default function InventoryAgingDashboard({
       </div>
 
       {/* Batch List */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 flex flex-row gap-3 items-center justify-between">
-          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-            <Package className="size-4" />
+      <div className="kpi-card overflow-hidden">
+        <div className="p-3 border-b border-theme-main flex flex-row gap-3 items-center justify-between">
+          <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+            <Package className="size-3.5" />
             {t('Batch Aging Detail', 'بیچ پرانا پن تفصیل')}
             {activeBatches.length > 0 && (
-              <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-black">{activeBatches.length}</span>
+              <span className="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded font-black text-[9px]">{activeBatches.length}</span>
             )}
           </h3>
           <select
             value={filterProduct}
             onChange={e => setFilterProduct(e.target.value)}
-            className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:border-orange-500"
+            className="text-[10px] border-none rounded px-2 py-1 bg-theme-main text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-orange-500 uppercase font-bold"
           >
             <option value="all">All Products</option>
             {activeProducts.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </div>
 
-        <div className="divide-y divide-slate-50">
+        <div className="divide-y divide-theme-main">
           {activeBatches.length === 0 ? (
-            <div className="py-12 text-center text-slate-400">
-              <Package className="size-10 mx-auto mb-3 opacity-30" />
+            <div className="py-8 text-center text-slate-400 text-xs">
+              <Package className="size-8 mx-auto mb-2 opacity-30" />
               <p>{t('No active batches found.', 'کوئی بیچ نہیں ملا۔')}</p>
             </div>
           ) : (
@@ -298,49 +298,49 @@ export default function InventoryAgingDashboard({
               const isExpanded = expandedBatchId === b.id;
 
               return (
-                <div key={b.id} className={`${b.tier.tier === 'emergency' ? 'bg-red-50/40' : b.tier.tier === 'critical' ? 'bg-orange-50/30' : ''}`}>
+                <div key={b.id} className={`${b.tier.tier === 'emergency' ? 'bg-red-500/10' : b.tier.tier === 'critical' ? 'bg-orange-500/10' : ''}`}>
                   <div
-                    className="p-4 flex items-center gap-3 hover:bg-slate-50 cursor-pointer transition-colors"
+                    className="p-3 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors"
                     onClick={() => setExpandedBatchId(isExpanded ? null : b.id)}
                   >
                     {/* Aging days badge */}
-                    <div className={`size-12 rounded-xl flex flex-col items-center justify-center shrink-0 border ${b.tier.badgeBg} ${b.tier.borderCard}`}>
-                      <span className={`text-lg font-black leading-none ${b.tier.color}`}>{b.agingDays}</span>
-                      <span className="text-[9px] text-slate-400 font-bold uppercase">days</span>
+                    <div className={`size-10 rounded flex flex-col items-center justify-center shrink-0 border ${b.tier.badgeBg} ${b.tier.borderCard}`}>
+                      <span className={`text-base font-black leading-none ${b.tier.color}`}>{b.agingDays}</span>
+                      <span className="text-[8px] text-slate-500 font-bold uppercase">days</span>
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono text-sm font-bold text-slate-700">{b.batchNumber}</span>
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${b.tier.badgeBg} ${b.tier.badgeText}`}>
+                        <span className="font-mono text-xs font-bold text-slate-700 dark:text-slate-200">{b.batchNumber}</span>
+                        <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold ${b.tier.badgeBg} ${b.tier.badgeText}`}>
                           <TierIcon className="size-2.5" />
                           {b.tier.label} — {b.tier.range}
                         </span>
                         {b.qualityStatus === 'quarantined' && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-500/20 text-purple-600">
                             🔒 Quarantined
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">
+                      <p className="text-[10px] text-slate-500 mt-0.5">
                         {product?.name} · {supplier?.name || '—'} · {new Date(b.deliveryDate || b.date).toLocaleDateString('en-PK', { day: '2-digit', month: 'short', year: '2-digit' })}
                       </p>
                     </div>
 
                     <div className="text-right shrink-0 hidden sm:block">
-                      <p className="text-sm font-black text-slate-800">{b.qtyRemaining.toLocaleString()}L</p>
-                      <p className="text-xs text-slate-400">Rs.{(b.exposureValue / 1000).toFixed(0)}K</p>
+                      <p className="text-xs font-black text-slate-800 dark:text-slate-200">{b.qtyRemaining.toLocaleString()}L</p>
+                      <p className="text-[10px] text-slate-400">Rs.{(b.exposureValue / 1000).toFixed(0)}K</p>
                     </div>
 
                     <div className="text-right shrink-0">
-                      <p className={`text-xs font-bold ${b.tier.color}`}>{b.tier.action}</p>
-                      {isExpanded ? <ChevronUp className="size-3.5 text-slate-400 ml-auto mt-1" /> : <ChevronDown className="size-3.5 text-slate-400 ml-auto mt-1" />}
+                      <p className={`text-[10px] font-bold ${b.tier.color}`}>{b.tier.action}</p>
+                      {isExpanded ? <ChevronUp className="size-3 text-slate-400 ml-auto mt-1" /> : <ChevronDown className="size-3 text-slate-400 ml-auto mt-1" />}
                     </div>
                   </div>
 
                   {isExpanded && (
-                    <div className="px-4 pb-4 pt-0">
-                      <div className="bg-white rounded-xl border border-slate-200 p-3 grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                    <div className="px-3 pb-3 pt-0">
+                      <div className="bg-theme-main rounded border border-theme-main p-2 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px]">
                         {[
                           { label: 'Invoice #', value: b.invoiceNumber || '—' },
                           { label: 'Received', value: `${b.qtyReceived.toLocaleString()}L` },
@@ -351,11 +351,11 @@ export default function InventoryAgingDashboard({
                           { label: 'Exp. Margin', value: `Rs.${((b.expectedBatchMarginPerLiter || 0)).toFixed(2)}/L`, highlight: 'emerald' },
                           { label: 'Exposure', value: `Rs.${(b.exposureValue / 1000).toFixed(1)}K`, highlight: b.tier.tier === 'emergency' ? 'red' : b.tier.tier === 'critical' ? 'orange' : '' },
                         ].map((item, i) => (
-                          <div key={i} className={`rounded-lg p-2 border ${
-                            item.highlight === 'emerald' ? 'bg-emerald-50 border-emerald-100 text-emerald-800' :
-                            item.highlight === 'red' ? 'bg-red-50 border-red-100 text-red-800' :
-                            item.highlight === 'orange' ? 'bg-orange-50 border-orange-100 text-orange-800' :
-                            'bg-slate-50 border-slate-100 text-slate-700'
+                          <div key={i} className={`rounded p-1.5 border ${
+                            item.highlight === 'emerald' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' :
+                            item.highlight === 'red' ? 'bg-red-500/10 border-red-500/20 text-red-600' :
+                            item.highlight === 'orange' ? 'bg-orange-500/10 border-orange-500/20 text-orange-600' :
+                            'bg-slate-50/50 dark:bg-slate-800/50 border-theme-main text-slate-600 dark:text-slate-400'
                           }`}>
                             <p className="text-slate-400 mb-0.5">{item.label}</p>
                             <p className="font-bold">{item.value}</p>

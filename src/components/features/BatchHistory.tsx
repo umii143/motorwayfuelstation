@@ -104,62 +104,62 @@ export default function BatchHistory({ batches, products, language }: BatchHisto
   }, [batches]);
 
   return (
-    <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+    <div className="kpi-card p-4 overflow-hidden">
       {/* Header */}
-      <div className="p-6 border-b border-slate-100">
-        <div className="flex flex-row justify-between gap-4 items-center mb-4">
+      <div className="border-b border-theme-main pb-3 mb-3">
+        <div className="flex flex-col sm:flex-row justify-between gap-3 items-start sm:items-center mb-3">
           <div>
-            <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2">
-              <Package className="size-5 text-indigo-600" />
+            <h3 className="font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+              <Package className="size-4 text-orange-600" />
               <span>{t('FIFO Batch Ledger', 'بیچ لیجر (FIFO)', language)}</span>
             </h3>
-            <p className="text-sm text-slate-500 mt-0.5">
+            <p className="text-[10px] text-slate-500 mt-0.5">
               {t('Tracking active and exhausted stock batches for precise cost calculations.', 'دقیق قیمت کے حساب کے لیے بیچز کا ریکارڈ۔', language)}
             </p>
           </div>
           <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-slate-400" />
             <input
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder={t('Search batch, invoice...', 'تلاش کریں...', language)}
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white text-sm"
+              placeholder={t('Search batch...', 'تلاش کریں...', language)}
+              className="w-full pl-8 pr-3 py-1.5 bg-theme-main border-none rounded outline-hidden focus:ring-1 focus:ring-orange-500 text-xs"
             />
           </div>
         </div>
 
         {/* Summary Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {[
-            { label: 'Active Batches', value: stats.activeBatches, icon: Package, color: 'text-indigo-600' },
-            { label: 'Total Remaining', value: `${stats.totalRemaining.toLocaleString()}L`, icon: Droplets, color: 'text-blue-600' },
-            { label: 'Expected Profit', value: `Rs.${stats.totalExpectedProfit.toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, icon: TrendingUp, color: 'text-emerald-600' },
-            { label: 'Realized Margin', value: `Rs.${stats.totalRealizedMargin.toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, icon: BarChart2, color: 'text-orange-600' },
+            { label: 'Active', value: stats.activeBatches, icon: Package, color: 'text-indigo-600' },
+            { label: 'Remaining', value: `${stats.totalRemaining.toLocaleString()}L`, icon: Droplets, color: 'text-blue-600' },
+            { label: 'Expected PnL', value: `Rs.${stats.totalExpectedProfit.toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, icon: TrendingUp, color: 'text-emerald-600' },
+            { label: 'Realized', value: `Rs.${stats.totalRealizedMargin.toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, icon: BarChart2, color: 'text-orange-600' },
           ].map((stat, i) => (
-            <div key={i} className="bg-slate-50 rounded-xl p-3 border border-slate-100">
-              <p className="text-xs text-slate-500 flex items-center gap-1 mb-1">
-                <stat.icon className={`size-3.5 ${stat.color}`} />
+            <div key={i} className="bg-slate-50/50 dark:bg-slate-800/50 rounded-lg p-2 border border-theme-main">
+              <p className="text-[9px] text-slate-500 dark:text-slate-400 flex items-center gap-1 mb-0.5 uppercase tracking-wide">
+                <stat.icon className={`size-3 ${stat.color}`} />
                 {stat.label}
               </p>
-              <p className="font-bold text-slate-800 text-sm">{stat.value}</p>
+              <p className="font-bold text-slate-800 dark:text-slate-100 text-xs truncate">{stat.value}</p>
             </div>
           ))}
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap gap-2 mt-4">
+        <div className="flex flex-wrap gap-2 mt-3 fp-date-tabs">
           {(['all', 'active', 'partial', 'exhausted'] as const).map(s => (
             <button key={s} onClick={() => setFilterStatus(s)}
-              className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${filterStatus === s ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}>
+              className={`fp-date-tab flex-1 sm:flex-none ${filterStatus === s ? 'fp-date-tab--active !text-slate-800 dark:!text-slate-100 !border-slate-800 dark:!border-slate-500 bg-slate-200/50 dark:bg-slate-700/50' : ''}`}>
               {s.charAt(0).toUpperCase() + s.slice(1)}
             </button>
           ))}
-          <div className="ml-auto flex items-center gap-2 text-xs text-slate-500">
+          <div className="ml-auto flex items-center gap-1.5 text-[10px] text-slate-500 font-bold uppercase tracking-wide">
             Sort:
             {(['date', 'margin', 'remaining'] as const).map(s => (
               <button key={s} onClick={() => setSortBy(s)}
-                className={`px-2 py-1 rounded ${sortBy === s ? 'bg-indigo-50 text-indigo-600 font-bold' : 'hover:bg-slate-50'}`}>
+                className={`px-2 py-1 rounded transition-colors ${sortBy === s ? 'bg-orange-500/10 text-orange-600' : 'hover:bg-theme-main text-slate-400'}`}>
                 {s}
               </button>
             ))}
@@ -168,30 +168,30 @@ export default function BatchHistory({ batches, products, language }: BatchHisto
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left font-sans text-sm">
+      <div className="overflow-x-auto hide-scrollbar">
+        <table className="w-full text-left font-sans">
           <thead>
-            <tr className="bg-slate-50 text-slate-500">
-              <th className="py-4 px-4 font-semibold">Batch Ref</th>
-              <th className="py-4 px-4 font-semibold">Date</th>
-              <th className="py-4 px-4 font-semibold">Product</th>
-              <th className="py-4 px-4 font-semibold text-right">Received</th>
-              <th className="py-4 px-4 font-semibold text-right">Remaining</th>
-              <th className="py-4 px-4 font-semibold text-right">Landed Cost</th>
-              <th className="py-4 px-4 font-semibold">
+            <tr className="bg-theme-main text-slate-500 text-[10px] uppercase tracking-wider">
+              <th className="py-2.5 px-3 font-bold">Batch Ref</th>
+              <th className="py-2.5 px-3 font-bold">Date</th>
+              <th className="py-2.5 px-3 font-bold">Product</th>
+              <th className="py-2.5 px-3 font-bold text-right">Received</th>
+              <th className="py-2.5 px-3 font-bold text-right">Remaining</th>
+              <th className="py-2.5 px-3 font-bold text-right">Landed Cost</th>
+              <th className="py-2.5 px-3 font-bold">
                 <div className="flex flex-col">
                   <span>Expected Margin</span>
-                  <span className="text-xs text-slate-400 font-normal">Realized Margin</span>
+                  <span className="text-[9px] text-slate-400 font-normal">Realized Margin</span>
                 </div>
               </th>
-              <th className="py-4 px-4 font-semibold text-center">Age</th>
-              <th className="py-4 px-4 font-semibold text-center">Status</th>
+              <th className="py-2.5 px-3 font-bold text-center">Age</th>
+              <th className="py-2.5 px-3 font-bold text-center">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-theme-main">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={9} className="py-12 text-center text-slate-400">
+                <td colSpan={9} className="py-8 text-center text-slate-400 text-xs">
                   {t('No stock batches found.', 'کوئی اسٹاک بیچ نہیں ملا۔', language)}
                 </td>
               </tr>
@@ -209,94 +209,94 @@ export default function BatchHistory({ batches, products, language }: BatchHisto
                 return (
                   <React.Fragment key={batch.id}>
                     <tr
-                      className={`hover:bg-slate-50/50 transition-colors cursor-pointer ${aging.status === 'critical' && batch.status === 'active' ? 'bg-red-50/30' : ''}`}
+                      className={`hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer ${aging.status === 'critical' && batch.status === 'active' ? 'bg-red-500/10' : ''}`}
                       onClick={() => setExpandedId(isExpanded ? null : batch.id)}
                     >
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <Hash className="size-4 text-slate-400" />
-                          <span className="font-mono text-slate-700 font-medium text-xs bg-slate-100 px-2 py-0.5 rounded-md">
+                      <td className="py-2.5 px-3">
+                        <div className="flex items-center gap-1.5">
+                          <Hash className="size-3.5 text-slate-400" />
+                          <span className="font-mono text-slate-700 dark:text-slate-200 font-bold text-[11px] bg-theme-main px-1.5 py-0.5 rounded">
                             {batch.batchNumber}
                           </span>
                           {batch.invoiceNumber && (
-                            <span className="text-xs text-slate-400 hidden xl:inline">#{batch.invoiceNumber}</span>
+                            <span className="text-[10px] text-slate-400 hidden xl:inline">#{batch.invoiceNumber}</span>
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-slate-600">
-                        <div className="text-xs">
+                      <td className="py-2.5 px-3 text-slate-600 dark:text-slate-400">
+                        <div className="text-[11px]">
                           <div className="flex items-center gap-1">
                             <Clock className="size-3 text-slate-400" />
                             {new Date(batch.deliveryDate || batch.date).toLocaleDateString('en-PK', { day: '2-digit', month: 'short' })}
                           </div>
-                          {batch.deliveryTime && <span className="text-slate-400 ml-4">{batch.deliveryTime}</span>}
+                          {batch.deliveryTime && <span className="text-slate-400 ml-4 text-[9px]">{batch.deliveryTime}</span>}
                         </div>
                       </td>
-                      <td className="py-3 px-4 font-bold text-slate-800 text-sm">
+                      <td className="py-2.5 px-3 font-bold text-slate-800 dark:text-slate-100 text-xs">
                         {product ? t(product.name, product.urduName, language) : batch.productId}
                       </td>
-                      <td className="py-3 px-4 text-right font-mono font-medium text-slate-600 text-sm">
+                      <td className="py-2.5 px-3 text-right font-mono font-medium text-slate-600 dark:text-slate-300 text-[11px]">
                         {batch.qtyReceived.toLocaleString()}
                       </td>
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-2.5 px-3 text-right">
                         <div>
-                          <span className={`font-bold font-mono text-sm ${batch.qtyRemaining > 0 ? 'text-indigo-600' : 'text-slate-400'}`}>
+                          <span className={`font-bold font-mono text-[11px] ${batch.qtyRemaining > 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`}>
                             {batch.qtyRemaining.toLocaleString()}
                           </span>
                           {pctSold > 0 && (
-                            <div className="mt-1">
-                              <MarginBar current={pctSold} max={100} />
-                              <p className="text-xs text-slate-400 text-right mt-0.5">{pctSold.toFixed(0)}% sold</p>
+                            <div className="mt-1 flex flex-col items-end">
+                              <div className="w-16"><MarginBar current={pctSold} max={100} /></div>
+                              <p className="text-[9px] text-slate-400 mt-0.5">{pctSold.toFixed(0)}% sold</p>
                             </div>
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-2.5 px-3 text-right">
                         <div>
-                          <span className="font-mono font-medium text-slate-600 text-sm">
-                            Rs. {batch.landedCostPerLiter.toFixed(2)}
+                          <span className="font-mono font-bold text-slate-600 dark:text-slate-300 text-[11px]">
+                            Rs.{batch.landedCostPerLiter.toFixed(2)}
                           </span>
                           {batch.invoiceCostPerLiter && batch.invoiceCostPerLiter !== batch.landedCostPerLiter && (
-                            <p className="text-xs text-slate-400">Invoice: Rs.{batch.invoiceCostPerLiter.toFixed(2)}</p>
+                            <p className="text-[9px] text-slate-400">Inv: Rs.{batch.invoiceCostPerLiter.toFixed(2)}</p>
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-2.5 px-3">
                         <div className="space-y-1">
                           {/* Expected Margin */}
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1">
                             {expectedMargin > 0
-                              ? <TrendingUp className="size-3.5 text-emerald-500 shrink-0" />
-                              : <TrendingDown className="size-3.5 text-red-500 shrink-0" />
+                              ? <TrendingUp className="size-3 text-emerald-500 shrink-0" />
+                              : <TrendingDown className="size-3 text-red-500 shrink-0" />
                             }
-                            <span className={`font-bold text-sm ${expectedMargin > 0 ? 'text-emerald-700' : 'text-red-600'}`}>
-                              Rs. {expectedMargin.toFixed(2)}/L
+                            <span className={`font-bold text-[11px] ${expectedMargin > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-600'}`}>
+                              Rs.{expectedMargin.toFixed(2)}/L
                             </span>
                           </div>
-                          <MarginBar current={expectedMargin} max={maxMargin} />
+                          <div className="w-20"><MarginBar current={expectedMargin} max={maxMargin} /></div>
                           {/* Realized Margin */}
                           {hasRealizedData && (
-                            <div className="flex items-center gap-1.5 mt-1">
-                              <span className="text-xs text-slate-400">Realized:</span>
-                              <span className={`text-xs font-semibold ${realizedMarginPL >= expectedMargin ? 'text-emerald-600' : 'text-amber-600'}`}>
-                                Rs. {realizedMarginPL.toFixed(2)}/L
+                            <div className="flex items-center gap-1 mt-0.5">
+                              <span className="text-[9px] text-slate-400">Realized:</span>
+                              <span className={`text-[9px] font-bold ${realizedMarginPL >= expectedMargin ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                                Rs.{realizedMarginPL.toFixed(2)}
                                 {realizedMarginPL >= expectedMargin ? ' ✅' : ' ⚠️'}
                               </span>
                             </div>
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-2.5 px-3 text-center">
                         {batch.status !== 'depleted' && batch.status !== 'exhausted' ? (
                           <AgingBadge days={days} />
                         ) : <span className="text-slate-300 text-xs">—</span>}
                       </td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-2.5 px-3 text-center">
                         <div className="flex flex-col items-center gap-1">
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${getStatusColor(batch)}`}>
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-bold border ${getStatusColor(batch)}`}>
                             {getStatusLabel(batch)}
                           </span>
-                          {isExpanded ? <ChevronUp className="size-3.5 text-slate-400" /> : <ChevronDown className="size-3.5 text-slate-400" />}
+                          {isExpanded ? <ChevronUp className="size-3 text-slate-400" /> : <ChevronDown className="size-3 text-slate-400" />}
                         </div>
                       </td>
                     </tr>

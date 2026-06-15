@@ -119,24 +119,24 @@ export default function DriversManager({ settings, stationId }: DriversManagerPr
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-row justify-between items-start items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
-        <div className="flex flex-row gap-4 w-full sm:w-auto flex-1">
-          <div className="relative w-full sm:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+      <div className="flex flex-row justify-between items-center gap-2 mb-2">
+        <div className="flex flex-row gap-2 w-full flex-1">
+          <div className="relative w-full">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
             <input 
               type="text" 
-              placeholder="Search by Name, License..."
+              placeholder="Search Name, License..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full pl-8 pr-3 py-1.5 bg-theme-card border border-theme-main rounded-lg text-xs focus:outline-none focus:border-orange-500"
             />
           </div>
           <select 
             value={filterAccount} 
             onChange={(e) => setFilterAccount(e.target.value)}
-            className="w-full sm:w-64 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full px-2 py-1.5 bg-theme-card border border-theme-main rounded-lg text-xs focus:outline-none focus:border-orange-500"
           >
-            <option value="all">All Corporate Accounts</option>
+            <option value="all">All Accounts</option>
             {accounts.map(acc => (
               <option key={acc.id} value={acc.id}>{acc.companyName}</option>
             ))}
@@ -145,61 +145,61 @@ export default function DriversManager({ settings, stationId }: DriversManagerPr
         <button 
           onClick={() => handleOpenModal()}
           disabled={accounts.length === 0}
-          className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-800 transition whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-1.5 bg-slate-900 dark:bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-800 transition whitespace-nowrap disabled:opacity-50"
         >
-          <Plus className="h-4 w-4" />
-          Add Driver
+          <Plus className="h-3.5 w-3.5" />
+          Add
         </button>
       </div>
 
       {accounts.length === 0 && (
-        <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
+        <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-amber-800 dark:text-amber-500 p-3 rounded-xl flex items-start gap-2 mb-2">
+          <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
           <div>
-            <h4 className="font-bold text-sm">No Corporate Accounts Exist</h4>
-            <p className="text-xs mt-1">You must create a corporate fleet account before you can add drivers.</p>
+            <h4 className="font-bold text-xs">No Corporate Accounts Exist</h4>
+            <p className="text-[10px] mt-0.5 opacity-80">You must create a corporate fleet account before you can add drivers.</p>
           </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-2">
         {filteredDrivers.map(driver => (
-          <div key={driver.id} className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition">
-            <div className="flex justify-between items-start mb-3">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${driver.status === 'active' ? 'bg-indigo-50 text-indigo-600' : 'bg-rose-50 text-rose-600'}`}>
-                  <Contact className="h-6 w-6" />
+          <div key={driver.id} className="kpi-card p-2">
+            <div className="flex justify-between items-start mb-2">
+              <div className="flex items-center gap-2 truncate">
+                <div className={`w-6 h-6 rounded flex items-center justify-center shrink-0 ${driver.status === 'active' ? 'bg-indigo-500/20 text-indigo-600' : 'bg-rose-500/20 text-rose-600'}`}>
+                  <Contact className="w-3.5 h-3.5" />
                 </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 font-sans tracking-tight">{driver.name}</h3>
-                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${driver.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                <div className="truncate">
+                  <h3 className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate leading-tight">{driver.name}</h3>
+                  <span className={`text-[9px] font-bold uppercase ${driver.status === 'active' ? 'text-emerald-500' : 'text-rose-500'}`}>
                     {driver.status}
                   </span>
                 </div>
               </div>
               <button 
                 onClick={() => handleOpenModal(driver)}
-                className="text-orange-600 hover:text-orange-800 font-bold text-xs bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded-lg transition"
+                className="text-orange-600 hover:text-orange-800 dark:hover:text-orange-400 font-bold text-[10px] bg-orange-50 dark:bg-orange-500/10 px-2 py-1 rounded transition"
               >
                 Edit
               </button>
             </div>
             
-            <div className="space-y-2 mt-4 text-sm text-slate-600 border-t border-slate-100 pt-3">
-              <div className="flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-slate-400" />
-                <span className="font-medium text-slate-700">{getAccountName(driver.accountId)}</span>
+            <div className="space-y-1.5 mt-2 text-[10px] text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800/50 pt-2">
+              <div className="flex items-center gap-1.5 truncate">
+                <Building2 className="w-3 h-3 text-slate-400 shrink-0" />
+                <span className="font-medium text-slate-700 dark:text-slate-300 truncate">{getAccountName(driver.accountId)}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Contact className="h-4 w-4 text-slate-400" />
-                <span>License: <span className="font-mono text-slate-800">{driver.licenseNumber}</span></span>
+              <div className="flex items-center gap-1.5 truncate">
+                <Contact className="w-3 h-3 text-slate-400 shrink-0" />
+                <span className="truncate">Lic: <span className="font-mono text-slate-800 dark:text-slate-200">{driver.licenseNumber}</span></span>
               </div>
-              <div className="flex items-center gap-2">
-                <CarFront className="h-4 w-4 text-slate-400" />
+              <div className="flex items-center gap-1.5 truncate">
+                <CarFront className="w-3 h-3 text-slate-400 shrink-0" />
                 {driver.assignedVehicleId ? (
-                  <span>Assigned to: <span className="font-mono font-bold text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded">{getVehicleReg(driver.assignedVehicleId)}</span></span>
+                  <span className="truncate">Assigned: <span className="font-mono font-bold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">{getVehicleReg(driver.assignedVehicleId)}</span></span>
                 ) : (
-                  <span className="text-slate-400 italic">No vehicle assigned</span>
+                  <span className="text-slate-400 dark:text-slate-500 italic truncate">No vehicle</span>
                 )}
               </div>
             </div>
@@ -207,10 +207,10 @@ export default function DriversManager({ settings, stationId }: DriversManagerPr
         ))}
 
         {filteredDrivers.length === 0 && (
-          <div className="col-span-full py-12 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
-            <UsersRound className="h-8 w-8 text-slate-300 mx-auto mb-3" />
-            <h3 className="text-sm font-bold text-slate-700">No Drivers Found</h3>
-            <p className="text-xs text-slate-500 mt-1">Add drivers to track their consumption and behavior.</p>
+          <div className="col-span-2 py-8 text-center border border-dashed border-theme-main rounded-xl bg-theme-card">
+            <UsersRound className="w-6 h-6 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+            <h3 className="text-xs font-bold text-theme-main">No Drivers Found</h3>
+            <p className="text-[10px] text-slate-500 mt-1">Add drivers to track consumption.</p>
           </div>
         )}
       </div>

@@ -419,28 +419,24 @@ export default function Ledger({
     <div className="space-y-6 pb-16 lg:pb-0">
 
       {/* HEADER ROW WITH INTEGRATED DYNAMIC TIME FILTER */}
-      <div className="flex flex-row flex-wrap items-start items-center justify-between gap-4 border-b border-slate-200 pb-4">
-        <div>
-          <span className="font-mono text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-0.5">OPERATIONS</span>
-          <h2 className="font-sans text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
-            <BookOpen className="h-6 w-6 text-orange-600" />
-            <span>{t('Consolidated Ledger Book', 'بنیادی یکجا کاروباری کھاتہ روزنامچہ')}</span>
-          </h2>
-          <p className="hidden md:block font-sans text-xs text-slate-500 mt-1">
-            {t('Unified Vyapar ledger weighing receivables (customers) against payables (wholesale depots).', 'گاہکوں اور آئل کمپنیوں کے بقایاجات، یکساں حساب اور مجموعی کھاتہ چالان کنٹرول پینل۔')}
-          </p>
+      <div className="fp-header flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-theme-main pb-3 mb-4">
+        <div className="flex items-center gap-2">
+          <BookOpen className="w-5 h-5 text-orange-600" />
+          <h1 className="text-lg font-black text-slate-800 dark:text-slate-100">
+            {t('Consolidated Ledger', 'بنیادی یکجا کھاتہ')}
+          </h1>
         </div>
 
         {/* TIME FILTER SELECTOR ROW */}
-        <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200 shadow-sm shrink-0 self-start lg:self-center">
+        <div className="fp-date-tabs">
           {(['all', 'weekly', 'monthly', 'yearly'] as const).map((filter) => (
             <button
               key={filter}
               onClick={() => setTimeFilter(filter)}
-              className={`px-3 py-1.5 font-sans text-[11px] font-bold uppercase tracking-wider rounded-md transition-all cursor-pointer ${
+              className={`fp-date-tab ${
                 timeFilter === filter
-                  ? 'bg-orange-600 text-white shadow-xs'
-                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                  ? 'fp-date-tab--active !text-orange-600 !border-orange-600 bg-orange-50/50 dark:bg-orange-500/10'
+                  : ''
               }`}
             >
               {filter === 'all' && t('All-Time', 'کل وقت')}
@@ -500,7 +496,7 @@ export default function Ledger({
             </div>
 
             {/* Filter buttons */}
-            <div className="flex gap-1.5 border-t border-slate-100 pt-3">
+            <div className="fp-date-tabs mt-2 w-full">
               {[
                 { id: 'all', label: 'All', urdu: 'تمام' },
                 { id: 'receivables', label: 'Dr (Customers)', urdu: 'صارفین' },
@@ -509,10 +505,10 @@ export default function Ledger({
                 <button
                   key={f.id}
                   onClick={() => setPartyTypeFilter(f.id as any)}
-                  className={`rounded-md px-2.5 py-1 text-[10px] font-sans font-bold cursor-pointer transition-colors ${
+                  className={`fp-date-tab flex-1 ${
                     partyTypeFilter === f.id
-                      ? 'bg-slate-800 text-white shadow-xs'
-                      : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                      ? 'fp-date-tab--active !text-slate-800 dark:!text-slate-100 !border-slate-800 dark:!border-slate-500 bg-slate-200/50 dark:bg-slate-700/50'
+                      : ''
                   }`}
                 >
                   {t(f.label, f.urdu)}
@@ -534,32 +530,32 @@ export default function Ledger({
                     setSelectedParty({ id: party.id, type: party.type });
                     setIsLedgerSheetOpen(true);
                   }}
-                  className={`relative w-full text-left rounded-xl border p-4 shadow-xs transition-colors flex items-center justify-between cursor-pointer ${
+                  className={`relative w-full text-left kpi-card p-2 flex items-center justify-between cursor-pointer ${
                     isSelected
-                      ? 'border-orange-500 bg-orange-50/20'
-                      : 'border-slate-200 bg-white hover:border-slate-300'
+                      ? 'border-orange-500 bg-orange-50/20 dark:bg-orange-500/10'
+                      : ''
                   }`}
                 >
-                  <div className={`absolute top-0 bottom-0 left-0 w-1 rounded-l-md ${isCust ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
+                  <div className={`absolute top-0 bottom-0 left-0 w-0.5 rounded-l ${isCust ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
 
-                  <div className="pl-3">
-                    <div className="flex items-center gap-1.5">
-                      {isCust ? <Users className="h-3.5 w-3.5 text-emerald-500" /> : <Truck className="h-3.5 w-3.5 text-rose-500" />}
-                      <h4 className="font-sans text-xs font-bold text-slate-800">
+                  <div className="pl-2 truncate flex-1">
+                    <div className="flex items-center gap-1.5 truncate">
+                      {isCust ? <Users className="h-3 w-3 text-emerald-500 shrink-0" /> : <Truck className="h-3 w-3 text-rose-500 shrink-0" />}
+                      <h4 className="font-sans text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
                         {t(party.name, party.urduName)}
                       </h4>
                     </div>
 
-                    <span className="font-mono text-[9px] text-slate-400 mt-1 block tracking-tight">
+                    <span className="font-mono text-[9px] text-slate-400 dark:text-slate-500 mt-0.5 block tracking-tight truncate">
                       📞 {party.contact}
                     </span>
                   </div>
 
-                  <div className="text-right">
-                    <span className={`font-mono text-xs font-bold block ${isCust ? 'text-emerald-700' : 'text-red-650'}`}>
+                  <div className="text-right shrink-0 ml-2">
+                    <span className={`font-mono text-xs font-bold block ${isCust ? 'text-emerald-600' : 'text-rose-600'}`}>
                       Rs. {outstanding.toLocaleString()}
                     </span>
-                    <span className="font-mono text-[8px] text-slate-400 block mt-1 uppercase">
+                    <span className="font-mono text-[8px] text-slate-400 dark:text-slate-500 block mt-0.5 uppercase">
                       {isCust ? t('Receivable', 'واجب الوصول') : t('Payable', 'واجب الادا')}
                     </span>
                   </div>
@@ -572,38 +568,38 @@ export default function Ledger({
         {/* RIGHT COLUMN (2/3 WIDTH): PARTY HISTORY TIMELINE (DESKTOP) */}
         <div className="hidden lg:block lg:col-span-2">
           {selectedParty && activePartyDetails ? (
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-6">
+            <div className="bg-theme-card rounded-xl border border-theme-main p-4 shadow-sm space-y-4">
               
-              <div className="flex flex-col gap-4 sm:flex-row items-center sm:justify-between border-b border-slate-100 pb-4">
-                <div className="flex gap-3 items-center">
-                  <div className={`flex h-11 w-11 items-center justify-center rounded-xl text-white ${selectedParty.type === 'customer' ? 'bg-emerald-500' : 'bg-rose-500'}`}>
-                    {selectedParty.type === 'customer' ? <Users className="h-5.5 w-5.5" /> : <Truck className="h-5.5 w-5.5" />}
+              <div className="flex flex-col gap-3 sm:flex-row items-center sm:justify-between border-b border-theme-main pb-3">
+                <div className="flex gap-2.5 items-center">
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl text-white ${selectedParty.type === 'customer' ? 'bg-emerald-500' : 'bg-rose-500'}`}>
+                    {selectedParty.type === 'customer' ? <Users className="h-5 w-5" /> : <Truck className="h-5 w-5" />}
                   </div>
                   <div>
-                    <h3 className="font-sans text-sm font-bold text-slate-905 leading-tight">
+                    <h3 className="font-sans text-sm font-bold text-slate-900 dark:text-slate-100 leading-tight">
                       {t(activePartyDetails.name, activePartyDetails.urduName)}
                     </h3>
-                    <p className="font-mono text-[10px] text-slate-400 mt-1 block">
+                    <p className="font-mono text-[9px] text-slate-400 dark:text-slate-500 mt-0.5 block">
                       Type: <span className="uppercase font-bold text-slate-500">{selectedParty.type}</span> | Contact: {activePartyDetails.contact}
                     </p>
                   </div>
                 </div>
 
-                <div className="rounded-lg bg-slate-50 border border-slate-100 px-4 py-2 text-right">
+                <div className="rounded-lg bg-slate-50/50 dark:bg-slate-800/50 border border-theme-main px-3 py-1.5 text-right">
                   <span className="font-sans text-[8px] text-slate-400 font-bold uppercase block">
                     {selectedParty.type === 'customer' ? t('Owed to Station:', 'کسٹمر بقایا قرض:') : t('Owed by Station:', 'سپلائر بِل بقایا:')}
                   </span>
-                  <strong className="font-mono text-base font-bold text-slate-805 block mt-0.5">Rs. {activePartyDetails.balance.toLocaleString()}</strong>
+                  <strong className="font-mono text-sm font-bold text-slate-800 dark:text-slate-200 block mt-0.5">Rs. {activePartyDetails.balance.toLocaleString()}</strong>
                 </div>
               </div>
 
               {/* TIMELINE LIST */}
-              <div className="space-y-4">
-                <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 block">
+              <div className="space-y-3">
+                <h4 className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-theme-main pb-1 block">
                   {t('Chronological Ledger Transactions History', 'تاریخ برقی کاروباری لیجر')}
                 </h4>
 
-                <div className="overflow-x-auto rounded-lg border border-slate-200">
+                <div className="overflow-x-auto rounded-lg border border-theme-main">
                   <div className="min-w-full max-w-[600px]">
                     <ResponsiveTable
                       data={activePartyLedgerTimeline}

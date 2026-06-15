@@ -126,55 +126,59 @@ export default function AccountsManager({ settings, stationId }: AccountsManager
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-2">
         {filteredAccounts.map(account => (
-          <div key={account.id} className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition">
-            <div className="flex justify-between items-start mb-3">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${account.status === 'active' ? 'bg-emerald-50 text-emerald-600' : account.status === 'suspended' ? 'bg-amber-50 text-amber-600' : 'bg-rose-50 text-rose-600'}`}>
-                  <Building2 className="h-5 w-5" />
+          <div key={account.id} className="kpi-card p-2">
+            <div className="flex justify-between items-start mb-2">
+              <div className="flex items-center gap-2 truncate">
+                <div className={`w-6 h-6 rounded flex items-center justify-center shrink-0 ${account.status === 'active' ? 'bg-emerald-500/20 text-emerald-600' : account.status === 'suspended' ? 'bg-amber-500/20 text-amber-600' : 'bg-rose-500/20 text-rose-600'}`}>
+                  <Building2 className="w-3.5 h-3.5" />
                 </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 font-sans tracking-tight">{account.companyName}</h3>
-                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${account.status === 'active' ? 'bg-emerald-100 text-emerald-700' : account.status === 'suspended' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'}`}>
+                <div className="truncate">
+                  <h3 className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate leading-tight">{account.companyName}</h3>
+                  <span className={`text-[9px] font-bold uppercase ${account.status === 'active' ? 'text-emerald-500' : account.status === 'suspended' ? 'text-amber-500' : 'text-rose-500'}`}>
                     {account.status}
                   </span>
                 </div>
               </div>
               <button 
                 onClick={() => handleOpenModal(account)}
-                className="text-slate-400 hover:text-slate-600 p-1"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-0.5"
               >
-                <MoreVertical className="h-4 w-4" />
+                <MoreVertical className="w-4 h-4" />
               </button>
             </div>
             
-            <div className="space-y-2 mt-4 text-sm text-slate-600">
-              <div className="flex items-center gap-2">
-                <UsersRound className="h-4 w-4 text-slate-400" />
-                <span>{account.contactPerson}</span>
+            <div className="space-y-1 mt-2 text-[10px] text-slate-500 dark:text-slate-400">
+              <div className="flex items-center justify-between gap-1">
+                <div className="flex items-center gap-1 truncate">
+                  <UsersRound className="w-3 h-3 text-slate-400 shrink-0" />
+                  <span className="truncate">{account.contactPerson}</span>
+                </div>
+                <span className="font-mono">{account.phone}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-slate-400" />
-                <span>{account.phone}</span>
+              
+              <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-slate-100 dark:border-slate-800/50">
+                <span className="text-[9px] uppercase">Limit</span>
+                <span className="font-mono font-bold text-slate-700 dark:text-slate-300">
+                  {settings.currency} {account.creditLimit.toLocaleString()}
+                </span>
               </div>
-              <div className="flex items-center gap-2">
-                <CreditCard className="h-4 w-4 text-slate-400" />
-                <span>Limit: <span className="font-mono font-bold text-slate-900">{settings.currency} {account.creditLimit.toLocaleString()}</span></span>
-              </div>
-              <div className="flex items-center gap-2">
-                <FileSpreadsheet className="h-4 w-4 text-slate-400" />
-                <span>Current Balance: <span className={`font-mono font-bold ${account.balance > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>{settings.currency} {account.balance.toLocaleString()}</span></span>
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] uppercase">Bal</span>
+                <span className={`font-mono font-bold ${account.balance > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                  {settings.currency} {account.balance.toLocaleString()}
+                </span>
               </div>
             </div>
           </div>
         ))}
 
         {filteredAccounts.length === 0 && (
-          <div className="col-span-full py-12 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
-            <Building2 className="h-8 w-8 text-slate-300 mx-auto mb-3" />
-            <h3 className="text-sm font-bold text-slate-700">No Corporate Accounts Found</h3>
-            <p className="text-xs text-slate-500 mt-1">Add your first corporate fleet account to start billing.</p>
+          <div className="col-span-2 py-8 text-center border border-dashed border-theme-main rounded-xl bg-theme-card">
+            <Building2 className="w-6 h-6 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+            <h3 className="text-xs font-bold text-theme-main">No Corporate Accounts</h3>
+            <p className="text-[10px] text-slate-500 mt-1">Add a corporate fleet account.</p>
           </div>
         )}
       </div>

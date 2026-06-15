@@ -121,24 +121,24 @@ export default function VehiclesManager({ settings, stationId }: VehiclesManager
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-row justify-between items-start items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
-        <div className="flex flex-row gap-4 w-full sm:w-auto flex-1">
-          <div className="relative w-full sm:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+      <div className="flex flex-row justify-between items-center gap-2 mb-2">
+        <div className="flex flex-row gap-2 w-full flex-1">
+          <div className="relative w-full">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
             <input 
               type="text" 
-              placeholder="Search by Reg No, RFID..."
+              placeholder="Search Reg No, RFID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full pl-8 pr-3 py-1.5 bg-theme-card border border-theme-main rounded-lg text-xs focus:outline-none focus:border-orange-500"
             />
           </div>
           <select 
             value={filterAccount} 
             onChange={(e) => setFilterAccount(e.target.value)}
-            className="w-full sm:w-64 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full px-2 py-1.5 bg-theme-card border border-theme-main rounded-lg text-xs focus:outline-none focus:border-orange-500"
           >
-            <option value="all">All Corporate Accounts</option>
+            <option value="all">All Accounts</option>
             {accounts.map(acc => (
               <option key={acc.id} value={acc.id}>{acc.companyName}</option>
             ))}
@@ -147,10 +147,10 @@ export default function VehiclesManager({ settings, stationId }: VehiclesManager
         <button 
           onClick={() => handleOpenModal()}
           disabled={accounts.length === 0}
-          className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-800 transition whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-1.5 bg-slate-900 dark:bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-800 transition whitespace-nowrap disabled:opacity-50"
         >
-          <Plus className="h-4 w-4" />
-          Add Vehicle
+          <Plus className="h-3.5 w-3.5" />
+          Add
         </button>
       </div>
 

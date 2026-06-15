@@ -150,95 +150,101 @@ export default function DeliveryVerification({ settings, stationId }: DeliveryVe
   // Derive shortages visually
   return (
     <div className="space-y-4">
-      <div className="flex flex-row justify-between items-start items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
-        <div className="relative w-full sm:w-96">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+      <div className="flex flex-row justify-between items-center gap-2 mb-2">
+        <div className="relative w-full flex-1">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
           <input 
             type="text" 
-            placeholder="Search by PO or Tank..."
+            placeholder="Search PO or Tank..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+            className="w-full pl-8 pr-3 py-1.5 bg-theme-card border border-theme-main rounded-lg text-xs focus:outline-none focus:border-rose-500"
           />
         </div>
         <button 
           onClick={() => handleOpenModal()}
-          className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-800 transition whitespace-nowrap"
+          className="flex items-center gap-1.5 bg-slate-900 dark:bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-800 transition whitespace-nowrap"
         >
-          <Plus className="h-4 w-4" />
-          Log Tanker Delivery
+          <Plus className="h-3.5 w-3.5" />
+          Log Delivery
         </button>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider font-bold">
-                <th className="px-4 py-3">Delivery Date & PO</th>
-                <th className="px-4 py-3">Tank & Decanted By</th>
-                <th className="px-4 py-3 text-right">Invoice Qty</th>
-                <th className="px-4 py-3 text-right">Actual Dip Qty</th>
-                <th className="px-4 py-3 text-right">Shortage</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-sm">
-              {filteredDeliveries.map(del => {
-                const hasShortage = del.shortageQuantity > 0;
-                return (
-                  <tr key={del.id} className="hover:bg-slate-50/50 transition">
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-slate-900">{new Date(del.actualDeliveryDate).toLocaleDateString()}</div>
-                      <div className="text-xs text-slate-500">{getScheduleRef(del.scheduleId)}</div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-slate-900">{getTankName(del.tankId)}</div>
-                      <div className="text-xs text-slate-500">By {getStaffName(del.decantedBy)}</div>
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono">
-                      {del.invoiceQuantity.toLocaleString()} L
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono">
-                      {del.actualDipQuantity.toLocaleString()} L
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      {hasShortage ? (
-                        <div className="flex flex-col items-end">
-                          <span className="font-mono font-bold text-rose-600">{del.shortageQuantity.toLocaleString()} L</span>
-                          <span className="text-[10px] text-rose-500">Val: {settings.currency} {del.shortageAmount.toLocaleString()}</span>
-                        </div>
-                      ) : (
-                        <span className="text-emerald-600 font-mono text-xs">No Shortage</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${del.status === 'verified' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-                        {del.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <button 
-                        onClick={() => handleOpenModal(del)}
-                        className="text-rose-600 hover:text-rose-800 font-bold text-xs bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition"
-                      >
-                        Edit
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-              {filteredDeliveries.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-slate-500 text-sm">
-                    No verified deliveries recorded yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+      <div className="bg-theme-card rounded-xl border border-theme-main overflow-hidden shadow-sm">
+        <ResponsiveTable
+          data={filteredDeliveries}
+          columns={[
+            {
+              header: 'Delivery & PO',
+              accessor: (del) => (
+                <div className="flex flex-col">
+                  <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px]">{new Date(del.actualDeliveryDate).toLocaleDateString()}</span>
+                  <span className="text-[10px] text-slate-500">{getScheduleRef(del.scheduleId)}</span>
+                </div>
+              ),
+              isPrimaryMobile: true
+            },
+            {
+              header: 'Tank & Staff',
+              accessor: (del) => (
+                <div className="flex flex-col">
+                  <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px]">{getTankName(del.tankId)}</span>
+                  <span className="text-[10px] text-slate-500">By {getStaffName(del.decantedBy)}</span>
+                </div>
+              )
+            },
+            {
+              header: 'Invoice Qty',
+              className: 'text-right',
+              accessor: (del) => (
+                <span className="font-mono text-[11px] text-slate-700 dark:text-slate-300">{del.invoiceQuantity.toLocaleString()} L</span>
+              )
+            },
+            {
+              header: 'Actual Dip Qty',
+              className: 'text-right',
+              accessor: (del) => (
+                <span className="font-mono text-[11px] text-slate-700 dark:text-slate-300">{del.actualDipQuantity.toLocaleString()} L</span>
+              )
+            },
+            {
+              header: 'Shortage',
+              className: 'text-right',
+              accessor: (del) => (
+                del.shortageQuantity > 0 ? (
+                  <div className="flex flex-col items-end">
+                    <span className="font-mono font-bold text-rose-500 text-[11px]">{del.shortageQuantity.toLocaleString()} L</span>
+                    <span className="text-[10px] text-rose-400">Val: {settings.currency} {del.shortageAmount.toLocaleString()}</span>
+                  </div>
+                ) : (
+                  <span className="text-emerald-500 font-mono text-[11px]">No Shortage</span>
+                )
+              )
+            },
+            {
+              header: 'Status',
+              accessor: (del) => (
+                <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full ${del.status === 'verified' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
+                  {del.status}
+                </span>
+              )
+            },
+            {
+              header: 'Actions',
+              className: 'text-right',
+              accessor: (del) => (
+                <button 
+                  onClick={() => handleOpenModal(del)}
+                  className="text-rose-600 hover:text-rose-800 dark:hover:text-rose-400 font-bold text-[10px] bg-rose-50 dark:bg-rose-500/10 px-2 py-1 rounded transition"
+                >
+                  Edit
+                </button>
+              )
+            }
+          ]}
+          keyExtractor={(d) => d.id}
+          emptyMessage="No verified deliveries recorded yet."
+        />
       </div>
 
       {/* Form Modal */}

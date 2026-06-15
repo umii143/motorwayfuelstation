@@ -511,62 +511,52 @@ export default function Inventory({
       )}
 
       {/* HEADER SECTION */}
-      <div className="flex flex-col gap-4 border-b border-slate-200 pb-4">
-        <div className="flex flex-row items-center justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <span className="font-mono text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-0.5">OPERATIONS</span>
-            <h2 className="font-sans text-xl sm:text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-              <Package className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600 shrink-0" />
-              <span className="truncate">{isLube
-                ? t('Product & Parts Inventory', 'پروڈکٹ اور پارٹس انوینٹری')
-                : t('Inventory, Price Revisions & Tanks Calibration', 'ٹینکس اسٹاک، قیمت تبدیلی اور کیلیبریشن')}
-              </span>
-            </h2>
-            <p className="font-sans text-xs text-slate-500 mt-1 hidden sm:block">
+      <div className="fp-header flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-theme-main pb-3 mb-4">
+        <div className="flex flex-row items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Package className="w-5 h-5 text-orange-600 shrink-0" />
+            <h1 className="text-lg font-black text-slate-800 dark:text-slate-100 truncate">
               {isLube
-                ? t('Manage lubricant stock, register supplier deliveries, and track price revisions.', 'لیوبریکنٹ اسٹاک، سپلائر ڈیلیوری اور قیمتوں کی تبدیلی کا انتظام۔')
-                : t('Audit fuel tank dip measurements, register lubricant wholesale receipts, and track revaluation gain/loss.', 'پٹرولیم ٹینکوں، موبل آئل کی وصولی، قیمتوں میں فلو تبدیلیاں مانیٹرنگ اور فزیکل اسٹاک ایڈجسٹمنٹ کھاتا۔')}
-            </p>
+                ? t('Product Inventory', 'پروڈکٹ انوینٹری')
+                : t('Inventory & Tanks', 'ٹینکس اسٹاک')}
+            </h1>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-1 sm:pb-0 w-full">
+        <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar w-full sm:w-auto">
           <button
             onClick={generateAIStockInsights}
             disabled={isGeneratingAiInsights || products.length === 0}
-            className={`shrink-0 flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 sm:px-4 sm:py-2.5 font-sans text-xs font-bold text-white shadow-md shadow-indigo-500/10 hover:bg-indigo-700 transition-all cursor-pointer ${isGeneratingAiInsights ? 'opacity-50' : ''}`}
+            className={`shrink-0 flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 font-sans text-xs font-bold text-white hover:bg-indigo-700 transition-all cursor-pointer ${isGeneratingAiInsights ? 'opacity-50' : ''}`}
           >
-            <Sparkles className={`h-4 w-4 ${isGeneratingAiInsights ? 'animate-spin' : ''}`} />
-            <span>{t('AI Insights', 'اے آئی تجزیہ')}</span>
+            <Sparkles className={`h-3.5 w-3.5 ${isGeneratingAiInsights ? 'animate-spin' : ''}`} />
+            <span>{t('Insights', 'تجزیہ')}</span>
           </button>
 
           <button
             onClick={() => setShowReconcileModal(true)}
-            className="shrink-0 flex items-center justify-center gap-1.5 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 sm:px-4 sm:py-2.5 font-sans text-xs font-bold text-orange-700 hover:bg-orange-100 transition-all cursor-pointer"
+            className="shrink-0 flex items-center justify-center gap-1.5 rounded-lg border border-orange-500/20 bg-orange-500/10 px-3 py-1.5 font-sans text-xs font-bold text-orange-600 hover:bg-orange-500/20 transition-all cursor-pointer"
           >
-            <CheckCircle className="h-4 w-4" />
-            <span>{isLube
-              ? t('Physical Count', 'جسمانی اسٹاک')
-              : t('Reconcile (Dip)', 'فزیکل ٹینک ڈپ')}
-            </span>
+            <CheckCircle className="h-3.5 w-3.5" />
+            <span>{isLube ? t('Count', 'جسمانی اسٹاک') : t('Reconcile', 'فزیکل ٹینک ڈپ')}</span>
           </button>
 
           <button
             onClick={() => setShowAddStockModal(true)}
-            className="shrink-0 flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-3 py-2 sm:px-4 sm:py-2.5 font-sans text-xs font-bold text-white shadow-md shadow-orange-500/10 hover:bg-orange-700 transition-all cursor-pointer"
+            className="shrink-0 flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-3 py-1.5 font-sans text-xs font-bold text-white hover:bg-orange-700 transition-all cursor-pointer"
           >
-            <PlusCircle className="h-4 w-4" />
-            <span>{t('Stock Receipt', 'نیا اسٹاک')}</span>
+            <PlusCircle className="h-3.5 w-3.5" />
+            <span>{t('Receipt', 'نیا اسٹاک')}</span>
           </button>
 
           {/* Register Product — only shown for Lube businesses */}
           {isLube && (
           <button
             onClick={openAddProduct}
-            className="shrink-0 flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] sm:px-4 sm:py-2.5 font-sans text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all cursor-pointer"
+            className="shrink-0 flex items-center justify-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 font-sans text-xs font-bold text-emerald-600 hover:bg-emerald-500/20 transition-all cursor-pointer"
           >
-            <PlusCircle className="h-4 w-4" />
-            <span>{t('Add Product', 'نئی پروڈکٹ')}</span>
+            <PlusCircle className="h-3.5 w-3.5" />
+            <span>{t('Product', 'نئی پروڈکٹ')}</span>
           </button>
           )}
         </div>
@@ -648,13 +638,13 @@ export default function Inventory({
       </div>
 
       {/* SUBTABS BAR */}
-      <div className="flex overflow-x-auto hide-scrollbar gap-2 border-b border-slate-200 pb-1">
+      <div className="fp-date-tabs mt-4">
         <button
           onClick={() => setActiveTab('inventory')}
-          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+          className={`fp-date-tab ${
             activeTab === 'inventory'
-              ? 'border-orange-600 text-orange-600 font-extrabold'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'fp-date-tab--active !text-orange-600 !border-orange-600 bg-orange-50/50 dark:bg-orange-500/10'
+              : ''
           }`}
         >
           📦 {t('Product Stock List', 'پراڈکٹس اسٹاک لسٹ')}
@@ -663,10 +653,10 @@ export default function Inventory({
         {!isLube && (
         <button
           onClick={() => setActiveTab('tanks_calibration')}
-          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+          className={`fp-date-tab ${
             activeTab === 'tanks_calibration'
-              ? 'border-orange-600 text-orange-600 font-extrabold'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'fp-date-tab--active !text-orange-600 !border-orange-600 bg-orange-50/50 dark:bg-orange-500/10'
+              : ''
           }`}
         >
           🛢️ {t('Storage Tanks & Calibration Dip Chart', 'سٹوریج ٹینکس اور الیکٹرانک ڈپ ناپ')}
@@ -675,10 +665,10 @@ export default function Inventory({
 
         <button
           onClick={() => setActiveTab('pricing_logs')}
-          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+          className={`fp-date-tab ${
             activeTab === 'pricing_logs'
-              ? 'border-orange-600 text-orange-600 font-extrabold'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'fp-date-tab--active !text-orange-600 !border-orange-600 bg-orange-50/50 dark:bg-orange-500/10'
+              : ''
           }`}
         >
           📈 {t('Price Revisions History Log', 'ریٹ تبدیلی اور اسٹاک نفع نقصان')}
@@ -686,10 +676,10 @@ export default function Inventory({
 
         <button
           onClick={() => setActiveTab('batch_history')}
-          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+          className={`fp-date-tab ${
             activeTab === 'batch_history'
-              ? 'border-orange-600 text-orange-600 font-extrabold'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'fp-date-tab--active !text-orange-600 !border-orange-600 bg-orange-50/50 dark:bg-orange-500/10'
+              : ''
           }`}
         >
           🏷️ {t('FIFO Batches', 'فیفو بیچز')}
@@ -698,10 +688,10 @@ export default function Inventory({
         {!isLube && (
         <button
           onClick={() => setActiveTab('aging')}
-          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+          className={`fp-date-tab ${
             activeTab === 'aging'
-              ? 'border-orange-600 text-orange-600 font-extrabold'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'fp-date-tab--active !text-orange-600 !border-orange-600 bg-orange-50/50 dark:bg-orange-500/10'
+              : ''
           }`}
         >
           🔥 {t('Aging Intel', 'عمر تجزیہ')}
@@ -715,10 +705,10 @@ export default function Inventory({
 
         <button
           onClick={() => setActiveTab('supplier_perf')}
-          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer ${
+          className={`fp-date-tab ${
             activeTab === 'supplier_perf'
-              ? 'border-orange-600 text-orange-600 font-extrabold'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'fp-date-tab--active !text-orange-600 !border-orange-600 bg-orange-50/50 dark:bg-orange-500/10'
+              : ''
           }`}
         >
           🏆 {t('Supplier Scores', 'سپلائر اسکور')}
@@ -726,10 +716,10 @@ export default function Inventory({
 
         <button
           onClick={() => setActiveTab('payables')}
-          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer ${
+          className={`fp-date-tab ${
             activeTab === 'payables'
-              ? 'border-orange-600 text-orange-600 font-extrabold'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'fp-date-tab--active !text-orange-600 !border-orange-600 bg-orange-50/50 dark:bg-orange-500/10'
+              : ''
           }`}
         >
           💳 {t('Payables', 'واجبات')}
@@ -742,10 +732,10 @@ export default function Inventory({
 
         <button
           onClick={() => setActiveTab('claims')}
-          className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer ${
+          className={`fp-date-tab ${
             activeTab === 'claims'
-              ? 'border-orange-600 text-orange-600 font-extrabold'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'fp-date-tab--active !text-orange-600 !border-orange-600 bg-orange-50/50 dark:bg-orange-500/10'
+              : ''
           }`}
         >
           ⚖️ {t('Claims', 'کلیمز')}
@@ -762,23 +752,22 @@ export default function Inventory({
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* LEFT PANEL (2/3 WIDTH): PRODUCTS DATABASE DETAIL BOARD */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs flex flex-col gap-3.5 sm:flex-row items-center sm:justify-between">
+            <div className="flex flex-col gap-3.5 sm:flex-row items-center sm:justify-between">
               {/* Categorization controls */}
-              <div className="flex flex-wrap gap-1.5">
+              <div className="fp-date-tabs w-full sm:w-auto">
                 {[
                   { id: 'all', label: 'All Stock', urdu: 'کل اسٹاک', show: true },
                   { id: 'fuel', label: 'Fuels Only', urdu: 'صرف پیٹرولیم', show: !isLube },
-                  // Lubes & Oils filter only visible in Lube business
                   { id: 'lube', label: 'Lubes & Oils', urdu: 'انجن آئل', show: isLube },
                   { id: 'low', label: 'Low Alert', urdu: 'انتباہی اسٹاک', show: true }
                 ].filter(f => f.show).map(f => (
                   <button
                     key={f.id}
                     onClick={() => setFilterType(f.id as any)}
-                    className={`rounded-md px-3 py-1 font-sans text-xs font-bold cursor-pointer transition-all ${
+                    className={`fp-date-tab flex-1 sm:flex-none ${
                       filterType === f.id
-                        ? 'bg-orange-600 text-white shadow-xs'
-                        : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                        ? 'fp-date-tab--active !text-slate-800 dark:!text-slate-100 !border-slate-800 dark:!border-slate-500 bg-slate-200/50 dark:bg-slate-700/50'
+                        : ''
                     }`}
                   >
                     {t(f.label, f.urdu)}
@@ -791,10 +780,10 @@ export default function Inventory({
             <div className="lg:hidden w-full flex justify-end mb-4">
               <button
                 onClick={() => setIsAuditSheetOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl shadow-xs border border-slate-200"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-theme-card text-slate-700 dark:text-slate-300 font-bold rounded-lg shadow-sm border border-theme-main text-xs"
               >
-                <History className="w-4 h-4" />
-                {t('View Audit Logs', 'آڈٹ لاگز دیکھیں')}
+                <History className="w-3.5 h-3.5" />
+                {t('Audit Logs', 'آڈٹ لاگز')}
               </button>
             </div>
 
@@ -813,76 +802,73 @@ export default function Inventory({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.05 }}
                       key={prod.id} 
-                      className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-orange-500/10 hover:border-orange-200"
+                      className="kpi-card p-2 group"
                     >
-                      <div className="absolute inset-0 bg-linear-to-br from-orange-500/0 to-orange-500/5 opacity-0 transition-opacity group-hover:opacity-100 pointer-events-none" />
-                      <div className="relative z-10 space-y-3">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <strong className="font-sans text-sm font-black text-slate-800 block group-hover:text-orange-600 transition-colors">{t(prod.name, prod.urduName)}</strong>
-                            <span className="font-sans text-[10px] uppercase font-bold tracking-wider text-slate-400 mt-1 block">
-                              {prod.type === 'fuel' ? t('Fuel Product', 'پٹرولیم پراڈکٹ') : prod.type === 'lube' ? t('Lubricant / Oil', 'لیوب آئل') : t('Other Item', 'دیگر آئٹم')}
-                            </span>
-                          </div>
-                          {isLow ? (
-                            <span className="rounded-full bg-red-50 text-red-700 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider select-none animate-pulse border border-red-100 shadow-xs shadow-red-500/20">
-                              ⚠️ {t('LOW STOCK', 'اسٹاک کم')}
-                            </span>
-                          ) : (
-                            <span className="rounded-full bg-emerald-50 text-emerald-700 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider select-none border border-emerald-100">
-                              {t('Sufficient', 'اسٹاک مناسب')}
-                            </span>
-                          )}
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="truncate pr-2">
+                          <strong className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate block group-hover:text-orange-600 transition-colors leading-tight">{t(prod.name, prod.urduName)}</strong>
+                          <span className="text-[9px] uppercase font-bold text-slate-400 mt-0.5 block truncate">
+                            {prod.type === 'fuel' ? t('Fuel Product', 'پٹرولیم پراڈکٹ') : prod.type === 'lube' ? t('Lubricant / Oil', 'لیوب آئل') : t('Other Item', 'دیگر آئٹم')}
+                          </span>
                         </div>
-
-                        {/* Visual liquid volume indicator if fuel */}
-                        {prod.type === 'fuel' && fillPct !== null && (
-                          <div className="space-y-1.5 py-1">
-                            <div className="flex justify-between items-center text-[10px] font-mono font-bold text-slate-500">
-                              <span>{t('Stock Depth:', 'ٹینکر پوزیشن:')}</span>
-                              <span className={fillPct < 20 ? 'text-red-500' : fillPct < 50 ? 'text-orange-500' : 'text-teal-600'}>{fillPct}%</span>
-                            </div>
-                            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                              <div 
-                                style={{ width: `${Math.min(100, fillPct)}%` }} 
-                                className={`h-full rounded-full transition-all duration-1000 ${fillPct < 20 ? 'bg-linear-to-r from-red-500 to-red-400' : fillPct < 50 ? 'bg-linear-to-r from-orange-500 to-amber-400' : 'bg-linear-to-r from-teal-500 to-emerald-400'}`}
-                              />
-                            </div>
-                          </div>
+                        {isLow ? (
+                          <span className="shrink-0 rounded bg-red-500/10 text-red-600 px-1.5 py-0.5 text-[9px] font-bold uppercase select-none border border-red-500/20">
+                            {t('LOW', 'اسٹاک کم')}
+                          </span>
+                        ) : (
+                          <span className="shrink-0 rounded bg-emerald-500/10 text-emerald-600 px-1.5 py-0.5 text-[9px] font-bold uppercase select-none">
+                            {t('OK', 'اسٹاک مناسب')}
+                          </span>
                         )}
+                      </div>
 
-                        <div className="flex justify-between items-center py-3 border-t border-b border-slate-100 text-slate-700 font-mono text-xs mt-2">
-                          <div>
-                            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wide block font-sans">{t('Physical Stock', 'موجودہ اسٹاک')}</span>
-                            <strong className="text-slate-900 text-base font-black drop-shadow-xs">{prod.currentStock.toLocaleString()} <span className="text-xs text-slate-500 font-semibold">{prod.unit}</span></strong>
+                      {/* Visual liquid volume indicator if fuel */}
+                      {prod.type === 'fuel' && fillPct !== null && (
+                        <div className="space-y-1 py-0.5">
+                          <div className="flex justify-between items-center text-[9px] font-mono font-bold text-slate-500">
+                            <span>{t('Tank Level', 'ٹینکر پوزیشن')}</span>
+                            <span className={fillPct < 20 ? 'text-red-500' : fillPct < 50 ? 'text-orange-500' : 'text-teal-600'}>{fillPct}%</span>
                           </div>
-                          <div className="text-right">
-                            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wide block font-sans">{t('Current Pricing', 'موجودہ قیمت')}</span>
-                            <strong className="text-orange-600 text-base font-black drop-shadow-xs">Rs. {prod.rate.toFixed(2)}</strong>
+                          <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div 
+                              style={{ width: `${Math.min(100, fillPct)}%` }} 
+                              className={`h-full rounded-full transition-all duration-1000 ${fillPct < 20 ? 'bg-red-500' : fillPct < 50 ? 'bg-orange-500' : 'bg-teal-500'}`}
+                            />
                           </div>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between items-center py-2 border-t border-b border-theme-main text-slate-700 dark:text-slate-300 font-mono text-[10px] mt-1.5 mb-1.5">
+                        <div className="truncate">
+                          <span className="text-slate-400 dark:text-slate-500 text-[9px] uppercase block font-sans truncate">{t('Stock', 'اسٹاک')}</span>
+                          <strong className="text-slate-900 dark:text-slate-100 text-sm font-bold truncate block">{prod.currentStock.toLocaleString()} <span className="text-[10px] text-slate-500">{prod.unit}</span></strong>
+                        </div>
+                        <div className="text-right truncate pl-2">
+                          <span className="text-slate-400 dark:text-slate-500 text-[9px] uppercase block font-sans truncate">{t('Price', 'قیمت')}</span>
+                          <strong className="text-orange-600 text-sm font-bold truncate block">Rs. {prod.rate.toFixed(2)}</strong>
                         </div>
                       </div>
 
-                      <div className="relative z-10 mt-3 text-[10px] font-semibold text-slate-400 flex justify-between items-center bg-slate-50/50 backdrop-blur-sm p-2.5 rounded-xl border border-slate-100">
-                        <span>Min Threshold: <strong className="text-slate-600">{prod.minStock.toLocaleString()} {prod.unit}</strong></span>
-                        <span className="uppercase tracking-widest bg-white px-2 py-0.5 rounded-md shadow-xs">Unit: {prod.unit}</span>
+                      <div className="flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50 p-1.5 rounded text-[9px] font-bold text-slate-500 mb-2">
+                        <span>Min: <strong className="text-slate-700 dark:text-slate-300">{prod.minStock.toLocaleString()}</strong></span>
+                        <span className="uppercase">Unit: {prod.unit}</span>
                       </div>
 
                       {/* Edit / Delete action bar */}
-                      <div className="relative z-10 mt-3 flex gap-2">
+                      <div className="flex gap-1.5">
                         <button
                           onClick={() => openEditProduct(prod)}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-orange-400 hover:text-orange-600 font-sans text-[11px] font-bold transition-all cursor-pointer"
+                          className="flex-1 flex items-center justify-center gap-1 py-1 rounded bg-theme-card border border-theme-main text-slate-600 dark:text-slate-300 hover:border-orange-500 hover:text-orange-500 font-bold text-[10px] transition-colors"
                         >
                           <Pencil className="h-3 w-3" />
                           {t('Edit', 'ترمیم')}
                         </button>
                         <button
                           onClick={() => handleDeleteProduct(prod)}
-                          className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-100 bg-red-50 text-red-600 hover:bg-red-100 font-sans text-[11px] font-bold transition-all cursor-pointer"
+                          className="flex items-center justify-center gap-1 px-2 py-1 rounded bg-red-500/10 text-red-600 hover:bg-red-500/20 font-bold text-[10px] transition-colors"
                         >
                           <Trash2 className="h-3 w-3" />
-                          {t('Delete', 'حذف')}
+                          {t('Del', 'حذف')}
                         </button>
                       </div>
                     </motion.div>
@@ -893,15 +879,15 @@ export default function Inventory({
           </div>
 
           {/* RIGHT SIDEBAR (1/3 WIDTH): DETAILED LIVE REAL-TIME STOCK TRANSACTION LEDGER */}
-          <div className="hidden lg:block rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-4">
-            <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
-              <History className="h-4 w-4 text-slate-450" />
-              <span>{t('Inventory Transaction Audits', 'اسٹاک فلو آڈٹ ٹرانزیکشنز')}</span>
+          <div className="hidden lg:block bg-theme-card rounded-xl border border-theme-main p-3 shadow-sm space-y-3">
+            <h3 className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-theme-main pb-2">
+              <History className="h-3.5 w-3.5" />
+              <span>{t('Inventory Audits', 'اسٹاک آڈٹ')}</span>
             </h3>
 
-            <div className="space-y-3.5 max-h-[360px] overflow-y-auto pr-1">
+            <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
               {stockTransactions.length === 0 ? (
-                <p className="py-12 text-center text-slate-400 text-xs font-sans">
+                <p className="py-8 text-center text-slate-400 text-[10px] font-sans">
                   {t('No inventory transactions logged yet.', 'اسٹاک کی کوئی انٹری اس شیٹ میں موجود نہیں۔')}
                 </p>
               ) : (
@@ -916,15 +902,15 @@ export default function Inventory({
                           const isRec = txn.type === 'receipt';
                           const isSale = txn.type === 'sale';
                           return (
-                            <div className="flex gap-2 items-center">
-                              <div className={`rounded-full p-1.5 flex-shrink-0 ${isRec ? 'bg-teal-50 text-teal-650' : isSale ? 'bg-orange-50 text-orange-650' : 'bg-amber-50 text-amber-650'}`}>
+                            <div className="flex gap-1.5 items-center">
+                              <div className={`rounded p-1 shrink-0 ${isRec ? 'bg-teal-500/10 text-teal-500' : isSale ? 'bg-orange-500/10 text-orange-500' : 'bg-amber-500/10 text-amber-500'}`}>
                                 {isRec ? <ArrowUpRight className="h-3 w-3" /> : isSale ? <ArrowDownRight className="h-3 w-3" /> : <Wrench className="h-3 w-3" />}
                               </div>
                               <div className="flex flex-col justify-center">
-                                <strong className="text-slate-800 block truncate max-w-[120px]">
+                                <strong className="text-slate-800 dark:text-slate-100 block truncate max-w-[100px] text-[11px]">
                                   {prod ? t(prod.name, prod.urduName) : txn.itemId}
-                                </strong>
-                                <span className="text-[10px] text-slate-400 block mt-0.5">{txn.date} • {txn.by}</span>
+                               </strong>
+                                <span className="text-[9px] text-slate-400 dark:text-slate-500 block mt-0.5">{txn.date} • {txn.by}</span>
                               </div>
                             </div>
                           );
@@ -932,7 +918,7 @@ export default function Inventory({
                         isPrimaryMobile: true
                       },
                       {
-                        header: t('Quantity', 'تعداد/مقدار'),
+                        header: t('Quantity', 'مقدار'),
                         className: 'text-right',
                         accessor: (txn) => {
                           const prod = products.find(p => p.id === txn.itemId);
@@ -940,12 +926,12 @@ export default function Inventory({
                           const isSale = txn.type === 'sale';
                           return (
                             <div className="flex flex-col justify-center text-right">
-                              <strong className={`font-mono text-[11.5px] block ${isRec ? 'text-teal-600' : isSale ? 'text-slate-700' : txn.quantity > 0 ? 'text-teal-600' : 'text-red-500'}`}>
+                              <strong className={`font-mono text-[10px] block ${isRec ? 'text-teal-500' : isSale ? 'text-slate-700 dark:text-slate-300' : txn.quantity > 0 ? 'text-teal-500' : 'text-red-500'}`}>
                                 {isRec ? '+' : isSale ? '-' : txn.quantity > 0 ? '+' : ''}
                                 {txn.quantity.toLocaleString()} {prod?.unit || 'Ltr'}
                               </strong>
                               {txn.amount && (
-                                <span className="text-[10px] text-slate-450 font-mono block mt-0.5">Rs. {txn.amount.toLocaleString()}</span>
+                                <span className="text-[9px] text-slate-400 dark:text-slate-500 font-mono block mt-0.5">Rs. {txn.amount.toLocaleString()}</span>
                               )}
                             </div>
                           );
@@ -982,15 +968,15 @@ export default function Inventory({
                       const isRec = txn.type === 'receipt';
                       const isSale = txn.type === 'sale';
                       return (
-                        <div className="flex gap-3 items-center">
-                          <div className={`rounded-xl p-2 flex-shrink-0 ${isRec ? 'bg-teal-50 text-teal-600' : isSale ? 'bg-orange-50 text-orange-600' : 'bg-amber-50 text-amber-600'}`}>
-                            {isRec ? <ArrowUpRight className="h-4 w-4" /> : isSale ? <ArrowDownRight className="h-4 w-4" /> : <Wrench className="h-4 w-4" />}
+                        <div className="flex gap-1.5 items-center">
+                          <div className={`rounded p-1 shrink-0 ${isRec ? 'bg-teal-500/10 text-teal-500' : isSale ? 'bg-orange-500/10 text-orange-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                            {isRec ? <ArrowUpRight className="h-3.5 w-3.5" /> : isSale ? <ArrowDownRight className="h-3.5 w-3.5" /> : <Wrench className="h-3.5 w-3.5" />}
                           </div>
                           <div className="flex flex-col justify-center">
-                            <strong className="text-slate-800 block text-sm">
+                            <strong className="text-slate-800 dark:text-slate-100 block text-xs">
                               {prod ? t(prod.name, prod.urduName) : txn.itemId}
                             </strong>
-                            <span className="text-[11px] text-slate-400 block mt-0.5">{txn.date} • {txn.by}</span>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500 block mt-0.5">{txn.date} • {txn.by}</span>
                           </div>
                         </div>
                       );
@@ -998,7 +984,7 @@ export default function Inventory({
                     isPrimaryMobile: true
                   },
                   {
-                    header: t('Quantity', 'تعداد/مقدار'),
+                    header: t('Quantity', 'مقدار'),
                     className: 'text-right',
                     accessor: (txn) => {
                       const prod = products.find(p => p.id === txn.itemId);
@@ -1006,12 +992,12 @@ export default function Inventory({
                       const isSale = txn.type === 'sale';
                       return (
                         <div className="text-right flex flex-col justify-center">
-                          <strong className={`font-mono text-sm block ${isRec ? 'text-teal-600' : isSale ? 'text-slate-700' : txn.quantity > 0 ? 'text-teal-600' : 'text-red-500'}`}>
+                          <strong className={`font-mono text-xs block ${isRec ? 'text-teal-500' : isSale ? 'text-slate-700 dark:text-slate-300' : txn.quantity > 0 ? 'text-teal-500' : 'text-red-500'}`}>
                             {isRec ? '+' : isSale ? '-' : txn.quantity > 0 ? '+' : ''}
                             {txn.quantity.toLocaleString()} {prod?.unit || 'Ltr'}
                           </strong>
                           {txn.amount && (
-                            <span className="text-xs text-slate-400 font-mono block mt-1">Rs. {txn.amount.toLocaleString()}</span>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono block mt-0.5">Rs. {txn.amount.toLocaleString()}</span>
                           )}
                         </div>
                       );
@@ -1031,20 +1017,20 @@ export default function Inventory({
           TAB 2: TANKS CALIBRATION MODULE (MODULE B2/B3/D2)
           ========================================== */}
       {activeTab === 'tanks_calibration' && (
-        <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* TANKS LIST BOARD WITH CYLINDERS */}
-          <div className="md:col-span-2 space-y-4">
-            <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
-              <Layers3 className="h-4 w-4 text-slate-450" />
+          <div className="md:col-span-2 space-y-3">
+            <h3 className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-theme-main pb-2">
+              <Layers3 className="h-3.5 w-3.5 text-slate-400" />
               <span>{t('Storage Tank Capacities & Stock Ratios', 'سٹوریج ٹینکس کی گنجائش اور فزیکل والیم')}</span>
             </h3>
 
             {tanks.length === 0 ? (
-              <div className="p-8 text-center rounded-xl border border-slate-150 bg-slate-50 text-slate-400 text-xs">
+              <div className="p-4 text-center rounded-xl bg-theme-card border border-theme-main text-slate-400 text-xs">
                 {t('No storage tanks has been configured in Settings yet.', 'ٹھیکیدار کی ترجیحات میں کوئی سٹوریج ٹینک نہیں پایا گیا۔ پہلے ٹینکس ترتیب کھڑا کریں۔')}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {tanks.map(tnk => {
                   const prod = products.find(p => p.id === tnk.productId);
                   const fillPct = Math.round((tnk.currentStock / tnk.capacity) * 100);
@@ -1052,59 +1038,62 @@ export default function Inventory({
                   const isUnderCritical = tnk.currentStock < tnk.criticalLevel;
 
                   return (
-                    <div key={tnk.id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs flex gap-5 items-center relative overflow-hidden">
+                    <div key={tnk.id} className="kpi-card p-3 flex gap-4 items-center">
                       {/* CYLINDER VISUAL */}
-                      <div className="relative w-16 h-32 select-none border border-slate-300 rounded-t-lg rounded-b-lg bg-slate-100 flex items-end shrink-0 shadow-inner">
+                      <div className="relative w-12 h-24 border border-theme-main rounded bg-slate-100 dark:bg-slate-800 flex items-end shrink-0 shadow-inner overflow-hidden">
                         {/* Fuel liquid level */}
                         <div 
                           style={{ height: `${Math.min(100, Math.max(0, fillPct))}%` }} 
-                          className={`w-full rounded-b-md transition-all ${
-                            isUnderCritical ? 'bg-red-500/80 animate-pulse' : isUnderSafe ? 'bg-orange-400/85' : 'bg-teal-500/80'
+                          className={`w-full transition-all ${
+                            isUnderCritical ? 'bg-red-500/80 animate-pulse' : isUnderSafe ? 'bg-orange-500/85' : 'bg-teal-500/80'
                           }`}
                         />
-                        <div className="absolute inset-0 flex flex-col justify-between items-center py-2 text-[10px] font-mono select-none font-bold text-slate-755 z-10 text-center leading-tight">
+                        <div className="absolute inset-0 flex flex-col justify-between items-center py-1 text-[8px] font-mono font-bold text-slate-700 dark:text-slate-200 z-10 text-center leading-tight">
                           <span>{tnk.capacity.toLocaleString()}L</span>
-                          <span className="bg-white/80 px-1 py-0.5 rounded shadow-xs text-[11px] font-mono font-extrabold text-slate-900">{fillPct}%</span>
-                          <span>{tnk.physicalLabel || tnk.name}</span>
+                          <span className="bg-white/80 dark:bg-black/60 px-1 py-0.5 rounded text-[9px] font-mono font-extrabold">{fillPct}%</span>
+                          <span className="truncate w-full px-1">{tnk.physicalLabel || tnk.name}</span>
                         </div>
                       </div>
 
-                      <div className="space-y-2 flex-grow">
-                        <div>
-                          <strong className="text-slate-800 text-xs font-bold font-sans flex items-center gap-1.5 leading-normal">
-                            <span>{tnk.name}</span>
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 font-bold ml-1 text-slate-500">{prod ? t(prod.name, prod.urduName) : tnk.productId}</span>
+                      <div className="space-y-1.5 flex-grow truncate">
+                        <div className="truncate">
+                          <strong className="text-slate-800 dark:text-slate-100 text-sm font-bold truncate block">
+                            {tnk.name}
                           </strong>
-                          <span className="font-mono text-[10px] text-slate-400 block mt-0.5">Label: {tnk.physicalLabel || 'Unspecified'}</span>
+                          <span className="text-[9px] text-slate-500 uppercase flex items-center gap-1 mt-0.5 truncate">
+                            {prod ? t(prod.name, prod.urduName) : tnk.productId} 
+                            <span className="opacity-50">•</span> 
+                            {tnk.physicalLabel || 'Unspecified'}
+                          </span>
                         </div>
 
-                        <div className="space-y-1 font-mono text-[11px]">
-                          <div className="flex justify-between">
-                            <span className="text-slate-400 font-sans">{t('Current Fuel Level:', 'حالیہ اسٹاک حجم:')}</span>
-                            <strong className="text-slate-800">{tnk.currentStock.toLocaleString()} Ltr</strong>
+                        <div className="space-y-0.5 font-mono text-[10px]">
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400 dark:text-slate-500 font-sans">{t('Level:', 'اسٹاک:')}</span>
+                            <strong className="text-slate-800 dark:text-slate-100">{tnk.currentStock.toLocaleString()}L</strong>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-400 font-sans">{t('Safe Operations Threshold', 'محفوظ رینج لمٹ:')}</span>
-                            <strong className="text-teal-650 font-bold">&gt; {tnk.safeLevel.toLocaleString()} Ltr</strong>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400 dark:text-slate-500 font-sans">{t('Safe:', 'محفوظ:')}</span>
+                            <strong className="text-teal-600 dark:text-teal-400">&gt;{tnk.safeLevel.toLocaleString()}L</strong>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-400 font-sans">{t('Critical Refueling Alarms', 'وارننگ الرٹ لمٹ:')}</span>
-                            <strong className="text-red-500 font-bold">&lt; {tnk.criticalLevel.toLocaleString()} Ltr</strong>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400 dark:text-slate-500 font-sans">{t('Crit:', 'الرٹ:')}</span>
+                            <strong className="text-red-500 dark:text-red-400">&lt;{tnk.criticalLevel.toLocaleString()}L</strong>
                           </div>
                         </div>
 
-                        <div className="flex gap-1">
+                        <div className="pt-1">
                           {isUnderCritical ? (
-                            <span className="rounded-full bg-red-50 text-red-700 px-2.5 py-0.5 text-[9px] font-bold border border-red-200">
-                              🚨 CRITICAL REFUELLING REQUIRED
+                            <span className="rounded bg-red-500/10 text-red-600 px-1.5 py-0.5 text-[8px] font-bold uppercase block text-center truncate">
+                              🚨 CRITICAL REFUELLING
                             </span>
                           ) : isUnderSafe ? (
-                            <span className="rounded-full bg-amber-50 text-amber-700 px-2.5 py-0.5 text-[9px] font-bold border border-amber-200">
-                              ⚠️ LOW STOCK LEVEL RUNNING
+                            <span className="rounded bg-orange-500/10 text-orange-600 px-1.5 py-0.5 text-[8px] font-bold uppercase block text-center truncate">
+                              ⚠️ LOW STOCK LEVEL
                             </span>
                           ) : (
-                            <span className="rounded-full bg-teal-50 text-teal-700 px-2.5 py-0.5 text-[9px] font-bold border border-teal-200">
-                              ✅ OPTIMAL RUNNING RANGE
+                            <span className="rounded bg-teal-500/10 text-teal-600 px-1.5 py-0.5 text-[8px] font-bold uppercase block text-center truncate">
+                              ✅ OPTIMAL RANGE
                             </span>
                           )}
                         </div>
@@ -1117,26 +1106,26 @@ export default function Inventory({
           </div>
 
           {/* CALIBRATION DIP stick CALCULATOR (Interactive!) */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-            <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
-              <Calculator className="h-4 w-4 text-slate-450" />
-              <span>{t('Calibration Dip stick Calculator', ' ٹینک ڈپ سٹک لیٹر کنورٹر کیلکولیٹر')}</span>
+          <div className="kpi-card p-4 space-y-4">
+            <h3 className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-theme-main pb-2">
+              <Calculator className="h-3.5 w-3.5 text-slate-400" />
+              <span>{t('Dip stick Calculator', ' ٹینک ڈپ سٹک کیلکولیٹر')}</span>
             </h3>
 
-            <p className="font-sans text-[11.5px] text-slate-400 leading-normal leading-relaxed">
+            <p className="font-sans text-[10px] text-slate-500 leading-normal">
               {t(
                 'Convert physical wet-height measurements in centimeters automatically directly to fuel balance volumes based on certified laboratory dip charts.',
                 'سٹک پیمائش ناپ کا ہندسہ اینٹی میٹر (Centimeter) میں لکھیں، سسٹم فارمولا اور لیبارٹری گراف کے مطابق بقایا لیٹرز خود بخود نکال دیگا۔'
               )}
             </p>
 
-            <div className="space-y-4 font-sans text-xs">
+            <div className="space-y-3 font-sans text-xs">
               <div>
-                <label className="block text-slate-505 font-bold mb-1.5">{t('Select Storage Tank to Audit:', 'سٹوریج ٹینک منتخب کریں:')}</label>
+                <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1 text-[11px]">{t('Select Storage Tank:', 'سٹوریج ٹینک منتخب کریں:')}</label>
                 <select
                   value={calcTankId}
                   onChange={(e) => setCalcTankId(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 outline-hidden focus:border-orange-500"
+                  className="w-full rounded bg-theme-main border-none px-2.5 py-2 outline-hidden focus:ring-1 focus:ring-orange-500 text-xs"
                 >
                   <option value="">{t('-- Choose Tank --', '-- منتخب ٹینک کریں --')}</option>
                   {tanks.map(t => <option key={t.id} value={t.id}>{t.name} ({t.productId.toUpperCase()})</option>)}
@@ -1144,24 +1133,23 @@ export default function Inventory({
               </div>
 
               <div>
-                <label className="block text-slate-505 font-bold mb-1.5">{t('Measured Height in Centimeters (cm):', 'پیمائش سٹک ہائٹ سینٹی میٹرز میں:')}</label>
+                <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1 text-[11px]">{t('Measured Height (cm):', 'پیمائش سٹک (cm):')}</label>
                 <input
                   type="number"
                   min="0"
                   max="400"
-                  placeholder="e.g. 120"
+                  placeholder="120"
                   value={calcDepthCm}
                   onChange={(e) => setCalcDepthCm(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-hidden focus:border-orange-500 font-mono text-sm"
+                  className="w-full rounded bg-theme-main border-none px-2.5 py-2 outline-hidden focus:ring-1 focus:ring-orange-500 font-mono text-xs"
                 />
               </div>
 
               {/* CALIBRATED OUTPUT BLOCK */}
               {calculatedCalibratedVolume !== null && (
-                <div className="rounded-xl border border-teal-150 bg-teal-50/50 p-4 shadow-inner text-center space-y-1">
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-teal-650 block">🎉 {t('CONVERTED VOLUME RESULT', 'حساب شدہ فیول والیم')}</span>
-                  <strong className="text-2xl font-mono text-teal-800 block">{calculatedCalibratedVolume.toLocaleString()} <span className="text-sm font-sans font-normal text-teal-600">Litres</span></strong>
-                  <span className="text-[10px] text-teal-450 font-medium block">Linear Interpolated Chart Mapped</span>
+                <div className="rounded border border-teal-500/20 bg-teal-500/10 p-3 text-center space-y-0.5 mt-2">
+                  <span className="text-[9px] uppercase font-bold tracking-wider text-teal-600 dark:text-teal-400 block">🎉 {t('CONVERTED VOLUME', 'حساب شدہ والیم')}</span>
+                  <strong className="text-xl font-mono text-teal-700 dark:text-teal-300 block">{calculatedCalibratedVolume.toLocaleString()} <span className="text-[10px] font-sans font-normal text-teal-600/70">Litres</span></strong>
                 </div>
               )}
             </div>
@@ -1173,14 +1161,14 @@ export default function Inventory({
           TAB 3: PRICING REVISIONS LOGS (MODULE B4 / D1)
           ========================================== */}
       {activeTab === 'pricing_logs' && (
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-          <div className="border-b border-slate-100 pb-3 flex justify-between items-center flex-wrap gap-2">
+        <div className="kpi-card p-4 space-y-4">
+          <div className="border-b border-theme-main pb-2 flex justify-between items-center flex-wrap gap-2">
             <div>
-              <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+              <h3 className="font-sans text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
                 <Clock className="h-4 w-4 text-orange-600" />
                 <span>{t('Certified Corporate Tariff Pricing logs', 'ریٹ تبدیلی اور اسٹاک ویلیویشن لاگر ریکارڈ')}</span>
               </h3>
-              <p className="font-sans text-[11.5px] text-slate-400 mt-1">
+              <p className="font-sans text-[10px] text-slate-500 mt-0.5">
                 {t('Track fuel rate modification history, auditor remarks, and estimated inventory evaluation gain/loss impact.', 'پٹرولیم فنڈز کی قیمت تبدیل کرنے کے دوران موجود اسٹاک ویلیویشن کے نقصان یا منافع کا ریکارڈ۔')}
               </p>
             </div>

@@ -26,23 +26,22 @@ export default function LogisticsHub({ settings }: LogisticsHubProps) {
   ] as const;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 border-b border-slate-200 pb-4">
-        <div>
-          <span className="font-mono text-[9px] font-black text-rose-600 uppercase tracking-widest block mb-0.5">
-            ENTERPRISE MODULE
-          </span>
-          <h2 className="font-sans text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
-            <ArrowRightLeft className="h-6 w-6 text-rose-600" />
-            <span>Logistics & Tanker Operations</span>
-          </h2>
-          <p className="font-sans text-xs text-slate-500 mt-1">
-            Manage incoming fuel deliveries, track ETAs, verify received quantities, and monitor shortage losses.
-          </p>
+    <div className="w-full flex-1 flex flex-col bg-transparent pb-16">
+      {/* COMPACT HEADER */}
+      <div className="fp-header">
+        <div className="flex items-center gap-2">
+          <ArrowRightLeft className="w-5 h-5 text-rose-600" />
+          <h1 className="text-lg font-black text-slate-800 dark:text-slate-100">
+            {settings?.language === 'ur' ? 'لاجسٹکس' : 'Logistics'}
+          </h1>
+        </div>
+        <div className="flex items-center gap-2">
+          {/* Optional actions */}
         </div>
       </div>
 
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide border-b border-slate-200">
+      {/* COMPACT TABS */}
+      <div className="fp-date-tabs mb-4 px-1">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -50,13 +49,9 @@ export default function LogisticsHub({ settings }: LogisticsHubProps) {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-t-xl font-sans text-xs font-bold whitespace-nowrap transition-all border-b-2 ${
-                isActive
-                  ? 'border-rose-500 text-rose-600 bg-rose-50/50'
-                  : 'border-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-700'
-              }`}
+              className={`fp-date-tab flex items-center gap-1.5 ${isActive ? 'fp-date-tab--active !text-rose-600 !border-rose-600 bg-rose-50/50' : ''}`}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-3.5 w-3.5" />
               {tab.label}
             </button>
           );

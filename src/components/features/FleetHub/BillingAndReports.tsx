@@ -62,101 +62,108 @@ export default function BillingAndReports({ settings, stationId }: BillingAndRep
         </div>
       </div>
 
-      <div className="flex flex-row justify-between items-start items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
-        <div className="flex flex-row gap-4 w-full sm:w-auto flex-1">
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-slate-400" />
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-2">
+        <div className="flex flex-row gap-2 w-full flex-1 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Filter className="h-3.5 w-3.5 text-slate-400" />
             <select 
               value={filterAccount} 
               onChange={(e) => setFilterAccount(e.target.value)}
-              className="w-full sm:w-64 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-[140px] px-2 py-1.5 bg-theme-card border border-theme-main rounded-lg text-xs focus:outline-none focus:border-orange-500"
             >
-              <option value="all">All Corporate Accounts</option>
+              <option value="all">All Accounts</option>
               {accounts.map(acc => (
                 <option key={acc.id} value={acc.id}>{acc.companyName}</option>
               ))}
             </select>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 shrink-0">
             <input 
               type="date" 
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-[110px] px-2 py-1.5 bg-theme-card border border-theme-main rounded-lg text-xs focus:outline-none focus:border-orange-500"
             />
-            <span className="text-slate-400 text-sm">to</span>
+            <span className="text-slate-400 text-xs">to</span>
             <input 
               type="date" 
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-[110px] px-2 py-1.5 bg-theme-card border border-theme-main rounded-lg text-xs focus:outline-none focus:border-orange-500"
             />
           </div>
         </div>
         <button 
-          className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded-lg text-sm font-bold hover:bg-slate-800 transition whitespace-nowrap"
+          className="flex items-center gap-1.5 bg-slate-900 dark:bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-800 transition whitespace-nowrap shrink-0 w-full sm:w-auto justify-center"
         >
-          <Download className="h-4 w-4" />
-          Export Statement
+          <Download className="h-3.5 w-3.5" />
+          Export
         </button>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider font-bold">
-                <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3">Account</th>
-                <th className="px-4 py-3">Transaction Details</th>
-                <th className="px-4 py-3 text-right">Debit (Consumption)</th>
-                <th className="px-4 py-3 text-right">Credit (Payment)</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-sm">
-              {filteredTxns.map(txn => (
-                <tr key={txn.id} className="hover:bg-slate-50/50 transition">
-                  <td className="px-4 py-3 text-slate-500">
-                    {new Date(txn.date).toLocaleDateString()} <br/>
-                    <span className="text-[10px]">{new Date(txn.date).toLocaleTimeString()}</span>
-                  </td>
-                  <td className="px-4 py-3 font-medium text-slate-700">
-                    {getAccountName(txn.accountId)}
-                  </td>
-                  <td className="px-4 py-3">
-                    {txn.type === 'consumption' ? (
-                      <div>
-                        <div className="font-bold text-slate-900">{txn.quantity} Liters - {txn.productId === 'p_pmg' ? 'Petrol' : 'Diesel'}</div>
-                        <div className="text-xs text-slate-500">Rate: {settings.currency} {txn.rate} / L</div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <Receipt className="h-4 w-4 text-emerald-500" />
-                        <div>
-                          <div className="font-bold text-slate-900">Payment Received</div>
-                          <div className="text-xs text-slate-500">Mode: {txn.paymentMode?.toUpperCase()} • Ref: {txn.referenceNumber}</div>
-                        </div>
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-right font-mono font-bold text-rose-600">
-                    {txn.type === 'consumption' ? `${settings.currency} ${txn.amount.toLocaleString()}` : '-'}
-                  </td>
-                  <td className="px-4 py-3 text-right font-mono font-bold text-emerald-600">
-                    {txn.type === 'payment' ? `${settings.currency} ${txn.amount.toLocaleString()}` : '-'}
-                  </td>
-                </tr>
-              ))}
-              {filteredTxns.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-slate-500 text-sm">
-                    No transactions found for the selected period and account.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+      <div className="bg-theme-card rounded-xl border border-theme-main overflow-hidden shadow-sm">
+        <ResponsiveTable
+          data={filteredTxns}
+          columns={[
+            {
+              header: 'Date & Time',
+              accessor: (txn) => (
+                <div className="flex flex-col">
+                  <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px]">{new Date(txn.date).toLocaleDateString()}</span>
+                  <span className="text-[10px] text-slate-500">{new Date(txn.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                </div>
+              ),
+              isPrimaryMobile: true
+            },
+            {
+              header: 'Account',
+              accessor: (txn) => (
+                <span className="font-medium text-[11px] text-slate-700 dark:text-slate-300 truncate block max-w-[120px]">
+                  {getAccountName(txn.accountId)}
+                </span>
+              )
+            },
+            {
+              header: 'Details',
+              accessor: (txn) => (
+                txn.type === 'consumption' ? (
+                  <div className="flex flex-col">
+                    <span className="font-bold text-slate-900 dark:text-white text-[11px]">{txn.quantity}L {txn.productId === 'p_pmg' ? 'Petrol' : 'Diesel'}</span>
+                    <span className="text-[10px] text-slate-500">Rate: {txn.rate}/L</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <Receipt className="h-3.5 w-3.5 text-emerald-500" />
+                    <div className="flex flex-col">
+                      <span className="font-bold text-slate-900 dark:text-white text-[11px]">Payment</span>
+                      <span className="text-[10px] text-slate-500 uppercase">{txn.paymentMode}</span>
+                    </div>
+                  </div>
+                )
+              )
+            },
+            {
+              header: 'Debit',
+              className: 'text-right',
+              accessor: (txn) => (
+                <span className="font-mono font-bold text-rose-500 text-[11px]">
+                  {txn.type === 'consumption' ? `${settings.currency} ${txn.amount.toLocaleString()}` : '-'}
+                </span>
+              )
+            },
+            {
+              header: 'Credit',
+              className: 'text-right',
+              accessor: (txn) => (
+                <span className="font-mono font-bold text-emerald-500 text-[11px]">
+                  {txn.type === 'payment' ? `${settings.currency} ${txn.amount.toLocaleString()}` : '-'}
+                </span>
+              )
+            }
+          ]}
+          keyExtractor={(t) => t.id}
+          emptyMessage="No transactions found for the selected period."
+        />
       </div>
     </div>
   );
