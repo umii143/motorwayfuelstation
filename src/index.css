@@ -25,6 +25,8 @@ html, body {
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
+  overscroll-behavior-y: none;
+  touch-action: manipulation;
 }
 
 /* Ensure minimum touch targets for all interactive elements on mobile */

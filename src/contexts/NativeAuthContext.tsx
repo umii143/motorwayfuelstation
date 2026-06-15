@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { BiometricAuth } from '@aparajita/capacitor-biometric-auth';
 import { App as CapacitorApp } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 
 interface NativeAuthContextType {
   isLocked: boolean;
@@ -39,11 +40,15 @@ export const NativeAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, [backgroundTime]);
 
   const requireBiometric = useCallback(async (reason: string): Promise<boolean> => {
+    if (!Capacitor.isNativePlatform()) {
+      return true; // Auto-pass for web development
+    }
+    
     try {
       const info = await BiometricAuth.checkBiometry();
       if (!info.isAvailable) {
-        // Fallback or deny if biometric is not available
-        return true; // Dev mode / Web fallback
+        console.warn("Biometrics not available on device");
+        return false; // Real device without biometry fails security check
       }
 
       await BiometricAuth.authenticate({
@@ -54,8 +59,8 @@ export const NativeAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       return true;
     } catch (error) {
       console.error("Biometric error:", error);
-      // If error (e.g. running on web where biometric fails), we can fallback to true for dev or handle appropriately
-      return true; // For web testing, normally would be false
+      // FAILED AUTHENTICATION
+      return false; 
     }
   }, []);
 

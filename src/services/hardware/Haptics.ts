@@ -1,5 +1,6 @@
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { Capacitor } from '@capacitor/core';
+import { NativeSounds } from '../../utils/SoundManager';
 
 export class NativeHaptics {
   /**
@@ -14,6 +15,7 @@ export class NativeHaptics {
    * Use for tab changes, minor button clicks, checking checkboxes
    */
   static async selection() {
+    NativeSounds.playClick();
     if (!this.isSupported()) return;
     try {
       await Haptics.selectionStart();
@@ -29,6 +31,7 @@ export class NativeHaptics {
    * @param style Light, Medium, or Heavy
    */
   static async impact(style: ImpactStyle = ImpactStyle.Medium) {
+    NativeSounds.playClick();
     if (!this.isSupported()) return;
     try {
       await Haptics.impact({ style });
@@ -41,6 +44,10 @@ export class NativeHaptics {
    * Trigger a notification feedback (Success, Warning, Error)
    */
   static async notification(type: NotificationType) {
+    if (type === NotificationType.Success) NativeSounds.playSuccess();
+    else if (type === NotificationType.Error) NativeSounds.playError();
+    else if (type === NotificationType.Warning) NativeSounds.playError();
+
     if (!this.isSupported()) return;
     try {
       await Haptics.notification({ type });
