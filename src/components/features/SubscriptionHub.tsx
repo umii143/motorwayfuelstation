@@ -97,10 +97,10 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
   ];
 
   const gateways = [
-    { id: 'jazzcash', name: 'JazzCash', desc: '0300-1234567 (Umar Ali)' },
-    { id: 'easypaisa', name: 'EasyPaisa', desc: '0345-1234567 (Umar Ali)' },
-    { id: 'raast', name: 'Raast ID', desc: '0300-1234567' },
-    { id: 'bank', name: 'Bank Transfer', desc: 'HBL: 0123456789 (Umar Ali)' }
+    { id: 'jazzcash', name: 'NayaPay', desc: '0316 8432329 (Umar Ali)' },
+    { id: 'easypaisa', name: 'SadaPay', desc: '0316 84 32329 (Umar Ali)' },
+    { id: 'raast', name: 'Raast ID', desc: '0316 8432329 (Umar Ali)' },
+    { id: 'bank', name: 'Bank Transfer', desc: 'Please use Raast/NayaPay/SadaPay' }
   ];
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -148,7 +148,7 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
       
       // Open WhatsApp automatically
       const waMessage = `Assalamualaikum.\nI have submitted my FuelPro subscription payment.\nOrg ID: ${organization.orgId}\nPlan: ${selectedPlan}\nPlease verify my request.`;
-      const waUrl = `https://wa.me/923000000000?text=${encodeURIComponent(waMessage)}`;
+      const waUrl = `https://wa.me/923168432329?text=${encodeURIComponent(waMessage)}`;
       window.open(waUrl, '_blank');
       
       // Local state update handled by real-time listener or reload
