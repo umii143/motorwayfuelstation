@@ -160,9 +160,9 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
       // Local state update handled by real-time listener or reload
       window.location.reload();
       
-    } catch (err) {
-      console.error(err);
-      alert(t('Failed to submit receipt. Please try again.', 'رسید جمع کرانے میں ناکامی۔ دوبارہ کوشش کریں۔'));
+    } catch (err: any) {
+      console.error('Upload Error:', err);
+      alert(`Upload Failed: ${err.message || err.code || 'Unknown error'}\n\nPlease make sure Firebase Storage is enabled in your Firebase Console and rules are set to allow read/write.`);
     } finally {
       setIsProcessing(false);
     }
