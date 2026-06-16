@@ -493,11 +493,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // ─────────────────────────────────────────────────────────────────────────
-  // EMAIL OTP (New Flow)
+  // EMAIL OTP (New Flow via Local Express Server)
   // ─────────────────────────────────────────────────────────────────────────
   const requestOTP = async (email: string) => {
     try {
-      await sendEmailOTP({ email });
+      const response = await fetch("/api/auth/request-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to send OTP");
+      }
     } catch (err: any) {
       console.error("requestOTP error:", err);
       throw new Error(err.message || "Failed to send OTP");
@@ -506,8 +514,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const verifyOTP = async (email: string, otp: string) => {
     try {
-      const response = await verifyEmailOTP({ email, otp });
-      const { token } = response.data;
+      const response = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Invalid OTP");
+      }
+      
+      const { token } = data;
       if (token) {
         const credential = await signInWithCustomToken(auth, token);
         const { profile, orgProfile } = await loadUserProfile(credential.user);
