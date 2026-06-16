@@ -39,7 +39,7 @@ export default function MaintenanceDashboard({ settings, stationId }: Maintenanc
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="premium-card p-5 border relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-amber-50 rounded-full group-hover:scale-110 transition-transform"></div>
           <div className="relative">
@@ -97,7 +97,7 @@ export default function MaintenanceDashboard({ settings, stationId }: Maintenanc
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Warranty Alerts */}
         <div className="premium-card border overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">

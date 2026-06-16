@@ -69,7 +69,7 @@ export default function CredentialsManager({ settings, stationId }: CredentialsM
           <p className="text-xs text-slate-500 mt-1">Configure endpoints to receive real-time events when data changes.</p>
         </div>
         <div className="p-6 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Endpoint URL</label>
               <input type="url" placeholder="https://api.yourcompany.com/webhooks/fuel" className="w-full px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500" />

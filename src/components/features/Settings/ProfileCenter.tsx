@@ -35,7 +35,7 @@ export default function ProfileCenter({ settings }: { settings: GlobalSettings }
         <p className="text-sm text-slate-500 mt-1">{t('Manage your personal information and login credentials.', 'اپنی ذاتی معلومات اور لاگ ان کی تفصیلات کا نظم کریں۔')}</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Profile Card */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-6 text-center relative overflow-hidden">
@@ -103,7 +103,7 @@ export default function ProfileCenter({ settings }: { settings: GlobalSettings }
             
             <div className="p-6">
               <form onSubmit={handleSave} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('Full Name', 'پورا نام')}</label>
                     <div className="relative">

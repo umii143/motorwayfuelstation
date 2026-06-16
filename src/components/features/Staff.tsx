@@ -431,7 +431,7 @@ export default function StaffPanel({
       </div>
 
       {/* SUB-PANELS WORKSPACE */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-3 space-y-6">
 
           {/* ==========================================
@@ -736,7 +736,7 @@ export default function StaffPanel({
                   <span>{t('Duty Attendance Historical Records log', 'گزشتہ حاضری ہسٹری لاگز')}</span>
                 </h3>
 
-                <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                   {Array.from(new Set(attendance.map(a => a.date))).map(dtKey => {
                     const dayRecs = attendance.filter(a => a.date === dtKey);
                     const prs = dayRecs.filter(r => r.status === 'present').length;
@@ -958,7 +958,7 @@ export default function StaffPanel({
           {activeTab === 'performance' && (
             <div className="space-y-6">
               {/* KPIs Header */}
-              <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="bg-white p-4 rounded-xl border border-slate-200">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">{t('Total Shifts Conducted', 'کل شفٹیں برپا کی گئیں')}</span>
                   <strong className="font-mono text-lg font-bold text-slate-800 block mt-1">{shifts.length}</strong>
@@ -1475,7 +1475,7 @@ export default function StaffPanel({
               </div>
 
               <form onSubmit={handleCreateStaffSubmit} className="space-y-4 font-sans text-xs">
-                <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-slate-505 font-bold mb-1">{t('Staff Name (English):', 'اسٹاف کا نام انگریزی میں:')}</label>
                     <input

@@ -710,7 +710,7 @@ const cartItems = useMemo(() => {
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
                   <span className="text-slate-800">🔒</span> CHOOSE LEDGER POSTING TYPE
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-2">
                   <button onClick={() => setPaymentMode('cash')} className={`py-3 px-2 rounded-[14px] text-[10px] font-black uppercase tracking-wider transition-all border shadow-sm ${paymentMode === 'cash' ? 'bg-emerald-500 border-emerald-600 text-white' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>Cash</button>
                   <button onClick={() => setPaymentMode('credit')} className={`py-3 px-2 rounded-[14px] text-[10px] font-black uppercase tracking-wider transition-all border shadow-sm ${paymentMode === 'credit' ? 'bg-blue-500 border-blue-600 text-white' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>Credit</button>
                   <button onClick={() => setPaymentMode('bank')} className={`py-3 px-2 rounded-[14px] text-[10px] font-black uppercase tracking-wider transition-all border shadow-sm ${paymentMode === 'bank' ? 'bg-purple-500 border-purple-600 text-white' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>Bank</button>

@@ -11,7 +11,7 @@ export function DashboardRealtimeGauges({ settings, products = [], tanks = [], a
   }, [activeStationId]);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
       <div className="bg-slate-900 rounded-2xl p-6 shadow-xl border border-slate-800 text-center flex flex-col justify-center items-center">
         <Clock className="h-10 w-10 text-orange-500 mb-3" />
         <h3 className="font-mono text-3xl font-black text-white tracking-widest">{time.toLocaleTimeString()}</h3>

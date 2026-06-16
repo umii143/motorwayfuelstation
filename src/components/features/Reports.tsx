@@ -566,7 +566,7 @@ export default function Reports({
           NEW VIEW: 50+ CORPORATE REPORT GENERATION CONSOLE
           ======================================================== */}
       {activeReportTab === 'corporate_audit' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
           
           {/* LEFT COLUMN: ACTIVE DIRECTORY ACCORDION OF REPORTS */}
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3 lg:sticky lg:top-5">
@@ -890,7 +890,7 @@ export default function Reports({
         <div className="space-y-6">
           
           {/* Bento box summary widgets row with 5 indicators */}
-          <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4 lg:grid-cols-5">
+          <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4 lg:grid-cols-5">
             
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm flex flex-col justify-between">
               <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block leading-snug">{t('Summed Period Sales', 'کل سیشنز فروخت رقم')}</span>
@@ -1068,7 +1068,7 @@ export default function Reports({
           ======================================================== */}
       {activeReportTab === 'inventory_audit' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-6">
             
             {/* INVENTORY TABLE LEFT PANEL (2/3) */}
             <div className="md:col-span-2 rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
@@ -1167,7 +1167,7 @@ export default function Reports({
           REPORT VIEW 4: FINALIZED SHIFT STATEMENT INVOICES / RECEIPTS
           ======================================================== */}
       {activeReportTab === 'shift_sheets' && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
           
           {/* List of past shifts archived */}
           <div className="space-y-3.5">
@@ -1226,7 +1226,7 @@ export default function Reports({
                 </div>
 
                 {/* Sub Metadata rows */}
-                <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4 border-b border-slate-100 pb-4 text-xs font-sans text-slate-600">
+                <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4 border-b border-slate-100 pb-4 text-xs font-sans text-slate-600">
                   <div>
                     <span className="block font-bold">Shift ID: <span className="font-mono font-semibold">#{activeShiftToReceipt.id}</span></span>
                     <span className="block mt-1">Date: <span className="font-semibold">{activeShiftToReceipt.date}</span></span>
@@ -1245,7 +1245,7 @@ export default function Reports({
                     {t('Final Cash Audit Sheet Summary', 'حتمی کیش گوشوارہ پڑتال')}
                   </strong>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4 text-xs font-sans">
+                  <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4 text-xs font-sans">
                     <div className="rounded-lg bg-slate-50 p-3 space-y-1.5 border border-slate-105">
                       <span className="text-slate-400 font-semibold block">{t('EXPECTED COMPUTED CASH:', 'حسابی کیش ہونا چاہیۓ تھا:')}</span>
                       <strong className="font-mono text-sm font-bold text-slate-800">{formatCurrency(activeShiftToReceipt.expectedCash, settings)}</strong>
@@ -1320,7 +1320,7 @@ export default function Reports({
           </div>
 
           {/* Aggregated indicators */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white p-4 rounded-xl border border-slate-200">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block leading-snug">{t('Total Shifts Logged', 'کل شفٹ ریکارڈز')}</span>
               <strong className="font-mono text-lg font-bold text-slate-800 block mt-1">{shifts.length}</strong>

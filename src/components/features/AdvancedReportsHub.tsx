@@ -883,7 +883,7 @@ export default function AdvancedReportsHub({
       </div>
 
       {/* KPI Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         <div className="premium-card border border-slate-200">
           <span className="text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider block">
             Total Reports
@@ -984,7 +984,7 @@ export default function AdvancedReportsHub({
                 {mod.name}
               </h2>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
                 {mod.reports.map((report) => (
                   <div
                     key={report.id}

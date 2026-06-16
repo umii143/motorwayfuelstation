@@ -201,7 +201,7 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
              <div>
                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Date:', 'تاریخ:')}</label>
                <input

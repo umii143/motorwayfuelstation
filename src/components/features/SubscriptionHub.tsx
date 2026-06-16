@@ -263,7 +263,7 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
             <AnimatePresence mode="wait">
               {step === 1 && (
                 <motion.div key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
-                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-6 pt-4 items-center">
+                  <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-6 pt-4 items-center">
                     {plans.map(p => (
                   <div 
                     key={p.id} 

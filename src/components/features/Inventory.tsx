@@ -749,7 +749,7 @@ export default function Inventory({
 
       {/* CORE ACTIVE WORKSPACE MODULES */}
       {activeTab === 'inventory' && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
           {/* LEFT PANEL (2/3 WIDTH): PRODUCTS DATABASE DETAIL BOARD */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex flex-col gap-3.5 sm:flex-row items-center sm:justify-between">
@@ -788,7 +788,7 @@ export default function Inventory({
             </div>
 
             {/* PRODUCT LISTING CARD GRID */}
-            <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
               <AnimatePresence>
                 {filteredProducts.map((prod, idx) => {
                   const capacity = prod.capacity || 100;
@@ -1017,7 +1017,7 @@ export default function Inventory({
           TAB 2: TANKS CALIBRATION MODULE (MODULE B2/B3/D2)
           ========================================== */}
       {activeTab === 'tanks_calibration' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {/* TANKS LIST BOARD WITH CYLINDERS */}
           <div className="md:col-span-2 space-y-3">
             <h3 className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-theme-main pb-2">
@@ -1424,7 +1424,7 @@ export default function Inventory({
               </div>
 
               <form onSubmit={handleProductModalSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Product Name (English):', 'نام (انگریزی):')}</label>
                     <input type="text" required value={prodName} onChange={e => setProdName(e.target.value)}

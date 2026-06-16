@@ -174,7 +174,7 @@ export default function TreasuryDrillDownModal({
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           
           {/* Executive KPI Header */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="bg-slate-900 rounded-xl p-4 shadow-sm relative overflow-hidden lg:col-span-2 border border-slate-700">
               <div className="absolute -right-4 -top-4 size-16 bg-white/5 rounded-full blur-xl pointer-events-none"></div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Corporate Liquidity</p>
@@ -216,7 +216,7 @@ export default function TreasuryDrillDownModal({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 xl:grid-cols-4 gap-6">
             
             {/* Left Column: Analytics & AI */}
             <div className="space-y-6 xl:col-span-1">

@@ -277,7 +277,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
       )}
 
       {/* KPI Header */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: t('Total Claims', 'کل کلیمز'), value: intelligence.total, icon: AlertTriangle, bg: 'bg-slate-50 border-slate-200', color: 'text-slate-700', valueColor: 'text-slate-800' },
           { label: t('Recovery Rate', 'وصولی شرح'), value: `${intelligence.recoveryPct.toFixed(1)}%`, icon: TrendingUp, bg: intelligence.recoveryPct >= 70 ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200', color: intelligence.recoveryPct >= 70 ? 'text-emerald-600' : 'text-red-600', valueColor: intelligence.recoveryPct >= 70 ? 'text-emerald-800' : 'text-red-800' },
@@ -349,7 +349,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
             </h4>
             <button onClick={() => setShowAddForm(false)} className="text-red-200 hover:text-white">✕</button>
           </div>
-          <div className="p-5 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="p-5 grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">{t('Linked Batch *', 'منسلک بیچ *')}</label>
               <select value={newClaim.batchId || ''} onChange={e => {
@@ -566,7 +566,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
                     {isExpanded && (
                       <div className="px-4 pb-4 pt-0">
                         <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3 shadow-inner">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                          <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                             {[
                               { label: 'Claim Amount', value: `Rs.${claim.claimAmount.toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, color: 'text-slate-800', bg: 'bg-slate-50 border-slate-100' },
                               { label: 'Recovered', value: `Rs.${claim.recoveredAmount.toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-100' },

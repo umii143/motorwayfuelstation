@@ -254,7 +254,7 @@ export default function RevaluationDrillDownModal({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             
             {/* Left Sidebar: Filters & Mini Analytics */}
             <div className="space-y-6">
@@ -357,7 +357,7 @@ export default function RevaluationDrillDownModal({
             <div className="lg:col-span-3 space-y-6">
               
               {/* Visual Analytics */}
-              <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="premium-card p-5 border h-72">
                   <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 text-center">Impact Distribution (Gain/Loss by Product)</h4>
                   <ResponsiveContainer width="100%" height="100%">

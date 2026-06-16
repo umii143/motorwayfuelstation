@@ -429,14 +429,14 @@ export default function Expenses({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
         
         {/* LEFT COMPEX: TIMELINES & DETAIL LIST OF EXPENDITURES */}
         <div className="lg:col-span-2 space-y-4">
           
           {/* SEARCH & FILTER CONTROLS CARD */}
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3.5">
-            <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
 
               <div>
                 <select
@@ -612,7 +612,7 @@ export default function Expenses({
 
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Paid From Account:', 'رقم کہاں سے ادا کی گئی:')}</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                     <button
                       type="button"
                       onClick={() => setFormPaidFrom('cash')}

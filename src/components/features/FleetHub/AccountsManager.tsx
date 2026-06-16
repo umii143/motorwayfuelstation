@@ -197,7 +197,7 @@ export default function AccountsManager({ settings, stationId }: AccountsManager
             </div>
             
             <div className="p-6 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Company Name *</label>
                   <input type="text" value={companyName} onChange={e => setCompanyName(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="e.g. DHL Express" />

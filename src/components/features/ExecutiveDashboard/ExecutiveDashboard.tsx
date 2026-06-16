@@ -155,7 +155,7 @@ export const ExecutiveDashboard: React.FC = () => {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
               {health.recommendations.map((rec, idx) => {
                 const isCritical = rec.type === 'critical';
                 const isWarning = rec.type === 'warning';
@@ -200,7 +200,7 @@ export const ExecutiveDashboard: React.FC = () => {
         )}
 
         {/* Core KPI Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-8">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-8">
           
           {/* Revenue */}
           <div 
@@ -358,7 +358,7 @@ export const ExecutiveDashboard: React.FC = () => {
         </div>
 
         {/* Secondary Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
+        <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
           
           {/* Inventory Insights */}
           <div className="premium-card p-6 border flex items-center justify-between">

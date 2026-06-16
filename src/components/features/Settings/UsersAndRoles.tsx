@@ -25,7 +25,7 @@ export default function UsersAndRoles({ settings }: { settings: GlobalSettings }
           Staff management, attendance, and payroll have been migrated to the primary Staff Module on the main dashboard sidebar for easier daily access.
         </p>
         
-        <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4 max-w-sm mx-auto text-left">
+        <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4 max-w-sm mx-auto text-left">
           <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 flex items-center gap-3">
             <UserPlus className="h-5 w-5 text-indigo-500" />
             <span className="text-xs font-bold text-slate-700">Add Staff</span>

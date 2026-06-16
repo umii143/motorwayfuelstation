@@ -99,7 +99,7 @@ export default function TreasuryDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle className="text-lg flex items-center space-x-2">

@@ -1847,7 +1847,7 @@ export default function ShiftWizard({
               <label className="mb-2 block font-sans text-xs font-bold text-slate-500 uppercase tracking-wide">
                 {t("Choose Shift Type:", "شفٹ کی قسم:")}
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                 <button
                   type="button"
                   onClick={() => setShiftType("day")}
@@ -1874,7 +1874,7 @@ export default function ShiftWizard({
             </div>
 
             {/* Date and Time Details */}
-            <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
               <div>
                 <label className="mb-2 block font-sans text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5 text-slate-400" />
@@ -1939,7 +1939,7 @@ export default function ShiftWizard({
           STEP 3: ACTIVE SHIFT HUB DRAWERS
           ========================================== */}
       {wizardStep === 3 && activeShift && (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
           {/* Active Shift Info Sidebar */}
           <div className="space-y-3">
             <div className="rounded-xl border border-orange-200 bg-orange-50/50 p-4 shadow-xs">
@@ -3142,7 +3142,7 @@ export default function ShiftWizard({
           STEP 6: EXPECTED CASH AUDIT RECONCILIATIONS
           ========================================== */}
       {wizardStep === 6 && activeShift && expectedTotals && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 items-start">
+        <div className="grid grid-cols-2 gap-6 lg:grid-cols-5 items-start">
           {/* Detailed Calculations Columns */}
           <div className="lg:col-span-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
             <h3 className="font-sans text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4 uppercase tracking-wider flex items-center justify-between">
@@ -3411,7 +3411,7 @@ export default function ShiftWizard({
 
           <div className="p-6 space-y-5 font-sans">
             {/* Metadata Rows */}
-            <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4 text-xs border-b border-dashed border-slate-100 pb-3 pt-0.5">
+            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4 text-xs border-b border-dashed border-slate-100 pb-3 pt-0.5">
               <div>
                 <span className="text-slate-400 block">
                   {t("Operator In-charge:", "ڈیوٹی آپریٹر:")}

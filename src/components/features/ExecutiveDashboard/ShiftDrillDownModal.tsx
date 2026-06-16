@@ -185,7 +185,7 @@ export default function ShiftDrillDownModal({
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
 
             {/* EXECUTIVE KPI HEADER */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="premium-card border border-slate-200">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Total Cash Collected</span>
                 <h3 className="text-2xl font-black text-slate-900">{formatCurrency(kpis.totalCashCollected, settings)}</h3>
@@ -280,7 +280,7 @@ export default function ShiftDrillDownModal({
 
             {/* CONTENT VIEWS */}
             {activeTab === 'overview' && (
-              <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                 
                 {/* Staff Performance Chart */}
                 <div className="premium-card border border-slate-200">

@@ -146,7 +146,7 @@ export default function DipCalculator({ settings, tanks }: DipCalculatorProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
         {/* Calculator Form */}
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-main)] shadow-sm p-6 space-y-4">
@@ -269,7 +269,7 @@ export default function DipCalculator({ settings, tanks }: DipCalculatorProps) {
               </div>
 
               {/* Breakdown Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="bg-[var(--bg-card)] rounded-xl border border-[var(--border-main)] p-4">
                   <p className="font-mono text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-1">Raw Volume</p>
                   <p className="font-mono text-2xl font-black text-[var(--text-main)]">{result.rawLiters.toLocaleString()} L</p>

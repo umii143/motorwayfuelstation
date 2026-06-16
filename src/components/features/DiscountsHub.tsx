@@ -116,7 +116,7 @@ export default function DiscountsHub({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="premium-card border border-slate-200">
           <span className="text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider block">
             {t('Total Discounts Value', 'کل رعیاتی ڈسکاؤنٹ')}

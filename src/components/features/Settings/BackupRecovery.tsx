@@ -184,7 +184,7 @@ export default function BackupRecovery({ settings, activeStationId }: { settings
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
         {/* EXPORT SECTION */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col">
           <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-3">

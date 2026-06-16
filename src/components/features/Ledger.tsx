@@ -479,7 +479,7 @@ export default function Ledger({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
         
         {/* LEFT COLUMN: ACTIVE PARTIES DATABASE */}
         <div className="space-y-4">

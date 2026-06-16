@@ -48,7 +48,7 @@ export default function BusinessIntelligenceDashboard() {
       <BIMasterKPIs metrics={metrics} settings={{}} />
 
       {/* ROW 2: Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
         <div className="lg:col-span-2">
           <BIInvestmentChart shifts={shifts} batches={batches} expenses={standaloneExpenses} filter={filter} />
         </div>

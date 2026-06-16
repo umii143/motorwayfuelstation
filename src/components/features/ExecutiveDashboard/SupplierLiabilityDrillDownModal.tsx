@@ -280,7 +280,7 @@ export default function SupplierLiabilityDrillDownModal({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 xl:grid-cols-4 gap-6">
             
             {/* Left Column: Analytics & AI */}
             <div className="space-y-6 xl:col-span-1">

@@ -21,7 +21,7 @@ export function BIMasterKPIs({ metrics, settings }: BIMasterKPIsProps) {
     new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', minimumFractionDigits: 0 }).format(val);
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-6">
+    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-6">
       
       {/* 1. Total Invested */}
       <div className="premium-card border border-slate-200 flex flex-col justify-between">

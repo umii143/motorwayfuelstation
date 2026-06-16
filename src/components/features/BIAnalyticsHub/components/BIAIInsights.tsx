@@ -199,7 +199,7 @@ export function BIAIInsights({ metrics }: any) {
         </div>
       )}
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {insights.map((insight, index) => (
           <div key={index} className="bg-white/10 rounded-xl p-4 border border-white/10 hover:bg-white/20 transition-colors cursor-default">
             <div className="flex items-start gap-3">

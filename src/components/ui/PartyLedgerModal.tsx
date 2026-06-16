@@ -403,7 +403,7 @@ export default function PartyLedgerModal({
 
             {/* ─── TOTALS FOOTER ─── */}
             <div className="border-t-2 border-[var(--border-main)] bg-[var(--bg-secondary)] px-5 py-4 print:fixed print:bottom-0 print:w-full">
-              <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+              <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-4 text-center">
 
                 <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border-main)] p-3">
                   <span className="font-sans text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] block">Transactions</span>
