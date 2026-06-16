@@ -303,6 +303,36 @@ function MainApp() {
   // ==========================================
 
   const renderActiveComponent = () => {
+    // ENFORCE STRICT EXPIRATION LOCK
+    if (isExpired && activeView !== 'subscription_hub') {
+      return (
+        <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+          <div className="w-24 h-24 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center mb-6">
+            <AlertTriangle className="h-12 w-12" />
+          </div>
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
+            {settings.language === 'ur' ? 'لائسنس کی معیاد ختم ہو گئی' : 'License Expired'}
+          </h2>
+          <p className="text-lg text-slate-500 dark:text-slate-400 mb-8 max-w-md">
+            {settings.language === 'ur' 
+              ? 'آپ کے ٹرائل یا سبسکرپشن کی معیاد ختم ہو چکی ہے۔ سسٹم تک دوبارہ رسائی حاصل کرنے کے لیے براہ کرم اپنا پلان اپ گریڈ کریں۔' 
+              : 'Your 7-day trial or subscription has expired. Please upgrade your plan to restore full access to FuelPro.'}
+          </p>
+          <div className="flex flex-col items-center gap-4">
+            <button 
+              onClick={() => handleViewChange('subscription_hub')} 
+              className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg shadow-orange-500/30 transition-all"
+            >
+              {settings.language === 'ur' ? 'ابھی اپ گریڈ کریں' : 'Upgrade Plan Now'}
+            </button>
+            <p className="text-slate-500 font-bold mt-2">
+              {settings.language === 'ur' ? 'رابطہ کریں: 0316 8432329' : 'Support Contact: 0316 8432329'}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
     switch (activeView) {
       case 'dashboard':
         return (
