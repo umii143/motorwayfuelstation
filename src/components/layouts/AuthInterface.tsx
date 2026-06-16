@@ -160,14 +160,14 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0e17] text-white flex flex-col font-sans selection:bg-orange-500/30">
+    <div className="min-h-screen bg-[#0a0e17] text-white flex flex-col font-sans selection:bg-orange-500/30 overflow-y-auto scroll-smooth">
       
       {/* Language toggle or top right elements can go here if needed */}
       <div className="absolute top-6 right-6 z-50 flex items-center gap-2">
         {/* You can add a language dropdown here in the future to match the mockup */}
       </div>
 
-      <div className="flex-1 flex flex-col xl:flex-row overflow-x-hidden">
+      <div className="flex-1 flex flex-col xl:flex-row">
         
         {/* ── LEFT SIDE (Branding & Features) ── */}
         <div className="w-full xl:w-[55%] 2xl:w-[60%] p-6 lg:p-12 2xl:p-16 flex flex-col justify-between relative order-2 xl:order-1 border-t xl:border-t-0 xl:border-r border-white/5 bg-[#0a0e17]">
