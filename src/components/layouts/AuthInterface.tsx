@@ -160,7 +160,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0e17] text-white flex flex-col font-sans selection:bg-orange-500/30 overflow-y-auto scroll-smooth">
+    <div className="min-h-[100dvh] bg-[#0a0e17] text-white flex flex-col font-sans selection:bg-orange-500/30 overflow-y-auto scroll-smooth">
       
       {/* Language toggle or top right elements can go here if needed */}
       <div className="absolute top-6 right-6 z-50 flex items-center gap-2">
@@ -250,7 +250,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
         </div>
 
         {/* ── RIGHT SIDE (Login Form) ── */}
-        <div className="w-full xl:w-[45%] 2xl:w-[40%] flex flex-col items-center justify-center p-6 lg:p-12 relative z-10 order-1 xl:order-2 bg-[#111622] min-h-[100vh] xl:min-h-auto shadow-[-20px_0_50px_rgba(0,0,0,0.5)]">
+        <div className="w-full xl:w-[45%] 2xl:w-[40%] flex flex-col items-center justify-center p-6 lg:p-12 relative z-10 order-1 xl:order-2 bg-[#111622] min-h-[100dvh] xl:min-h-auto shadow-[-20px_0_50px_rgba(0,0,0,0.5)]">
            
            {/* Mobile Only Branding */}
            <div className="xl:hidden flex flex-col items-center mb-10 text-center">
@@ -359,7 +359,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
                         value={email}
                         placeholder={t("Enter your username or email", "اپنا یوزر نیم یا ای میل درج کریں")}
                         onChange={e => setEmail(e.target.value)}
-                        className="w-full bg-transparent border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-orange-500 focus:bg-white/5 transition-all placeholder:text-slate-600"
+                        className="w-full bg-transparent border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-[16px] text-white focus:outline-none focus:border-orange-500 focus:bg-white/5 transition-all placeholder:text-slate-600"
                       />
                     </div>
                   </div>
@@ -377,7 +377,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
                         value={password}
                         placeholder={t("Enter your password", "اپنا پاس ورڈ درج کریں")}
                         onChange={e => setPassword(e.target.value)}
-                        className="w-full bg-transparent border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-orange-500 focus:bg-white/5 transition-all placeholder:text-slate-600"
+                        className="w-full bg-transparent border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-[16px] text-white focus:outline-none focus:border-orange-500 focus:bg-white/5 transition-all placeholder:text-slate-600"
                       />
                     </div>
                   </div>
