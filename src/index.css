@@ -934,6 +934,7 @@ input, textarea {
   color: var(--text-muted);
   background: transparent;
   min-height: 32px;
+  flex-shrink: 0;
 }
 .fp-date-tab--active {
   background: rgba(249,115,22,.15);

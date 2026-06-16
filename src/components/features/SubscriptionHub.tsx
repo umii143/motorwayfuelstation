@@ -19,8 +19,7 @@ import { GlobalSettings } from '../../types';
 import { t as translate } from '../../lib/translations';
 import { useAuth } from '../../contexts/AuthContext';
 import { doc, setDoc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { dbFS, storage } from '../../lib/firebase';
+import { dbFS } from '../../lib/firebase';
 import { haptic } from '../../utils/haptics';
 
 interface SubscriptionHubProps {
@@ -116,16 +115,23 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
     try {
       const requestId = `req_${Date.now()}`;
       
-      // Upload to Firebase Storage with a 15-second timeout
-      const storageRef = ref(storage, `subscription_receipts/${organization.orgId}/${requestId}/receipt.jpg`);
-      
-      const uploadTask = uploadBytes(storageRef, receiptFile);
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Upload timeout. Storage might not be enabled or connection is slow.')), 15000);
+      // Upload to ImgBB via free API
+      const formData = new FormData();
+      formData.append('key', '4f7eacf5f013e25960ed4be616506e61');
+      formData.append('image', receiptFile);
+
+      const response = await fetch('https://api.imgbb.com/1/upload', {
+        method: 'POST',
+        body: formData
       });
+
+      const data = await response.json();
       
-      await Promise.race([uploadTask, timeoutPromise]);
-      const receiptUrl = await getDownloadURL(storageRef);
+      if (!data.success) {
+        throw new Error(data.error?.message || 'ImgBB upload failed');
+      }
+      
+      const receiptUrl = data.data.url;
 
       const selectedPlanData = plans.find(p => p.id === selectedPlan);
       
@@ -162,7 +168,7 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
       
     } catch (err: any) {
       console.error('Upload Error:', err);
-      alert(`Upload Failed: ${err.message || err.code || 'Unknown error'}\n\nPlease make sure Firebase Storage is enabled in your Firebase Console and rules are set to allow read/write.`);
+      alert(`Upload Failed: ${err.message || err.code || 'Unknown error'}\n\nPlease make sure your ImgBB API key is correct and you have internet connection.`);
     } finally {
       setIsProcessing(false);
     }

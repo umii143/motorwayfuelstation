@@ -1216,7 +1216,7 @@ import { NativeFeedbackProvider } from './components/providers/NativeFeedbackPro
 
 export default function App() {
   const [dbReady, setDbReady] = useState(false);
-  const [splashDone, setSplashDone] = useState(false);
+  const [splashDone, setSplashDone] = useState(true); // SKIPPED: was false
   const [languageSelected, setLanguageSelected] = useState(false);
   const [carouselDone, setCarouselDone] = useState(false);
   const [preferredLang, setPreferredLang] = useState<'en'|'ur'>('ur');
