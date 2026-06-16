@@ -14,8 +14,15 @@ export const SecurityScreen: React.FC = () => {
   const [showPin, setShowPin] = useState(false);
 
   return (
-    <div className="fixed inset-0 z-[10000] bg-[#0F172A] flex flex-col items-center justify-center p-6 overflow-hidden">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-rose-500/10 to-transparent rounded-full" />
+    <div className="fixed inset-0 z-[10000] bg-slate-950 flex flex-col items-center justify-center p-6 overflow-hidden font-sans">
+      {/* Background Image with Overlay */}
+      <div 
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-40 mix-blend-luminosity"
+        style={{ backgroundImage: 'url(/bg-station.png)' }}
+      />
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-slate-950 via-slate-950/90 to-slate-950/60 backdrop-blur-sm" />
+      
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-rose-500/10 to-transparent rounded-full z-0" />
 
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}

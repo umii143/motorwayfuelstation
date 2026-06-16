@@ -38,8 +38,8 @@ export default function LoadingScreen() {
     <div className="relative min-h-screen w-full flex flex-col justify-center items-center overflow-hidden bg-slate-950 font-sans">
       {/* Background Image with Overlay */}
       <div 
-        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-50"
-        style={{ backgroundImage: 'url(/loading-bg.jpg)' }}
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-40 mix-blend-luminosity"
+        style={{ backgroundImage: 'url(/bg-station.png)' }}
       />
       <div className="absolute inset-0 z-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-slate-950/40 backdrop-blur-sm" />
 

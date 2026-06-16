@@ -863,7 +863,7 @@ function MainApp() {
           setSettings({ ...settings, language: languages[nextIndex] });
         }}
         onThemeToggle={() => {
-          const themes = ['light', 'white', 'dark'];
+          const themes: ('light' | 'dark' | 'blue' | 'emerald' | 'orange' | 'white')[] = ['light', 'dark', 'blue', 'emerald', 'orange', 'white'];
           const currentIndex = themes.indexOf(settings.theme || 'light');
           const nextIndex = (currentIndex + 1) % themes.length;
           setSettings({ ...settings, theme: themes[nextIndex] as any });

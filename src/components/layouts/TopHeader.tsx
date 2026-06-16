@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Globe, ChevronDown, Search, Bell, Fuel, Sun, Moon, Settings } from 'lucide-react';
+import { Menu, Globe, ChevronDown, Search, Bell, Fuel, Sun, Moon, Settings, Palette } from 'lucide-react';
 import { GlobalSettings } from '../../types';
 
 interface TopHeaderProps {
@@ -57,7 +57,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           onClick={onThemeToggle}
           className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors"
         >
-          {settings.theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          <Palette className="w-5 h-5" />
         </button>
 
         {/* Settings (Tanks/Config) */}

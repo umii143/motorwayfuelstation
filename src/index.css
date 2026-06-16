@@ -259,7 +259,7 @@ textarea {
    iteratively migrate to semantic variables.
    ========================================= */
 
-.theme-dark, .dark {
+.theme-dark, .dark, .theme-white {
   &, &.bg-slate-50, &.bg-slate-100 {
     background-color: var(--bg-app) !important;
     color: var(--text-main) !important;
