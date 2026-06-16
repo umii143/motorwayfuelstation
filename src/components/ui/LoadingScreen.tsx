@@ -21,9 +21,21 @@ export default function LoadingScreen() {
             <Shield className="w-6 h-6 text-orange-500" />
           </div>
         </div>
-        <h1 className="text-sm font-bold text-slate-300 tracking-widest uppercase text-center animate-pulse">
-          Loading FuelPro...
+        <h1 className="text-2xl font-black text-slate-100 tracking-wide text-center mt-2 flex items-center justify-center gap-3">
+          <span>FuelPro</span>
+          <span className="text-orange-500 font-normal">|</span>
+          <span dir="rtl" className="font-urdu">فیول پرو</span>
         </h1>
+        <p className="text-sm font-medium text-orange-400 mt-2 text-center tracking-wide" dir="rtl">
+          آپ کا اپنا فیول اسٹیشن
+        </p>
+        
+        <div className="absolute fixed bottom-12 left-0 w-full flex flex-col items-center justify-center opacity-60">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] text-center leading-relaxed">
+            Powered By Umar Ali<br/>
+            <span className="text-orange-500/80">Motorway Petroleum, Mardan</span>
+          </p>
+        </div>
       </motion.div>
     </div>
   );
