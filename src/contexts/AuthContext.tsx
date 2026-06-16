@@ -70,6 +70,7 @@ export interface AuthContextType {
   firebaseUser: FirebaseUser | null;
   organization: Organization | null;
   session: UserSession | null;
+  isSuperAdmin: boolean;
   checkingAuth: boolean;
   pendingVerification: boolean;
   hasPermission: (permission: string) => boolean;
@@ -190,6 +191,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<UserProfile | null>(null);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [session, setSession] = useState<UserSession | null>(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [pendingVerification, setPendingVerification] = useState(false);
 
@@ -273,8 +275,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const { profile, orgProfile } = await loadUserProfile(fbUser);
         if (!active) return;
 
+        // Check if user is Super Admin
+        let superAdminStatus = false;
+        try {
+          const saDoc = await getDoc(doc(dbFS, 'systemSettings', 'superAdmin'));
+          if (saDoc.exists() && saDoc.data().uid === fbUser.uid) {
+            superAdminStatus = true;
+          }
+        } catch (e) {
+          console.warn("Could not fetch superAdmin status", e);
+        }
+
         setUser(profile);
         setOrganization(orgProfile);
+        setIsSuperAdmin(superAdminStatus);
         await syncSessionState(fbUser, profile.orgId);
       } catch (error: any) {
         if (!active) return;
@@ -606,6 +620,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       firebaseUser,
       organization,
       session,
+      isSuperAdmin,
       checkingAuth,
       pendingVerification,
       hasPermission,

@@ -19,6 +19,7 @@ interface SidebarDrawerProps {
   onLanguageToggle: () => void;
   onThemeToggle: () => void;
   onLogout: () => void;
+  isSuperAdmin?: boolean;
 }
 
 export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({ 
@@ -30,7 +31,8 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
   isLubeBusiness,
   onLanguageToggle,
   onThemeToggle,
-  onLogout
+  onLogout,
+  isSuperAdmin = false
 }) => {
   if (!isOpen) return null;
 
@@ -55,6 +57,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
     { id: 'setup_profile', icon: Settings, label: 'Station Profile', urdu: 'اسٹیشن پروفائل' },
     { id: 'security_hub', icon: Shield, label: 'Security & Roles', urdu: 'سیکیورٹی ہب' },
     { id: 'subscription_hub', icon: CreditCard, label: 'Subscription', urdu: 'بلنگ' },
+    ...(isSuperAdmin ? [{ id: 'license_manager', icon: Shield, label: 'License Manager', urdu: 'لائسنس مینیجر' }] : []),
     { id: 'communication_center', icon: MessageCircle, label: 'Communication Center', urdu: 'مواصلاتی مرکز' },
     { id: 'sync_center', icon: RefreshCw, label: 'Sync Center', urdu: 'سنک سینٹر' }
   ];

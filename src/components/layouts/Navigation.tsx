@@ -93,6 +93,7 @@ interface NavigationProps {
   onDeleteStation?: (stationId: string) => void;
   isSidebarCollapsed?: boolean;
   onToggleSidebar?: (collapsed: boolean) => void;
+  isSuperAdmin?: boolean;
 }
 
 const Navigation = React.memo(function Navigation({
@@ -109,7 +110,8 @@ const Navigation = React.memo(function Navigation({
   onEditStation,
   onDeleteStation,
   isSidebarCollapsed = false,
-  onToggleSidebar
+  onToggleSidebar,
+  isSuperAdmin = false
 }: NavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [stationDropdownOpen, setStationDropdownOpen] = useState(false);
@@ -179,6 +181,7 @@ const Navigation = React.memo(function Navigation({
     // SYSTEM
     { id: 'security_hub', section: 'system', icon: Shield, label: 'Security & Roles', urdu: 'سیکیورٹی ہب', showInLube: true },
     { id: 'subscription_hub', section: 'system', icon: CreditCard, label: 'Subscription & Billing', urdu: 'بلنگ اور پلان', showInLube: true },
+    ...(isSuperAdmin ? [{ id: 'license_manager', section: 'system', icon: ShieldCheck, label: 'License Manager', urdu: 'لائسنس مینیجر', showInLube: true }] : []),
     { id: 'communication_center', section: 'system', icon: MessageCircle, label: 'Communication Center', urdu: 'مواصلاتی مرکز', showInLube: true },
     { id: 'sync_center', section: 'system', icon: Database, label: 'Sync Center', urdu: 'سنک سینٹر', showInLube: true }
   ];

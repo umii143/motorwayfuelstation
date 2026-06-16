@@ -55,6 +55,7 @@ const OnboardingWizard = React.lazy(() => import('./components/features/Onboardi
 import AuthInterface from './components/layouts/AuthInterface'; // Kept static for immediate auth render
 const SecurityHub = React.lazy(() => import('./components/features/SecurityHub'));
 const SubscriptionHub = React.lazy(() => import('./components/features/SubscriptionHub'));
+const LicenseManager = React.lazy(() => import('./components/features/LicenseManager'));
 const BankCashPanel = React.lazy(() => import('./components/features/BankCashPanel'));
 const DigitalCashPanel = React.lazy(() => import('./components/features/DigitalCashPanel'));
 const PriceManagement = React.lazy(() => import('./components/features/PriceManagement'));
@@ -92,13 +93,29 @@ function MainApp() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Centralized Auth Context connection
-  const { user: authenticatedUser, checkingAuth, logout } = useAuth();
+  const { user: authenticatedUser, checkingAuth, isSuperAdmin, logout } = useAuth();
 
   const { isRefreshing, handleTouchStart, handleTouchMove, handleTouchEnd } = usePullToRefresh(async () => {
     // Short artificial delay for smooth UX and animation
     await new Promise(resolve => setTimeout(resolve, 800));
     window.location.reload();
   });
+
+  const organization = useAuth().organization;
+  const daysRemaining = React.useMemo(() => {
+    if (!organization?.expiryDate && !organization?.trialEndDate) return 0;
+    const end = new Date(organization.expiryDate || organization.trialEndDate);
+    const now = new Date();
+    const diff = end.getTime() - now.getTime();
+    return Math.max(0, Math.ceil(diff / (1000 * 3600 * 24)));
+  }, [organization?.expiryDate, organization?.trialEndDate]);
+
+  const isExpired = organization?.subscriptionStatus === 'expired' || (organization?.subscriptionStatus === 'trialing' && daysRemaining === 0);
+  const activePlan = isExpired ? 'starter' : (organization?.subscriptionTier || 'trial');
+  
+  // Feature Restriction Logic
+  const canAccessPremium = activePlan === 'professional' || activePlan === 'enterprise' || activePlan === 'trial';
+  const canAccessEnterprise = activePlan === 'enterprise' || activePlan === 'trial';
 
   const handleLoginSuccess = () => {
     window.location.reload();
@@ -609,6 +626,9 @@ function MainApp() {
       case 'subscription_hub':
         return <SubscriptionHub settings={settings} />;
 
+      case 'license_manager':
+        return <LicenseManager settings={settings} />;
+
       case 'price_management':
         return (
           <PriceManagement
@@ -634,6 +654,18 @@ function MainApp() {
       case 'cctv':
       case 'api_gateway':
       case 'enterprise_hub':
+        if (!canAccessPremium) {
+           return (
+             <div className="flex flex-col items-center justify-center p-12 text-center h-[60vh]">
+               <div className="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mb-4">
+                 <AlertTriangle className="h-8 w-8" />
+               </div>
+               <h2 className="text-2xl font-bold text-slate-800">Premium Feature Locked</h2>
+               <p className="text-slate-500 mt-2 mb-6 max-w-md">This feature is only available on Professional or Enterprise plans. Please upgrade your subscription to access it.</p>
+               <button onClick={() => handleViewChange('subscription_hub')} className="bg-orange-600 text-white px-6 py-2 rounded-lg font-bold">Upgrade Now</button>
+             </div>
+           );
+        }
         // Let EnterpriseHub handle the internal tab selection using the activeView
         return <EnterpriseHub settings={settings} activeModule={activeView === 'enterprise_hub' ? 'fleet' : activeView} onNavigate={handleViewChange} stationId={activeStationId} />;
 
@@ -674,15 +706,19 @@ function MainApp() {
           />
         );
       case 'communication_center':
+        if (!canAccessPremium) return <div className="p-8 text-center"><AlertTriangle className="mx-auto h-8 w-8 text-orange-500 mb-4"/><h2 className="text-xl font-bold">Premium Feature</h2><button onClick={() => handleViewChange('subscription_hub')} className="mt-4 bg-orange-600 text-white px-4 py-2 rounded-lg">Upgrade</button></div>;
         return <CommunicationDashboard />;
 
       case 'bi_analytics':
+        if (!canAccessPremium) return <div className="p-8 text-center"><AlertTriangle className="mx-auto h-8 w-8 text-orange-500 mb-4"/><h2 className="text-xl font-bold">Premium Feature</h2><button onClick={() => handleViewChange('subscription_hub')} className="mt-4 bg-orange-600 text-white px-4 py-2 rounded-lg">Upgrade</button></div>;
         return <BIDashboard />;
         
       case 'risk_center':
+        if (!canAccessEnterprise) return <div className="p-8 text-center"><AlertTriangle className="mx-auto h-8 w-8 text-orange-500 mb-4"/><h2 className="text-xl font-bold">Enterprise Feature</h2><button onClick={() => handleViewChange('subscription_hub')} className="mt-4 bg-orange-600 text-white px-4 py-2 rounded-lg">Upgrade</button></div>;
         return <RiskCenter />;
         
       case 'executive_dashboard':
+        if (!canAccessPremium) return <div className="p-8 text-center"><AlertTriangle className="mx-auto h-8 w-8 text-orange-500 mb-4"/><h2 className="text-xl font-bold">Premium Feature</h2><button onClick={() => handleViewChange('subscription_hub')} className="mt-4 bg-orange-600 text-white px-4 py-2 rounded-lg">Upgrade</button></div>;
         return <ExecutiveDashboard />;
         
       case 'demand_forecast':
@@ -880,6 +916,7 @@ function MainApp() {
         activeView={activeView}
         settings={settings}
         isLubeBusiness={isLubeBusiness}
+        isSuperAdmin={isSuperAdmin}
         onLanguageToggle={() => {
           const languages: ('en' | 'ur' | 'ar' | 'es' | 'zh')[] = ['en', 'ur', 'ar', 'es', 'zh'];
           const currentIndex = languages.indexOf(settings.language || 'en');
@@ -910,6 +947,21 @@ function MainApp() {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
+        {(!isExpired && daysRemaining <= 7 && activeView !== 'subscription_hub') && (
+          <div className="bg-orange-50 border-b border-orange-200 px-4 py-3 flex items-center justify-between z-10 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 bg-orange-100 rounded-full text-orange-600 shrink-0"><AlertTriangle className="h-4 w-4" /></div>
+              <p className="text-sm font-bold text-orange-900">
+                Your FuelPro {organization?.subscriptionTier} subscription will expire in <span className="text-red-600">{daysRemaining} days</span>. 
+                Please renew to avoid losing access to premium features.
+              </p>
+            </div>
+            <button onClick={() => handleViewChange('subscription_hub')} className="px-4 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-lg transition-colors shrink-0 whitespace-nowrap">
+              Renew Now
+            </button>
+          </div>
+        )}
+        
         {isRefreshing && (
           <div className="absolute top-16 left-0 right-0 flex justify-center py-4 z-50">
             <div className="bg-white shadow-xl rounded-full p-2 border border-slate-100 flex items-center justify-center">

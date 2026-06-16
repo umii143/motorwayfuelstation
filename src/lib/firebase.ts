@@ -125,5 +125,8 @@ export function onFirebaseAuthChange(callback: (user: User | null) => void) {
 export const sendEmailOTP = httpsCallable<{ email: string }, { success: boolean }>(functions, 'sendEmailOTP');
 export const verifyEmailOTP = httpsCallable<{ email: string, otp: string }, { success: boolean, token: string }>(functions, 'verifyEmailOTP');
 
-export { auth, app, dbFS, functions };
+import { getStorage } from 'firebase/storage';
+const storage = getStorage(app);
+
+export { auth, app, dbFS, functions, storage };
 export type { User as FirebaseUser };
