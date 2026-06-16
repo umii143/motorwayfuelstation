@@ -116,9 +116,15 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
     try {
       const requestId = `req_${Date.now()}`;
       
-      // Upload to Firebase Storage
+      // Upload to Firebase Storage with a 15-second timeout
       const storageRef = ref(storage, `subscription_receipts/${organization.orgId}/${requestId}/receipt.jpg`);
-      await uploadBytes(storageRef, receiptFile);
+      
+      const uploadTask = uploadBytes(storageRef, receiptFile);
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Upload timeout. Storage might not be enabled or connection is slow.')), 15000);
+      });
+      
+      await Promise.race([uploadTask, timeoutPromise]);
       const receiptUrl = await getDownloadURL(storageRef);
 
       const selectedPlanData = plans.find(p => p.id === selectedPlan);
@@ -197,15 +203,15 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
 
       {/* Current Status Banner */}
       <div className={`p-6 rounded-2xl border shadow-sm flex flex-col md:flex-row items-center justify-between gap-6 ${
-        isActive ? 'bg-emerald-50 border-emerald-200' :
-        isPending ? 'bg-orange-50 border-orange-200' :
-        isExpired ? 'bg-rose-50 border-rose-200' : 'bg-blue-50 border-blue-200'
+        isActive ? 'bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20' :
+        isPending ? 'bg-orange-50 border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/20' :
+        isExpired ? 'bg-rose-50 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/20' : 'bg-blue-50 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/20'
       }`}>
         <div className="flex items-start gap-4">
           <div className={`p-3 rounded-full mt-1 ${
-            isActive ? 'bg-emerald-100 text-emerald-600' :
-            isPending ? 'bg-orange-100 text-orange-600' :
-            isExpired ? 'bg-rose-100 text-rose-600' : 'bg-blue-100 text-blue-600'
+            isActive ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' :
+            isPending ? 'bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400' :
+            isExpired ? 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400'
           }`}>
             {isActive ? <CheckCircle2 className="h-6 w-6" /> :
              isPending ? <Clock className="h-6 w-6" /> :
@@ -213,9 +219,9 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
           </div>
           <div>
             <h3 className={`text-lg font-bold ${
-              isActive ? 'text-emerald-900' :
-              isPending ? 'text-orange-900' :
-              isExpired ? 'text-rose-900' : 'text-blue-900'
+              isActive ? 'text-emerald-900 dark:text-emerald-400' :
+              isPending ? 'text-orange-900 dark:text-orange-400' :
+              isExpired ? 'text-rose-900 dark:text-rose-400' : 'text-blue-900 dark:text-blue-400'
             }`}>
               {isActive ? t('Active Subscription', 'فعال سبسکرپشن') :
                isPending ? t('Pending Verification', 'تصدیق زیر التوا ہے') :
@@ -223,9 +229,9 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
                t('Active Trial Period', 'فعال ٹرائل کی مدت')}
             </h3>
             <p className={`text-sm mt-1 max-w-xl ${
-              isActive ? 'text-emerald-700' :
-              isPending ? 'text-orange-700' :
-              isExpired ? 'text-rose-700' : 'text-blue-700'
+              isActive ? 'text-emerald-700 dark:text-emerald-300' :
+              isPending ? 'text-orange-700 dark:text-orange-300' :
+              isExpired ? 'text-rose-700 dark:text-rose-300' : 'text-blue-700 dark:text-blue-300'
             }`}>
               {isActive ? t(`Your account is fully upgraded. ${daysRemaining} days remaining.`, `آپ کا اکاؤنٹ اپ گریڈ ہے۔ ${daysRemaining} دن باقی ہیں۔`) :
                isPending ? t('Your payment receipt is under review by our team. Please wait for approval.', 'آپ کی رسید کا جائزہ لیا جا رہا ہے۔ براہ کرم انتظار کریں۔') :
@@ -236,8 +242,8 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
         </div>
       </div>
 
-      {(!isActive && !isPending) && (
-        <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden">
+      {(!isPending) && (
+        <div className="bg-white dark:bg-[#111622] rounded-[24px] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
           {/* Progress Steps */}
           <div className="flex border-b border-slate-100">
             {[1, 2, 3].map(num => (
@@ -252,41 +258,42 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
               {step === 1 && (
                 <motion.div key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
                   <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-6 pt-4 items-center">
-                    {plans.map(plan => {
-                      const Icon = plan.icon;
-                      return (
-                        <div key={plan.id} className={`relative rounded-3xl border p-8 cursor-pointer transition-all duration-300 ${plan.color} ${selectedPlan === plan.id && !plan.popular ? 'ring-2 ring-slate-900' : ''}`} onClick={() => setSelectedPlan(plan.id as any)}>
-                          {plan.popular && <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-orange-600 text-white px-4 py-1 rounded-full text-xs font-bold tracking-wider uppercase shadow-md">{t('Most Popular', 'سب سے مقبول')}</div>}
-                          <div className="flex items-center justify-between mb-6">
-                            <div>
-                              <h3 className="text-xl font-bold text-slate-900">{plan.name}</h3>
-                            </div>
-                            <div className={`p-3 rounded-xl bg-white shadow-sm ${plan.iconColor}`}>
-                              <Icon className="h-6 w-6" />
-                            </div>
-                          </div>
-                          <div className="mb-8">
-                            <div className="flex items-end gap-1">
-                              <span className="text-3xl font-black text-slate-900 tracking-tight">{plan.price}</span>
-                              <span className="text-sm font-bold text-slate-400 mb-1">{plan.period}</span>
-                            </div>
-                          </div>
-                          <div className="space-y-4 mb-8">
-                            {plan.features.map((feature, i) => (
-                              <div key={i} className="flex items-center gap-3">
-                                <div className={`shrink-0 rounded-full p-0.5 ${plan.popular ? 'bg-orange-100 text-orange-600' : 'bg-emerald-100 text-emerald-600'}`}>
-                                  <CheckCircle2 className="h-3 w-3" />
-                                </div>
-                                <span className="text-sm font-medium text-slate-700">{feature}</span>
-                              </div>
-                            ))}
-                          </div>
-                          <button onClick={(e) => { e.stopPropagation(); setSelectedPlan(plan.id as any); setStep(2); haptic.light(); }} className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-white transition-all shadow-md ${plan.btnColor}`}>
-                            {t('Select Plan', 'منتخب کریں')} <ArrowRight className="h-4 w-4" />
-                          </button>
-                        </div>
-                      );
-                    })}
+                    {plans.map(p => (
+                  <div 
+                    key={p.id} 
+                    className={`relative p-6 rounded-2xl border-2 transition-all cursor-pointer overflow-hidden ${
+                      selectedPlan === p.id 
+                        ? 'border-orange-500 ring-4 ring-orange-500/10 dark:bg-orange-500/10 bg-orange-50' 
+                        : 'border-slate-200 dark:border-slate-800 dark:bg-[#161c2d] hover:border-orange-300 dark:hover:border-orange-500/50'
+                    } ${p.popular ? 'md:-mt-4 md:mb-4 shadow-xl' : ''}`}
+                    onClick={() => setSelectedPlan(p.id as any)}
+                  >
+                    {p.popular && (
+                      <div className="absolute top-0 right-0 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider">
+                        {t('Most Popular', 'سب سے مقبول')}
+                      </div>
+                    )}
+                    <div className={`p-3 rounded-xl inline-flex ${p.id === 'professional' ? 'bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'} mb-4`}>
+                      <p.icon className="h-6 w-6" />
+                    </div>
+                    <h4 className="text-xl font-bold dark:text-white">{p.name}</h4>
+                    <div className="mt-2 flex items-baseline gap-1">
+                      <span className="text-2xl font-black text-slate-900 dark:text-white">{p.price}</span>
+                      <span className="text-sm text-slate-500 dark:text-slate-400">{p.period}</span>
+                    </div>
+                    <div className="mt-6 space-y-3">
+                      {p.features.map((feature, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400">
+                          <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+                          {feature}
+                        </li>
+                      ))}
+                    </div>
+                    <button onClick={() => { setSelectedPlan(p.id as any); setStep(2); haptic.light(); }} className={`w-full mt-8 py-3 rounded-xl font-bold transition-all ${selectedPlan === p.id ? 'bg-orange-600 text-white' : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'}`}>
+                      {t('Select Plan', 'منتخب کریں')}
+                    </button>
+                  </div>
+                    ))}
                   </div>
                 </motion.div>
               )}
@@ -294,20 +301,26 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
               {step === 2 && (
                 <motion.div key="step2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="max-w-3xl mx-auto">
                   <div className="mb-6 text-center">
-                    <h3 className="text-2xl font-bold text-slate-900 mb-2">{t('Select Payment Method', 'ادائیگی کا طریقہ منتخب کریں')}</h3>
+                    <h3 className="text-xl font-bold dark:text-white">{t('Select Payment Gateway', 'ادائیگی کا طریقہ منتخب کریں')}</h3>
                     <p className="text-slate-500">{t('Please select where you would like to transfer the payment.', 'براہ کرم منتخب کریں کہ آپ ادائیگی کہاں منتقل کرنا چاہتے ہیں۔')}</p>
                   </div>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                    {gateways.map(gw => (
-                      <div key={gw.id} onClick={() => setSelectedGateway(gw.id as any)} className={`p-6 rounded-2xl border-2 cursor-pointer transition-all flex flex-col items-center justify-center text-center ${selectedGateway === gw.id ? 'border-orange-500 bg-orange-50' : 'border-slate-200 hover:border-slate-300 bg-white'}`}>
-                        <span className={`font-black text-xl mb-2 ${selectedGateway === gw.id ? 'text-orange-900' : 'text-slate-700'}`}>{gw.name}</span>
-                        <span className="text-slate-500 font-medium font-mono bg-white px-3 py-1 rounded-lg border border-slate-200">{gw.desc}</span>
+                    {gateways.map(g => (
+                      <div key={g.id} onClick={() => setSelectedGateway(g.id as any)} className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between ${
+                        selectedGateway === g.id 
+                          ? 'border-orange-500 bg-orange-50 dark:bg-orange-500/10' 
+                          : 'border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-500/50 dark:bg-[#161c2d]'
+                      }`}>
+                          <div>
+                            <h4 className="font-bold text-slate-900 dark:text-white">{g.name}</h4>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">{g.desc}</p>
+                          </div>
                       </div>
                     ))}
                   </div>
 
-                  <div className="flex justify-between mt-8 pt-6 border-t border-slate-100">
+                  <div className="flex justify-between mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
                     <button onClick={() => setStep(1)} className="px-6 py-3 font-bold text-slate-500 hover:text-slate-700">{t('Back', 'پیچھے')}</button>
                     <button onClick={() => setStep(3)} className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-orange-500/30">
                       {t('Continue', 'جاری رکھیں')} <ArrowRight className="h-5 w-5" />
@@ -319,35 +332,35 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
               {step === 3 && (
                 <motion.div key="step3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="max-w-2xl mx-auto">
                   <div className="mb-6 text-center">
-                    <h3 className="text-2xl font-bold text-slate-900 mb-2">{t('Upload Payment Receipt', 'ادائیگی کی رسید اپ لوڈ کریں')}</h3>
+                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{t('Upload Payment Receipt', 'ادائیگی کی رسید اپ لوڈ کریں')}</h3>
                     <p className="text-slate-500">
                       {t('Please transfer ', 'براہ کرم ')} 
-                      <strong className="text-slate-900">{plans.find(p => p.id === selectedPlan)?.price}</strong> 
+                      <strong className="text-slate-900 dark:text-white">{plans.find(p => p.id === selectedPlan)?.price}</strong> 
                       {t(' to the selected account and upload the screenshot.', ' منتقل کریں اور اسکرین شاٹ اپ لوڈ کریں۔')}
                     </p>
                   </div>
 
-                  <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 mb-8 flex items-start gap-4">
-                    <div className="p-3 bg-blue-100 text-blue-600 rounded-xl shrink-0"><ShieldCheck className="h-6 w-6" /></div>
+                  <div className="bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-900/50 rounded-2xl p-6 mb-8 flex items-start gap-4">
+                    <div className="p-3 bg-blue-100 text-blue-600 dark:bg-blue-900/50 rounded-xl shrink-0"><ShieldCheck className="h-6 w-6" /></div>
                     <div>
-                      <h4 className="font-bold text-blue-900 mb-1">{gateways.find(g => g.id === selectedGateway)?.name} Account Details</h4>
-                      <p className="text-blue-800 font-mono text-lg bg-white inline-block px-3 py-1 rounded-lg border border-blue-100 mt-2">{gateways.find(g => g.id === selectedGateway)?.desc}</p>
+                      <h4 className="font-bold text-blue-900 dark:text-blue-400 mb-1">{gateways.find(g => g.id === selectedGateway)?.name} Account Details</h4>
+                      <p className="text-blue-800 dark:text-blue-200 font-mono text-lg bg-white dark:bg-black/20 inline-block px-3 py-1 rounded-lg border border-blue-100 dark:border-blue-800 mt-2">{gateways.find(g => g.id === selectedGateway)?.desc}</p>
                     </div>
                   </div>
                   
                   <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileChange} />
                   
-                  <div onClick={() => fileInputRef.current?.click()} className={`border-2 border-dashed rounded-3xl p-10 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${receiptFile ? 'border-emerald-500 bg-emerald-50' : 'border-slate-300 hover:border-orange-500 hover:bg-orange-50 bg-slate-50'}`}>
+                  <div onClick={() => fileInputRef.current?.click()} className={`border-2 border-dashed rounded-3xl p-10 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${receiptFile ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' : 'border-slate-300 dark:border-slate-700 hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 bg-slate-50 dark:bg-[#161c2d]'}`}>
                     {receiptFile ? (
                       <>
-                        <div className="h-16 w-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-4"><FileImage className="h-8 w-8" /></div>
-                        <h4 className="font-bold text-emerald-900 text-lg">{receiptFile.name}</h4>
-                        <p className="text-emerald-700 text-sm mt-1">{t('Tap to change file', 'فائل تبدیل کرنے کے لیے تھپتھپائیں')}</p>
+                        <div className="h-16 w-16 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 rounded-full flex items-center justify-center mb-4"><FileImage className="h-8 w-8" /></div>
+                        <h4 className="font-bold text-emerald-900 dark:text-emerald-400 text-lg">{receiptFile.name}</h4>
+                        <p className="text-emerald-700 dark:text-emerald-500 text-sm mt-1">{t('Tap to change file', 'فائل تبدیل کرنے کے لیے تھپتھپائیں')}</p>
                       </>
                     ) : (
                       <>
-                        <div className="h-16 w-16 bg-white text-slate-400 rounded-full flex items-center justify-center mb-4 shadow-sm border border-slate-200"><UploadCloud className="h-8 w-8" /></div>
-                        <h4 className="font-bold text-slate-700 text-lg">{t('Tap to upload receipt', 'رسید اپ لوڈ کرنے کے لیے تھپتھپائیں')}</h4>
+                        <div className="h-16 w-16 bg-white dark:bg-slate-800 text-slate-400 rounded-full flex items-center justify-center mb-4 shadow-sm border border-slate-200 dark:border-slate-700"><UploadCloud className="h-8 w-8" /></div>
+                        <h4 className="font-bold text-slate-700 dark:text-slate-200 text-lg">{t('Tap to upload receipt', 'رسید اپ لوڈ کرنے کے لیے تھپتھپائیں')}</h4>
                         <p className="text-slate-500 text-sm mt-1">{t('Supported formats: JPG, PNG, PDF', 'معاون فارمیٹس: JPG, PNG, PDF')}</p>
                       </>
                     )}
