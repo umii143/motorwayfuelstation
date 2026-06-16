@@ -402,12 +402,19 @@ input, textarea {
   user-select: text;                        /* except inputs */
 }
 
-/* ─── NATIVE SCROLL ─────────────────────────────────────────── */
+/* ─── NATIVE SCROLL & HORIZONTAL OVERFLOW FIX ────────────────── */
 .scroll-container {
   overflow-y: scroll;
   -webkit-overflow-scrolling: touch;        /* iOS momentum scroll */
   overscroll-behavior-y: contain;           /* native bounce */
   scroll-behavior: auto;                    /* not smooth — native feel */
+}
+
+/* Fix overlapping items in horizontally scrollable flex containers across the app */
+.flex.overflow-x-auto > *,
+.flex.overflow-x-scroll > *,
+.flex.no-scrollbar > * {
+  flex-shrink: 0;
 }
 
 /* ─── COMPACT HEADER ─────────────────────────────────────────── */
