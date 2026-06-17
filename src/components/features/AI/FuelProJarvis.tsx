@@ -1,6 +1,6 @@
 import React from 'react';
 import { useJarvis } from '../../../hooks/useJarvis';
-import { Mic, MicOff, BrainCircuit, Loader2, Sparkles } from 'lucide-react';
+import { Mic, MicOff, BrainCircuit, Loader2, Sparkles, Phone } from 'lucide-react';
 
 export default function FuelProJarvis() {
   const {
@@ -10,7 +10,9 @@ export default function FuelProJarvis() {
     transcript,
     chatHistory,
     startListening,
-    stopListening
+    stopListening,
+    toggleCallMode,
+    isCallModeActive
   } = useJarvis();
 
   return (
@@ -90,8 +92,8 @@ export default function FuelProJarvis() {
         )}
       </div>
 
-      {/* WAVEFORM ORB (LISTENING STATE OVERLAY) */}
-      {isListening && (
+      {/* WAVEFORM ORB (LISTENING STATE OVERLAY) - Only show in one-off mode, not call mode */}
+      {isListening && !isCallModeActive && (
         <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm z-20 flex flex-col items-center justify-center animate-in fade-in">
           <div className="relative">
             <div className="w-32 h-32 rounded-full bg-indigo-600 flex items-center justify-center shadow-2xl shadow-indigo-500/50 relative z-10">
@@ -111,34 +113,52 @@ export default function FuelProJarvis() {
         </div>
       )}
 
+      {/* CALL MODE ACTIVE INDICATOR TOP RIGHT */}
+      {isCallModeActive && isListening && (
+        <div className="absolute top-6 right-6 z-20 flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-full shadow-lg animate-pulse">
+           <div className="w-2 h-2 rounded-full bg-white animate-ping" />
+           <span className="font-bold text-sm tracking-wider">LISTENING...</span>
+        </div>
+      )}
+
       {/* FOOTER CONTROLS */}
       <div className="p-6 border-t border-slate-200 dark:border-white/5 bg-white dark:bg-[#151521] z-10">
         <div className="flex items-center gap-4 max-w-2xl mx-auto">
-          <button
-            onClick={isListening ? stopListening : startListening}
-            disabled={isProcessing}
-            className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl font-black text-lg transition-all shadow-lg ${
-              isListening 
-                ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/25' 
-                : isProcessing
-                ? 'bg-slate-200 dark:bg-slate-800 text-slate-500 cursor-not-allowed'
-                : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-600/25'
-            }`}
-          >
-            {isListening ? (
-              <>
-                <MicOff className="w-6 h-6" /> Stop Recording
-              </>
-            ) : isProcessing ? (
-              <>
-                <Loader2 className="w-6 h-6 animate-spin" /> Processing AI...
-              </>
-            ) : (
-              <>
-                <Mic className="w-6 h-6" /> Tap to Speak
-              </>
-            )}
-          </button>
+          {isCallModeActive ? (
+            <button
+              onClick={toggleCallMode}
+              className="flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl font-black text-lg transition-all shadow-lg bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/25 animate-in slide-in-from-bottom-2"
+            >
+              <Phone className="w-6 h-6 rotate-135" style={{ transform: 'rotate(135deg)' }} /> End Call
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={startListening}
+                disabled={isProcessing}
+                className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl font-black text-lg transition-all shadow-lg ${
+                  isProcessing
+                  ? 'bg-slate-200 dark:bg-slate-800 text-slate-500 cursor-not-allowed'
+                  : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
+                }`}
+              >
+                {isProcessing ? <Loader2 className="w-6 h-6 animate-spin" /> : <Mic className="w-6 h-6" />}
+                {isProcessing ? "Processing..." : "Tap to Speak"}
+              </button>
+              
+              <button
+                onClick={toggleCallMode}
+                disabled={isProcessing}
+                className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl font-black text-lg transition-all shadow-lg ${
+                  isProcessing
+                  ? 'bg-slate-200 dark:bg-slate-800 text-slate-500 cursor-not-allowed'
+                  : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-600/25'
+                }`}
+              >
+                <Phone className="w-6 h-6" /> Start Live Call
+              </button>
+            </>
+          )}
         </div>
         <p className="text-center text-xs font-bold text-slate-400 mt-4 uppercase tracking-widest">Powered by Gemini 2.5 Flash</p>
       </div>

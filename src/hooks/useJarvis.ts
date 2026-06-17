@@ -11,6 +11,7 @@ export function useJarvis() {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isCallModeActive, setIsCallModeActive] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [chatHistory, setChatHistory] = useState<Message[]>([
     {
@@ -21,6 +22,7 @@ export function useJarvis() {
   
   const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
+  const callModeRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -59,13 +61,37 @@ export function useJarvis() {
     utterance.rate = 0.95;
     utterance.pitch = 1.0;
     
-    utterance.onend = () => setIsSpeaking(false);
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      if (callModeRef.current) {
+        // Restart listening after speaking finishes
+        setTimeout(() => {
+          if (callModeRef.current) {
+            try {
+              recognitionRef.current?.start();
+              setIsListening(true);
+            } catch (e) {
+              console.error("Auto-restart failed", e);
+            }
+          }
+        }, 500);
+      }
+    };
     synthRef.current.speak(utterance);
   };
 
   const processAudioInput = async (finalTranscript: string) => {
     if (!finalTranscript.trim()) return;
     
+    // Check if user wants to end call manually via voice
+    const lowerText = finalTranscript.toLowerCase();
+    if (callModeRef.current && (lowerText.includes('stop') || lowerText.includes('bye') || lowerText.includes('end') || lowerText.includes('band karo') || lowerText.includes('khatam karo') || lowerText.includes('shukriya'))) {
+      callModeRef.current = false;
+      setIsCallModeActive(false);
+      speak("Goodbye Sir, ending the call.");
+      return;
+    }
+
     setIsProcessing(true);
     const newUserMsg: Message = { role: 'user', parts: [{ text: finalTranscript }] };
     const updatedHistory = [...chatHistory, newUserMsg];
@@ -169,13 +195,30 @@ export function useJarvis() {
     }
   }, [isListening, transcript]);
 
+  const toggleCallMode = useCallback(() => {
+    if (callModeRef.current) {
+      // Turn off
+      callModeRef.current = false;
+      setIsCallModeActive(false);
+      if (isListening) stopListening();
+      if (synthRef.current?.speaking) synthRef.current.cancel();
+    } else {
+      // Turn on
+      callModeRef.current = true;
+      setIsCallModeActive(true);
+      startListening();
+    }
+  }, [isListening, startListening, stopListening]);
+
   return {
     isListening,
     isSpeaking,
     isProcessing,
+    isCallModeActive,
     transcript,
     chatHistory,
     startListening,
-    stopListening
+    stopListening,
+    toggleCallMode
   };
 }
