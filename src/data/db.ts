@@ -13,12 +13,13 @@ export async function initDatabase() {
   try {
     await localforage.ready();
     const keys = await localforage.keys();
-    for (const key of keys) {
-      const val = await localforage.getItem(key);
-      if (val !== null) {
-        memoryCache[key] = val as string;
+    
+    // Optimize: Bulk load all items concurrently using iterate (drastically faster than sequential awaits)
+    await localforage.iterate((value, key) => {
+      if (value !== null) {
+        memoryCache[key] = value as string;
       }
-    }
+    });
     // Fallback migration from localStorage to IndexedDB if it has data but localforage is empty
     if (keys.length === 0 && typeof window !== 'undefined' && localStorage.length > 0) {
        console.log('Migrating localStorage to localforage...');

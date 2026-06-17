@@ -25,15 +25,15 @@ export const SplashSequence: React.FC<SplashSequenceProps> = ({ onComplete }) =>
     // Sequence timing
     const t1 = setTimeout(() => {
       setStage('loading');
-    }, 1500);
+    }, 400);
 
     const t2 = setTimeout(() => {
       setStage('done');
-    }, 3000);
+    }, 1000);
 
     const t3 = setTimeout(() => {
       onComplete();
-    }, 3500);
+    }, 1200);
 
     return () => {
       clearTimeout(t1);
