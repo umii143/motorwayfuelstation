@@ -117,6 +117,20 @@ export const jarvisFunctionDeclarations = [
       },
       required: ["productName", "quantity"]
     }
+  },
+  {
+    name: "registerStaff",
+    description: "Registers or adds a new staff member to the system.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        name: { type: "STRING", description: "Name of the staff member" },
+        role: { type: "STRING", description: "Role (e.g., 'cashier', 'salesman', 'manager')" },
+        salary: { type: "NUMBER", description: "Monthly salary in PKR" },
+        phone: { type: "STRING", description: "Phone number (optional)" }
+      },
+      required: ["name", "role", "salary"]
+    }
   }
 ];
 
@@ -361,6 +375,27 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
       
       useFinancialStore.getState().handleAddLubePosSale(sale, "", "");
       return { status: "Success", message: `Sold ${quantity}x ${product.name} for Rs ${sale.total}.` };
+    }
+
+    case "registerStaff": {
+      const { name, role, salary, phone } = args;
+      const staffStore = useStaffStore.getState();
+      
+      const newStaff = {
+        id: `stf_${Date.now()}`,
+        name,
+        urduName: name,
+        role: role.toLowerCase(),
+        salary: Number(salary) || 0,
+        advances: 0,
+        active: true,
+        status: "active" as any,
+        pin: "1234",
+        phone: phone || "",
+      };
+      
+      await staffStore.handleAddStaff(newStaff, "", "");
+      return { status: "Success", message: `Registered new staff member ${name} as ${role} with salary Rs ${salary}.` };
     }
 
     default:
