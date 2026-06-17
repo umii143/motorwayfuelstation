@@ -431,8 +431,8 @@ export default function StaffPanel({
       </div>
 
       {/* SUB-PANELS WORKSPACE */}
-      <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-3 space-y-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-3 space-y-6 w-full max-w-full">
 
           {/* ==========================================
               TAB 1: STAFF CREW LIST (ROSTER)
