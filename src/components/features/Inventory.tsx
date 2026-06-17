@@ -764,7 +764,7 @@ export default function Inventory({
                   <button
                     key={f.id}
                     onClick={() => setFilterType(f.id as any)}
-                    className={`fp-date-tab flex-1 sm:flex-none ${
+                    className={`fp-date-tab ${
                       filterType === f.id
                         ? 'fp-date-tab--active !text-slate-800 dark:!text-slate-100 !border-slate-800 dark:!border-slate-500 bg-slate-200/50 dark:bg-slate-700/50'
                         : ''

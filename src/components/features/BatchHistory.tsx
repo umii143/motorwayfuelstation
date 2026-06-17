@@ -151,7 +151,7 @@ export default function BatchHistory({ batches, products, language }: BatchHisto
         <div className="flex flex-wrap gap-2 mt-3 fp-date-tabs">
           {(['all', 'active', 'partial', 'exhausted'] as const).map(s => (
             <button key={s} onClick={() => setFilterStatus(s)}
-              className={`fp-date-tab flex-1 sm:flex-none ${filterStatus === s ? 'fp-date-tab--active !text-slate-800 dark:!text-slate-100 !border-slate-800 dark:!border-slate-500 bg-slate-200/50 dark:bg-slate-700/50' : ''}`}>
+              className={`fp-date-tab ${filterStatus === s ? 'fp-date-tab--active !text-slate-800 dark:!text-slate-100 !border-slate-800 dark:!border-slate-500 bg-slate-200/50 dark:bg-slate-700/50' : ''}`}>
               {s.charAt(0).toUpperCase() + s.slice(1)}
             </button>
           ))}
