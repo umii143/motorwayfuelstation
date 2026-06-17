@@ -76,7 +76,13 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
 
     case "getCashPosition": {
       const state = useTreasuryStore.getState();
-      return { cashOnHand: state.totalCash || 0, bankBalance: state.totalBank || 0, currency: "PKR" };
+      let totalCash = 0;
+      let totalBank = 0;
+      state.cashAccounts?.forEach(acc => {
+        if (acc.type === 'cash' || acc.type === 'drawer') totalCash += acc.balance;
+        else totalBank += acc.balance;
+      });
+      return { cashOnHand: totalCash, bankBalance: totalBank, currency: "PKR" };
     }
 
     case "getTankLevels": {
@@ -107,7 +113,9 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
         id: `exp_${Date.now()}`,
         category,
         description,
-        amount: Number(amount)
+        amount: Number(amount),
+        date: new Date().toISOString(),
+        paidFrom: 'cash'
       };
 
       const updatedShift = {
@@ -133,8 +141,9 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
         id: `rec_${Date.now()}`,
         customerId: `cust_unresolved_${customerName}`, // In real app, look up useCustomerStore.getState().customers
         amount: Number(amount),
-        mode: 'cash',
-        date: new Date().toISOString()
+        mode: 'cash' as any,
+        date: new Date().toISOString(),
+        reference: `Voice Entry: ${customerName}`
       };
 
       const updatedShift = {

@@ -25,6 +25,7 @@ export function useJarvis() {
   const callModeRef = useRef<boolean>(false);
   const transcriptRef = useRef<string>('');
   const processAudioInputRef = useRef<any>(null);
+  const hasUnlockedSpeechRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -196,6 +197,14 @@ export function useJarvis() {
   }, [processAudioInput]);
 
   const startListening = useCallback(() => {
+    if (synthRef.current && !hasUnlockedSpeechRef.current) {
+      // Unlock speech synthesis on Android/iOS by playing a silent utterance on first user click
+      const silentUtterance = new SpeechSynthesisUtterance('');
+      silentUtterance.volume = 0;
+      synthRef.current.speak(silentUtterance);
+      hasUnlockedSpeechRef.current = true;
+    }
+
     if (recognitionRef.current) {
       if (synthRef.current?.speaking) {
         synthRef.current.cancel();
