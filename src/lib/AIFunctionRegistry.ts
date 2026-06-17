@@ -129,7 +129,7 @@ export const jarvisFunctionDeclarations = [
         salary: { type: "NUMBER", description: "Monthly salary in PKR" },
         phone: { type: "STRING", description: "Phone number (optional)" }
       },
-      required: ["name", "role", "salary"]
+      required: ["name"]
     }
   },
   {
@@ -142,7 +142,7 @@ export const jarvisFunctionDeclarations = [
         contact: { type: "STRING", description: "Contact number" },
         creditLimit: { type: "NUMBER", description: "Credit limit in PKR" }
       },
-      required: ["name", "creditLimit"]
+      required: ["name"]
     }
   },
   {
@@ -167,7 +167,7 @@ export const jarvisFunctionDeclarations = [
         accountNo: { type: "STRING", description: "Account number (optional)" },
         initialBalance: { type: "NUMBER", description: "Opening balance in PKR" }
       },
-      required: ["name", "initialBalance"]
+      required: ["name"]
     }
   },
   {
@@ -179,7 +179,7 @@ export const jarvisFunctionDeclarations = [
         managerName: { type: "STRING", description: "Name of the manager starting the shift" },
         shiftType: { type: "STRING", description: "'day' or 'night'" }
       },
-      required: ["managerName", "shiftType"]
+      required: ["shiftType"]
     }
   }
 ];
@@ -435,7 +435,7 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
         id: `stf_${Date.now()}`,
         name,
         urduName: name,
-        role: role.toLowerCase(),
+        role: role?.toLowerCase() || 'staff',
         salary: Number(salary) || 0,
         advances: 0,
         active: true,
@@ -481,10 +481,10 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
       const { name, accountNo, initialBalance } = args;
       const newBank = {
         id: `bank_${Date.now()}`,
-        name,
+        name: name || "New Account",
         accountNo: accountNo || "",
         balance: Number(initialBalance) || 0,
-        type: name.toLowerCase().includes("cash") || name.toLowerCase().includes("drawer") ? 'cash' : 'bank' as any
+        type: name?.toLowerCase()?.includes("cash") || name?.toLowerCase()?.includes("drawer") ? 'cash' : 'bank' as any
       };
       await useFinancialStore.getState().handleAddBank(newBank, "", "");
       return { status: "Success", message: `Registered new account ${name} with balance Rs ${initialBalance}.` };
@@ -495,13 +495,13 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
       const shiftStore = useShiftStore.getState();
       const staffStore = useStaffStore.getState();
       
-      const manager = staffStore.staff.find(s => s.name.toLowerCase().includes(managerName.toLowerCase()));
+      const manager = staffStore.staff.find(s => s.name.toLowerCase().includes(managerName?.toLowerCase() || ""));
       const managerId = manager ? manager.id : "unknown";
 
       const newShift = {
         id: `sh_${Date.now()}`,
         staffId: managerId,
-        type: (shiftType.toLowerCase() === 'night' ? 'night' : 'day') as 'day' | 'night',
+        type: (shiftType?.toLowerCase() === 'night' ? 'night' : 'day') as 'day' | 'night',
         date: new Date().toISOString().split('T')[0],
         startTime: new Date().toISOString(),
         endTime: "",
