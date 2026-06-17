@@ -131,6 +131,56 @@ export const jarvisFunctionDeclarations = [
       },
       required: ["name", "role", "salary"]
     }
+  },
+  {
+    name: "addCustomer",
+    description: "Registers a new credit customer.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        name: { type: "STRING", description: "Customer name" },
+        contact: { type: "STRING", description: "Contact number" },
+        creditLimit: { type: "NUMBER", description: "Credit limit in PKR" }
+      },
+      required: ["name", "creditLimit"]
+    }
+  },
+  {
+    name: "addSupplier",
+    description: "Registers a new supplier.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        name: { type: "STRING", description: "Supplier company or person name" },
+        contact: { type: "STRING", description: "Contact number" }
+      },
+      required: ["name"]
+    }
+  },
+  {
+    name: "addBankAccount",
+    description: "Registers a new bank account or cash drawer in the treasury.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        name: { type: "STRING", description: "Account name (e.g., 'Main Cash', 'HBL')" },
+        accountNo: { type: "STRING", description: "Account number (optional)" },
+        initialBalance: { type: "NUMBER", description: "Opening balance in PKR" }
+      },
+      required: ["name", "initialBalance"]
+    }
+  },
+  {
+    name: "startShift",
+    description: "Starts a new shift. This is also called the shift wizard.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        managerName: { type: "STRING", description: "Name of the manager starting the shift" },
+        shiftType: { type: "STRING", description: "'day' or 'night'" }
+      },
+      required: ["managerName", "shiftType"]
+    }
   }
 ];
 
@@ -396,6 +446,83 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
       
       await staffStore.handleAddStaff(newStaff, "", "");
       return { status: "Success", message: `Registered new staff member ${name} as ${role} with salary Rs ${salary}.` };
+    }
+
+    case "addCustomer": {
+      const { name, contact, creditLimit } = args;
+      const newCustomer = {
+        id: `cust_${Date.now()}`,
+        name,
+        urduName: name,
+        contact: contact || "",
+        address: "",
+        creditLimit: Number(creditLimit) || 0,
+        balance: 0
+      };
+      await useCustomerStore.getState().handleAddCustomer(newCustomer, "", "");
+      return { status: "Success", message: `Registered new customer ${name} with limit Rs ${creditLimit}.` };
+    }
+
+    case "addSupplier": {
+      const { name, contact } = args;
+      const newSupplier = {
+        id: `sup_${Date.now()}`,
+        name,
+        urduName: name,
+        contact: contact || "",
+        accountNo: "",
+        balance: 0
+      };
+      await useSupplierStore.getState().handleAddSupplier(newSupplier, "", "");
+      return { status: "Success", message: `Registered new supplier ${name}.` };
+    }
+
+    case "addBankAccount": {
+      const { name, accountNo, initialBalance } = args;
+      const newBank = {
+        id: `bank_${Date.now()}`,
+        name,
+        accountNo: accountNo || "",
+        balance: Number(initialBalance) || 0,
+        type: name.toLowerCase().includes("cash") || name.toLowerCase().includes("drawer") ? 'cash' : 'bank' as any
+      };
+      await useFinancialStore.getState().handleAddBank(newBank, "", "");
+      return { status: "Success", message: `Registered new account ${name} with balance Rs ${initialBalance}.` };
+    }
+
+    case "startShift": {
+      const { managerName, shiftType } = args;
+      const shiftStore = useShiftStore.getState();
+      const staffStore = useStaffStore.getState();
+      
+      const manager = staffStore.staff.find(s => s.name.toLowerCase().includes(managerName.toLowerCase()));
+      const managerId = manager ? manager.id : "unknown";
+
+      const newShift = {
+        id: `sh_${Date.now()}`,
+        staffId: managerId,
+        type: (shiftType.toLowerCase() === 'night' ? 'night' : 'day') as 'day' | 'night',
+        date: new Date().toISOString().split('T')[0],
+        startTime: new Date().toISOString(),
+        endTime: "",
+        status: 'active' as any,
+        readings: [],
+        expenses: [],
+        recoveries: [],
+        payments: [],
+        creditSales: [],
+        totalSales: 0,
+        totalCash: 0,
+        totalExpenses: 0,
+        totalRecoveries: 0,
+        totalPayments: 0,
+        totalCreditSales: 0,
+        netCash: 0,
+        shortage: 0
+      };
+
+      await shiftStore.handleStartShift(newShift, "", "");
+      return { status: "Success", message: `Started ${shiftType} shift for manager ${managerName}.` };
     }
 
     default:
