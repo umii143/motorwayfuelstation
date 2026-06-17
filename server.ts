@@ -1647,6 +1647,40 @@ app.post('/api/ai-vision', requireRole(["owner", "manager", "station_manager", "
   }
 });
 
+// ==========================================
+// FUELPRO JARVIS VOICE AGENT ENDPOINT (Function Calling)
+// ==========================================
+app.post('/api/ai/jarvis', requireRole(["owner", "manager", "station_manager", "staff", "desk_operator", "cashier"]), async (req, res) => {
+  try {
+    const { messages, tools, systemInstruction } = req.body;
+    
+    // Support function calling directly using the new SDK
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: messages,
+      config: {
+        systemInstruction: systemInstruction,
+        tools: tools ? [{ functionDeclarations: tools }] : undefined,
+        temperature: 0.2, // Low temperature for factual ERP data
+      }
+    });
+
+    const call = response.functionCalls?.[0];
+    if (call) {
+      return res.json({
+        type: 'function_call',
+        functionName: call.name,
+        functionArgs: call.args
+      });
+    }
+
+    res.json({ type: 'text', reply: response.text });
+  } catch (error: any) {
+    console.error('Jarvis AI Error:', error);
+    res.status(500).json({ error: error.message || 'Failed to process Jarvis request' });
+  }
+});
+
 async function startServer() {
   // Vite assets middleware for local dev compilation
   if (process.env.NODE_ENV !== "production") {

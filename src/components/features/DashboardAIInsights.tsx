@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Sparkles, BrainCircuit, AlertTriangle } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { Sparkles, BrainCircuit, AlertTriangle, ShieldAlert, TrendingUp, CheckCircle2 } from 'lucide-react';
 import { Shift, GlobalSettings } from '../../types';
+import { InvestigationEngine } from '../../lib/investigationEngine';
 
 interface Props {
   settings: GlobalSettings;
@@ -8,49 +9,78 @@ interface Props {
 }
 
 export function DashboardAIInsights({ settings, shifts }: Props) {
-  const [insight, setInsight] = useState<{ title: string; message: string; type: 'positive' | 'warning' | 'neutral' } | null>(null);
-
-  useEffect(() => {
-    // Generate an AI-like insight based on shifts data
-    if (shifts.length === 0) {
-      setInsight({ title: 'Welcome to FuelPro AI', message: 'Once you start logging shifts, I will analyze your sales patterns here.', type: 'neutral' });
-      return;
-    }
+  
+  const insights = useMemo(() => {
+    const alerts: any[] = [];
     
-    // Calculate simple trend
-    let totalVol = 0;
-    shifts.forEach(s => {
-      Object.values(s.closingReadings || {}).forEach((c, idx) => {
-        const o = Object.values(s.openingReadings || {})[idx] || 0;
-        totalVol += Math.max(0, c - o);
-      });
+    // Evaluate the last 5 shifts
+    const recentShifts = [...shifts].sort((a, b) => b.id.localeCompare(a.id)).slice(0, 5);
+    
+    let totalShortage = 0;
+    recentShifts.forEach(s => {
+      const health = InvestigationEngine.evaluateShiftHealth(s);
+      
+      if (health.overallSHI < 80) {
+        alerts.push({
+          id: `shi_${s.id}`,
+          title: `Low Health Score: Shift #${s.id}`,
+          message: `Station Health Index dropped to ${health.overallSHI}%. Investigation recommended.`,
+          type: 'danger'
+        });
+      }
+      
+      if (s.shortage > 0) {
+        totalShortage += s.shortage;
+      }
     });
 
-    if (totalVol > 10000) {
-      setInsight({ title: 'High Volume Trend Detected', message: `Your station is experiencing a higher volume trend this week. Ensure tanks are refilled.`, type: 'positive' });
-    } else {
-      setInsight({ title: 'Optimal Cash Operations', message: 'Shift variances are within the 0.05% tolerance threshold. Great job maintaining zero-loss operations.', type: 'positive' });
+    if (totalShortage > 5000) {
+       alerts.push({
+          id: 'shortage_trend',
+          title: `Cash Leakage Detected`,
+          message: `Accumulated shortage of Rs. ${totalShortage} detected across recent shifts. Cross-reference operator deposits immediately.`,
+          type: 'danger'
+       });
     }
+
+    if (alerts.length === 0) {
+       alerts.push({
+          id: 'optimal_health',
+          title: `Optimal Financial Integrity`,
+          message: `All recent shifts maintain a 90%+ Station Health Index with zero detected variance. Operations are highly secure.`,
+          type: 'success'
+       });
+    }
+
+    return alerts.slice(0, 3); // Top 3 critical alerts
   }, [shifts]);
 
-  if (!insight) return null;
-
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-900 to-purple-900 p-6 text-white shadow-lg mt-6 group">
-      <div className="absolute right-0 top-0 opacity-10 group-hover:opacity-20 transition-opacity">
-        <BrainCircuit className="h-48 w-48 -mr-10 -mt-10" />
+    <div className="bg-white dark:bg-[#1A1A24] rounded-[24px] shadow-sm border border-slate-200 dark:border-white/5 overflow-hidden flex flex-col h-full">
+      <div className="p-5 border-b border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-[#151521] flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <BrainCircuit className="w-5 h-5 text-indigo-500" />
+          <h3 className="font-bold text-slate-800 dark:text-white">Global Loss Prevention</h3>
+        </div>
+        <span className="px-2 py-0.5 rounded text-[10px] font-black bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 uppercase tracking-widest">Live Feed</span>
       </div>
-      <div className="relative z-10 flex items-start gap-4">
-        <div className="p-3 bg-white/10 rounded-xl backdrop-blur-md border border-white/20 shadow-inner">
-          {insight.type === 'warning' ? <AlertTriangle className="h-6 w-6 text-amber-300" /> : <Sparkles className="h-6 w-6 text-indigo-300 animate-pulse" />}
-        </div>
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-200">AI Insight of the Day</span>
+      
+      <div className="p-5 flex-1 flex flex-col gap-4">
+        {insights.map(insight => (
+          <div key={insight.id} className={`flex items-start gap-4 p-4 rounded-xl border ${insight.type === 'danger' ? 'bg-rose-50 dark:bg-rose-500/5 border-rose-200 dark:border-rose-500/20' : 'bg-emerald-50 dark:bg-emerald-500/5 border-emerald-200 dark:border-emerald-500/20'}`}>
+            <div className="shrink-0 mt-0.5">
+              {insight.type === 'danger' ? (
+                <ShieldAlert className="w-5 h-5 text-rose-500" />
+              ) : (
+                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+              )}
+            </div>
+            <div>
+              <h4 className={`text-sm font-bold mb-1 ${insight.type === 'danger' ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400'}`}>{insight.title}</h4>
+              <p className={`text-xs leading-relaxed ${insight.type === 'danger' ? 'text-rose-600/80 dark:text-rose-300' : 'text-emerald-600/80 dark:text-emerald-300'}`}>{insight.message}</p>
+            </div>
           </div>
-          <h3 className="font-sans text-lg font-bold text-white leading-tight mb-2">{insight.title}</h3>
-          <p className="text-indigo-100 text-sm max-w-3xl leading-relaxed">{insight.message}</p>
-        </div>
+        ))}
       </div>
     </div>
   );

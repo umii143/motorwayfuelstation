@@ -120,20 +120,21 @@ export default function ExpenseEntryTab({
   };
 
   return (
-    <div className="space-y-3">
-      <h3 className="font-sans text-xs font-bold text-slate-800 border-b border-slate-100 pb-1.5 mb-3">
-        {t("💸 Operational Expenses", "آپریشنل اخراجات")}
+    <div className="space-y-4">
+      <h3 className="font-sans text-sm font-bold text-slate-200 border-b border-slate-700/50 pb-2 mb-4 flex items-center gap-2">
+        <div className="w-2 h-2 rounded-full bg-red-500"></div>
+        {t("Operational Expenses", "آپریشنل اخراجات")}
       </h3>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2 sm:col-span-1">
-          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
             {t("Category:", "کیٹیگری:")}
           </label>
           <select
             value={expCategory}
             onChange={(e) => setExpCategory(e.target.value)}
-            className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500"
+            className="w-full rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2 font-sans text-xs text-slate-200 focus:border-red-500 focus:bg-slate-800 outline-none transition-colors"
           >
             {EXPENSE_CATEGORIES.map((cat) => (
               <option key={cat.id} value={cat.id}>
@@ -145,15 +146,15 @@ export default function ExpenseEntryTab({
         </div>
 
         {expCategory === "salary" && (
-          <div className="col-span-2 bg-orange-50/40 p-2 rounded-md border border-orange-200/60 transition-all">
-            <label className="block text-[10px] font-bold text-orange-805 uppercase tracking-wide mb-1 flex items-center gap-1">
+          <div className="col-span-2 bg-orange-500/10 p-3 rounded-lg border border-orange-500/20 transition-all">
+            <label className="block text-[10px] font-bold text-orange-400 uppercase tracking-wider mb-1.5 flex items-center gap-2">
               <span>👷</span>{" "}
               {t("Staff Member:", "ملازم:")}
             </label>
             <select
               value={expStaffId}
               onChange={(e) => setExpStaffId(e.target.value)}
-              className="w-full rounded-md border border-orange-300 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500 font-medium"
+              className="w-full rounded-md border border-orange-500/30 bg-slate-900/50 px-3 py-2 font-sans text-xs text-slate-200 focus:border-orange-500 font-medium outline-none transition-colors"
             >
               <option value="">
                 {t("-- Choose --", "-- منتخب کریں --")}
@@ -170,7 +171,7 @@ export default function ExpenseEntryTab({
         )}
 
         <div className="col-span-2 sm:col-span-1">
-          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
             {t("Amount:", "رقم:")}
           </label>
           <input
@@ -178,22 +179,22 @@ export default function ExpenseEntryTab({
             value={expAmount}
             onChange={(e) => setExpAmount(e.target.value)}
             placeholder="e.g. 1200"
-            className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-mono text-xs focus:border-orange-500"
+            className="w-full rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2 font-mono text-sm text-red-400 focus:border-red-500 focus:bg-slate-800 outline-none transition-colors"
           />
         </div>
 
         <div className="col-span-2 sm:col-span-1">
-          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
             {t("Sourced From:", "منبع:")}
           </label>
-          <div className="grid grid-cols-2 gap-1">
+          <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => setExpPaidFrom("cash")}
-              className={`py-1.5 rounded-md border font-sans text-[10px] font-bold cursor-pointer transition-all ${
+              className={`py-2 rounded-md border font-sans text-[10px] font-bold cursor-pointer transition-all ${
                 expPaidFrom === "cash"
-                  ? "border-orange-500 bg-orange-50 text-orange-700"
-                  : "border-slate-200 bg-white text-slate-500"
+                  ? "border-red-500/50 bg-red-500/10 text-red-400"
+                  : "border-slate-700 bg-slate-800/50 text-slate-400 hover:bg-slate-700"
               }`}
             >
               💸 {t("Cash", "کیش")}
@@ -201,10 +202,10 @@ export default function ExpenseEntryTab({
             <button
               type="button"
               onClick={() => setExpPaidFrom("bank")}
-              className={`py-1.5 rounded-md border font-sans text-[10px] font-bold cursor-pointer transition-all ${
+              className={`py-2 rounded-md border font-sans text-[10px] font-bold cursor-pointer transition-all ${
                 expPaidFrom === "bank"
-                  ? "border-orange-500 bg-orange-50 text-orange-700"
-                  : "border-slate-200 bg-white text-slate-500"
+                  ? "border-red-500/50 bg-red-500/10 text-red-400"
+                  : "border-slate-700 bg-slate-800/50 text-slate-400 hover:bg-slate-700"
               }`}
             >
               🏦 {t("Bank", "بینک")}
@@ -213,7 +214,7 @@ export default function ExpenseEntryTab({
         </div>
 
         <div className="col-span-2">
-          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
             {t("Notes:", "نوٹ:")}
           </label>
           <input
@@ -221,47 +222,47 @@ export default function ExpenseEntryTab({
             value={expDesc}
             onChange={(e) => setExpDesc(e.target.value)}
             placeholder="e.g. Lunch tea for staff"
-            className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500"
+            className="w-full rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2 font-sans text-xs text-slate-200 focus:border-red-500 focus:bg-slate-800 outline-none transition-colors"
           />
         </div>
       </div>
 
       <button
         onClick={handleAddExpense}
-        className="w-full py-2 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 cursor-pointer shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
+        className="w-full py-3 bg-gradient-to-r from-red-600 to-red-500 text-white font-sans text-xs font-bold rounded-xl hover:from-red-500 hover:to-red-400 cursor-pointer shadow-lg shadow-red-500/20 active:scale-95 flex items-center justify-center gap-2 mt-2 transition-all uppercase tracking-wider"
       >
-        <Plus className="h-3 w-3" />
+        <Plus className="h-4 w-4" />
         <span>{t("ADD EXPENSE", "خرچہ درج کریں")}</span>
       </button>
 
       {/* Registered Expenses List */}
-      <div className="mt-4 border-t border-slate-100 pt-4">
-        <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+      <div className="mt-6 border-t border-slate-700/50 pt-4">
+        <h4 className="font-sans text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">
           {t("Expenses This Shift:", "اس شفٹ میں اخراجات:")}
         </h4>
         {activeShift.expenseEntries.length === 0 ? (
-          <p className="text-center py-4 font-sans text-xs text-slate-400 border border-slate-100 border-dashed rounded-lg bg-slate-50/50">
+          <p className="text-center py-6 font-sans text-xs text-slate-500 border border-slate-700/50 border-dashed rounded-xl bg-slate-800/20">
             {t(
               "No expense records logged in this session.",
               "ابھی کوئی خرچہ درج نہیں۔",
             )}
           </p>
         ) : (
-          <div className="space-y-2 max-h-40 overflow-y-auto">
+          <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
             {activeShift.expenseEntries.map((e) => (
               <div
                 key={e.id}
-                className="flex justify-between items-center text-xs p-2 rounded-lg border border-slate-100 bg-slate-50/20"
+                className="flex justify-between items-center text-xs p-3 rounded-xl border border-slate-700/50 bg-slate-800/40 hover:bg-slate-800/80 transition-colors"
               >
-                <div className="font-sans text-slate-700 pr-4 flex-1 flex flex-wrap items-center gap-0.5">
-                  <span className="font-bold uppercase tracking-tight text-[10px] bg-red-50 text-red-650 px-1.5 py-0.5 rounded-sm mr-2">
+                <div className="font-sans text-slate-300 pr-4 flex-1 flex flex-wrap items-center gap-2">
+                  <span className="font-bold uppercase tracking-widest text-[9px] bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded-md">
                     {e.category}
                   </span>
-                  <span className="text-slate-800 font-medium">
+                  <span className="text-slate-200 font-medium">
                     {e.description}
                   </span>
                   {e.staffId && (
-                    <span className="ml-2 inline-flex items-center gap-0.5 text-[9px] font-bold text-orange-700 bg-orange-50 border border-orange-200 px-1.5 py-0.5 rounded-sm">
+                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-md">
                       <span>👤</span>
                       <span>
                         {settings.language === "en"
@@ -273,13 +274,13 @@ export default function ExpenseEntryTab({
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="font-mono font-bold text-red-550">
+                <div className="flex items-center gap-4">
+                  <span className="font-mono font-bold text-red-400">
                     Rs. {e.amount.toLocaleString()}
                   </span>
                   <button
                     onClick={() => handleDeleteExpense(e.id)}
-                    className="text-red-500 hover:text-red-700 cursor-pointer"
+                    className="text-slate-500 hover:text-red-400 transition-colors cursor-pointer"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>

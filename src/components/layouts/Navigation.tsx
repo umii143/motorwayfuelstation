@@ -62,7 +62,8 @@ import {
   Briefcase,
   Beaker,
   FlaskConical,
-  PlusCircle
+  PlusCircle,
+  BrainCircuit
 } from 'lucide-react';
 import { GlobalSettings, Station } from '../../types';
 import { t as translate } from '../../lib/translations';
@@ -141,6 +142,7 @@ const Navigation = React.memo(function Navigation({
   const allMenuItems = [
     // MAIN
     { id: 'dashboard', section: 'main', icon: LayoutDashboard, label: 'Dashboard', urdu: 'ڈیش بورڈ', showInLube: true },
+    { id: 'jarvis', section: 'main', icon: BrainCircuit, label: 'FuelPro Jarvis (AI)', urdu: 'جاروس (اے آئی)', showInLube: true },
     { id: isLube ? 'lube_pos' : 'shift_wizard', section: 'main', icon: RefreshCw, label: isLube ? 'Lube POS Terminal' : 'Shift Wizard', urdu: isLube ? 'لیوب پی او ایس' : 'شفٹ وزرڈ', showInLube: true },
     { id: 'shift_logs', section: 'main', icon: History, label: 'Shift Logs & Audit', urdu: 'شفٹ لاگز', showInLube: false },
     { id: 'price_management', section: 'main', icon: DollarSign, label: 'Price Management', urdu: 'قیمتیں اور نرخ', showInLube: false },

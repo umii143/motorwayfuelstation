@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, LineChart, BookOpen, Grid, Plus } from 'lucide-react';
+import { Home, LineChart, BookOpen, Grid, Plus, BrainCircuit } from 'lucide-react';
 
 interface BottomNavigationProps {
   activeView: string;
@@ -33,13 +33,17 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeView, 
           <span className="text-[10px] font-bold">Sales</span>
         </button>
 
-        {/* Center Floating Button */}
+        {/* Center Floating Button (Jarvis) */}
         <div className="relative w-16 h-full flex justify-center">
           <button 
-            onClick={() => onNavigate('lube_pos')}
-            className="absolute -top-6 w-14 h-14 rounded-full bg-[#FF7A00] flex items-center justify-center text-white shadow-[0_8px_16px_rgba(255,122,0,0.4)] border-4 border-white dark:border-[#151521] transition-transform active:scale-95"
+            onClick={() => onNavigate('jarvis')}
+            className={`absolute -top-6 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg border-4 border-white dark:border-[#151521] transition-transform active:scale-95 ${
+              activeView === 'jarvis' 
+                ? 'bg-indigo-600 shadow-indigo-500/50 scale-110' 
+                : 'bg-slate-800 dark:bg-slate-700 hover:bg-indigo-600 hover:shadow-indigo-500/50'
+            }`}
           >
-            <Plus className="w-6 h-6 stroke-[3]" />
+            <BrainCircuit className="w-6 h-6 stroke-[2]" />
           </button>
         </div>
 

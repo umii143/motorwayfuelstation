@@ -44,8 +44,9 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
     {
       id: 'starter',
       name: t('Starter', 'اسٹارٹر'),
-      price: 'Rs. 2,999',
-      amount: 2999,
+      price: 'Rs. 2,000',
+      originalPrice: 'Rs. 5,000',
+      amount: 2000,
       period: t('/month', '/مہینہ'),
       icon: Zap,
       features: [
@@ -61,8 +62,8 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
     {
       id: 'professional',
       name: t('Professional', 'پروفیشنل'),
-      price: 'Rs. 5,999',
-      amount: 5999,
+      price: 'Rs. 3,000',
+      amount: 3000,
       period: t('/month', '/مہینہ'),
       icon: Crown,
       popular: true,
@@ -77,21 +78,39 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
       btnColor: 'bg-orange-600 hover:bg-orange-700'
     },
     {
-      id: 'enterprise',
-      name: t('Enterprise', 'انٹرپرائز'),
-      price: 'Rs. 12,999',
-      amount: 12999,
-      period: t('/month', '/مہینہ'),
+      id: 'quarterly',
+      name: t('3 Months', '3 ماہ کا پلان'),
+      price: 'Rs. 10,000',
+      originalPrice: 'Rs. 18,000',
+      amount: 10000,
+      period: t('/3 months', '/3 مہینے'),
+      icon: Clock,
+      features: [
+        t('All Pro Features', 'پروفیشنل کی تمام خصوصیات'),
+        t('Save Rs. 8,000', '8,000 روپے کی بچت'),
+        t('Priority Support', 'ترجیحی سپورٹ'),
+        t('Free Data Backup', 'مفت ڈیٹا بیک اپ')
+      ],
+      color: 'bg-emerald-50 border-emerald-200',
+      iconColor: 'text-emerald-600',
+      btnColor: 'bg-emerald-600 hover:bg-emerald-700'
+    },
+    {
+      id: 'yearly',
+      name: t('1 Year', '1 سال کا پلان'),
+      price: 'Rs. 30,000',
+      amount: 30000,
+      period: t('/year', '/سال'),
       icon: Building2,
       features: [
-        t('Unlimited Users & Stations', 'لامحدود یوزرز اور اسٹیشنز'),
-        t('OTA Updates & Priority Support', 'اپ ڈیٹس اور ترجیحی سپورٹ'),
+        t('All Pro Features', 'پروفیشنل کی تمام خصوصیات'),
+        t('Best Value', 'بہترین قیمت'),
         t('Custom Branding', 'کسٹم برانڈنگ'),
-        t('API Access', 'اے پی آئی تک رسائی')
+        t('Dedicated Account Manager', 'مخصوص اکاؤنٹ مینیجر')
       ],
-      color: 'bg-slate-50 border-slate-200',
-      iconColor: 'text-slate-600',
-      btnColor: 'bg-slate-800 hover:bg-slate-900'
+      color: 'bg-blue-50 border-blue-200',
+      iconColor: 'text-blue-600',
+      btnColor: 'bg-blue-600 hover:bg-blue-700'
     }
   ];
 
@@ -263,7 +282,7 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
             <AnimatePresence mode="wait">
               {step === 1 && (
                 <motion.div key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
-                  <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-6 pt-4 items-center">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-4 items-center">
                     {plans.map(p => (
                   <div 
                     key={p.id} 
@@ -283,7 +302,10 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
                       <p.icon className="h-6 w-6" />
                     </div>
                     <h4 className="text-xl font-bold dark:text-white">{p.name}</h4>
-                    <div className="mt-2 flex items-baseline gap-1">
+                    <div className="mt-2 flex items-baseline gap-1 flex-wrap">
+                      {p.originalPrice && (
+                        <span className="text-lg line-through text-slate-400 mr-1">{p.originalPrice}</span>
+                      )}
                       <span className="text-2xl font-black text-slate-900 dark:text-white">{p.price}</span>
                       <span className="text-sm text-slate-500 dark:text-slate-400">{p.period}</span>
                     </div>

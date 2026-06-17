@@ -930,13 +930,13 @@ export default function StockInForm({
                       <button type="button"
                         onClick={() => setPriceEntryMode('perLiter')}
                         className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${priceEntryMode === 'perLiter' ? 'bg-orange-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>
-                        ○ Enter Per-Liter Rate
+                        ○ Enter Custom Purchase Price (w/ Discount)
                       </button>
                     </div>
 
                     {priceEntryMode === 'total' ? (
                       <Field label="Total Invoice Amount (Rs.) *"
-                        hint="Enter the exact total from the paper invoice. Includes all PSO charges (DLVCHRG, SSLF, taxes).">
+                        hint="Enter the exact total from the paper invoice. Includes all charges.">
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-500">Rs.</span>
                           <input type="number" step="0.01" value={invoiceTotalAmount}
@@ -957,7 +957,7 @@ export default function StockInForm({
                         )}
                       </Field>
                     ) : (
-                      <Field label="Invoice Rate Per Liter (Rs.) *">
+                      <Field label="Custom Purchase Price / Liter (Rs.) *" hint="Enter the actual purchase rate you got from the supplier (including any special discounts) to calculate correct profit margins.">
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-500">Rs.</span>
                           <input type="number" step="0.0001" value={invoicePerLiterRate}
@@ -967,7 +967,7 @@ export default function StockInForm({
                         </div>
                         {numQtyReceived > 0 && invoicePerLiterRate && (
                           <p className="text-xs text-slate-500 mt-1">
-                            = Rs. {(Number(invoicePerLiterRate) * numQtyReceived).toLocaleString('en-PK', { minimumFractionDigits: 2 })} total
+                            = Rs. {(Number(invoicePerLiterRate) * numQtyReceived).toLocaleString('en-PK', { minimumFractionDigits: 2 })} total invoice value
                           </p>
                         )}
                       </Field>

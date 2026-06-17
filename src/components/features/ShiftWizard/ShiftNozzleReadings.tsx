@@ -33,7 +33,7 @@ export function ShiftNozzleReadings({
 
   return (
     <div className="space-y-4">
-      <h3 className="font-sans text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4 flex items-center justify-between">
+      <h3 className="font-sans text-sm font-bold text-slate-200 border-b border-slate-700/50 pb-2 mb-4 flex items-center justify-between">
         <span className="flex items-center gap-2">
           <Zap className="h-5 w-5 text-red-500" />
           {t("Mid-Shift Price Revision Snapshot", "قیمت میں تبدیلی کا سنیپ شاٹ")}
@@ -52,16 +52,16 @@ export function ShiftNozzleReadings({
         return (
           <div
             key={rev.id}
-            className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4"
+            className="bg-slate-800/50 border border-red-500/20 rounded-xl p-5 mb-4 shadow-lg"
           >
-            <div className="flex flex-row items-center justify-between mb-3 gap-2 sm:gap-0">
+            <div className="flex flex-row items-center justify-between mb-4 gap-2 sm:gap-0">
               <div>
-                <h4 className="font-bold text-red-800 text-sm">{prod.name}</h4>
-                <p className="text-xs text-red-600">
+                <h4 className="font-bold text-red-400 text-sm tracking-wide">{prod.name}</h4>
+                <p className="text-xs text-red-300/80 mt-1 font-mono">
                   Old: Rs {rev.oldRate} → New: Rs {rev.newRate}
                 </p>
               </div>
-              <div className="text-left sm:text-right text-xs text-red-500">
+              <div className="text-left sm:text-right text-xs text-red-400/80 font-mono bg-red-500/10 px-3 py-1 rounded-full border border-red-500/20">
                 Effective: {new Date(rev.effectiveAt).toLocaleTimeString()}
               </div>
             </div>
@@ -70,14 +70,14 @@ export function ShiftNozzleReadings({
               {prodNozzles.map((nz) => (
                 <div
                   key={nz.id}
-                  className="flex flex-row items-center gap-2"
+                  className="flex flex-row items-center gap-3 bg-slate-900/50 p-2 rounded-lg border border-slate-700/50"
                 >
-                  <span className="font-medium text-sm text-slate-700 w-24">
+                  <span className="font-bold text-sm text-slate-300 w-24 pl-2">
                     {nz.name}
                   </span>
                   <input
                     type="number"
-                    className="flex-1 w-full rounded-md border-slate-200 text-sm"
+                    className="flex-1 w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-200 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition-all font-mono"
                     placeholder={t("Current Meter Reading", "موجودہ میٹر ریڈنگ")}
                     value={snapshotReadings[nz.id] || ""}
                     onChange={(e) =>
@@ -91,13 +91,13 @@ export function ShiftNozzleReadings({
               ))}
             </div>
 
-            <div className="mt-4 pt-4 border-t border-red-200">
-              <label className="flex items-center gap-2 text-sm text-red-800 font-medium mb-2 cursor-pointer">
+            <div className="mt-5 pt-4 border-t border-slate-700/50">
+              <label className="flex items-center gap-3 text-sm text-red-400 font-medium mb-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={snapshotOverride}
                   onChange={(e) => setSnapshotOverride(e.target.checked)}
-                  className="rounded border-red-300 text-red-600 focus:ring-red-500"
+                  className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-red-500 focus:ring-red-500 focus:ring-offset-slate-800 transition-all"
                 />
                 {t(
                   "Owner Override (Apply new rate to entire shift without snapshot)",
@@ -111,15 +111,15 @@ export function ShiftNozzleReadings({
                   placeholder={t("Owner Price Override PIN", "قیمت اوور رائیڈ پن")}
                   value={snapshotPin}
                   onChange={(e) => setSnapshotPin(e.target.value)}
-                  className="mt-2 w-full sm:w-auto rounded-md border-slate-200 text-sm"
+                  className="w-full sm:w-auto rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-200 focus:border-red-500 outline-none transition-all"
                 />
               )}
             </div>
 
-            <div className="mt-4 flex sm:justify-end">
+            <div className="mt-5 flex sm:justify-end">
               <button
                 onClick={() => handleCaptureSnapshot(rev.productId)}
-                className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-bold text-sm"
+                className="w-full sm:w-auto bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white px-6 py-2.5 rounded-lg font-bold text-sm shadow-lg shadow-red-500/20 transition-all active:scale-95"
               >
                 {t("Save Snapshot & Apply", "سنیپ شاٹ محفوظ کریں")}
               </button>

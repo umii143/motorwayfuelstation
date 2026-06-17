@@ -1,56 +1,27 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React, { useState, useMemo } from 'react';
-
 import {
   History,
   Filter,
   Search,
-  Eye,
   Calendar,
-  X,
-  TrendingDown,
-  TrendingUp,
-  CreditCard,
-  Landmark,
-  Smartphone,
-  Factory,
-  CheckCircle2,
-  AlertTriangle,
-  Clock,
   Download,
-  UserCircle
+  Activity,
+  CreditCard,
+  Building2,
+  Receipt,
+  Wallet,
+  TrendingUp,
+  FolderOpen,
+  BrainCircuit,
+  ShieldAlert,
+  Flame
 } from 'lucide-react';
-import { ExportToolbar } from '../shared/ExportToolbar';
-import { DocumentActionToolbar } from '../shared/DocumentActionToolbar';
-import { ShiftReceiptDocument } from '../shared/receipts/ShiftReceipt';
-import { useWhatsAppShare } from '../../hooks/useWhatsAppShare';
-import { WhatsAppShareModal } from '../shared/WhatsAppShareModal';
-import {
-  Shift,
-  Staff,
-  Customer,
-  Supplier,
-  BankAccount,
-  DigitalAccount,
-  Product,
-  Tank,
-  GlobalSettings,
-  DebitEntry,
-  RecoveryEntry,
-  ExpenseEntry,
-  BankCashEntry,
-  DigitalCashEntry,
-  SupplierPayment,
-  Nozzle,
-  FIFODeduction,
-} from '../../types';
-import { useInventoryStore } from '../../stores/useInventoryStore';
+import { Shift, Staff, Customer, Supplier, BankAccount, DigitalAccount, Product, Tank, Nozzle, GlobalSettings } from '../../types';
 import { t as translate } from '../../lib/translations';
-import ShiftDrillDownModal from './ExecutiveDashboard/ShiftDrillDownModal';
+import { ShiftSidebar } from './ShiftSidebar';
+import { useInventoryStore } from '../../stores/useInventoryStore';
+import { InvestigationEngine } from '../../lib/investigationEngine';
+import { FuelVarianceHeatmap } from './FuelVarianceHeatmap';
 
 interface ShiftLogsProps {
   shifts: Shift[];
@@ -81,38 +52,35 @@ export default function ShiftLogs({
   const isUrdu = settings.language === 'ur';
 
   // State
-  const [filterDateStr, setFilterDateStr] = useState<string>('');
-  const [filterStaffId, setFilterStaffId] = useState<string>('all');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'closed'>('all');
-  
+  const [filterType, setFilterType] = useState<string>('all');
+  const [operatorFilter, setOperatorFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
-  const [showExport, setShowExport] = useState(false);
-  
-  const whatsappHook = useWhatsAppShare();
-  
-  // Drill-down states
-  const [viewDetailType, setViewDetailType] = useState<
-    'credits' | 'debits' | 'expenses' | 'supplier' | 'bank' | 'digital' | null
-  >(null);
-  
-  const [isShiftDrillDownOpen, setIsShiftDrillDownOpen] = useState(false);
+  const [activeGlobalModal, setActiveGlobalModal] = useState<string | null>(null);
 
   const filteredShifts = useMemo(() => {
     return shifts
       .filter((s) => {
-        if (filterStatus !== 'all' && s.status !== filterStatus) return false;
-        if (filterStaffId !== 'all' && s.staffId !== filterStaffId) return false;
-        if (filterDateStr && s.date !== filterDateStr) return false;
+        if (filterType !== 'all' && s.type !== filterType) return false;
+        if (statusFilter !== 'all' && s.status !== statusFilter) return false;
+        if (operatorFilter !== 'all' && s.staffId !== operatorFilter) return false;
+        
+        if (searchQuery) {
+          const sName = getStaffName(s.staffId).toLowerCase();
+          return sName.includes(searchQuery.toLowerCase()) || s.id.includes(searchQuery);
+        }
         return true;
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [shifts, filterStatus, filterStaffId, filterDateStr]);
+  }, [shifts, filterType, statusFilter, operatorFilter, searchQuery]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat(isUrdu ? 'ur-PK' : 'en-PK', {
       style: 'currency',
       currency: settings.currency || 'PKR',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     }).format(amount);
   };
 
@@ -121,299 +89,299 @@ export default function ShiftLogs({
     return s ? (isUrdu ? s.urduName : s.name) : 'Unknown';
   };
 
-  const calculateTotalFuelSoldLiters = (shift: Shift) => {
-    if (!shift.openingReadings || !shift.closingReadings) return 0;
-    return Object.keys(shift.closingReadings).reduce((sum, nozzleId) => {
-      const start = shift.openingReadings[nozzleId] || 0;
-      const end = shift.closingReadings[nozzleId] || 0;
-      return sum + Math.max(0, end - start);
-    }, 0);
-  };
+  // CALCULATE GLOBAL AGGREGATES FOR TOP KPIs BASED ON FILTERED SHIFTS
+  const aggregates = useMemo(() => {
+    let sales = 0;
+    let credits = 0;
+    let bankCash = 0;
+    let expenses = 0;
+    let recoveries = 0;
+    let profit = 0;
 
-  const shiftColumns: TableColumn<Shift>[] = [
-    {
-      header: t('Date & Time', 'تاریخ اور وقت'),
-      accessor: (shift) => (
-        <div>
-          <div className="font-medium text-slate-800">{shift.date}</div>
-          <div className="text-xs text-slate-500">
-            {shift.startTime} {shift.endTime ? `- ${shift.endTime}` : ''}
-          </div>
-        </div>
-      ),
-      isPrimaryMobile: true
-    },
-    {
-      header: t('Salesman', 'سیلزمین'),
-      accessor: (shift) => (
-        <div>
-          <div className="font-medium text-slate-800">{getStaffName(shift.staffId)}</div>
-          <div className="text-xs text-slate-500 capitalize">{shift.type} Shift</div>
-        </div>
-      ),
-      isSecondaryMobile: true
-    },
-    {
-      header: t('Fuel Sold', 'فروخت شدہ تیل (لیٹر)'),
-      accessor: (shift) => (
-        <span className="text-slate-800 font-medium">
-          {calculateTotalFuelSoldLiters(shift).toFixed(2)} L
-        </span>
-      ),
-      isHiddenMobile: true
-    },
-    {
-      header: t('Cash Submitted', 'جمع شدہ کیش'),
-      accessor: (shift) => (
-        <span className="text-slate-800 font-medium">
-          {formatCurrency(shift.submittedCash || 0)}
-        </span>
-      )
-    },
-    {
-      header: t('Shortage/Overage', 'کمی/زیادتی'),
-      accessor: (shift) => (
-        <div>
-          {shift.shortage > 0 ? (
-            <span className="inline-flex items-center gap-1 text-red-600 font-medium bg-red-50 px-2.5 py-0.5 rounded-full text-sm">
-              <TrendingDown className="w-3.5 h-3.5" />
-              {formatCurrency(shift.shortage)}
-            </span>
-          ) : shift.overage > 0 ? (
-            <span className="inline-flex items-center gap-1 text-emerald-600 font-medium bg-emerald-50 px-2.5 py-0.5 rounded-full text-sm">
-              <TrendingUp className="w-3.5 h-3.5" />
-              {formatCurrency(shift.overage)}
-            </span>
-          ) : (
-            <span className="text-slate-400 font-medium">-</span>
-          )}
-        </div>
-      )
-    },
-    {
-      header: t('Status', 'سٹیٹس'),
-      accessor: (shift) => (
-        <div className="flex flex-col gap-1.5">
-            {shift.status === 'active' ? (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 w-max">
-                <Clock className="w-3.5 h-3.5" />
-                {t('Active', 'جاری ہے')}
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700 w-max">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                {t('Closed', 'بند ہو گئی')}
-              </span>
-            )}
-            {shift.status === 'closed' && (
-              shift.shortage > 0 ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700 w-max">
-                  <AlertTriangle className="w-3 h-3" />
-                  {t('Issue Detected', 'مسئلہ پایا گیا')}
-                </span>
-              ) : shift.overage > 0 ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 w-max">
-                  <AlertTriangle className="w-3 h-3" />
-                  {t('Review Required', 'جائزہ درکار ہے')}
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 w-max">
-                  <CheckCircle2 className="w-3 h-3" />
-                  {t('Verified', 'تصدیق شدہ')}
-                </span>
-              )
-            )}
-        </div>
-      )
+    const fifoDeductions = useInventoryStore.getState().fifoDeductions || [];
+    const stockBatches = useInventoryStore.getState().stockBatches || [];
+
+    filteredShifts.forEach(shift => {
+      // Station Sales
+      let shiftSales = 0;
+      if (shift.closingReadings && shift.openingReadings) {
+        Object.keys(shift.closingReadings).forEach((nozzleId) => {
+          const start = shift.openingReadings![nozzleId] || 0;
+          const end = shift.closingReadings![nozzleId] || 0;
+          const liters = Math.max(0, end - start);
+          const nozzle = nozzles.find(n => n.id === nozzleId);
+          if (nozzle) {
+            const rate = shift.rates?.[nozzle.productId] || 0;
+            shiftSales += (liters * rate);
+          }
+        });
+      }
+      sales += shiftSales;
+
+      // Other metrics
+      credits += shift.debitEntries?.reduce((sum, d) => sum + d.amount, 0) || 0;
+      bankCash += shift.bankCashEntries?.reduce((sum, b) => sum + b.amount, 0) || 0;
+      const shiftExpenses = shift.expenseEntries?.reduce((sum, e) => sum + e.amount, 0) || 0;
+      expenses += shiftExpenses;
+      recoveries += shift.recoveryEntries?.reduce((sum, r) => sum + r.amount, 0) || 0;
+
+      // Profit
+      const shiftDeductions = fifoDeductions.filter((d) => d.shiftId === shift.id);
+      const grossMargin = shiftDeductions.reduce((sum, d) => sum + d.realizedMargin, 0);
+      const uniqueBatchIds = new Set<string>();
+      shiftDeductions.forEach((d) => uniqueBatchIds.add(d.batchId));
+      const shiftRevaluation = Array.from(uniqueBatchIds).reduce((sum, bId) => {
+        const b = stockBatches.find(sb => sb.id === bId);
+        return sum + (b?.revaluationGainLoss || 0);
+      }, 0);
+
+      profit += (grossMargin - shiftExpenses + shiftRevaluation);
+    });
+
+    let avgSHI = 0;
+    if (filteredShifts.length > 0) {
+      const totalSHI = filteredShifts.reduce((sum, s) => sum + InvestigationEngine.evaluateShiftHealth(s).overallSHI, 0);
+      avgSHI = Math.round(totalSHI / filteredShifts.length);
     }
-  ];
+
+    return { sales, credits, bankCash, expenses, recoveries, profit, avgSHI };
+  }, [filteredShifts, nozzles]);
 
   return (
-    <div className="pb-12">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <History className="w-6 h-6 text-indigo-600" />
-            {t('Shift Logs & Audit', 'شفٹ لاگز اور آڈٹ')}
-          </h1>
-          <p className="text-slate-500 mt-1">
-            {t('Complete history and centralized audit system for all shifts.', 'تمام شفٹوں کی مکمل تاریخ اور آڈٹ سسٹم۔')}
-          </p>
-        </div>
-      </div>
+    <div className="flex w-full h-[calc(100vh-64px)] overflow-hidden bg-slate-50 dark:bg-[#0B0F19]">
       
-      {/* ENTERPRISE KPI ROW */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div 
-          onClick={() => setIsShiftDrillDownOpen(true)}
-          className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/30 transition-colors group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 group-hover:scale-110 transition-transform">
-              <History className="h-5 w-5" />
-            </div>
-            <div>
-              <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block group-hover:text-indigo-600 transition-colors">Total Shifts Processed</span>
-              <strong className="font-mono text-xl font-bold text-slate-800 tracking-tight mt-1 block">
-                {shifts.length}
-              </strong>
-            </div>
-          </div>
-        </div>
-
-        <div 
-          onClick={() => setIsShiftDrillDownOpen(true)}
-          className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs cursor-pointer hover:border-red-300 hover:bg-red-50/30 transition-colors group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 group-hover:scale-110 transition-transform">
-              <TrendingDown className="h-5 w-5" />
-            </div>
-            <div>
-              <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block group-hover:text-red-600 transition-colors">Accumulated Shortage</span>
-              <strong className="font-mono text-xl font-bold text-red-600 tracking-tight mt-1 block">
-                {formatCurrency(shifts.reduce((sum, s) => sum + (s.shortage > 0 ? s.shortage : 0), 0))}
-              </strong>
-            </div>
-          </div>
-        </div>
-
-        <div 
-          onClick={() => setIsShiftDrillDownOpen(true)}
-          className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs cursor-pointer hover:border-emerald-300 hover:bg-emerald-50/30 transition-colors group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 group-hover:scale-110 transition-transform">
-              <TrendingUp className="h-5 w-5" />
-            </div>
-            <div>
-              <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block group-hover:text-emerald-600 transition-colors">Accumulated Overage</span>
-              <strong className="font-mono text-xl font-bold text-emerald-600 tracking-tight mt-1 block">
-                {formatCurrency(shifts.reduce((sum, s) => sum + (s.overage > 0 ? s.overage : 0), 0))}
-              </strong>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Export Toolbar */}
-      <ExportToolbar
-        isOpen={showExport}
-        onClose={() => setShowExport(false)}
-        data={filteredShifts}
-        columns={[
-          { key: 'date', label: 'Date', urduLabel: 'تاریخ' },
-          { key: 'salesmanId', label: 'Salesman', urduLabel: 'سیلزمین' },
-          { key: 'status', label: 'Status', urduLabel: 'سٹیٹس' },
-          { key: 'totalSales', label: 'Total Sales', urduLabel: 'کل فروخت' },
-          { key: 'totalCash', label: 'Total Cash', urduLabel: 'کل کیش' },
-          { key: 'shortage', label: 'Shortage', urduLabel: 'کمی' }
-        ]}
-        title="Shift Logs Report"
-        filenamePrefix="shift_logs"
-      />
-
-      {/* Filters */}
-      <div className="bg-white rounded-xl shadow-xs border border-slate-200 p-4 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 text-slate-800 font-semibold">
-            <Filter className="w-4 h-4 text-slate-500" />
-            {t('Filters', 'فلٹرز')}
-          </div>
-          <button
-            onClick={() => setShowExport(true)}
-            className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 text-sm font-bold rounded-lg hover:bg-indigo-100 transition-colors cursor-pointer"
-          >
-            {t('Export', 'ایکسپورٹ')}
-          </button>
-        </div>
+      {/* MAIN CONTENT PANE */}
+      <div className="flex-1 flex flex-col h-full overflow-y-auto px-4 lg:px-8 py-6">
         
-        <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* HEADER */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">
-              {t('Date', 'تاریخ')}
-            </label>
-            <input
-              type="date"
-              value={filterDateStr}
-              onChange={(e) => setFilterDateStr(e.target.value)}
-              className="premium-input border px-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-            />
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Activity className="w-6 h-6 text-orange-500" />
+              Shift Wizard Logs
+            </h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              View, analyze and audit all shift sessions with complete financial details.
+            </p>
           </div>
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">
-              {t('Salesman', 'سیلزمین')}
-            </label>
-            <select
-              value={filterStaffId}
-              onChange={(e) => setFilterStaffId(e.target.value)}
-              className="premium-input border px-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-            >
-              <option value="all">{t('All Staff', 'تمام اسٹاف')}</option>
-              {staff.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {isUrdu ? s.urduName : s.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">
-              {t('Status', 'سٹیٹس')}
-            </label>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value as any)}
-              className="premium-input border px-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-            >
-              <option value="all">{t('All Shifts', 'تمام شفٹیں')}</option>
-              <option value="active">{t('Active', 'جاری ہے')}</option>
-              <option value="closed">{t('Closed', 'بند ہو گئی')}</option>
-            </select>
-          </div>
-        </div>
-        <div className="mt-4 flex justify-end">
-          <button
-            onClick={() => {
-              setFilterDateStr('');
-              setFilterStaffId('all');
-              setFilterStatus('all');
-            }}
-            className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
-          >
-            {t('Clear Filters', 'فلٹرز صاف کریں')}
-          </button>
-        </div>
-      </div>
-
-      {/* Main Table */}
-      <div className="mb-8">
-        <ResponsiveTable
-          data={filteredShifts}
-          columns={shiftColumns}
-          keyExtractor={(shift) => shift.id}
-          emptyMessage={t('No shifts found matching the filters.', 'فلٹرز کے مطابق کوئی شفٹ نہیں ملی۔')}
-          renderActions={(shift) => (
-            <button
-              onClick={() => setSelectedShift(shift)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-50 hover:border-indigo-200 transition-colors shadow-xs cursor-pointer w-full md:w-auto"
-            >
-              <Eye className="w-4 h-4" />
-              {t('View Details', 'تفصیلات دیکھیں')}
+          
+          <div className="flex items-center gap-3">
+            <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#111827] text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm">
+              <Download className="w-4 h-4" /> Export
             </button>
-          )}
-        />
+            <div className="flex items-center px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#111827] text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium shadow-sm">
+              <Calendar className="w-4 h-4 mr-2" />
+              17 May 2025 - 17 Jun 2025
+            </div>
+            <button className="p-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#111827] text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm">
+              <Filter className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* INTELLIGENCE ENGINE & TOP KPIs */}
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 mb-8">
+          
+          {/* AI Decision Panel */}
+          <div className="xl:col-span-3 bg-gradient-to-br from-indigo-900 to-slate-900 rounded-xl p-6 text-white shadow-lg relative overflow-hidden flex flex-col justify-between">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -mt-10 -mr-10"></div>
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <BrainCircuit className="w-5 h-5 text-indigo-400" />
+                <h3 className="font-bold text-lg text-indigo-50">Decision Intelligence Engine</h3>
+                <span className="px-2 py-0.5 rounded text-[10px] font-black bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase tracking-widest ml-2">Active</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-lg p-3 backdrop-blur-sm">
+                  <div className="w-2 h-2 rounded-full bg-rose-500 mt-1.5 shrink-0 animate-pulse"></div>
+                  <div>
+                    <div className="text-sm font-bold text-white mb-0.5">Recover High Credit Exposure</div>
+                    <div className="text-xs text-indigo-200">You have over Rs. 150,000 in unrecovered Udhar from the last 7 shifts. Immediate recovery recommended from Top 3 debtors.</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-lg p-3 backdrop-blur-sm">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0"></div>
+                  <div>
+                    <div className="text-sm font-bold text-white mb-0.5">Ali is Top Performer</div>
+                    <div className="text-xs text-indigo-200">Operator Ali consistently maintains a 98% Cash Integrity score. Shift profit is 12% above station average.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Station Health Index (SHI) */}
+          <div className="bg-white dark:bg-[#111827] rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm flex flex-col items-center justify-center text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-emerald-600"></div>
+            <ShieldAlert className={`w-10 h-10 mb-2 ${aggregates.avgSHI >= 85 ? 'text-emerald-500' : aggregates.avgSHI >= 70 ? 'text-amber-500' : 'text-rose-500'}`} />
+            <div className="text-4xl font-black text-slate-900 dark:text-white mb-1">{aggregates.avgSHI}%</div>
+            <div className="text-sm font-bold text-slate-500 dark:text-slate-400">Station Health Index</div>
+            <div className="mt-4 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300">
+              {aggregates.avgSHI >= 85 ? 'Excellent Health' : aggregates.avgSHI >= 70 ? 'Needs Attention' : 'Critical Investigation'}
+            </div>
+          </div>
+        </div>
+
+        {/* TOP KPIs */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+          <KpiCard icon={<TrendingUp className="w-4 h-4 text-emerald-500" />} iconBg="bg-emerald-50 dark:bg-emerald-500/10" border="border-emerald-500/20" title="Total Sales" value={formatCurrency(aggregates.sales)} />
+          <KpiCard onClick={() => setActiveGlobalModal('credits')} icon={<CreditCard className="w-4 h-4 text-purple-500" />} iconBg="bg-purple-50 dark:bg-purple-500/10" border="border-purple-500/20" title="Total Credits" value={formatCurrency(aggregates.credits)} />
+          <KpiCard onClick={() => setActiveGlobalModal('bank')} icon={<Building2 className="w-4 h-4 text-blue-500" />} iconBg="bg-blue-50 dark:bg-blue-500/10" border="border-blue-500/20" title="Bank Cash" value={formatCurrency(aggregates.bankCash)} />
+          <KpiCard onClick={() => setActiveGlobalModal('expenses')} icon={<Receipt className="w-4 h-4 text-red-500" />} iconBg="bg-red-50 dark:bg-red-500/10" border="border-red-500/20" title="Expenses" value={formatCurrency(aggregates.expenses)} />
+          <KpiCard onClick={() => setActiveGlobalModal('recoveries')} icon={<Wallet className="w-4 h-4 text-emerald-500" />} iconBg="bg-emerald-50 dark:bg-emerald-500/10" border="border-emerald-500/20" title="Recoveries" value={formatCurrency(aggregates.recoveries)} />
+          <KpiCard icon={<Activity className="w-4 h-4 text-orange-500" />} iconBg="bg-orange-50 dark:bg-orange-500/10" border="border-orange-500/20" title="Net Profit / Loss" value={formatCurrency(aggregates.profit)} />
+        </div>
+
+        {/* FUEL VARIANCE HEATMAP */}
+        <div className="mb-8">
+          <FuelVarianceHeatmap tanks={tanks} shifts={filteredShifts} />
+        </div>
+
+        {/* TABLE SECTION */}
+        <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex flex-col flex-1 min-h-[400px]">
+          
+          {/* Table Filters */}
+          <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap gap-4 items-center justify-between">
+            <div className="relative flex-1 min-w-[250px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input 
+                type="text" 
+                placeholder="Search by operator or note..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+            </div>
+            
+            <div className="flex items-center gap-3 w-full lg:w-auto">
+              <select 
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm px-3 py-2 text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-orange-500"
+              >
+                <option value="all">All Shift Types</option>
+                <option value="day">Day Shifts</option>
+                <option value="night">Night Shifts</option>
+              </select>
+
+              <select 
+                value={operatorFilter}
+                onChange={(e) => setOperatorFilter(e.target.value)}
+                className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm px-3 py-2 text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-orange-500"
+              >
+                <option value="all">All Operators</option>
+                {staff.filter(s => s.role === 'operator' || s.role === 'manager').map(s => (
+                  <option key={s.id} value={s.id}>{isUrdu ? s.urduName : s.name}</option>
+                ))}
+              </select>
+
+              <select 
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm px-3 py-2 text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-orange-500"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Open</option>
+                <option value="closed">Closed</option>
+              </select>
+
+              <button 
+                onClick={() => { setFilterType('all'); setOperatorFilter('all'); setStatusFilter('all'); setSearchQuery(''); }}
+                className="flex items-center gap-2 px-3 py-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 text-sm font-medium transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700 rounded-lg"
+              >
+                <Filter className="w-4 h-4" /> Clear Filters
+              </button>
+            </div>
+          </div>
+
+          {/* Table Data */}
+          <div className="overflow-x-auto flex-1">
+            <table className="w-full text-left border-collapse min-w-[800px]">
+              <thead>
+                <tr className="bg-slate-50 dark:bg-[#0B0F19] text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                  <th className="px-6 py-4">SHIFT ID</th>
+                  <th className="px-6 py-4">SHIFT TYPE</th>
+                  <th className="px-6 py-4">OPERATOR</th>
+                  <th className="px-6 py-4">DATE & TIME</th>
+                  <th className="px-6 py-4">SALES (Rs.)</th>
+                  <th className="px-6 py-4">CASH IN HAND (Rs.)</th>
+                  <th className="px-6 py-4 text-center">STATUS</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {filteredShifts.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="px-6 py-24 text-center">
+                      <div className="flex flex-col items-center justify-center text-slate-400">
+                        <FolderOpen className="w-16 h-16 mb-4 opacity-50" />
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">No shift logs found</h3>
+                        <p className="text-sm">Try adjusting your filters or date range.</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredShifts.map(shift => {
+                    // Quick calculation for row
+                    let shiftSales = 0;
+                    if (shift.closingReadings && shift.openingReadings) {
+                      Object.keys(shift.closingReadings).forEach((nozzleId) => {
+                        const start = shift.openingReadings![nozzleId] || 0;
+                        const end = shift.closingReadings![nozzleId] || 0;
+                        const liters = Math.max(0, end - start);
+                        const nozzle = nozzles.find(n => n.id === nozzleId);
+                        if (nozzle) {
+                          const rate = shift.rates?.[nozzle.productId] || 0;
+                          shiftSales += (liters * rate);
+                        }
+                      });
+                    }
+
+                    const isSelected = selectedShift?.id === shift.id;
+
+                    return (
+                      <tr 
+                        key={shift.id} 
+                        onClick={() => setSelectedShift(shift)}
+                        className={`cursor-pointer transition-colors ${isSelected ? 'bg-orange-50 dark:bg-orange-500/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+                      >
+                        <td className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">#{shift.id.slice(-5)}</td>
+                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{shift.type === 'day' ? 'Day Shift' : 'Night Shift'}</td>
+                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{getStaffName(shift.staffId)}</td>
+                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{shift.date} <span className="text-slate-400 text-xs ml-1">{shift.startTime}</span></td>
+                        <td className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">{formatCurrency(shiftSales).replace('PKR', '').trim()}</td>
+                        <td className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">{formatCurrency(shift.submittedCash || 0).replace('PKR', '').trim()}</td>
+                        <td className="px-6 py-4 text-center">
+                          {shift.status === 'closed' ? (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 uppercase tracking-widest">CLOSED</span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 uppercase tracking-widest">OPEN</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+          
+          {/* Pagination Footer */}
+          <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+            <div>Showing {filteredShifts.length > 0 ? 1 : 0} to {filteredShifts.length} of {filteredShifts.length} entries</div>
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> Real-time</span>
+              <History className="w-3.5 h-3.5" />
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      {/* Selected Shift Drawer Placeholder */}
-      {selectedShift && (
-        <ShiftAuditDrawer
+      {/* RIGHT SIDEBAR - SHIFT DETAILS */}
+      {selectedShift ? (
+        <ShiftSidebar
           shift={selectedShift}
-          onClose={() => {
-            setSelectedShift(null);
-            setViewDetailType(null);
-          }}
+          onClose={() => setSelectedShift(null)}
           settings={settings}
           staff={staff}
           products={products}
@@ -422,464 +390,76 @@ export default function ShiftLogs({
           banks={banks}
           digitalAccounts={digitalAccounts}
           nozzles={nozzles}
-          viewDetailType={viewDetailType}
-          setViewDetailType={setViewDetailType}
-          whatsappHook={whatsappHook}
+        />
+      ) : (
+        <div className="w-80 lg:w-96 bg-slate-50 dark:bg-[#0B0F19] border-l border-slate-200 dark:border-slate-800 hidden lg:flex flex-col items-center justify-center p-8 text-center shrink-0">
+          <FolderOpen className="w-16 h-16 mb-4 text-slate-300 dark:text-slate-700" />
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Shift Details</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Select a shift from the list to view full details and drill-down information.</p>
+        </div>
+      )}
+
+      {/* GLOBAL MODALS */}
+      {activeGlobalModal === 'expenses' && (
+        <GlobalTransactionModal
+          title="Global Expenses Ledger"
+          onClose={() => setActiveGlobalModal(null)}
+          items={filteredShifts.flatMap(s => (s.expenseEntries || []).map(e => ({ ...e, shiftId: s.id, date: s.date })))}
+          columns={[
+            { key: 'shift', label: 'Shift ID', render: (item: any) => `#${item.shiftId.slice(-5)}` },
+            { key: 'date', label: 'Date', render: (item: any) => item.date },
+            { key: 'category', label: 'Category', render: (item: any) => item.category },
+            { key: 'amount', label: 'Amount', render: (item: any) => formatCurrency(item.amount) },
+            { key: 'desc', label: 'Description', render: (item: any) => item.description || '-' }
+          ]}
         />
       )}
 
-      <WhatsAppShareModal 
-        hook={whatsappHook} 
-        customers={customers} 
-        suppliers={suppliers} 
-        staff={staff} 
-      />
+      {activeGlobalModal === 'credits' && (
+        <GlobalTransactionModal
+          title="Global Credit Sales Ledger"
+          onClose={() => setActiveGlobalModal(null)}
+          items={filteredShifts.flatMap(s => (s.debitEntries || []).map(e => ({ ...e, shiftId: s.id, date: s.date })))}
+          columns={[
+            { key: 'shift', label: 'Shift ID', render: (item: any) => `#${item.shiftId.slice(-5)}` },
+            { key: 'date', label: 'Date', render: (item: any) => item.date },
+            { key: 'customer', label: 'Customer', render: (item: any) => customers.find(c => c.id === item.customerId)?.name || 'Unknown' },
+            { key: 'product', label: 'Product', render: (item: any) => products.find(p => p.id === item.productId)?.name || 'Unknown' },
+            { key: 'amount', label: 'Amount', render: (item: any) => formatCurrency(item.amount) }
+          ]}
+        />
+      )}
 
-      <ShiftDrillDownModal 
-        isOpen={isShiftDrillDownOpen}
-        onClose={() => setIsShiftDrillDownOpen(false)}
-        settings={settings}
-      />
-    </div>
-  );
-}
+      {activeGlobalModal === 'bank' && (
+        <GlobalTransactionModal
+          title="Global Bank Deposits"
+          onClose={() => setActiveGlobalModal(null)}
+          items={filteredShifts.flatMap(s => (s.bankCashEntries || []).map(e => ({ ...e, shiftId: s.id, date: s.date })))}
+          columns={[
+            { key: 'shift', label: 'Shift ID', render: (item: any) => `#${item.shiftId.slice(-5)}` },
+            { key: 'date', label: 'Date', render: (item: any) => item.date },
+            { key: 'bank', label: 'Bank', render: (item: any) => banks.find(b => b.id === item.bankAccountId)?.name || 'Unknown' },
+            { key: 'amount', label: 'Amount', render: (item: any) => formatCurrency(item.amount) },
+            { key: 'ref', label: 'Reference', render: (item: any) => item.reference || '-' }
+          ]}
+        />
+      )}
 
-// ----------------------------------------------------------------------
-// SUB-COMPONENTS FOR DRAWERS AND DRILL DOWNS
-// ----------------------------------------------------------------------
+      {activeGlobalModal === 'recoveries' && (
+        <GlobalTransactionModal
+          title="Global Recoveries Ledger"
+          onClose={() => setActiveGlobalModal(null)}
+          items={filteredShifts.flatMap(s => (s.recoveryEntries || []).map(e => ({ ...e, shiftId: s.id, date: s.date })))}
+          columns={[
+            { key: 'shift', label: 'Shift ID', render: (item: any) => `#${item.shiftId.slice(-5)}` },
+            { key: 'date', label: 'Date', render: (item: any) => item.date },
+            { key: 'customer', label: 'Customer', render: (item: any) => customers.find(c => c.id === item.customerId)?.name || 'Unknown' },
+            { key: 'amount', label: 'Amount', render: (item: any) => formatCurrency(item.amount) },
+            { key: 'mode', label: 'Mode', render: (item: any) => item.mode }
+          ]}
+        />
+      )}
 
-function ShiftAuditDrawer({
-  shift,
-  onClose,
-  settings,
-  staff,
-  products,
-  customers,
-  suppliers,
-  banks,
-  digitalAccounts,
-  nozzles,
-  viewDetailType,
-  setViewDetailType,
-  whatsappHook
-}: any) {
-  const t = (en: string, ur: string) => translate(en, ur, settings);
-  const isUrdu = settings.language === 'ur';
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat(isUrdu ? 'ur-PK' : 'en-PK', {
-      style: 'currency',
-      currency: settings.currency || 'PKR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  };
-
-  const getStaffName = (id: string) => {
-    const s = staff.find((st: Staff) => st.id === id);
-    return s ? (isUrdu ? s.urduName : s.name) : 'Unknown';
-  };
-
-  // Aggregates
-  const totalDebits = shift.debitEntries?.reduce((sum: number, d: DebitEntry) => sum + d.amount, 0) || 0;
-  const totalRecoveries = shift.recoveryEntries?.reduce((sum: number, r: RecoveryEntry) => sum + r.amount, 0) || 0;
-  const totalExpenses = shift.expenseEntries?.reduce((sum: number, e: ExpenseEntry) => sum + e.amount, 0) || 0;
-  const totalBank = shift.bankCashEntries?.reduce((sum: number, b: BankCashEntry) => sum + b.amount, 0) || 0;
-  const totalDigital = shift.digitalCashEntries?.reduce((sum: number, d: DigitalCashEntry) => sum + d.amount, 0) || 0;
-  const totalSupplierPayments = shift.supplierPayments?.reduce((sum: number, s: SupplierPayment) => sum + s.amount, 0) || 0;
-
-  // Compute total cash
-  const totalCashCollected = (shift.submittedCash || 0) + totalBank + totalDigital;
-
-  // Compute fuel sold
-  let petrolSold = 0;
-  let dieselSold = 0;
-  if (shift.closingReadings && shift.openingReadings) {
-    Object.keys(shift.closingReadings).forEach((nozzleId) => {
-      const start = shift.openingReadings![nozzleId] || 0;
-      const end = shift.closingReadings![nozzleId] || 0;
-      const liters = Math.max(0, end - start);
-      
-      const nozzle = nozzles.find((n: Nozzle) => n.id === nozzleId);
-      if (nozzle) {
-        const product = products.find((p: Product) => p.id === nozzle.productId);
-        if (product) {
-          const nameLower = product.name.toLowerCase();
-          if (nameLower.includes('petrol') || nameLower.includes('super') || product.id === 'prod_f1') {
-            petrolSold += liters;
-          } else if (nameLower.includes('diesel') || nameLower.includes('hsd') || product.id === 'prod_f3') {
-            dieselSold += liters;
-          }
-        }
-      }
-    });
-  }
-
-  const totalFuelSold = petrolSold + dieselSold;
-  // Estimate fuel sales amount based on shift rates
-  let estimatedFuelSalesAmount = 0;
-  if (shift.rates) {
-    Object.keys(shift.rates).forEach(productId => {
-      const product = products.find((p: Product) => p.id === productId);
-      if (product) {
-        const nameLower = product.name.toLowerCase();
-        if (nameLower.includes('petrol') || nameLower.includes('super') || productId === 'prod_f1') {
-          estimatedFuelSalesAmount += (petrolSold * shift.rates![productId]);
-        } else if (nameLower.includes('diesel') || nameLower.includes('hsd') || productId === 'prod_f3') {
-          estimatedFuelSalesAmount += (dieselSold * shift.rates![productId]);
-        }
-      }
-    });
-  }
-
-  // Calculate Profit from FIFO Deductions for this Shift
-  const fifoDeductions = useInventoryStore((state) => state.fifoDeductions) || [];
-  const shiftDeductions = fifoDeductions.filter((d: FIFODeduction) => d.shiftId === shift.id);
-  
-  const totalLitersSoldFIFO = shiftDeductions.reduce((sum: number, d: FIFODeduction) => sum + d.litersDeducted, 0);
-  const totalRevenue = shiftDeductions.reduce((sum: number, d: FIFODeduction) => sum + d.realizedRevenue, 0);
-  const totalCogsCost = shiftDeductions.reduce((sum: number, d: FIFODeduction) => sum + d.realizedCOGS, 0);
-  const totalGrossProfit = shiftDeductions.reduce((sum: number, d: FIFODeduction) => sum + d.realizedMargin, 0);
-  
-  // Revaluation for this shift
-  const stockBatches = useInventoryStore((state) => state.stockBatches) || [];
-  const uniqueBatchIds = new Set<string>();
-  shiftDeductions.forEach((d: FIFODeduction) => uniqueBatchIds.add(d.batchId));
-  const shiftRevaluation = Array.from(uniqueBatchIds).reduce((sum, bId) => {
-    const b = stockBatches.find(sb => sb.id === bId);
-    return sum + (b?.revaluationGainLoss || 0);
-  }, 0);
-
-  const totalNetProfit = totalGrossProfit - totalExpenses + shiftRevaluation;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-end items-center justify-center p-0 sm:p-6 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="w-full sm:w-[95vw] md:w-[85vw] lg:w-[1200px] max-w-full h-[95vh] bg-slate-50 rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
-        
-        {/* ENTERPRISE HEADER */}
-        <div className="flex-none bg-slate-900 border-b border-slate-800 px-6 py-5 flex flex-row items-start items-center justify-between z-10 shadow-2xl relative overflow-hidden">
-          {/* Subtle background glow */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
-          
-          <div className="relative z-10 mb-4 sm:mb-0">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-500/20 rounded-xl border border-indigo-500/30 shadow-inner">
-                <History className="w-6 h-6 text-indigo-400" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-black text-white flex items-center gap-3 tracking-tight">
-                  {t(`Shift Intelligence Audit`, `شفٹ آڈٹ لاگ`)}
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 tracking-widest uppercase flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" /> {t('Audit Verified', 'تصدیق شدہ')}
-                  </span>
-                </h2>
-                <div className="flex items-center gap-3 mt-1.5 text-sm font-medium">
-                  <span className="flex items-center gap-1.5 text-indigo-300">
-                    <UserCircle className="w-4 h-4" />
-                    {getStaffName(shift.staffId)}
-                  </span>
-                  <span className="w-1 h-1 rounded-full bg-slate-700" />
-                  <span className="text-slate-300 font-bold">{shift.date}</span>
-                  <span className="w-1 h-1 rounded-full bg-slate-700" />
-                  <span className="text-slate-400">{shift.type === 'day' ? t('Day Shift', 'دن کی شفٹ') : t('Night Shift', 'رات کی شفٹ')}</span>
-                  <span className="w-1 h-1 rounded-full bg-slate-700" />
-                  <span className="text-slate-400">{shift.startTime} to {shift.endTime || 'Present'}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 relative z-10 w-full sm:w-auto justify-end">
-            <div className="bg-slate-800/80 p-1 rounded-lg border border-slate-700 backdrop-blur-sm flex items-center shadow-inner">
-              <DocumentActionToolbar 
-                pdfDocument={<ShiftReceiptDocument shift={shift} generatedBy="Admin" />}
-                pdfFileName={`Shift_Report_${shift.id}.pdf`}
-                onPrint={() => window.print()}
-                onWhatsAppShare={() => {
-                  whatsappHook.openShareModal(
-                    'custom',
-                    {},
-                    undefined,
-                    `Shift_Report_${shift.id}.pdf`,
-                    <ShiftReceiptDocument shift={shift} generatedBy="Admin" />
-                  );
-                }}
-              />
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl border border-slate-700 transition-all cursor-pointer shadow-lg"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Drawer Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-slate-50/50">
-          
-          {/* Main Financial Summary Grid */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
-                {t('Financial Summary', 'مالیاتی خلاصہ')}
-              </h3>
-              <span className="text-xs font-bold text-slate-600 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-sm flex gap-2">
-                <span className="text-slate-400">Net Profit:</span> <span className="text-emerald-600">{formatCurrency(totalNetProfit)}</span>
-                <span className="text-slate-300">|</span>
-                <span className="text-slate-400">Total Collection:</span> <span className="text-indigo-600">{formatCurrency(totalCashCollected)}</span>
-              </span>
-            </div>
-            
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              <div className="premium-card border border-slate-200 flex flex-col justify-between">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('Expected Cash', 'متوقع کیش')}</span>
-                <span className="text-2xl font-black text-slate-800 truncate">{formatCurrency(shift.expectedCash || 0)}</span>
-              </div>
-              <div className="bg-indigo-50/80 rounded-xl border border-indigo-100 p-5 shadow-sm flex flex-col justify-between">
-                <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">{t('Submitted Cash', 'جمع شدہ کیش')}</span>
-                <span className="text-2xl font-black text-indigo-700 truncate">{formatCurrency(shift.submittedCash || 0)}</span>
-              </div>
-              <div className="bg-red-50/80 rounded-xl border border-red-100 p-5 shadow-sm flex flex-col justify-between">
-                <span className="text-[10px] font-black text-red-400 uppercase tracking-widest mb-1">{t('Shortage', 'کمی')}</span>
-                <span className="text-2xl font-black text-red-700 truncate">{formatCurrency(shift.shortage || 0)}</span>
-              </div>
-              <div className="bg-emerald-50/80 rounded-xl border border-emerald-100 p-5 shadow-sm flex flex-col justify-between">
-                <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">{t('Overage', 'زیادتی')}</span>
-                <span className="text-2xl font-black text-emerald-700 truncate">{formatCurrency(shift.overage || 0)}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Fuel Sales Summary Grid */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
-                {t('Fuel Sales Summary', 'فیول سیلز کا خلاصہ')}
-              </h3>
-              <span className="text-xs font-bold text-slate-600 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-sm flex gap-2">
-                <span className="text-slate-400">Avg Margin:</span> <span className="text-orange-600">{totalLitersSoldFIFO > 0 ? formatCurrency(totalGrossProfit / totalLitersSoldFIFO) : '0'} /L</span>
-                <span className="text-slate-300">|</span>
-                <span className="text-slate-400">Est. Sales:</span> <span className="text-blue-600">{formatCurrency(estimatedFuelSalesAmount)}</span>
-              </span>
-            </div>
-            
-            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="bg-gradient-to-br from-orange-50 to-orange-100/30 rounded-xl border border-orange-200 p-5 shadow-sm flex flex-col justify-between relative overflow-hidden">
-                <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-orange-200/50 to-transparent"></div>
-                <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-2 relative z-10">{t('Petrol Sold', 'پٹرول فروخت')}</span>
-                <span className="text-3xl font-black text-orange-700 truncate relative z-10">{petrolSold.toFixed(2)} L</span>
-              </div>
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100/30 rounded-xl border border-blue-200 p-5 shadow-sm flex flex-col justify-between relative overflow-hidden">
-                <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-blue-200/50 to-transparent"></div>
-                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2 relative z-10">{t('Diesel Sold', 'ڈیزل فروخت')}</span>
-                <span className="text-3xl font-black text-blue-700 truncate relative z-10">{dieselSold.toFixed(2)} L</span>
-              </div>
-              <div className="premium-card border border-slate-200 flex flex-col justify-between relative overflow-hidden">
-                <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-slate-100 to-transparent"></div>
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 relative z-10">{t('Total Fuel Sold', 'کل فیول فروخت')}</span>
-                <span className="text-3xl font-black text-slate-800 truncate relative z-10">{totalFuelSold.toFixed(2)} L</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Drill Down Sections */}
-          <div>
-            <div className="flex items-center mb-4">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></div>
-                {t('Transaction Intelligence Drill-Downs', 'ٹرانزیکشن کی تفصیلات')}
-              </h3>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
-              
-              <DrillDownCard
-                icon={TrendingUp}
-                title={t('Credit Sales (Udhar)', 'ادھار فروخت')}
-                count={shift.debitEntries?.length || 0}
-                amount={totalDebits}
-                formatCurrency={formatCurrency}
-                onClick={() => setViewDetailType('debits')}
-                colorClass="text-rose-600 bg-rose-50 border-rose-200 hover:border-rose-300"
-              />
-              
-              <DrillDownCard
-                icon={TrendingDown}
-                title={t('Recoveries (Collection)', 'ادھار وصولی')}
-                count={shift.recoveryEntries?.length || 0}
-                amount={totalRecoveries}
-                formatCurrency={formatCurrency}
-                onClick={() => setViewDetailType('credits')}
-                colorClass="text-emerald-600 bg-emerald-50 border-emerald-200 hover:border-emerald-300"
-              />
-
-              <DrillDownCard
-                icon={CreditCard}
-                title={t('Expenses', 'اخراجات')}
-                count={shift.expenseEntries?.length || 0}
-                amount={totalExpenses}
-                formatCurrency={formatCurrency}
-                onClick={() => setViewDetailType('expenses')}
-                colorClass="text-amber-600 bg-amber-50 border-amber-200 hover:border-amber-300"
-              />
-
-              <DrillDownCard
-                icon={Factory}
-                title={t('Supplier Payments', 'سپلائر کی ادائیگیاں')}
-                count={shift.supplierPayments?.length || 0}
-                amount={totalSupplierPayments}
-                formatCurrency={formatCurrency}
-                onClick={() => setViewDetailType('supplier')}
-                colorClass="text-blue-600 bg-blue-50 border-blue-200 hover:border-blue-300"
-              />
-
-              <DrillDownCard
-                icon={Landmark}
-                title={t('Bank Deposits', 'بینک ڈپازٹ')}
-                count={shift.bankCashEntries?.length || 0}
-                amount={totalBank}
-                formatCurrency={formatCurrency}
-                onClick={() => setViewDetailType('bank')}
-                colorClass="text-cyan-600 bg-cyan-50 border-cyan-200 hover:border-cyan-300"
-              />
-
-              <DrillDownCard
-                icon={Smartphone}
-                title={t('Digital Payments', 'ڈیجیٹل ادائیگیاں')}
-                count={shift.digitalCashEntries?.length || 0}
-                amount={totalDigital}
-                formatCurrency={formatCurrency}
-                onClick={() => setViewDetailType('digital')}
-                colorClass="text-violet-600 bg-violet-50 border-violet-200 hover:border-violet-300"
-              />
-
-              <DrillDownCard
-                icon={TrendingUp}
-                title={t('Profit Breakdown (FIFO)', 'منافع کی تفصیلات')}
-                count={shiftDeductions.length || 0}
-                amount={totalNetProfit}
-                formatCurrency={formatCurrency}
-                onClick={() => setViewDetailType('cogs')}
-                colorClass="text-indigo-600 bg-indigo-50 border-indigo-200 hover:border-indigo-300"
-              />
-
-            </div>
-          </div>
-
-        </div>
-
-        {/* Drill Down Modals */}
-        {viewDetailType === 'debits' && (
-          <TransactionModal
-            title={t('Credit Sales (Udhar)', 'ادھار فروخت')}
-            onClose={() => setViewDetailType(null)}
-            items={shift.debitEntries || []}
-            columns={[
-              { key: 'customer', label: t('Customer', 'گاہک'), render: (item: any) => customers.find((c: Customer) => c.id === item.customerId)?.name || 'Unknown' },
-              { key: 'product', label: t('Product', 'پروڈکٹ'), render: (item: any) => products.find((p: Product) => p.id === item.productId)?.name || 'Unknown' },
-              { key: 'quantity', label: t('Qty/Liters', 'مقدار'), render: (item: any) => item.quantity },
-              { key: 'rate', label: t('Rate', 'ریٹ'), render: (item: any) => formatCurrency(item.rate) },
-              { key: 'amount', label: t('Amount', 'رقم'), render: (item: any) => formatCurrency(item.amount) },
-              { key: 'note', label: t('Note', 'نوٹ'), render: (item: any) => item.note || '-' }
-            ]}
-          />
-        )}
-
-        {viewDetailType === 'credits' && (
-          <TransactionModal
-            title={t('Recoveries (Collection)', 'ادھار وصولی')}
-            onClose={() => setViewDetailType(null)}
-            items={shift.recoveryEntries || []}
-            columns={[
-              { key: 'customer', label: t('Customer', 'گاہک'), render: (item: any) => customers.find((c: Customer) => c.id === item.customerId)?.name || 'Unknown' },
-              { key: 'mode', label: t('Mode', 'طریقہ'), render: (item: any) => item.mode },
-              { key: 'amount', label: t('Amount', 'رقم'), render: (item: any) => formatCurrency(item.amount) },
-              { key: 'reference', label: t('Reference', 'حوالہ'), render: (item: any) => item.reference || '-' }
-            ]}
-          />
-        )}
-
-        {viewDetailType === 'expenses' && (
-          <TransactionModal
-            title={t('Expenses', 'اخراجات')}
-            onClose={() => setViewDetailType(null)}
-            items={shift.expenseEntries || []}
-            columns={[
-              { key: 'category', label: t('Category', 'زمرہ'), render: (item: any) => item.category },
-              { key: 'paidFrom', label: t('Paid From', 'کہاں سے ادا کیا'), render: (item: any) => item.paidFrom },
-              { key: 'amount', label: t('Amount', 'رقم'), render: (item: any) => formatCurrency(item.amount) },
-              { key: 'description', label: t('Description', 'تفصیل'), render: (item: any) => item.description || '-' }
-            ]}
-          />
-        )}
-
-        {viewDetailType === 'supplier' && (
-          <TransactionModal
-            title={t('Supplier Payments', 'سپلائر کی ادائیگیاں')}
-            onClose={() => setViewDetailType(null)}
-            items={shift.supplierPayments || []}
-            columns={[
-              { key: 'supplier', label: t('Supplier', 'سپلائر'), render: (item: any) => suppliers.find((s: Supplier) => s.id === item.supplierId)?.name || 'Unknown' },
-              { key: 'mode', label: t('Mode', 'طریقہ'), render: (item: any) => item.mode },
-              { key: 'amount', label: t('Amount', 'رقم'), render: (item: any) => formatCurrency(item.amount) },
-              { key: 'reference', label: t('Reference', 'حوالہ'), render: (item: any) => item.reference || '-' }
-            ]}
-          />
-        )}
-
-        {viewDetailType === 'bank' && (
-          <TransactionModal
-            title={t('Bank Deposits', 'بینک ڈپازٹ')}
-            onClose={() => setViewDetailType(null)}
-            items={shift.bankCashEntries || []}
-            columns={[
-              { key: 'bank', label: t('Bank', 'بینک'), render: (item: any) => banks.find((b: BankAccount) => b.id === item.bankAccountId)?.name || 'Unknown' },
-              { key: 'amount', label: t('Amount', 'رقم'), render: (item: any) => formatCurrency(item.amount) },
-              { key: 'reference', label: t('Reference', 'حوالہ'), render: (item: any) => item.reference || '-' }
-            ]}
-          />
-        )}
-
-        {viewDetailType === 'digital' && (
-          <TransactionModal
-            title={t('Digital Payments', 'ڈیجیٹل ادائیگیاں')}
-            onClose={() => setViewDetailType(null)}
-            items={shift.digitalCashEntries || []}
-            columns={[
-              { key: 'digital', label: t('Account', 'اکاؤنٹ'), render: (item: any) => digitalAccounts.find((d: DigitalAccount) => d.id === item.method)?.name || item.method },
-              { key: 'amount', label: t('Amount', 'رقم'), render: (item: any) => formatCurrency(item.amount) },
-              { key: 'transactionId', label: t('Txn ID', 'ٹرانزیکشن آئی ڈی'), render: (item: any) => item.transactionId || '-' }
-            ]}
-          />
-        )}
-
-        {viewDetailType === 'cogs' && (
-          <TransactionModal
-            title={t('Profit Breakdown (FIFO)', 'منافع کی تفصیلات')}
-            onClose={() => setViewDetailType(null)}
-            items={shiftDeductions || []}
-            columns={[
-              { 
-                key: 'product', 
-                label: t('Product', 'پروڈکٹ'), 
-                render: (item: FIFODeduction) => {
-                  const nozzle = nozzles.find((n: Nozzle) => n.id === item.nozzleId);
-                  const product = products.find((p: Product) => p.id === nozzle?.productId);
-                  return product?.name || 'Unknown';
-                }
-              },
-              { key: 'qty', label: t('Qty', 'مقدار (لیٹر)'), render: (item: FIFODeduction) => `${item.litersDeducted.toFixed(2)} L` },
-              { key: 'cost', label: t('Landed Cost', 'خریداری لاگت'), render: (item: FIFODeduction) => formatCurrency(item.batchLandedCost) },
-              { key: 'pumpPrice', label: t('Pump Price', 'پمپ قیمت'), render: (item: FIFODeduction) => formatCurrency(item.sellingPrice) },
-              { key: 'margin', label: t('Margin', 'مارجن'), render: (item: FIFODeduction) => formatCurrency(item.realizedMarginPerLiter) },
-              { key: 'netProfit', label: t('Realized Profit', 'خالص منافع'), render: (item: FIFODeduction) => <span className="text-emerald-600 font-bold">{formatCurrency(item.realizedMargin)}</span> }
-            ]}
-          />
-        )}
-
-      </div>
     </div>
   );
 }
@@ -888,134 +468,75 @@ function ShiftAuditDrawer({
 // HELPER COMPONENTS
 // ----------------------------------------------------------------------
 
-function SummaryCard({ title, amount, formatCurrency, className = '', valueClassName = '' }: any) {
+function KpiCard({ icon, iconBg, border, title, value, onClick }: any) {
   return (
-    <div className={`p-4 rounded-xl border ${className} shadow-xs`}>
-      <div className="text-xs font-bold uppercase tracking-wider opacity-70 mb-1">{title}</div>
-      <div className={`text-xl sm:text-2xl font-bold ${valueClassName}`}>
-        {formatCurrency(amount)}
+    <div onClick={onClick} className={`bg-white dark:bg-[#111827] rounded-xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer group`}>
+      <div className="flex items-center gap-3 mb-4">
+        <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${iconBg} ${border}`}>
+          {icon}
+        </div>
+        <div className="text-xs font-bold text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">{title}</div>
+      </div>
+      <div>
+        <div className="text-xl font-bold text-slate-900 dark:text-white truncate group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors">{value.replace('PKR', '').trim()}</div>
+      </div>
+      <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/50 flex items-center gap-1 text-[10px] text-slate-400 uppercase tracking-widest font-bold group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors">
+        View Details <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </div>
     </div>
   );
 }
 
-function DrillDownCard({ icon: Icon, title, count, amount, formatCurrency, onClick, colorClass }: any) {
-  // Map our old colorClass strings to modern gradient logic based on key words
-  const isRose = colorClass.includes('rose');
-  const isEmerald = colorClass.includes('emerald');
-  const isAmber = colorClass.includes('amber');
-  const isBlue = colorClass.includes('blue');
-  const isCyan = colorClass.includes('cyan');
-  const isViolet = colorClass.includes('violet');
-  const isIndigo = colorClass.includes('indigo');
+import { X } from 'lucide-react';
 
-  let gradient = 'from-slate-50 to-white border-slate-200 text-slate-600';
-  let iconBg = 'bg-slate-100 text-slate-500';
-  let valueColor = 'text-slate-800';
-
-  if (isRose) {
-    gradient = 'from-rose-50 to-white border-rose-200 text-rose-600';
-    iconBg = 'bg-rose-100 text-rose-500';
-    valueColor = 'text-rose-700';
-  } else if (isEmerald) {
-    gradient = 'from-emerald-50 to-white border-emerald-200 text-emerald-600';
-    iconBg = 'bg-emerald-100 text-emerald-500';
-    valueColor = 'text-emerald-700';
-  } else if (isAmber) {
-    gradient = 'from-amber-50 to-white border-amber-200 text-amber-600';
-    iconBg = 'bg-amber-100 text-amber-500';
-    valueColor = 'text-amber-700';
-  } else if (isBlue) {
-    gradient = 'from-blue-50 to-white border-blue-200 text-blue-600';
-    iconBg = 'bg-blue-100 text-blue-500';
-    valueColor = 'text-blue-700';
-  } else if (isCyan) {
-    gradient = 'from-cyan-50 to-white border-cyan-200 text-cyan-600';
-    iconBg = 'bg-cyan-100 text-cyan-500';
-    valueColor = 'text-cyan-700';
-  } else if (isViolet) {
-    gradient = 'from-violet-50 to-white border-violet-200 text-violet-600';
-    iconBg = 'bg-violet-100 text-violet-500';
-    valueColor = 'text-violet-700';
-  } else if (isIndigo) {
-    gradient = 'from-indigo-50 to-white border-indigo-200 text-indigo-600';
-    iconBg = 'bg-indigo-100 text-indigo-500';
-    valueColor = 'text-indigo-700';
-  }
-
+function GlobalTransactionModal({ title, onClose, items, columns }: any) {
   return (
-    <div 
-      onClick={onClick}
-      className={`p-5 rounded-2xl border shadow-xs cursor-pointer transition-all duration-300 hover:shadow-md hover:-translate-y-1 bg-gradient-to-br ${gradient} group relative overflow-hidden`}
-    >
-      <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-white/40 to-transparent"></div>
-      
-      <div className="flex items-center justify-between mb-4 relative z-10">
-        <div className={`p-2.5 rounded-xl shadow-inner ${iconBg}`}>
-          <Icon className="w-5 h-5" />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-4xl bg-white dark:bg-[#111827] rounded-2xl shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200 overflow-hidden border border-slate-200 dark:border-slate-800">
+        <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0B0F19]">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <FolderOpen className="w-5 h-5 text-orange-500" />
+            {title}
+            <span className="px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-[10px] font-black text-slate-600 dark:text-slate-300 ml-2">{items.length} Entries</span>
+          </h3>
+          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors">
+            <X className="w-5 h-5" />
+          </button>
         </div>
-        <div className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 bg-white/80 rounded-full shadow-xs border border-white">
-          {count} Entries
+        <div className="overflow-auto flex-1 p-0">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-100 dark:bg-slate-800/50 text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                {columns.map((col: any, idx: number) => (
+                  <th key={idx} className="px-5 py-3 whitespace-nowrap">{col.label}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+              {items.length === 0 ? (
+                <tr>
+                  <td colSpan={columns.length} className="px-5 py-12 text-center text-slate-500 dark:text-slate-400">
+                    <div className="flex flex-col items-center justify-center">
+                      <FolderOpen className="w-12 h-12 mb-3 opacity-20" />
+                      No records found for the current filters.
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                items.map((item: any, idx: number) => (
+                  <tr key={item.id || idx} className="hover:bg-slate-50 dark:bg-slate-900/50 dark:hover:bg-slate-800/80 transition-colors">
+                    {columns.map((col: any, colIdx: number) => (
+                      <td key={colIdx} className="px-5 py-3 text-sm text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                        {col.render(item)}
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      </div>
-      <div className="text-xs font-black uppercase tracking-widest opacity-80 mb-1 relative z-10">{title}</div>
-      <div className={`text-2xl font-black relative z-10 ${valueColor}`}>
-        {formatCurrency(amount)}
-      </div>
-      <div className="mt-4 pt-3 border-t border-black/5 text-[10px] font-bold uppercase tracking-widest flex items-center justify-between opacity-60 group-hover:opacity-100 transition-opacity relative z-10">
-        <span>Click to deep-dive log</span>
-        <Search className="w-3.5 h-3.5" />
       </div>
     </div>
-  );
-}
-
-import { BottomSheet } from '../shared/BottomSheet';
-import { ResponsiveTable, TableColumn } from '../shared/ResponsiveTable';
-
-function TransactionModal({ title, onClose, items, columns }: any) {
-  const tableColumns: TableColumn<any>[] = columns.map((col: any, idx: number) => ({
-    header: col.label,
-    accessor: col.render,
-    isPrimaryMobile: idx === 0,
-    isSecondaryMobile: idx === 1
-  }));
-
-  return (
-    <>
-      {/* Desktop Modal View */}
-      <div className="hidden lg:flex fixed inset-0 z-[60] items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-        <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
-          <div className="flex items-center justify-between p-5 border-b border-slate-200">
-            <h3 className="text-lg font-bold text-slate-800">{title}</h3>
-            <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-          <div className="overflow-auto p-4 bg-slate-50/50">
-            <ResponsiveTable
-              data={items}
-              columns={tableColumns}
-              keyExtractor={(item, idx) => item.id || idx.toString()}
-              emptyMessage="No records found."
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Bottom Sheet View */}
-      <div className="lg:hidden">
-        <BottomSheet isOpen={true} onClose={onClose} title={title} snapPoints={['85vh']} allowFullscreen={true}>
-          <div className="pb-8">
-            <ResponsiveTable
-              data={items}
-              columns={tableColumns}
-              keyExtractor={(item, idx) => item.id || idx.toString()}
-              emptyMessage="No records found."
-            />
-          </div>
-        </BottomSheet>
-      </div>
-    </>
   );
 }

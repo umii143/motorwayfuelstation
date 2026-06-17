@@ -4,11 +4,13 @@ import { db } from '../../../data/db';
 import LogisticsDashboard from './LogisticsDashboard';
 import TankerScheduling from './TankerScheduling';
 import DeliveryVerification from './DeliveryVerification';
+import TransitShrinkageTracker from './TransitShrinkageTracker';
 import {
   ArrowRightLeft,
   LayoutDashboard,
   CalendarClock,
-  ClipboardCheck
+  ClipboardCheck,
+  TrendingDown
 } from 'lucide-react';
 
 interface LogisticsHubProps {
@@ -16,13 +18,14 @@ interface LogisticsHubProps {
 }
 
 export default function LogisticsHub({ settings }: LogisticsHubProps) {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'scheduling' | 'verification'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'scheduling' | 'verification' | 'shrinkage'>('dashboard');
   const stationId = db.getActiveStationId();
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'scheduling', label: 'Tanker Scheduling', icon: CalendarClock },
     { id: 'verification', label: 'Delivery Verification', icon: ClipboardCheck },
+    { id: 'shrinkage', label: 'Shrinkage Analysis', icon: TrendingDown },
   ] as const;
 
   return (
@@ -62,6 +65,7 @@ export default function LogisticsHub({ settings }: LogisticsHubProps) {
         {activeTab === 'dashboard' && <LogisticsDashboard settings={settings} stationId={stationId} />}
         {activeTab === 'scheduling' && <TankerScheduling settings={settings} stationId={stationId} />}
         {activeTab === 'verification' && <DeliveryVerification settings={settings} stationId={stationId} />}
+        {activeTab === 'shrinkage' && <TransitShrinkageTracker settings={settings} stationId={stationId} />}
       </div>
     </div>
   );

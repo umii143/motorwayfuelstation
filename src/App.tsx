@@ -72,6 +72,7 @@ const AIAnalyticsHub = React.lazy(() => import('./components/features/AIAnalytic
 const RiskCenter = React.lazy(() => import('./components/features/RiskCenter/RiskCenter'));
 const ExecutiveDashboard = React.lazy(() => import('./components/features/ExecutiveDashboard/ExecutiveDashboard'));
 const TreasuryCenter = React.lazy(() => import('./components/features/TreasuryCenter/TreasuryCenter'));
+const FuelProJarvis = React.lazy(() => import('./components/features/AI/FuelProJarvis'));
 import { PageTransition } from './components/shared/PageTransition';
 import { GlobalSearchModal } from './components/shared/GlobalSearchModal';
 import { SmartSuggestions } from './components/shared/SmartSuggestions';
@@ -773,6 +774,13 @@ function MainApp() {
           />
         );
 
+      case 'jarvis':
+        return (
+          <React.Suspense fallback={<LoadingScreen />}>
+            <FuelProJarvis />
+          </React.Suspense>
+        );
+
       case 'sync_center':
         return (
           <React.Suspense fallback={<LoadingScreen />}>
@@ -972,7 +980,7 @@ function MainApp() {
 
       {/* Main Container Workspace */}
       <main 
-        className="flex-1 w-full pt-[64px] pb-[80px] lg:pb-0 flex flex-col overflow-y-auto scroll-container relative bg-slate-50 dark:bg-[#151521]"
+        className="flex-1 w-full pt-[64px] pb-[80px] lg:pb-0 lg:pl-[280px] flex flex-col overflow-y-auto scroll-container relative bg-slate-50 dark:bg-[#151521] transition-all"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}

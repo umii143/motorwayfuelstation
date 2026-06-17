@@ -32,7 +32,12 @@ import {
   BarChart2,
   Flame,
   TrendingDown,
-  Zap
+  Zap,
+  CheckCircle2,
+  Sun,
+  Moon,
+  Fuel,
+  Info
 } from "lucide-react";
 import {
   Staff,
@@ -1775,10 +1780,10 @@ export default function ShiftWizard({
   return (
     <div className="space-y-3 pb-16 lg:pb-0">
       {/* HEADER ROW BAR */}
-      <div className="flex flex-row items-center justify-between border-b border-slate-200 pb-2">
+      <div className="flex flex-row items-center justify-between border-b border-slate-700/50 pb-2">
         <div className="flex items-center gap-2">
           <RotateCcw className="h-5 w-5 text-orange-600 animate-spin-slow" />
-          <h2 className="font-sans text-lg font-bold tracking-tight text-slate-900">
+          <h2 className="font-sans text-lg font-bold tracking-tight text-slate-200">
             {t("Operational Shift Wizard", "شفٹ کنٹرول وزرڈ")}
           </h2>
         </div>
@@ -1803,121 +1808,370 @@ export default function ShiftWizard({
         </div>
       )}
 
-      {/* ==========================================
+                        {/* ==========================================
           STEP 1: SHIFT SETUP & INITIALS
           ========================================== */}
       {wizardStep === 1 && (
-        <div className="mx-auto max-w-lg rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="flex items-center gap-3 border-b border-slate-100 pb-3 mb-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 text-orange-600">
-              <Play className="h-4 w-4" />
+        <div className="max-w-[1200px] mx-auto animate-fade-in space-y-6">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/20 shrink-0">
+                <Play className="w-7 h-7 text-white ml-1" fill="currentColor" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-white tracking-tight">Initiate New Shift Session</h2>
+                <p className="text-sm text-slate-400 mt-0.5">Start your shift and manage your sales efficiently</p>
+              </div>
             </div>
-            <h3 className="font-sans text-base font-bold text-slate-900">
-              {t("Initiate New Shift Session", "نئی کاروباری شفٹ شروع کریں")}
-            </h3>
+            <div className="flex items-center gap-3 bg-slate-800/80 border border-slate-700/50 px-4 py-2.5 rounded-xl shadow-sm backdrop-blur-sm">
+              <div>
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Today's Date</p>
+                <p className="text-sm font-bold text-white">{format(new Date(), "dd MMMM yyyy, EEEE")}</p>
+              </div>
+              <div className="w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center border border-slate-600/50 ml-2">
+                <Calendar className="w-4 h-4 text-slate-300" />
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-4">
-            {/* Salesman selection dropdown */}
-            <div>
-              <label className="mb-2 block font-sans text-xs font-bold text-slate-500 uppercase tracking-wide">
-                {t("Assign Operator / Salesman:", "ڈیوٹی آپریٹر / سیلزمین:")}
-              </label>
-              <select
-                value={selectedStaffId}
-                onChange={(e) => setSelectedStaffId(e.target.value)}
-                className="premium-input border bg-white px-3 .5 font-sans text-sm text-slate-800 shadow-xs focus:border-orange-500 focus:outline-hidden"
-              >
-                <option value="">
-                  {t("-- Select Staff operator --", "-- سیلزمین منتخب کریں --")}
-                </option>
-                {staff
-                  .filter((st) => st.active)
-                  .map((st) => (
-                    <option key={st.id} value={st.id}>
-                      {settings.language === "en" ? st.name : st.urduName} (
-                      {t(st.role.toUpperCase(), st.role)})
-                    </option>
-                  ))}
-              </select>
-            </div>
-
-            {/* Shift Type Button Toggle */}
-            <div>
-              <label className="mb-2 block font-sans text-xs font-bold text-slate-500 uppercase tracking-wide">
-                {t("Choose Shift Type:", "شفٹ کی قسم:")}
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
-                <button
-                  type="button"
-                  onClick={() => setShiftType("day")}
-                  className={`flex items-center justify-center gap-2 rounded-lg py-3.5 border font-sans text-sm font-bold transition-all cursor-pointer ${
-                    shiftType === "day"
-                      ? "border-orange-500 bg-orange-50 text-orange-700 shadow-sm"
-                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                  }`}
-                >
-                  ☀️ {t("Day Shift (Morning)", "دن کی شفٹ")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShiftType("night")}
-                  className={`flex items-center justify-center gap-2 rounded-lg py-3.5 border font-sans text-sm font-bold transition-all cursor-pointer ${
-                    shiftType === "night"
-                      ? "border-orange-500 bg-orange-50 text-orange-700 shadow-sm"
-                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                  }`}
-                >
-                  🌙 {t("Night Shift (Evening)", "رات کی شفٹ")}
-                </button>
+                    {/* Top 4 System Status Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6">
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 lg:p-5 shadow-sm flex flex-col justify-between hover:bg-slate-800/80 transition-colors backdrop-blur-sm">
+              <div className="flex items-start justify-between mb-3">
+                <p className="text-[11px] lg:text-xs font-semibold text-slate-400">Active Shifts <span className="float-right text-slate-500">›</span></p>
+              </div>
+              <div className="flex items-center gap-3 lg:gap-4">
+                <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0 border border-blue-500/30">
+                  <Activity className="w-5 h-5 lg:w-6 lg:h-6 text-blue-400" />
+                </div>
+                <div>
+                  <h4 className="text-lg lg:text-xl font-bold text-white">{shifts.filter(s => s.status === 'active' && s.stationId === activeStationId).length}</h4>
+                  <p className="text-[10px] lg:text-xs font-semibold text-blue-400 mt-0.5 lg:mt-1">Currently Running</p>
+                </div>
               </div>
             </div>
 
-            {/* Date and Time Details */}
-            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
-              <div>
-                <label className="mb-2 block font-sans text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                  <span>{t("Opening Date:", "آغاز تاریخ:")}</span>
-                </label>
-                <input
-                  type="date"
-                  value={shiftDate}
-                  onChange={(e) => setShiftDate(e.target.value)}
-                  className="premium-input border bg-white px-3 font-mono text-sm text-slate-800 shadow-xs focus:border-orange-500 focus:outline-hidden"
-                />
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 lg:p-5 shadow-sm flex flex-col justify-between hover:bg-slate-800/80 transition-colors backdrop-blur-sm">
+              <div className="flex items-start justify-between mb-3">
+                <p className="text-[11px] lg:text-xs font-semibold text-slate-400">Available Staff <span className="float-right text-slate-500">›</span></p>
               </div>
-
-              <div>
-                <label className="mb-2 block font-sans text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5 text-slate-400" />
-                  <span>{t("Opening Start Time:", "آغاز وقت:")}</span>
-                </label>
-                <input
-                  type="time"
-                  value={shiftTime}
-                  onChange={(e) => setShiftTime(e.target.value)}
-                  className="premium-input border bg-white px-3 font-mono text-sm text-slate-800 shadow-xs focus:border-orange-500 focus:outline-hidden"
-                />
+              <div className="flex items-center gap-3 lg:gap-4">
+                <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-orange-500/20 flex items-center justify-center shrink-0 border border-orange-500/30">
+                  <User className="w-5 h-5 lg:w-6 lg:h-6 text-orange-400" />
+                </div>
+                <div>
+                  <h4 className="text-lg lg:text-xl font-bold text-white">{staff.filter(s => s.active).length}</h4>
+                  <p className="text-[10px] lg:text-xs font-semibold text-orange-400 mt-0.5 lg:mt-1">Active Profiles</p>
+                </div>
               </div>
             </div>
 
-            {/* Launch CTA */}
-            <button
-              onClick={handleStartShift}
-              className="w-full py-4 bg-orange-600 font-sans text-sm font-bold text-white tracking-wide rounded-lg hover:bg-orange-700 shadow-md shadow-orange-500/10 flex items-center justify-center gap-2 mt-2 transition-all cursor-pointer"
-            >
-              <span>
-                {isLubeBusiness
-                  ? t("START NEW LUBE SHIFT →", "نئی لیوب شفٹ شروع کریں ←")
-                  : t("START NEW SHIFT SESSION →", "نئی کاروباری شفٹ شروع کریں ←")}
-              </span>
-            </button>
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 lg:p-5 shadow-sm flex flex-col justify-between hover:bg-slate-800/80 transition-colors backdrop-blur-sm">
+              <div className="flex items-start justify-between mb-3">
+                <p className="text-[11px] lg:text-xs font-semibold text-slate-400">Active Pumps <span className="float-right text-slate-500">›</span></p>
+              </div>
+              <div className="flex items-center gap-3 lg:gap-4">
+                <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                  <Fuel className="w-5 h-5 lg:w-6 lg:h-6 text-emerald-400" />
+                </div>
+                <div>
+                  <h4 className="text-lg lg:text-xl font-bold text-white">{pumps.filter(p => p.active && p.stationId === activeStationId).length}</h4>
+                  <p className="text-[10px] lg:text-xs font-semibold text-emerald-400 mt-0.5 lg:mt-1">Online</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 lg:p-5 shadow-sm flex flex-col justify-between hover:bg-slate-800/80 transition-colors backdrop-blur-sm">
+              <div className="flex items-start justify-between mb-3">
+                <p className="text-[11px] lg:text-xs font-semibold text-slate-400">Active Nozzles <span className="float-right text-slate-500">›</span></p>
+              </div>
+              <div className="flex items-center gap-3 lg:gap-4">
+                <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-indigo-500/20 flex items-center justify-center shrink-0 border border-indigo-500/30">
+                  <Zap className="w-5 h-5 lg:w-6 lg:h-6 text-indigo-400" />
+                </div>
+                <div>
+                  <h4 className="text-lg lg:text-xl font-bold text-white">{nozzles.filter(n => n.active).length}</h4>
+                  <p className="text-[10px] lg:text-xs font-semibold text-indigo-400 mt-0.5 lg:mt-1">Operational</p>
+                </div>
+              </div>
+            </div>
           </div>
+
+<div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        {/* Left Col: Select Staff */}
+            <div className="lg:col-span-5 bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-sm flex flex-col backdrop-blur-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center text-xs font-bold">1</div>
+                  <h3 className="text-lg font-bold text-white">Select Staff Member</h3>
+                </div>
+                {selectedStaffId && (
+                  <div className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-xs font-bold rounded-lg border border-emerald-500/20">Selected</div>
+                )}
+              </div>
+              
+              <div className="relative group flex-1 flex flex-col z-50">
+                <div className="relative mb-3">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                  </div>
+                  <input type="text" placeholder="Search staff by name or code..." className="peer w-full pl-9 pr-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-colors" />
+                </div>
+
+                <div className="absolute top-[52px] left-0 right-0 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl opacity-0 invisible peer-focus:opacity-100 peer-focus:visible hover:opacity-100 hover:visible transition-all max-h-[300px] overflow-y-auto custom-scrollbar">
+                  {staff.filter(st => st.active).map(s => {
+                    const isSelected = selectedStaffId === s.id;
+                    return (
+                      <div 
+                        key={s.id} 
+                        onMouseDown={(e) => {
+                          e.preventDefault(); // prevents input from losing focus immediately before click fires
+                          setSelectedStaffId(s.id);
+                        }}
+                        className={`relative flex items-center justify-between p-3 border-b border-slate-700/50 cursor-pointer transition-all last:border-0 ${isSelected ? 'bg-orange-500/10' : 'hover:bg-slate-700/50'}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=1e293b&color=f97316&bold=true`} alt={s.name} className="w-10 h-10 rounded-full border border-slate-600 object-cover" />
+                          <div>
+                            <h4 className="font-bold text-white text-sm">{settings.language === "en" ? s.name : s.urduName}</h4>
+                            <p className={`text-xs font-semibold ${isSelected ? 'text-orange-400' : 'text-slate-400'}`}>{t(s.role.toUpperCase(), s.role)}</p>
+                          </div>
+                        </div>
+                        {isSelected && <Check className="w-4 h-4 text-orange-500" strokeWidth={3} />}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Selected Staff Info Display */}
+                <div className="mt-2">
+                  {selectedStaffId ? (
+                    <div className="bg-slate-900/50 border border-orange-500/30 rounded-xl p-4 flex items-center justify-between">
+                       <div className="flex items-center gap-3">
+                          <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(staff.find(s => s.id === selectedStaffId)?.name || '')}&background=1e293b&color=f97316&bold=true`} alt="Selected" className="w-14 h-14 rounded-full border-2 border-orange-500/50 object-cover" />
+                          <div>
+                            <h4 className="font-bold text-white text-base">{staff.find(s => s.id === selectedStaffId)?.name}</h4>
+                            <p className="text-sm font-semibold text-orange-400">{staff.find(s => s.id === selectedStaffId)?.role}</p>
+                            <span className="inline-block mt-1 text-[10px] font-mono text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">EMP-{selectedStaffId.slice(-3).toUpperCase()}</span>
+                          </div>
+                       </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-center p-6 border-2 border-dashed border-slate-700/50 rounded-xl bg-slate-900/20">
+                      <User className="w-10 h-10 text-slate-600 mb-2" />
+                      <p className="text-sm text-slate-400 font-medium">No staff selected</p>
+                      <p className="text-xs text-slate-500 mt-1">Tap the search bar to select an operator</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Col: Shift Type & Date */}
+            <div className="lg:col-span-7 flex flex-col gap-6">
+              <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 shadow-sm flex-1 backdrop-blur-sm">
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center text-xs font-bold">2</div>
+                  <h3 className="text-lg font-bold text-white">Select Shift Type</h3>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 lg:gap-5">
+                  <div 
+                    onClick={() => setShiftType("day")}
+                    className={`relative flex flex-col items-center justify-center text-center p-4 rounded-2xl border-2 cursor-pointer transition-all ${shiftType === 'day' ? 'border-orange-500 bg-orange-500/10 shadow-sm' : 'border-slate-700 hover:border-slate-600 hover:bg-slate-700/30'}`}
+                  >
+                    <div className="w-10 h-10 lg:w-12 lg:h-12 mb-3 text-orange-400">
+                      <Sun className="w-full h-full" fill={shiftType === 'day' ? 'currentColor' : 'none'} strokeWidth={shiftType === 'day' ? 2 : 1.5} />
+                    </div>
+                    <h4 className={`text-base lg:text-lg font-bold ${shiftType === 'day' ? 'text-white' : 'text-slate-300'}`}>Day Shift</h4>
+                    <p className={`text-xs lg:text-sm font-semibold mb-2 ${shiftType === 'day' ? 'text-orange-400' : 'text-slate-500'}`}>(Morning)</p>
+                    <p className="text-[10px] lg:text-[11px] font-semibold text-slate-400 mt-1 lg:mt-2 bg-slate-900 px-2 py-1 rounded-full border border-slate-700">06:00 AM → 06:00 PM</p>
+                    
+                    <div className="absolute bottom-3 right-3 lg:bottom-4 lg:right-4">
+                      <div className={`w-4 h-4 lg:w-5 lg:h-5 rounded-full border-2 flex items-center justify-center ${shiftType === 'day' ? 'border-orange-500 bg-orange-500' : 'border-slate-600'}`}>
+                        {shiftType === 'day' && <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-white"></div>}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div 
+                    onClick={() => setShiftType("night")}
+                    className={`relative flex flex-col items-center justify-center text-center p-4 rounded-2xl border-2 cursor-pointer transition-all ${shiftType === 'night' ? 'border-orange-500 bg-orange-500/10 shadow-sm' : 'border-slate-700 hover:border-slate-600 hover:bg-slate-700/30'}`}
+                  >
+                    <div className="w-10 h-10 lg:w-12 lg:h-12 mb-3 text-indigo-400">
+                      <Moon className="w-full h-full" fill={shiftType === 'night' ? 'currentColor' : 'none'} strokeWidth={shiftType === 'night' ? 2 : 1.5} />
+                    </div>
+                    <h4 className={`text-base lg:text-lg font-bold ${shiftType === 'night' ? 'text-white' : 'text-slate-300'}`}>Night Shift</h4>
+                    <p className={`text-xs lg:text-sm font-semibold mb-2 ${shiftType === 'night' ? 'text-indigo-400' : 'text-slate-500'}`}>(Evening)</p>
+                    <p className="text-[10px] lg:text-[11px] font-semibold text-slate-400 mt-1 lg:mt-2 bg-slate-900 px-2 py-1 rounded-full border border-slate-700">06:00 PM → 06:00 AM</p>
+                    
+                    <div className="absolute bottom-3 right-3 lg:bottom-4 lg:right-4">
+                      <div className={`w-4 h-4 lg:w-5 lg:h-5 rounded-full border-2 flex items-center justify-center ${shiftType === 'night' ? 'border-orange-500 bg-orange-500' : 'border-slate-600'}`}>
+                        {shiftType === 'night' && <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-white"></div>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
+                <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-sm backdrop-blur-sm">
+                  <label className="flex items-center gap-2 text-sm font-bold text-slate-300 mb-3">
+                    <Calendar className="w-4 h-4 text-slate-400" /> Opening Date
+                  </label>
+                  <div className="relative">
+                    <input 
+                      type="date" 
+                      value={shiftDate}
+                      onChange={(e) => setShiftDate(e.target.value)}
+                      className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-sm backdrop-blur-sm">
+                  <label className="flex items-center gap-2 text-sm font-bold text-slate-300 mb-3">
+                    <Clock className="w-4 h-4 text-slate-400" /> Opening Start Time
+                  </label>
+                  <div className="relative">
+                    <input 
+                      type="time" 
+                      value={shiftTime}
+                      onChange={(e) => setShiftTime(e.target.value)}
+                      className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-colors"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+{/* Bottom Row: Summary & Recent */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-7 bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 shadow-sm backdrop-blur-sm">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center text-xs font-bold">5</div>
+                <h3 className="text-lg font-bold text-white">Shift Summary Preview</h3>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6 mb-6">
+                <div>
+                  <p className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5"><User className="w-3.5 h-3.5 text-orange-400" /> Operator</p>
+                  <p className="font-bold text-white text-sm truncate">{selectedStaffId ? (staff.find(s=>s.id===selectedStaffId)?.name || 'Unknown') : 'Not selected'}</p>
+                  <p className="text-xs text-slate-400 mt-0.5 truncate">{selectedStaffId ? staff.find(s=>s.id===selectedStaffId)?.role : '-'}</p>
+                </div>
+                <div>
+                  <p className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5"><Sun className="w-3.5 h-3.5 text-orange-400" /> Shift Type</p>
+                  <p className="font-bold text-white text-sm">{shiftType === 'day' ? 'Day Shift' : 'Night Shift'}</p>
+                  <p className="text-xs text-orange-400 font-semibold bg-orange-500/10 border border-orange-500/20 inline-block px-2 py-0.5 mt-0.5 rounded-md">{shiftType === 'day' ? 'Morning' : 'Evening'}</p>
+                </div>
+                <div>
+                  <p className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5"><Calendar className="w-3.5 h-3.5 text-slate-500" /> Date</p>
+                  <p className="font-bold text-white text-sm">{format(new Date(shiftDate), "dd/MM/yyyy")}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{format(new Date(shiftDate), "EEEE")}</p>
+                </div>
+                <div>
+                  <p className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5"><Clock className="w-3.5 h-3.5 text-slate-500" /> Start Time</p>
+                  <p className="font-bold text-white text-sm">{format(new Date(`2000-01-01T${shiftTime}`), "hh:mm a")}</p>
+                </div>
+                <div>
+                  <p className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Status</p>
+                  <span className="inline-flex items-center bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold px-2.5 py-1 mt-0.5 rounded-md">Ready</span>
+                </div>
+              </div>
+
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row items-start gap-3 sm:gap-4 mt-6">
+                <div className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0 shadow-sm"><Info className="w-4 h-4"/></div>
+                <div>
+                  <p className="text-sm sm:text-base text-blue-300 font-medium leading-relaxed mb-1">
+                    You are about to start a <span className="font-bold text-blue-200">{shiftType === 'day' ? 'Day' : 'Night'} Shift</span> session.
+                  </p>
+                  <p className="text-xs sm:text-sm text-blue-400/80 leading-relaxed">
+                    All sales, expenses and activities will be recorded under this shift.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-5 bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 shadow-sm flex flex-col backdrop-blur-sm">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-sm font-bold text-white flex items-center gap-2"><Clock className="w-4 h-4 text-slate-400" /> Recent Shift Activity</h3>
+                <span className="text-xs font-bold text-blue-400 cursor-pointer hover:text-blue-300 transition-colors">View All</span>
+              </div>
+              <div className="flex-1 space-y-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <div className="w-8 h-8 bg-slate-700 rounded-full border border-slate-600 flex items-center justify-center text-slate-300 text-xs font-bold">UA</div>
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-slate-800 rounded-full flex items-center justify-center shadow-sm">
+                        <User className="w-2.5 h-2.5 text-orange-400" />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400">15/06/2026 <span className="text-slate-200 font-bold ml-1">Day Shift</span></p>
+                      <p className="text-sm font-bold text-white">Umar Ali</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Sales</p>
+                    <p className="text-sm font-bold text-emerald-400">PKR 68,450</p>
+                  </div>
+                </div>
+                <div className="h-px bg-slate-700/50 w-full"></div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <div className="w-8 h-8 bg-slate-700 rounded-full border border-slate-600 flex items-center justify-center text-slate-300 text-xs font-bold">ZA</div>
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-slate-800 rounded-full flex items-center justify-center shadow-sm">
+                        <Moon className="w-2.5 h-2.5 text-indigo-400" />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400">15/06/2026 <span className="text-slate-200 font-bold ml-1">Night Shift</span></p>
+                      <p className="text-sm font-bold text-white">Zain Ahmed</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Sales</p>
+                    <p className="text-sm font-bold text-emerald-400">PKR 54,230</p>
+                  </div>
+                </div>
+                <div className="h-px bg-slate-700/50 w-full"></div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <div className="w-8 h-8 bg-slate-700 rounded-full border border-slate-600 flex items-center justify-center text-slate-300 text-xs font-bold">BH</div>
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-slate-800 rounded-full flex items-center justify-center shadow-sm">
+                        <User className="w-2.5 h-2.5 text-orange-400" />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400">14/06/2026 <span className="text-slate-200 font-bold ml-1">Day Shift</span></p>
+                      <p className="text-sm font-bold text-white">Bilal Hussain</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Sales</p>
+                    <p className="text-sm font-bold text-emerald-400">PKR 72,190</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            disabled={!selectedStaffId}
+            onClick={handleStartShift}
+            className="w-full rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 py-4 text-center font-sans text-lg font-bold text-white shadow-lg shadow-orange-500/20 transition-all hover:-translate-y-0.5 hover:shadow-orange-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 uppercase tracking-wider group mt-2"
+          >
+            <Play className="w-5 h-5 fill-white" />
+            <span>START SHIFT SESSION</span>
+            <ArrowRight className="w-5 h-5 ml-1 group-hover:translate-x-1 transition-transform" />
+          </button>
         </div>
       )}
-
-      {/* ==========================================
+{/* ==========================================
           STEP 2: OPENING NOZZLES METER CORRELATION
           ========================================== */}
       {wizardStep === 2 && (
@@ -1942,18 +2196,18 @@ export default function ShiftWizard({
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
           {/* Active Shift Info Sidebar */}
           <div className="space-y-3">
-            <div className="rounded-xl border border-orange-200 bg-orange-50/50 p-4 shadow-xs">
+            <div className="rounded-xl border border-orange-500/50 bg-orange-500/10/50 p-4 shadow-xs">
               <div className="flex items-center gap-2 font-sans text-[10px] text-orange-600 font-bold uppercase tracking-wider">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75"></span>
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-orange-500"></span>
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-orange-500/100"></span>
                 </span>
                 <span>
                   {t("Active Session", "جاری شفٹ")}
                 </span>
               </div>
 
-              <h3 className="font-sans text-base font-bold text-slate-900 mt-1">
+              <h3 className="font-sans text-base font-bold text-slate-200 mt-1">
                 {activeStaffMember
                   ? settings.language === "en"
                     ? activeStaffMember.name
@@ -1967,16 +2221,16 @@ export default function ShiftWizard({
                 )}
               </p>
 
-              <div className="mt-3 divide-y divide-slate-100 border-t border-slate-100 pt-2 text-[10px] font-sans text-slate-500 space-y-1">
+              <div className="mt-3 divide-y divide-slate-100 border-t border-slate-700/50 pt-2 text-[10px] font-sans text-slate-500 space-y-1">
                 <div className="flex justify-between pt-1">
                   <span>{t("Started on:", "آغاز تاریخ:")}</span>
-                  <span className="font-mono font-bold text-slate-800">
+                  <span className="font-mono font-bold text-slate-200">
                     {activeShift.date}
                   </span>
                 </div>
                 <div className="flex justify-between pt-1">
                   <span>{t("Start Time:", "آغاز کا وقت:")}</span>
-                  <span className="font-mono font-bold text-slate-800">
+                  <span className="font-mono font-bold text-slate-200">
                     {activeShift.startTime}
                   </span>
                 </div>
@@ -1995,8 +2249,8 @@ export default function ShiftWizard({
             </div>
 
             {/* Multi-Tab Running Session Accrual Counters */}
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-              <h4 className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1.5 mb-2">
+            <div className="rounded-xl border border-slate-700/50 bg-slate-900/50 p-4 shadow-xs">
+              <h4 className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-700/50 pb-1.5 mb-2">
                 {t("Accrual Stats", "موجودہ پوزیشن")}
               </h4>
               <div className="space-y-2 font-sans text-xs">
@@ -2024,7 +2278,7 @@ export default function ShiftWizard({
                     Rs. {expectedTotals?.expenses.toLocaleString()}
                   </span>
                 </div>
-                <div className="flex justify-between border-t border-dashed border-slate-200 pt-2 font-semibold text-slate-700">
+                <div className="flex justify-between border-t border-dashed border-slate-700/50 pt-2 font-semibold text-slate-700">
                   <span className="text-[10px]">
                     {t("Liquid cash expected:", "کیش پوزیشن:")}
                   </span>
@@ -2062,7 +2316,7 @@ export default function ShiftWizard({
           {/* Operational Entry Cards (TABS) */}
           <div className="lg:col-span-2 space-y-3">
             {/* Tab selection rail */}
-            <div className="flex border border-slate-200 rounded-lg overflow-x-auto bg-white p-1 scrollbar-hide">
+            <div className="flex border border-slate-700/50 rounded-lg overflow-x-auto bg-slate-900/50 p-1 scrollbar-hide">
               {[
                 { id: "debit", label: "Debit", urdu: "ادھار" },
                 { id: "recovery", label: "Recovery", urdu: "وصولی" },
@@ -2080,7 +2334,7 @@ export default function ShiftWizard({
                   className={`flex-shrink-0 px-2.5 py-1.5 text-[11px] font-sans font-bold rounded-md transition-all cursor-pointer whitespace-nowrap ${
                     activeTab === tab.id
                       ? "bg-slate-900 text-white shadow-xs"
-                      : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                      : "text-slate-500 hover:bg-slate-800/50 hover:text-slate-200"
                   }`}
                 >
                   {t(tab.label, tab.urdu)}
@@ -2089,7 +2343,7 @@ export default function ShiftWizard({
             </div>
 
             {/* TAB PANELS CONTAINER */}
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="rounded-xl border border-slate-700/50 bg-slate-900/50 p-5 shadow-sm">
               {/* TAB 1: DEBITS (CREDIT SALES) */}
               {activeTab === "debit" && (
                 <ShiftDebtors
@@ -2121,7 +2375,7 @@ export default function ShiftWizard({
               {/* TAB 2: RECOVERIES (CREDIT RECOVERIES) */}
               {activeTab === "recovery" && (
                 <div className="space-y-3">
-                  <h3 className="font-sans text-xs font-bold text-slate-800 border-b border-slate-100 pb-1.5 mb-3">
+                  <h3 className="font-sans text-xs font-bold text-slate-200 border-b border-slate-700/50 pb-1.5 mb-3">
                     {t("💚 Outstanding Recovery", "بقایا رقم وصولی")}
                   </h3>
 
@@ -2134,7 +2388,7 @@ export default function ShiftWizard({
                         {onAddCustomer && (
                           <button
                             onClick={() => setShowQuickCustomer(true)}
-                            className="text-[9px] font-bold text-orange-600 uppercase tracking-widest bg-orange-50 px-1.5 py-0.5 rounded hover:bg-orange-100 transition-colors pointer-events-auto"
+                            className="text-[9px] font-bold text-orange-600 uppercase tracking-widest bg-orange-500/10 px-1.5 py-0.5 rounded hover:bg-orange-100 transition-colors pointer-events-auto"
                           >
                             + {t("Quick Add", "نیا")}
                           </button>
@@ -2153,7 +2407,7 @@ export default function ShiftWizard({
                             onChange={(e) =>
                               setQuickCustomerName(e.target.value)
                             }
-                            className="w-full rounded-md border border-orange-300 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500 outline-none"
+                            className="w-full rounded-md border border-orange-300 bg-slate-900/50 px-2 py-1.5 font-sans text-xs text-slate-200 shadow-xs focus:border-orange-500 outline-none"
                           />
                           <button
                             type="submit"
@@ -2173,7 +2427,7 @@ export default function ShiftWizard({
                         <select
                           value={recCustId}
                           onChange={(e) => setRecCustId(e.target.value)}
-                          className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500"
+                          className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-sans text-xs text-slate-200 shadow-xs focus:border-orange-500"
                         >
                           <option value="">
                             {t("-- Select --", "-- منتخب کریں --")}
@@ -2201,7 +2455,7 @@ export default function ShiftWizard({
                         value={recAmount}
                         onChange={(e) => setRecAmount(e.target.value)}
                         placeholder="e.g. 15000"
-                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-mono text-xs focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-mono text-xs focus:border-orange-500"
                       />
                     </div>
 
@@ -2217,8 +2471,8 @@ export default function ShiftWizard({
                             onClick={() => setRecMode(m as any)}
                             className={`py-1.5 rounded-md border font-sans text-[10px] font-bold transition-all cursor-pointer ${
                               recMode === m
-                                ? "border-orange-500 bg-orange-50 text-orange-700"
-                                : "border-slate-200 bg-white text-slate-500"
+                                ? "border-orange-500 bg-orange-500/10 text-orange-700"
+                                : "border-slate-700/50 bg-slate-900/50 text-slate-500"
                             }`}
                           >
                             {t(m.toUpperCase(), m)}
@@ -2237,7 +2491,7 @@ export default function ShiftWizard({
                         onChange={(e) => setRecRef(e.target.value)}
                         placeholder="e.g. CHQ-123"
                         disabled={recMode === "cash"}
-                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500 disabled:bg-slate-50"
+                        className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-sans text-xs focus:border-orange-500 disabled:bg-slate-800/50"
                       />
                     </div>
                   </div>
@@ -2251,12 +2505,12 @@ export default function ShiftWizard({
                   </button>
 
                   {/* Registered Recoveries List */}
-                  <div className="mt-4 border-t border-slate-100 pt-4">
+                  <div className="mt-4 border-t border-slate-700/50 pt-4">
                     <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                       {t("Recovered This Shift:", "اس شفٹ میں وصولیاں:")}
                     </h4>
                     {activeShift.recoveryEntries.length === 0 ? (
-                      <p className="text-center py-4 font-sans text-xs text-slate-400 border border-slate-100 border-dashed rounded-lg bg-slate-50/50">
+                      <p className="text-center py-4 font-sans text-xs text-slate-400 border border-slate-700/50 border-dashed rounded-lg bg-slate-800/50/50">
                         {t(
                           "No recovery transactions logged.",
                           "ابھی تک کوئی وصولی درج نہیں۔",
@@ -2271,7 +2525,7 @@ export default function ShiftWizard({
                           return (
                             <div
                               key={r.id}
-                              className="flex justify-between items-center text-xs p-2 rounded-lg border border-slate-100 bg-slate-50/20"
+                              className="flex justify-between items-center text-xs p-2 rounded-lg border border-slate-700/50 bg-slate-800/50/20"
                             >
                               <div className="font-sans text-slate-700 pr-4">
                                 <span className="font-bold">{cName}</span> —
@@ -2322,7 +2576,7 @@ export default function ShiftWizard({
               {/* TAB 4: BANK CASH DEPOSITS */}
               {activeTab === "bank" && (
                 <div className="space-y-3">
-                  <h3 className="font-sans text-xs font-bold text-slate-800 border-b border-slate-100 pb-1.5 mb-3">
+                  <h3 className="font-sans text-xs font-bold text-slate-200 border-b border-slate-700/50 pb-1.5 mb-3">
                     {t("🏦 Bank Deposits", "بینک جمع")}
                   </h3>
 
@@ -2335,28 +2589,28 @@ export default function ShiftWizard({
                         {onAddBank && (
                           <button
                             onClick={() => setShowQuickBank(true)}
-                            className="text-[9px] font-bold text-orange-600 uppercase tracking-widest bg-orange-50 px-1.5 py-0.5 rounded hover:bg-orange-100 transition-colors pointer-events-auto"
+                            className="text-[9px] font-bold text-orange-600 uppercase tracking-widest bg-orange-500/10 px-1.5 py-0.5 rounded hover:bg-orange-100 transition-colors pointer-events-auto"
                           >
                             + {t("Add", "نیا")}
                           </button>
                         )}
                       </div>
                       {showQuickBank ? (
-                        <div className="space-y-1.5 border border-orange-300 bg-orange-50/50 p-2 rounded-md">
+                        <div className="space-y-1.5 border border-orange-300 bg-orange-500/10/50 p-2 rounded-md">
                           <input
                             autoFocus
                             type="text"
                             placeholder={t("Bank Name...", "نام...")}
                             value={quickBankName}
                             onChange={(e) => setQuickBankName(e.target.value)}
-                            className="w-full rounded-md border border-orange-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 outline-none focus:border-orange-500"
+                            className="w-full rounded-md border border-orange-500/50 bg-slate-900/50 px-2 py-1.5 font-sans text-xs text-slate-200 outline-none focus:border-orange-500"
                           />
                           <input
                             type="text"
                             placeholder={t("Account No...", "اکاؤنٹ نمبر...")}
                             value={quickBankAccNo}
                             onChange={(e) => setQuickBankAccNo(e.target.value)}
-                            className="w-full rounded-md border border-orange-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 outline-none focus:border-orange-500"
+                            className="w-full rounded-md border border-orange-500/50 bg-slate-900/50 px-2 py-1.5 font-sans text-xs text-slate-200 outline-none focus:border-orange-500"
                           />
                           <div className="flex gap-1.5 justify-end">
                             <button
@@ -2379,7 +2633,7 @@ export default function ShiftWizard({
                         <select
                           value={bankAcctId}
                           onChange={(e) => setBankAcctId(e.target.value)}
-                          className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500"
+                          className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-sans text-xs text-slate-200 shadow-xs focus:border-orange-500"
                         >
                           <option value="">
                             {t("-- Choose --", "-- منتخب کریں --")}
@@ -2402,7 +2656,7 @@ export default function ShiftWizard({
                         value={bankAmount}
                         onChange={(e) => setBankAmount(e.target.value)}
                         placeholder="e.g. 50000"
-                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-mono text-xs focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-mono text-xs focus:border-orange-500"
                       />
                     </div>
 
@@ -2415,7 +2669,7 @@ export default function ShiftWizard({
                         value={bankRef}
                         onChange={(e) => setBankRef(e.target.value)}
                         placeholder="e.g. FT-9938"
-                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-sans text-xs focus:border-orange-500"
                       />
                     </div>
 
@@ -2426,7 +2680,7 @@ export default function ShiftWizard({
                       <select
                         value={bankCustId}
                         onChange={(e) => setBankCustId(e.target.value)}
-                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-sans text-xs text-slate-200 shadow-xs focus:border-orange-500"
                       >
                         <option value="">
                           {t("-- None --", "-- کوئی نہیں --")}
@@ -2448,7 +2702,7 @@ export default function ShiftWizard({
                     <span>{t("ADD BANK ENTRY", "بینک میں جمع کریں")}</span>
                   </button>
 
-                  <div className="mt-4 border-t border-slate-100 pt-4">
+                  <div className="mt-4 border-t border-slate-700/50 pt-4">
                     <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                       {t(
                         "Bank Cash Entries Transferred:",
@@ -2456,7 +2710,7 @@ export default function ShiftWizard({
                       )}
                     </h4>
                     {activeShift.bankCashEntries.length === 0 ? (
-                      <p className="text-center py-4 font-sans text-xs text-slate-400 border border-slate-100 border-dashed rounded-lg bg-slate-50/50">
+                      <p className="text-center py-4 font-sans text-xs text-slate-400 border border-slate-700/50 border-dashed rounded-lg bg-slate-800/50/50">
                         {t(
                           "No bank transfers reported yet.",
                           "ابھی تک کوئی بینک انٹری درج نہیں۔",
@@ -2474,7 +2728,7 @@ export default function ShiftWizard({
                           return (
                             <div
                               key={b.id}
-                              className="flex justify-between items-center text-xs p-2 rounded-lg border border-slate-100 bg-slate-50/20"
+                              className="flex justify-between items-center text-xs p-2 rounded-lg border border-slate-700/50 bg-slate-800/50/20"
                             >
                               <div className="font-sans text-slate-700 pr-4">
                                 <span className="font-bold">{name}</span> — Ref:{" "}
@@ -2502,7 +2756,7 @@ export default function ShiftWizard({
 
               {activeTab === "digital" && (
                 <div className="space-y-3">
-                  <h3 className="font-sans text-xs font-bold text-slate-800 border-b border-slate-100 pb-1.5 mb-3">
+                  <h3 className="font-sans text-xs font-bold text-slate-200 border-b border-slate-700/50 pb-1.5 mb-3">
                     {t("📱 Digital Wallets & Cards", "ڈیجیٹل اور کارڈ")}
                   </h3>
 
@@ -2514,7 +2768,7 @@ export default function ShiftWizard({
                       <select
                         value={digMethod}
                         onChange={(e) => setDigMethod(e.target.value)}
-                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-sans text-xs text-slate-200 shadow-xs focus:border-orange-500"
                       >
                         <option value="EasyPaisa">EasyPaisa</option>
                         <option value="JazzCash">JazzCash</option>
@@ -2535,7 +2789,7 @@ export default function ShiftWizard({
                         value={digAmount}
                         onChange={(e) => setDigAmount(e.target.value)}
                         placeholder="e.g. 5000"
-                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-mono text-xs focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-mono text-xs focus:border-orange-500"
                       />
                     </div>
 
@@ -2548,7 +2802,7 @@ export default function ShiftWizard({
                         value={digRefId}
                         onChange={(e) => setDigRefId(e.target.value)}
                         placeholder="e.g. TR-2839201"
-                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-sans text-xs focus:border-orange-500"
                       />
                     </div>
 
@@ -2561,7 +2815,7 @@ export default function ShiftWizard({
                         value={digAccountHolder}
                         onChange={(e) => setDigAccountHolder(e.target.value)}
                         placeholder="e.g. Umar Ali"
-                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-sans text-xs focus:border-orange-500"
                       />
                     </div>
                   </div>
@@ -2574,7 +2828,7 @@ export default function ShiftWizard({
                     <span>{t("ADD DIGITAL ENTRY", "ڈیجیٹل رقم شامل کریں")}</span>
                   </button>
 
-                  <div className="mt-4 border-t border-slate-100 pt-4">
+                  <div className="mt-4 border-t border-slate-700/50 pt-4">
                     <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                       {t(
                         "Digital Receipts Logged:",
@@ -2582,7 +2836,7 @@ export default function ShiftWizard({
                       )}
                     </h4>
                     {activeShift.digitalCashEntries.length === 0 ? (
-                      <p className="text-center py-4 font-sans text-xs text-slate-400 border border-slate-100 border-dashed rounded-lg bg-slate-50/50">
+                      <p className="text-center py-4 font-sans text-xs text-slate-400 border border-slate-700/50 border-dashed rounded-lg bg-slate-800/50/50">
                         {t(
                           "No digital receipts logged yet.",
                           "ابھی تک کوئی ڈیجیٹل چالان نہیں لکھی گئی۔",
@@ -2593,7 +2847,7 @@ export default function ShiftWizard({
                         {activeShift.digitalCashEntries.map((d) => (
                           <div
                             key={d.id}
-                            className="flex justify-between items-center text-xs p-2 rounded-lg border border-slate-100 bg-slate-50/20"
+                            className="flex justify-between items-center text-xs p-2 rounded-lg border border-slate-700/50 bg-slate-800/50/20"
                           >
                             <div className="font-sans text-slate-700 pr-4">
                               <span className="font-bold">{d.method}</span> —
@@ -2621,7 +2875,7 @@ export default function ShiftWizard({
 
               {activeTab === "discount" && (
                 <div className="space-y-3">
-                  <h3 className="font-sans text-xs font-bold text-slate-800 border-b border-slate-100 pb-1.5 mb-3">
+                  <h3 className="font-sans text-xs font-bold text-slate-200 border-b border-slate-700/50 pb-1.5 mb-3">
                     {t("📉 Discount", "ڈسکاؤنٹ")}
                   </h3>
 
@@ -2635,7 +2889,7 @@ export default function ShiftWizard({
                         min="0"
                         value={discAmount}
                         onChange={(e) => setDiscAmount(e.target.value)}
-                        className="w-full font-mono text-sm font-bold text-orange-600 rounded-md border border-slate-200 bg-white px-2 py-1.5 focus:border-orange-500 shadow-inner"
+                        className="w-full font-mono text-sm font-bold text-orange-600 rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 focus:border-orange-500 shadow-inner"
                       />
                     </div>
                     <div className="col-span-2 sm:col-span-1">
@@ -2645,7 +2899,7 @@ export default function ShiftWizard({
                       <select
                         value={discType}
                         onChange={(e) => setDiscType(e.target.value)}
-                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-sans text-xs text-slate-200 focus:border-orange-500"
                       >
                         <option value="Percentage">Percentage (%)</option>
                         <option value="Fixed Amount">Fixed Amount (Rs.)</option>
@@ -2664,7 +2918,7 @@ export default function ShiftWizard({
                         value={discCustomer}
                         onChange={(e) => setDiscCustomer(e.target.value)}
                         placeholder="e.g. Umar"
-                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-sans text-xs focus:border-orange-500"
                       />
                     </div>
                     <div className="col-span-2 sm:col-span-1">
@@ -2676,7 +2930,7 @@ export default function ShiftWizard({
                         value={discApprovedBy}
                         onChange={(e) => setDiscApprovedBy(e.target.value)}
                         placeholder="e.g. Ali"
-                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-sans text-xs focus:border-orange-500"
                       />
                     </div>
 
@@ -2687,7 +2941,7 @@ export default function ShiftWizard({
                       <select
                         value={discProduct}
                         onChange={(e) => setDiscProduct(e.target.value)}
-                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-sans text-xs text-slate-200 focus:border-orange-500"
                       >
                         <option value="">{t("-- Any --", "-- کوئی بھی --")}</option>
                         {products.map((product) => (
@@ -2706,7 +2960,7 @@ export default function ShiftWizard({
                         value={discReason}
                         onChange={(e) => setDiscReason(e.target.value)}
                         placeholder="Corporate"
-                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs outline-none"
+                        className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-sans text-xs outline-none"
                       />
                     </div>
 
@@ -2719,7 +2973,7 @@ export default function ShiftWizard({
                         value={discNotes}
                         onChange={(e) => setDiscNotes(e.target.value)}
                         placeholder="Optional..."
-                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-sans text-xs focus:border-orange-500"
                       />
                     </div>
                   </div>
@@ -2732,13 +2986,13 @@ export default function ShiftWizard({
                     <span>{t("ADD DISCOUNT", "ڈسکاؤنٹ شامل کریں")}</span>
                   </button>
 
-                  <div className="mt-4 border-t border-slate-100 pt-4">
+                  <div className="mt-4 border-t border-slate-700/50 pt-4">
                     <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                       {t("Discounts Logged:", "اس شفٹ کے ڈسکاؤنٹس:")}
                     </h4>
                     {!activeShift.discountEntries ||
                     activeShift.discountEntries.length === 0 ? (
-                      <p className="text-center py-4 font-sans text-xs text-slate-400 border border-slate-100 border-dashed rounded-lg bg-slate-50/50">
+                      <p className="text-center py-4 font-sans text-xs text-slate-400 border border-slate-700/50 border-dashed rounded-lg bg-slate-800/50/50">
                         {t(
                           "No discounts logged yet.",
                           "ابھی تک کوئی ڈسکاؤنٹ درج نہیں۔",
@@ -2749,7 +3003,7 @@ export default function ShiftWizard({
                         {activeShift.discountEntries.map((d) => (
                           <div
                             key={d.id}
-                            className="flex justify-between items-center text-xs p-2 rounded-lg border border-slate-100 bg-slate-50/20"
+                            className="flex justify-between items-center text-xs p-2 rounded-lg border border-slate-700/50 bg-slate-800/50/20"
                           >
                             <div className="font-sans text-slate-700 pr-4">
                               <span className="font-bold">
@@ -2782,7 +3036,7 @@ export default function ShiftWizard({
               {/* TAB 6: LUBRICANTS SALE */}
               {activeTab === "lube" && (
                 <div className="space-y-3">
-                  <h3 className="font-sans text-xs font-bold text-slate-800 border-b border-slate-100 pb-1.5 mb-3">
+                  <h3 className="font-sans text-xs font-bold text-slate-200 border-b border-slate-700/50 pb-1.5 mb-3">
                     {t("🛢️ Lubricants Sale", "انجن آئل فروخت")}
                   </h3>
 
@@ -2794,7 +3048,7 @@ export default function ShiftWizard({
                       <select
                         value={lubeItemId}
                         onChange={(e) => setLubeItemId(e.target.value)}
-                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-sans text-xs text-slate-200 shadow-xs focus:border-orange-500"
                       >
                         <option value="">{t("-- Choose --", "-- منتخب کریں --")}</option>
                         {products
@@ -2816,16 +3070,16 @@ export default function ShiftWizard({
                         value={lubeQty}
                         onChange={(e) => setLubeQty(e.target.value)}
                         placeholder="e.g. 3"
-                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-mono text-xs focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-mono text-xs focus:border-orange-500"
                       />
                     </div>
                   </div>
 
-                  <div className="mt-2 flex justify-between items-center bg-slate-50 p-2 rounded-md border border-slate-200 border-dashed">
+                  <div className="mt-2 flex justify-between items-center bg-slate-800/50 p-2 rounded-md border border-slate-700/50 border-dashed">
                     <span className="font-sans text-[10px] font-semibold text-slate-500">
                       {t("Total:", "کل رقم:")}
                     </span>
-                    <span className="font-mono text-sm font-bold text-slate-800">
+                    <span className="font-mono text-sm font-bold text-slate-200">
                       Rs.{" "}
                       {(
                         (Number(lubeQty) || 0) *
@@ -2842,7 +3096,7 @@ export default function ShiftWizard({
                     <span>{t("ADD SALE", "فروخت شامل کریں")}</span>
                   </button>
 
-                  <div className="mt-4 border-t border-slate-100 pt-4">
+                  <div className="mt-4 border-t border-slate-700/50 pt-4">
                     <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                       {t(
                         "Lube Sales This Shift:",
@@ -2850,7 +3104,7 @@ export default function ShiftWizard({
                       )}
                     </h4>
                     {activeShift.lubeSales.length === 0 ? (
-                      <p className="text-center py-4 font-sans text-xs text-slate-400 border border-slate-100 border-dashed rounded-lg bg-slate-50/50">
+                      <p className="text-center py-4 font-sans text-xs text-slate-400 border border-slate-700/50 border-dashed rounded-lg bg-slate-800/50/50">
                         {t(
                           "No lube products listed.",
                           "کوئی انجن آئل فروخت نہیں ہوئی۔",
@@ -2865,7 +3119,7 @@ export default function ShiftWizard({
                           return (
                             <div
                               key={l.id}
-                              className="flex justify-between items-center text-xs p-2 rounded-lg border border-slate-100 bg-slate-50/20"
+                              className="flex justify-between items-center text-xs p-2 rounded-lg border border-slate-700/50 bg-slate-800/50/20"
                             >
                               <div className="font-sans text-slate-700 pr-4">
                                 <span className="font-bold">{name}</span> —{" "}
@@ -2894,7 +3148,7 @@ export default function ShiftWizard({
               {/* TAB 7: SUPPLIER DEPOT PAYMENTS */}
               {activeTab === "supplier" && (
                 <div className="space-y-3">
-                  <h3 className="font-sans text-xs font-bold text-slate-800 border-b border-slate-100 pb-1.5 mb-3">
+                  <h3 className="font-sans text-xs font-bold text-slate-200 border-b border-slate-700/50 pb-1.5 mb-3">
                     {t("🏭 Supplier Payments", "سپلائر بل کی ادائیگی")}
                   </h3>
 
@@ -2907,7 +3161,7 @@ export default function ShiftWizard({
                         {onAddSupplier && (
                           <button
                             onClick={() => setShowQuickSupplier(true)}
-                            className="text-[9px] font-bold text-orange-600 uppercase tracking-widest bg-orange-50 px-2 py-0.5 rounded-full hover:bg-orange-100 transition-colors pointer-events-auto"
+                            className="text-[9px] font-bold text-orange-600 uppercase tracking-widest bg-orange-500/10 px-2 py-0.5 rounded-full hover:bg-orange-100 transition-colors pointer-events-auto"
                           >
                             + {t("New", "نئی انٹری")}
                           </button>
@@ -2921,7 +3175,7 @@ export default function ShiftWizard({
                             placeholder={t("Name...", "نام...")}
                             value={quickSupplierName}
                             onChange={(e) => setQuickSupplierName(e.target.value)}
-                            className="w-full rounded-md border border-orange-300 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500 outline-none"
+                            className="w-full rounded-md border border-orange-300 bg-slate-900/50 px-2 py-1.5 font-sans text-xs text-slate-200 shadow-xs focus:border-orange-500 outline-none"
                           />
                           <button
                             type="submit"
@@ -2941,7 +3195,7 @@ export default function ShiftWizard({
                         <select
                           value={supId}
                           onChange={(e) => setSupId(e.target.value)}
-                          className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500"
+                          className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-sans text-xs text-slate-200 shadow-xs focus:border-orange-500"
                         >
                           <option value="">{t("-- Select --", "-- منتخب کریں --")}</option>
                           {suppliers.map((s) => (
@@ -2962,7 +3216,7 @@ export default function ShiftWizard({
                         value={supAmount}
                         onChange={(e) => setSupAmount(e.target.value)}
                         placeholder="e.g. 100000"
-                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-mono text-xs focus:border-orange-500"
+                        className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-mono text-xs focus:border-orange-500"
                       />
                     </div>
 
@@ -2978,8 +3232,8 @@ export default function ShiftWizard({
                             onClick={() => setSupMode(m as any)}
                             className={`flex-1 py-1.5 rounded-md border font-sans text-[10px] font-bold transition-all cursor-pointer ${
                               supMode === m
-                                ? "border-orange-500 bg-orange-50 text-orange-700"
-                                : "border-slate-200 bg-white text-slate-500"
+                                ? "border-orange-500 bg-orange-500/10 text-orange-700"
+                                : "border-slate-700/50 bg-slate-900/50 text-slate-500"
                             }`}
                           >
                             {t(m.substring(0,4).toUpperCase(), m === "cash" ? "نقد" : m === "cheque" ? "چیک" : "بینک")}
@@ -2996,7 +3250,7 @@ export default function ShiftWizard({
                         <select
                           value={supBankAcct}
                           onChange={(e) => setSupBankAcct(e.target.value)}
-                          className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500"
+                          className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-sans text-xs text-slate-200 shadow-xs focus:border-orange-500"
                         >
                           <option value="">{t("-- Choose --", "-- منتخب کریں --")}</option>
                           {banks.map((bk) => (
@@ -3016,7 +3270,7 @@ export default function ShiftWizard({
                           value={supRef}
                           onChange={(e) => setSupRef(e.target.value)}
                           placeholder="e.g. CHQ-88942"
-                          className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500"
+                          className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-sans text-xs focus:border-orange-500"
                         />
                       </div>
                     )}
@@ -3030,7 +3284,7 @@ export default function ShiftWizard({
                     <span>{t("RECORD PAYMENT", "ادا شدہ بل شامل کریں")}</span>
                   </button>
 
-                  <div className="mt-4 border-t border-slate-100 pt-4">
+                  <div className="mt-4 border-t border-slate-700/50 pt-4">
                     <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                       {t(
                         "Supplier Payments Settle:",
@@ -3038,7 +3292,7 @@ export default function ShiftWizard({
                       )}
                     </h4>
                     {activeShift.supplierPayments.length === 0 ? (
-                      <p className="text-center py-4 font-sans text-xs text-slate-400 border border-slate-100 border-dashed rounded-lg bg-slate-50/50">
+                      <p className="text-center py-4 font-sans text-xs text-slate-400 border border-slate-700/50 border-dashed rounded-lg bg-slate-800/50/50">
                         {t(
                           "No supplier adjustments created.",
                           "کوئی رقم ابھی ادا نہیں ہوئی۔",
@@ -3053,7 +3307,7 @@ export default function ShiftWizard({
                           return (
                             <div
                               key={s.id}
-                              className="flex justify-between items-center text-xs p-2 rounded-lg border border-slate-100 bg-slate-50/20"
+                              className="flex justify-between items-center text-xs p-2 rounded-lg border border-slate-700/50 bg-slate-800/50/20"
                             >
                               <div className="font-sans text-slate-700 pr-4">
                                 <span className="font-bold">{name}</span> —
@@ -3144,8 +3398,8 @@ export default function ShiftWizard({
       {wizardStep === 6 && activeShift && expectedTotals && (
         <div className="grid grid-cols-2 gap-6 lg:grid-cols-5 items-start">
           {/* Detailed Calculations Columns */}
-          <div className="lg:col-span-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
-            <h3 className="font-sans text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4 uppercase tracking-wider flex items-center justify-between">
+          <div className="lg:col-span-3 rounded-xl border border-slate-700/50 bg-slate-900/50 p-5 shadow-sm space-y-4">
+            <h3 className="font-sans text-sm font-bold text-slate-200 border-b border-slate-700/50 pb-2 mb-4 uppercase tracking-wider flex items-center justify-between">
               <span>
                 {t(
                   "📊 Expected Shift Cash Ledger Audit",
@@ -3158,7 +3412,7 @@ export default function ShiftWizard({
             </h3>
 
             {/* Sales Accruals Breakdown */}
-            <div className="space-y-2 border-b border-dashed border-slate-100 pb-3 font-sans text-xs">
+            <div className="space-y-2 border-b border-dashed border-slate-700/50 pb-3 font-sans text-xs">
               <strong className="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">
                 {t(
                   "A. SALES LIQUID ACCRUANCE:",
@@ -3203,7 +3457,7 @@ export default function ShiftWizard({
                   </span>
                 </div>
               )}
-              <div className="flex justify-between border-t border-slate-100 pt-1.5 font-bold text-slate-700">
+              <div className="flex justify-between border-t border-slate-700/50 pt-1.5 font-bold text-slate-700">
                 <span>{t("GROSS STATION SALES", "مجموعی فروخت")}</span>
                 <span className="font-mono">
                   Rs. {expectedTotals.grossSales.toLocaleString()}
@@ -3212,7 +3466,7 @@ export default function ShiftWizard({
             </div>
 
             {/* Subtract Non-Cash Debits */}
-            <div className="space-y-2 border-b border-dashed border-slate-100 pb-3 pt-1 font-sans text-xs text-red-650">
+            <div className="space-y-2 border-b border-dashed border-slate-700/50 pb-3 pt-1 font-sans text-xs text-red-650">
               <strong className="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">
                 {t(
                   "B. SUBTRACT CREDIT SALES / OUTFLOWS:",
@@ -3252,7 +3506,7 @@ export default function ShiftWizard({
             </div>
 
             {/* Add Recoveries */}
-            <div className="space-y-2 border-b border-slate-100 pb-3 pt-1 font-sans text-xs text-emerald-650">
+            <div className="space-y-2 border-b border-slate-700/50 pb-3 pt-1 font-sans text-xs text-emerald-650">
               <strong className="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">
                 {t(
                   "C. ADD RECOVERED OUTSTANDINGS:",
@@ -3268,7 +3522,7 @@ export default function ShiftWizard({
             </div>
 
             {/* Grand Expected */}
-            <div className="bg-indigo-50 border border-indigo-150 rounded-lg p-3.5 flex items-center justify-between font-sans shadow-sm">
+            <div className="bg-indigo-500/10 border border-indigo-150 rounded-lg p-3.5 flex items-center justify-between font-sans shadow-sm">
               <div>
                 <strong className="text-[11px] uppercase text-indigo-600 block tracking-wider leading-none">
                   {t(
@@ -3287,8 +3541,8 @@ export default function ShiftWizard({
           </div>
 
           {/* Submitted inputs Auditor columns */}
-          <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
-            <h3 className="font-sans text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4 uppercase tracking-wider">
+          <div className="lg:col-span-2 rounded-xl border border-slate-700/50 bg-slate-900/50 p-5 shadow-sm space-y-4">
+            <h3 className="font-sans text-sm font-bold text-slate-200 border-b border-slate-700/50 pb-2 mb-4 uppercase tracking-wider">
               {t("💰 Operator Cash Submission", "کیش ملان اور تسلیم شد بل")}
             </h3>
 
@@ -3306,7 +3560,7 @@ export default function ShiftWizard({
                     value={submittedCash}
                     onChange={(e) => setSubmittedCash(e.target.value)}
                     placeholder="e.g. 80000"
-                    className="premium-input border bg-white pl-3 pr-10 font-mono text-base font-bold text-slate-800 focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-slate-900/50 pl-3 pr-10 font-mono text-base font-bold text-slate-200 focus:border-orange-500 focus:outline-hidden"
                   />
                   <span className="absolute inset-y-0 right-0 py-3.5 pr-3 text-slate-450 font-mono text-sm">
                     Rs
@@ -3318,7 +3572,7 @@ export default function ShiftWizard({
               {submittedCash !== "" && (
                 <div className="rounded-lg p-4 font-sans text-xs space-y-2.5 border">
                   {Number(submittedCash) === expectedTotals.expectedCash ? (
-                    <div className="text-center font-bold text-emerald-600 bg-emerald-50 border border-emerald-150 p-2 rounded-md">
+                    <div className="text-center font-bold text-emerald-600 bg-emerald-500/10 border border-emerald-150 p-2 rounded-md">
                       ✅{" "}
                       {t(
                         "Shift Cash Perfect Balanced",
@@ -3372,7 +3626,7 @@ export default function ShiftWizard({
               <div className="flex gap-2.5 pt-4">
                 <button
                   onClick={() => setWizardStep(5)}
-                  className="w-1/3 py-3 border border-slate-200 bg-white font-sans text-xs font-bold text-slate-655 rounded-lg hover:bg-slate-50"
+                  className="w-1/3 py-3 border border-slate-700/50 bg-slate-900/50 font-sans text-xs font-bold text-slate-655 rounded-lg hover:bg-slate-800/50"
                 >
                   {t("← Back", "← واپس")}
                 </button>
@@ -3392,7 +3646,7 @@ export default function ShiftWizard({
           STEP 7: FINAL COMPREHENSIVE SHIFT RECEIPT CARD
           ========================================== */}
       {wizardStep === 7 && activeShift && expectedTotals && (
-        <div className="mx-auto max-w-xl rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden">
+        <div className="mx-auto max-w-xl rounded-xl border border-slate-700/50 bg-slate-900/50 shadow-lg overflow-hidden">
           {/* Accent Header */}
           <div className="bg-linear-to-r from-orange-600 to-amber-600 px-6 py-5 text-white flex justify-between items-center">
             <div className="space-y-0.5">
@@ -3404,19 +3658,19 @@ export default function ShiftWizard({
               </h3>
             </div>
 
-            <span className="rounded-md bg-white/20 px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-wider">
+            <span className="rounded-md bg-slate-900/50/20 px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-wider">
               {activeShift.type}
             </span>
           </div>
 
           <div className="p-6 space-y-5 font-sans">
             {/* Metadata Rows */}
-            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4 text-xs border-b border-dashed border-slate-100 pb-3 pt-0.5">
+            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4 text-xs border-b border-dashed border-slate-700/50 pb-3 pt-0.5">
               <div>
                 <span className="text-slate-400 block">
                   {t("Operator In-charge:", "ڈیوٹی آپریٹر:")}
                 </span>
-                <strong className="text-slate-800 text-sm">
+                <strong className="text-slate-200 text-sm">
                   {activeStaffMember
                     ? settings.language === "en"
                       ? activeStaffMember.name
@@ -3428,14 +3682,14 @@ export default function ShiftWizard({
                 <span className="text-slate-400 block">
                   {t("Record Date & Time:", "تاریخ اور آغاز:")}
                 </span>
-                <strong className="text-slate-800">
+                <strong className="text-slate-200">
                   {activeShift.date} | {activeShift.startTime}
                 </strong>
               </div>
             </div>
 
             {/* Dynamic sales volumetric summary tables */}
-            <div className="space-y-2 border-b border-slate-100 pb-3">
+            <div className="space-y-2 border-b border-slate-700/50 pb-3">
               <strong className="text-[10px] text-slate-450 uppercase font-bold tracking-wider block mb-2">
                 {t("PRODUCT VOLUME SALES:", "فیول فروختی حجم کا خلاصہ:")}
               </strong>
@@ -3472,12 +3726,12 @@ export default function ShiftWizard({
             </div>
 
             {/* Outlays balances */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5 text-xs border-b border-slate-100 pb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5 text-xs border-b border-slate-700/50 pb-4">
               <div className="flex justify-between">
                 <span className="text-slate-450">
                   {t("Debits (Receivables):", "گاہکوں کا بل:")}
                 </span>
-                <span className="font-mono font-bold text-slate-800">
+                <span className="font-mono font-bold text-slate-200">
                   Rs. {expectedTotals.debits.toLocaleString()}
                 </span>
               </div>
@@ -3493,7 +3747,7 @@ export default function ShiftWizard({
                 <span className="text-slate-450">
                   {t("Expenses Logged:", "موجودہ اخراجات:")}
                 </span>
-                <span className="font-mono font-bold text-slate-800">
+                <span className="font-mono font-bold text-slate-200">
                   Rs. {expectedTotals.expenses.toLocaleString()}
                 </span>
               </div>
@@ -3519,12 +3773,12 @@ export default function ShiftWizard({
             </div>
 
             {/* Financial Auditing Bottomline */}
-            <div className="bg-slate-50 border border-slate-150- rounded-lg p-4 font-mono text-xs space-y-2">
+            <div className="bg-slate-800/50 border border-slate-150- rounded-lg p-4 font-mono text-xs space-y-2">
               <div className="flex justify-between text-slate-500">
                 <span>{t("EXPECTED DRAWER CASH:", "مطلوبہ دراز کیش:")}</span>
                 <span>Rs. {expectedTotals.expectedCash.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between text-slate-700 font-bold border-b border-dashed border-slate-200 pb-2">
+              <div className="flex justify-between text-slate-700 font-bold border-b border-dashed border-slate-700/50 pb-2">
                 <span>{t("SUBMITTED CASH:", "سیلزمین کا پیش کردہ کیش:")}</span>
                 <span>Rs. {activeShift.submittedCash?.toLocaleString()}</span>
               </div>
@@ -3547,7 +3801,7 @@ export default function ShiftWizard({
                       {t("AUDIT ACCRUANCE: +OVERAGE", "آڈٹ آمدنی:") +
                         " OVERAGE ✅"}
                     </span>
-                    <span className="font-bold text-emerald-550 bg-emerald-50 px-2.5 py-0.5 rounded-sm">
+                    <span className="font-bold text-emerald-550 bg-emerald-500/10 px-2.5 py-0.5 rounded-sm">
                       Rs. {activeShift.overage.toLocaleString()}
                     </span>
                   </>
@@ -3556,7 +3810,7 @@ export default function ShiftWizard({
                     <span className="text-emerald-650 font-bold">
                       {t("STATEMENT: BALANCED", "سٹیٹمنٹ: بالکل پورہ")}
                     </span>
-                    <span className="font-bold text-emerald-555 bg-emerald-50 px-2.5 py-0.5 rounded-sm">
+                    <span className="font-bold text-emerald-555 bg-emerald-500/10 px-2.5 py-0.5 rounded-sm">
                       Rs. 0
                     </span>
                   </>
@@ -3585,15 +3839,15 @@ export default function ShiftWizard({
               const netMarginPct    = totalRevenue > 0 ? (netShiftProfit / totalRevenue) * 100 : 0;
 
               const rows = [
-                { label: t('Gross Revenue (Sales)',   'مجموعی فروخت'),     value: totalRevenue,    sign: '',  color: 'text-blue-700',    bg: 'bg-blue-50' },
+                { label: t('Gross Revenue (Sales)',   'مجموعی فروخت'),     value: totalRevenue,    sign: '',  color: 'text-blue-700',    bg: 'bg-blue-500/20' },
                 { label: t('Realized COGS (FIFO)',    'FIFO لاگت'),         value: -totalCOGS,      sign: '−', color: 'text-red-600',     bg: 'bg-red-50' },
-                { label: t('Gross Profit',            'مجموعی منافع'),      value: grossProfit,     sign: '=', color: grossProfit >= 0 ? 'text-emerald-700' : 'text-red-700', bg: grossProfit >= 0 ? 'bg-emerald-50' : 'bg-red-50', bold: true },
+                { label: t('Gross Profit',            'مجموعی منافع'),      value: grossProfit,     sign: '=', color: grossProfit >= 0 ? 'text-emerald-400' : 'text-red-700', bg: grossProfit >= 0 ? 'bg-emerald-500/10' : 'bg-red-50', bold: true },
                 { label: t('Operational Expenses',   'آپریشنل اخراجات'), value: -opExpenses,     sign: '−', color: 'text-amber-700',   bg: 'bg-amber-50' },
-                { label: t('Net Shift Profit',        'خالص شفٹ منافع'),   value: netShiftProfit,  sign: '=', color: netShiftProfit >= 0 ? 'text-emerald-700' : 'text-red-700', bg: netShiftProfit >= 0 ? 'bg-emerald-50' : 'bg-red-50', bold: true },
+                { label: t('Net Shift Profit',        'خالص شفٹ منافع'),   value: netShiftProfit,  sign: '=', color: netShiftProfit >= 0 ? 'text-emerald-400' : 'text-red-700', bg: netShiftProfit >= 0 ? 'bg-emerald-500/10' : 'bg-red-50', bold: true },
               ];
 
               return (
-                <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                <div className="border border-slate-700/50 rounded-xl overflow-hidden shadow-sm">
                   <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-4 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <TrendingUp className="size-4 text-emerald-400" />
@@ -3605,9 +3859,9 @@ export default function ShiftWizard({
                       {t('True P&L', 'حقیقی P&L')}
                     </span>
                   </div>
-                  <div className="bg-white divide-y divide-slate-50">
+                  <div className="bg-slate-900/50 divide-y divide-slate-50">
                     {rows.map((row, i) => (
-                      <div key={i} className={`flex items-center justify-between px-4 py-2.5 ${row.bold ? 'border-t-2 border-dashed border-slate-200' : ''}`}>
+                      <div key={i} className={`flex items-center justify-between px-4 py-2.5 ${row.bold ? 'border-t-2 border-dashed border-slate-700/50' : ''}`}>
                         <div className="flex items-center gap-2">
                           <span className={`text-xs font-black w-4 text-center ${row.color}`}>{row.sign}</span>
                           <span className={`text-xs ${row.bold ? 'font-black text-slate-700' : 'text-slate-500'}`}>{row.label}</span>
@@ -3641,21 +3895,21 @@ export default function ShiftWizard({
             <div className="flex gap-2">
               <button
                 onClick={() => window.print()}
-                className="flex-1 py-2.5 border border-slate-200 text-slate-655 rounded-lg font-sans text-xs font-bold hover:bg-slate-55 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                className="flex-1 py-2.5 border border-slate-700/50 text-slate-655 rounded-lg font-sans text-xs font-bold hover:bg-slate-55 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
                 <FileText className="h-4 w-4" />
                 <span>{t("Print Statement PDF", "پی ڈی ایف پرنٹ کریں")}</span>
               </button>
               <button
                 onClick={() => showToast(t("Summary link copied to clipboard!", "خلاصہ لنک کلپ بورڈ پر کاپی ہو گیا!"), "success")}
-                className="px-3.5 border border-slate-200 text-slate-500 rounded-lg hover:bg-slate-50 flex items-center justify-center cursor-pointer"
+                className="px-3.5 border border-slate-700/50 text-slate-500 rounded-lg hover:bg-slate-800/50 flex items-center justify-center cursor-pointer"
               >
                 <Share2 className="h-4 w-4" />
               </button>
               <button
                 onClick={generateAISummary}
                 disabled={isGeneratingAiSummary}
-                className={`px-4 border border-indigo-200 text-indigo-600 rounded-lg hover:bg-indigo-50 flex items-center justify-center gap-1.5 font-bold text-xs transition-colors cursor-pointer ${isGeneratingAiSummary ? 'opacity-50' : ''}`}
+                className={`px-4 border border-indigo-500/50 text-indigo-600 rounded-lg hover:bg-indigo-500/10 flex items-center justify-center gap-1.5 font-bold text-xs transition-colors cursor-pointer ${isGeneratingAiSummary ? 'opacity-50' : ''}`}
               >
                 <Sparkles className={`h-4 w-4 ${isGeneratingAiSummary ? 'animate-spin' : ''}`} />
                 <span className="hidden sm:inline">✨ AI Summary</span>
@@ -3663,7 +3917,7 @@ export default function ShiftWizard({
             </div>
 
             {aiSummary && (
-              <div className="bg-indigo-50/50 border border-indigo-100 rounded-lg p-4 font-sans text-sm text-indigo-900 shadow-inner">
+              <div className="bg-indigo-500/10/50 border border-indigo-100 rounded-lg p-4 font-sans text-sm text-indigo-900 shadow-inner">
                 <div className="flex items-center gap-2 mb-2">
                   <Sparkles className="h-4 w-4 text-indigo-500" />
                   <span className="font-bold text-indigo-700">Gemini AI Shift Analysis</span>
@@ -3689,8 +3943,8 @@ export default function ShiftWizard({
                     const isPositive = result.totalMargin >= 0;
 
                     return (
-                      <div key={productId} className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-                        <div className="px-3 py-2 border-b border-slate-100 flex justify-between items-center">
+                      <div key={productId} className="bg-slate-900/50 rounded-lg border border-slate-700/50 overflow-hidden">
+                        <div className="px-3 py-2 border-b border-slate-700/50 flex justify-between items-center">
                           <span className="font-bold text-xs text-slate-700">{productName}</span>
                           <div className="flex items-center gap-2">
                             {result.hasStockDeficit && (
@@ -3699,7 +3953,7 @@ export default function ShiftWizard({
                               </span>
                             )}
                             <span className={`text-xs font-black px-2 py-0.5 rounded-full ${
-                              isPositive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                              isPositive ? 'bg-emerald-100 text-emerald-400' : 'bg-red-100 text-red-700'
                             }`}>
                               {isPositive ? '▲' : '▼'} Rs.{result.totalMargin.toLocaleString('en-PK', { maximumFractionDigits: 0 })}
                             </span>
@@ -3709,8 +3963,8 @@ export default function ShiftWizard({
                           {[
                             { label: 'Liters', value: `${result.totalLiters.toLocaleString('en-PK', { maximumFractionDigits: 0 })}L`, color: 'text-slate-700' },
                             { label: 'Avg Landed', value: `Rs.${avgLandedCost.toFixed(2)}`, color: 'text-blue-700' },
-                            { label: 'Avg Sell', value: `Rs.${avgSellingPrice.toFixed(2)}`, color: 'text-emerald-700' },
-                            { label: 'Margin/L', value: `Rs.${result.avgRealizedMarginPerLiter.toFixed(2)}`, color: isPositive ? 'text-emerald-700' : 'text-red-700' },
+                            { label: 'Avg Sell', value: `Rs.${avgSellingPrice.toFixed(2)}`, color: 'text-emerald-400' },
+                            { label: 'Margin/L', value: `Rs.${result.avgRealizedMarginPerLiter.toFixed(2)}`, color: isPositive ? 'text-emerald-400' : 'text-red-700' },
                           ].map((m, i) => (
                             <div key={i} className="px-2 py-1.5 text-center">
                               <p className="text-slate-400 text-[9px] font-semibold uppercase">{m.label}</p>
@@ -3734,7 +3988,7 @@ export default function ShiftWizard({
                                         style={{ width: `${Math.min(100, Math.max(5, heatPct))}%` }}
                                       />
                                     </div>
-                                    <span className={`text-[9px] font-black w-20 text-right ${isHot ? 'text-emerald-700' : 'text-amber-700'}`}>
+                                    <span className={`text-[9px] font-black w-20 text-right ${isHot ? 'text-emerald-400' : 'text-amber-700'}`}>
                                       {d.litersDeducted.toFixed(0)}L · Rs.{d.realizedMarginPerLiter.toFixed(2)}/L
                                     </span>
                                   </div>

@@ -8,6 +8,9 @@ import TreasuryDashboard from './TreasuryDashboard';
 import FundTransferForm from './FundTransferForm';
 import CashReconciliationForm from './CashReconciliationForm';
 import OwnerDrawingsForm from './OwnerDrawingsForm';
+import BankDepositReconciliation from './BankDepositReconciliation';
+import SmartDebtRecovery from './SmartDebtRecovery';
+import { Target, CheckCircle2 } from 'lucide-react';
 
 export default function TreasuryCenter() {
   const stationId = useAuthStore(state => state.stationId);
@@ -16,7 +19,7 @@ export default function TreasuryCenter() {
     cashAccounts: state.cashAccounts,
     handleAddCashAccount: state.handleAddCashAccount
   })));
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'transfers' | 'reconciliation' | 'drawings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'transfers' | 'reconciliation' | 'drawings' | 'bank_reconciliation' | 'debt_recovery'>('dashboard');
 
   useEffect(() => {
     if (stationId) {
@@ -58,6 +61,10 @@ export default function TreasuryCenter() {
         return <FundTransferForm />;
       case 'reconciliation':
         return <CashReconciliationForm />;
+      case 'bank_reconciliation':
+        return <BankDepositReconciliation />;
+      case 'debt_recovery':
+        return <SmartDebtRecovery />;
       case 'drawings':
         return <OwnerDrawingsForm />;
       default:
@@ -110,6 +117,24 @@ export default function TreasuryCenter() {
         >
           <UserMinus className="h-4 w-4" />
           <span>Owner Drawings</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('bank_reconciliation')}
+          className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-md transition-colors ${
+            activeTab === 'bank_reconciliation' ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-medium' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+          }`}
+        >
+          <CheckCircle2 className="h-4 w-4" />
+          <span>Bank Deposit Matcher</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('debt_recovery')}
+          className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-md transition-colors ${
+            activeTab === 'debt_recovery' ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-medium' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+          }`}
+        >
+          <Target className="h-4 w-4" />
+          <span>Debt Recovery Queue</span>
         </button>
       </div>
 

@@ -52,21 +52,22 @@ export function ShiftDebtors({
   handleDeleteDebit,
 }: ShiftDebtorsProps) {
   return (
-    <div className="space-y-3">
-      <h3 className="font-sans text-xs font-bold text-slate-800 border-b border-slate-100 pb-1.5 mb-3">
-        {t("💳 Credit Sales (Udhar)", "ادھار فروخت")}
+    <div className="space-y-4">
+      <h3 className="font-sans text-sm font-bold text-slate-200 border-b border-slate-700/50 pb-2 mb-4 flex items-center gap-2">
+        <div className="w-2 h-2 rounded-full bg-rose-500"></div>
+        {t("Credit Sales (Udhar)", "ادھار فروخت")}
       </h3>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2 sm:col-span-1">
-          <div className="flex justify-between items-center mb-1">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+          <div className="flex justify-between items-center mb-1.5">
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">
               {t("Customer:", "گاہک:")}
             </label>
             {onAddCustomer && (
               <button
                 onClick={() => setShowQuickCustomer(true)}
-                className="text-[9px] font-bold text-orange-600 uppercase tracking-widest bg-orange-50 px-1.5 py-0.5 rounded hover:bg-orange-100 transition-colors pointer-events-auto"
+                className="text-[9px] font-bold text-rose-400 uppercase tracking-widest bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded hover:bg-rose-500/20 transition-colors pointer-events-auto"
               >
                 + {t("Quick Add", "نیا")}
               </button>
@@ -74,25 +75,25 @@ export function ShiftDebtors({
           </div>
 
           {showQuickCustomer ? (
-            <form onSubmit={handleQuickAddCustomer} className="flex gap-1">
+            <form onSubmit={handleQuickAddCustomer} className="flex gap-2 bg-slate-800/50 p-2 rounded-lg border border-slate-700/50">
               <input
                 autoFocus
                 type="text"
                 placeholder={t("Name...", "نام...")}
                 value={quickCustomerName}
                 onChange={(e) => setQuickCustomerName(e.target.value)}
-                className="w-full rounded-md border border-orange-300 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500 outline-none"
+                className="w-full rounded-md border border-slate-600 bg-slate-900/50 px-2.5 py-1.5 font-sans text-xs text-slate-200 focus:border-rose-500 outline-none"
               />
               <button
                 type="submit"
-                className="bg-orange-600 text-white px-2 py-1.5 rounded-md font-bold text-[10px] uppercase shadow-sm"
+                className="bg-rose-600 text-white px-3 py-1.5 rounded-md font-bold text-[10px] uppercase shadow-sm hover:bg-rose-500 transition-colors"
               >
                 {t("Save", "سیو")}
               </button>
               <button
                 type="button"
                 onClick={() => setShowQuickCustomer(false)}
-                className="bg-slate-200 text-slate-600 px-2 py-1.5 rounded-md font-bold text-[10px] uppercase"
+                className="bg-slate-700 text-slate-300 px-3 py-1.5 rounded-md font-bold text-[10px] uppercase hover:bg-slate-600 transition-colors"
               >
                 X
               </button>
@@ -101,7 +102,7 @@ export function ShiftDebtors({
             <select
               value={debCustId}
               onChange={(e) => setDebCustId(e.target.value)}
-              className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500"
+              className="w-full rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2 font-sans text-xs text-slate-200 focus:border-rose-500 focus:bg-slate-800 outline-none transition-colors"
             >
               <option value="">
                 {t("-- Select --", "-- منتخب کریں --")}
@@ -116,13 +117,13 @@ export function ShiftDebtors({
         </div>
 
         <div className="col-span-2 sm:col-span-1">
-          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
             {t("Product:", "آئٹم:")}
           </label>
           <select
             value={debProdId}
             onChange={(e) => setDebProdId(e.target.value)}
-            className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs text-slate-800 shadow-xs focus:border-orange-500"
+            className="w-full rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2 font-sans text-xs text-slate-200 focus:border-rose-500 focus:bg-slate-800 outline-none transition-colors"
           >
             {products.map((p) => (
               <option key={p.id} value={p.id}>
@@ -136,7 +137,7 @@ export function ShiftDebtors({
         </div>
 
         <div className="col-span-2 sm:col-span-1">
-          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
             {debProdId === "general_debit"
               ? t("Amount:", "رقم:")
               : t(`Quantity:`, `تعداد:`)}
@@ -146,12 +147,12 @@ export function ShiftDebtors({
             value={debQty}
             onChange={(e) => setDebQty(e.target.value)}
             placeholder={debProdId === "general_debit" ? "e.g. 5000" : "e.g. 50"}
-            className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-mono text-xs focus:border-orange-500"
+            className="w-full rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2 font-mono text-sm text-rose-400 focus:border-rose-500 focus:bg-slate-800 outline-none transition-colors"
           />
         </div>
 
         <div className="col-span-2 sm:col-span-1">
-          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
             {t("Note:", "نوٹ:")}
           </label>
           <input
@@ -159,16 +160,16 @@ export function ShiftDebtors({
             value={debNote}
             onChange={(e) => setDebNote(e.target.value)}
             placeholder={debProdId === "general_debit" ? "e.g. Cash Loan" : "e.g. Truck S-98"}
-            className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 font-sans text-xs focus:border-orange-500"
+            className="w-full rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2 font-sans text-xs text-slate-200 focus:border-rose-500 focus:bg-slate-800 outline-none transition-colors"
           />
         </div>
       </div>
 
-      <div className="mt-2 flex justify-between items-center bg-slate-50 p-2 rounded-md border border-slate-200 border-dashed">
-        <span className="font-sans text-[10px] font-semibold text-slate-500">
+      <div className="mt-4 flex justify-between items-center bg-slate-800/40 p-3 rounded-lg border border-slate-700/50">
+        <span className="font-sans text-[10px] font-bold uppercase tracking-widest text-slate-500">
           {t("Total:", "کل رقم:")}
         </span>
-        <span className="font-mono text-sm font-bold text-slate-800">
+        <span className="font-mono text-lg font-bold text-rose-400">
           Rs.{" "}
           {(
             (Number(debQty) || 0) *
@@ -181,23 +182,23 @@ export function ShiftDebtors({
 
       <button
         onClick={handleAddDebit}
-        className="w-full py-2 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 cursor-pointer shadow-sm active:scale-95 flex items-center justify-center gap-1.5 mt-2"
+        className="w-full py-3 bg-gradient-to-r from-rose-600 to-rose-500 text-white font-sans text-xs font-bold rounded-xl hover:from-rose-500 hover:to-rose-400 cursor-pointer shadow-lg shadow-rose-500/20 active:scale-95 flex items-center justify-center gap-2 mt-2 transition-all uppercase tracking-wider"
       >
-        <Plus className="h-3 w-3" />
+        <Plus className="h-4 w-4" />
         <span>{t("ADD DEBIT", "ادھار لکھیں")}</span>
       </button>
 
       {/* Registered Debits Lists */}
-      <div className="mt-4 border-t border-slate-100 pt-4">
-        <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+      <div className="mt-6 border-t border-slate-700/50 pt-4">
+        <h4 className="font-sans text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">
           {t("Added Debits This Shift:", "اس شفٹ میں شامل کردہ قرضے:")}
         </h4>
         {activeShift.debitEntries.length === 0 ? (
-          <p className="text-center py-4 font-sans text-xs text-slate-400 border border-slate-100 border-dashed rounded-lg bg-slate-50/50">
+          <p className="text-center py-6 font-sans text-xs text-slate-500 border border-slate-700/50 border-dashed rounded-xl bg-slate-800/20">
             {t("No debit transactions added yet.", "ابھی تک کوئی انٹری نہیں لکھی گئی۔")}
           </p>
         ) : (
-          <div className="space-y-2 max-h-40 overflow-y-auto">
+          <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
             {activeShift.debitEntries.map((d) => {
               const cName = customers.find((c) => c.id === d.customerId)?.name || "Debtor";
               const isGen = d.productId === "general_debit";
@@ -210,20 +211,20 @@ export function ShiftDebtors({
               return (
                 <div
                   key={d.id}
-                  className="flex justify-between items-center text-xs p-2 rounded-lg border border-slate-100 bg-slate-50/20"
+                  className="flex justify-between items-center text-xs p-3 rounded-xl border border-slate-700/50 bg-slate-800/40 hover:bg-slate-800/80 transition-colors"
                 >
-                  <div className="font-sans text-slate-700 pr-4">
-                    <span className="font-bold">{cName}</span> —{" "}
-                    {isGen ? "" : `${d.quantity} ${unitStr}`} {pName}{" "}
-                    {d.note && `(${d.note})`}
+                  <div className="font-sans text-slate-300 pr-4">
+                    <span className="font-bold text-slate-200">{cName}</span> <span className="text-slate-500">—</span>{" "}
+                    {isGen ? "" : <span className="font-mono text-rose-400 bg-rose-500/10 px-1 py-0.5 rounded">{d.quantity} {unitStr}</span>} <span className="font-medium">{pName}</span>{" "}
+                    {d.note && <span className="text-slate-500 ml-1">({d.note})</span>}
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono font-bold text-rose-500">
+                  <div className="flex items-center gap-4">
+                    <span className="font-mono font-bold text-rose-400">
                       Rs. {d.amount.toLocaleString()}
                     </span>
                     <button
                       onClick={() => handleDeleteDebit(d.id)}
-                      className="text-red-500 hover:text-red-700 cursor-pointer"
+                      className="text-slate-500 hover:text-red-400 transition-colors cursor-pointer"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
