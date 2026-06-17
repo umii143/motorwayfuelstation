@@ -1654,27 +1654,98 @@ app.post('/api/ai/jarvis', requireRole(["owner", "manager", "station_manager", "
   try {
     const { messages, tools, systemInstruction } = req.body;
     
-    // Support function calling directly using the new SDK
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: messages,
-      config: {
-        systemInstruction: systemInstruction,
-        tools: tools ? [{ functionDeclarations: tools }] : undefined,
-        temperature: 0.2, // Low temperature for factual ERP data
+    // Use Groq API instead of Gemini for unlimited fast inference
+    const groqApiKey = process.env.GROQ_API_KEY;
+    
+    // Map Gemini tools to OpenAI/Groq tools
+    const groqTools = tools ? tools.map((t: any) => ({
+      type: "function",
+      function: {
+        name: t.name,
+        description: t.description,
+        parameters: t.parameters ? {
+          type: "object",
+          properties: Object.fromEntries(
+            Object.entries(t.parameters.properties).map(([k, v]: [string, any]) => [
+              k, { type: v.type.toLowerCase(), description: v.description }
+            ])
+          ),
+          required: t.parameters.required || []
+        } : undefined
       }
+    })) : undefined;
+
+    // Map Gemini messages to OpenAI/Groq messages
+    const groqMessages: any[] = [];
+    if (systemInstruction?.parts?.[0]?.text) {
+      groqMessages.push({ role: "system", content: systemInstruction.parts[0].text });
+    }
+    
+    let lastToolCallId = "call_" + Math.random().toString(36).substring(7);
+
+    for (const m of messages) {
+      if (m.role === 'user') {
+        groqMessages.push({ role: "user", content: m.parts[0].text });
+      } else if (m.role === 'model') {
+        if (m.parts[0].functionCall) {
+          lastToolCallId = "call_" + Math.random().toString(36).substring(7);
+          groqMessages.push({
+            role: "assistant",
+            content: null,
+            tool_calls: [{
+              id: lastToolCallId,
+              type: "function",
+              function: {
+                name: m.parts[0].functionCall.name,
+                arguments: JSON.stringify(m.parts[0].functionCall.args)
+              }
+            }]
+          });
+        } else if (m.parts[0].text) {
+          groqMessages.push({ role: "assistant", content: m.parts[0].text });
+        }
+      } else if (m.role === 'function') {
+        groqMessages.push({
+          role: "tool",
+          tool_call_id: lastToolCallId,
+          name: m.parts[0].functionResponse.name,
+          content: JSON.stringify(m.parts[0].functionResponse.response)
+        });
+      }
+    }
+
+    const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${groqApiKey}`
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: groqMessages,
+        tools: groqTools,
+        temperature: 0.2
+      })
     });
 
-    const call = response.functionCalls?.[0];
-    if (call) {
+    if (!groqRes.ok) {
+      const errText = await groqRes.text();
+      throw new Error(`Groq API Error: ${errText}`);
+    }
+
+    const groqData = await groqRes.json();
+    const responseMessage = groqData.choices[0].message;
+
+    if (responseMessage.tool_calls && responseMessage.tool_calls.length > 0) {
+      const call = responseMessage.tool_calls[0];
       return res.json({
         type: 'function_call',
-        functionName: call.name,
-        functionArgs: call.args
+        functionName: call.function.name,
+        functionArgs: JSON.parse(call.function.arguments)
       });
     }
 
-    res.json({ type: 'text', reply: response.text });
+    res.json({ type: 'text', reply: responseMessage.content });
   } catch (error: any) {
     console.error('Jarvis AI Error:', error);
     res.status(500).json({ error: error.message || 'Failed to process Jarvis request' });
