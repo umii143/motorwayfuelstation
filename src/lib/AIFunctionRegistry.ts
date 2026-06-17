@@ -2,6 +2,9 @@ import { useShiftStore } from '../stores/useShiftStore';
 import { useTreasuryStore } from '../stores/useTreasuryStore';
 import { useInventoryStore } from '../stores/useInventoryStore';
 import { useFinancialStore } from '../stores/useFinancialStore';
+import { useStaffStore } from '../stores/useStaffStore';
+import { useCustomerStore } from '../stores/useCustomerStore';
+import { useSupplierStore } from '../stores/useSupplierStore';
 
 // These declarations match the Gemini Tool Function Declarations
 export const jarvisFunctionDeclarations = [
@@ -49,6 +52,22 @@ export const jarvisFunctionDeclarations = [
       },
       required: ["amount", "customerName"]
     }
+  },
+  {
+    name: "getStaffList",
+    description: "Fetches the list of all staff members, their roles, and current salary advances.",
+  },
+  {
+    name: "getCustomerBalances",
+    description: "Fetches the list of all customers and their current outstanding balances.",
+  },
+  {
+    name: "getSupplierBalances",
+    description: "Fetches the list of all suppliers and the current amount payable to them.",
+  },
+  {
+    name: "getInventoryStock",
+    description: "Fetches the exact physical stock of all Lube products and Fuel Tanks.",
   }
 ];
 
@@ -153,6 +172,55 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
 
       await useShiftStore.getState().handleUpdateShift(updatedShift);
       return { status: "Success", message: `Recovery of Rs ${amount} from ${customerName} added successfully.` };
+    }
+
+    case "getStaffList": {
+      const staff = useStaffStore.getState().staff || [];
+      return { 
+        staffList: staff.map(s => ({
+          name: s.name,
+          role: s.role,
+          salary: s.salary,
+          advances: s.advances || 0
+        }))
+      };
+    }
+
+    case "getCustomerBalances": {
+      const customers = useCustomerStore.getState().customers || [];
+      return {
+        customerBalances: customers.map(c => ({
+          name: c.name,
+          balance: c.balance || 0,
+          limit: c.creditLimit || 0
+        }))
+      };
+    }
+
+    case "getSupplierBalances": {
+      const suppliers = useSupplierStore.getState().suppliers || [];
+      return {
+        supplierBalances: suppliers.map(s => ({
+          name: s.name,
+          balance: s.balance || 0
+        }))
+      };
+    }
+
+    case "getInventoryStock": {
+      const inventory = useInventoryStore.getState();
+      return {
+        products: (inventory.products || []).map(p => ({
+          name: p.name,
+          stock: p.stock,
+          price: p.sellingPrice
+        })),
+        tanks: (inventory.tanks || []).map(t => ({
+          name: t.name,
+          volume: t.currentStock,
+          capacity: t.capacity
+        }))
+      };
     }
 
     default:
