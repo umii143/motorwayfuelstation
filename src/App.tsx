@@ -28,19 +28,71 @@ import OfflineIndicator from './components/ui/OfflineIndicator';
 
 // Start the enterprise offline-first sync engine immediately
 SyncEngine.start().catch(console.error);
-const Dashboard = React.lazy(() => import('./components/features/Dashboard'));
-const ShiftWizard = React.lazy(() => import('./components/features/ShiftWizard'));
-const ShiftLogs = React.lazy(() => import('./components/features/ShiftLogs'));
-const CustomerIntelligenceCenter = React.lazy(() => import('./components/features/CustomerIntelligenceCenter/CustomerIntelligenceCenter'));
-const SupplierCommandCenter = React.lazy(() => import('./components/features/SupplierCommandCenter/SupplierCommandCenter'));
-const Ledger = React.lazy(() => import('./components/features/Ledger'));
-const Inventory = React.lazy(() => import('./components/features/Inventory'));
-const Expenses = React.lazy(() => import('./components/features/Expenses'));
-const LubePOS = React.lazy(() => import('./components/features/LubePOS'));
-const Reports = React.lazy(() => import('./components/features/Reports'));
-const LubeReports = React.lazy(() => import('./components/features/LubeReports'));
+// Utility to auto-reload on ChunkLoadError during new deployments
+const lazyWithRetry = (componentImport: () => Promise<any>) =>
+  React.lazy(async () => {
+    try {
+      return await componentImport();
+    } catch (error: any) {
+      if (
+        error?.name === 'ChunkLoadError' ||
+        String(error).includes('Failed to fetch dynamically imported module') ||
+        String(error).includes('Failed to load module script')
+      ) {
+        console.warn('ChunkLoadError detected, reloading page to fetch new version...');
+        window.location.reload();
+      }
+      throw error;
+    }
+  });
+
+const Dashboard = lazyWithRetry(() => import('./components/features/Dashboard'));
+const ShiftWizard = lazyWithRetry(() => import('./components/features/ShiftWizard'));
+const ShiftLogs = lazyWithRetry(() => import('./components/features/ShiftLogs'));
+const CustomerIntelligenceCenter = lazyWithRetry(() => import('./components/features/CustomerIntelligenceCenter/CustomerIntelligenceCenter'));
+const SupplierCommandCenter = lazyWithRetry(() => import('./components/features/SupplierCommandCenter/SupplierCommandCenter'));
+const Ledger = lazyWithRetry(() => import('./components/features/Ledger'));
+const Inventory = lazyWithRetry(() => import('./components/features/Inventory'));
+const Expenses = lazyWithRetry(() => import('./components/features/Expenses'));
+const LubePOS = lazyWithRetry(() => import('./components/features/LubePOS'));
+const Reports = lazyWithRetry(() => import('./components/features/Reports'));
+const LubeReports = lazyWithRetry(() => import('./components/features/LubeReports'));
+// const StorePOS = lazyWithRetry(() => import('./components/features/StorePOS'));
+const DiscountsHub = lazyWithRetry(() => import('./components/features/DiscountsHub'));
+const FleetHub = lazyWithRetry(() => import('./components/features/FleetHub/FleetHub'));
+const LogisticsHub = lazyWithRetry(() => import('./components/features/LogisticsHub/LogisticsHub'));
+// const LoyaltyProgram = lazyWithRetry(() => import('./components/features/LoyaltyProgram/LoyaltyProgram'));
+// const OffersManager = lazyWithRetry(() => import('./components/features/LoyaltyProgram/OffersManager'));
+// const AnalyticsOverview = lazyWithRetry(() => import('./components/features/LoyaltyProgram/AnalyticsOverview'));
+// const FleetManagement = lazyWithRetry(() => import('./components/features/FleetManagement'));
+// const FuelCards = lazyWithRetry(() => import('./components/features/FuelCards'));
+const StaffPanel = lazyWithRetry(() => import('./components/features/Staff'));
+const SettingsPanel = lazyWithRetry(() => import('./components/features/Settings'));
+const SystemAuditTrail = lazyWithRetry(() => import('./components/features/Settings/SystemAuditTrail'));
+const OnboardingWizard = lazyWithRetry(() => import('./components/features/OnboardingWizard'));
+const LocalStorageMigrationWizard = lazyWithRetry(() => import('./components/features/LocalStorageMigrationWizard'));
+const SecurityHub = lazyWithRetry(() => import('./components/features/SecurityHub'));
+const SubscriptionHub = lazyWithRetry(() => import('./components/features/SubscriptionHub'));
+const LicenseManager = lazyWithRetry(() => import('./components/features/LicenseManager'));
+const BankCashPanel = lazyWithRetry(() => import('./components/features/BankCashPanel'));
+const DigitalCashPanel = lazyWithRetry(() => import('./components/features/DigitalCashPanel'));
+const PriceManagement = lazyWithRetry(() => import('./components/features/PriceManagement'));
+const EnterpriseHub = lazyWithRetry(() => import('./components/features/EnterpriseHub'));
+const DipCalculator = lazyWithRetry(() => import('./components/features/DipCalculator/DipCalculator'));
+const OGRAPriceSync = lazyWithRetry(() => import('./components/features/OGRAPriceSync/OGRAPriceSync'));
+const AIAssistant = lazyWithRetry(() => import('./components/features/AIAssistant/AIAssistant'));
+const CommunicationDashboard = lazyWithRetry(() => import('./components/features/CommunicationCenter/CommunicationDashboard'));
+const BIDashboard = lazyWithRetry(() => import('./components/features/BIAnalytics/BIDashboard'));
+const SyncCenter = lazyWithRetry(() => import('./components/features/SyncCenter/SyncCenter'));
+
+// AI Analytics Imports
+const AIAnalyticsHub = lazyWithRetry(() => import('./components/features/AIAnalyticsHub/AIAnalyticsHub'));
+const RiskCenter = lazyWithRetry(() => import('./components/features/RiskCenter/RiskCenter'));
+const ExecutiveDashboard = lazyWithRetry(() => import('./components/features/ExecutiveDashboard/ExecutiveDashboard'));
+const TreasuryCenter = lazyWithRetry(() => import('./components/features/TreasuryCenter/TreasuryCenter'));
+const FuelProJarvis = lazyWithRetry(() => import('./components/features/AI/FuelProJarvis'));
+
 import LoadingScreen from './components/ui/LoadingScreen';
-const DiscountsHub = React.lazy(() => import('./components/features/DiscountsHub'));
 import { SplashSequence } from './components/features/SplashSequence';
 import { LanguageSelect } from './components/features/Onboarding/LanguageSelect';
 import { WelcomeCarousel } from './components/features/Onboarding/WelcomeCarousel';
@@ -48,31 +100,7 @@ import { NativeAuthProvider, useNativeAuth } from './contexts/NativeAuthContext'
 import { SecurityScreen } from './components/features/SecurityScreen';
 import { mobileEngine } from './services/mobile/MobileExperienceEngine';
 
-const StaffPanel = React.lazy(() => import('./components/features/Staff'));
-const SettingsPanel = React.lazy(() => import('./components/features/Settings'));
-
-const OnboardingWizard = React.lazy(() => import('./components/features/OnboardingWizard'));
 import AuthInterface from './components/layouts/AuthInterface'; // Kept static for immediate auth render
-const SecurityHub = React.lazy(() => import('./components/features/SecurityHub'));
-const SubscriptionHub = React.lazy(() => import('./components/features/SubscriptionHub'));
-const LicenseManager = React.lazy(() => import('./components/features/LicenseManager'));
-const BankCashPanel = React.lazy(() => import('./components/features/BankCashPanel'));
-const DigitalCashPanel = React.lazy(() => import('./components/features/DigitalCashPanel'));
-const PriceManagement = React.lazy(() => import('./components/features/PriceManagement'));
-const EnterpriseHub = React.lazy(() => import('./components/features/EnterpriseHub'));
-const DipCalculator = React.lazy(() => import('./components/features/DipCalculator/DipCalculator'));
-const OGRAPriceSync = React.lazy(() => import('./components/features/OGRAPriceSync/OGRAPriceSync'));
-const AIAssistant = React.lazy(() => import('./components/features/AIAssistant/AIAssistant'));
-const CommunicationDashboard = React.lazy(() => import('./components/features/CommunicationCenter/CommunicationDashboard'));
-const BIDashboard = React.lazy(() => import('./components/features/BIAnalytics/BIDashboard'));
-const SyncCenter = React.lazy(() => import('./components/features/SyncCenter/SyncCenter'));
-
-// AI Hub
-const AIAnalyticsHub = React.lazy(() => import('./components/features/AIAnalyticsHub/AIAnalyticsHub'));
-const RiskCenter = React.lazy(() => import('./components/features/RiskCenter/RiskCenter'));
-const ExecutiveDashboard = React.lazy(() => import('./components/features/ExecutiveDashboard/ExecutiveDashboard'));
-const TreasuryCenter = React.lazy(() => import('./components/features/TreasuryCenter/TreasuryCenter'));
-const FuelProJarvis = React.lazy(() => import('./components/features/AI/FuelProJarvis'));
 import { PageTransition } from './components/shared/PageTransition';
 import { GlobalSearchModal } from './components/shared/GlobalSearchModal';
 import { SmartSuggestions } from './components/shared/SmartSuggestions';
