@@ -91,6 +91,13 @@ export function useJarvis() {
 
       const data = await res.json();
 
+      if (data.error) {
+        console.error('Backend returned error:', data.error);
+        setChatHistory(prev => [...prev, { role: 'model', parts: [{ text: `System Error: ${data.error}` }] }]);
+        speak("Sir, there is a server error: " + (data.error.includes("configured") ? "API key is missing" : data.error));
+        return;
+      }
+
       // 2. Handle Function Call
       if (data.type === 'function_call') {
         const funcCallMsg: Message = { role: 'model', parts: [{ functionCall: { name: data.functionName, args: data.functionArgs } }] };

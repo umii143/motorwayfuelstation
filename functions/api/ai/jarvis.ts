@@ -1,5 +1,3 @@
-import { GoogleGenAI } from '@google/genai';
-
 export async function onRequestPost(context: any) {
   const { request, env } = context;
 
@@ -14,7 +12,6 @@ export async function onRequestPost(context: any) {
       });
     }
 
-    // Cloudflare passes environment variables in context.env
     const apiKey = env.GEMINI_API_KEY || env.VITE_GEMINI_API_KEY;
     if (!apiKey) {
       return new Response(JSON.stringify({ error: 'VITE_GEMINI_API_KEY is not configured in Cloudflare Pages.' }), { 
@@ -23,31 +20,53 @@ export async function onRequestPost(context: any) {
       });
     }
 
-    const ai = new GoogleGenAI({ apiKey });
-
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+    const payload = {
       contents: messages,
-      config: {
-        systemInstruction: systemInstruction,
-        tools: tools ? [{ functionDeclarations: tools }] : undefined,
-        temperature: 0.2, // Low temperature for factual ERP data
+      systemInstruction: systemInstruction,
+      tools: tools ? [{ functionDeclarations: tools }] : undefined,
+      generationConfig: {
+        temperature: 0.2
       }
+    };
+
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
 
-    if (response.functionCalls && response.functionCalls.length > 0) {
-      const call = response.functionCalls[0];
+    const data = await res.json();
+
+    if (!res.ok) {
+      return new Response(JSON.stringify({ error: data.error?.message || 'Failed to call Gemini API' }), { 
+        status: 500, 
+        headers: { "Content-Type": "application/json" } 
+      });
+    }
+
+    const candidate = data.candidates?.[0];
+    if (!candidate) {
+      return new Response(JSON.stringify({ type: 'text', reply: "No response generated." }), { status: 200, headers: { "Content-Type": "application/json" } });
+    }
+
+    const parts = candidate.content?.parts || [];
+    
+    // Check for function call
+    const functionCallPart = parts.find((p: any) => p.functionCall);
+    if (functionCallPart) {
       return new Response(JSON.stringify({
         type: 'function_call',
-        functionName: call.name,
-        functionArgs: call.args
+        functionName: functionCallPart.functionCall.name,
+        functionArgs: functionCallPart.functionCall.args
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
-    if (response.text) {
+    // Check for text
+    const textPart = parts.find((p: any) => p.text);
+    if (textPart) {
       return new Response(JSON.stringify({
         type: 'text',
-        reply: response.text
+        reply: textPart.text
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
