@@ -7,6 +7,7 @@ interface TopHeaderProps {
   onLanguageToggle?: () => void;
   onThemeToggle?: () => void;
   onSettingsClick?: () => void;
+  onJarvisTrigger?: () => void;
   settings: GlobalSettings;
 }
 
@@ -15,6 +16,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   onLanguageToggle,
   onThemeToggle,
   onSettingsClick,
+  onJarvisTrigger,
   settings 
 }) => {
   return (
@@ -69,13 +71,25 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         </button>
 
         {/* Search */}
-        <div className="hidden sm:flex items-center relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3" />
+        <div className="hidden sm:flex items-center relative group">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 transition-colors group-hover:text-indigo-500" />
           <input 
             type="text" 
-            placeholder="Search..." 
-            className="w-48 lg:w-64 h-9 pl-9 pr-4 rounded-full bg-slate-100 dark:bg-[#1A1A24] text-sm font-medium text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 border border-transparent dark:border-white/5 transition-all"
+            placeholder="Search or ask Jarvis..." 
+            className="w-56 lg:w-72 h-9 pl-9 pr-10 rounded-full bg-slate-100 dark:bg-[#1A1A24] text-sm font-medium text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 border border-transparent dark:border-white/5 transition-all"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && onJarvisTrigger) {
+                onJarvisTrigger();
+              }
+            }}
           />
+          <button 
+            onClick={onJarvisTrigger}
+            title="Ask Jarvis"
+            className="absolute right-1.5 p-1.5 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-full hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-500 dark:hover:text-white transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+          </button>
         </div>
 
         {/* Notifications */}

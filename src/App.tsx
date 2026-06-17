@@ -945,6 +945,9 @@ function MainApp() {
         onSettingsClick={() => {
           handleViewChange('configuration');
         }}
+        onJarvisTrigger={() => {
+          handleViewChange('jarvis');
+        }}
       />
 
       <SidebarDrawer
