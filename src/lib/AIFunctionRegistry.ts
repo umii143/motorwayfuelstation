@@ -68,6 +68,55 @@ export const jarvisFunctionDeclarations = [
   {
     name: "getInventoryStock",
     description: "Fetches the exact physical stock of all Lube products and Fuel Tanks.",
+  },
+  {
+    name: "getTopDefaulters",
+    description: "Identifies customers who owe the most money or have exceeded their credit limits.",
+  },
+  {
+    name: "getLowStockAlerts",
+    description: "Returns a list of any fuel tanks or lube products that are running dangerously low on stock.",
+  },
+  {
+    name: "getFinancialSummary",
+    description: "Returns an overview of the station's total assets, liabilities, and profitability.",
+  },
+  {
+    name: "transferFunds",
+    description: "Transfers cash from the main drawer/cash account to a bank account.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        amount: { type: "NUMBER", description: "The amount to transfer in PKR" },
+        fromAccount: { type: "STRING", description: "Source account (e.g. 'Cash')" },
+        toBankName: { type: "STRING", description: "Destination bank name (e.g. 'HBL', 'Meezan')" }
+      },
+      required: ["amount", "toBankName"]
+    }
+  },
+  {
+    name: "markAttendance",
+    description: "Marks attendance for a staff member.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        staffName: { type: "STRING", description: "Name of the staff member" },
+        status: { type: "STRING", description: "Attendance status: 'Present', 'Absent', 'Leave', or 'Half Day'" }
+      },
+      required: ["staffName", "status"]
+    }
+  },
+  {
+    name: "addLubeSale",
+    description: "Records the sale of a Lube/Tuck Shop product.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        productName: { type: "STRING", description: "The name of the product" },
+        quantity: { type: "NUMBER", description: "The quantity sold" }
+      },
+      required: ["productName", "quantity"]
+    }
   }
 ];
 
@@ -212,7 +261,7 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
       return {
         products: (inventory.products || []).map(p => ({
           name: p.name,
-          stock: p.stock,
+          stock: p.currentStock || p.stock,
           price: p.sellingPrice
         })),
         tanks: (inventory.tanks || []).map(t => ({
@@ -221,6 +270,97 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
           capacity: t.capacity
         }))
       };
+    }
+
+    case "getTopDefaulters": {
+      const customers = useCustomerStore.getState().customers || [];
+      const defaulters = customers
+        .filter(c => c.balance > 0)
+        .sort((a, b) => b.balance - a.balance)
+        .slice(0, 5)
+        .map(c => ({
+          name: c.name,
+          balance: c.balance,
+          limit: c.creditLimit,
+          isOverLimit: c.balance > (c.creditLimit || 0)
+        }));
+      return { topDefaulters: defaulters };
+    }
+
+    case "getLowStockAlerts": {
+      const inventory = useInventoryStore.getState();
+      const lowTanks = (inventory.tanks || []).filter(t => t.currentStock < (t.capacity * 0.15)).map(t => ({ name: t.name, stock: t.currentStock }));
+      const lowProducts = (inventory.products || []).filter(p => (p.currentStock || p.stock) < (p.minimumStock || 5)).map(p => ({ name: p.name, stock: p.currentStock || p.stock }));
+      return { lowTanks, lowProducts };
+    }
+
+    case "getFinancialSummary": {
+      const treasury = useTreasuryStore.getState();
+      const customers = useCustomerStore.getState().customers || [];
+      const suppliers = useSupplierStore.getState().suppliers || [];
+      
+      let totalCashAndBank = 0;
+      treasury.cashAccounts?.forEach(acc => totalCashAndBank += acc.balance);
+      
+      let totalReceivables = 0;
+      customers.forEach(c => totalReceivables += (c.balance || 0));
+      
+      let totalPayables = 0;
+      suppliers.forEach(s => totalPayables += (s.balance || 0));
+
+      return {
+        liquidAssets: totalCashAndBank,
+        receivables: totalReceivables,
+        payables: totalPayables,
+        netPosition: (totalCashAndBank + totalReceivables) - totalPayables
+      };
+    }
+
+    case "transferFunds": {
+      const { amount, toBankName } = args;
+      const treasury = useTreasuryStore.getState();
+      const cashAcc = treasury.cashAccounts.find(a => a.type === 'cash' || a.type === 'drawer');
+      const bankAcc = treasury.cashAccounts.find(a => a.type === 'bank' && a.name.toLowerCase().includes(toBankName.toLowerCase()));
+      
+      if (!cashAcc || !bankAcc) return { status: "Failed: Could not find matching accounts." };
+      
+      treasury.transferFunds(cashAcc.id, bankAcc.id, Number(amount), "Voice Transfer", "Jarvis", "", "");
+      return { status: "Success", message: `Transferred ${amount} to ${bankAcc.name}.` };
+    }
+
+    case "markAttendance": {
+      const { staffName, status } = args;
+      const staffStore = useStaffStore.getState();
+      const staffMember = staffStore.staff.find(s => s.name.toLowerCase().includes(staffName.toLowerCase()));
+      if (!staffMember) return { status: `Failed: Could not find staff named ${staffName}.` };
+      
+      const record = {
+        staffId: staffMember.id,
+        date: new Date().toISOString().split('T')[0],
+        status: status as any
+      };
+      
+      staffStore.handleAddAttendance([record], "", "");
+      return { status: "Success", message: `Marked ${staffMember.name} as ${status}.` };
+    }
+
+    case "addLubeSale": {
+      const { productName, quantity } = args;
+      const inventory = useInventoryStore.getState();
+      const product = inventory.products.find(p => p.name.toLowerCase().includes(productName.toLowerCase()));
+      if (!product) return { status: `Failed: Could not find product ${productName}.` };
+      
+      const sale = {
+        id: `ls_${Date.now()}`,
+        date: new Date().toISOString().split('T')[0],
+        items: [{ productId: product.id, productName: product.name, quantity: Number(quantity), unitPrice: product.sellingPrice, total: product.sellingPrice * Number(quantity) }],
+        total: product.sellingPrice * Number(quantity),
+        paymentMode: 'cash' as any,
+        invoiceNo: `INV-${Date.now()}`
+      };
+      
+      useFinancialStore.getState().handleAddLubePosSale(sale, "", "");
+      return { status: "Success", message: `Sold ${quantity}x ${product.name} for Rs ${sale.total}.` };
     }
 
     default:
