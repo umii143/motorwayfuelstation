@@ -438,8 +438,8 @@ export default function StaffPanel({
               TAB 1: STAFF CREW LIST (ROSTER)
               ========================================== */}
           {activeTab === 'crew' && (
-            <div className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
-              <table className="premium-table">
+            <div className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-x-auto">
+              <table className="premium-table min-w-[800px]">
                 <thead>
                   <tr className="text-slate-650 text-[10px]">
                     <th>{t('Crew Employee Name', 'ملازم کا نام')}</th>
@@ -1462,7 +1462,7 @@ export default function StaffPanel({
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: 15, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 350 }}
-              className="bg-white rounded-xl border border-slate-200 w-full max-w-lg p-5 space-y-4 shadow-xl"
+              className="bg-white rounded-xl border border-slate-200 w-full max-w-lg p-5 space-y-4 shadow-xl max-h-[95vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center border-b border-slate-100 pb-2.5">
                 <h4 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
