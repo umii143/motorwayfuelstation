@@ -23,6 +23,8 @@ export function useJarvis() {
   const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
   const callModeRef = useRef<boolean>(false);
+  const transcriptRef = useRef<string>('');
+  const processAudioInputRef = useRef<any>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -39,10 +41,24 @@ export function useJarvis() {
             currentTranscript += event.results[i][0].transcript;
           }
           setTranscript(currentTranscript);
+          transcriptRef.current = currentTranscript;
         };
 
         recognitionRef.current.onend = () => {
           setIsListening(false);
+          const finalStr = transcriptRef.current;
+          if (finalStr.trim()) {
+            transcriptRef.current = '';
+            if (processAudioInputRef.current) {
+              processAudioInputRef.current(finalStr);
+            }
+          } else if (callModeRef.current && !synthRef.current?.speaking) {
+            // Keep listening if call mode is active and we're not speaking
+            try {
+              recognitionRef.current.start();
+              setIsListening(true);
+            } catch (e) {}
+          }
         };
       }
       synthRef.current = window.speechSynthesis;
@@ -93,6 +109,9 @@ export function useJarvis() {
     }
 
     setIsProcessing(true);
+    setTranscript('');
+    transcriptRef.current = '';
+    
     const newUserMsg: Message = { role: 'user', parts: [{ text: finalTranscript }] };
     const updatedHistory = [...chatHistory, newUserMsg];
     setChatHistory(updatedHistory);
@@ -169,9 +188,12 @@ export function useJarvis() {
       speak("Sorry Sir, I encountered a network error connecting to the backend gateway.");
     } finally {
       setIsProcessing(false);
-      setTranscript('');
     }
   };
+
+  useEffect(() => {
+    processAudioInputRef.current = processAudioInput;
+  }, [processAudioInput]);
 
   const startListening = useCallback(() => {
     if (recognitionRef.current) {
