@@ -435,7 +435,7 @@ export default React.memo(function Dashboard({
       )}
 
       {/* THREE COLUMNS: TRANSACTIONS, TOP ITEMS, SHIFT SUMMARY */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
         
         {/* Recent Transactions */}
         <div className="bg-white dark:bg-[#1A1A24] rounded-[24px] p-6 shadow-sm border border-slate-200 dark:border-white/5 flex flex-col h-full">
