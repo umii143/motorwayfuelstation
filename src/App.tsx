@@ -962,6 +962,10 @@ function MainApp() {
         settings={settings}
         isLubeBusiness={isLubeBusiness}
         isSuperAdmin={isSuperAdmin}
+        stations={stations}
+        activeStationId={activeStationId}
+        onSwitchStation={handleSwitchStation}
+        onCreateStation={() => handleViewChange('onboarding')}
         onLanguageToggle={() => {
           const languages: ('en' | 'ur' | 'ar' | 'es' | 'zh')[] = ['en', 'ur', 'ar', 'es', 'zh'];
           const currentIndex = languages.indexOf(settings.language || 'en');

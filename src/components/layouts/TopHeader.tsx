@@ -53,12 +53,9 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* Station Switcher / Identity */}
-        <div className="relative ml-2" ref={dropdownRef}>
-          <button 
-            onClick={() => setIsStationMenuOpen(!isStationMenuOpen)}
-            className="flex items-center gap-3 p-1.5 pr-3 rounded-full transition-colors hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
-          >
+        {/* Station Identity (Read-only) */}
+        <div className="relative ml-2">
+          <div className="flex items-center gap-3 p-1.5 pr-3 rounded-full transition-colors">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-[#FF7A00] flex items-center justify-center shadow-lg shadow-orange-500/20 shrink-0">
               <Fuel className="w-4 h-4 text-white fill-white" />
             </div>
@@ -70,50 +67,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                 {activeStation?.businessType === 'lube' ? 'Lube Business' : activeStation?.businessType === 'cng' ? 'CNG Station' : 'Fuel Station'}
               </span>
             </div>
-            <ChevronDown className={`w-4 h-4 text-slate-400 hidden sm:block ml-1 transition-transform ${isStationMenuOpen ? 'rotate-180' : ''}`} />
-          </button>
-
-          {/* Dropdown Menu */}
-          {isStationMenuOpen && (
-            <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-[#1f2937] rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] border border-slate-200 dark:border-slate-700/50 py-2 z-50 animate-in slide-in-from-top-2 fade-in duration-200">
-              <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 mb-2">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Switch Station</span>
-              </div>
-              {stations.map(station => (
-                <button
-                  key={station.id}
-                  onClick={() => {
-                    onSwitchStation?.(station.id);
-                    setIsStationMenuOpen(false);
-                  }}
-                  className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${station.id === activeStationId ? 'bg-orange-50 dark:bg-orange-500/10' : ''}`}
-                >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${station.id === activeStationId ? 'bg-orange-500 text-white shadow-[0_0_10px_rgba(249,115,22,0.4)]' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}>
-                    <Store className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className={`font-bold text-sm ${station.id === activeStationId ? 'text-orange-600 dark:text-orange-400' : 'text-slate-700 dark:text-slate-200'}`}>
-                      {station.name}
-                    </div>
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      {station.businessType === 'lube' ? 'Lube Business' : station.businessType === 'cng' ? 'CNG Station' : 'Fuel Station'}
-                    </div>
-                  </div>
-                </button>
-              ))}
-              <div className="px-3 pt-2 mt-2 border-t border-slate-100 dark:border-slate-800">
-                <button
-                  onClick={() => {
-                    onCreateStation?.();
-                    setIsStationMenuOpen(false);
-                  }}
-                  className="w-full py-2.5 px-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-orange-50 dark:hover:bg-orange-500/10 text-orange-600 dark:text-orange-500 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-dashed border-slate-200 dark:border-slate-700 hover:border-orange-200 dark:hover:border-orange-500/30"
-                >
-                  <span>+ Create New Business</span>
-                </button>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       </div>
 
