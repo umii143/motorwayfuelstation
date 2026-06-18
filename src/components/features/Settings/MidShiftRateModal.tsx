@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertCircle, CheckCircle, X } from 'lucide-react';
 import { Product, Shift, Nozzle } from '../../../types';
 import { useInventoryStore } from '../../../stores/useInventoryStore';
@@ -71,8 +72,8 @@ export default function MidShiftRateModal({
     onConfirm(finalReadings);
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+  return createPortal(
+    <div className="fixed inset-0 z-[105] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
         
         <div className="bg-amber-50 border-b border-amber-100 p-6 flex items-start gap-4">
@@ -151,6 +152,7 @@ export default function MidShiftRateModal({
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

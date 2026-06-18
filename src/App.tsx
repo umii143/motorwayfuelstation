@@ -1,7 +1,7 @@
 import { StationProvider, useStation } from './contexts/StationContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ScannerProvider } from './contexts/ScannerContext';
-import LocalStorageMigrationWizard from './components/features/LocalStorageMigrationWizard';
+
 import { AutoUpdatePrompt } from './components/shared/AutoUpdatePrompt';
 import { firestoreDb } from './data/firestore';
 import { writeBatch, doc, setDoc } from 'firebase/firestore';
@@ -79,7 +79,6 @@ const DigitalCashPanel = lazyWithRetry(() => import('./components/features/Digit
 const PriceManagement = lazyWithRetry(() => import('./components/features/PriceManagement'));
 const EnterpriseHub = lazyWithRetry(() => import('./components/features/EnterpriseHub'));
 const DipCalculator = lazyWithRetry(() => import('./components/features/DipCalculator/DipCalculator'));
-const OGRAPriceSync = lazyWithRetry(() => import('./components/features/OGRAPriceSync/OGRAPriceSync'));
 const AIAssistant = lazyWithRetry(() => import('./components/features/AIAssistant/AIAssistant'));
 const CommunicationDashboard = lazyWithRetry(() => import('./components/features/CommunicationCenter/CommunicationDashboard'));
 const BIDashboard = lazyWithRetry(() => import('./components/features/BIAnalytics/BIDashboard'));
@@ -736,34 +735,7 @@ function MainApp() {
           />
         );
 
-      case 'ogra_sync':
-        return (
-          <OGRAPriceSync
-            settings={settings}
-            products={products}
-            onApplyRates={(updates) => {
-              updates.forEach(u => handleUpdateProductRate(u.productId, u.newRate));
-              showToast('OGRA rates applied successfully!', 'success');
-              handleViewChange('inventory');
 
-              if (settings.whatsappSettings?.enabled && settings.whatsappSettings?.alerts?.priceChange) {
-                try {
-                   let msg = "*🚨 Official Rate Change Alert*\n\nNew rates have been applied to the station:\n";
-                   updates.forEach(u => {
-                      const p = products.find(prod => prod.id === u.productId);
-                      if (p) msg += `- ${p.name}: Rs ${u.newRate.toFixed(2)}\n`;
-                   });
-                   msg += `\n_Generated automatically by FuelPro ERP_`;
-                   fetchWithAuth('/api/wa/send', {
-                     method: 'POST',
-                     headers: { 'Content-Type': 'application/json' },
-                     body: JSON.stringify({ number: settings.whatsappSettings.number, message: msg })
-                   }).catch(() => {});
-                } catch(e) {}
-              }
-            }}
-          />
-        );
       case 'communication_center':
         if (!canAccessPremium) return <div className="p-8 text-center"><AlertTriangle className="mx-auto h-8 w-8 text-orange-500 mb-4"/><h2 className="text-xl font-bold">Premium Feature</h2><button onClick={() => handleViewChange('subscription_hub')} className="mt-4 bg-orange-600 text-white px-4 py-2 rounded-lg">Upgrade</button></div>;
         return <CommunicationDashboard />;
@@ -955,6 +927,10 @@ function MainApp() {
       {/* Dynamic Premium Top Header */}
       <TopHeader
         settings={settings}
+        stations={stations}
+        activeStationId={activeStationId}
+        onSwitchStation={handleSwitchStation}
+        onCreateStation={() => handleViewChange('onboarding')}
         onMenuClick={() => {
           setIsSidebarOpen(true);
         }}

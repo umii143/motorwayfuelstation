@@ -18,6 +18,16 @@ import {
 // Lazy import SyncEngine to avoid circular dependency issues at boot
 import { SyncEngine } from '../services/core/SyncEngine';
 
+const removeUndefined = (obj: any): any => {
+  if (Array.isArray(obj)) return obj.map(removeUndefined);
+  if (obj === null || typeof obj !== 'object') return obj;
+  return Object.fromEntries(
+    Object.entries(obj)
+      .filter(([_, v]) => v !== undefined)
+      .map(([k, v]) => [k, removeUndefined(v)])
+  );
+};
+
 // Helper to construct references
 const getCollectionRef = (orgId: string, stationId: string, collectionName: string) => {
   return collection(dbFS, 'organizations', orgId, 'stations', stationId, collectionName);
@@ -68,7 +78,8 @@ export const firestoreDb = {
         } 
       : createMetadata(orgId, stationId, businessType);
 
-    await setDoc(docRef, { ...withBusinessScope(data, stationId, orgId), ...meta }, { merge: true });
+    const payload = removeUndefined({ ...withBusinessScope(data, stationId, orgId), ...meta });
+    await setDoc(docRef, payload, { merge: true });
   },
 
   // Generic single save/update (intercepted by Sync Engine)
@@ -183,7 +194,8 @@ export const firestoreDb = {
         const docRef = getDocumentRef(orgId, stationId, collectionName, docId);
         
         const metadata = createMetadata(orgId, stationId, enforcedBusinessType);
-        batch.set(docRef, { ...withBusinessScope(item, stationId, orgId), ...metadata }, { merge: true });
+        const payload = removeUndefined({ ...withBusinessScope(item, stationId, orgId), ...metadata });
+        batch.set(docRef, payload, { merge: true });
       });
       await batch.commit();
       

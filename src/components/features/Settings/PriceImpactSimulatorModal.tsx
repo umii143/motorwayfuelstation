@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Product, RateChangeReason, Attachment, Tank } from '../../../types';
 import { X, TrendingUp, TrendingDown, Upload, File as FileIcon, XCircle, AlertCircle, Info, Activity, CheckCircle } from 'lucide-react';
 import { t } from '../../../lib/translations';
@@ -123,8 +124,8 @@ export default function PriceImpactSimulatorModal({
     onConfirm(reason as RateChangeReason, attachments);
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+  return createPortal(
+    <div className="fixed inset-0 z-[105] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
         
         <div className="bg-slate-800 p-6 flex justify-between items-center text-white sticky top-0 z-10">
@@ -292,6 +293,7 @@ export default function PriceImpactSimulatorModal({
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

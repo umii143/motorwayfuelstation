@@ -182,6 +182,30 @@ class SyncEngineClass {
     }
 
     private async persistQueue() {
+        // Enforce a hard limit on the offline queue to prevent local storage bloat/OOM on low-end devices
+        const MAX_QUEUE_SIZE = 5000;
+        
+        if (this.queue.length > MAX_QUEUE_SIZE) {
+            console.warn(`Sync queue exceeded ${MAX_QUEUE_SIZE} items. Truncating oldest items to conserve memory.`);
+            
+            // Sort by newest first (descending createdAt)
+            this.queue.sort((a, b) => b.createdAt - a.createdAt);
+            
+            // Identify items to be purged
+            const truncatedItems = this.queue.slice(MAX_QUEUE_SIZE);
+            
+            // Keep only the newest items
+            this.queue = this.queue.slice(0, MAX_QUEUE_SIZE);
+            
+            // Log the purged items to the integrity drift log so they are not silently lost
+            for (const item of truncatedItems) {
+                await this.logIntegrityDrift({
+                    ...item,
+                    error: 'Purged from local queue due to memory limits (device offline for too long)'
+                });
+            }
+        }
+        
         await localforage.setItem(QUEUE_KEY, this.queue);
     }
 

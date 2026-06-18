@@ -62,8 +62,7 @@ import {
   Briefcase,
   Beaker,
   FlaskConical,
-  PlusCircle,
-  BrainCircuit
+  PlusCircle
 } from 'lucide-react';
 import { GlobalSettings, Station } from '../../types';
 import { t as translate } from '../../lib/translations';
@@ -142,7 +141,6 @@ const Navigation = React.memo(function Navigation({
   const allMenuItems = [
     // MAIN
     { id: 'dashboard', section: 'main', icon: LayoutDashboard, label: 'Dashboard', urdu: 'ڈیش بورڈ', showInLube: true },
-    { id: 'jarvis', section: 'main', icon: BrainCircuit, label: 'FuelPro Jarvis (AI)', urdu: 'جاروس (اے آئی)', showInLube: true },
     { id: isLube ? 'lube_pos' : 'shift_wizard', section: 'main', icon: RefreshCw, label: isLube ? 'Lube POS Terminal' : 'Shift Wizard', urdu: isLube ? 'لیوب پی او ایس' : 'شفٹ وزرڈ', showInLube: true },
     { id: 'shift_logs', section: 'main', icon: History, label: 'Shift Logs & Audit', urdu: 'شفٹ لاگز', showInLube: false },
     { id: 'price_management', section: 'main', icon: DollarSign, label: 'Price Management', urdu: 'قیمتیں اور نرخ', showInLube: false },
@@ -178,7 +176,7 @@ const Navigation = React.memo(function Navigation({
     // ANALYTICS
     { id: 'reports', section: 'analytics', icon: FileBarChart, label: isLube ? 'Lube Reports' : 'Advanced Reports (104)', urdu: isLube ? 'لیوب رپورٹس' : 'ایڈوانسڈ رپورٹس', showInLube: true },
     { id: 'dip_calculator', section: 'analytics', icon: Droplets, label: 'Dip Chart Calculator', urdu: 'دپ چارٹ کیلکولیٹر', showInLube: false },
-
+    { id: 'ogra_sync', section: 'analytics', icon: ShieldCheck, label: 'OGRA Price Sync', urdu: 'OGRA قیمت سنک', showInLube: false },
     { id: 'ai_analytics', section: 'analytics', icon: Sparkles, label: 'AI Analytics Hub', urdu: 'اے آئی اینالٹکس', showInLube: true },
     // SYSTEM
     { id: 'security_hub', section: 'system', icon: Shield, label: 'Security & Roles', urdu: 'سیکیورٹی ہب', showInLube: true },

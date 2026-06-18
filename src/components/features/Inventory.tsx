@@ -51,6 +51,7 @@ import InventoryAgingDashboard from './InventoryAgingDashboard';
 import SupplierScorecard from './SupplierCommandCenter/SupplierScorecard';
 import SupplierPayablesPanel from './SupplierCommandCenter/SupplierPayablesPanel';
 import SupplierClaimsPanel from './SupplierCommandCenter/SupplierClaimsPanel';
+import AdvancedFuelStock from './FuelStock/AdvancedFuelStock';
 
 interface InventoryProps {
   settings: GlobalSettings;
@@ -103,7 +104,7 @@ export default function Inventory({
   }, [suppliers, storeSuppliers]);
 
   // Filter States
-  const [activeTab, setActiveTab] = useState<'inventory' | 'tanks_calibration' | 'pricing_logs' | 'batch_history' | 'aging' | 'supplier_perf' | 'payables' | 'claims'>('inventory');
+  const [activeTab, setActiveTab] = useState<'inventory' | 'tanks_calibration' | 'pricing_logs' | 'batch_history' | 'aging' | 'supplier_perf' | 'payables' | 'claims' | 'advanced_dashboard'>('advanced_dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'fuel' | 'lube' | 'low'>('all');
   const [isInventoryDrillDownOpen, setIsInventoryDrillDownOpen] = useState(false);
@@ -745,7 +746,25 @@ export default function Inventory({
             </span>
           )}
         </button>
+
+        {!isLube && (
+        <button
+          onClick={() => setActiveTab('advanced_dashboard')}
+          className={`fp-date-tab ${
+            activeTab === 'advanced_dashboard'
+              ? 'fp-date-tab--active !text-blue-600 !border-blue-600 bg-blue-50/50 dark:bg-blue-500/10'
+              : ''
+          }`}
+        >
+          🚀 {t('Advanced Dashboard', 'ایڈوانسڈ ڈیش بورڈ')}
+        </button>
+        )}
       </div>
+
+      {/* ADVANCED FUEL STOCK DASHBOARD */}
+      {activeTab === 'advanced_dashboard' && !isLube && (
+        <AdvancedFuelStock />
+      )}
 
       {/* CORE ACTIVE WORKSPACE MODULES */}
       {activeTab === 'inventory' && (

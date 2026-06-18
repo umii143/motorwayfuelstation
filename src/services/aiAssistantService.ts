@@ -243,6 +243,8 @@ export class AIAssistantService {
     }
   }
 
+
+
   public async generateBusinessInsights(contextData: any): Promise<AIBusinessInsight[]> {
     const prompt = `
     Analyze the following Business Intelligence (BI) data for a fuel station.

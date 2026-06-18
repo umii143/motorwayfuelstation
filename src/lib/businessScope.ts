@@ -13,7 +13,7 @@ const FUEL_ONLY_VIEWS = new Set([
   'tanker_delivery',
   'loss_prevention',
   'dip_calculator',
-  'ogra_sync',
+
   'onboarding',
 ]);
 

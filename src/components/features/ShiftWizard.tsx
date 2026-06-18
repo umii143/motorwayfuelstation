@@ -1913,68 +1913,77 @@ export default function ShiftWizard({
               </div>
               
               <div className="relative group flex-1 flex flex-col z-50">
-                <div className="relative mb-3">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                  </div>
-                  <input 
-                    type="text" 
-                    placeholder="Search staff by name or code..." 
-                    value={searchStaffQuery}
-                    onChange={(e) => setSearchStaffQuery(e.target.value)}
-                    className="peer w-full pl-9 pr-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-colors" 
-                  />
-                </div>
-
-                <div className="absolute top-[52px] left-0 right-0 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl opacity-0 invisible peer-focus:opacity-100 peer-focus:visible hover:opacity-100 hover:visible transition-all max-h-[300px] overflow-y-auto custom-scrollbar">
-                  {staff
-                    .filter(st => st.active)
-                    .filter(st => searchStaffQuery === '' || st.name.toLowerCase().includes(searchStaffQuery.toLowerCase()) || (st.urduName && st.urduName.includes(searchStaffQuery)))
-                    .map(s => {
-                    const isSelected = selectedStaffId === s.id;
-                    return (
-                      <div 
-                        key={s.id} 
-                        onMouseDown={(e) => {
-                          e.preventDefault(); // prevents input from losing focus immediately before click fires
-                          setSelectedStaffId(s.id);
-                        }}
-                        className={`relative flex items-center justify-between p-3 border-b border-slate-700/50 cursor-pointer transition-all last:border-0 ${isSelected ? 'bg-orange-500/10' : 'hover:bg-slate-700/50'}`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=1e293b&color=f97316&bold=true`} alt={s.name} className="w-10 h-10 rounded-full border border-slate-600 object-cover" />
-                          <div>
-                            <h4 className="font-bold text-white text-sm">{settings.language === "en" ? s.name : s.urduName}</h4>
-                            <p className={`text-xs font-semibold ${isSelected ? 'text-orange-400' : 'text-slate-400'}`}>{t(s.role.toUpperCase(), s.role)}</p>
-                          </div>
-                        </div>
-                        {isSelected && <Check className="w-4 h-4 text-orange-500" strokeWidth={3} />}
+                {!selectedStaffId ? (
+                  <>
+                    <div className="relative mb-3">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                       </div>
-                    );
-                  })}
-                </div>
+                      <input 
+                        type="text" 
+                        placeholder="Search staff by name or code..." 
+                        value={searchStaffQuery}
+                        onChange={(e) => setSearchStaffQuery(e.target.value)}
+                        className="w-full pl-9 pr-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-colors" 
+                      />
+                    </div>
 
-                {/* Selected Staff Info Display */}
-                <div className="mt-2">
-                  {selectedStaffId ? (
-                    <div className="bg-slate-900/50 border border-orange-500/30 rounded-xl p-4 flex items-center justify-between">
+                    <div className="bg-slate-800 border border-slate-600 rounded-xl max-h-[220px] overflow-y-auto custom-scrollbar shadow-inner">
+                      {staff
+                        .filter(st => st.active)
+                        .filter(st => searchStaffQuery === '' || st.name.toLowerCase().includes(searchStaffQuery.toLowerCase()) || (st.urduName && st.urduName.includes(searchStaffQuery)))
+                        .map(s => {
+                        return (
+                          <div 
+                            key={s.id} 
+                            onClick={() => {
+                              setSelectedStaffId(s.id);
+                              setSearchStaffQuery('');
+                            }}
+                            className="relative flex items-center justify-between p-3 border-b border-slate-700/50 cursor-pointer transition-all last:border-0 hover:bg-slate-700"
+                          >
+                            <div className="flex items-center gap-3">
+                              <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=1e293b&color=f97316&bold=true`} alt={s.name} className="w-10 h-10 rounded-full border border-slate-600 object-cover shadow-sm" />
+                              <div>
+                                <h4 className="font-bold text-white text-sm">{settings.language === "en" ? s.name : s.urduName}</h4>
+                                <p className="text-xs font-semibold text-slate-400">{t(s.role.toUpperCase(), s.role)}</p>
+                              </div>
+                            </div>
+                            <div className="opacity-0 hover:opacity-100 flex items-center justify-center size-6 rounded-full bg-orange-500/20 text-orange-400 transition-opacity">
+                              <Check className="size-3" strokeWidth={3} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {staff.filter(st => st.active).length === 0 && (
+                        <div className="p-6 text-center">
+                          <User className="w-8 h-8 text-slate-500 mx-auto mb-2 opacity-50" />
+                          <p className="text-sm text-slate-400 font-medium">No active staff found.</p>
+                          <p className="text-xs text-slate-500 mt-1">Please add staff in Staff & Payroll first.</p>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="mt-2 animate-in zoom-in-95 duration-200">
+                    <div className="bg-slate-900/80 border border-orange-500/50 shadow-[0_0_15px_rgba(249,115,22,0.1)] rounded-xl p-4 flex items-center justify-between">
                        <div className="flex items-center gap-3">
-                          <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(staff.find(s => s.id === selectedStaffId)?.name || '')}&background=1e293b&color=f97316&bold=true`} alt="Selected" className="w-14 h-14 rounded-full border-2 border-orange-500/50 object-cover" />
+                          <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(staff.find(s => s.id === selectedStaffId)?.name || '')}&background=1e293b&color=f97316&bold=true`} alt="Selected" className="w-14 h-14 rounded-full border-2 border-orange-500/50 object-cover shadow-lg" />
                           <div>
                             <h4 className="font-bold text-white text-base">{staff.find(s => s.id === selectedStaffId)?.name}</h4>
                             <p className="text-sm font-semibold text-orange-400">{staff.find(s => s.id === selectedStaffId)?.role}</p>
                             <span className="inline-block mt-1 text-[10px] font-mono text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">EMP-{selectedStaffId.slice(-3).toUpperCase()}</span>
                           </div>
                        </div>
+                       <button 
+                         onClick={() => setSelectedStaffId('')}
+                         className="text-xs bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg border border-slate-600 transition-colors font-medium shadow-sm hover:shadow active:scale-95"
+                       >
+                         {t('Change', 'تبدیل کریں')}
+                       </button>
                     </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center text-center p-6 border-2 border-dashed border-slate-700/50 rounded-xl bg-slate-900/20">
-                      <User className="w-10 h-10 text-slate-600 mb-2" />
-                      <p className="text-sm text-slate-400 font-medium">No staff selected</p>
-                      <p className="text-xs text-slate-500 mt-1">Tap the search bar to select an operator</p>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
 

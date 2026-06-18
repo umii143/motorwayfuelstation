@@ -165,8 +165,8 @@ export default function StaffPanel({
       advances: 0,
       active: true,
       pin: addPin,
-      phone: addPhone || undefined,
-      cnic: addCnic || undefined
+      phone: addPhone || '',
+      cnic: addCnic || ''
     };
 
     onAddStaff(newPrs);
@@ -281,8 +281,8 @@ export default function StaffPanel({
         staffId: sId,
         date: attendanceDate,
         status: data.status,
-        checkIn: data.status === 'present' ? data.checkIn : undefined,
-        checkOut: data.status === 'present' ? data.checkOut : undefined
+        checkIn: data.status === 'present' ? data.checkIn : '',
+        checkOut: data.status === 'present' ? data.checkOut : ''
       };
     });
 

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -62,8 +62,7 @@ import {
   Briefcase,
   Beaker,
   FlaskConical,
-  PlusCircle,
-  BrainCircuit
+  PlusCircle
 } from 'lucide-react';
 import { GlobalSettings, Station } from '../../types';
 import { t as translate } from '../../lib/translations';
@@ -94,7 +93,6 @@ interface NavigationProps {
   onDeleteStation?: (stationId: string) => void;
   isSidebarCollapsed?: boolean;
   onToggleSidebar?: (collapsed: boolean) => void;
-  isSuperAdmin?: boolean;
 }
 
 const Navigation = React.memo(function Navigation({
@@ -111,8 +109,7 @@ const Navigation = React.memo(function Navigation({
   onEditStation,
   onDeleteStation,
   isSidebarCollapsed = false,
-  onToggleSidebar,
-  isSuperAdmin = false
+  onToggleSidebar
 }: NavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [stationDropdownOpen, setStationDropdownOpen] = useState(false);
@@ -141,51 +138,49 @@ const Navigation = React.memo(function Navigation({
 
   const allMenuItems = [
     // MAIN
-    { id: 'dashboard', section: 'main', icon: LayoutDashboard, label: 'Dashboard', urdu: 'ڈیش بورڈ', showInLube: true },
-    { id: 'jarvis', section: 'main', icon: BrainCircuit, label: 'FuelPro Jarvis (AI)', urdu: 'جاروس (اے آئی)', showInLube: true },
-    { id: isLube ? 'lube_pos' : 'shift_wizard', section: 'main', icon: RefreshCw, label: isLube ? 'Lube POS Terminal' : 'Shift Wizard', urdu: isLube ? 'لیوب پی او ایس' : 'شفٹ وزرڈ', showInLube: true },
-    { id: 'shift_logs', section: 'main', icon: History, label: 'Shift Logs & Audit', urdu: 'شفٹ لاگز', showInLube: false },
-    { id: 'price_management', section: 'main', icon: DollarSign, label: 'Price Management', urdu: 'قیمتیں اور نرخ', showInLube: false },
-    { id: 'ledger', section: 'main', icon: BookOpen, label: 'Accounts & Billing', urdu: 'کھاتہ اور بلنگ', showInLube: true },
-    { id: 'customers', section: 'main', icon: Users, label: 'Customers Khata', urdu: 'گاہکوں کا کھاتہ', showInLube: true },
-    { id: 'suppliers', section: 'main', icon: Factory, label: isLube ? 'Suppliers' : 'Suppliers Depot', urdu: isLube ? 'سپلائرز' : 'سپلائرز ڈپو', showInLube: true },
-    { id: 'inventory', section: 'main', icon: isLube ? Wrench : Fuel, label: isLube ? 'Product & Parts Stock' : 'Fuel Stock', urdu: isLube ? 'پروڈکٹ اسٹاک' : 'فیول اسٹاک', showInLube: true },
-    { id: 'bank_cash', section: 'main', icon: Landmark, label: 'Bank Cash', urdu: 'بینک کیش', showInLube: true },
-    { id: 'digital_cash', section: 'main', icon: Smartphone, label: 'Digital Cash', urdu: 'ڈیجیٹل کیش', showInLube: true },
+    { id: 'dashboard', section: 'main', icon: LayoutDashboard, label: 'Dashboard', urdu: '┌ê█î╪┤ ╪¿┘ê╪▒┌ê', showInLube: true },
+    { id: isLube ? 'lube_pos' : 'shift_wizard', section: 'main', icon: RefreshCw, label: isLube ? 'Lube POS Terminal' : 'Shift Wizard', urdu: isLube ? '┘ä█î┘ê╪¿ ┘╛█î ╪º┘ê ╪º█î╪│' : '╪┤┘ü┘╣ ┘ê╪▓╪▒┌ê', showInLube: true },
+    { id: 'shift_logs', section: 'main', icon: History, label: 'Shift Logs & Audit', urdu: '╪┤┘ü┘╣ ┘ä╪º┌»╪▓', showInLube: false },
+    { id: 'price_management', section: 'main', icon: DollarSign, label: 'Price Management', urdu: '┘é█î┘à╪¬█î┌║ ╪º┘ê╪▒ ┘å╪▒╪«', showInLube: false },
+    { id: 'ledger', section: 'main', icon: BookOpen, label: 'Accounts & Billing', urdu: '┌⌐┌╛╪º╪¬█ü ╪º┘ê╪▒ ╪¿┘ä┘å┌»', showInLube: true },
+    { id: 'customers', section: 'main', icon: Users, label: 'Customers Khata', urdu: '┌»╪º█ü┌⌐┘ê┌║ ┌⌐╪º ┌⌐┌╛╪º╪¬█ü', showInLube: true },
+    { id: 'suppliers', section: 'main', icon: Factory, label: isLube ? 'Suppliers' : 'Suppliers Depot', urdu: isLube ? '╪│┘╛┘ä╪º╪ª╪▒╪▓' : '╪│┘╛┘ä╪º╪ª╪▒╪▓ ┌ê┘╛┘ê', showInLube: true },
+    { id: 'inventory', section: 'main', icon: isLube ? Wrench : Fuel, label: isLube ? 'Product & Parts Stock' : 'Fuel Stock', urdu: isLube ? '┘╛╪▒┘ê┌ê┌⌐┘╣ ╪º╪│┘╣╪º┌⌐' : '┘ü█î┘ê┘ä ╪º╪│┘╣╪º┌⌐', showInLube: true },
+    { id: 'bank_cash', section: 'main', icon: Landmark, label: 'Bank Cash', urdu: '╪¿█î┘å┌⌐ ┌⌐█î╪┤', showInLube: true },
+    { id: 'digital_cash', section: 'main', icon: Smartphone, label: 'Digital Cash', urdu: '┌ê█î╪¼█î┘╣┘ä ┌⌐█î╪┤', showInLube: true },
     { 
       id: 'enterprise_hub', 
       section: 'main',
       icon: Building, 
       label: 'Enterprise Modules', 
-      urdu: 'انٹرپرائز ماڈیولز', 
+      urdu: '╪º┘å┘╣╪▒┘╛╪▒╪º╪ª╪▓ ┘à╪º┌ê█î┘ê┘ä╪▓', 
       showInLube: true,
       children: [
-        { id: 'bi_analytics', icon: LineChart, label: 'BI Analytics', urdu: 'بی آئی اینالٹکس', showInLube: true },
-        { id: 'executive_dashboard', icon: Briefcase, label: 'Executive Insights', urdu: 'ایگزیکٹو ڈیش بورڈ', showInLube: true },
-        { id: 'treasury', icon: Landmark, label: 'Treasury Center', urdu: 'ٹریژری سینٹر', showInLube: true },
-        { id: 'risk_center', icon: ShieldAlert, label: 'Risk Center', urdu: 'رسک سینٹر', showInLube: true },
-        { id: 'integrity_center', icon: ShieldCheck, label: 'Integrity Center', urdu: 'انٹیگریٹی سینٹر', showInLube: true },
-        { id: 'demand_forecast', icon: BarChart3, label: 'Forecasting', urdu: 'فورکاسٹنگ', showInLube: true },
-        { id: 'fleet', icon: Truck, label: 'Fleet Accounts', urdu: 'فلیٹ منیجمنٹ', showInLube: false },
-        { id: 'tanker_delivery', icon: ArrowRightLeft, label: isLube ? 'Supplier Deliveries' : 'Tankers & Delivery', urdu: isLube ? 'سپلائر ڈیلیوری' : 'ٹینکر شیڈول', showInLube: false },
-        { id: 'erp_integration', icon: Link, label: 'ERP Connect', urdu: 'ای آر پی کنیکٹ', showInLube: true },
+        { id: 'bi_analytics', icon: LineChart, label: 'BI Analytics', urdu: '╪¿█î ╪ó╪ª█î ╪º█î┘å╪º┘ä┘╣┌⌐╪│', showInLube: true },
+        { id: 'executive_dashboard', icon: Briefcase, label: 'Executive Insights', urdu: '╪º█î┌»╪▓█î┌⌐┘╣┘ê ┌ê█î╪┤ ╪¿┘ê╪▒┌ê', showInLube: true },
+        { id: 'treasury', icon: Landmark, label: 'Treasury Center', urdu: '┘╣╪▒█î┌ÿ╪▒█î ╪│█î┘å┘╣╪▒', showInLube: true },
+        { id: 'risk_center', icon: ShieldAlert, label: 'Risk Center', urdu: '╪▒╪│┌⌐ ╪│█î┘å┘╣╪▒', showInLube: true },
+        { id: 'integrity_center', icon: ShieldCheck, label: 'Integrity Center', urdu: '╪º┘å┘╣█î┌»╪▒█î┘╣█î ╪│█î┘å┘╣╪▒', showInLube: true },
+        { id: 'demand_forecast', icon: BarChart3, label: 'Forecasting', urdu: '┘ü┘ê╪▒┌⌐╪º╪│┘╣┘å┌»', showInLube: true },
+        { id: 'fleet', icon: Truck, label: 'Fleet Accounts', urdu: '┘ü┘ä█î┘╣ ┘à┘å█î╪¼┘à┘å┘╣', showInLube: false },
+        { id: 'tanker_delivery', icon: ArrowRightLeft, label: isLube ? 'Supplier Deliveries' : 'Tankers & Delivery', urdu: isLube ? '╪│┘╛┘ä╪º╪ª╪▒ ┌ê█î┘ä█î┘ê╪▒█î' : '┘╣█î┘å┌⌐╪▒ ╪┤█î┌ê┘ê┘ä', showInLube: false },
+        { id: 'erp_integration', icon: Link, label: 'ERP Connect', urdu: '╪º█î ╪ó╪▒ ┘╛█î ┌⌐┘å█î┌⌐┘╣', showInLube: true },
       ]
     },
     // OPERATIONS
-    { id: 'discounts', section: 'operations', icon: Tag, label: 'Discounts', urdu: 'ڈسکاؤنٹس', showInLube: true },
-    { id: 'expenses', section: 'operations', icon: TrendingDown, label: 'Expenses', urdu: 'اخراجات', showInLube: true },
-    { id: 'staff', section: 'operations', icon: Users2, label: 'Staff & Payroll', urdu: 'اسٹاف اور تنخواہ', showInLube: true },
+    { id: 'discounts', section: 'operations', icon: Tag, label: 'Discounts', urdu: '┌ê╪│┌⌐╪º╪ñ┘å┘╣╪│', showInLube: true },
+    { id: 'expenses', section: 'operations', icon: TrendingDown, label: 'Expenses', urdu: '╪º╪«╪▒╪º╪¼╪º╪¬', showInLube: true },
+    { id: 'staff', section: 'operations', icon: Users2, label: 'Staff & Payroll', urdu: '╪º╪│┘╣╪º┘ü ╪º┘ê╪▒ ╪¬┘å╪«┘ê╪º█ü', showInLube: true },
     // ANALYTICS
-    { id: 'reports', section: 'analytics', icon: FileBarChart, label: isLube ? 'Lube Reports' : 'Advanced Reports (104)', urdu: isLube ? 'لیوب رپورٹس' : 'ایڈوانسڈ رپورٹس', showInLube: true },
-    { id: 'dip_calculator', section: 'analytics', icon: Droplets, label: 'Dip Chart Calculator', urdu: 'دپ چارٹ کیلکولیٹر', showInLube: false },
-
-    { id: 'ai_analytics', section: 'analytics', icon: Sparkles, label: 'AI Analytics Hub', urdu: 'اے آئی اینالٹکس', showInLube: true },
+    { id: 'reports', section: 'analytics', icon: FileBarChart, label: isLube ? 'Lube Reports' : 'Advanced Reports (104)', urdu: isLube ? '┘ä█î┘ê╪¿ ╪▒┘╛┘ê╪▒┘╣╪│' : '╪º█î┌ê┘ê╪º┘å╪│┌ê ╪▒┘╛┘ê╪▒┘╣╪│', showInLube: true },
+    { id: 'dip_calculator', section: 'analytics', icon: Droplets, label: 'Dip Chart Calculator', urdu: '╪»┘╛ ┌å╪º╪▒┘╣ ┌⌐█î┘ä┌⌐┘ê┘ä█î┘╣╪▒', showInLube: false },
+    { id: 'ogra_sync', section: 'analytics', icon: ShieldCheck, label: 'OGRA Price Sync', urdu: 'OGRA ┘é█î┘à╪¬ ╪│┘å┌⌐', showInLube: false },
+    { id: 'ai_analytics', section: 'analytics', icon: Sparkles, label: 'AI Analytics Hub', urdu: '╪º█Æ ╪ó╪ª█î ╪º█î┘å╪º┘ä┘╣┌⌐╪│', showInLube: true },
     // SYSTEM
-    { id: 'security_hub', section: 'system', icon: Shield, label: 'Security & Roles', urdu: 'سیکیورٹی ہب', showInLube: true },
-    { id: 'subscription_hub', section: 'system', icon: CreditCard, label: 'Subscription & Billing', urdu: 'بلنگ اور پلان', showInLube: true },
-    ...(isSuperAdmin ? [{ id: 'license_manager', section: 'system', icon: ShieldCheck, label: 'License Manager', urdu: 'لائسنس مینیجر', showInLube: true }] : []),
-    { id: 'communication_center', section: 'system', icon: MessageCircle, label: 'Communication Center', urdu: 'مواصلاتی مرکز', showInLube: true },
-    { id: 'sync_center', section: 'system', icon: Database, label: 'Sync Center', urdu: 'سنک سینٹر', showInLube: true }
+    { id: 'security_hub', section: 'system', icon: Shield, label: 'Security & Roles', urdu: '╪│█î┌⌐█î┘ê╪▒┘╣█î █ü╪¿', showInLube: true },
+    { id: 'subscription_hub', section: 'system', icon: CreditCard, label: 'Subscription & Billing', urdu: '╪¿┘ä┘å┌» ╪º┘ê╪▒ ┘╛┘ä╪º┘å', showInLube: true },
+    { id: 'communication_center', section: 'system', icon: MessageCircle, label: 'Communication Center', urdu: '┘à┘ê╪º╪╡┘ä╪º╪¬█î ┘à╪▒┌⌐╪▓', showInLube: true },
+    { id: 'sync_center', section: 'system', icon: Database, label: 'Sync Center', urdu: '╪│┘å┌⌐ ╪│█î┘å┘╣╪▒', showInLube: true }
   ];
 
   // Filter menu items based on business type
@@ -245,11 +240,11 @@ const Navigation = React.memo(function Navigation({
 
   // 1. Theme Logic
   const availableThemes = [
-    { id: 'light', icon: Sun, label: 'Light', urdu: 'لائٹ' },
-    { id: 'dark', icon: Moon, label: 'Dark', urdu: 'ڈارک' },
-    { id: 'blue', icon: LayoutDashboard, label: 'Ocean Blue', urdu: 'نیلا' },
-    { id: 'emerald', icon: Factory, label: 'Emerald', urdu: 'سبز' },
-    { id: 'orange', icon: TrendingDown, label: 'Sunset Orange', urdu: 'نارنجی' },
+    { id: 'light', icon: Sun, label: 'Light', urdu: '┘ä╪º╪ª┘╣' },
+    { id: 'dark', icon: Moon, label: 'Dark', urdu: '┌ê╪º╪▒┌⌐' },
+    { id: 'blue', icon: LayoutDashboard, label: 'Ocean Blue', urdu: '┘å█î┘ä╪º' },
+    { id: 'emerald', icon: Factory, label: 'Emerald', urdu: '╪│╪¿╪▓' },
+    { id: 'orange', icon: TrendingDown, label: 'Sunset Orange', urdu: '┘å╪º╪▒┘å╪¼█î' },
   ];
 
   const handleSelectTheme = (themeId: string) => {
@@ -267,8 +262,8 @@ const Navigation = React.memo(function Navigation({
       alerts.push({
         id: `stock_${p.id}`,
         type: 'warning',
-        title: t('Low Stock Alert', 'اسٹاک کم ہے'),
-        message: `${t(p.name, p.urduName)}: ${p.currentStock} ${p.unit} ${t('remaining', 'باقی')}`,
+        title: t('Low Stock Alert', '╪º╪│┘╣╪º┌⌐ ┌⌐┘à █ü█Æ'),
+        message: `${t(p.name, p.urduName)}: ${p.currentStock} ${p.unit} ${t('remaining', '╪¿╪º┘é█î')}`,
         icon: Package
       });
     });
@@ -277,7 +272,7 @@ const Navigation = React.memo(function Navigation({
       alerts.push({
         id: `credit_${c.id}`,
         type: 'danger',
-        title: t('High Credit Balance', 'زیادہ ادھار'),
+        title: t('High Credit Balance', '╪▓█î╪º╪»█ü ╪º╪»┌╛╪º╪▒'),
         message: `${t(c.name, c.urduName)}: ${c.balance.toLocaleString()}`,
         icon: AlertTriangle
       });
@@ -343,7 +338,7 @@ const Navigation = React.memo(function Navigation({
       setAiSearchResult(data.reply);
     } catch (error) {
       console.error(error);
-      setAiSearchResult("⚠️ Failed to reach AI services or data context too large.");
+      setAiSearchResult("ΓÜá∩╕Å Failed to reach AI services or data context too large.");
     } finally {
       setIsAiSearching(false);
     }
@@ -481,7 +476,7 @@ const Navigation = React.memo(function Navigation({
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span className="font-mono text-[9px] md:text-[10px] text-slate-400 hidden sm:inline">
-                      {t('Station Isolation Mode Active', 'مستقل اسٹیشن ڈیٹا سیکیورٹی')}
+                      {t('Station Isolation Mode Active', '┘à╪│╪¬┘é┘ä ╪º╪│┘╣█î╪┤┘å ┌ê█î┘╣╪º ╪│█î┌⌐█î┘ê╪▒┘╣█î')}
                     </span>
                   </div>
                 </div>
@@ -492,7 +487,7 @@ const Navigation = React.memo(function Navigation({
                 <div className="absolute left-0 mt-2 w-72 md:w-80 rounded-xl border border-slate-200 bg-white p-2 shadow-2xl ring-1 ring-slate-900/5 focus:outline-hidden z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="px-3 py-1.5 mb-1.5 border-b border-slate-100">
                     <span className="font-sans text-xs font-bold text-slate-500 tracking-wider uppercase">
-                      {t('Switch ERP Station', 'دوسرے اسٹیشن پر جائیں')}
+                      {t('Switch ERP Station', '╪»┘ê╪│╪▒█Æ ╪º╪│┘╣█î╪┤┘å ┘╛╪▒ ╪¼╪º╪ª█î┌║')}
                     </span>
                   </div>
                   
@@ -532,7 +527,7 @@ const Navigation = React.memo(function Navigation({
                             <button
                               onClick={(e) => openEditModal(st, e)}
                               className="p-1 text-slate-400 hover:text-orange-600 hover:bg-slate-100 rounded-md transition-colors"
-                              title={t('Edit Station Info', 'ترمیم کریں')}
+                              title={t('Edit Station Info', '╪¬╪▒┘à█î┘à ┌⌐╪▒█î┌║')}
                             >
                               <Edit className="h-3.5 w-3.5" />
                             </button>
@@ -540,7 +535,7 @@ const Navigation = React.memo(function Navigation({
                               <button
                                 onClick={(e) => handlePerformDelete(st.id, e)}
                                 className="p-1 text-slate-400 hover:text-red-650 hover:bg-slate-100 rounded-md transition-colors text-red-500"
-                                title={t('Delete Station Data', 'حذف کریں')}
+                                title={t('Delete Station Data', '╪¡╪░┘ü ┌⌐╪▒█î┌║')}
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
                               </button>
@@ -559,7 +554,7 @@ const Navigation = React.memo(function Navigation({
                       }`}
                     >
                       <Plus className="h-4 w-4" />
-                      <span>{t('Register New Station', 'نیا اسٹیشن برانچ شامل کریں')}</span>
+                      <span>{t('Register New Station', '┘å█î╪º ╪º╪│┘╣█î╪┤┘å ╪¿╪▒╪º┘å┌å ╪┤╪º┘à┘ä ┌⌐╪▒█î┌║')}</span>
                     </button>
                   </div>
                 </div>
@@ -578,7 +573,7 @@ const Navigation = React.memo(function Navigation({
                 }`}
               >
                 <Fuel className="h-3.5 w-3.5" />
-                <span>{t('Fuel Station', 'فیول اسٹیشن')}</span>
+                <span>{t('Fuel Station', '┘ü█î┘ê┘ä ╪º╪│┘╣█î╪┤┘å')}</span>
               </button>
               <button
                 type="button"
@@ -590,7 +585,7 @@ const Navigation = React.memo(function Navigation({
                 }`}
               >
                 <Wrench className="h-3.5 w-3.5" />
-                <span>{t('Lube Business', 'لیوب بزنس')}</span>
+                <span>{t('Lube Business', '┘ä█î┘ê╪¿ ╪¿╪▓┘å╪│')}</span>
               </button>
             </div>
 
@@ -602,10 +597,10 @@ const Navigation = React.memo(function Navigation({
           <button
             onClick={() => setIsDocScannerOpen(true)}
             className="hidden md:flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-2 sm:px-3 py-1.5 font-sans text-[10px] sm:text-xs font-bold text-indigo-700 shadow-xs hover:bg-indigo-100 hover:border-indigo-300 transition-colors shrink-0"
-            title={t("Scan Receipt", "رسید سکین کریں")}
+            title={t("Scan Receipt", "╪▒╪│█î╪» ╪│┌⌐█î┘å ┌⌐╪▒█î┌║")}
           >
             <ScanLine className="h-4 w-4" />
-            <span className="hidden sm:inline">{t('Scan', 'سکین')}</span>
+            <span className="hidden sm:inline">{t('Scan', '╪│┌⌐█î┘å')}</span>
           </button>
           
           <button
@@ -614,16 +609,16 @@ const Navigation = React.memo(function Navigation({
           >
             <Languages className="h-4 w-4 text-orange-600" />
             <span className="hidden sm:inline">
-              {settings.language === 'ur' ? 'اردو (Urdu)' :
-               settings.language === 'ar' ? 'العربية' :
-               settings.language === 'es' ? 'Español' :
-               settings.language === 'zh' ? '中文' : 'English'}
+              {settings.language === 'ur' ? '╪º╪▒╪»┘ê (Urdu)' :
+               settings.language === 'ar' ? '╪º┘ä╪╣╪▒╪¿┘è╪⌐' :
+               settings.language === 'es' ? 'Espa├▒ol' :
+               settings.language === 'zh' ? 'Σ╕¡µûç' : 'English'}
             </span>
             <span className="inline sm:hidden">
-              {settings.language === 'ur' ? 'اردو' :
-               settings.language === 'ar' ? 'العربية' :
+              {settings.language === 'ur' ? '╪º╪▒╪»┘ê' :
+               settings.language === 'ar' ? '╪º┘ä╪╣╪▒╪¿┘è╪⌐' :
                settings.language === 'es' ? 'ES' :
-               settings.language === 'zh' ? '中文' : 'EN'}
+               settings.language === 'zh' ? 'Σ╕¡µûç' : 'EN'}
             </span>
           </button>
           
@@ -634,7 +629,7 @@ const Navigation = React.memo(function Navigation({
               className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/50 px-2 sm:px-3 py-1.5 sm:p-2 text-slate-500 hover:bg-white hover:text-orange-600 hover:border-orange-200 transition-all cursor-pointer shadow-xs w-8 sm:w-48 xl:w-64 justify-center sm:justify-start"
             >
               <Search className="h-4 w-4 shrink-0" />
-              <span className="hidden sm:inline text-xs font-semibold">{t("Search global...", "تلاش کریں...")}</span>
+              <span className="hidden sm:inline text-xs font-semibold">{t("Search global...", "╪¬┘ä╪º╪┤ ┌⌐╪▒█î┌║...")}</span>
               <kbd className="ml-auto hidden rounded border border-slate-200 bg-white px-1.5 font-mono text-[10px] font-bold text-slate-400 sm:inline-block">Ctrl K</kbd>
             </button>
 
@@ -648,7 +643,7 @@ const Navigation = React.memo(function Navigation({
                     type="text"
                     value={globalSearch}
                     onChange={(e) => setGlobalSearch(e.target.value)}
-                    placeholder={t("Type to search...", "تلاش کے لیے ٹائپ کریں...")}
+                    placeholder={t("Type to search...", "╪¬┘ä╪º╪┤ ┌⌐█Æ ┘ä█î█Æ ┘╣╪º╪ª┘╛ ┌⌐╪▒█î┌║...")}
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-[88px] text-sm font-semibold text-slate-800 focus:border-orange-500 focus:bg-white focus:outline-hidden"
                   />
                   {globalSearch.trim().length > 2 && (
@@ -666,7 +661,7 @@ const Navigation = React.memo(function Navigation({
                     <div className="space-y-3">
                       {searchResults.customers.length > 0 && (
                         <div>
-                          <div className="px-2 mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">{t('Customers', 'گاہک')}</div>
+                          <div className="px-2 mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">{t('Customers', '┌»╪º█ü┌⌐')}</div>
                           {searchResults.customers.map(c => (
                             <button key={c.id} onClick={() => handleSearchSelect('customers')} className="flex w-full items-center justify-between rounded-lg px-3 py-2 hover:bg-orange-50 transition-colors cursor-pointer">
                               <span className="text-sm font-bold text-slate-700">{c.name}</span>
@@ -677,7 +672,7 @@ const Navigation = React.memo(function Navigation({
                       )}
                       {searchResults.products.length > 0 && (
                         <div>
-                          <div className="px-2 mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">{t('Products', 'پروڈکٹس')}</div>
+                          <div className="px-2 mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">{t('Products', '┘╛╪▒┘ê┌ê┌⌐┘╣╪│')}</div>
                           {searchResults.products.map(p => (
                             <button key={p.id} onClick={() => handleSearchSelect('inventory')} className="flex w-full items-center justify-between rounded-lg px-3 py-2 hover:bg-orange-50 transition-colors cursor-pointer">
                               <span className="text-sm font-bold text-slate-700">{t(p.name, p.urduName)}</span>
@@ -690,7 +685,7 @@ const Navigation = React.memo(function Navigation({
                       )}
                       {searchResults.staff.length > 0 && (
                         <div>
-                          <div className="px-2 mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">{t('Staff', 'عملہ')}</div>
+                          <div className="px-2 mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">{t('Staff', '╪╣┘à┘ä█ü')}</div>
                           {searchResults.staff.map(s => (
                             <button key={s.id} onClick={() => handleSearchSelect('staff')} className="flex w-full items-center justify-between rounded-lg px-3 py-2 hover:bg-orange-50 transition-colors cursor-pointer">
                               <span className="text-sm font-bold text-slate-700">{t(s.name, s.urduName)}</span>
@@ -701,13 +696,13 @@ const Navigation = React.memo(function Navigation({
                       )}
                       {searchResults.customers.length === 0 && searchResults.products.length === 0 && searchResults.staff.length === 0 && (
                         <div className="py-8 text-center text-sm font-semibold text-slate-400">
-                          {t("No results found.", "کوئی نتیجہ نہیں ملا۔")}
+                          {t("No results found.", "┌⌐┘ê╪ª█î ┘å╪¬█î╪¼█ü ┘å█ü█î┌║ ┘à┘ä╪º█ö")}
                         </div>
                       )}
                     </div>
                   ) : (
                     <div className="py-8 text-center text-sm font-semibold text-slate-400">
-                      {t("Type at least 2 characters...", "تلاش کے لیے کم از کم 2 حروف ٹائپ کریں۔")}
+                      {t("Type at least 2 characters...", "╪¬┘ä╪º╪┤ ┌⌐█Æ ┘ä█î█Æ ┌⌐┘à ╪º╪▓ ┌⌐┘à 2 ╪¡╪▒┘ê┘ü ┘╣╪º╪ª┘╛ ┌⌐╪▒█î┌║█ö")}
                     </div>
                   )}
                 </div>
@@ -719,7 +714,7 @@ const Navigation = React.memo(function Navigation({
             <button
               onClick={() => setIsSetupOpen(!isSetupOpen)}
               className="rounded-lg border border-slate-200 bg-white p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors cursor-pointer shadow-xs flex items-center justify-center"
-              title={t('Setup Wizards', 'سیٹ اپ وزرڈز')}
+              title={t('Setup Wizards', '╪│█î┘╣ ╪º┘╛ ┘ê╪▓╪▒┌ê╪▓')}
             >
               <Sliders className="h-4 w-4" />
             </button>
@@ -727,7 +722,7 @@ const Navigation = React.memo(function Navigation({
             {isSetupOpen && (
               <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white p-2 shadow-2xl border border-slate-100 z-50 animate-in fade-in slide-in-from-top-2">
                 <div className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  {t('Quick Setup', 'سیٹ اپ')}
+                  {t('Quick Setup', '╪│█î┘╣ ╪º┘╛')}
                 </div>
                 
                 <button
@@ -735,35 +730,35 @@ const Navigation = React.memo(function Navigation({
                   className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer"
                 >
                   <Fuel className="h-4 w-4" />
-                  <span>{t('Nozzles Setup', 'نوزلز سیٹ اپ')}</span>
+                  <span>{t('Nozzles Setup', '┘å┘ê╪▓┘ä╪▓ ╪│█î┘╣ ╪º┘╛')}</span>
                 </button>
                 <button
                   onClick={() => { onViewChange('setup_tanks'); setIsSetupOpen(false); setMobileMenuOpen(false); }}
                   className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer"
                 >
                   <Database className="h-4 w-4" />
-                  <span>{t('Tanks Setup', 'ٹینکس سیٹ اپ')}</span>
+                  <span>{t('Tanks Setup', '┘╣█î┘å┌⌐╪│ ╪│█î┘╣ ╪º┘╛')}</span>
                 </button>
                 <button
                   onClick={() => { onViewChange('setup_rates'); setIsSetupOpen(false); setMobileMenuOpen(false); }}
                   className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer"
                 >
                   <DollarSign className="h-4 w-4" />
-                  <span>{t('Rates Change', 'ریٹس تبدیل کریں')}</span>
+                  <span>{t('Rates Change', '╪▒█î┘╣╪│ ╪¬╪¿╪»█î┘ä ┌⌐╪▒█î┌║')}</span>
                 </button>
                 <button
                   onClick={() => { onViewChange('setup_accounts'); setIsSetupOpen(false); setMobileMenuOpen(false); }}
                   className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer"
                 >
                   <Building className="h-4 w-4" />
-                  <span>{t('Chart of Accounts', 'اکاؤنٹس چارٹ')}</span>
+                  <span>{t('Chart of Accounts', '╪º┌⌐╪º╪ñ┘å┘╣╪│ ┌å╪º╪▒┘╣')}</span>
                 </button>
                 <button
                   onClick={() => { onViewChange('setup_profile'); setIsSetupOpen(false); setMobileMenuOpen(false); }}
                   className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer border-t border-slate-100 mt-1 pt-2"
                 >
                   <Settings className="h-4 w-4" />
-                  <span>{t('Station Profile', 'اسٹیشن پروفائل')}</span>
+                  <span>{t('Station Profile', '╪º╪│┘╣█î╪┤┘å ┘╛╪▒┘ê┘ü╪º╪ª┘ä')}</span>
                 </button>
               </div>
             )}
@@ -773,7 +768,7 @@ const Navigation = React.memo(function Navigation({
             <button
               onClick={() => setIsThemeOpen(!isThemeOpen)}
               className="rounded-lg border border-slate-200 bg-white p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors cursor-pointer shadow-xs flex items-center justify-center"
-              title={t('Switch Theme', 'تھیم تبدیل کریں')}
+              title={t('Switch Theme', '╪¬┌╛█î┘à ╪¬╪¿╪»█î┘ä ┌⌐╪▒█î┌║')}
             >
               {settings.theme === 'light' ? <Sun className="h-4 w-4" /> : 
                settings.theme === 'dark' ? <Moon className="h-4 w-4" /> : 
@@ -783,7 +778,7 @@ const Navigation = React.memo(function Navigation({
             {isThemeOpen && (
               <div className="absolute right-0 top-full mt-2 w-48 rounded-2xl bg-white p-2 shadow-2xl border border-slate-100 z-50 animate-in fade-in slide-in-from-top-2">
                 <div className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  {t('Select Theme', 'تھیم منتخب کریں')}
+                  {t('Select Theme', '╪¬┌╛█î┘à ┘à┘å╪¬╪«╪¿ ┌⌐╪▒█î┌║')}
                 </div>
                 {availableThemes.map(theme => (
                   <button
@@ -808,7 +803,7 @@ const Navigation = React.memo(function Navigation({
           <button
             onClick={() => setIsHelpOpen(true)}
             className="hidden md:flex items-center justify-center rounded-lg border border-slate-200 bg-white p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors cursor-pointer shadow-xs shrink-0"
-            title={t('Help Guide', 'یوزر گائیڈ')}
+            title={t('Help Guide', '█î┘ê╪▓╪▒ ┌»╪º╪ª█î┌ê')}
           >
             <HelpCircle className="h-4 w-4" />
           </button>
@@ -829,7 +824,7 @@ const Navigation = React.memo(function Navigation({
               {onLogout && (
                 <button
                   onClick={onLogout}
-                  title={t("Log Out", "لاگ آؤٹ")}
+                  title={t("Log Out", "┘ä╪º┌» ╪ó╪ñ┘╣")}
                   className="hidden md:block ml-2 p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
                 >
                   <LogOut className="h-4 w-4" />
@@ -841,7 +836,7 @@ const Navigation = React.memo(function Navigation({
               <UserCircle className="h-8 w-8 text-slate-400" />
               <div className="hidden sm:flex flex-col text-left">
                 <span className="font-sans text-xs font-bold text-slate-800 leading-none">
-                  {t('Owner / Admin', 'مالک / ایڈمن')}
+                  {t('Owner / Admin', '┘à╪º┘ä┌⌐ / ╪º█î┌ê┘à┘å')}
                 </span>
                 <span className="font-mono text-[10px] text-slate-400 leading-none mt-0.5">
                   {settings.ownerContact}
@@ -879,10 +874,10 @@ const Navigation = React.memo(function Navigation({
                     ? 'bg-orange-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
-                title={isSidebarCollapsed ? t('Fuel Station', 'فیول') : undefined}
+                title={isSidebarCollapsed ? t('Fuel Station', '┘ü█î┘ê┘ä') : undefined}
               >
                 <Fuel className="h-3.5 w-3.5 shrink-0" />
-                {!isSidebarCollapsed && <span>{t('Fuel Station', 'فیول')}</span>}
+                {!isSidebarCollapsed && <span>{t('Fuel Station', '┘ü█î┘ê┘ä')}</span>}
               </button>
               <button
                 type="button"
@@ -892,10 +887,10 @@ const Navigation = React.memo(function Navigation({
                     ? 'bg-blue-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
-                title={isSidebarCollapsed ? t('Lube Biz', 'لیوب') : undefined}
+                title={isSidebarCollapsed ? t('Lube Biz', '┘ä█î┘ê╪¿') : undefined}
               >
                 <Wrench className="h-3.5 w-3.5 shrink-0" />
-                {!isSidebarCollapsed && <span>{t('Lube Biz', 'لیوب')}</span>}
+                {!isSidebarCollapsed && <span>{t('Lube Biz', '┘ä█î┘ê╪¿')}</span>}
               </button>
             </div>
           </div>
@@ -913,7 +908,7 @@ const Navigation = React.memo(function Navigation({
                     <div className="px-3 py-2 mt-4 flex items-center">
                       <div className="h-px bg-slate-200 flex-1"></div>
                       <span className="px-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">
-                        {t(sectionKey.toUpperCase(), sectionKey === 'main' ? 'مین' : sectionKey === 'operations' ? 'آپریشنز' : sectionKey === 'analytics' ? 'رپورٹس' : 'سسٹم')}
+                        {t(sectionKey.toUpperCase(), sectionKey === 'main' ? '┘à█î┘å' : sectionKey === 'operations' ? '╪ó┘╛╪▒█î╪┤┘å╪▓' : sectionKey === 'analytics' ? '╪▒┘╛┘ê╪▒┘╣╪│' : '╪│╪│┘╣┘à')}
                       </span>
                       <div className="h-px bg-slate-200 flex-1"></div>
                     </div>
@@ -1007,7 +1002,10 @@ const Navigation = React.memo(function Navigation({
             })}
           </nav>
           
-          <div className="p-3 border-t border-white/5 mt-auto">
+          <div className="p-3 border-t border-slate-100 bg-slate-50/50">
+            <div className="mb-3 px-1">
+              <PoweredByUmarAli variant="compact" />
+            </div>
             <button
               onClick={() => handleItemClick('configuration')}
               className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 font-sans text-sm font-bold transition-colors cursor-pointer ${
@@ -1017,14 +1015,14 @@ const Navigation = React.memo(function Navigation({
               }`}
             >
               <Settings className={`h-5 w-5 ${activeView === 'configuration' || activeView === 'settings' ? 'text-indigo-600' : 'text-slate-400'}`} />
-              {!isSidebarCollapsed && <span>{t("Settings", "ترتیبات")}</span>}
+              {!isSidebarCollapsed && <span>{t("Settings", "╪¬╪▒╪¬█î╪¿╪º╪¬")}</span>}
             </button>
           </div>
         </div>
       </aside>
 
       {/* MOBILE POPUP DRAWER */}
-      <BottomSheet isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} title={t("Menu", "مینو")}>
+      <BottomSheet isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} title={t("Menu", "┘à█î┘å┘ê")}>
         {/* MOBILE SEGMENTED SWITCH */}
         <div className="mb-4 shrink-0 select-none">
           <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
@@ -1038,7 +1036,7 @@ const Navigation = React.memo(function Navigation({
               }`}
             >
               <Fuel className="h-3.5 w-3.5 shrink-0" />
-              <span>{t('Fuel Station', 'فیول')}</span>
+              <span>{t('Fuel Station', '┘ü█î┘ê┘ä')}</span>
             </button>
             <button
               type="button"
@@ -1050,7 +1048,7 @@ const Navigation = React.memo(function Navigation({
               }`}
             >
               <Wrench className="h-3.5 w-3.5 shrink-0" />
-              <span>{t('Lube Biz', 'لیوب')}</span>
+              <span>{t('Lube Biz', '┘ä█î┘ê╪¿')}</span>
             </button>
           </div>
         </div>
@@ -1065,7 +1063,7 @@ const Navigation = React.memo(function Navigation({
                 <div className="py-2 mt-4 flex items-center">
                   <div className="h-px bg-slate-200 flex-1"></div>
                   <span className="px-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">
-                    {t(sectionKey.toUpperCase(), sectionKey === 'main' ? 'مین' : sectionKey === 'operations' ? 'آپریشنز' : sectionKey === 'analytics' ? 'رپورٹس' : 'سسٹم')}
+                    {t(sectionKey.toUpperCase(), sectionKey === 'main' ? '┘à█î┘å' : sectionKey === 'operations' ? '╪ó┘╛╪▒█î╪┤┘å╪▓' : sectionKey === 'analytics' ? '╪▒┘╛┘ê╪▒┘╣╪│' : '╪│╪│┘╣┘à')}
                   </span>
                   <div className="h-px bg-slate-200 flex-1"></div>
                 </div>
@@ -1159,14 +1157,14 @@ const Navigation = React.memo(function Navigation({
               className="flex items-center justify-center gap-2 rounded-lg bg-slate-50 border border-slate-100 p-2 text-xs font-bold text-slate-600 cursor-pointer"
             >
               <Search className="h-4 w-4" />
-              <span>{t("Search", "تلاش")}</span>
+              <span>{t("Search", "╪¬┘ä╪º╪┤")}</span>
             </button>
             <button
               onClick={() => { setIsDocScannerOpen(true); setMobileMenuOpen(false); }}
               className="flex items-center justify-center gap-2 rounded-lg bg-indigo-50 border border-indigo-100 p-2 text-xs font-bold text-indigo-700 cursor-pointer"
             >
               <ScanLine className="h-4 w-4" />
-              <span>{t("Scan", "سکین")}</span>
+              <span>{t("Scan", "╪│┌⌐█î┘å")}</span>
             </button>
             <button
               onClick={toggleLanguage}
@@ -1183,7 +1181,7 @@ const Navigation = React.memo(function Navigation({
               className="flex items-center justify-center gap-2 rounded-lg bg-slate-50 border border-slate-100 p-2 text-xs font-bold text-slate-600 cursor-pointer"
             >
               {settings.theme === 'light' ? <Sun className="h-4 w-4" /> : settings.theme === 'dark' ? <Moon className="h-4 w-4" /> : <LayoutDashboard className="h-4 w-4" />}
-              <span>{t("Theme", "تھیم")}</span>
+              <span>{t("Theme", "╪¬┌╛█î┘à")}</span>
             </button>
           </div>
 
@@ -1199,70 +1197,61 @@ const Navigation = React.memo(function Navigation({
             }`}
           >
             <Settings className={`h-5 w-5 ${activeView === 'configuration' || activeView === 'settings' ? 'text-indigo-600' : 'text-slate-400'}`} />
-            <span>{t("Settings", "ترتیبات")}</span>
+            <span>{t("Settings", "╪¬╪▒╪¬█î╪¿╪º╪¬")}</span>
           </button>
         </div>
       </BottomSheet>
 
-      {/* NATIVE MOBILE BOTTOM NAVIGATION */}
+      {/* MOBILE BOTTOM NAVIGATION */}
       <nav className="fp-bottom-nav lg:hidden">
-        <motion.div
-          whileTap={{ scale: 0.9 }}
+        <div
           onClick={async () => { await haptic.light(); onViewChange('dashboard'); }}
           className={`fp-nav-item ${activeView === 'dashboard' ? 'fp-nav-item--active' : ''} cursor-pointer`}
         >
           <LayoutDashboard className="fp-nav-icon" />
-          <span className="fp-nav-label">{t('Home', 'ہوم')}</span>
-        </motion.div>
-        <motion.div
-          whileTap={{ scale: 0.9 }}
+          <span className="fp-nav-label">{t('Home', '█ü┘ê┘à')}</span>
+        </div>
+        <div
           onClick={async () => { await haptic.light(); onViewChange('shift_logs'); }}
           className={`fp-nav-item ${activeView === 'shift_logs' ? 'fp-nav-item--active' : ''} cursor-pointer`}
         >
           <History className="fp-nav-icon" />
-          <span className="fp-nav-label">{t('Logs', 'لاگز')}</span>
-        </motion.div>
-        
-        {/* CENTER FLOATING ACTION BUTTON (FAB) */}
-        <div className="fp-fab-center-container cursor-pointer" onClick={async () => { await haptic.medium(); onViewChange(isLube ? 'lube_pos' : 'shift_wizard'); }}>
-          <motion.div 
-            whileTap={{ scale: 0.9, y: 5 }}
-            className="fp-fab-center"
-          >
-            <PlusCircle style={{ width: '28px', height: '28px', color: '#FFF' }} strokeWidth={2.5} />
-          </motion.div>
-          <span className="fp-nav-label mt-1">{t('Sale', 'سیل')}</span>
+          <span className="fp-nav-label">{t('Logs', '┘ä╪º┌»╪▓')}</span>
         </div>
-
-        <motion.div
-          whileTap={{ scale: 0.9 }}
+        <div
+          onClick={async () => { await haptic.light(); onViewChange(isLube ? 'lube_pos' : 'shift_wizard'); }}
+          className="fp-nav-item cursor-pointer"
+        >
+          <PlusCircle style={{ color: '#F97316', width: '32px', height: '32px' }} />
+          <span className="fp-nav-label" style={{ color: '#F97316' }}>{t('Sale', '╪│█î┘ä')}</span>
+        </div>
+        <div
           onClick={async () => { await haptic.light(); onViewChange('ledger'); }}
           className={`fp-nav-item ${activeView === 'ledger' ? 'fp-nav-item--active' : ''} cursor-pointer`}
         >
           <BookOpen className="fp-nav-icon" />
-          <span className="fp-nav-label">{t('Ledger', 'کھاتہ')}</span>
-        </motion.div>
-        <motion.div
-          whileTap={{ scale: 0.9 }}
+          <span className="fp-nav-label">{t('Ledger', '┌⌐┌╛╪º╪¬█ü')}</span>
+        </div>
+        <div
           onClick={async () => { await haptic.light(); setMobileMenuOpen(true); }}
           className="fp-nav-item cursor-pointer"
         >
           <Menu className="fp-nav-icon" />
-          <span className="fp-nav-label">{t('Menu', 'مزید')}</span>
-        </motion.div>
+          <span className="fp-nav-label">{t('Menu', '┘à╪▓█î╪»')}</span>
+        </div>
       </nav>
 
       {/* REGISTER STATION MODAL */}
       <BottomSheet
         isOpen={showAddModal}
         onClose={handleCloseAddModal}
-        title={t('Register Independent ERP Station', 'نیا آزادانہ فیول اسٹیشن درج کریں')}
+        title={t('Register Independent ERP Station', '┘å█î╪º ╪ó╪▓╪º╪»╪º┘å█ü ┘ü█î┘ê┘ä ╪º╪│┘╣█î╪┤┘å ╪»╪▒╪¼ ┌⌐╪▒█î┌║')}
         desktopMode="modal"
       >
         <form onSubmit={handleSaveNewStation} className="space-y-4">
           <div>
             <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
-              {t('Station Name (English) *', 'اسٹیشن کا نام (انگریزی) *')}
+              {t('Station Name (English) *', '╪º╪│┘╣█î╪┤┘å ┌⌐╪º ┘å╪º┘à (╪º┘å┌»╪▒█î╪▓█î) *')}
             </label>
             <input
               type="text"
@@ -1270,61 +1259,61 @@ const Navigation = React.memo(function Navigation({
               placeholder="e.g. Star Petroleum GT Road"
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
-              className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
             />
           </div>
 
           <div>
             <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
-              {t('Station Name (Urdu)', 'اسٹیشن کا نام (اردو)')}
+              {t('Station Name (Urdu)', '╪º╪│┘╣█î╪┤┘å ┌⌐╪º ┘å╪º┘à (╪º╪▒╪»┘ê)')}
             </label>
             <input
               type="text"
-              placeholder="مثال: اسٹار پٹرولیم جی ٹی روڈ"
+              placeholder="┘à╪½╪º┘ä: ╪º╪│┘╣╪º╪▒ ┘╛┘╣╪▒┘ê┘ä█î┘à ╪¼█î ┘╣█î ╪▒┘ê┌ê"
               value={formUrduName}
               onChange={(e) => setFormUrduName(e.target.value)}
               dir="rtl"
-              className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
             />
           </div>
 
           <div>
             <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
-              {t('Address (Karachi, Multan, DHA, etc.)', 'اسٹیشن کا پتہ')}
+              {t('Address (Karachi, Multan, DHA, etc.)', '╪º╪│┘╣█î╪┤┘å ┌⌐╪º ┘╛╪¬█ü')}
             </label>
             <input
               type="text"
               placeholder="e.g. Plot 104, Main GT Road, Lahore"
               value={formAddress}
               onChange={(e) => setFormAddress(e.target.value)}
-              className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
-                {t('NTN Registration No.', 'این ٹی این نمبر')}
+                {t('NTN Registration No.', '╪º█î┘å ┘╣█î ╪º█î┘å ┘å┘à╪¿╪▒')}
               </label>
               <input
                 type="text"
                 placeholder="e.g. NTN-4839210-9"
                 value={formNtn}
                 onChange={(e) => setFormNtn(e.target.value)}
-                className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
               />
             </div>
 
             <div>
               <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
-                {t('Owner Contact / Phone', 'رابطہ نمبر')}
+                {t('Owner Contact / Phone', '╪▒╪º╪¿╪╖█ü ┘å┘à╪¿╪▒')}
               </label>
               <input
                 type="text"
                 placeholder="e.g. 0300-1234567"
                 value={formContact}
                 onChange={(e) => setFormContact(e.target.value)}
-                className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
               />
             </div>
           </div>
@@ -1335,13 +1324,13 @@ const Navigation = React.memo(function Navigation({
               onClick={handleCloseAddModal}
               className="rounded-lg px-4 py-2 font-sans text-xs font-bold text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer"
             >
-              {t('Cancel', 'منسوخ کریں')}
+              {t('Cancel', '┘à┘å╪│┘ê╪« ┌⌐╪▒█î┌║')}
             </button>
             <button
               type="submit"
               className="rounded-lg bg-orange-600 px-4 py-2 font-sans text-xs font-bold text-white hover:bg-orange-700 transition-colors shadow-xs cursor-pointer"
             >
-              {t('Create Isolated Station', 'نیا آزاد اسٹیشن بنائیں')}
+              {t('Create Isolated Station', '┘å█î╪º ╪ó╪▓╪º╪» ╪º╪│┘╣█î╪┤┘å ╪¿┘å╪º╪ª█î┌║')}
             </button>
           </div>
         </form>
@@ -1352,13 +1341,13 @@ const Navigation = React.memo(function Navigation({
         <BottomSheet
           isOpen={showEditModal}
           onClose={handleCloseEditModal}
-          title={t('Modify ERP Station Details', 'اسٹیشن کی معلومات تبدیل کریں')}
+          title={t('Modify ERP Station Details', '╪º╪│┘╣█î╪┤┘å ┌⌐█î ┘à╪╣┘ä┘ê┘à╪º╪¬ ╪¬╪¿╪»█î┘ä ┌⌐╪▒█î┌║')}
           desktopMode="modal"
         >
           <form onSubmit={handleSaveEditStation} className="space-y-4">
             <div>
               <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
-                {t('Station Name (English) *', 'اسٹیشن کا نام (انگریزی) *')}
+                {t('Station Name (English) *', '╪º╪│┘╣█î╪┤┘å ┌⌐╪º ┘å╪º┘à (╪º┘å┌»╪▒█î╪▓█î) *')}
               </label>
               <input
                 type="text"
@@ -1366,61 +1355,61 @@ const Navigation = React.memo(function Navigation({
                 placeholder="e.g. Star Petroleum GT Road"
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
-                className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
               />
             </div>
 
             <div>
               <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
-                {t('Station Name (Urdu)', 'اسٹیشن کا نام (اردو)')}
+                {t('Station Name (Urdu)', '╪º╪│┘╣█î╪┤┘å ┌⌐╪º ┘å╪º┘à (╪º╪▒╪»┘ê)')}
               </label>
               <input
                 type="text"
-                placeholder="مثال: اسٹار پٹرولیم جی ٹی روڈ"
+                placeholder="┘à╪½╪º┘ä: ╪º╪│┘╣╪º╪▒ ┘╛┘╣╪▒┘ê┘ä█î┘à ╪¼█î ┘╣█î ╪▒┘ê┌ê"
                 value={formUrduName}
                 onChange={(e) => setFormUrduName(e.target.value)}
                 dir="rtl"
-                className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
               />
             </div>
 
             <div>
               <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
-                {t('Address', 'اسٹیشن کا پتہ')}
+                {t('Address', '╪º╪│┘╣█î╪┤┘å ┌⌐╪º ┘╛╪¬█ü')}
               </label>
               <input
                 type="text"
                 placeholder="e.g. Plot 104, Main GT Road, Lahore"
                 value={formAddress}
                 onChange={(e) => setFormAddress(e.target.value)}
-                className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
-                  {t('NTN Registration No.', 'این ٹی این نمبر')}
+                  {t('NTN Registration No.', '╪º█î┘å ┘╣█î ╪º█î┘å ┘å┘à╪¿╪▒')}
                 </label>
                 <input
                   type="text"
                   placeholder="e.g. NTN-4839210-9"
                   value={formNtn}
                   onChange={(e) => setFormNtn(e.target.value)}
-                  className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1">
-                  {t('Owner Contact / Phone', 'رابطہ نمبر')}
+                  {t('Owner Contact / Phone', '╪▒╪º╪¿╪╖█ü ┘å┘à╪¿╪▒')}
                 </label>
                 <input
                   type="text"
                   placeholder="e.g. 0300-1234567"
                   value={formContact}
                   onChange={(e) => setFormContact(e.target.value)}
-                  className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
                 />
               </div>
             </div>
@@ -1431,13 +1420,13 @@ const Navigation = React.memo(function Navigation({
                 onClick={handleCloseEditModal}
                 className="rounded-lg px-4 py-2 font-sans text-xs font-bold text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer"
               >
-                {t('Cancel', 'منسوخ کریں')}
+                {t('Cancel', '┘à┘å╪│┘ê╪« ┌⌐╪▒█î┌║')}
               </button>
               <button
                 type="submit"
                 className="rounded-lg bg-orange-600 px-4 py-2 font-sans text-xs font-bold text-white hover:bg-orange-700 transition-colors shadow-xs cursor-pointer"
               >
-                {t('Save Changes', 'تبدیلی محفوظ کریں')}
+                {t('Save Changes', '╪¬╪¿╪»█î┘ä█î ┘à╪¡┘ü┘ê╪╕ ┌⌐╪▒█î┌║')}
               </button>
             </div>
           </form>

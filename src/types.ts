@@ -831,10 +831,12 @@ export interface Organization {
   ownerId: string;
   trialStartDate: number;
   trialEndDate?: number;
-  subscriptionStatus: 'active' | 'past_due' | 'canceled' | 'trialing';
+  subscriptionStatus: 'active' | 'past_due' | 'canceled' | 'trialing' | 'expired';
   subscriptionPlan: string;
+  subscriptionTier?: string;
   subscriptionStartDate?: number;
   subscriptionEndDate?: number;
+  expiryDate?: number;
   createdAt: number;
   updatedAt: number;
 }

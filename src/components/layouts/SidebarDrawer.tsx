@@ -82,7 +82,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
     // ANALYTICS
     { id: 'reports', section: 'analytics', icon: FileBarChart, label: isLubeBusiness ? 'Lube Reports' : 'Advanced Reports (104)', urdu: isLubeBusiness ? 'لیوب رپورٹس' : 'ایڈوانسڈ رپورٹس', showInLube: true },
     { id: 'dip_calculator', section: 'analytics', icon: Droplets, label: 'Dip Chart Calculator', urdu: 'دپ چارٹ کیلکولیٹر', showInLube: false },
-    { id: 'ogra_sync', section: 'analytics', icon: ShieldCheck, label: 'OGRA Price Sync', urdu: 'OGRA قیمت سنک', showInLube: false },
+
     { id: 'ai_analytics', section: 'analytics', icon: Sparkles, label: 'AI Analytics Hub', urdu: 'اے آئی اینالٹکس', showInLube: true },
     // SYSTEM / SETUP
     { id: 'settings', section: 'system', icon: Settings, label: 'Settings & Setup', urdu: 'سیٹنگز اور سیٹ اپ', showInLube: true },

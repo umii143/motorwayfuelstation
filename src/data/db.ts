@@ -362,7 +362,9 @@ function getStorageItem<T>(key: string, seed: T): T {
   try {
     const item = (memoryCache[key] ?? null);
     if (!item) {
-      ((memoryCache[key] = JSON.stringify(seed)), flushToIndexedDB(key, JSON.stringify(seed)));
+      if (dbInitialized) {
+        ((memoryCache[key] = JSON.stringify(seed)), flushToIndexedDB(key, JSON.stringify(seed)));
+      }
       return seed;
     }
     return JSON.parse(item) as T;
@@ -445,7 +447,9 @@ export const db = {
           withBusinessScope(SEED_FUEL_STATION, DEFAULT_STATION_ID),
           withBusinessScope(SEED_LUBE_STATION, LUBE_STATION_ID)
         ];
-        ((memoryCache['fuelpro_stations'] = JSON.stringify(defaultList)), flushToIndexedDB('fuelpro_stations', JSON.stringify(defaultList)));
+        if (dbInitialized) {
+          ((memoryCache['fuelpro_stations'] = JSON.stringify(defaultList)), flushToIndexedDB('fuelpro_stations', JSON.stringify(defaultList)));
+        }
         return defaultList;
       }
       const parsed = JSON.parse(list) as Station[];
@@ -474,7 +478,9 @@ export const db = {
     try {
       const active = (memoryCache['fuelpro_active_station_id'] ?? null);
       if (!active) {
-        ((memoryCache['fuelpro_active_station_id'] = DEFAULT_STATION_ID), flushToIndexedDB('fuelpro_active_station_id', DEFAULT_STATION_ID));
+        if (dbInitialized) {
+          ((memoryCache['fuelpro_active_station_id'] = DEFAULT_STATION_ID), flushToIndexedDB('fuelpro_active_station_id', DEFAULT_STATION_ID));
+        }
         return DEFAULT_STATION_ID;
       }
       return active;
@@ -489,18 +495,26 @@ export const db = {
 
   getSettings: (stationId: string): GlobalSettings => {
     const key = db.getStationStorageKey(stationId, STORAGE_KEYS.SETTINGS);
-    const item = (memoryCache[key] ?? null);
-    if (!item) {
-      const isLube = stationId === LUBE_STATION_ID;
-      const initialSettings = withBusinessScope(isLube ? SEED_LUBE_SETTINGS : SEED_FUEL_SETTINGS, stationId);
-      ((memoryCache[key] = JSON.stringify(initialSettings)), flushToIndexedDB(key, JSON.stringify(initialSettings)));
-      return initialSettings;
+    try {
+      const item = (memoryCache[key] ?? null);
+      if (!item) {
+        const isLube = stationId === LUBE_STATION_ID;
+        const initialSettings = withBusinessScope(isLube ? SEED_LUBE_SETTINGS : SEED_FUEL_SETTINGS, stationId);
+        if (dbInitialized) {
+          ((memoryCache[key] = JSON.stringify(initialSettings)), flushToIndexedDB(key, JSON.stringify(initialSettings)));
+        }
+        return initialSettings;
+      }
+      const scopedSettings = withBusinessScope(JSON.parse(item) as GlobalSettings, stationId);
+      if (JSON.stringify(JSON.parse(item)) !== JSON.stringify(scopedSettings)) {
+        if (dbInitialized) {
+          ((memoryCache[key] = JSON.stringify(scopedSettings)), flushToIndexedDB(key, JSON.stringify(scopedSettings)));
+        }
+      }
+      return scopedSettings;
+    } catch {
+      return withBusinessScope(SEED_FUEL_SETTINGS, stationId);
     }
-    const scopedSettings = withBusinessScope(JSON.parse(item) as GlobalSettings, stationId);
-    if (JSON.stringify(JSON.parse(item)) !== JSON.stringify(scopedSettings)) {
-      ((memoryCache[key] = JSON.stringify(scopedSettings)), flushToIndexedDB(key, JSON.stringify(scopedSettings)));
-    }
-    return scopedSettings;
   },
   
   saveSettings: (stationId: string, settings: GlobalSettings) => 

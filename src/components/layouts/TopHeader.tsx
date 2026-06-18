@@ -1,6 +1,6 @@
-import React from 'react';
-import { Menu, Globe, ChevronDown, Search, Bell, Fuel, Sun, Moon, Settings, Palette } from 'lucide-react';
-import { GlobalSettings } from '../../types';
+import React, { useState, useRef, useEffect } from 'react';
+import { Menu, Globe, ChevronDown, Search, Bell, Fuel, Sun, Moon, Settings, Palette, Store } from 'lucide-react';
+import { GlobalSettings, Station } from '../../types';
 
 interface TopHeaderProps {
   onMenuClick: () => void;
@@ -9,6 +9,9 @@ interface TopHeaderProps {
   onSettingsClick?: () => void;
   onJarvisTrigger?: () => void;
   settings: GlobalSettings;
+  stations?: Station[];
+  activeStationId?: string;
+  onSwitchStation?: (id: string) => void;
 }
 
 export const TopHeader: React.FC<TopHeaderProps> = ({ 
@@ -17,8 +20,27 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   onThemeToggle,
   onSettingsClick,
   onJarvisTrigger,
-  settings 
+  settings,
+  stations = [],
+  activeStationId,
+  onSwitchStation,
+  onCreateStation
 }) => {
+  const [isStationMenuOpen, setIsStationMenuOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsStationMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const activeStation = stations.find(s => s.id === activeStationId) || stations[0];
+
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-white dark:bg-[#151521] border-b border-slate-200 dark:border-white/5 z-[60] flex items-center justify-between px-4 lg:px-6 transition-colors shadow-sm dark:shadow-none">
       
@@ -28,17 +50,70 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           onClick={onMenuClick}
           className="p-2 -ml-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors"
         >
-          <Menu className="w-6 h-6" />
+          <Menu className="w-5 h-5" />
         </button>
-        
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-[#FF7A00] flex items-center justify-center shadow-lg shadow-orange-500/20">
-            <Fuel className="w-4 h-4 text-white fill-white" />
-          </div>
-          <div className="flex flex-col hidden sm:flex">
-            <span className="text-[14px] font-black tracking-tight leading-none text-slate-800 dark:text-white uppercase">PSO Super</span>
-            <span className="text-[9px] font-bold tracking-[0.2em] leading-none text-slate-500 dark:text-slate-400 mt-0.5 uppercase">Fuel Station</span>
-          </div>
+
+        {/* Station Switcher / Identity */}
+        <div className="relative ml-2" ref={dropdownRef}>
+          <button 
+            onClick={() => setIsStationMenuOpen(!isStationMenuOpen)}
+            className="flex items-center gap-3 p-1.5 pr-3 rounded-full transition-colors hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
+          >
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-[#FF7A00] flex items-center justify-center shadow-lg shadow-orange-500/20 shrink-0">
+              <Fuel className="w-4 h-4 text-white fill-white" />
+            </div>
+            <div className="flex flex-col hidden sm:flex text-left">
+              <span className="text-[14px] font-black tracking-tight leading-none text-slate-800 dark:text-white uppercase max-w-[140px] truncate">
+                {activeStation?.name || 'PSO Super'}
+              </span>
+              <span className="text-[9px] font-bold tracking-[0.2em] leading-none text-slate-500 dark:text-slate-400 mt-0.5 uppercase">
+                {activeStation?.businessType === 'lube' ? 'Lube Business' : activeStation?.businessType === 'cng' ? 'CNG Station' : 'Fuel Station'}
+              </span>
+            </div>
+            <ChevronDown className={`w-4 h-4 text-slate-400 hidden sm:block ml-1 transition-transform ${isStationMenuOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {/* Dropdown Menu */}
+          {isStationMenuOpen && (
+            <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-[#1f2937] rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] border border-slate-200 dark:border-slate-700/50 py-2 z-50 animate-in slide-in-from-top-2 fade-in duration-200">
+              <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 mb-2">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Switch Station</span>
+              </div>
+              {stations.map(station => (
+                <button
+                  key={station.id}
+                  onClick={() => {
+                    onSwitchStation?.(station.id);
+                    setIsStationMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${station.id === activeStationId ? 'bg-orange-50 dark:bg-orange-500/10' : ''}`}
+                >
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${station.id === activeStationId ? 'bg-orange-500 text-white shadow-[0_0_10px_rgba(249,115,22,0.4)]' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}>
+                    <Store className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className={`font-bold text-sm ${station.id === activeStationId ? 'text-orange-600 dark:text-orange-400' : 'text-slate-700 dark:text-slate-200'}`}>
+                      {station.name}
+                    </div>
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      {station.businessType === 'lube' ? 'Lube Business' : station.businessType === 'cng' ? 'CNG Station' : 'Fuel Station'}
+                    </div>
+                  </div>
+                </button>
+              ))}
+              <div className="px-3 pt-2 mt-2 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  onClick={() => {
+                    onCreateStation?.();
+                    setIsStationMenuOpen(false);
+                  }}
+                  className="w-full py-2.5 px-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-orange-50 dark:hover:bg-orange-500/10 text-orange-600 dark:text-orange-500 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-dashed border-slate-200 dark:border-slate-700 hover:border-orange-200 dark:hover:border-orange-500/30"
+                >
+                  <span>+ Create New Business</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

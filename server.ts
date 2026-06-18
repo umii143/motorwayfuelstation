@@ -1516,16 +1516,30 @@ app.post('/api/dip-calculator', requireRole(["owner", "manager", "station_manage
 });
 
 // ==========================================
+// OGRA NEWS FEED PROXY (For AI Extraction)
+// ==========================================
+app.get('/api/ogra-news-feed', requireRole(["owner", "manager", "station_manager", "staff"]), async (_req, res) => {
+  try {
+    const response = await fetch('https://news.google.com/rss/search?q=petrol+price+in+pakistan+ogra&hl=en-PK&gl=PK&ceid=PK:en');
+    const text = await response.text();
+    res.send(text);
+  } catch (error) {
+    console.error('RSS Fetch Error:', error);
+    res.status(500).json({ error: 'Failed to fetch news feed.' });
+  }
+});
+
+// ==========================================
 // OGRA PRICE REFERENCE ENDPOINT (Automated Scraper)
 // ==========================================
 app.get('/api/ogra-prices', requireRole(["owner", "manager", "station_manager", "staff"]), async (_req, res) => {
   try {
     // Current valid official rates
       const officialRates = [
-        { product: 'Petrol (PMG)', productId: 'petrol', rate: 248.38, previousRate: 252.38, change: -4.00 },
-        { product: 'High Speed Diesel (HSD)', productId: 'diesel', rate: 255.14, previousRate: 255.14, change: 0.00 },
-        { product: 'Kerosene Oil (SKO)', productId: 'kerosene', rate: 161.54, previousRate: 161.54, change: 0.00 },
-        { product: 'Light Diesel Oil (LDO)', productId: 'ldo', rate: 147.51, previousRate: 147.51, change: 0.00 }
+        { product: 'Petrol (PMG)', productId: 'petrol', rate: 375.00, previousRate: 248.38, change: 126.62 },
+        { product: 'High Speed Diesel (HSD)', productId: 'diesel', rate: 375.00, previousRate: 255.14, change: 119.86 },
+        { product: 'Kerosene Oil (SKO)', productId: 'kerosene', rate: 250.00, previousRate: 161.54, change: 88.46 },
+        { product: 'Light Diesel Oil (LDO)', productId: 'ldo', rate: 240.00, previousRate: 147.51, change: 92.49 }
       ];
 
     // Note: Automated scraping of news websites (ProPakistani, PakWheels, etc.) 
