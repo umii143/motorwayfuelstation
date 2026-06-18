@@ -1577,14 +1577,7 @@ app.post('/api/wa/send', requireRole(["owner", "manager", "station_manager", "de
   }
 });
 
-// ==========================================
-// GEMINI AI ASSISTANT ENDPOINT
-// ==========================================
-import { GoogleGenAI } from '@google/genai';
 
-const ai = new GoogleGenAI({ 
-  apiKey: process.env.GEMINI_API_KEY || "" 
-});
 
 app.post('/api/ai-assistant', requireRole(["owner", "manager", "station_manager", "staff", "desk_operator", "cashier"]), async (req, res) => {
   try {
@@ -1597,22 +1590,39 @@ app.post('/api/ai-assistant', requireRole(["owner", "manager", "station_manager"
       promptContent += `System: IMPORTANT: You must provide your final response in ${language === 'ur' ? 'Urdu (using Urdu script)' : 'English'}.\n\n`;
     }
 
+    const groqMessages: any[] = [{ role: "system", content: promptContent }];
+
     if (conversationHistory && Array.isArray(conversationHistory)) {
       conversationHistory.forEach((msg: any) => {
-        promptContent += `${msg.role === 'assistant' ? 'AI' : 'User'}: ${msg.content}\n\n`;
+        groqMessages.push({ role: msg.role === 'assistant' ? 'assistant' : 'user', content: msg.content });
       });
     }
     
-    promptContent += `User: ${userMessage}\n\nAI:`;
+    groqMessages.push({ role: "user", content: userMessage });
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: promptContent,
+    const groqApiKey = process.env.GROQ_API_KEY;
+    const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${groqApiKey}`
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: groqMessages,
+        temperature: 0.3
+      })
     });
 
-    res.json({ reply: response.text });
+    if (!groqRes.ok) {
+      const errText = await groqRes.text();
+      throw new Error(`Groq API Error: ${errText}`);
+    }
+
+    const groqData = await groqRes.json();
+    res.json({ reply: groqData.choices[0].message.content });
   } catch (error: any) {
-    console.error('Gemini AI Error:', error);
+    console.error('Groq AI Error:', error);
     res.status(500).json({ error: error.message || 'Failed to generate AI response' });
   }
 });
@@ -1627,22 +1637,41 @@ app.post('/api/ai-vision', requireRole(["owner", "manager", "station_manager", "
 
     const promptText = `System: ${systemPrompt || 'Analyze this document.'}\n\n${language ? `IMPORTANT: Respond in ${language === 'ur' ? 'Urdu' : 'English'}.` : ''}\n\nExtract the requested data from this image and return it in the format requested.`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: [
-        { text: promptText },
-        { 
-          inlineData: {
-            data: imageBase64.split(',')[1] || imageBase64,
-            mimeType: imageBase64.match(/data:([^;]+);/)?.[1] || "image/jpeg"
-          } 
-        }
-      ]
+    // Ensure the image base64 has the data URI prefix for Groq/OpenAI format
+    const mimeType = imageBase64.match(/data:([^;]+);/)?.[1] || "image/jpeg";
+    const base64Data = imageBase64.includes('data:image') ? imageBase64 : `data:${mimeType};base64,${imageBase64}`;
+
+    const groqApiKey = process.env.GROQ_API_KEY;
+    const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${groqApiKey}`
+      },
+      body: JSON.stringify({
+        model: "llama-3.2-90b-vision-preview",
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: promptText },
+              { type: "image_url", image_url: { url: base64Data } }
+            ]
+          }
+        ],
+        temperature: 0.2
+      })
     });
 
-    res.json({ reply: response.text });
+    if (!groqRes.ok) {
+      const errText = await groqRes.text();
+      throw new Error(`Groq API Error: ${errText}`);
+    }
+
+    const groqData = await groqRes.json();
+    res.json({ reply: groqData.choices[0].message.content });
   } catch (error: any) {
-    console.error('Gemini Vision AI Error:', error);
+    console.error('Groq Vision AI Error:', error);
     res.status(500).json({ error: error.message || 'Failed to process image with AI' });
   }
 });

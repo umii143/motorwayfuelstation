@@ -146,7 +146,10 @@ export default function StaffPanel({
   // Create Staff
   const handleCreateStaffSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!addName) return;
+    if (!addName || addName.trim() === '') {
+      showToast(t('Please enter a name for the staff member!', 'برائے مہربانی ملازم کا نام درج کریں!'), 'error');
+      return;
+    }
 
     if (!addPin || addPin.length < 4 || addPin.length > 6) {
       showToast(t('Please set a valid 4 to 6 digit security login PIN!', 'برائے مہربانی درست 4 سے 6 ہندسوں کا سیکیورٹی لاگ ان پن سیٹ کریں!'), 'error');
@@ -1480,7 +1483,6 @@ export default function StaffPanel({
                     <label className="block text-slate-505 font-bold mb-1">{t('Staff Name (English):', 'اسٹاف کا نام انگریزی میں:')}</label>
                     <input
                       type="text"
-                      required
                       placeholder="e.g. Abdul Rehman"
                       value={addName}
                       onChange={(e) => setAddName(e.target.value)}
@@ -1516,11 +1518,11 @@ export default function StaffPanel({
                     <label className="block text-slate-505 font-bold mb-1">{t(`Monthly Base Salary (${getCurrencySymbol(settings)}):`, 'ماہانہ बुनियादी تنخواہ:')}</label>
                     <input
                       type="number"
-                      required
-                      placeholder="e.g. 25000"
+                      min="0"
+                      placeholder="25000"
                       value={addSalary}
                       onChange={(e) => setAddSalary(e.target.value)}
-                      className="premium-input border px-3 outline-hidden focus:border-orange-500 font-mono text-slate-800"
+                      className="premium-input border pl-10 pr-3 outline-hidden focus:border-orange-500 font-mono text-slate-800"
                     />
                   </div>
 
@@ -1561,7 +1563,6 @@ export default function StaffPanel({
                       <input
                         type="password"
                         maxLength={6}
-                        required
                         placeholder="e.g. 1234"
                         pattern="\d*"
                         value={addPin}

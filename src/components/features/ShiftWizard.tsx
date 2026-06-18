@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useShallow } from 'zustand/react/shallow';
 import { motion, AnimatePresence } from "motion/react";
 import { format } from "date-fns";
@@ -242,7 +242,8 @@ export default function ShiftWizard({
   // ==========================================
   // STEP 1 FORM STATE: SETUP
   // ==========================================
-  const [selectedStaffId, setSelectedStaffId] = useState("");
+  const [selectedStaffId, setSelectedStaffId] = useState<string>("");
+  const [searchStaffQuery, setSearchStaffQuery] = useState("");
   const [shiftType, setShiftType] = useState<"day" | "night">("day");
   const [shiftDate, setShiftDate] = useState(
     () => new Date().toISOString().split("T")[0],
@@ -1916,11 +1917,20 @@ export default function ShiftWizard({
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                   </div>
-                  <input type="text" placeholder="Search staff by name or code..." className="peer w-full pl-9 pr-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-colors" />
+                  <input 
+                    type="text" 
+                    placeholder="Search staff by name or code..." 
+                    value={searchStaffQuery}
+                    onChange={(e) => setSearchStaffQuery(e.target.value)}
+                    className="peer w-full pl-9 pr-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-colors" 
+                  />
                 </div>
 
                 <div className="absolute top-[52px] left-0 right-0 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl opacity-0 invisible peer-focus:opacity-100 peer-focus:visible hover:opacity-100 hover:visible transition-all max-h-[300px] overflow-y-auto custom-scrollbar">
-                  {staff.filter(st => st.active).map(s => {
+                  {staff
+                    .filter(st => st.active)
+                    .filter(st => searchStaffQuery === '' || st.name.toLowerCase().includes(searchStaffQuery.toLowerCase()) || (st.urduName && st.urduName.includes(searchStaffQuery)))
+                    .map(s => {
                     const isSelected = selectedStaffId === s.id;
                     return (
                       <div 
