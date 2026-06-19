@@ -96,7 +96,8 @@ import {
   CashAccount,
   TreasuryTransaction,
   OwnerDrawing,
-  CashReconciliation
+  CashReconciliation,
+  MeterResetEvent
 } from '../types';
 import {
   DEFAULT_FUEL_STATION_ID,
@@ -157,6 +158,7 @@ const SPECIAL_STORAGE_KEYS = {
   TREASURY_TRANSACTIONS: 'fuelpro_treasury_transactions',
   OWNER_DRAWINGS: 'fuelpro_owner_drawings',
   CASH_RECONCILIATIONS: 'fuelpro_cash_reconciliations',
+  METER_RESETS: 'fuelpro_meter_resets',
   // Enterprise Fuel Costing Engine (v2)
   FIFO_DEDUCTIONS: 'fuelpro_fifo_deductions',
   SUPPLIER_CLAIMS: 'fuelpro_supplier_claims',
@@ -804,6 +806,11 @@ export const db = {
 
     return setting?.marginPerLiter ?? 8.64; // fallback to current OGRA rate
   },
+
+  getMeterResets: (stationId: string): MeterResetEvent[] =>
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.METER_RESETS, [] as MeterResetEvent[]),
+  saveMeterResets: (stationId: string, resets: MeterResetEvent[]) =>
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.METER_RESETS, resets),
 
   clearSettingsAuditTrail: (stationId: string) => {
     const scopedKey = db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL);

@@ -985,7 +985,7 @@ export default function CustomerDirectory({
               </div>
 
               {/* Outstanding metrics display & credit limit warning bar */}
-              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="rounded-lg p-4 bg-slate-50 border border-slate-100 font-sans text-xs flex flex-col justify-between relative overflow-hidden">
                   <div className="absolute top-0 bottom-0 left-0 w-1 bg-red-400"></div>
                   <span className="text-slate-400 font-bold uppercase tracking-wider">{t('Remaining Credit Space:', 'باقی گنجائش بقایا قرض:')}</span>
@@ -1279,7 +1279,7 @@ export default function CustomerDirectory({
                   />
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t(`Credit Limit (${getCurrencySymbol(settings)}):`, 'قرض کی انتہائ حد:')}</label>
                     <input
@@ -1354,7 +1354,7 @@ export default function CustomerDirectory({
                 setShowEditModal(false);
                 showToast(t('Customer profile updated!', 'کھاتہ دار معلومات اپڈیٹ ہو گئی!'), 'success');
               }} className="space-y-4">
-                <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Name (English):', 'نام (انگریزی):')}</label>
                     <input type="text" required value={editCustName} onChange={e => setEditCustName(e.target.value)}

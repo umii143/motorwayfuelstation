@@ -765,7 +765,7 @@ export default function SupplierDirectory({
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3.5 sm:grid-cols-2">
                       <div>
                         <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t('Transaction Nature:', 'انٹری کی قسم:')}</label>
-                        <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                           <button
                             type="button"
                             onClick={() => setAdjustNature('invoice')}

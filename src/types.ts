@@ -76,6 +76,14 @@ export interface Nozzle extends TenantDocument {
   tankId?: string;
   startReading?: number;
   currentReading?: number;
+  meterOffset?: number;
+  offsetHistory?: {
+    timestamp: string;
+    previousOffset: number;
+    addedOffset: number;
+    newOffset: number;
+    resetEventId: string;
+  }[];
 }
 
 export interface Pump extends TenantDocument {
@@ -229,6 +237,8 @@ export interface ShiftPriceSegment {
   delayStatus: 'normal' | 'warning' | 'critical';
   meterOpen: number;
   meterClose: number;
+  meterOpenDisplay?: number;
+  meterCloseDisplay?: number;
   litersSold: number;
   revenue: number;
   segmentIndex: number;
@@ -242,6 +252,56 @@ export interface PendingPriceRevision {
   effectiveAt: string;
   reason?: string;
   approvedBy?: string;
+}
+
+export interface MeterResetEvent extends TenantDocument {
+  id: string;
+  nozzleId: string;
+  nozzleName: string;
+  productId: string;
+  productName: string;
+  oldReading: number;
+  newReading: number;
+  meterDifference?: number;
+  
+  // Stock snapshot
+  stockAtReset?: number;
+  tankStockBeforeReset?: number;
+  tankStockAfterReset?: number;
+  tankId?: string;
+  tankName?: string;
+
+  // Financial
+  priceAtReset: number;
+  inventoryValueAtReset?: number;
+
+  reason: string;
+  isRollover: boolean;
+  
+  resetType?: 'ROLLOVER' | 'METER_REPLACEMENT' | 'METER_REPAIR' | 'CALIBRATION' | 'ADMIN_CORRECTION';
+  severity?: 'INFO' | 'WARNING' | 'CRITICAL';
+  eventHash?: string;
+
+  activeShiftId?: string;
+  shiftNumber?: string;
+  salesmanId?: string;
+  salesmanName?: string;
+  
+  authorizedBy: string;
+  authorizedByName?: string;
+  authorizationMethod?: 'MASTER_PIN' | 'BIOMETRIC' | 'OWNER_ACCOUNT';
+  requestedBy?: string;
+  approvedBy?: string;
+  approvedAt?: string;
+  isFinanciallyImpacting?: boolean;
+  
+  timestamp: string;
+  createdAt?: string;
+  
+  evidenceUrl?: string;
+  beforeMeterImage?: string;
+  afterMeterImage?: string;
+  notes?: string;
 }
 
 export interface Shift extends TenantDocument {
@@ -260,8 +320,10 @@ export interface Shift extends TenantDocument {
   segments?: ShiftPriceSegment[];
   pendingPriceRevisions?: PendingPriceRevision[];
   
-  openingReadings: { [nozzleId: string]: number };
-  closingReadings: { [nozzleId: string]: number };
+  openingReadings: { [nozzleId: string]: number }; // ACTUAL readings (display + offset)
+  openingReadingsDisplay?: { [nozzleId: string]: number }; // DISPLAY readings (what user saw)
+  closingReadings: { [nozzleId: string]: number }; // ACTUAL readings (display + offset)
+  closingReadingsDisplay?: { [nozzleId: string]: number }; // DISPLAY readings (what user saw)
   testLiters: { [productId: string]: number };
   
   debitEntries: DebitEntry[];

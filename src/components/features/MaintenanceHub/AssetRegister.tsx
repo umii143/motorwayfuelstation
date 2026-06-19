@@ -226,7 +226,7 @@ export default function AssetRegister({ settings, stationId }: AssetRegisterProp
             </div>
             
             <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Asset Name *</label>
                   <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="e.g. Dispenser Pump #1" />
@@ -246,7 +246,7 @@ export default function AssetRegister({ settings, stationId }: AssetRegisterProp
                   <input type="text" value={serialNumber} onChange={e => setSerialNumber(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono" placeholder="XYZ-987654321" />
                 </div>
 
-                <div className="border-t border-slate-100 pt-4 md:col-span-2 grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="border-t border-slate-100 pt-4 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Installation Date *</label>
                     <input type="date" value={installationDate} onChange={e => setInstallationDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />

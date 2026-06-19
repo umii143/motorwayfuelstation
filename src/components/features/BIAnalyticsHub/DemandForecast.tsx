@@ -60,13 +60,18 @@ export default function DemandForecast({ settings, stationId }: DemandForecastPr
     });
 
     const avgDailyVol = count > 0 ? totalVol / count : 0;
-    const baseline = avgDailyVol > 0 ? avgDailyVol : 1500;
+    const baseline = avgDailyVol > 0 ? avgDailyVol : 0;
+    // Confidence is based on how many data points we have — more shifts = higher confidence (max 90%)
+    const confidence = Math.min(90, Math.round((count / 30) * 90));
+    const hasData = count > 0;
     
     return {
-      next7Days: Math.round(baseline * 7 * 1.05), // 5% expected growth
-      confidence: Math.round(75 + Math.random() * 20), // 75-95%
-      trend: '+5.0%',
-      recommendation: `Order ${Math.round((baseline * 7 * 1.05) / 1000) * 1000}L by end of week.`
+      next7Days: hasData ? Math.round(baseline * 7 * 1.05) : 0,
+      confidence: hasData ? Math.max(confidence, 40) : 0, // min 40% if we have at least some data
+      trend: hasData ? '+5.0%' : 'No data',
+      recommendation: hasData
+        ? `Order ${Math.round((baseline * 7 * 1.05) / 1000) * 1000}L by end of week.`
+        : 'Not enough data yet. Close a few shifts first.'
     };
   };
 
@@ -89,7 +94,7 @@ export default function DemandForecast({ settings, stationId }: DemandForecastPr
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {fuelTypes.map(type => {
           const forecast = generateMockForecast(type);
 

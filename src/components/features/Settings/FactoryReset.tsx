@@ -153,7 +153,7 @@ export default function FactoryReset({ settings, activeStationId }: { settings: 
               {t('Dry Run Analysis', 'ڈرائی رن کا تجزیہ')}
             </h3>
             
-            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
               <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Records to Delete</p>
                 <p className="text-3xl font-mono font-bold text-rose-600">{recordsCount.toLocaleString()}</p>

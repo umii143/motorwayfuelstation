@@ -19,15 +19,13 @@ export const RiskCenter: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(true);
   const [scanProgress, setScanProgress] = useState(0);
 
-  // Fake scanning progress for wow-factor
+  // Deterministic scanning animation (no random values)
   useEffect(() => {
     let progress = 0;
+    const step = 8; // fixed step — completes in ~1.25s
     const interval = setInterval(() => {
-      progress += Math.random() * 15;
-      if (progress >= 100) {
-        progress = 100;
-        clearInterval(interval);
-      }
+      progress += step;
+      if (progress >= 100) { progress = 100; clearInterval(interval); }
       setScanProgress(progress);
     }, 100);
     return () => clearInterval(interval);

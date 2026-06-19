@@ -807,7 +807,7 @@ export default function Inventory({
             </div>
 
             {/* PRODUCT LISTING CARD GRID */}
-            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <AnimatePresence>
                 {filteredProducts.map((prod, idx) => {
                   const capacity = prod.capacity || 100;
@@ -1443,7 +1443,7 @@ export default function Inventory({
               </div>
 
               <form onSubmit={handleProductModalSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Product Name (English):', 'نام (انگریزی):')}</label>
                     <input type="text" required value={prodName} onChange={e => setProdName(e.target.value)}

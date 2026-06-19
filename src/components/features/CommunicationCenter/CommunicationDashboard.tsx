@@ -76,7 +76,7 @@ export const CommunicationDashboard: React.FC = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         
         {/* EOD Summary Card */}
         <div className="premium-card border border-slate-200 hover:shadow-md transition-shadow">

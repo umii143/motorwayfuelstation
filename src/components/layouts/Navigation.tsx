@@ -63,7 +63,8 @@ import {
   Beaker,
   FlaskConical,
   PlusCircle,
-  BrainCircuit
+  BrainCircuit,
+  Building2
 } from 'lucide-react';
 import { GlobalSettings, Station } from '../../types';
 import { t as translate } from '../../lib/translations';
@@ -162,6 +163,7 @@ const Navigation = React.memo(function Navigation({
       children: [
         { id: 'bi_analytics', icon: LineChart, label: 'BI Analytics', urdu: 'بی آئی اینالٹکس', showInLube: true },
         { id: 'executive_dashboard', icon: Briefcase, label: 'Executive Insights', urdu: 'ایگزیکٹو ڈیش بورڈ', showInLube: true },
+        { id: 'enterprise_dashboard', icon: Building2, label: 'Enterprise Dashboard', urdu: 'انٹرپرائز ڈیش بورڈ', showInLube: false, ownerOnly: true },
         { id: 'treasury', icon: Landmark, label: 'Treasury Center', urdu: 'ٹریژری سینٹر', showInLube: true },
         { id: 'risk_center', icon: ShieldAlert, label: 'Risk Center', urdu: 'رسک سینٹر', showInLube: true },
         { id: 'integrity_center', icon: ShieldCheck, label: 'Integrity Center', urdu: 'انٹیگریٹی سینٹر', showInLube: true },
@@ -952,7 +954,7 @@ const Navigation = React.memo(function Navigation({
                           
                           {expanded && (
                             <div className="pl-9 pr-2 space-y-1 mt-1 mb-2 animate-in slide-in-from-top-2 duration-200">
-                              {item.children.filter(child => isLube ? child.showInLube : true).map(child => {
+                              {item.children.filter(child => (isLube ? child.showInLube : true) && (!child.ownerOnly || isSuperAdmin)).map(child => {
                                 const ChildIcon = child.icon;
                                 const isChildItemActive = activeView === child.id;
                                 return (
@@ -1097,7 +1099,7 @@ const Navigation = React.memo(function Navigation({
                         
                         {expanded && (
                           <div className="pl-9 pr-2 space-y-1 mt-1 mb-2">
-                            {item.children.filter(child => isLube ? child.showInLube : true).map(child => {
+                            {item.children.filter(child => (isLube ? child.showInLube : true) && (!child.ownerOnly || isSuperAdmin)).map(child => {
                               const ChildIcon = child.icon;
                               const isChildItemActive = activeView === child.id;
                               return (

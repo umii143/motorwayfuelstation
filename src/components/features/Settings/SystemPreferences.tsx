@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sliders, Save, Globe, Monitor, Printer, AlertTriangle, Trash2 } from 'lucide-react';
+import { Sliders, Save, Globe, Monitor, Printer, AlertTriangle } from 'lucide-react';
 import { useStation } from '../../../contexts/StationContext';
 import { GlobalSettings } from '../../../types';
 
@@ -31,37 +31,6 @@ export default function SystemPreferences({ settings, onUpdateSettings, activeSt
     showToast(t('System preferences saved.', 'سسٹم کی ترجیحات محفوظ ہو گئیں۔'), 'success');
   };
 
-  const handleFactoryReset = async () => {
-    const msg1 = t('Are you sure you want to completely wipe all system data? This action cannot be undone!', 'کیا آپ واقعی سسٹم کا تمام ڈیٹا حذف کرنا چاہتے ہیں؟ یہ عمل ناقابل واپسی ہے!');
-    const msg2 = t('Final Warning: All shifts, sales, and configurations will be deleted permanently. Type "RESET" to confirm.', 'آخری انتباہ: تمام ڈیٹا مستقل طور پر حذف ہو جائے گا۔ تصدیق کے لیے "RESET" ٹائپ کریں۔');
-    
-    if (window.confirm(msg1)) {
-      const confirmText = window.prompt(msg2);
-      if (confirmText === 'RESET') {
-        try {
-          const { firestoreDb } = await import('../../../data/firestore');
-          // Wait, user may not be imported here, we need to get user from somewhere or use activeStationId
-          // I will use activeStationId, but I need orgId. Let's see if auth is available.
-          const { auth } = await import('../../../lib/firebase');
-          const orgId = auth.currentUser?.uid; // Assuming orgId is user uid if they are owner
-          if (orgId) {
-            await firestoreDb.wipeStationData(orgId, activeStationId);
-          }
-        } catch (e) {
-          console.error("Firestore wipe failed", e);
-        }
-
-        localStorage.clear();
-        // Keep the fresh slate flag so it doesn't seed dummy data on reload
-        localStorage.setItem('fuelpro_fresh_v5_nodummies', 'true');
-        
-        const { db } = await import('../../../data/db');
-        await db.resetToDefault();
-      } else {
-        showToast(t('Reset cancelled.', 'ری سیٹ منسوخ کر دیا گیا۔'), 'info');
-      }
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -129,26 +98,12 @@ export default function SystemPreferences({ settings, onUpdateSettings, activeSt
         </div>
       </div>
 
-      <div className="bg-red-50 rounded-xl border border-red-200 shadow-xs max-w-2xl p-6 space-y-4">
-        <div className="flex items-start gap-3">
-          <div className="p-2 bg-red-100 text-red-600 rounded-lg">
-            <AlertTriangle className="h-6 w-6" />
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-red-900">{t('Danger Zone: System Reset', 'خطرناک زون: سسٹم ری سیٹ')}</h3>
-            <p className="text-sm text-red-700 mt-1">
-              {t('This will permanently delete all records, shifts, customers, and configuration. It is useful for removing dummy data to start fresh.', 'یہ عمل تمام پرانا اور ڈمی ڈیٹا حذف کر دے گا۔ نیا کام شروع کرنے کے لیے استعمال کریں۔')}
-            </p>
-          </div>
-        </div>
-        <div className="pt-2">
-          <button 
-            onClick={handleFactoryReset}
-            className="px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px].5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold flex items-center gap-2 transition-colors cursor-pointer shadow-md"
-          >
-            <Trash2 className="h-4 w-4" /> {t('Wipe Data & Start Fresh', 'تمام ڈیٹا حذف کریں اور نیا شروع کریں')}
-          </button>
-        </div>
+      {/* Factory Reset moved to dedicated module: Settings > Factory Reset */}
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 max-w-2xl flex items-center gap-3">
+        <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+        <p className="text-xs text-amber-800 font-semibold">
+          {t('To wipe all data and factory reset, navigate to System Administration → Factory Reset.', 'تمام ڈیٹا حذف کرنے کے لیے، سسٹم ایڈمنسٹریشن → فیکٹری ری سیٹ پر جائیں۔')}
+        </p>
       </div>
     </div>
   );

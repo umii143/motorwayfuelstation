@@ -72,7 +72,7 @@ export default function AdvancedTools({ settings, activeStationId }: { settings:
         </p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {tools.map(tool => {
           const isRunning = activeTool === tool.id;
           const isCompleted = completedTools.includes(tool.id) && !isRunning;

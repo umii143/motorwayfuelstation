@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Plus, Check, X, Gauge } from 'lucide-react';
+import { Plus, Check, X, Gauge, AlertTriangle } from 'lucide-react';
+import { useStationStore } from '../../../stores/useStationStore';
 import { Nozzle, Tank, Pump, Product } from '../../../types';
 import { t } from '../../../lib/translations';
 
@@ -25,18 +26,22 @@ export default function NozzleWizard({
   const [showForm, setShowForm] = useState(false);
   const [pumpName, setPumpName] = useState("Pump 1");
   const [name, setName] = useState("");
-  const [tankId, setTankId] = useState("");
+  const [tankId, setTankId] = useState(tanks.length > 0 ? tanks[0].id : "");
   const [startReading, setStartReading] = useState("");
+  const showToast = useStationStore(state => state.showToast);
 
   const resetForm = () => {
     setName("");
-    setTankId("");
+    setTankId(tanks.length > 0 ? tanks[0].id : "");
     setStartReading("");
     setShowForm(false);
   };
 
   const handleAdd = () => {
-    if (!pumpName || !name || !tankId || !startReading) return;
+    if (!pumpName) return showToast(t('Please enter a pump name', 'براہ کرم پمپ کا نام درج کریں', language), 'error');
+    if (!name) return showToast(t('Please enter a nozzle name', 'براہ کرم نوزل کا نام درج کریں', language), 'error');
+    if (!tankId) return showToast(t('Please select a tank', 'براہ کرم ٹینک منتخب کریں', language), 'error');
+    if (!startReading && startReading !== "0") return showToast(t('Please enter an opening reading', 'براہ کرم ابتدائی ریڈنگ درج کریں', language), 'error');
 
     let targetPump = pumps.find(p => p.name.toLowerCase() === pumpName.trim().toLowerCase());
     const newPumps = [...pumps];
@@ -105,7 +110,7 @@ export default function NozzleWizard({
             </button>
           ) : (
             <div className="border border-slate-200 rounded-2xl p-6 space-y-5 bg-slate-50 shadow-inner animate-in zoom-in-95 duration-200">
-              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700">{t('Pump Name', 'پمپ کا نام', language)}</label>
                   <input
@@ -128,18 +133,25 @@ export default function NozzleWizard({
 
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700">{t('Link to Tank', 'ٹینک سے منسلک کریں', language)}</label>
-                <select 
-                  className="w-full h-12 px-4 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-medium text-slate-800 appearance-none cursor-pointer"
-                  value={tankId} 
-                  onChange={(e) => setTankId(e.target.value)}
-                >
-                  <option value="" disabled>{t("Select tank", "ٹینک منتخب کریں", language)}</option>
-                  {tanks.map((tank) => (
-                    <option key={tank.id} value={tank.id}>
-                      {tank.name} ({getTankDetails(tank.id)?.product?.name || 'Unknown'})
-                    </option>
-                  ))}
-                </select>
+                {tanks.length === 0 ? (
+                  <div className="p-3 bg-orange-50 border border-orange-200 text-orange-700 rounded-xl text-sm flex items-center gap-2">
+                    <AlertTriangle className="size-4 shrink-0" />
+                    <span>{t("Please setup a tank first from the Tanks menu.", "براہ کرم پہلے ٹینکس مینو سے ایک ٹینک بنائیں۔", language)}</span>
+                  </div>
+                ) : (
+                  <select 
+                    className="w-full h-12 px-4 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-medium text-slate-800 appearance-none cursor-pointer"
+                    value={tankId} 
+                    onChange={(e) => setTankId(e.target.value)}
+                  >
+                    <option value="" disabled>{t("Select tank", "ٹینک منتخب کریں", language)}</option>
+                    {tanks.map((tank) => (
+                      <option key={tank.id} value={tank.id}>
+                        {tank.name} ({getTankDetails(tank.id)?.product?.name || 'Unknown'})
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -156,7 +168,6 @@ export default function NozzleWizard({
               <div className="flex gap-3 pt-2">
                 <button 
                   onClick={handleAdd} 
-                  disabled={!pumpName || !name || !tankId || !startReading}
                   className="flex-1 h-12 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md"
                 >
                   {t('Save Nozzle', 'محفوظ کریں', language)}
@@ -176,7 +187,7 @@ export default function NozzleWizard({
               <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">
                 {t('Configured Nozzles', 'ترتیب دی گئی نوزلز', language)}
               </p>
-              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {nozzles.map((nozzle, index) => {
                   const details = getTankDetails(nozzle.tankId || '');
                   const pump = pumps.find(p => p.id === nozzle.pumpId);

@@ -616,7 +616,7 @@ export default function StockInForm({
               <h3 className="font-bold text-sm text-slate-200 uppercase tracking-wide mb-3 flex items-center gap-2">
                 <TrendingUp className="size-4 text-emerald-400" /> EXPECTED BATCH MARGIN
               </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <p className="text-slate-400 text-xs">Per Liter</p>
                   <p className="text-2xl font-bold text-emerald-400">
@@ -695,7 +695,7 @@ export default function StockInForm({
                     <p className="text-xs text-red-500 mt-2">Enter claim amount in the claims dashboard.</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                     <div>
                       <p className="text-red-600 font-semibold">Short Quantity</p>
                       <p className="text-xl font-bold text-red-700">{pendingClaimData.qtyShort}L</p>
@@ -770,7 +770,7 @@ export default function StockInForm({
                   <h3 className="font-bold text-sm text-slate-800 uppercase tracking-wide">Delivery Info</h3>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <Field label="Supplier *">
                     <select value={supplierId} onChange={e => setSupplierId(e.target.value)} className={selectCls} required>
                       <option value="">— Select Supplier —</option>
@@ -973,7 +973,7 @@ export default function StockInForm({
                       </Field>
                     )}
 
-                    <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       <Field label="OGRA Pump Price (Rs./L) *" hint="Auto-filled from Price Setup">
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-500">Rs.</span>
@@ -1012,7 +1012,7 @@ export default function StockInForm({
                 <SectionHeader title="Extra Costs" icon={CreditCard} sectionKey="extraCosts" />
                 {openSections.extraCosts && (
                   <div className="p-4 space-y-4 bg-white">
-                    <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       <div>
                         <Field label="Separate Carriage (Rs.)" hint={supplierRule?.carriageInvoiced ? 'PSO/Shell: leave as 0 — included in invoice' : 'Attock/GO: enter the separate carriage bill amount'}>
                           <div className="relative">
@@ -1215,7 +1215,7 @@ export default function StockInForm({
                       ))}
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {(paymentMethod === 'cash' || paymentMethod === 'bank' || paymentMethod === 'partial') && (
                         <Field label="Amount Paid (Rs.)">
                           <div className="relative">

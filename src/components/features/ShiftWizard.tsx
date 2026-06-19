@@ -590,7 +590,7 @@ export default function ShiftWizard({
   // ACTIONS / TRANSITIONS
   // ==========================================
 
-  const buildNewShift = (openingSnapshot: { [nozzleId: string]: number }): Shift => ({
+  const buildNewShift = (openingSnapshot: { [nozzleId: string]: number }, openingSnapshotDisplay?: { [nozzleId: string]: number }): Shift => ({
     id: `sh_${Date.now()}`,
     staffId: selectedStaffId,
     type: shiftType,
@@ -598,6 +598,7 @@ export default function ShiftWizard({
     startTime: shiftTime,
     status: "active",
     openingReadings: openingSnapshot,
+    openingReadingsDisplay: openingSnapshotDisplay || openingSnapshot,
     closingReadings: {},
     testLiters: {},
     debitEntries: [],
@@ -690,11 +691,12 @@ export default function ShiftWizard({
       return;
     }
 
-    const openingNum: { [nozzleId: string]: number } = {};
+    const openingNumActual: { [nozzleId: string]: number } = {};
+    const openingNumDisplay: { [nozzleId: string]: number } = {};
     let hasError = false;
 
     for (const noz of nozzles) {
-      const val = Number(openingReadings[noz.id] || 0);
+      const val = Number(openingReadings[noz.id] || 0); // This is display reading
       if (isNaN(val) || val < 0) {
         setWizardError(
           t(
@@ -705,12 +707,13 @@ export default function ShiftWizard({
         hasError = true;
         break;
       }
-      openingNum[noz.id] = val;
+      openingNumDisplay[noz.id] = val;
+      openingNumActual[noz.id] = val + (noz.meterOffset || 0); // Actual = Display + Offset
     }
 
     if (hasError) return;
 
-    onAddShift(buildNewShift(openingNum));
+    onAddShift(buildNewShift(openingNumActual, openingNumDisplay));
     setWizardStep(3); // Enter operational tabs
   };
 
@@ -1421,24 +1424,28 @@ export default function ShiftWizard({
   const handleConfirmClosings = () => {
     if (!activeShift) return;
     setWizardError("");
-    const closingNum: { [nozzleId: string]: number } = {};
+    const closingNumActual: { [nozzleId: string]: number } = {};
+    const closingNumDisplay: { [nozzleId: string]: number } = {};
     let hasError = false;
 
     for (const noz of nozzles) {
-      const open = activeShift.openingReadings[noz.id] || 0;
-      const close = Number(closingReadings[noz.id] || 0);
+      const openActual = activeShift.openingReadings[noz.id] || 0;
+      const openDisplay = activeShift.openingReadingsDisplay?.[noz.id] || openActual;
+      const closeDisplay = Number(closingReadings[noz.id] || 0);
+      const closeActual = closeDisplay + (noz.meterOffset || 0);
 
-      if (isNaN(close) || close < open) {
+      if (isNaN(closeDisplay) || closeDisplay < openDisplay || closeActual < openActual) {
         setWizardError(
           t(
-            `Closing reading for ${noz.name} must be greater than or equal to its opening reading (${open}).`,
-            `${noz.name} کی کلوزنگ ریڈنگ اس کی اوپننگ ریڈنگ (${open}) سے کم نہیں ہو سکتی۔`,
+            `Closing reading for ${noz.name} must be greater than or equal to its opening reading (${openDisplay}).`,
+            `${noz.name} کی کلوزنگ ریڈنگ اس کی اوپننگ ریڈنگ (${openDisplay}) سے کم نہیں ہو سکتی۔`,
           ),
         );
         hasError = true;
         break;
       }
-      closingNum[noz.id] = close;
+      closingNumDisplay[noz.id] = closeDisplay;
+      closingNumActual[noz.id] = closeActual;
     }
 
     if (hasError) return;
@@ -1448,7 +1455,7 @@ export default function ShiftWizard({
     for (const noz of nozzles) {
       if (noz.tankId) {
         const open = activeShift.openingReadings[noz.id] || 0;
-        const close = closingNum[noz.id] || 0;
+        const close = closingNumActual[noz.id] || 0;
         const discharge = Math.max(0, close - open);
         tankDischarges[noz.tankId] = (tankDischarges[noz.tankId] || 0) + discharge;
       }
@@ -1473,7 +1480,8 @@ export default function ShiftWizard({
     // Commit closing readings to the active activeShift state
     const updated = {
       ...activeShift,
-      closingReadings: closingNum,
+      closingReadings: closingNumActual,
+      closingReadingsDisplay: closingNumDisplay,
     };
     onUpdateShift(updated);
     setWizardStep(5); // Launch test deduction wizard
@@ -2115,67 +2123,82 @@ export default function ShiftWizard({
             <div className="lg:col-span-5 bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 shadow-sm flex flex-col backdrop-blur-sm">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2"><Clock className="w-4 h-4 text-slate-400" /> Recent Shift Activity</h3>
-                <span className="text-xs font-bold text-blue-400 cursor-pointer hover:text-blue-300 transition-colors">View All</span>
+                <span
+                  className="text-xs font-bold text-blue-400 cursor-pointer hover:text-blue-300 transition-colors"
+                  onClick={() => onNavigateToView('shift_logs')}
+                >View All</span>
               </div>
-              <div className="flex-1 space-y-5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <div className="w-8 h-8 bg-slate-700 rounded-full border border-slate-600 flex items-center justify-center text-slate-300 text-xs font-bold">UA</div>
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-slate-800 rounded-full flex items-center justify-center shadow-sm">
-                        <User className="w-2.5 h-2.5 text-orange-400" />
+              <div className="flex-1 space-y-4">
+                {(() => {
+                  const recentShifts = [...shifts]
+                    .sort((a, b) => b.date.localeCompare(a.date))
+                    .slice(0, 3);
+
+                  if (recentShifts.length === 0) {
+                    return (
+                      <div className="flex flex-col items-center justify-center h-full py-8 text-slate-500">
+                        <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center mb-3">
+                          <Clock className="w-5 h-5 text-slate-500" />
+                        </div>
+                        <p className="text-sm font-semibold text-slate-400">No previous shifts</p>
+                        <p className="text-xs text-slate-500 mt-1">This will be your first shift!</p>
                       </div>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-400">15/06/2026 <span className="text-slate-200 font-bold ml-1">Day Shift</span></p>
-                      <p className="text-sm font-bold text-white">Umar Ali</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Sales</p>
-                    <p className="text-sm font-bold text-emerald-400">PKR 68,450</p>
-                  </div>
-                </div>
-                <div className="h-px bg-slate-700/50 w-full"></div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <div className="w-8 h-8 bg-slate-700 rounded-full border border-slate-600 flex items-center justify-center text-slate-300 text-xs font-bold">ZA</div>
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-slate-800 rounded-full flex items-center justify-center shadow-sm">
-                        <Moon className="w-2.5 h-2.5 text-indigo-400" />
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-400">15/06/2026 <span className="text-slate-200 font-bold ml-1">Night Shift</span></p>
-                      <p className="text-sm font-bold text-white">Zain Ahmed</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Sales</p>
-                    <p className="text-sm font-bold text-emerald-400">PKR 54,230</p>
-                  </div>
-                </div>
-                <div className="h-px bg-slate-700/50 w-full"></div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <div className="w-8 h-8 bg-slate-700 rounded-full border border-slate-600 flex items-center justify-center text-slate-300 text-xs font-bold">BH</div>
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-slate-800 rounded-full flex items-center justify-center shadow-sm">
-                        <User className="w-2.5 h-2.5 text-orange-400" />
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-400">14/06/2026 <span className="text-slate-200 font-bold ml-1">Day Shift</span></p>
-                      <p className="text-sm font-bold text-white">Bilal Hussain</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Sales</p>
-                    <p className="text-sm font-bold text-emerald-400">PKR 72,190</p>
-                  </div>
-                </div>
+                    );
+                  }
+
+                  return recentShifts.map((sh, idx) => {
+                    const operator = staff.find(s => s.id === sh.staffId);
+                    const opName = operator?.name || 'Unknown Operator';
+                    const initials = opName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+                    const isNight = sh.shiftType === 'night';
+                    const shiftSales = sh.submittedCash || 0;
+                    const formattedDate = (() => {
+                      const [y, m, d] = sh.date.split('-');
+                      return `${d}/${m}/${y}`;
+                    })();
+
+                    return (
+                      <React.Fragment key={sh.id}>
+                        {idx > 0 && <div className="h-px bg-slate-700/50 w-full" />}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="relative">
+                              <div className="w-8 h-8 bg-slate-700 rounded-full border border-slate-600 flex items-center justify-center text-slate-300 text-xs font-bold">
+                                {initials}
+                              </div>
+                              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-slate-800 rounded-full flex items-center justify-center shadow-sm">
+                                {isNight
+                                  ? <Moon className="w-2.5 h-2.5 text-indigo-400" />
+                                  : <User className="w-2.5 h-2.5 text-orange-400" />
+                                }
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-bold text-slate-400">
+                                {formattedDate} <span className="text-slate-200 font-bold ml-1">{isNight ? 'Night Shift' : 'Day Shift'}</span>
+                              </p>
+                              <p className="text-sm font-bold text-white">{opName}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
+                              {sh.status === 'active' ? 'Active' : 'Cash'}
+                            </p>
+                            <p className={`text-sm font-bold ${sh.status === 'active' ? 'text-orange-400' : 'text-emerald-400'}`}>
+                              {sh.status === 'active'
+                                ? '● Running'
+                                : `PKR ${shiftSales.toLocaleString()}`
+                              }
+                            </p>
+                          </div>
+                        </div>
+                      </React.Fragment>
+                    );
+                  });
+                })()}
               </div>
             </div>
+
           </div>
 
           <button
@@ -3684,7 +3707,7 @@ export default function ShiftWizard({
 
           <div className="p-6 space-y-5 font-sans">
             {/* Metadata Rows */}
-            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4 text-xs border-b border-dashed border-slate-700/50 pb-3 pt-0.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs border-b border-dashed border-slate-700/50 pb-3 pt-0.5">
               <div>
                 <span className="text-slate-400 block">
                   {t("Operator In-charge:", "ڈیوٹی آپریٹر:")}

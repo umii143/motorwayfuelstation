@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   X, LayoutDashboard, RefreshCw, History, Users, Factory, 
   BookOpen, Landmark, Smartphone, Fuel, TrendingDown, 
-  FileBarChart, Building, Wrench, DollarSign, Settings,
+  FileBarChart, Building, Building2, Wrench, DollarSign, Settings,
   Shield, CreditCard, MessageCircle, Database, AlertTriangle,
   Sun, Moon, Globe, LogOut, Users2, Tag, Droplets, ShieldCheck, 
   Sparkles, LineChart, Briefcase, ShieldAlert, BarChart3, Truck, ArrowRightLeft, Link, ChevronDown, Zap, Camera, Store
@@ -70,6 +70,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
       children: [
         { id: 'bi_analytics', icon: LineChart, label: 'BI Analytics', urdu: 'بی آئی اینالٹکس', showInLube: false },
         { id: 'executive_dashboard', icon: Briefcase, label: 'Executive Insights', urdu: 'ایگزیکٹو ڈیش بورڈ', showInLube: false },
+        { id: 'enterprise_dashboard', icon: Building2, label: 'Enterprise Dashboard', urdu: 'انٹرپرائز ڈیش بورڈ', showInLube: false, ownerOnly: true },
         { id: 'treasury', icon: Landmark, label: 'Treasury Center', urdu: 'ٹریژری سینٹر', showInLube: false },
         { id: 'risk_center', icon: ShieldAlert, label: 'Risk Center', urdu: 'رسک سینٹر', showInLube: false },
         { id: 'integrity_center', icon: ShieldCheck, label: 'Integrity Center', urdu: 'انٹیگریٹی سینٹر', showInLube: false },
@@ -95,6 +96,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
     { id: 'dip_calculator', section: 'analytics', icon: Droplets, label: 'Dip Chart Calculator', urdu: 'دپ چارٹ کیلکولیٹر', showInLube: false },
     { id: 'ai_analytics', section: 'analytics', icon: Sparkles, label: 'AI Analytics Hub', urdu: 'اے آئی اینالٹکس', showInLube: false },
     // SYSTEM / SETUP
+    { id: 'audit_center', section: 'system', icon: ShieldAlert, label: 'Audit Center', urdu: 'آڈٹ سینٹر', showInLube: true },
     { id: 'settings', section: 'system', icon: Settings, label: 'Settings & Setup', urdu: 'سیٹنگز اور سیٹ اپ', showInLube: true },
     { id: 'security_hub', section: 'system', icon: Shield, label: 'Security & Roles', urdu: 'سیکیورٹی ہب', showInLube: true },
     { id: 'subscription_hub', section: 'system', icon: CreditCard, label: 'Subscription & Billing', urdu: 'بلنگ اور پلان', showInLube: true },
@@ -241,6 +243,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
                           <div className="mt-1 ml-4 space-y-1 border-l border-slate-200 dark:border-white/10 pl-2">
                             {item.children.map((child: any) => {
                               if (isLubeBusiness && !child.showInLube) return null;
+                              if (child.ownerOnly && !isSuperAdmin) return null;
                               const childActive = activeView === child.id;
                               const ChildIcon = child.icon;
                               

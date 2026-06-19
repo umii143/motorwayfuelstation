@@ -25,7 +25,8 @@ import {
   DealerMarginSetting,
   SalaryTransaction,
   StaffLoan,
-  SalaryAdvance
+  SalaryAdvance,
+  MeterResetEvent
 } from '../types';
 import { db } from '../data/db';
 import { useAuth } from './AuthContext';
@@ -119,6 +120,7 @@ export interface StationContextType {
   setStandaloneExpenses: (standaloneExpenses: ExpenseEntry[]) => void;
   setLubePosSales: (lubePosSales: LubePosSale[]) => void;
   setInventoryMovements: (inventoryMovements: InventoryMovement[]) => void;
+  setMeterResets: (meterResets: MeterResetEvent[]) => void;
 
   handleAddStation: (station: Station) => void;
   handleEditStation: (updatedStation: Station) => void;
@@ -167,6 +169,7 @@ export interface StationContextType {
   handleDeleteDebitEntry: (shiftId: string, entryId: string) => void;
   handleDeleteRecoveryEntry: (shiftId: string, entryId: string) => void;
   handleDeleteSupplierPayment: (shiftId: string, entryId: string) => void;
+  handleAddMeterReset: (reset: MeterResetEvent) => Promise<void>;
 }
 
 const StationContext = createContext<StationContextType | undefined>(undefined);
@@ -223,6 +226,7 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
   const stockTxns = useInventoryStore((state) => state.stockTxns);
   const rateHistory = useInventoryStore((state) => state.rateHistory);
   const inventoryMovements = useInventoryStore((state) => state.inventoryMovements);
+  const meterResets = useInventoryStore((state) => state.meterResets);
 
   const setProducts = useInventoryStore((state) => state.setProducts);
   const setTanks = useInventoryStore((state) => state.setTanks);
@@ -231,6 +235,7 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
   const setStockTxns = useInventoryStore((state) => state.setStockTxns);
   const setRateHistory = useInventoryStore((state) => state.setRateHistory);
   const setInventoryMovements = useInventoryStore((state) => state.setInventoryMovements);
+  const setMeterResets = useInventoryStore((state) => state.setMeterResets);
 
   const handleUpdateProductStock = (id: string, qty: number) => useInventoryStore.getState().handleUpdateProductStock(id, qty, orgId, activeStationId, checkPerm);
   const handleUpdateProductRate = (id: string, rate: number, reason?: string, by?: string, dStr?: string) => useInventoryStore.getState().handleUpdateProductRate(id, rate, reason, by, dStr, orgId, activeStationId, checkPerm);
@@ -245,6 +250,7 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
   const handleUpdateNozzle = (n: Nozzle) => useInventoryStore.getState().handleUpdateNozzle(n, orgId, activeStationId);
   const handleDeleteNozzle = (id: string) => useInventoryStore.getState().handleDeleteNozzle(id, orgId, activeStationId);
   const handleAddStockReceipt = (tx: StockTransaction) => useInventoryStore.getState().handleAddStockReceipt(tx, orgId, activeStationId, checkPerm);
+  const handleAddMeterReset = (reset: MeterResetEvent) => useInventoryStore.getState().handleAddMeterReset(reset, orgId, activeStationId);
 
   const shifts = useShiftStore((state) => state.shifts);
   const setShifts = useShiftStore((state) => state.setShifts);
@@ -351,6 +357,7 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     const loadedStockBatches = db.getStockBatches(activeStationId);
     const loadedCogsRecords = db.getCOGSRecords(activeStationId);
     const loadedDealerMarginSettings = db.getDealerMarginSettings(activeStationId);
+    const loadedMeterResets = db.getMeterResets(activeStationId);
 
     useStationStore.setState({ settings: loadedSettings });
     useStaffStore.setState({ staff: isolateTenantRecords(loadedStaff, activeStationId) });
@@ -364,7 +371,8 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
       inventoryMovements: isolateTenantRecords(loadedInventoryMovements, activeStationId),
       stockBatches: isolateTenantRecords(loadedStockBatches, activeStationId),
       cogsRecords: isolateTenantRecords(loadedCogsRecords, activeStationId),
-      dealerMarginSettings: loadedDealerMarginSettings
+      dealerMarginSettings: loadedDealerMarginSettings,
+      meterResets: isolateTenantRecords(loadedMeterResets, activeStationId)
     });
     useCustomerStore.setState({ customers: isolateTenantRecords(loadedCustomers, activeStationId) });
     useSupplierStore.setState({ suppliers: isolateTenantRecords(loadedSuppliers, activeStationId) });
@@ -419,7 +427,8 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
       firestoreDb.subscribeToCollection<JournalEntry>(orgId, activeStationId, 'journalEntries', (items) => useFinancialStore.setState({ journalEntries: isolateTenantRecords(items, activeStationId, orgId) })),
       firestoreDb.subscribeToCollection<StockBatch>(orgId, activeStationId, 'stockBatches', (items) => useInventoryStore.setState({ stockBatches: isolateTenantRecords(items, activeStationId, orgId) })),
       firestoreDb.subscribeToCollection<CogsRecord>(orgId, activeStationId, 'cogsRecords', (items) => useInventoryStore.setState({ cogsRecords: isolateTenantRecords(items, activeStationId, orgId) })),
-      firestoreDb.subscribeToCollection<DealerMarginSetting>(orgId, activeStationId, 'dealerMarginSettings', (items) => useInventoryStore.setState({ dealerMarginSettings: items }))
+      firestoreDb.subscribeToCollection<DealerMarginSetting>(orgId, activeStationId, 'dealerMarginSettings', (items) => useInventoryStore.setState({ dealerMarginSettings: items })),
+      firestoreDb.subscribeToCollection<MeterResetEvent>(orgId, activeStationId, 'meter_resets', (items) => useInventoryStore.setState({ meterResets: isolateTenantRecords(items, activeStationId, orgId) }))
     ];
 
     const loadSettingsFS = async () => {
@@ -461,6 +470,7 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     lubePosSales,
     inventoryMovements,
     journalEntries,
+    meterResets,
     toast,
     confirmDialog,
     showToast,
@@ -489,6 +499,7 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     setStandaloneExpenses,
     setLubePosSales,
     setInventoryMovements,
+    setMeterResets,
     handleAddStation,
     handleEditStation,
     handleDeleteStation,
@@ -535,7 +546,8 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
     handleUpdateDigitalAccounts,
     handleDeleteDebitEntry,
     handleDeleteRecoveryEntry,
-    handleDeleteSupplierPayment
+    handleDeleteSupplierPayment,
+    handleAddMeterReset
   };
 
   return (

@@ -78,6 +78,7 @@ const BankCashPanel = lazyWithRetry(() => import('./components/features/BankCash
 const DigitalCashPanel = lazyWithRetry(() => import('./components/features/DigitalCashPanel'));
 const PriceManagement = lazyWithRetry(() => import('./components/features/PriceManagement'));
 const EnterpriseHub = lazyWithRetry(() => import('./components/features/EnterpriseHub'));
+const AuditCenter = lazyWithRetry(() => import('./components/features/AuditCenter'));
 const DipCalculator = lazyWithRetry(() => import('./components/features/DipCalculator/DipCalculator'));
 const AIAssistant = lazyWithRetry(() => import('./components/features/AIAssistant/AIAssistant'));
 const CommunicationDashboard = lazyWithRetry(() => import('./components/features/CommunicationCenter/CommunicationDashboard'));
@@ -90,6 +91,7 @@ const RiskCenter = lazyWithRetry(() => import('./components/features/RiskCenter/
 const ExecutiveDashboard = lazyWithRetry(() => import('./components/features/ExecutiveDashboard/ExecutiveDashboard'));
 const TreasuryCenter = lazyWithRetry(() => import('./components/features/TreasuryCenter/TreasuryCenter'));
 const FuelProJarvis = lazyWithRetry(() => import('./components/features/AI/FuelProJarvis'));
+const EnterpriseDashboard = lazyWithRetry(() => import('./components/features/EnterpriseDashboard/EnterpriseDashboard'));
 
 import LoadingScreen from './components/ui/LoadingScreen';
 import { SplashSequence } from './components/features/SplashSequence';
@@ -379,6 +381,7 @@ function MainApp() {
             lubePosSales={lubePosSales}
             onStartShiftQuick={() => handleViewChange(isLubeBusiness ? 'lube_pos' : 'shift_wizard')}
             rateHistory={rateHistory}
+            stockTxns={stockTxns}
           />
         );
 
@@ -620,6 +623,11 @@ function MainApp() {
           <TreasuryCenter />
         );
 
+      case 'audit_center':
+        return (
+          <AuditCenter />
+        );
+
       case 'settings':
       case 'configuration':
       case 'setup_products':
@@ -751,6 +759,18 @@ function MainApp() {
       case 'executive_dashboard':
         if (!canAccessPremium) return <div className="p-8 text-center"><AlertTriangle className="mx-auto h-8 w-8 text-orange-500 mb-4"/><h2 className="text-xl font-bold">Premium Feature</h2><button onClick={() => handleViewChange('subscription_hub')} className="mt-4 bg-orange-600 text-white px-4 py-2 rounded-lg">Upgrade</button></div>;
         return <ExecutiveDashboard />;
+        
+      case 'enterprise_dashboard':
+        if (!canAccessEnterprise) return <div className="p-8 text-center"><AlertTriangle className="mx-auto h-8 w-8 text-orange-500 mb-4"/><h2 className="text-xl font-bold">Enterprise Feature</h2><button onClick={() => handleViewChange('subscription_hub')} className="mt-4 bg-orange-600 text-white px-4 py-2 rounded-lg">Upgrade</button></div>;
+        return (
+          <EnterpriseDashboard
+            onNavigate={(view, stationId) => {
+              if (stationId) handleSwitchStation(stationId);
+              if (view) handleViewChange(view);
+            }}
+          />
+        );
+        
         
       case 'demand_forecast':
         return (

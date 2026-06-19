@@ -162,7 +162,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
       </div>
 
       {/* ── Top KPI Row ──────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
           { label: 'Shifts Processed', value: stats?.totalShiftsProcessed ?? 0, icon: Activity, color: 'text-indigo-600', bg: 'bg-indigo-50' },
           { label: 'Validated', value: stats?.validatedShifts ?? 0, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
@@ -442,7 +442,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
                 </div>
 
                 {/* Details */}
-                <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4 text-xs text-slate-600">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs text-slate-600">
                   <div><span className="font-bold text-slate-800">Shift: </span>{selectedLog.shiftId}</div>
                   <div><span className="font-bold text-slate-800">Module: </span>{MODULE_CONFIG[selectedLog.module]?.label || selectedLog.module}</div>
                   <div><span className="font-bold text-slate-800">Detected: </span>{new Date(selectedLog.timestamp).toLocaleString()}</div>

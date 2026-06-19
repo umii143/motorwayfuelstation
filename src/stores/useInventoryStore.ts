@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Product, Tank, Nozzle, Pump, StockTransaction, RateHistoryEntry, InventoryMovement, StockBatch, CogsRecord, DealerMarginSetting, InventorySnapshot, FIFODeduction, SupplierClaim, SupplierPerformanceScore } from '../types';
+import { Product, Tank, Nozzle, Pump, StockTransaction, RateHistoryEntry, InventoryMovement, StockBatch, CogsRecord, DealerMarginSetting, InventorySnapshot, FIFODeduction, SupplierClaim, SupplierPerformanceScore, MeterResetEvent } from '../types';
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
 import { getBusinessTypeForStation, isolateProductRecords, withBusinessScope } from '../lib/businessScope';
@@ -20,6 +20,7 @@ interface InventoryState {
   fifoDeductions: FIFODeduction[];
   supplierClaims: SupplierClaim[];
   supplierPerformance: SupplierPerformanceScore[];
+  meterResets: MeterResetEvent[];
 
   getFuelProducts: () => Product[];
   getLubeProducts: () => Product[];
@@ -39,6 +40,9 @@ interface InventoryState {
   setFIFODeductions: (deductions: FIFODeduction[]) => void;
   setSupplierClaims: (claims: SupplierClaim[]) => void;
   setSupplierPerformance: (scores: SupplierPerformanceScore[]) => void;
+  setMeterResets: (resets: MeterResetEvent[]) => void;
+
+  handleAddMeterReset: (reset: MeterResetEvent, orgId?: string, stationId?: string) => Promise<void>;
 
   handleUpdateDealerMargin: (setting: DealerMarginSetting, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
   handleAddSupplierClaim: (claim: SupplierClaim, orgId?: string, stationId?: string) => Promise<void>;
@@ -80,6 +84,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   fifoDeductions: db.getFIFODeductions(db.getActiveStationId()),
   supplierClaims: db.getSupplierClaims(db.getActiveStationId()),
   supplierPerformance: db.getSupplierPerformance(db.getActiveStationId()),
+  meterResets: db.getMeterResets(db.getActiveStationId()),
 
   getFuelProducts: () => {
     return get().products.filter(p => p.type === 'fuel');
@@ -163,6 +168,59 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     set({ supplierPerformance });
     const sId = db.getActiveStationId();
     if (sId) db.saveSupplierPerformance(sId, supplierPerformance);
+  },
+
+  setMeterResets: (meterResets) => {
+    set({ meterResets });
+    const sId = db.getActiveStationId();
+    if (sId) db.saveMeterResets(sId, meterResets);
+  },
+
+  handleAddMeterReset: async (reset, orgId, stationId) => {
+    const sId = stationId || db.getActiveStationId();
+    
+    // Hash generation
+    const rawString = `${reset.timestamp}-${reset.nozzleId}-${reset.oldReading}-${reset.newReading}`;
+    const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(rawString));
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    reset.eventHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+    const currentResets = get().meterResets;
+    const updatedResets = [reset, ...currentResets];
+    get().setMeterResets(updatedResets);
+
+    // Update Nozzle Offset
+    const nozzleToUpdate = get().nozzles.find(n => n.id === reset.nozzleId);
+    if (nozzleToUpdate) {
+      const prevOffset = nozzleToUpdate.meterOffset || 0;
+      const addedOffset = reset.oldReading; // typically we add the old reading
+      const newOffset = prevOffset + addedOffset;
+      
+      const newHistoryEntry = {
+        timestamp: reset.timestamp,
+        previousOffset: prevOffset,
+        addedOffset: addedOffset,
+        newOffset: newOffset,
+        resetEventId: reset.id
+      };
+      
+      const updatedNozzle = {
+        ...nozzleToUpdate,
+        meterOffset: newOffset,
+        offsetHistory: [...(nozzleToUpdate.offsetHistory || []), newHistoryEntry]
+      };
+      
+      const updatedNozzles = get().nozzles.map(n => n.id === updatedNozzle.id ? updatedNozzle : n);
+      set({ nozzles: updatedNozzles });
+      db.saveNozzles(sId, updatedNozzles);
+      if (orgId) {
+        await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'nozzles', updatedNozzle.id, updatedNozzle);
+      }
+    }
+
+    if (orgId) {
+      await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'meter_resets', reset.id, reset);
+    }
   },
 
   handleAddSupplierClaim: async (claim, orgId, stationId) => {

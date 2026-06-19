@@ -97,7 +97,7 @@ export default function MaintenanceDashboard({ settings, stationId }: Maintenanc
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Warranty Alerts */}
         <div className="premium-card border overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">

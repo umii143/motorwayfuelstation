@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Plus, Check, X, Database } from 'lucide-react';
+import { Plus, Check, X, Database, AlertTriangle } from 'lucide-react';
+import { useStationStore } from '../../../stores/useStationStore';
 import { Tank, Product } from '../../../types';
 import { t } from '../../../lib/translations';
 
@@ -18,13 +19,14 @@ export default function TankWizard({ tanks, products, language, onAddTank, onUpd
   const [showForm, setShowForm] = useState(false);
   const [editingTankId, setEditingTankId] = useState<string | null>(null);
   const [name, setName] = useState("");
-  const [productId, setProductId] = useState("");
+  const [productId, setProductId] = useState(products.length > 0 ? products[0].id : "");
   const [capacity, setCapacity] = useState("");
   const [currentStock, setCurrentStock] = useState("");
+  const showToast = useStationStore(state => state.showToast);
 
   const resetForm = () => {
     setName("");
-    setProductId("");
+    setProductId(products.length > 0 ? products[0].id : "");
     setCapacity("");
     setCurrentStock("");
     setShowForm(false);
@@ -41,7 +43,10 @@ export default function TankWizard({ tanks, products, language, onAddTank, onUpd
   };
 
   const handleSave = () => {
-    if (!name || !productId || !capacity || !currentStock) return;
+    if (!name) return showToast(t('Please enter a tank name', 'براہ کرم ٹینک کا نام درج کریں', language), 'error');
+    if (!productId) return showToast(t('Please select a fuel product', 'براہ کرم فیول پراڈکٹ منتخب کریں', language), 'error');
+    if (!capacity) return showToast(t('Please enter capacity', 'براہ کرم گنجائش درج کریں', language), 'error');
+    if (!currentStock && currentStock !== "0") return showToast(t('Please enter current stock', 'براہ کرم موجودہ اسٹاک درج کریں', language), 'error');
 
     if (editingTankId) {
       const existing = tanks.find(t => t.id === editingTankId);
@@ -106,21 +111,28 @@ export default function TankWizard({ tanks, products, language, onAddTank, onUpd
 
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700">{t('Fuel Product', 'فیول پراڈکٹ', language)}</label>
-                <select 
-                  className="w-full h-12 px-4 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-medium text-slate-800 appearance-none cursor-pointer"
-                  value={productId} 
-                  onChange={(e) => setProductId(e.target.value)}
-                >
-                  <option value="" disabled>{t("Select fuel type", "فیول کی قسم منتخب کریں", language)}</option>
-                  {products.map((product) => (
-                    <option key={product.id} value={product.id}>
-                      {product.name}
-                    </option>
-                  ))}
-                </select>
+                {products.length === 0 ? (
+                  <div className="p-3 bg-orange-50 border border-orange-200 text-orange-700 rounded-xl text-sm flex items-center gap-2">
+                    <AlertTriangle className="size-4 shrink-0" />
+                    <span>{t("Please create a fuel product first from the Products menu.", "براہ کرم پہلے پراڈکٹس مینو سے فیول پراڈکٹ بنائیں۔", language)}</span>
+                  </div>
+                ) : (
+                  <select 
+                    className="w-full h-12 px-4 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-medium text-slate-800 appearance-none cursor-pointer"
+                    value={productId} 
+                    onChange={(e) => setProductId(e.target.value)}
+                  >
+                    <option value="" disabled>{t("Select fuel type", "فیول کی قسم منتخب کریں", language)}</option>
+                    {products.map((product) => (
+                      <option key={product.id} value={product.id}>
+                        {product.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700">{t('Capacity (Liters)', 'گنجائش (لیٹر)', language)}</label>
                   <input
@@ -146,7 +158,6 @@ export default function TankWizard({ tanks, products, language, onAddTank, onUpd
               <div className="flex gap-3 pt-2">
                 <button 
                   onClick={handleSave} 
-                  disabled={!name || !productId || !capacity || !currentStock}
                   className="flex-1 h-12 premium-button hover:bg-blue-700 font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md"
                 >
                   {editingTankId ? t('Update Tank', 'ٹینک اپڈیٹ کریں', language) : t('Save Tank', 'ٹینک محفوظ کریں', language)}
@@ -166,7 +177,7 @@ export default function TankWizard({ tanks, products, language, onAddTank, onUpd
               <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">
                 {t('Configured Tanks', 'ترتیب دیے گئے ٹینکس', language)}
               </p>
-              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {tanks.map((tank, index) => (
                   <div
                     key={tank.id}
@@ -208,7 +219,7 @@ export default function TankWizard({ tanks, products, language, onAddTank, onUpd
                         </button>
                       </div>
                     </div>
-                    <div className="ml-11 grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-4 text-sm pt-3 border-t border-slate-100 mt-3">
+                    <div className="ml-11 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm pt-3 border-t border-slate-100 mt-3">
                       <div>
                         <div className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{t('Capacity', 'گنجائش', language)}</div>
                         <div className="font-black text-slate-700">{Number(tank.capacity).toLocaleString()} <span className="text-xs text-slate-400 font-medium">L</span></div>

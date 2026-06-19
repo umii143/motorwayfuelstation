@@ -93,7 +93,7 @@ export default function AdvancedFuelStock() {
       const dayImports = stockTxns.filter(tx => tx.type === 'receipt' && tx.date.startsWith(dateStr2));
       const qty = dayImports.reduce((sum, tx) => sum + tx.quantity, 0);
       
-      data.push({ name: displayDate, value: qty || Math.floor(Math.random() * 50000 + 20000) });
+      data.push({ name: displayDate, value: qty });
     }
     return data;
   }, [stockTxns]);
