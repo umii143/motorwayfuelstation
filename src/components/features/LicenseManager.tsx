@@ -2,7 +2,21 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { ShieldCheck, CheckCircle2, XCircle, Search, Clock, ExternalLink, Users, Calendar, CreditCard, ChevronRight, Play, Square, Edit2, History, Trash2 } from 'lucide-react';
 import { dbFS } from '../../lib/firebase';
-import { GlobalSettings, Organization } from '../../types';
+import { GlobalSettings } from '../../types';
+
+// Local Firebase FirebaseOrg type — matches the actual Firestore document structure
+interface FirebaseOrg {
+  orgId: string;  // document id
+  name: string;
+  ownerId: string;
+  subscriptionStatus: 'active' | 'trialing' | 'expired' | 'past_due' | 'canceled' | 'pending_verification';
+  subscriptionTier: string; // 'trial' | 'basic' | 'professional' | 'enterprise'
+  trialStartDate: string;
+  trialEndDate: string;
+  expiryDate?: string;
+  phone?: string;
+  createdAt: string;
+}
 
 interface LicenseManagerProps {
   settings: GlobalSettings;
@@ -13,16 +27,16 @@ type ModalType = 'approve' | 'reject' | 'toggle' | 'addDays' | 'setExpiry' | 'ch
 export default function LicenseManager({ settings }: LicenseManagerProps) {
   const [activeTab, setActiveTab] = useState<'requests' | 'clients'>('requests');
   const [requests, setRequests] = useState<any[]>([]);
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [organizations, setOrganizations] = useState<FirebaseOrg[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
+  const [selectedOrg, setSelectedOrg] = useState<FirebaseOrg | null>(null);
 
   // Custom Modal State
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
     type: ModalType;
-    targetOrg?: Organization | null;
+    targetOrg?: FirebaseOrg | null;
     targetReq?: any | null;
     title: string;
     description: string;
@@ -40,7 +54,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
     // Realtime: Fetch all organizations from Firebase — no auto-delete, show real users
     const qOrg = query(collection(dbFS, 'organizations'), orderBy('createdAt', 'desc'));
     const unsubscribeOrg = onSnapshot(qOrg, (snapshot) => {
-      const data = snapshot.docs.map(d => ({ orgId: d.id, ...d.data() } as Organization));
+      const data = snapshot.docs.map(d => ({ orgId: d.id, ...d.data() } as FirebaseOrg));
       setOrganizations(data);
       setLoading(false);
     });
@@ -98,7 +112,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
     setInputValue('');
   };
 
-  const handleToggleStatus = (org: Organization) => {
+  const handleToggleStatus = (org: FirebaseOrg) => {
     const isDisabling = org.subscriptionStatus !== 'expired' && org.subscriptionStatus !== 'unpaid';
     setModalConfig({
       isOpen: true,
@@ -112,7 +126,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
     setInputValue('');
   };
 
-  const handleManualAddDays = (org: Organization) => {
+  const handleManualAddDays = (org: FirebaseOrg) => {
     setModalConfig({
       isOpen: true,
       type: 'addDays',
@@ -127,7 +141,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
     setInputValue('');
   };
 
-  const handleSetExactExpiry = (org: Organization) => {
+  const handleSetExactExpiry = (org: FirebaseOrg) => {
     setModalConfig({
       isOpen: true,
       type: 'setExpiry',
@@ -141,7 +155,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
     setInputValue(org.expiryDate ? new Date(org.expiryDate).toISOString().split('T')[0] : '');
   };
 
-  const handleChangePlan = (org: Organization) => {
+  const handleChangePlan = (org: FirebaseOrg) => {
     setModalConfig({
       isOpen: true,
       type: 'changePlan',
@@ -156,7 +170,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
     setInputValue(org.subscriptionTier || '');
   };
 
-  const handleDeleteClient = (org: Organization) => {
+  const handleDeleteClient = (org: FirebaseOrg) => {
     setModalConfig({
       isOpen: true,
       type: 'delete',
@@ -260,14 +274,14 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
     return orgRequests.filter(r => r.status === 'approved').length;
   }, [orgRequests]);
 
-  const calculateDaysRemaining = (org: Organization) => {
+  const calculateDaysRemaining = (org: FirebaseOrg) => {
     if (!org.expiryDate && !org.trialEndDate) return 0;
     const end = new Date(org.expiryDate || org.trialEndDate);
     const diff = end.getTime() - new Date().getTime();
     return Math.max(0, Math.ceil(diff / (1000 * 3600 * 24)));
   };
 
-  const getTenure = (org: Organization) => {
+  const getTenure = (org: FirebaseOrg) => {
     const start = new Date(org.createdAt);
     if (isNaN(start.getTime())) return 'Unknown';
     const diffDays = Math.ceil((new Date().getTime() - start.getTime()) / (1000 * 3600 * 24));
@@ -659,7 +673,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
                         <Trash2 className="w-5 h-5" />
                         <div className="text-left">
                           <p className="font-bold text-sm">Delete Client Data</p>
-                          <p className="text-xs opacity-80">Permanently erase this organization</p>
+                          <p className="text-xs opacity-80">Permanently erase this FirebaseOrg</p>
                         </div>
                       </button>
                     </div>
