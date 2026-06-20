@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import { Product, Tank, Nozzle, Pump, StockTransaction, RateHistoryEntry, InventoryMovement, StockBatch, CogsRecord, DealerMarginSetting, InventorySnapshot, FIFODeduction, SupplierClaim, SupplierPerformanceScore, MeterResetEvent } from '../types';
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
-import { getBusinessTypeForStation, isolateProductRecords, withBusinessScope } from '../lib/businessScope';
+import { getBusinessTypeForStation, isolateProductRecords, isolateTenantRecords, withBusinessScope } from '../lib/businessScope';
+import { useStationStore } from './useStationStore';
 
 interface InventoryState {
   products: Product[];
@@ -426,30 +427,48 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   handleAddTank: async (newTank, orgId, stationId, checkPerm) => {
     if (checkPerm) checkPerm('tank.manage', 'add tank', 'ٹینک شامل کرنے');
     const sId = stationId || db.getActiveStationId();
+    const scopedTank = withBusinessScope(newTank, sId, orgId);
 
     set((state) => {
-      const updated = [...state.tanks, newTank];
+      const updated = isolateTenantRecords([...state.tanks, scopedTank], sId, orgId);
       db.saveTanks(sId, updated);
       return { tanks: updated };
     });
 
     if (orgId) {
-      await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'tanks', newTank.id, newTank);
+      try {
+        await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'tanks', scopedTank.id, scopedTank);
+        useStationStore.getState().showToast('Tank added successfully!', 'success');
+      } catch (err) {
+        console.error("Error adding tank to Firestore:", err);
+        useStationStore.getState().showToast('Error saving tank to cloud, saved locally.', 'error');
+      }
+    } else {
+      useStationStore.getState().showToast('Tank added locally (Offline)', 'success');
     }
   },
 
   handleUpdateTank: async (updatedTank, orgId, stationId, checkPerm) => {
     if (checkPerm) checkPerm('tank.manage', 'update tank', 'ٹینک تبدیل کرنے');
     const sId = stationId || db.getActiveStationId();
+    const scopedTank = withBusinessScope(updatedTank, sId, orgId);
 
     set((state) => {
-      const updated = state.tanks.map((t) => (t.id === updatedTank.id ? updatedTank : t));
+      const updated = state.tanks.map((t) => (t.id === scopedTank.id ? scopedTank : t));
       db.saveTanks(sId, updated);
       return { tanks: updated };
     });
 
     if (orgId) {
-      await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'tanks', updatedTank.id, updatedTank);
+      try {
+        await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'tanks', scopedTank.id, scopedTank);
+        useStationStore.getState().showToast('Tank updated successfully!', 'success');
+      } catch (err) {
+        console.error("Error updating tank in Firestore:", err);
+        useStationStore.getState().showToast('Error updating tank to cloud, saved locally.', 'error');
+      }
+    } else {
+      useStationStore.getState().showToast('Tank updated locally (Offline)', 'success');
     }
   },
 
