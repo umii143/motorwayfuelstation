@@ -295,10 +295,14 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
     return `${(diffDays / 365).toFixed(1)} years`;
   };
 
-  const filteredOrganizations = organizations.filter(o => 
-    o.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    o.orgId.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const DUMMY_KEYWORDS = ['rahim abdur', 'daniyal khokhar', 'ahmad mujtaba', 'irfan khan'];
+  const isDummy = (str?: string) => str ? DUMMY_KEYWORDS.some(k => str.toLowerCase().includes(k)) : false;
+
+  const filteredOrganizations = organizations.filter(o => {
+    if (isDummy(o.name)) return false;
+    return o.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+           o.orgId.toLowerCase().includes(searchQuery.toLowerCase());
+  });
 
   return (
     <div className="space-y-6 pb-12 h-full flex flex-col relative">
@@ -367,22 +371,51 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 border-b border-slate-200 px-4">
+      <div className="flex items-center justify-between border-b border-slate-200 px-4">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setActiveTab('requests')}
+            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${
+              activeTab === 'requests' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <div className="flex items-center gap-2"><Clock className="w-4 h-4" /> Pending Requests</div>
+          </button>
+          <button
+            onClick={() => setActiveTab('clients')}
+            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${
+              activeTab === 'clients' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <div className="flex items-center gap-2"><Users className="w-4 h-4" /> Client Directory</div>
+          </button>
+        </div>
+        
         <button
-          onClick={() => setActiveTab('requests')}
-          className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${
-            activeTab === 'requests' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700'
-          }`}
+          onClick={async () => {
+            const DUMMY_KEYWORDS = ['rahim abdur', 'daniyal khokhar', 'ahmad mujtaba', 'irfan khan', 'test'];
+            const isDummy = (str?: string) => str ? DUMMY_KEYWORDS.some(k => str.toLowerCase().includes(k)) : false;
+            
+            setOrganizations(prev => prev.filter(o => !isDummy(o.name)));
+            setRequests(prev => prev.filter(r => !isDummy(r.userEmail)));
+            
+            let count = 0;
+            for (const org of organizations) {
+              if (isDummy(org.name)) {
+                try {
+                  await deleteDoc(doc(dbFS, 'organizations', org.orgId));
+                  count++;
+                } catch(e: any) {
+                  console.error(e);
+                  alert("Failed to delete from DB: " + e.message);
+                }
+              }
+            }
+            alert(`Filtered from UI! Successfully deleted ${count} entries from database.`);
+          }}
+          className="px-4 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 font-bold text-xs rounded-lg flex items-center gap-2 transition-colors"
         >
-          <div className="flex items-center gap-2"><Clock className="w-4 h-4" /> Pending Requests</div>
-        </button>
-        <button
-          onClick={() => setActiveTab('clients')}
-          className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${
-            activeTab === 'clients' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          <div className="flex items-center gap-2"><Users className="w-4 h-4" /> Client Directory</div>
+          <Trash2 className="w-4 h-4" /> Force Clean Dummy Data
         </button>
       </div>
 

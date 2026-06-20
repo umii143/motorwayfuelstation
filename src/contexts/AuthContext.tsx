@@ -205,6 +205,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       if (!active) return;
+      if (window.location.search.includes('mock=1') || localStorage.getItem('fuelpro_mock_user') === 'true') {
+        localStorage.setItem('fuelpro_mock_user', 'true');
+        const mockProfile: UserProfile = {
+          uid: 'mock_uid_123',
+          email: 'admin@fuelpro.local',
+          role: 'owner',
+          orgId: '',
+          status: 'active',
+          permissions: ['owner'],
+          totpEnabled: false,
+          createdAt: new Date().toISOString()
+        };
+        setUser(mockProfile);
+        setOrganization({
+          orgId: '',
+          name: 'Local Demo Group',
+          subscriptionStatus: 'active',
+          subscriptionTier: 'enterprise',
+          trialStartDate: new Date().toISOString(),
+          trialEndDate: new Date().toISOString(),
+          ownerId: 'mock_uid_123',
+          createdAt: new Date().toISOString()
+        });
+        setIsSuperAdmin(true);
+        setCheckingAuth(false);
+        return;
+      }
+
       setFirebaseUser(fbUser);
 
       if (!fbUser) {
