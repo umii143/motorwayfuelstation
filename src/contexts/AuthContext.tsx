@@ -61,6 +61,8 @@ export interface Organization {
   subscriptionTier: 'trial' | 'basic' | 'professional' | 'enterprise';
   trialStartDate: string;
   trialEndDate: string;
+  expiryDate?: string;
+  phone?: string;
   ownerId: string;
   createdAt: string;
 }

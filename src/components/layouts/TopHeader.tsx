@@ -13,6 +13,7 @@ interface TopHeaderProps {
   stations?: Station[];
   activeStationId?: string;
   onSwitchStation?: (id: string) => void;
+  onCreateStation?: () => void;
 }
 
 export const TopHeader: React.FC<TopHeaderProps> = ({ 
