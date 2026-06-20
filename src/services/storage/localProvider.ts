@@ -14,7 +14,7 @@ export class LocalProvider implements StorageProvider {
       
       reader.onload = () => {
         const base64String = reader.result as string;
-        const attachmentId = `loc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const attachmentId = `loc_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
         
         // In a true local-first PWA we'd use IndexedDB (e.g., localforage).
         // For this MVP, we simulate it by returning the data URI directly 

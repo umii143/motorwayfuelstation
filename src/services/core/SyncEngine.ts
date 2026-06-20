@@ -99,7 +99,7 @@ class SyncEngineClass {
     async enqueue(item: Omit<MutationQueueItem, 'id' | 'createdAt' | 'retryCount' | 'status'>) {
         const newItem: MutationQueueItem = {
             ...item,
-            id: `sync_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+            id: `sync_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
             createdAt: Date.now(),
             retryCount: 0,
             status: 'pending',

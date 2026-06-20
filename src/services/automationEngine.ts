@@ -102,7 +102,7 @@ export class AutomationEngine {
     // Aggregate Sales by Product type (Petrol, Diesel, Lubricants)
     let petrolSales = 0;
     let dieselSales = 0;
-    let lubeSales = 0;
+
     let totalExpenses = 0;
     let netCash = 0;
 
@@ -119,9 +119,7 @@ export class AutomationEngine {
         }
       });
       
-      shift.lubeSales?.forEach(ls => {
-        lubeSales += ls.amount;
-      });
+
 
       shift.expenseEntries?.forEach(exp => {
         totalExpenses += exp.amount;
@@ -140,8 +138,7 @@ PKR ${petrolSales.toLocaleString()}
 Diesel:
 PKR ${dieselSales.toLocaleString()}
 
-Lubricants:
-PKR ${lubeSales.toLocaleString()}
+
 
 Expenses:
 PKR ${totalExpenses.toLocaleString()}

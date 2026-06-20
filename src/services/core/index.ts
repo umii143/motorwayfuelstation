@@ -29,7 +29,7 @@ export {
   processDigitalPayment,
   processSupplierPayment,
   processDiscount,
-  processLubeSale,
+
   processReversal,
   processShiftOpen,
   processShiftClose,

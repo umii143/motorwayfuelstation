@@ -29,7 +29,7 @@ export const SalaryEngine = {
     branchId?: string
   ): SalaryTransaction => {
     return {
-      id: `sal_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+      id: `sal_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
       employeeId,
       employeeName,
       amount,

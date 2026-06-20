@@ -109,7 +109,7 @@ export default function FundTransferForm() {
 
       // 3. Record the central TreasuryTransaction
       await recordTransaction({
-        id: `trx_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        id: `trx_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
         date: new Date().toISOString(),
         sourceAccountId: sourceId,
         sourceAccountType: srcAcc.type as any,

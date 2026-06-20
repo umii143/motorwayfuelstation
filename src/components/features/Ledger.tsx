@@ -25,6 +25,7 @@ import { Customer, Supplier, Shift, Product, GlobalSettings, LubePosSale, Journa
 import { useFinancialStore } from '../../stores/useFinancialStore';
 import { useStaffStore } from '../../stores/useStaffStore';
 import { useStationStore } from '../../stores/useStationStore';
+import { DataConfidenceBadge } from '../ui/DataConfidenceBadge';
 
 
 interface LedgerProps {
@@ -451,31 +452,47 @@ export default function Ledger({
       {/* DYNAMIC KPI CARDS SECTION */}
       <div className="fp-kpi-grid-2x2 lg:grid-cols-4 lg:gap-4 lg:px-0">
         {/* AMBER CARD - NET LIQUIDITY */}
-        <div className={`fp-kpi-compact ${netBookBalance >= 0 ? 'kpi-green' : 'kpi-red'}`}>
+        <div className={`fp-kpi-compact ${netBookBalance >= 0 ? 'kpi-green' : 'kpi-red'} relative overflow-hidden`}>
           <p className="fp-kpi-compact__label">Net Position</p>
-          <p className="fp-kpi-compact__value">Rs. {netBookBalance.toLocaleString()}</p>
+          <p className="fp-kpi-compact__value text-3xl">Rs. {netBookBalance.toLocaleString()}</p>
           <p className="fp-kpi-compact__sub text-slate-400">⚖️ Liquidity</p>
+          <div className={`absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl ring-1 ring-inset shadow-inner ${netBookBalance >= 0 ? 'bg-emerald-500/15 text-emerald-500 ring-emerald-500/20' : 'bg-red-500/15 text-red-500 ring-red-500/20'}`}>
+            <Scale className="h-6 w-6" strokeWidth={2.5} />
+          </div>
+          <DataConfidenceBadge confidence={100} />
         </div>
 
         {/* GREEN CARD - TOTAL RECEIVABLES */}
-        <div className="fp-kpi-compact kpi-green">
+        <div className="fp-kpi-compact kpi-green relative overflow-hidden">
           <p className="fp-kpi-compact__label">Receivables</p>
-          <p className="fp-kpi-compact__value">Rs. {receivablesTotal.toLocaleString()}</p>
+          <p className="fp-kpi-compact__value text-3xl">Rs. {receivablesTotal.toLocaleString()}</p>
           <p className="fp-kpi-compact__sub text-slate-400">↗️ Due from Customers</p>
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-500 ring-1 ring-inset ring-emerald-500/20 shadow-inner">
+            <TrendingUp className="h-6 w-6" strokeWidth={2.5} />
+          </div>
+          <DataConfidenceBadge confidence={100} />
         </div>
 
         {/* CRIMSON CARD - TOTAL PAYABLES */}
-        <div className="fp-kpi-compact kpi-red">
+        <div className="fp-kpi-compact kpi-red relative overflow-hidden">
           <p className="fp-kpi-compact__label">Payables</p>
-          <p className="fp-kpi-compact__value">Rs. {payablesTotal.toLocaleString()}</p>
+          <p className="fp-kpi-compact__value text-3xl">Rs. {payablesTotal.toLocaleString()}</p>
           <p className="fp-kpi-compact__sub text-slate-400">↘️ Owed to Suppliers</p>
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/15 text-red-500 ring-1 ring-inset ring-red-500/20 shadow-inner">
+            <TrendingDown className="h-6 w-6" strokeWidth={2.5} />
+          </div>
+          <DataConfidenceBadge confidence={100} />
         </div>
 
         {/* BLUE CARD - TRANSACTION LOG INDEX */}
-        <div className="fp-kpi-compact kpi-blue">
+        <div className="fp-kpi-compact kpi-blue relative overflow-hidden">
           <p className="fp-kpi-compact__label">Transactions</p>
-          <p className="fp-kpi-compact__value">{kpiStats.txCount}</p>
+          <p className="fp-kpi-compact__value text-3xl">{kpiStats.txCount}</p>
           <p className="fp-kpi-compact__sub text-slate-400">👥 Shift Logs</p>
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-500 ring-1 ring-inset ring-blue-500/20 shadow-inner">
+            <FileSpreadsheet className="h-6 w-6" strokeWidth={2.5} />
+          </div>
+          <DataConfidenceBadge confidence={100} />
         </div>
       </div>
 

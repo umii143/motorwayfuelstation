@@ -11,6 +11,7 @@ import { GlobalSettings, Product, Nozzle, Pump, Tank, RateHistoryEntry, AuditTra
 import { db } from '../../data/db';
 import { useStation } from '../../contexts/StationContext';
 import { useNativeAuth } from '../../contexts/NativeAuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 import RateWizard from './Settings/RateWizard';
 import TankWizard from './Settings/TankWizard';
@@ -92,6 +93,7 @@ export default function SettingsPanel({
 }: SettingsProps) {
   const { showToast, showAlert, showConfirm } = useStation();
   const { requireBiometric } = useNativeAuth();
+  const { isSuperAdmin } = useAuth();
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
   const isLube = activeStationId === 'st_lube';
@@ -114,7 +116,7 @@ export default function SettingsPanel({
   const handleLogAudit = (category: string, action: string, details: string) => {
     const existing = db.getSettingsAuditTrail(activeStationId);
     const newEntry: AuditTrailEntry = {
-      id: 'audit_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+      id: 'audit_' + Date.now() + '_' + crypto.randomUUID().split('-')[0],
       timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
       category,
       action,
@@ -134,7 +136,7 @@ export default function SettingsPanel({
       items: [
         { id: 'profile',  label: t('Profile Center', 'پروفائل سینٹر'),           icon: User,          badge: null },
         { id: 'station',  label: t('Station Identity', 'اسٹیشن کی شناخت'),       icon: Building,      badge: null },
-        { id: 'license',  label: t('License & Plan', 'لائسنس اور پلان'),         icon: Key,           badge: null },
+        ...(isSuperAdmin ? [{ id: 'license' as SettingsView,  label: t('License & Plan', 'لائسنس اور پلان'),         icon: Key,           badge: null }] : []),
       ]
     },
     {

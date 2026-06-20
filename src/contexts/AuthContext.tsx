@@ -256,7 +256,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setPendingVerification(false);
 
       try {
-        const { profile, orgProfile } = await loadUserProfile(fbUser);
+        let { profile, orgProfile } = await loadUserProfile(fbUser);
         if (!active) return;
 
         // Check if user is Super Admin
@@ -301,13 +301,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const expiry = new Date(expiryStr);
             if (!isNaN(expiry.getTime()) && expiry < now) {
               // Period has ended \u2014 immediately expire in Firebase
-              if (orgProfile.subscriptionStatus !== 'expired' && orgProfile.subscriptionStatus !== 'canceled') {
+              if (orgProfile.subscriptionStatus !== ('expired' as any) && orgProfile.subscriptionStatus !== ('canceled' as any)) {
                 try {
                   await updateDoc(doc(dbFS, 'organizations', orgProfile.orgId), {
                     subscriptionStatus: 'expired'
                   });
                   // Reflect locally too
-                  orgProfile = { ...orgProfile, subscriptionStatus: 'expired' };
+                  orgProfile = { ...orgProfile, subscriptionStatus: 'expired' as any };
                 } catch (e) {
                   console.warn('[Auth] Could not auto-expire org:', e);
                 }

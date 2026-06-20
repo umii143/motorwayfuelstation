@@ -23,7 +23,7 @@ export default defineConfig(() => {
     },
     build: {
       target: 'es2015',      // Android WebView compatible
-      minify: 'terser',
+      minify: 'terser' as const,
       terserOptions: {
         compress: {
           drop_console: true,   // remove all console.log

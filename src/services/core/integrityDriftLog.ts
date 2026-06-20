@@ -61,7 +61,7 @@ export function addDriftLog(stationId: string, log: Omit<IntegrityDriftLog, 'id'
   const existing = getAllDriftLogs(stationId);
   const newLog: IntegrityDriftLog = {
     ...log,
-    id: `drift_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    id: `drift_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
     resolved: false,
   };
   existing.push(newLog);

@@ -53,7 +53,7 @@ import {
   ExpenseEntry,
   BankCashEntry,
   DigitalCashEntry,
-  LubeSale,
+  MeterResetEvent,
   SupplierPayment,
   EXPENSE_CATEGORIES,
   GlobalSettings,
@@ -72,8 +72,7 @@ import { useInventoryStore } from "../../stores/useInventoryStore";
 import {
   processCreditSale, processRecovery, processExpense,
   processBankDeposit, processDigitalPayment, processSupplierPayment,
-  processDiscount, processLubeSale, processReversal,
-  processShiftOpen, processShiftClose as eocShiftClose,
+  processDiscount, processReversal, processDebitSale, processRecovery as procRecovery, processExpense as procExpense, processBankCash, processDigitalCash, processSupplierPaymentShiftOpen, processShiftClose as eocShiftClose,
 } from "../../services/core/operationalCore";
 
 // Helper to classify fuel product IDs into hardcoded categories expected by the shift closeout logic
@@ -190,12 +189,6 @@ export default function ShiftWizard({
       return { ...c, effectiveBalance: activeBal };
     });
   }, [customers, activeShift]);
-  const isLubeBusiness = useMemo(
-    () =>
-      products.some((p) => p.type === "lube") &&
-      !products.some((p) => p.type === "fuel"),
-    [products],
-  );
   const defaultProductId = products[0]?.id || "general_debit";
 
   // AI Scanner States
@@ -284,8 +277,8 @@ export default function ShiftWizard({
   // STEP 3 OPERATIONAL TABS DRAWERS
   // ==========================================
   const [activeTab, setActiveTab] = useState<
-    "debit" | "recovery" | "expense" | "bank" | "digital" | "lube" | "supplier" | "discount" | "rateChange"
-  >(() => (isLubeBusiness ? "lube" : "debit"));
+    "debit" | "recovery" | "expense" | "bank" | "digital" | "supplier" | "discount" | "rateChange"
+  >("debit");
   // Quick Add forms state
   const [showQuickCustomer, setShowQuickCustomer] = useState(false);
   const [quickCustomerName, setQuickCustomerName] = useState("");
@@ -340,10 +333,6 @@ export default function ShiftWizard({
   const [discApprovedBy, setDiscApprovedBy] = useState("");
   const [discNotes, setDiscNotes] = useState("");
 
-  // Tab 6: Lubricant Sales
-  const [lubeItemId, setLubeItemId] = useState("");
-  const [lubeQty, setLubeQty] = useState("");
-
   // Tab 7: Wholesale Depot Payments
   const [supId, setSupId] = useState("");
   const [supAmount, setSupAmount] = useState("");
@@ -389,10 +378,6 @@ export default function ShiftWizard({
   // VALIDATORS / ALERT FLAGS
   // ==========================================
   const [wizardError, setWizardError] = useState("");
-
-  useEffect(() => {
-    setActiveTab(isLubeBusiness ? "lube" : "debit");
-  }, [isLubeBusiness, activeStationId]);
 
   useEffect(() => {
     if (debProdId === "general_debit") {
@@ -504,14 +489,8 @@ export default function ShiftWizard({
     const cngSaleKgs = Math.max(0, cngKgsAccum - cngTestLiters);
     cngSalesSum = Math.max(0, cngSalesSum - (cngTestLiters * fuelRates.cng));
 
-    // Lubricants Gross Sum
-    const lubeSalesSum = activeShift.lubeSales.reduce(
-      (acc, l) => acc + l.amount,
-      0,
-    );
-
     const grossSalesSum =
-      petrolSalesSum + dieselSalesSum + cngSalesSum + lubeSalesSum;
+      petrolSalesSum + dieselSalesSum + cngSalesSum;
 
     // Recovery, Debit, expense, bank cash lists summing
     const totalDebits = activeShift.debitEntries.reduce(
@@ -544,7 +523,7 @@ export default function ShiftWizard({
     );
 
     // FORMULATION
-    // EXPECTED CASH = Sales + LubeCash + CashRecoveries - CreditSales - ExpensesPaidInCash - SupplierPaymentsPaidInCash - BankDeposits - DigitalPayments - Discounts
+    // EXPECTED CASH = Sales + CashRecoveries - CreditSales - ExpensesPaidInCash - SupplierPaymentsPaidInCash - BankDeposits - DigitalPayments - Discounts
     // To represent cash on hand before submitting:
     const expectedCashAmount = Math.max(
       0,
@@ -565,7 +544,6 @@ export default function ShiftWizard({
       dieselSales: dieselSalesSum,
       cngKgs: cngSaleKgs,
       cngSales: cngSalesSum,
-      lubeSales: lubeSalesSum,
       grossSales: grossSalesSum,
       debits: totalDebits,
       recoveries: totalRecoveries,
@@ -607,7 +585,6 @@ export default function ShiftWizard({
     bankCashEntries: [],
     digitalCashEntries: [],
     discountEntries: [],
-    lubeSales: [],
     supplierPayments: [],
     expectedCash: 0,
     submittedCash: 0,
@@ -1197,84 +1174,6 @@ export default function ShiftWizard({
     onUpdateShift(updated);
   };
 
-  const handleAddLube = () => {
-    if (!activeShift) return;
-    if (!lubeItemId) {
-      showToast(
-        t("Please select a lubricant item.", "براہ کرم پراڈکٹ کا انتخاب کریں۔"),
-        "error",
-      );
-      return;
-    }
-    const qty = Number(lubeQty);
-    if (!qty || qty <= 0) {
-      showToast(
-        t("Please enter a valid quantity.", "براہ کرم درست تعداد درج کریں۔"),
-        "error",
-      );
-      return;
-    }
-
-    const product = products.find((p) => p.id === lubeItemId);
-    if (product) {
-      const alreadyAdded = activeShift.lubeSales
-        .filter((l) => l.itemId === lubeItemId)
-        .reduce((sum, l) => sum + l.quantity, 0);
-      const totalRequested = qty + alreadyAdded;
-      if (totalRequested > product.currentStock) {
-        showToast(
-          t(
-            `Insufficient lubricant inventory. Available stock: ${product.currentStock}. Already added: ${alreadyAdded}. Requested: ${qty}.`,
-            `لیوب کا اسٹاک کم ہے۔ دستیاب اسٹاک: ${product.currentStock}۔ پہلے سے شامل: ${alreadyAdded}۔ مطلوبہ: ${qty}۔`
-          ),
-          "error"
-        );
-        return;
-      }
-    }
-
-    const price = product?.rate || 1000;
-    const amount = qty * price;
-
-    const newLube: LubeSale = {
-      id: `lub_${Date.now()}`,
-      itemId: lubeItemId,
-      quantity: qty,
-      price,
-      amount,
-    };
-
-    // ── Optimistic UI update ──────────────────────────────────────────────────
-    const updated = {
-      ...activeShift,
-      lubeSales: [...activeShift.lubeSales, newLube],
-    };
-    onUpdateShift(updated);
-
-    // ── EOC Pipeline ─────────────────────────────────────────────────────────
-    processLubeSale(
-      activeShift.id, activeStationId, activeStationId,
-      { itemId: lubeItemId, itemName: product?.name ?? lubeItemId, quantity: qty, price, amount },
-      activeShift.date
-    ).catch((err: Error) => console.warn('[EOC] Lube sale pipeline:', err.message));
-
-    // Reset inputs
-    setLubeQty("");
-  };
-
-  const handleDeleteLube = (id: string) => {
-    if (!activeShift) return;
-    showConfirm(
-      t("Reverse Entry", "اندراج کو پلٹائیں"),
-      t("This lube sale will be reversed with an audit entry.", "یہ لیوب سیل ریورسل انٹری کے ساتھ پلٹایا جائے گا۔"),
-      () => {
-        const updated = { ...activeShift, lubeSales: activeShift.lubeSales.filter((l) => l.id !== id) };
-        onUpdateShift(updated);
-        processReversal(id, t("User reversed lube sale", "صارف نے لیوب سیل پلٹایا"), activeShift.id, activeStationId, activeStationId, activeShift.date)
-          .catch((err: Error) => console.warn('[EOC] Lube reversal:', err.message));
-      }
-    );
-  };
 
   const handleAddSupplier = () => {
     if (!activeShift) return;
@@ -1885,7 +1784,7 @@ export default function ShiftWizard({
                   <Fuel className="w-5 h-5 lg:w-6 lg:h-6 text-emerald-400" />
                 </div>
                 <div>
-                  <h4 className="text-lg lg:text-xl font-bold text-white">{pumps.filter(p => p.active && p.stationId === activeStationId).length}</h4>
+                  <h4 className="text-lg lg:text-xl font-bold text-white">{pumps.length}</h4>
                   <p className="text-[10px] lg:text-xs font-semibold text-emerald-400 mt-0.5 lg:mt-1">Online</p>
                 </div>
               </div>
@@ -1900,7 +1799,7 @@ export default function ShiftWizard({
                   <Zap className="w-5 h-5 lg:w-6 lg:h-6 text-indigo-400" />
                 </div>
                 <div>
-                  <h4 className="text-lg lg:text-xl font-bold text-white">{nozzles.filter(n => n.active).length}</h4>
+                  <h4 className="text-lg lg:text-xl font-bold text-white">{nozzles.length}</h4>
                   <p className="text-[10px] lg:text-xs font-semibold text-indigo-400 mt-0.5 lg:mt-1">Operational</p>
                 </div>
               </div>
@@ -2150,7 +2049,7 @@ export default function ShiftWizard({
                     const operator = staff.find(s => s.id === sh.staffId);
                     const opName = operator?.name || 'Unknown Operator';
                     const initials = opName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
-                    const isNight = sh.shiftType === 'night';
+                    const isNight = sh.type === 'night';
                     const shiftSales = sh.submittedCash || 0;
                     const formattedDate = (() => {
                       const [y, m, d] = sh.date.split('-');
@@ -3075,117 +2974,7 @@ export default function ShiftWizard({
                 </div>
               )}
 
-              {/* TAB 6: LUBRICANTS SALE */}
-              {activeTab === "lube" && (
-                <div className="space-y-3">
-                  <h3 className="font-sans text-xs font-bold text-slate-200 border-b border-slate-700/50 pb-1.5 mb-3">
-                    {t("🛢️ Lubricants Sale", "انجن آئل فروخت")}
-                  </h3>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
-                        {t("Lubricant:", "موبل آئل:")}
-                      </label>
-                      <select
-                        value={lubeItemId}
-                        onChange={(e) => setLubeItemId(e.target.value)}
-                        className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-sans text-xs text-slate-200 shadow-xs focus:border-orange-500"
-                      >
-                        <option value="">{t("-- Choose --", "-- منتخب کریں --")}</option>
-                        {products
-                          .filter((p) => p.type === "lube")
-                          .map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {settings.language === "en" ? p.name : p.urduName} ({t(`Rs. ${p.rate}`, `${p.rate} روپے`)})
-                            </option>
-                          ))}
-                      </select>
-                    </div>
-
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
-                        {t("Quantity:", "تعداد:")}
-                      </label>
-                      <input
-                        type="number"
-                        value={lubeQty}
-                        onChange={(e) => setLubeQty(e.target.value)}
-                        placeholder="e.g. 3"
-                        className="w-full rounded-md border border-slate-700/50 bg-slate-900/50 px-2 py-1.5 font-mono text-xs focus:border-orange-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mt-2 flex justify-between items-center bg-slate-800/50 p-2 rounded-md border border-slate-700/50 border-dashed">
-                    <span className="font-sans text-[10px] font-semibold text-slate-500">
-                      {t("Total:", "کل رقم:")}
-                    </span>
-                    <span className="font-mono text-sm font-bold text-slate-200">
-                      Rs.{" "}
-                      {(
-                        (Number(lubeQty) || 0) *
-                        (products.find((p) => p.id === lubeItemId)?.rate || 0)
-                      ).toLocaleString()}
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={handleAddLube}
-                    className="w-full py-2 bg-orange-600 text-white font-sans text-xs font-bold rounded-lg hover:bg-orange-700 cursor-pointer shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
-                  >
-                    <Plus className="h-3 w-3" />
-                    <span>{t("ADD SALE", "فروخت شامل کریں")}</span>
-                  </button>
-
-                  <div className="mt-4 border-t border-slate-700/50 pt-4">
-                    <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                      {t(
-                        "Lube Sales This Shift:",
-                        "اس شفٹ میں موبل آئل فروخت:",
-                      )}
-                    </h4>
-                    {activeShift.lubeSales.length === 0 ? (
-                      <p className="text-center py-4 font-sans text-xs text-slate-400 border border-slate-700/50 border-dashed rounded-lg bg-slate-800/50/50">
-                        {t(
-                          "No lube products listed.",
-                          "کوئی انجن آئل فروخت نہیں ہوئی۔",
-                        )}
-                      </p>
-                    ) : (
-                      <div className="space-y-2 max-h-40 overflow-y-auto">
-                        {activeShift.lubeSales.map((l) => {
-                          const name =
-                            products.find((p) => p.id === l.itemId)?.name ||
-                            "Lube";
-                          return (
-                            <div
-                              key={l.id}
-                              className="flex justify-between items-center text-xs p-2 rounded-lg border border-slate-700/50 bg-slate-800/50/20"
-                            >
-                              <div className="font-sans text-slate-700 pr-4">
-                                <span className="font-bold">{name}</span> —{" "}
-                                {l.quantity} Can(s) sold @ Rs. {l.price}
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <span className="font-mono font-bold text-orange-655">
-                                  Rs. {l.amount.toLocaleString()}
-                                </span>
-                                <button
-                                  onClick={() => handleDeleteLube(l.id)}
-                                  className="text-red-500 hover:text-red-700 cursor-pointer"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
 
               {/* TAB 7: SUPPLIER DEPOT PAYMENTS */}
               {activeTab === "supplier" && (
@@ -3491,14 +3280,7 @@ export default function ShiftWizard({
                   </span>
                 </div>
               )}
-              {expectedTotals.lubeSales > 0 && (
-                <div className="flex justify-between">
-                  <span>Lubricants shop cash</span>
-                  <span className="font-mono">
-                    Rs. {expectedTotals.lubeSales.toLocaleString()}
-                  </span>
-                </div>
-              )}
+
               <div className="flex justify-between border-t border-slate-700/50 pt-1.5 font-bold text-slate-700">
                 <span>{t("GROSS STATION SALES", "مجموعی فروخت")}</span>
                 <span className="font-mono">
@@ -3758,12 +3540,7 @@ export default function ShiftWizard({
                     {expectedTotals.cngSales.toLocaleString()}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Lubricants Stock</span>
-                  <span className="font-mono font-semibold">
-                    Rs. {expectedTotals.lubeSales.toLocaleString()}
-                  </span>
-                </div>
+
               </div>
             </div>
 

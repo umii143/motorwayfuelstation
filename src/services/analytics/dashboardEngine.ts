@@ -79,7 +79,7 @@ export const generateDashboardStats = (
 
       nozzles.forEach(nz => {
         const open = s.openingReadings?.[nz.id] || 0;
-        const close = s.closingReadings?.[nz.id] || 0;
+        const close = s.status === 'closed' ? (s.closingReadings?.[nz.id] || 0) : (nz.currentReading || open);
         const diff = Math.max(0, close - open);
         const fuelCat = getFuelCategory(nz.productId, products);
         if (fuelCat === 'petrol') petrolLiters += diff;

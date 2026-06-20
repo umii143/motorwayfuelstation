@@ -25,7 +25,7 @@ export class StripeProvider implements PaymentProvider {
     
     return {
       success: true,
-      transactionId: `ch_stripe_${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
+      transactionId: `ch_stripe_${crypto.randomUUID().split('-')[0].toUpperCase()}`,
       provider: 'stripe',
       amount,
       currency,
@@ -49,7 +49,7 @@ export class SafepayProvider implements PaymentProvider {
     
     return {
       success: true,
-      transactionId: `sf_pay_${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
+      transactionId: `sf_pay_${crypto.randomUUID().split('-')[0].toUpperCase()}`,
       provider: 'safepay',
       amount,
       currency,
@@ -72,7 +72,7 @@ export class JazzCashProvider implements PaymentProvider {
     
     return {
       success: true,
-      transactionId: `jc_tx_${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
+      transactionId: `jc_tx_${crypto.randomUUID().split('-')[0].toUpperCase()}`,
       provider: 'jazzcash',
       amount,
       currency,
@@ -95,7 +95,7 @@ export class EasyPaisaProvider implements PaymentProvider {
     
     return {
       success: true,
-      transactionId: `ep_txn_${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
+      transactionId: `ep_txn_${crypto.randomUUID().split('-')[0].toUpperCase()}`,
       provider: 'easypaisa',
       amount,
       currency,

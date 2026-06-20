@@ -16,6 +16,7 @@ import SupplierPayablesPanel from './SupplierPayablesPanel';
 import SupplierPayments from './SupplierPayments';
 import SupplierClaimsPanel from './SupplierClaimsPanel';
 import SupplierScorecard from './SupplierScorecard';
+import SupplierDetailsFullPage from './SupplierDetailsFullPage';
 
 interface SupplierCommandCenterProps {
   settings: GlobalSettings;
@@ -41,6 +42,37 @@ export default function SupplierCommandCenter({
   onDeleteSupplierPayment
 }: SupplierCommandCenterProps) {
   const [activeTab, setActiveTab] = useState<'directory' | 'payables' | 'payments' | 'claims' | 'scorecard'>('directory');
+  const [currentSupplierId, setCurrentSupplierId] = React.useState<string | null>(() => {
+    const path = window.location.pathname;
+    if (path.startsWith('/suppliers/') && path.length > 11) {
+      return path.split('/')[2];
+    }
+    return null;
+  });
+
+  React.useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      if (path.startsWith('/suppliers/') && path.length > 11) {
+        setCurrentSupplierId(path.split('/')[2]);
+      } else {
+        setCurrentSupplierId(null);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const navigateToSupplier = (id: string) => {
+    window.history.pushState({}, '', `/suppliers/${id}`);
+    setCurrentSupplierId(id);
+  };
+
+  const navigateBackToDirectory = () => {
+    window.history.pushState({}, '', '/suppliers');
+    setCurrentSupplierId(null);
+  };
+
   const t = (en: string, ur: string) => translate(en, ur, settings);
   const language = settings.language;
 
@@ -56,25 +88,40 @@ export default function SupplierCommandCenter({
     { id: 'scorecard', icon: BarChart2, label: 'Scorecard', urdu: 'سپلائر کی کارکردگی' }
   ];
 
+  if (currentSupplierId) {
+    const supplier = suppliers.find(s => s.id === currentSupplierId);
+    if (!supplier) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <ShieldAlert className="w-16 h-16 text-slate-600 mb-4" />
+          <h2 className="text-xl font-bold text-white mb-2">Supplier Not Found</h2>
+          <button onClick={navigateBackToDirectory} className="text-orange-500 hover:underline">Return to Directory</button>
+        </div>
+      );
+    }
+    return (
+      <SupplierDetailsFullPage 
+        supplier={supplier}
+        settings={settings}
+        shifts={shifts}
+        banks={banks}
+        batches={batches}
+        onBack={navigateBackToDirectory}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6 pb-16 lg:pb-0">
-      {/* Header */}
-      <div className="flex flex-row items-center justify-between ga premium-card p-6 border">
-        <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-lg">
-            <Truck className="h-7 w-7" />
-          </div>
-          <div>
-            <h1 className="font-sans text-2xl font-bold text-slate-900 tracking-tight">
-              {t('Supplier Command Center', 'سپلائر کمانڈ سینٹر')}
-            </h1>
-            <p className="font-sans text-sm text-slate-500 mt-1">
-              {t('Unified management for oil vendors, payments, aging payables, and claims.', 'آئل کمپنیوں کے بلز، ادائیگیاں، واجبات اور کلیمز کا مربوط نظام۔')}
-            </p>
-          </div>
-        </div>
+      {/* Advanced Clean Header */}
+      <div className="flex flex-col gap-1 mb-2">
+        <h1 className="font-sans text-2xl font-bold dark:text-white text-slate-900 tracking-tight">
+          {t('Supplier Management', 'سپلائر مینجمنٹ')}
+        </h1>
+        <p className="font-sans text-sm dark:text-slate-400 text-slate-500">
+          {t('Manage your fuel, lubricant and service suppliers', 'اپنے فیول، لبریکنٹ اور سروس سپلائرز کا انتظام کریں')}
+        </p>
       </div>
-
       {/* Navigation Tabs */}
       <div className="flex overflow-x-auto no-scrollbar gap-2 pb-2">
         {tabs.map(tab => {
@@ -109,12 +156,14 @@ export default function SupplierCommandCenter({
             settings={settings}
             suppliers={suppliers}
             shifts={shifts}
+            batches={batches}
             products={products}
             banks={banks}
             onAddSupplier={onAddSupplier}
             onUpdateSupplier={onUpdateSupplier}
             onDeleteSupplier={onDeleteSupplier}
             onDeleteSupplierPayment={onDeleteSupplierPayment}
+            onNavigateToSupplier={navigateToSupplier}
           />
         )}
 

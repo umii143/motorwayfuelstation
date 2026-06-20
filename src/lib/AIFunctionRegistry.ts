@@ -211,7 +211,7 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
       let totalCash = 0;
       let totalBank = 0;
       state.cashAccounts?.forEach(acc => {
-        if (acc.type === 'cash' || acc.type === 'drawer') totalCash += acc.balance;
+        if ((acc.type as any) === 'cash' || (acc.type as any) === 'drawer') totalCash += acc.balance;
         else totalBank += acc.balance;
       });
       return { cashOnHand: totalCash, bankBalance: totalBank, currency: "PKR" };
@@ -247,7 +247,7 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
         description,
         amount: Number(amount),
         date: new Date().toISOString(),
-        paidFrom: 'cash'
+        paidFrom: 'cash' as any
       };
 
       const updatedShift = {
@@ -325,7 +325,7 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
       return {
         products: (inventory.products || []).map(p => ({
           name: p.name,
-          stock: p.currentStock || p.stock,
+          stock: p.currentStock,
           price: p.sellingPrice
         })),
         tanks: (inventory.tanks || []).map(t => ({
@@ -354,7 +354,7 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
     case "getLowStockAlerts": {
       const inventory = useInventoryStore.getState();
       const lowTanks = (inventory.tanks || []).filter(t => t.currentStock < (t.capacity * 0.15)).map(t => ({ name: t.name, stock: t.currentStock }));
-      const lowProducts = (inventory.products || []).filter(p => (p.currentStock || p.stock) < (p.minimumStock || 5)).map(p => ({ name: p.name, stock: p.currentStock || p.stock }));
+      const lowProducts = (inventory.products || []).filter(p => p.currentStock < p.minStock).map(p => ({ name: p.name, stock: p.currentStock }));
       return { lowTanks, lowProducts };
     }
 
@@ -383,7 +383,7 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
     case "transferFunds": {
       const { amount, toBankName } = args;
       const treasury = useTreasuryStore.getState();
-      const cashAcc = treasury.cashAccounts.find(a => a.type === 'cash' || a.type === 'drawer');
+      const cashAcc = treasury.cashAccounts.find(a => (a.type as any) === 'cash' || (a.type as any) === 'drawer');
       const bankAcc = treasury.cashAccounts.find(a => a.type === 'bank' && a.name.toLowerCase().includes(toBankName.toLowerCase()));
       
       if (!cashAcc || !bankAcc) return { status: "Failed: Could not find matching accounts." };
@@ -399,6 +399,7 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
       if (!staffMember) return { status: `Failed: Could not find staff named ${staffName}.` };
       
       const record = {
+        id: `att_${Date.now()}`,
         staffId: staffMember.id,
         date: new Date().toISOString().split('T')[0],
         status: status as any
@@ -417,10 +418,17 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
       const sale = {
         id: `ls_${Date.now()}`,
         date: new Date().toISOString().split('T')[0],
-        items: [{ productId: product.id, productName: product.name, quantity: Number(quantity), unitPrice: product.sellingPrice, total: product.sellingPrice * Number(quantity) }],
+        items: [{ productId: product.id, productName: product.name, quantity: Number(quantity), unitPrice: product.sellingPrice, total: product.sellingPrice * Number(quantity), unit: 'Liter', lineTotal: product.sellingPrice * Number(quantity) }],
         total: product.sellingPrice * Number(quantity),
         paymentMode: 'cash' as any,
-        invoiceNo: `INV-${Date.now()}`
+        invoiceNo: `INV-${Date.now()}`,
+        time: new Date().toISOString(),
+        cashierId: "system",
+        subtotal: product.sellingPrice * Number(quantity),
+        discount: 0,
+        tax: 0,
+        amountReceived: product.sellingPrice * Number(quantity),
+        changeGiven: 0
       };
       
       useFinancialStore.getState().handleAddLubePosSale(sale, "", "");
@@ -521,7 +529,7 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
         shortage: 0
       };
 
-      await shiftStore.handleStartShift(newShift, "", "");
+      await shiftStore.handleAddShift(newShift as any, "", "");
       return { status: "Success", message: `Started ${shiftType} shift for manager ${managerName}.` };
     }
 

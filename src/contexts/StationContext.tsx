@@ -90,6 +90,7 @@ export interface StationContextType {
   standaloneExpenses: ExpenseEntry[];
   lubePosSales: LubePosSale[];
   inventoryMovements: InventoryMovement[];
+  meterResets: MeterResetEvent[];
   journalEntries?: JournalEntry[];
   toast: ToastConfig;
   confirmDialog: ConfirmConfig;

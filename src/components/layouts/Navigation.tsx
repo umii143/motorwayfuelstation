@@ -192,7 +192,10 @@ const Navigation = React.memo(function Navigation({
 
   // Filter menu items based on business type
   const menuItems = isLube
-    ? allMenuItems.filter(item => item.showInLube)
+    ? allMenuItems.filter(item => item.showInLube).map(item => ({
+        ...item,
+        children: item.children ? item.children.filter(child => child.showInLube) : undefined
+      }))
     : allMenuItems;
 
   const toggleLanguage = () => {

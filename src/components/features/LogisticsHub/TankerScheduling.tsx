@@ -55,7 +55,7 @@ export default function TankerScheduling({ settings, stationId }: TankerScheduli
     } else {
       setEditingId(null);
       setSupplierId(suppliers.length > 0 ? suppliers[0].id : '');
-      setPoNumber(`PO-${Math.floor(1000 + Math.random() * 9000)}`);
+      setPoNumber(`PO-${Date.now().toString().slice(-4)}`);
       setProductId(products.length > 0 ? products[0].id : '');
       setOrderedQuantity('');
       setExpectedDeliveryDate(new Date().toISOString().split('T')[0]);

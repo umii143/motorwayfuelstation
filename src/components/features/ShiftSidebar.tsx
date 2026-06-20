@@ -3,6 +3,7 @@ import { X, Printer, Download, Search, AlertCircle, ChevronRight, CheckCircle2, 
 import { useInventoryStore } from '../../stores/useInventoryStore';
 import { InvestigationEngine } from '../../lib/investigationEngine';
 import { InvestigationModal } from './InvestigationModal';
+import { Shift, Staff, Product, Customer, Supplier, BankAccount, DigitalAccount, Nozzle } from '../../types';
 
 interface ShiftSidebarProps {
   shift: Shift;

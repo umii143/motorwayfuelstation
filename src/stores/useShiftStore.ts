@@ -180,7 +180,7 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
         if (relevantNozzles.length === 0) return shift;
 
         const newRevision = {
-          id: `rev_${Date.now()}_${Math.random().toString(36).substr(2,6)}`,
+          id: `rev_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
           productId,
           oldRate,
           newRate,
@@ -296,7 +296,7 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
     const bType = getBusinessType(sId);
     if (bType === 'lube') return;
 
-    updatedShift = withBusinessScope({ ...updatedShift, lubeSales: [] }, sId, orgId);
+    updatedShift = withBusinessScope({ ...updatedShift }, sId, orgId);
     const showToast = useStationStore.getState().showToast;
     const settings = useStationStore.getState().settings;
 
@@ -342,19 +342,6 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
         }
       }
 
-      // Validate lube product stocks
-      for (const lubeSale of updatedShift.lubeSales) {
-        const product = products.find((p) => p.id === lubeSale.itemId);
-        if (product) {
-          if (lubeSale.quantity > product.currentStock) {
-            const msg = settings.language === 'ur'
-              ? `پراڈکٹ "${product.name}" کا اسٹاک کم ہے۔ دستیاب اسٹاک: ${product.currentStock}۔ مطلوبہ فروخت: ${lubeSale.quantity}۔`
-              : `Insufficient product stock for ${product.name}. Available: ${product.currentStock}. Requested: ${lubeSale.quantity}.`;
-            showToast(msg, 'error');
-            throw new Error(msg);
-          }
-        }
-      }
 
       // 3. Compute new customer balances
       const nextCustomers = customers.map((cust) => {
@@ -448,47 +435,6 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
             netSoldForFIFO = netSoldLitres;
             prod = { ...prod, currentStock: Math.max(0, Number((prod.currentStock - netSoldLitres).toFixed(2))) };
           }
-        } else if (prod.type === 'lube') {
-          const lubeTx = updatedShift.lubeSales.reduce((acc, sale) => {
-            return sale.itemId === prod.id ? acc + sale.quantity : acc;
-          }, 0);
-          if (lubeTx > 0) {
-            netSoldForFIFO = lubeTx;
-            const txnId = `stk_lube_sale_shift_${updatedShift.id}_prod_${prod.id}`;
-            generatedStockTxns.push({
-              id: txnId,
-              itemId: prod.id,
-              type: 'sale',
-              quantity: lubeTx,
-              by: updatedShift.staffId,
-              date: updatedShift.date,
-              amount: lubeTx * prod.rate,
-              sellingPrice: prod.rate,
-              fuelType: 'Lube Sale',
-              orgId: orgId || undefined,
-              stationId: sId,
-              businessType: bType,
-              createdAt: Date.now(),
-              updatedAt: Date.now()
-            });
-
-            generatedMovements.push({
-              id: `mov_lube_sale_shift_${updatedShift.id}_prod_${prod.id}`,
-              productId: prod.id,
-              type: 'Sale',
-              quantity: lubeTx,
-              date: new Date().toISOString(),
-              referenceId: updatedShift.id,
-              notes: `Shift Sale for Lube Product ${prod.name}`,
-              orgId: orgId || undefined,
-              stationId: sId,
-              businessType: bType,
-              createdAt: Date.now(),
-              updatedAt: Date.now()
-            });
-
-            prod = { ...prod, currentStock: Math.max(0, Number((prod.currentStock - lubeTx).toFixed(2))) };
-          }
         }
 
         // Apply FIFO Deduction for this product
@@ -517,7 +463,7 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
             // Record COGS
             const dealerMargin = db.getCurrentDealerMargin(sId, prod.name, updatedShift.date + 'T' + (updatedShift.endTime || '16:00:00') + '.000Z');
             newCOGSRecords.push({
-              id: `cogs_${Date.now()}_${Math.random().toString(36).substr(2,6)}`,
+              id: `cogs_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
               shiftId: updatedShift.id,
               shiftSegmentId: 'default',
               batchId: batch.id,

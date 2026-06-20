@@ -33,7 +33,7 @@ export interface ShiftMetrics {
   date: string;
   totalFuelLiters: number;
   totalFuelRevenue: number;
-  totalLubeRevenue: number;
+
   totalCreditSales: number;
   totalRecoveries: number;
   totalExpenses: number;
@@ -100,7 +100,7 @@ export function computeShiftMetrics(shift: Shift, nozzles: Nozzle[], products: P
     }
   });
 
-  const totalLubeRevenue = shift.lubeSales.reduce((s, l) => s + l.amount, 0);
+
   const totalCreditSales = shift.debitEntries.reduce((s, d) => s + d.amount, 0);
   const totalRecoveries = shift.recoveryEntries.reduce((s, r) => s + r.amount, 0);
   const totalExpenses = shift.expenseEntries.reduce((s, e) => s + e.amount, 0);
@@ -108,7 +108,7 @@ export function computeShiftMetrics(shift: Shift, nozzles: Nozzle[], products: P
   const totalDigitalPayments = shift.digitalCashEntries.reduce((s, d) => s + d.amount, 0);
   const totalSupplierPayments = shift.supplierPayments.reduce((s, p) => s + p.amount, 0);
   const totalDiscounts = (shift.discountEntries ?? []).reduce((s, d) => s + d.amount, 0);
-  const grossRevenue = totalFuelRevenue + totalLubeRevenue;
+  const grossRevenue = totalFuelRevenue;
   const cashVariance = (shift.submittedCash ?? 0) - (shift.expectedCash ?? 0);
 
   return {
@@ -116,7 +116,7 @@ export function computeShiftMetrics(shift: Shift, nozzles: Nozzle[], products: P
     date: shift.date,
     totalFuelLiters,
     totalFuelRevenue,
-    totalLubeRevenue,
+
     totalCreditSales,
     totalRecoveries,
     totalExpenses,
@@ -143,7 +143,7 @@ export async function computeNetProfitDrillThrough(
 
   let totalRevenue = 0;
   let totalFuelRevenue = 0;
-  let totalLubeRevenue = 0;
+
   let totalExpenses = 0;
   let totalDiscounts = 0;
   const shiftIds: string[] = [];
@@ -151,13 +151,13 @@ export async function computeNetProfitDrillThrough(
   for (const shift of filteredShifts) {
     const metrics = computeShiftMetrics(shift, nozzles, products);
     totalFuelRevenue += metrics.totalFuelRevenue;
-    totalLubeRevenue += metrics.totalLubeRevenue;
+
     totalExpenses += metrics.totalExpenses;
     totalDiscounts += metrics.totalDiscounts;
     shiftIds.push(shift.id);
   }
 
-  totalRevenue = totalFuelRevenue + totalLubeRevenue;
+  totalRevenue = totalFuelRevenue;
   const netProfit = totalRevenue - totalExpenses - totalDiscounts;
 
   return {
@@ -168,7 +168,7 @@ export async function computeNetProfitDrillThrough(
     generatedAt: new Date().toISOString(),
     components: [
       { label: 'Fuel Revenue', value: totalFuelRevenue, sourceType: 'shift', sourceIds: shiftIds, drillable: true },
-      { label: 'Lube Revenue', value: totalLubeRevenue, sourceType: 'shift', sourceIds: shiftIds, drillable: true },
+
       { label: 'Total Expenses', value: -totalExpenses, sourceType: 'shift', sourceIds: shiftIds, drillable: true },
       { label: 'Discounts Given', value: -totalDiscounts, sourceType: 'shift', sourceIds: shiftIds, drillable: true },
     ],

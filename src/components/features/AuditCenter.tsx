@@ -5,10 +5,11 @@ import { Search, Filter, AlertCircle, ShieldAlert, FileText, ChevronDown, Activi
 import { ResponsiveTable } from '../shared/ResponsiveTable';
 import { db } from '../../data/db';
 import { AuditTrailEntry, InventoryMovement } from '../../types';
+import DataIntegrityTab from './IntegrityCenter/DataIntegrityTab';
 
 const AuditCenter: React.FC = () => {
-  const { meterResets, settings, staff, users } = useStation();
-  const [activeTab, setActiveTab] = useState('Meter Resets');
+  const { meterResets, settings, staff } = useStation();
+  const [activeTab, setActiveTab] = useState('Data Integrity');
   const [searchQuery, setSearchQuery] = useState('');
   const [auditTrails, setAuditTrails] = useState<AuditTrailEntry[]>([]);
   const [inventoryMovements, setInventoryMovements] = useState<InventoryMovement[]>([]);
@@ -35,6 +36,7 @@ const AuditCenter: React.FC = () => {
   };
 
   const tabs = [
+    'Data Integrity',
     'Meter Resets',
     'Price Changes',
     'Inventory Adjustments',
@@ -48,13 +50,13 @@ const AuditCenter: React.FC = () => {
 
   const renderMeterResets = () => {
     const columns = [
-      { key: 'timestamp', label: settings.language === 'ur' ? 'تاریخ' : 'Date/Time' },
-      { key: 'nozzle', label: settings.language === 'ur' ? 'نوزل' : 'Nozzle' },
-      { key: 'type', label: settings.language === 'ur' ? 'قسم' : 'Reset Type' },
-      { key: 'reading', label: settings.language === 'ur' ? 'ریڈنگ' : 'Reading (Old -> New)' },
-      { key: 'stock', label: settings.language === 'ur' ? 'اسٹاک' : 'Stock (Before -> After)' },
-      { key: 'authorization', label: settings.language === 'ur' ? 'اجازت' : 'Authorization' },
-      { key: 'severity', label: settings.language === 'ur' ? 'سنگینی' : 'Severity' }
+      { accessor: 'timestamp', header: settings.language === 'ur' ? 'تاریخ' : 'Date/Time' },
+      { accessor: 'nozzle', header: settings.language === 'ur' ? 'نوزل' : 'Nozzle' },
+      { accessor: 'type', header: settings.language === 'ur' ? 'قسم' : 'Reset Type' },
+      { accessor: 'reading', header: settings.language === 'ur' ? 'ریڈنگ' : 'Reading (Old -> New)' },
+      { accessor: 'stock', header: settings.language === 'ur' ? 'اسٹاک' : 'Stock (Before -> After)' },
+      { accessor: 'authorization', header: settings.language === 'ur' ? 'اجازت' : 'Authorization' },
+      { accessor: 'severity', header: settings.language === 'ur' ? 'سنگینی' : 'Severity' }
     ];
 
     const data = meterResets
@@ -88,22 +90,22 @@ const AuditCenter: React.FC = () => {
             >
               Verify Hash
             </button>
-            {verificationStatus[r.id] === true && <CheckCircle className="w-4 h-4 text-green-500" title="Hash Valid" />}
-            {verificationStatus[r.id] === false && <XCircle className="w-4 h-4 text-red-500" title="Hash Invalid or Missing" />}
+            {verificationStatus[r.id] === true && <span title="Hash Valid"><CheckCircle className="w-4 h-4 text-green-500" /></span>}
+            {verificationStatus[r.id] === false && <span title="Hash Invalid or Missing"><XCircle className="w-4 h-4 text-red-500" /></span>}
           </div>
         )
       }));
 
-    return <ResponsiveTable columns={[...columns, { key: 'hash', label: 'Integrity' }]} data={data} />;
+    return <ResponsiveTable columns={[...columns, { accessor: 'hash', header: 'Integrity' }] as any} data={data} keyExtractor={r => r.id} />;
   };
 
   const renderAuditTrails = (categoryFilter?: string) => {
     const columns = [
-      { key: 'timestamp', label: 'Date/Time' },
-      { key: 'category', label: 'Category' },
-      { key: 'action', label: 'Action' },
-      { key: 'details', label: 'Details' },
-      { key: 'user', label: 'User' }
+      { accessor: 'timestamp', header: 'Date/Time' },
+      { accessor: 'category', header: 'Category' },
+      { accessor: 'action', header: 'Action' },
+      { accessor: 'details', header: 'Details' },
+      { accessor: 'user', header: 'User' }
     ];
 
     const data = auditTrails
@@ -126,16 +128,16 @@ const AuditCenter: React.FC = () => {
         user: a.user
       }));
 
-    return <ResponsiveTable columns={columns} data={data} />;
+    return <ResponsiveTable columns={columns as any} data={data} keyExtractor={a => a.id} />;
   };
 
   const renderInventoryMovements = () => {
     const columns = [
-      { key: 'date', label: 'Date' },
-      { key: 'type', label: 'Type' },
-      { key: 'product', label: 'Product' },
-      { key: 'quantity', label: 'Quantity' },
-      { key: 'reference', label: 'Reference' }
+      { accessor: 'date', header: 'Date' },
+      { accessor: 'type', header: 'Type' },
+      { accessor: 'product', header: 'Product' },
+      { accessor: 'quantity', header: 'Quantity' },
+      { accessor: 'reference', header: 'Reference' }
     ];
 
     const data = inventoryMovements
@@ -146,11 +148,11 @@ const AuditCenter: React.FC = () => {
       )
       .map(m => ({
         id: m.id,
-        date: new Date(m.timestamp).toLocaleString(),
+        date: new Date(m.date).toLocaleString(),
         type: (
           <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${
-            m.type === 'IN' ? 'bg-green-100 text-green-700' :
-            m.type === 'OUT' ? 'bg-orange-100 text-orange-700' :
+            ['Purchase', 'Return', 'Tank Refill'].includes(m.type) ? 'bg-green-100 text-green-700' :
+            ['Sale', 'Wastage', 'Tank Loss'].includes(m.type) ? 'bg-orange-100 text-orange-700' :
             'bg-blue-100 text-blue-700'
           }`}>
             {m.type}
@@ -161,7 +163,7 @@ const AuditCenter: React.FC = () => {
         reference: m.referenceId || m.notes || '-'
       }));
 
-    return <ResponsiveTable columns={columns} data={data} />;
+    return <ResponsiveTable columns={columns as any} data={data} keyExtractor={m => m.id} />;
   };
 
   return (
@@ -194,29 +196,32 @@ const AuditCenter: React.FC = () => {
         ))}
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <CardTitle>{activeTab}</CardTitle>
-            <div className="relative w-full sm:w-64">
-              <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder={settings.language === 'ur' ? 'تلاش کریں...' : 'Search records...'}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
-              />
+      {activeTab === 'Data Integrity' ? (
+        <DataIntegrityTab stationId={db.getActiveStationId() || ''} settings={settings} />
+      ) : (
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              <CardTitle>{activeTab}</CardTitle>
+              <div className="relative w-full sm:w-64">
+                <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder={settings.language === 'ur' ? 'تلاش کریں...' : 'Search records...'}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
+                />
+              </div>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {activeTab === 'Meter Resets' && renderMeterResets()}
-          {activeTab === 'Price Changes' && renderAuditTrails('Tariff')}
-          {activeTab === 'Inventory Adjustments' && renderInventoryMovements()}
-          {activeTab === 'System Events' && renderAuditTrails()}
-          {activeTab === 'Shift Reopens' && renderAuditTrails('Shift')}
-          {activeTab === 'Tank Calibrations' && renderAuditTrails('Tank')}
+          </CardHeader>
+          <CardContent>
+            {activeTab === 'Meter Resets' && renderMeterResets()}
+            {activeTab === 'Price Changes' && renderAuditTrails('Tariff')}
+            {activeTab === 'Inventory Adjustments' && renderInventoryMovements()}
+            {activeTab === 'System Events' && renderAuditTrails()}
+            {activeTab === 'Shift Reopens' && renderAuditTrails('Shift')}
+            {activeTab === 'Tank Calibrations' && renderAuditTrails('Tank')}
           
           {['Deleted Transactions', 'User Login Activity', 'Cash Corrections'].includes(activeTab) && (
             <div className="py-12 text-center text-gray-500 flex flex-col items-center">
@@ -227,6 +232,7 @@ const AuditCenter: React.FC = () => {
           )}
         </CardContent>
       </Card>
+      )}
     </div>
   );
 };

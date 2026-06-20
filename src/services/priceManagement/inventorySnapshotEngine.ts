@@ -37,7 +37,7 @@ export const inventorySnapshotEngine = {
     // 3. Generate snapshot
     const now = new Date();
     return {
-      id: `snap_${now.getTime()}_${Math.random().toString(36).substring(2, 5)}`,
+      id: `snap_${now.getTime()}_${crypto.randomUUID().split('-')[0]}`,
       snapshotDate: now.toISOString().split('T')[0],
       snapshotTime: now.toTimeString().split(' ')[0],
       productId: product.id,

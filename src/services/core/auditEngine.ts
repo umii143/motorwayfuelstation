@@ -90,7 +90,7 @@ export async function logShiftEvent(
   const user = authState.user;
 
   const event: ShiftEvent = {
-    id: `se_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    id: `se_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
     timestamp: new Date().toISOString(),
     eventType,
     shiftId,
@@ -128,7 +128,7 @@ export async function logSecurityEvent(
   const user = authState.user;
 
   const event: SecurityEvent = {
-    id: `sec_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    id: `sec_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
     timestamp: new Date().toISOString(),
     action,
     severity,

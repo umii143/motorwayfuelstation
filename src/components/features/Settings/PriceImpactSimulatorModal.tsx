@@ -52,9 +52,7 @@ export default function PriceImpactSimulatorModal({
       const stock = relevantTanks.reduce((sum, t) => sum + (t.currentStock || 0), 0) || product.currentStock || 0;
       setTotalStock(stock);
 
-      // 2. Calculate average sales (mocking past 30 days for this demo, ideally would query shifts deeply)
-      // Using a simple daily average of 5500, 5700, 6000 for demonstration or calculating from actual shifts
-      // Let's do a basic estimation from total past shifts if available, otherwise fallback.
+      // Calculate average sales based on historical shifts
       let totalSold = 0;
       let daysWithSales = new Set<string>();
       
@@ -70,8 +68,8 @@ export default function PriceImpactSimulatorModal({
       const uniqueDays = daysWithSales.size || 1;
       const dailyAvg = totalSold / uniqueDays;
       
-      // If we don't have enough data, use 5000 as baseline
-      const baseDaily = dailyAvg > 0 ? dailyAvg : 5000;
+      // If we don't have data, we explicitly use 0 to avoid hallucinating impact
+      const baseDaily = dailyAvg > 0 ? dailyAvg : 0;
 
       const rateDifference = newRate - (product.rate || 0);
       

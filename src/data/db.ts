@@ -26,7 +26,7 @@ export async function initDatabase() {
        for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
           if (key) {
-             const val = (memoryCache[key] ?? null);
+             const val = localStorage.getItem(key);
              if (val !== null) {
                memoryCache[key] = val;
                await localforage.setItem(key, val);
@@ -34,6 +34,14 @@ export async function initDatabase() {
           }
        }
     }
+
+    if (!(memoryCache['fuelpro_fresh_v5_nodummies'] ?? null)) {
+      await localforage.clear();
+      memoryCache = {};
+      memoryCache['fuelpro_fresh_v5_nodummies'] = 'true';
+      await localforage.setItem('fuelpro_fresh_v5_nodummies', 'true');
+    }
+
     dbInitialized = true;
   } catch (err) {
     console.error('Error initializing IndexedDB:', err);
@@ -166,11 +174,6 @@ const SPECIAL_STORAGE_KEYS = {
   SUPPLIER_PERFORMANCE: 'fuelpro_supplier_performance'
 };
 
-// Clear trigger for clean slate if needed
-if (typeof window !== 'undefined' && !(memoryCache['fuelpro_fresh_v5_nodummies'] ?? null)) {
-  (memoryCache = {}, localforage.clear());
-  ((memoryCache['fuelpro_fresh_v5_nodummies'] = 'true'), flushToIndexedDB('fuelpro_fresh_v5_nodummies', 'true'));
-}
 
 const DEFAULT_STATION_ID = DEFAULT_FUEL_STATION_ID;
 const STATION_SCOPE_MIGRATION_KEY = 'fuelpro_station_scope_v2';

@@ -27,7 +27,7 @@ export const priceChangeEngine = {
     // 4. Create Rate History Entry
     const now = new Date();
     const rateHistoryEntry: RateHistoryEntry = {
-      id: `rh_${now.getTime()}_${Math.random().toString(36).substring(2, 5)}`,
+      id: `rh_${now.getTime()}_${crypto.randomUUID().split('-')[0]}`,
       productId: product.id,
       productName: product.name,
       oldPrice: impact.oldPrice,
@@ -52,7 +52,7 @@ export const priceChangeEngine = {
     
     if (impact.inventoryImpact !== 0) {
       journalEntry = {
-        id: `jr_rev_${now.getTime()}_${Math.random().toString(36).substring(2, 5)}`,
+        id: `jr_rev_${now.getTime()}_${crypto.randomUUID().split('-')[0]}`,
         date: now.toISOString(),
         partyId: product.id,
         partyType: 'asset',

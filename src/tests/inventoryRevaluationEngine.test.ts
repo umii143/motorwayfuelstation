@@ -7,13 +7,14 @@ describe('inventoryRevaluationEngine', () => {
     const snapshot: InventorySnapshot = {
       id: 'snap1',
       productId: 'prod1',
-      timestamp: 123456789,
+      snapshotDate: '2023-01-01',
+      snapshotTime: '12:00',
+      productName: 'Product 1',
       stockQuantity: 1000,
       currentPrice: 200,
-      valuationTotal: 200000,
-      recordedBy: 'user1',
-      businessType: 'fuel_station',
-      tanksState: []
+      inventoryValue: 200000,
+      createdBy: 'user1',
+      tankDetails: []
     };
 
     const newPrice = 250;
@@ -30,13 +31,14 @@ describe('inventoryRevaluationEngine', () => {
     const snapshot: InventorySnapshot = {
       id: 'snap2',
       productId: 'prod1',
-      timestamp: 123456789,
+      snapshotDate: '2023-01-01',
+      snapshotTime: '12:00',
+      productName: 'Product 1',
       stockQuantity: 500,
       currentPrice: 300,
-      valuationTotal: 150000,
-      recordedBy: 'user1',
-      businessType: 'fuel_station',
-      tanksState: []
+      inventoryValue: 150000,
+      createdBy: 'user1',
+      tankDetails: []
     };
 
     const newPrice = 250;

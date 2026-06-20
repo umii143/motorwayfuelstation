@@ -375,56 +375,56 @@ export default function Expenses({
         {/* AMBER CARD - TOTAL SPEND */}
         <div className="fp-kpi-compact kpi-orange relative overflow-hidden">
           <div className="fp-kpi-compact__label">TOTAL SPEND</div>
-          <div className="fp-kpi-compact__value">
+          <div className="fp-kpi-compact__value text-3xl">
             {formatCurrency(totalAmountSpent, settings)}
           </div>
           <div className="fp-kpi-compact__sub text-orange-400">
             {t('Summed active company expenses', 'مجموعی اخراجات کی رقم')}
           </div>
-          <div className="absolute top-2 right-2 text-orange-500 opacity-20">
-            <Coins className="h-8 w-8" />
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/15 text-orange-500 ring-1 ring-inset ring-orange-500/20 shadow-inner">
+            <Coins className="h-6 w-6" strokeWidth={2.5} />
           </div>
         </div>
 
         {/* GREEN CARD - STAFF FOOD & MEALS */}
         <div className="fp-kpi-compact kpi-green relative overflow-hidden">
           <div className="fp-kpi-compact__label">STAFF FOOD & MEALS</div>
-          <div className="fp-kpi-compact__value">
+          <div className="fp-kpi-compact__value text-3xl">
             {formatCurrency(widgetStats.mealsSum, settings)}
           </div>
           <div className="fp-kpi-compact__sub text-emerald-400">
             {t('Welfare & daily lunches cost', 'سٹاف فلاح و بہبود کھانا')}
           </div>
-          <div className="absolute top-2 right-2 text-emerald-500 opacity-20">
-            <Utensils className="h-8 w-8" />
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-500 ring-1 ring-inset ring-emerald-500/20 shadow-inner">
+            <Utensils className="h-6 w-6" strokeWidth={2.5} />
           </div>
         </div>
 
         {/* CRIMSON CARD - PUMP MAINTENANCE */}
         <div className="fp-kpi-compact kpi-red relative overflow-hidden">
           <div className="fp-kpi-compact__label">{isLube ? 'SHOP MAINTENANCE' : 'PUMP MAINTENANCE'}</div>
-          <div className="fp-kpi-compact__value">
+          <div className="fp-kpi-compact__value text-3xl">
             {formatCurrency(widgetStats.maintenanceSum, settings)}
           </div>
           <div className="fp-kpi-compact__sub text-rose-400">
             {isLube ? t('Shop repairs & equipment', 'مرمت اور ساز و سامان') : t('Nozzles, calibrations & repairs', 'مرمت اور دیکھ بھال کا خرچہ')}
           </div>
-          <div className="absolute top-2 right-2 text-rose-500 opacity-20">
-            <Wrench className="h-8 w-8" />
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-500/15 text-rose-500 ring-1 ring-inset ring-rose-500/20 shadow-inner">
+            <Wrench className="h-6 w-6" strokeWidth={2.5} />
           </div>
         </div>
 
         {/* BLUE CARD - OPERATOR WAGES & UTILITIES */}
         <div className="fp-kpi-compact kpi-blue relative overflow-hidden">
           <div className="fp-kpi-compact__label">WAGES & UTILITIES</div>
-          <div className="fp-kpi-compact__value">
+          <div className="fp-kpi-compact__value text-3xl">
             {formatCurrency(widgetStats.salaryAndUtilSum, settings)}
           </div>
           <div className="fp-kpi-compact__sub text-blue-400 truncate">
             {t('Power, salaries & gen fuel', 'بجلی بل، تنخواہیں و جنریٹر')}
           </div>
-          <div className="absolute top-2 right-2 text-blue-500 opacity-20">
-            <Lightbulb className="h-8 w-8" />
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-500 ring-1 ring-inset ring-blue-500/20 shadow-inner">
+            <Lightbulb className="h-6 w-6" strokeWidth={2.5} />
           </div>
         </div>
       </div>

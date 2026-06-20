@@ -65,7 +65,7 @@ export const useTreasuryStore = create<TreasuryState>((set, get) => ({
     if (!sourceAcc || !destAcc) throw new Error("Invalid accounts");
 
     const txn: TreasuryTransaction = withBusinessScope({
-      id: `trx_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+      id: `trx_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
       date: new Date().toISOString(),
       sourceAccountId: sourceId,
       sourceAccountType: sourceAcc.type,
@@ -108,7 +108,7 @@ export const useTreasuryStore = create<TreasuryState>((set, get) => ({
     if (!sourceAcc) throw new Error("Invalid source account");
 
     const drawing: OwnerDrawing = withBusinessScope({
-      id: `dwg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+      id: `dwg_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
       date: new Date().toISOString(),
       amount,
       sourceAccountId: sourceId,
@@ -121,7 +121,7 @@ export const useTreasuryStore = create<TreasuryState>((set, get) => ({
     drawing.updatedAt = Date.now();
 
     const txn: TreasuryTransaction = withBusinessScope({
-      id: `trx_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+      id: `trx_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
       date: new Date().toISOString(),
       sourceAccountId: sourceId,
       sourceAccountType: sourceAcc.type,
@@ -163,7 +163,7 @@ export const useTreasuryStore = create<TreasuryState>((set, get) => ({
     const variance = physical - expected;
 
     const rec: CashReconciliation = withBusinessScope({
-      id: `rec_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+      id: `rec_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
       date: new Date().toISOString(),
       accountId,
       shiftId,
@@ -180,7 +180,7 @@ export const useTreasuryStore = create<TreasuryState>((set, get) => ({
     let txn: TreasuryTransaction | null = null;
     if (variance !== 0) {
       txn = withBusinessScope({
-        id: `trx_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        id: `trx_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
         date: new Date().toISOString(),
         [variance > 0 ? 'destinationAccountId' : 'sourceAccountId']: accountId,
         [variance > 0 ? 'destinationAccountType' : 'sourceAccountType']: acc.type,

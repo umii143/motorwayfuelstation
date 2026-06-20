@@ -109,6 +109,15 @@ export interface Supplier extends TenantDocument {
   contact: string;
   accountNo: string;
   balance: number; // Positive means we owe the supplier money (Cr)
+  
+  // Advanced fields (optional for backward compatibility)
+  creditLimit?: number;
+  email?: string;
+  address?: string;
+  supplierType?: 'Fuel Supplier' | 'Lubricant Supplier' | 'CNG Supplier' | 'Service Provider' | 'Other';
+  status?: 'Active' | 'Inactive';
+  supplierSince?: string;
+  ntn?: string;
 }
 
 export interface DebitEntry extends TenantDocument {
@@ -119,6 +128,10 @@ export interface DebitEntry extends TenantDocument {
   rate: number;
   amount: number;
   note: string;
+  date?: string;
+  slipNumber?: string;
+  vehicleNo?: string;
+  productType?: string;
 }
 
 export interface RecoveryEntry extends TenantDocument {
@@ -127,6 +140,9 @@ export interface RecoveryEntry extends TenantDocument {
   amount: number;
   mode: 'cash' | 'cheque' | 'transfer';
   reference: string;
+  date?: string;
+  receiptNumber?: string;
+  paymentMode?: string;
 }
 
 export interface ExpenseEntry extends TenantDocument {
@@ -157,13 +173,6 @@ export interface DigitalCashEntry extends TenantDocument {
   accountHolder?: string;
 }
 
-export interface LubeSale extends TenantDocument {
-  id: string;
-  itemId: string;
-  quantity: number;
-  price: number;
-  amount: number;
-}
 
 export interface LubePosSaleLine {
   productId: string;
@@ -296,7 +305,7 @@ export interface MeterResetEvent extends TenantDocument {
   isFinanciallyImpacting?: boolean;
   
   timestamp: string;
-  createdAt?: string;
+  createdAt?: number;
   
   evidenceUrl?: string;
   beforeMeterImage?: string;
@@ -325,6 +334,7 @@ export interface Shift extends TenantDocument {
   closingReadings: { [nozzleId: string]: number }; // ACTUAL readings (display + offset)
   closingReadingsDisplay?: { [nozzleId: string]: number }; // DISPLAY readings (what user saw)
   testLiters: { [productId: string]: number };
+  rates?: { [productId: string]: number }; // Add rates
   
   debitEntries: DebitEntry[];
   recoveryEntries: RecoveryEntry[];
@@ -332,7 +342,7 @@ export interface Shift extends TenantDocument {
   bankCashEntries: BankCashEntry[];
   digitalCashEntries: DigitalCashEntry[];
   discountEntries?: DiscountEntry[];
-  lubeSales: LubeSale[];
+
   supplierPayments: SupplierPayment[];
   
   expectedCash: number;

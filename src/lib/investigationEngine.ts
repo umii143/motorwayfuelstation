@@ -1,4 +1,4 @@
-import { Shift, Staff, LubeSale, DebitEntry, ExpenseEntry, RecoveryEntry, BankCashEntry, DigitalCashEntry } from '../types';
+import { Shift, Staff, DebitEntry, ExpenseEntry, RecoveryEntry, BankCashEntry, DigitalCashEntry } from '../types';
 
 export interface ShiftTimelineEvent {
   id: string;

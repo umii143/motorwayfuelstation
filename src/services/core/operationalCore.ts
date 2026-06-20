@@ -42,7 +42,7 @@ import { getPendingApprovals } from './approvalEngine';
 
 export type EOCTxnType =
   | 'credit_sale' | 'recovery' | 'expense' | 'bank_deposit'
-  | 'digital_payment' | 'supplier_payment' | 'discount' | 'lube_sale'
+  | 'digital_payment' | 'supplier_payment' | 'discount'
   | 'salary_payment' | 'owner_drawing';
 
 export type TransactionStatus =
@@ -77,7 +77,7 @@ export interface BankDepositPayload { bankAccountId: string; bankName: string; a
 export interface DigitalPaymentPayload { method: 'jazzcash' | 'easypaisa' | 'pos'; amount: number; transactionId: string; accountHolder: string; }
 export interface SupplierPaymentPayload { supplierId: string; supplierName: string; amount: number; mode: 'cash' | 'transfer'; bankAccountId?: string; reference: string; }
 export interface DiscountPayload { customerName: string; amount: number; type: 'cash' | 'volume'; reason: string; approvedBy: string; productId?: string; }
-export interface LubeSalePayload { itemId: string; itemName: string; quantity: number; price: number; amount: number; }
+
 export interface ShiftClosePayload { submittedCash: number; expectedCash: number; shortage: number; overage: number; }
 
 // ─── Transaction Registry ─────────────────────────────────────────────────────
@@ -93,7 +93,7 @@ async function _saveTxn(stationId: string, txn: EOCTransaction): Promise<void> {
 }
 
 function _makeTxnId(type: EOCTxnType): string {
-  return `eoc_${type}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  return `eoc_${type}_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
 }
 
 function _getCurrentUser(): { name: string; role: string } {
@@ -345,34 +345,6 @@ export async function processDiscount(
   return txn;
 }
 
-// ─── 8. Lube Sale ─────────────────────────────────────────────────────────────
-
-export async function processLubeSale(
-  shiftId: string, stationId: string, branchId: string,
-  payload: LubeSalePayload, date: string
-): Promise<EOCTransaction> {
-  await checkPeriodOpen(stationId, date);
-  const user = _getCurrentUser();
-  const txnId = _makeTxnId('lube_sale');
-  const now = new Date().toISOString();
-
-  const meta: TxnMeta = { txnId, shiftId, stationId, branchId, description: `Lube Sale — ${payload.itemName} × ${payload.quantity}`, performedBy: user.name, timestamp: now };
-
-  const pair = await createDoubleEntry(
-    { account: 'cash_drawer', partyId: 'shift_cash', amount: payload.amount, type: 'debit' },
-    { account: 'lube_revenue', amount: payload.amount, type: 'credit' },
-    meta
-  );
-
-  await postCashIn('shift_cash', payload.amount, txnId, pair.debitEntry.id, shiftId, stationId, branchId, `Lube Sale: ${payload.itemName}`);
-  await recordCashIn(stationId, 'cash_drawer', payload.amount, txnId, 'sale', `Lube Sale — ${payload.itemName}`, user.name, shiftId);
-  await logShiftEvent('lube_sale', shiftId, stationId, branchId, `Lube Sale — ${payload.itemName}`, { amount: payload.amount, txnId });
-
-  const txn: EOCTransaction = { id: txnId, type: 'lube_sale', status: 'posted', shiftId, stationId, branchId, amount: payload.amount, payload: payload as any, journalDrId: pair.debitEntry.id, journalCrId: pair.creditEntry.id, createdBy: user.name, createdAt: now, postedAt: now, description: meta.description };
-  await _saveTxn(stationId, txn);
-  eventBus.emit(EOC_EVENTS.LUBE_SALE_POSTED, { txnId, payload }, stationId, branchId, user.name, shiftId);
-  return txn;
-}
 
 // ─── 9. Reverse Transaction ───────────────────────────────────────────────────
 

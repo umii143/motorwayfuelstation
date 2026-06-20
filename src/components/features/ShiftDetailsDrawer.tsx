@@ -16,8 +16,8 @@ import {
   History,
   Info
 } from 'lucide-react';
-import { Shift, Staff, Product, Customer, Supplier, BankAccount, DigitalAccount, Nozzle } from '../../../types';
-import { useInventoryStore } from '../../../stores/useInventoryStore';
+import { GlobalSettings, Shift, Staff, Product, Customer, Supplier, BankAccount, DigitalAccount, Nozzle } from '../../types';
+import { useInventoryStore } from '../../stores/useInventoryStore';
 
 interface ShiftDetailsDrawerProps {
   shift: Shift;

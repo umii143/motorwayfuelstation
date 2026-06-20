@@ -234,7 +234,7 @@ export default function ShiftLogs({
 
         {/* FUEL VARIANCE HEATMAP */}
         <div className="mb-8">
-          <FuelVarianceHeatmap tanks={tanks} shifts={filteredShifts} />
+          <FuelVarianceHeatmap tanks={tanks} shifts={filteredShifts} nozzles={nozzles} />
         </div>
 
         {/* TABLE SECTION */}

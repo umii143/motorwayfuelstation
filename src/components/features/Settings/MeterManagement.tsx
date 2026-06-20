@@ -90,7 +90,7 @@ export default function MeterManagement({ settings, activeStationId }: { setting
         isRollover: newReadingNum < currentReading && newReadingNum === 0,
         activeShiftId: activeShift?.id,
         salesmanName: activeSalesman ? activeSalesman.name : 'No Active Shift',
-        authorizedBy: user?.name || user?.email || 'Owner',
+        authorizedBy: user?.email || 'Owner',
         timestamp: new Date().toISOString()
       };
 

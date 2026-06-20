@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { GlobalSettings, FleetTransaction, FleetAccount } from '../../../types';
 import { db } from '../../../data/db';
 import { FileSpreadsheet, Download, Filter, Search, Receipt } from 'lucide-react';
+import { ResponsiveTable } from '../../shared/ResponsiveTable';
 
 interface BillingAndReportsProps {
   settings: GlobalSettings;

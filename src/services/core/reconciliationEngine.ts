@@ -210,6 +210,6 @@ function _computeGrossSales(shift: Shift, nozzles: Nozzle[], products: Product[]
     const product = products.find(p => p.id === nz.productId);
     if (product) total += liters * product.rate;
   });
-  total += shift.lubeSales.reduce((s, l) => s + l.amount, 0);
+
   return total;
 }

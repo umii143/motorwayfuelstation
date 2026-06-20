@@ -785,56 +785,56 @@ export default function CustomerDirectory({
           className="fp-kpi-compact kpi-orange group cursor-pointer"
         >
           <div className="fp-kpi-compact__label">TOTAL RECEIVABLES</div>
-          <div className="fp-kpi-compact__value">
+          <div className="fp-kpi-compact__value text-3xl">
             {formatCurrency(kpiStats.totalReceivables, settings)}
           </div>
           <div className="fp-kpi-compact__sub text-orange-400">
             {t('Total active loans outstanding', 'فعال ادھار بیلنس')}
           </div>
-          <div className="absolute top-2 right-2 text-orange-500 opacity-20">
-            <Coins className="h-8 w-8" />
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/15 text-orange-500 ring-1 ring-inset ring-orange-500/20 shadow-inner">
+            <Coins className="h-6 w-6" strokeWidth={2.5} />
           </div>
         </div>
 
         {/* ACTIVE DEBTORS */}
         <div className="fp-kpi-compact kpi-green relative overflow-hidden">
           <div className="fp-kpi-compact__label">ACTIVE DEBTORS</div>
-          <div className="fp-kpi-compact__value">
+          <div className="fp-kpi-compact__value text-3xl">
             {kpiStats.activeDebtorsCount}
           </div>
           <div className="fp-kpi-compact__sub text-emerald-400">
             of {customers.length} total active users
           </div>
-          <div className="absolute top-2 right-2 text-emerald-500 opacity-20">
-            <User className="h-8 w-8" />
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-500 ring-1 ring-inset ring-emerald-500/20 shadow-inner">
+            <User className="h-6 w-6" strokeWidth={2.5} />
           </div>
         </div>
 
         {/* CREDIT EXTENDED */}
         <div className="fp-kpi-compact kpi-red relative overflow-hidden">
           <div className="fp-kpi-compact__label">CREDIT EXTENDED</div>
-          <div className="fp-kpi-compact__value">
+          <div className="fp-kpi-compact__value text-3xl">
             {formatCurrency(kpiStats.creditExtendedSum, settings)}
           </div>
           <div className="fp-kpi-compact__sub text-rose-400 truncate">
             {t('New Udhar given in this period', 'اس مدت کے دوران دیا گیا نیا ادھار')}
           </div>
-          <div className="absolute top-2 right-2 text-rose-500 opacity-20">
-            <ArrowUpRight className="h-8 w-8" />
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-500/15 text-rose-500 ring-1 ring-inset ring-rose-500/20 shadow-inner">
+            <ArrowUpRight className="h-6 w-6" strokeWidth={2.5} />
           </div>
         </div>
 
         {/* TOTAL RECOVERY */}
         <div className="fp-kpi-compact kpi-blue relative overflow-hidden">
           <div className="fp-kpi-compact__label">TOTAL RECOVERY</div>
-          <div className="fp-kpi-compact__value">
+          <div className="fp-kpi-compact__value text-3xl">
             {formatCurrency(kpiStats.totalRecoverySum, settings)}
           </div>
           <div className="fp-kpi-compact__sub text-blue-400 truncate">
             {t('Total collection from debtors', 'وصول شدہ کل ادھار رقم')}
           </div>
-          <div className="absolute top-2 right-2 text-blue-500 opacity-20">
-            <ArrowDownRight className="h-8 w-8" />
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-500 ring-1 ring-inset ring-blue-500/20 shadow-inner">
+            <ArrowDownRight className="h-6 w-6" strokeWidth={2.5} />
           </div>
         </div>
       </div>
@@ -1200,9 +1200,11 @@ export default function CustomerDirectory({
 
             </div>
           ) : (
-            <div className="h-full rounded-xl border border-dashed border-slate-250 py-32 text-center text-slate-400 font-sans text-sm flex flex-col justify-center items-center gap-3">
-              <Coins className="h-10 w-10 text-slate-300" />
-              <span>{t('Select a customer account on the left sidebar to display credit profiles and ledger logs.', 'بائیں پینل سے کسی گاہک کا انتخاب کریں تاکہ اس کا لیجر کھاتہ کھل سکے۔')}</span>
+            <div className="h-full rounded-xl border border-dashed border-slate-200 py-32 text-center text-slate-400 font-sans text-sm flex flex-col justify-center items-center gap-4 bg-white/50">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 text-slate-400 ring-4 ring-white shadow-sm">
+                <Coins className="h-10 w-10" strokeWidth={2} />
+              </div>
+              <span className="max-w-xs">{t('Select a customer account on the left sidebar to display credit profiles and ledger logs.', 'بائیں پینل سے کسی گاہک کا انتخاب کریں تاکہ اس کا لیجر کھاتہ کھل سکے۔')}</span>
             </div>
           )}
         </div>

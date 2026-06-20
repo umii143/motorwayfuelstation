@@ -18,9 +18,9 @@ export default function EmptyState({
 }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center text-center p-8 md:p-16 border border-dashed border-slate-200 rounded-2xl bg-white space-y-4 max-w-md mx-auto my-6 animate-fade-in shadow-xs">
-      {/* Icon Frame - Clean, minimalist outline */}
-      <div className="flex items-center justify-center w-14 h-14 rounded-full bg-slate-50 border border-slate-100 text-slate-400">
-        <Icon className="h-7 w-7 stroke-[1.5]" />
+      {/* Icon Frame - High Definition, minimalist outline */}
+      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-50/50 text-slate-400 ring-4 ring-slate-50 shadow-inner">
+        <Icon className="h-10 w-10" strokeWidth={2} />
       </div>
 
       {/* Narrative block */}

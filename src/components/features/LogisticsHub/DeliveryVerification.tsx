@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { GlobalSettings, TankerDelivery, TankerSchedule, Tank, Staff } from '../../../types';
 import { db } from '../../../data/db';
 import { ClipboardCheck, Search, Plus, XCircle, Droplets, AlertTriangle, Scale } from 'lucide-react';
+import { ResponsiveTable } from '../../shared/ResponsiveTable';
 
 interface DeliveryVerificationProps {
   settings: GlobalSettings;

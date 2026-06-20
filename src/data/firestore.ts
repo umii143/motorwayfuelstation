@@ -190,7 +190,7 @@ export const firestoreDb = {
       const enforcedBusinessType = getBusinessTypeForStation(stationId);
       const batch = writeBatch(dbFS);
       items.forEach((item) => {
-        const docId = item.id || `doc_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`;
+        const docId = item.id || `doc_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
         const docRef = getDocumentRef(orgId, stationId, collectionName, docId);
         
         const metadata = createMetadata(orgId, stationId, enforcedBusinessType);

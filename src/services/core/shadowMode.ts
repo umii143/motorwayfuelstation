@@ -10,7 +10,6 @@ import {
   processBankDeposit,
   processDigitalPayment,
   processDiscount,
-  processLubeSale,
   processExpense,
   processShiftOpen,
   processShiftClose
@@ -133,20 +132,6 @@ export async function dispatchShiftToOperationalCore(
         approvedBy: ds.approvedBy || 'system',
         productId: ds.productId
       }, date);
-    }
-
-    // 8. Lube Sales
-    for (const ls of shift.lubeSales || []) {
-      const product = products.find((p) => p.id === ls.itemId);
-      if (product) {
-        await processLubeSale(shift.id, stationId, branchId, {
-          itemId: ls.itemId,
-          itemName: product.name,
-          quantity: ls.quantity,
-          price: product.rate || 0,
-          amount: ls.quantity * (product.rate || 0)
-        }, date);
-      }
     }
 
     // 9. Expenses

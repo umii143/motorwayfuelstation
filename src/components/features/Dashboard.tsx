@@ -32,6 +32,7 @@ import {
   Activity,
   RefreshCw
 } from 'lucide-react';
+import { DataConfidenceBadge } from '../ui/DataConfidenceBadge';
 import { generateDashboardStats, getFuelCategory } from '../../services/analytics/dashboardEngine';
 import {
   Staff,
@@ -260,23 +261,24 @@ export default React.memo(function Dashboard({
         return {
           id: sh.id,
           date: sh.date,
-          shiftType: sh.shiftType || 'day',
+          shiftType: sh.type || 'day',
           operatorName: operator?.name || 'Unknown',
           operatorInitials: (operator?.name || 'UK').substring(0, 2).toUpperCase(),
           status: sh.status,
           sales: shiftStats.totalSales,
           submittedCash: sh.submittedCash || 0,
-          closedAt: sh.closedAt
+          closedAt: sh.endTime || sh.startTime
         };
       });
   }, [shifts, staff, products, customers, nozzles, isLube, lubePosSales]);
 
-  // ─── REAL: Top Selling Items (from today's shift data) ───
+  // ─── REAL: Top Selling Items (from today's shift data or lube POS data) ───
   const topSellingItems = useMemo(() => {
-    const todayShifts = shifts.filter(s => s.date === selectedDate);
     const litersByProduct: Record<string, { name: string; liters: number; color: string }> = {};
 
-    todayShifts.forEach(sh => {
+    if (!isLube) {
+      const todayShifts = shifts.filter(s => s.date === selectedDate);
+      todayShifts.forEach(sh => {
       nozzles.forEach(nz => {
         const open = sh.openingReadings?.[nz.id] || 0;
         const close = sh.closingReadings?.[nz.id] || 0;
@@ -296,7 +298,8 @@ export default React.memo(function Dashboard({
           }
         }
       });
-    });
+      });
+    }
 
     // Also include lube POS sales
     if (isLube) {
@@ -308,7 +311,7 @@ export default React.memo(function Dashboard({
             if (!litersByProduct[prod.id]) {
               litersByProduct[prod.id] = { name: prod.name, liters: 0, color: '#3B82F6' };
             }
-            litersByProduct[prod.id].liters += item.qty;
+            litersByProduct[prod.id].liters += item.quantity;
           }
         });
       });
@@ -338,7 +341,7 @@ export default React.memo(function Dashboard({
         if (sh.status === 'active') {
           list.push({ id: `sh_${sh.id}_open`, icon: Play, color: 'text-emerald-400', bg: 'bg-emerald-500/10', title: `Shift Opened`, subtitle: `${op} · ${sh.date}`, time: sh.date });
         } else {
-          list.push({ id: `sh_${sh.id}_close`, icon: StopCircle, color: 'text-slate-400', bg: 'bg-slate-500/10', title: `Shift Settled`, subtitle: `${op} · ${sh.date}`, time: sh.closedAt || sh.date });
+          list.push({ id: `sh_${sh.id}_close`, icon: StopCircle, color: 'text-slate-400', bg: 'bg-slate-500/10', title: `Shift Settled`, subtitle: `${op} · ${sh.date}`, time: sh.endTime || sh.date });
         }
       });
 
@@ -429,10 +432,11 @@ export default React.memo(function Dashboard({
               </div>
             )}
           </div>
-          <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center mb-3">
-            <DollarSign className="w-5 h-5 text-emerald-500" />
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-500 ring-1 ring-inset ring-emerald-500/20 shadow-inner">
+            <DollarSign className="w-6 h-6" strokeWidth={2.5} />
           </div>
-          <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-1">{formatCurrency(stats.totalSales, settings)}</h3>
+          <DataConfidenceBadge confidence={100} />
+          <h3 className="text-3xl font-black text-slate-800 dark:text-white mb-1">{formatCurrency(stats.totalSales, settings)}</h3>
           <p className="text-xs font-semibold text-slate-400">Today's Sales</p>
         </div>
 
@@ -447,10 +451,11 @@ export default React.memo(function Dashboard({
               </div>
             )}
           </div>
-          <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center mb-3">
-            <TrendingUp className="w-5 h-5 text-blue-500" />
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-500 ring-1 ring-inset ring-blue-500/20 shadow-inner">
+            <TrendingUp className="w-6 h-6" strokeWidth={2.5} />
           </div>
-          <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-1">{formatCurrency(stats.margin, settings)}</h3>
+          <DataConfidenceBadge confidence={100} />
+          <h3 className="text-3xl font-black text-slate-800 dark:text-white mb-1">{formatCurrency(stats.margin, settings)}</h3>
           <p className="text-xs font-semibold text-slate-400">Gross Margin</p>
         </div>
 
@@ -459,10 +464,11 @@ export default React.memo(function Dashboard({
           <div className="flex justify-between items-start mb-4">
             <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">UDHAR DUE</span>
           </div>
-          <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center mb-3">
-            <UserPlus className="w-5 h-5 text-orange-500" />
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/15 text-orange-500 ring-1 ring-inset ring-orange-500/20 shadow-inner">
+            <UserPlus className="w-6 h-6" strokeWidth={2.5} />
           </div>
-          <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-1">{formatCurrency(stats.dueRecovery, settings)}</h3>
+          <DataConfidenceBadge confidence={100} />
+          <h3 className="text-3xl font-black text-slate-800 dark:text-white mb-1">{formatCurrency(stats.dueRecovery, settings)}</h3>
           <p className="text-xs font-semibold text-slate-400">Pending Recovery</p>
         </div>
 
@@ -471,10 +477,11 @@ export default React.memo(function Dashboard({
           <div className="flex justify-between items-start mb-4">
             <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">CASH ON HAND</span>
           </div>
-          <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center mb-3">
-            <Coins className="w-5 h-5 text-purple-500" />
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-500/15 text-purple-500 ring-1 ring-inset ring-purple-500/20 shadow-inner">
+            <Coins className="w-6 h-6" strokeWidth={2.5} />
           </div>
-          <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-1">{formatCurrency(stats.cashOnHand, settings)}</h3>
+          <DataConfidenceBadge confidence={100} />
+          <h3 className="text-3xl font-black text-slate-800 dark:text-white mb-1">{formatCurrency(stats.cashOnHand, settings)}</h3>
           <p className="text-xs font-semibold text-slate-400">Available</p>
         </div>
       </div>
@@ -575,46 +582,76 @@ export default React.memo(function Dashboard({
       {/* THREE COLUMNS: RECENT SHIFTS, TOP ITEMS, AI INSIGHTS */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
 
-        {/* Recent Shift Settlements — REAL DATA */}
+        {/* Recent Shift Settlements or Recent POS Sales — REAL DATA */}
         <div className="bg-white dark:bg-[#1A1A24] rounded-[24px] p-6 shadow-sm border border-slate-200 dark:border-white/5 flex flex-col h-full">
-          <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6">Recent Shifts</h3>
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6">
+            {isLube ? 'Recent POS Sales' : 'Recent Shifts'}
+          </h3>
           <div className="flex-1 flex flex-col gap-3">
-            {recentShiftSettlements.length > 0 ? recentShiftSettlements.map(sh => (
-              <div key={sh.id} className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-white/5 last:border-0">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-[12px] flex items-center justify-center text-xs font-bold ${sh.status === 'active' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-100 dark:bg-white/5 text-slate-500'}`}>
-                    {sh.operatorInitials}
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-slate-800 dark:text-white leading-tight">{sh.operatorName}</h4>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] text-slate-500">{sh.date}</span>
-                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${sh.status === 'active' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-200 dark:bg-white/10 text-slate-500'}`}>
-                        {sh.status === 'active' ? '● ACTIVE' : sh.shiftType === 'night' ? '🌙 NIGHT' : '☀ DAY'}
-                      </span>
+            {!isLube ? (
+              recentShiftSettlements.length > 0 ? recentShiftSettlements.map(sh => (
+                <div key={sh.id} className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-white/5 last:border-0">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-[12px] flex items-center justify-center text-xs font-bold ${sh.status === 'active' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-100 dark:bg-white/5 text-slate-500'}`}>
+                      {sh.operatorInitials}
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-800 dark:text-white leading-tight">{sh.operatorName}</h4>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] text-slate-500">{sh.date}</span>
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${sh.status === 'active' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-200 dark:bg-white/10 text-slate-500'}`}>
+                          {sh.status === 'active' ? '● ACTIVE' : sh.shiftType === 'night' ? '🌙 NIGHT' : '☀ DAY'}
+                        </span>
+                      </div>
                     </div>
                   </div>
+                  <div className="text-right">
+                    <span className="text-sm font-bold text-slate-800 dark:text-white">
+                      {formatCurrency(sh.sales || sh.submittedCash, settings)}
+                    </span>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Sales</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-sm font-bold text-slate-800 dark:text-white">
-                    {formatCurrency(sh.sales || sh.submittedCash, settings)}
-                  </span>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Sales</p>
+              )) : (
+                <div className="flex-1 flex flex-col items-center justify-center text-slate-400 py-8">
+                  <Receipt className="w-8 h-8 mb-2 opacity-20" />
+                  <p className="text-sm font-semibold">No shifts yet</p>
+                  <p className="text-xs mt-1 opacity-70">Start a shift to see it here</p>
                 </div>
-              </div>
-            )) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-slate-400 py-8">
-                <Receipt className="w-8 h-8 mb-2 opacity-20" />
-                <p className="text-sm font-semibold">No shifts yet</p>
-                <p className="text-xs mt-1 opacity-70">Start a shift to see it here</p>
-              </div>
+              )
+            ) : (
+              // Lube POS Sales
+              lubePosSales.slice(0, 5).map(sale => (
+                <div key={sale.id} className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-white/5 last:border-0">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-[12px] flex items-center justify-center text-xs font-bold bg-blue-500/10 text-blue-500">
+                      POS
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-800 dark:text-white leading-tight">{sale.customerName || 'Walk-in'}</h4>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] text-slate-500">{sale.date} {sale.time}</span>
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-white/5 text-slate-500 uppercase">
+                          {sale.paymentMode}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-sm font-bold text-slate-800 dark:text-white">
+                      {formatCurrency(sale.total, settings)}
+                    </span>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Invoice: {sale.invoiceNo}</p>
+                  </div>
+                </div>
+              ))
             )}
           </div>
           <button
-            onClick={() => onNavigate('shift_logs')}
-            className="w-full mt-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-bold text-orange-500 hover:bg-orange-500/5 transition-colors"
+            onClick={() => isLube ? onNavigate('lube_pos') : onNavigate('shift_logs')}
+            className="w-full mt-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-bold text-orange-500 hover:bg-orange-500/5 transition-colors cursor-pointer"
           >
-            View All Shifts
+            {isLube ? 'Go to POS Terminal' : 'View All Shifts'}
           </button>
         </div>
 

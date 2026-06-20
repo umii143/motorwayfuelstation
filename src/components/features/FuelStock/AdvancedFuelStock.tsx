@@ -20,8 +20,11 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  ResponsiveContainer 
+  ResponsiveContainer,
+  AreaChart,
+  Area
 } from 'recharts';
+import { DataConfidenceBadge } from '../../ui/DataConfidenceBadge';
 import { useInventoryStore } from '../../../stores/useInventoryStore';
 import { useSupplierStore } from '../../../stores/useSupplierStore';
 import { useFinancialStore } from '../../../stores/useFinancialStore';
@@ -155,7 +158,7 @@ export default function AdvancedFuelStock() {
       amount: totalAmount,
       purchasePrice: Number(formData.rate),
       supplierId: formData.supplierId,
-      paymentMode: formData.paymentMethod === 'Bank Transfer' ? 'bank' : formData.paymentMethod === 'Cash' ? 'cash' : 'credit',
+      paymentMode: (formData.paymentMethod === 'Bank Transfer' ? 'bank' : formData.paymentMethod === 'Cash' ? 'cash' : 'credit') as any,
       bankAccountId: formData.paymentMethod === 'Bank Transfer' ? formData.bankAccountId : undefined,
       notes: formData.notes
     };
@@ -220,6 +223,7 @@ export default function AdvancedFuelStock() {
           <div className="bg-blue-500/20 p-2.5 rounded-lg text-blue-400">
             <Fuel className="w-5 h-5" />
           </div>
+          <DataConfidenceBadge confidence={100} />
         </div>
 
         {/* Current Stock */}
@@ -232,6 +236,7 @@ export default function AdvancedFuelStock() {
           <div className="bg-emerald-500/20 p-2.5 rounded-lg text-emerald-400">
             <Fuel className="w-5 h-5" />
           </div>
+          <DataConfidenceBadge confidence={100} />
         </div>
 
         {/* Today's Import */}
@@ -244,6 +249,7 @@ export default function AdvancedFuelStock() {
           <div className="bg-purple-500/20 p-2.5 rounded-lg text-purple-400">
             <Truck className="w-5 h-5" />
           </div>
+          <DataConfidenceBadge confidence={100} />
         </div>
 
         {/* Stock Value */}
@@ -256,6 +262,7 @@ export default function AdvancedFuelStock() {
           <div className="bg-orange-500/20 p-2.5 rounded-lg text-orange-400">
             <DollarSign className="w-5 h-5" />
           </div>
+          <DataConfidenceBadge confidence={100} />
         </div>
 
         {/* Low Stock Alerts */}

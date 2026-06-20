@@ -24,6 +24,7 @@ import { useSupplierStore } from '../../../stores/useSupplierStore';
 import { DEFAULT_FUEL_STATION_ID, LUBE_STATION_ID } from '../../../lib/businessScope';
 import { formatCurrency } from '../../../lib/currency';
 import { PoweredByUmarAli } from '../../shared/PoweredByUmarAli';
+import { DataConfidenceBadge } from '../../ui/DataConfidenceBadge';
 
 // ──────────────────────────────────────────────
 // Helpers
@@ -45,7 +46,6 @@ function changeClass(change: number): string {
   return 'text-slate-400';
 }
 
-// KPI Card
 function KPICard({
   label, value, sub, icon: Icon, iconBg, iconColor, change
 }: {
@@ -53,9 +53,23 @@ function KPICard({
   icon: React.ElementType; iconBg: string; iconColor: string;
   change?: number;
 }) {
+  // Use a softer background color based on iconColor class
+  // e.g., 'text-emerald-500' -> 'bg-emerald-500/15 ring-emerald-500/20'
+  const bgColorMap: Record<string, string> = {
+    'text-emerald-500': 'bg-emerald-500/15 ring-emerald-500/20 text-emerald-500',
+    'text-orange-500': 'bg-orange-500/15 ring-orange-500/20 text-orange-500',
+    'text-blue-500': 'bg-blue-500/15 ring-blue-500/20 text-blue-500',
+    'text-red-500': 'bg-red-500/15 ring-red-500/20 text-red-500',
+    'text-purple-500': 'bg-purple-500/15 ring-purple-500/20 text-purple-500',
+    'text-amber-500': 'bg-amber-500/15 ring-amber-500/20 text-amber-500',
+    'text-teal-500': 'bg-teal-500/15 ring-teal-500/20 text-teal-500',
+    'text-indigo-500': 'bg-indigo-500/15 ring-indigo-500/20 text-indigo-500',
+  };
+  const badgeClasses = bgColorMap[iconColor] || 'bg-slate-500/15 ring-slate-500/20 text-slate-500';
+
   return (
-    <div className="bg-white dark:bg-[#1A1A24] rounded-[24px] p-5 shadow-sm border border-slate-200 dark:border-white/5">
-      <div className="flex justify-between items-start mb-3">
+    <div className="bg-white dark:bg-[#1A1A24] rounded-[24px] p-5 shadow-sm border border-slate-200 dark:border-white/5 relative overflow-hidden group">
+      <div className="flex justify-between items-start mb-4">
         <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{label}</span>
         {change !== undefined && (
           <div className={`flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded ${change >= 0 ? 'text-emerald-500 bg-emerald-500/10' : 'text-red-500 bg-red-500/10'}`}>
@@ -64,10 +78,11 @@ function KPICard({
           </div>
         )}
       </div>
-      <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center mb-3`}>
-        <Icon className={`w-5 h-5 ${iconColor}`} />
+      <div className={`absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl ring-1 ring-inset shadow-inner ${badgeClasses}`}>
+        <Icon className="w-6 h-6" strokeWidth={2.5} />
       </div>
-      <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-0.5">{value}</h3>
+      <DataConfidenceBadge confidence={100} />
+      <h3 className="text-3xl font-black text-slate-800 dark:text-white mb-1">{value}</h3>
       {sub && <p className="text-xs font-semibold text-slate-400">{sub}</p>}
     </div>
   );

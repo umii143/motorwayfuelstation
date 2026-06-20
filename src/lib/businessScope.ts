@@ -106,7 +106,7 @@ export function isolateShiftRecords(
 
   return scopedShifts.map((shift) => ({
     ...shift,
-    lubeSales: [],
+
   }));
 }
 

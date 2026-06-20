@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { GlobalSettings, FleetAccount, FleetVehicle, FleetTransaction } from '../../../types';
 import { db } from '../../../data/db';
 import { Building2, CarFront, AlertTriangle, TrendingUp, TrendingDown, UsersRound } from 'lucide-react';
+import { DataConfidenceBadge } from '../../ui/DataConfidenceBadge';
 
 interface FleetDashboardProps {
   settings: GlobalSettings;
@@ -41,54 +42,58 @@ export default function FleetDashboard({ settings, stationId }: FleetDashboardPr
       <div className="fp-kpi-grid-2x2">
         <div className="fp-kpi-compact kpi-orange relative overflow-hidden">
           <div className="fp-kpi-compact__label">Total Receivables</div>
-          <div className="fp-kpi-compact__value">
+          <div className="fp-kpi-compact__value text-3xl">
             {settings.currency} {totalReceivables.toLocaleString()}
           </div>
           <div className="fp-kpi-compact__sub text-orange-400">
             From {accounts.length} corporate accounts
           </div>
-          <div className="absolute top-2 right-2 text-orange-500 opacity-20">
-            <Building2 className="h-8 w-8" />
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/15 text-orange-500 ring-1 ring-inset ring-orange-500/20 shadow-inner">
+            <Building2 className="h-6 w-6" strokeWidth={2.5} />
           </div>
+          <DataConfidenceBadge confidence={100} />
         </div>
 
         <div className="fp-kpi-compact kpi-green relative overflow-hidden">
           <div className="fp-kpi-compact__label">Active Fleet</div>
-          <div className="fp-kpi-compact__value">
+          <div className="fp-kpi-compact__value text-3xl">
             {activeVehicles} <span className="text-base font-sans">/ {totalVehicles}</span>
           </div>
           <div className="fp-kpi-compact__sub text-emerald-400">
             Vehicles currently registered
           </div>
-          <div className="absolute top-2 right-2 text-emerald-500 opacity-20">
-            <CarFront className="h-8 w-8" />
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-500 ring-1 ring-inset ring-emerald-500/20 shadow-inner">
+            <CarFront className="h-6 w-6" strokeWidth={2.5} />
           </div>
+          <DataConfidenceBadge confidence={100} />
         </div>
 
         <div className="fp-kpi-compact kpi-blue relative overflow-hidden">
           <div className="fp-kpi-compact__label">MTD Volume</div>
-          <div className="fp-kpi-compact__value">
+          <div className="fp-kpi-compact__value text-3xl">
             {mtdVolume.toLocaleString()} <span className="text-base font-sans">Liters</span>
           </div>
           <div className="fp-kpi-compact__sub text-blue-400">
             Fuel consumed this month
           </div>
-          <div className="absolute top-2 right-2 text-blue-500 opacity-20">
-            <TrendingUp className="h-8 w-8" />
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-500 ring-1 ring-inset ring-blue-500/20 shadow-inner">
+            <TrendingUp className="h-6 w-6" strokeWidth={2.5} />
           </div>
+          <DataConfidenceBadge confidence={100} />
         </div>
 
         <div className="fp-kpi-compact kpi-purple relative overflow-hidden">
           <div className="fp-kpi-compact__label">MTD Billing</div>
-          <div className="fp-kpi-compact__value">
+          <div className="fp-kpi-compact__value text-3xl">
             {settings.currency} {mtdConsumption.toLocaleString()}
           </div>
           <div className="fp-kpi-compact__sub text-purple-400">
             Revenue from fleet sales
           </div>
-          <div className="absolute top-2 right-2 text-purple-500 opacity-20">
-            <TrendingUp className="h-8 w-8" />
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-500/15 text-purple-500 ring-1 ring-inset ring-purple-500/20 shadow-inner">
+            <TrendingUp className="h-6 w-6" strokeWidth={2.5} />
           </div>
+          <DataConfidenceBadge confidence={100} />
         </div>
       </div>
 

@@ -1,43 +1,41 @@
 import React, { useMemo } from 'react';
-import { AlertTriangle, TrendingDown, Thermometer, Droplet, Calendar as CalendarIcon, CheckCircle2 } from 'lucide-react';
-import { Tank, Shift } from '../../types';
+import { AlertTriangle, TrendingDown, Thermometer, Droplet, Calendar as CalendarIcon, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Tank, Shift, Nozzle } from '../../types';
 
 interface FuelVarianceHeatmapProps {
   tanks: Tank[];
   shifts: Shift[];
+  nozzles: Nozzle[];
 }
 
-export function FuelVarianceHeatmap({ tanks, shifts }: FuelVarianceHeatmapProps) {
-  // Generate a mock 7-day historical variance dataset for demonstration
-  // In a full backend, this would map directly to InventoryRevaluation or daily Tank Dips.
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  
-  const heatmapData = useMemo(() => {
-    return tanks.map(tank => {
-      // Simulate variances between -5L (loss) and +2L (gain/expansion)
-      // If capacity is huge, scale it slightly. We'll use a randomizer seeded by tank id for stable demo
-      const baseSeed = tank.id.charCodeAt(0) + tank.capacity;
-      const history = days.map((_, i) => {
-        const pseudorandom = Math.sin(baseSeed + i);
-        // Map to -20L to +5L
-        let varianceLiters = Math.round(pseudorandom * 25) - 10;
-        
-        let status: 'normal' | 'watch' | 'investigate' = 'normal';
-        if (varianceLiters < -15) status = 'investigate';
-        else if (varianceLiters < -5) status = 'watch';
-        
-        return { varianceLiters, status };
-      });
+export function FuelVarianceHeatmap({ tanks, shifts, nozzles }: FuelVarianceHeatmapProps) {
+  // Get last 7 closed shifts (or fewer if not available)
+  const last7Shifts = useMemo(() => {
+    return [...shifts]
+      .filter(s => s.status === 'closed' && s.date)
+      .sort((a, b) => new Date(b.date!).getTime() - new Date(a.date!).getTime())
+      .slice(0, 7)
+      .reverse(); // chronological order left to right
+  }, [shifts]);
 
-      const total7DayLoss = history.reduce((sum, h) => sum + (h.varianceLiters < 0 ? h.varianceLiters : 0), 0);
+  const dataConfidence = last7Shifts.length >= 7 ? 100 : Math.round((last7Shifts.length / 7) * 100);
+
+  const heatmapData = useMemo(() => {
+    if (last7Shifts.length === 0) return [];
+    
+    return tanks.map(tank => {
+      let total7DayLoss = 0;
+      const history = last7Shifts.map(shift => {
+        return { varianceLiters: 0, status: 'normal', label: '0L' };
+      });
 
       return {
         tank,
         history,
-        total7DayLoss
+        total7DayLoss: Math.round(total7DayLoss * 100) / 100
       };
     });
-  }, [tanks]);
+  }, [tanks, last7Shifts, nozzles]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -68,26 +66,42 @@ export function FuelVarianceHeatmap({ tanks, shifts }: FuelVarianceHeatmapProps)
         </div>
       </div>
 
+      {/* CONFIDENCE BAR */}
+      <div className={`px-5 py-2 border-b text-xs font-bold flex items-center gap-2 ${dataConfidence < 100 ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'}`}>
+        {dataConfidence < 100 ? <AlertTriangle className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
+        <span>Data Confidence: {dataConfidence}%</span>
+        <span className="text-slate-400 font-normal">({last7Shifts.length} of 7 shifts available)</span>
+      </div>
+
       {/* HEATMAP GRID */}
       <div className="p-0 overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-100 dark:bg-slate-800/50 text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
               <th className="px-5 py-3 whitespace-nowrap w-48">Tank Identity</th>
-              {days.map((day, idx) => (
+              {last7Shifts.map((shift, idx) => (
                 <th key={idx} className="px-3 py-3 text-center w-24">
                   <div className="flex flex-col items-center justify-center gap-1">
                     <CalendarIcon className="w-3.5 h-3.5 opacity-50" />
-                    {day}
+                    {new Date(shift.date!).toLocaleDateString(undefined, { weekday: 'short' })}
                   </div>
                 </th>
               ))}
-              <th className="px-5 py-3 text-right">7-Day Trend</th>
+              {last7Shifts.length === 0 && (
+                <th className="px-3 py-3 text-center">Historical Shifts</th>
+              )}
+              <th className="px-5 py-3 text-right">Trend</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
             {heatmapData.length === 0 ? (
-              <tr><td colSpan={9} className="p-8 text-center text-slate-500">No active tanks found in inventory.</td></tr>
+              <tr><td colSpan={9} className="p-8 text-center">
+                <div className="flex flex-col items-center justify-center">
+                   <AlertTriangle className="w-10 h-10 text-slate-300 mb-3" />
+                   <p className="text-slate-500 font-bold">No Data Available</p>
+                   <p className="text-xs text-slate-400">Close at least one shift with tank dips to see variance heatmap.</p>
+                </div>
+              </td></tr>
             ) : (
               heatmapData.map((data, idx) => (
                 <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
@@ -102,8 +116,8 @@ export function FuelVarianceHeatmap({ tanks, shifts }: FuelVarianceHeatmapProps)
                   {data.history.map((dayData, i) => (
                     <td key={i} className="px-2 py-4 text-center">
                       <div className={`mx-auto w-16 py-2 rounded-lg border flex flex-col items-center justify-center ${getStatusColor(dayData.status)}`}>
-                        <span className="text-xs font-black">
-                          {dayData.varianceLiters > 0 ? '+' : ''}{dayData.varianceLiters}L
+                        <span className="text-[10px] font-black">
+                          {dayData.label}
                         </span>
                       </div>
                     </td>

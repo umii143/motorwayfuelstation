@@ -35,7 +35,7 @@ export function NozzlesStep({ nozzles, pumps, tanks, products, onUpdate, onConti
     
     if (!targetPump) {
       targetPump = {
-        id: 'pump_' + Date.now() + '_' + Math.floor(Math.random()*1000),
+        id: 'pump_' + Date.now() + '_' + crypto.randomUUID().split('-')[0],
         name: pumpName.trim(),
         nozzleCount: 0
       };
@@ -45,7 +45,7 @@ export function NozzlesStep({ nozzles, pumps, tanks, products, onUpdate, onConti
     const selectedTank = tanks.find(t => t.id === tankId);
     
     const newNozzle: Nozzle = {
-      id: 'nzl_' + Date.now() + '_' + Math.floor(Math.random()*1000),
+      id: 'nzl_' + Date.now() + '_' + crypto.randomUUID().split('-')[0],
       pumpId: targetPump.id,
       name,
       tankId,

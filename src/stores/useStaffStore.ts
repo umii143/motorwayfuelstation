@@ -135,7 +135,7 @@ export const useStaffStore = create<StaffState>((set, get) => ({
       const isAdvance = newEntry.type === 'advance';
 
       const exp: ExpenseEntry = {
-        id: 'exp_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5),
+        id: 'exp_' + Date.now() + '_' + crypto.randomUUID().split('-')[0],
         category: 'salary',
         amount: newEntry.amount,
         description: `${isAdvance ? 'Advance/Loan' : 'Salary Payment'} for ${label} (${newEntry.note || ''})`,

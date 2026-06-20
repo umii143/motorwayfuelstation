@@ -8,6 +8,7 @@ import {
   TreasuryAccountType 
 } from '../../../services/core/treasuryEngine';
 import TreasuryLedgerModal from './TreasuryLedgerModal';
+import { DataConfidenceBadge } from '../../ui/DataConfidenceBadge';
 
 export default function TreasuryDashboard() {
   const { stationId } = useAuthStore();
@@ -51,12 +52,13 @@ export default function TreasuryDashboard() {
           onClick={() => openLedger('main_safe', 'Cash In Hand (Safe)')}
         >
           <div className="fp-kpi-compact__label">Cash In Hand (Vault)</div>
-          <div className="fp-kpi-compact__value">
+          <div className="fp-kpi-compact__value text-3xl">
             Rs {cashInHand.toLocaleString()}
           </div>
-          <div className="absolute top-2 right-2 text-emerald-500 opacity-20">
-            <Wallet className="h-8 w-8" />
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-500 ring-1 ring-inset ring-emerald-500/20 shadow-inner">
+            <Wallet className="h-6 w-6" strokeWidth={2.5} />
           </div>
+          <DataConfidenceBadge confidence={100} />
         </div>
 
         <div 
@@ -64,12 +66,13 @@ export default function TreasuryDashboard() {
           onClick={() => openLedger('bank', 'Consolidated Bank')}
         >
           <div className="fp-kpi-compact__label">Bank Balance</div>
-          <div className="fp-kpi-compact__value">
+          <div className="fp-kpi-compact__value text-3xl">
             Rs {(position?.bankTotal || 0).toLocaleString()}
           </div>
-          <div className="absolute top-2 right-2 text-blue-500 opacity-20">
-            <Landmark className="h-8 w-8" />
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-500 ring-1 ring-inset ring-blue-500/20 shadow-inner">
+            <Landmark className="h-6 w-6" strokeWidth={2.5} />
           </div>
+          <DataConfidenceBadge confidence={100} />
         </div>
 
         <div 
@@ -77,12 +80,13 @@ export default function TreasuryDashboard() {
           onClick={() => openLedger('pos_terminal', 'Digital Wallets & POS')}
         >
           <div className="fp-kpi-compact__label">Digital Wallets & POS</div>
-          <div className="fp-kpi-compact__value">
+          <div className="fp-kpi-compact__value text-3xl">
             Rs {((position?.jazzCash || 0) + (position?.easyPaisa || 0) + (position?.posTerminal || 0)).toLocaleString()}
           </div>
-          <div className="absolute top-2 right-2 text-purple-500 opacity-20">
-            <Smartphone className="h-8 w-8" />
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-500/15 text-purple-500 ring-1 ring-inset ring-purple-500/20 shadow-inner">
+            <Smartphone className="h-6 w-6" strokeWidth={2.5} />
           </div>
+          <DataConfidenceBadge confidence={100} />
         </div>
 
         <div 
@@ -90,12 +94,13 @@ export default function TreasuryDashboard() {
           onClick={() => openLedger('owner_cash', 'Owner Cash')}
         >
           <div className="fp-kpi-compact__label">Owner Cash</div>
-          <div className="fp-kpi-compact__value">
+          <div className="fp-kpi-compact__value text-3xl">
             Rs {(position?.ownerCash || 0).toLocaleString()}
           </div>
-          <div className="absolute top-2 right-2 text-orange-500 opacity-20">
-            <ShieldCheck className="h-8 w-8" />
+          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/15 text-orange-500 ring-1 ring-inset ring-orange-500/20 shadow-inner">
+            <ShieldCheck className="h-6 w-6" strokeWidth={2.5} />
           </div>
+          <DataConfidenceBadge confidence={100} />
         </div>
       </div>
 

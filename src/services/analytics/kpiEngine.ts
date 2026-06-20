@@ -291,27 +291,7 @@ export const generateKPIs = (
        shiftRev += legacyRev;
     }
 
-    // Shift Lube Sales
-    shift.lubeSales?.forEach(ls => {
-      shiftRev += ls.amount;
-      const p = products.find(prod => prod.id === ls.itemId);
-      const pp = p?.purchasePrice || (p?.rate ? p.rate * 0.7 : 0);
-      const cogs = (ls.quantity * pp);
-      shiftCogs += cogs;
 
-      if (isDateInPeriod(d)) {
-        const pName = getProductName(p);
-        const pCat = getProductCategory(p);
-        const profit = ls.amount - cogs;
-
-        addTrend(d, ls.amount, profit, 0);
-
-        breakdowns.revenueByProduct[pName] = (breakdowns.revenueByProduct[pName] || 0) + ls.amount;
-        breakdowns.revenueByCategory[pCat] = (breakdowns.revenueByCategory[pCat] || 0) + ls.amount;
-        breakdowns.grossProfitByProduct[pName] = (breakdowns.grossProfitByProduct[pName] || 0) + profit;
-        breakdowns.grossProfitByCategory[pCat] = (breakdowns.grossProfitByCategory[pCat] || 0) + profit;
-      }
-    });
 
     // Shift Expenses
     shift.expenseEntries?.forEach(exp => {

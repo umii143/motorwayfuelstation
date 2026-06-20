@@ -67,10 +67,6 @@ export default function AdvancedPriceManagement({
     return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
   }).length;
 
-  // Calculate Margin Impact (Mocked or calculated based on overall difference)
-  // For simplicity we use a small hardcoded or derived mock for the overall impact % for now
-  const marginImpact = "+2.45%"; 
-
   // Compute stats per product
   const productStats = useMemo(() => {
     return fuelProducts.map(product => {
@@ -82,7 +78,7 @@ export default function AdvancedPriceManagement({
 
       // Find latest purchase to calculate margin
       const latestReceipt = stockTxns
-        .filter(t => t.type === 'receipt' && t.productId === product.id)
+        .filter(t => t.type === 'receipt' && t.itemId === product.id)
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
 
       const purchaseRate = latestReceipt && latestReceipt.purchasePrice ? latestReceipt.purchasePrice : (product.rate * 0.95); // fallback to 5% margin if no purchases
@@ -122,6 +118,11 @@ export default function AdvancedPriceManagement({
   const avgChange = productStats.length > 0 
     ? productStats.reduce((sum, p) => sum + p.changeAmt, 0) / productStats.length 
     : 0;
+    
+  // Calculate Margin Impact based on actual rate history changes
+  const marginImpact = avgPrice - avgChange > 0 
+    ? `${avgChange > 0 ? '+' : ''}${(avgChange / (avgPrice - avgChange) * 100).toFixed(2)}%`
+    : '0.00%';
   
   const maxChange = [...productStats].sort((a, b) => Math.abs(b.changeAmt) - Math.abs(a.changeAmt))[0];
 

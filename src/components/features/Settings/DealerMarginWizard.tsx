@@ -35,7 +35,7 @@ export default function DealerMarginWizard({ language, onLogAudit, stationId }: 
     
     // We can just add the new one. The getter logic uses the latest effectiveFrom date that is <= atDate
     const newSetting: DealerMarginSetting = {
-      id: `dm_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+      id: `dm_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
       productType,
       marginPerLiter: marginNum,
       effectiveFrom: effectiveFrom, // store as YYYY-MM-DD

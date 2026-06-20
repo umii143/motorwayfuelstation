@@ -21,7 +21,7 @@ export class AuditLogger {
     const userRole = user?.role || 'System';
     const branch = stationId || user?.branchId || db.getActiveStationId() || 'Unknown Branch';
     
-    const entryId = `audit_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    const entryId = `audit_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
     
     const entry: AuditTrailEntry = {
       id: entryId,
