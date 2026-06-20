@@ -26,10 +26,10 @@ interface InventoryState {
   getFuelProducts: () => Product[];
   getLubeProducts: () => Product[];
 
-  setProducts: (products: Product[]) => void;
-  setTanks: (tanks: Tank[]) => void;
-  setNozzles: (nozzles: Nozzle[]) => void;
-  setPumps: (pumps: Pump[]) => void;
+  setProducts: (products: Product[], orgId?: string) => void;
+  setTanks: (tanks: Tank[], orgId?: string) => void;
+  setNozzles: (nozzles: Nozzle[], orgId?: string) => void;
+  setPumps: (pumps: Pump[], orgId?: string) => void;
   setStockTxns: (txns: StockTransaction[]) => void;
   setRateHistory: (history: RateHistoryEntry[]) => void;
   setInventoryMovements: (movements: InventoryMovement[]) => void;
@@ -94,26 +94,49 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     return get().products.filter(p => p.type === 'lube');
   },
 
-  setProducts: (products) => {
+  setProducts: (products, orgId) => {
     const sId = db.getActiveStationId();
-    const scopedProducts = isolateProductRecords(products, sId);
+    const scopedProducts = isolateProductRecords(products, sId, orgId);
     set({ products: scopedProducts });
-    if (sId) db.saveProducts(sId, scopedProducts);
+    if (sId) {
+      db.saveProducts(sId, scopedProducts);
+      if (orgId) {
+        scopedProducts.forEach(p => firestoreDb.saveDocument(orgId, sId, getBusinessTypeForStation(sId), 'products', p.id, p).catch(console.error));
+      }
+    }
   },
-  setTanks: (tanks) => {
-    set({ tanks });
+  setTanks: (tanks, orgId) => {
     const sId = db.getActiveStationId();
-    if (sId) db.saveTanks(sId, tanks);
+    const scopedTanks = isolateTenantRecords(tanks, sId, orgId);
+    set({ tanks: scopedTanks });
+    if (sId) {
+      db.saveTanks(sId, scopedTanks);
+      if (orgId) {
+        scopedTanks.forEach(t => firestoreDb.saveDocument(orgId, sId, getBusinessTypeForStation(sId), 'tanks', t.id, t).catch(console.error));
+      }
+    }
   },
-  setNozzles: (nozzles) => {
-    set({ nozzles });
+  setNozzles: (nozzles, orgId) => {
     const sId = db.getActiveStationId();
-    if (sId) db.saveNozzles(sId, nozzles);
+    const scopedNozzles = isolateTenantRecords(nozzles, sId, orgId);
+    set({ nozzles: scopedNozzles });
+    if (sId) {
+      db.saveNozzles(sId, scopedNozzles);
+      if (orgId) {
+        scopedNozzles.forEach(n => firestoreDb.saveDocument(orgId, sId, getBusinessTypeForStation(sId), 'nozzles', n.id, n).catch(console.error));
+      }
+    }
   },
-  setPumps: (pumps) => {
-    set({ pumps });
+  setPumps: (pumps, orgId) => {
     const sId = db.getActiveStationId();
-    if (sId) db.savePumps(sId, pumps);
+    const scopedPumps = isolateTenantRecords(pumps, sId, orgId);
+    set({ pumps: scopedPumps });
+    if (sId) {
+      db.savePumps(sId, scopedPumps);
+      if (orgId) {
+        scopedPumps.forEach(p => firestoreDb.saveDocument(orgId, sId, getBusinessTypeForStation(sId), 'pumps', p.id, p).catch(console.error));
+      }
+    }
   },
   setStockTxns: (stockTxns) => {
     set({ stockTxns });

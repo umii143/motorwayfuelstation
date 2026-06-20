@@ -576,7 +576,7 @@ const cartItems = useMemo(() => {
         </div>
 
         {/* Right Panel - Billing Cart */}
-        <div className="w-full lg:w-full max-w-[400px] xl:w-[440px] flex flex-col bg-white rounded-[2rem] border border-slate-200/80 shadow-[0_8px_40px_rgb(0,0,0,0.06)] overflow-hidden shrink-0">
+        <div className="w-full lg:max-w-[400px] xl:max-w-[440px] flex flex-col bg-white rounded-[2rem] border border-slate-200/80 shadow-[0_8px_40px_rgb(0,0,0,0.06)] overflow-hidden shrink-0 mx-auto lg:mx-0">
           
           {/* Header */}
           <div className="px-6 py-5 flex items-center justify-between border-b border-slate-100/80">

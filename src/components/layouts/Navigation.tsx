@@ -740,20 +740,24 @@ const Navigation = React.memo(function Navigation({
                   {t('Quick Setup', 'سیٹ اپ')}
                 </div>
                 
-                <button
-                  onClick={() => { onViewChange('setup_nozzles'); setIsSetupOpen(false); setMobileMenuOpen(false); }}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer"
-                >
-                  <Fuel className="h-4 w-4" />
-                  <span>{t('Nozzles Setup', 'نوزلز سیٹ اپ')}</span>
-                </button>
-                <button
-                  onClick={() => { onViewChange('setup_tanks'); setIsSetupOpen(false); setMobileMenuOpen(false); }}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer"
-                >
-                  <Database className="h-4 w-4" />
-                  <span>{t('Tanks Setup', 'ٹینکس سیٹ اپ')}</span>
-                </button>
+                {!isLube && (
+                  <>
+                    <button
+                      onClick={() => { onViewChange('setup_nozzles'); setIsSetupOpen(false); setMobileMenuOpen(false); }}
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer"
+                    >
+                      <Fuel className="h-4 w-4" />
+                      <span>{t('Nozzles Setup', 'نوزلز سیٹ اپ')}</span>
+                    </button>
+                    <button
+                      onClick={() => { onViewChange('setup_tanks'); setIsSetupOpen(false); setMobileMenuOpen(false); }}
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer"
+                    >
+                      <Database className="h-4 w-4" />
+                      <span>{t('Tanks Setup', 'ٹینکس سیٹ اپ')}</span>
+                    </button>
+                  </>
+                )}
                 <button
                   onClick={() => { onViewChange('setup_rates'); setIsSetupOpen(false); setMobileMenuOpen(false); }}
                   className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer"

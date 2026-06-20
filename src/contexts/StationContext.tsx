@@ -229,10 +229,10 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
   const inventoryMovements = useInventoryStore((state) => state.inventoryMovements);
   const meterResets = useInventoryStore((state) => state.meterResets);
 
-  const setProducts = useInventoryStore((state) => state.setProducts);
-  const setTanks = useInventoryStore((state) => state.setTanks);
-  const setNozzles = useInventoryStore((state) => state.setNozzles);
-  const setPumps = useInventoryStore((state) => state.setPumps);
+  const setProducts = (products: Product[]) => useInventoryStore.getState().setProducts(products, orgId);
+  const setTanks = (tanks: Tank[]) => useInventoryStore.getState().setTanks(tanks, orgId);
+  const setNozzles = (nozzles: Nozzle[]) => useInventoryStore.getState().setNozzles(nozzles, orgId);
+  const setPumps = (pumps: Pump[]) => useInventoryStore.getState().setPumps(pumps, orgId);
   const setStockTxns = useInventoryStore((state) => state.setStockTxns);
   const setRateHistory = useInventoryStore((state) => state.setRateHistory);
   const setInventoryMovements = useInventoryStore((state) => state.setInventoryMovements);
