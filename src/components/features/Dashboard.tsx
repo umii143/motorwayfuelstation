@@ -385,8 +385,8 @@ export default React.memo(function Dashboard({
           <h2 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
             {getGreeting()}, {userName} 👋
           </h2>
-          <h1 className="text-3xl font-black text-slate-800 dark:text-white mb-4">
-            {isLube ? 'Lube Dashboard' : 'Dashboard'}
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-white mb-4">
+            {isLube ? 'Welcome to Lube Station! 🛢️' : 'Welcome to Fuel Station! ⛽'}
           </h1>
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-200/50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
@@ -698,7 +698,7 @@ export default React.memo(function Dashboard({
               <div className="flex-1 flex flex-col items-center justify-center text-slate-400 py-8">
                 <Gauge className="w-8 h-8 mb-2 opacity-20" />
                 <p className="text-sm font-semibold">No sales data for today</p>
-                <p className="text-xs mt-1 opacity-70">Close a shift to see fuel breakdown</p>
+                <p className="text-xs mt-1 opacity-70">{isLube ? 'Process POS sales to see breakdown' : 'Close a shift to see fuel breakdown'}</p>
               </div>
             )}
           </div>

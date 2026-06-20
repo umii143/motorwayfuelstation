@@ -516,7 +516,11 @@ const Navigation = React.memo(function Navigation({
                           }`}
                         >
                           <div className="flex items-start gap-2.5 max-w-[80%]">
-                            <Building className={`h-4 w-4 mt-0.5 shrink-0 ${isActive ? 'text-orange-600' : 'text-slate-400'}`} />
+                            {isLubeBusinessStation(st.id) ? (
+                              <Droplets className={`h-4 w-4 mt-0.5 shrink-0 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
+                            ) : (
+                              <Fuel className={`h-4 w-4 mt-0.5 shrink-0 ${isActive ? 'text-orange-600' : 'text-slate-400'}`} />
+                            )}
                             <div className="truncate">
                               <p className={`font-sans text-sm font-semibold truncate ${isActive ? 'text-orange-950' : 'text-slate-900'}`}>
                                 {t(st.name, st.urduName)}

@@ -151,8 +151,12 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
             className="flex w-full items-center justify-between gap-3 p-2 rounded-xl transition-colors hover:bg-slate-50 dark:hover:bg-white/5 border border-slate-200 dark:border-white/10"
           >
             <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-[#FF7A00] flex items-center justify-center shadow-lg shrink-0">
-                <Store className="w-4 h-4 text-white" />
+              <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${activeStation?.businessType === 'lube' ? 'from-blue-400 to-[#0055FF]' : 'from-orange-400 to-[#FF7A00]'} flex items-center justify-center shadow-lg shrink-0`}>
+                {activeStation?.businessType === 'lube' ? (
+                  <Droplets className="w-4 h-4 text-white" />
+                ) : (
+                  <Fuel className="w-4 h-4 text-white" />
+                )}
               </div>
               <div className="flex flex-col text-left truncate">
                 <span className="text-sm font-bold text-slate-800 dark:text-white truncate">
@@ -176,10 +180,14 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
                     setIsStationMenuOpen(false);
                     if (window.innerWidth < 1024) onClose();
                   }}
-                  className={`flex items-center gap-3 p-2 rounded-lg transition-colors text-left ${station.id === activeStationId ? 'bg-orange-50 dark:bg-orange-500/10' : 'hover:bg-slate-50 dark:hover:bg-white/5'}`}
+                  className={`flex items-center gap-3 p-2 rounded-lg transition-colors text-left ${station.id === activeStationId ? (station.businessType === 'lube' ? 'bg-blue-50 dark:bg-blue-500/10' : 'bg-orange-50 dark:bg-orange-500/10') : 'hover:bg-slate-50 dark:hover:bg-white/5'}`}
                 >
-                  <Store className={`w-4 h-4 shrink-0 ${station.id === activeStationId ? 'text-orange-600 dark:text-orange-400' : 'text-slate-400'}`} />
-                  <span className={`text-xs font-bold truncate ${station.id === activeStationId ? 'text-orange-600 dark:text-orange-400' : 'text-slate-600 dark:text-slate-300'}`}>
+                  {station.businessType === 'lube' ? (
+                    <Droplets className={`w-4 h-4 shrink-0 ${station.id === activeStationId ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
+                  ) : (
+                    <Fuel className={`w-4 h-4 shrink-0 ${station.id === activeStationId ? 'text-orange-600 dark:text-orange-400' : 'text-slate-400'}`} />
+                  )}
+                  <span className={`text-xs font-bold truncate ${station.id === activeStationId ? (station.businessType === 'lube' ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400') : 'text-slate-600 dark:text-slate-300'}`}>
                     {station.name}
                   </span>
                 </button>
