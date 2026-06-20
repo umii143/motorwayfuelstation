@@ -272,6 +272,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
 
         setUser(profile);
+
+        // ─── SUBSCRIPTION EXPIRY ENFORCEMENT ──────────────────────────────
+        // Check on every login: if trial or paid period has ended, mark expired.
+        // This is the financial safety gate \u2014 prevents free usage past due date.
+        if (orgProfile && orgProfile.orgId && !superAdminStatus) {
+          const now = new Date();
+          // Use expiryDate (paid plans) first, fall back to trialEndDate (trial)
+          const expiryStr = orgProfile.expiryDate || orgProfile.trialEndDate;
+          if (expiryStr) {
+            const expiry = new Date(expiryStr);
+            if (!isNaN(expiry.getTime()) && expiry < now) {
+              // Period has ended \u2014 immediately expire in Firebase
+              if (orgProfile.subscriptionStatus !== 'expired' && orgProfile.subscriptionStatus !== 'canceled') {
+                try {
+                  await updateDoc(doc(dbFS, 'organizations', orgProfile.orgId), {
+                    subscriptionStatus: 'expired'
+                  });
+                  // Reflect locally too
+                  orgProfile = { ...orgProfile, subscriptionStatus: 'expired' };
+                } catch (e) {
+                  console.warn('[Auth] Could not auto-expire org:', e);
+                }
+              }
+            }
+          }
+        }
+        // ──────────────────────────────────────────────────────────────────
+
         setOrganization(orgProfile);
         setIsSuperAdmin(superAdminStatus);
         await syncSessionState(fbUser, profile.orgId);

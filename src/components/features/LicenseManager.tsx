@@ -72,6 +72,34 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
     };
   }, []);
 
+  // ─── AUTO-EXPIRY ENFORCEMENT ENGINE ─────────────────────────────────────────
+  // Runs every time organizations list changes (realtime). Checks every org
+  // and auto-marks as 'expired' in Firebase if their trial or paid period ended.
+  useEffect(() => {
+    if (organizations.length === 0) return;
+    const now = new Date();
+
+    organizations.forEach(org => {
+      // Skip already-expired or manually disabled
+      if (org.subscriptionStatus === 'expired' || org.subscriptionStatus === 'canceled') return;
+
+      // Determine the effective expiry date
+      // Priority: expiryDate (for paid plans) > trialEndDate (for trial)
+      const expiryStr = org.expiryDate || org.trialEndDate;
+      if (!expiryStr) return;
+
+      const expiryDate = new Date(expiryStr);
+      if (isNaN(expiryDate.getTime())) return;
+
+      // If expiry has passed → auto-expire in Firebase
+      if (expiryDate < now) {
+        updateDoc(doc(dbFS, 'organizations', org.orgId), {
+          subscriptionStatus: 'expired'
+        }).catch(e => console.error('[AutoExpiry] Failed to expire org:', org.orgId, e));
+      }
+    });
+  }, [organizations]);;
+
   // Sync selected org if updated
   useEffect(() => {
     if (selectedOrg) {
@@ -193,16 +221,37 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
 
     try {
       if (type === 'approve' && targetReq) {
+        // ─── Calculate EXACT expiry based on the plan purchased ───────────
+        // This is critical for billing accuracy — never lose money!
+        const PLAN_DAYS: Record<string, number> = {
+          professional: 30,   // monthly
+          quarterly:    90,   // 3 months
+          yearly:       365,  // 1 year
+          basic:        30,   // alias for monthly
+          monthly:      30,
+          enterprise:   365,
+        };
+        const planKey = (targetReq.plan || '').toLowerCase();
+        const daysToAdd = PLAN_DAYS[planKey] ?? 30; // default 30 if unknown
+
+        // Expiry = today's date at midnight + exact plan days
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + daysToAdd);
+        expiryDate.setHours(23, 59, 59, 999); // End of that day
+
         await updateDoc(doc(dbFS, 'subscriptionRequests', targetReq.id), {
           status: 'approved',
-          approvedAt: new Date().toISOString()
+          approvedAt: new Date().toISOString(),
+          expiryDate: expiryDate.toISOString(),
+          daysGranted: daysToAdd
         });
-        const newExpiry = new Date();
-        newExpiry.setDate(newExpiry.getDate() + 30);
         await updateDoc(doc(dbFS, 'organizations', targetReq.orgId), {
           subscriptionStatus: 'active',
-          subscriptionTier: targetReq.plan,
-          expiryDate: newExpiry.toISOString()
+          subscriptionTier: planKey,
+          expiryDate: expiryDate.toISOString(),
+          lastApprovedAt: new Date().toISOString(),
+          lastApprovedPlan: planKey,
+          lastApprovedDays: daysToAdd
         });
       } 
       else if (type === 'reject' && targetReq) {
