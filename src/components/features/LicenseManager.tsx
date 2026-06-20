@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { collection, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore';
-import { ShieldCheck, CheckCircle2, XCircle, Search, Clock, ExternalLink, Users, Calendar, CreditCard, ChevronRight, Play, Square, Edit2, History } from 'lucide-react';
+import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { ShieldCheck, CheckCircle2, XCircle, Search, Clock, ExternalLink, Users, Calendar, CreditCard, ChevronRight, Play, Square, Edit2, History, Trash2 } from 'lucide-react';
 import { dbFS } from '../../lib/firebase';
 import { GlobalSettings, Organization } from '../../types';
 
@@ -8,7 +8,7 @@ interface LicenseManagerProps {
   settings: GlobalSettings;
 }
 
-type ModalType = 'approve' | 'reject' | 'toggle' | 'addDays' | 'setExpiry' | 'changePlan' | null;
+type ModalType = 'approve' | 'reject' | 'toggle' | 'addDays' | 'setExpiry' | 'changePlan' | 'delete' | null;
 
 export default function LicenseManager({ settings }: LicenseManagerProps) {
   const [activeTab, setActiveTab] = useState<'requests' | 'clients'>('requests');
@@ -154,6 +154,19 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
     setInputValue(org.subscriptionTier || '');
   };
 
+  const handleDeleteClient = (org: Organization) => {
+    setModalConfig({
+      isOpen: true,
+      type: 'delete',
+      targetOrg: org,
+      title: 'Delete Client Data',
+      description: `Are you absolutely sure you want to permanently delete ${org.name}? This cannot be undone.`,
+      confirmText: 'Delete Forever',
+      confirmColor: 'bg-red-600 hover:bg-red-700'
+    });
+    setInputValue('');
+  };
+
 
   // ---------------------------------------------------------------------------
   // Modal Confirm Logic
@@ -217,6 +230,10 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
         await updateDoc(doc(dbFS, 'organizations', targetOrg.orgId), {
           subscriptionTier: inputValue.toLowerCase()
         });
+      }
+      else if (type === 'delete' && targetOrg) {
+        await deleteDoc(doc(dbFS, 'organizations', targetOrg.orgId));
+        setSelectedOrg(null);
       }
     } catch (e) {
       console.error(e);
@@ -573,6 +590,17 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
                         <div className="text-left">
                           <p className="font-bold text-sm">Change Plan Tier</p>
                           <p className="text-xs opacity-80">Current: {selectedOrg.subscriptionTier}</p>
+                        </div>
+                      </button>
+
+                      <button 
+                        onClick={() => handleDeleteClient(selectedOrg)}
+                        className="p-3 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 flex items-center gap-3 transition-colors col-span-2"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                        <div className="text-left">
+                          <p className="font-bold text-sm">Delete Client Data</p>
+                          <p className="text-xs opacity-80">Permanently erase this organization</p>
                         </div>
                       </button>
                     </div>
