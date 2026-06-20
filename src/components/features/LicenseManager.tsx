@@ -28,6 +28,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
   const [activeTab, setActiveTab] = useState<'requests' | 'clients'>('requests');
   const [requests, setRequests] = useState<any[]>([]);
   const [organizations, setOrganizations] = useState<FirebaseOrg[]>([]);
+  const [usersMap, setUsersMap] = useState<Record<string, { email: string; phone?: string }>>({});
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOrg, setSelectedOrg] = useState<FirebaseOrg | null>(null);
@@ -51,7 +52,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
   const [planFilter, setPlanFilter] = useState<'all' | 'trial' | 'paid' | 'expired'>('all');
 
   useEffect(() => {
-    // Realtime: Fetch all organizations from Firebase — no auto-delete, show real users
+    // Realtime: Fetch all organizations from Firebase
     const qOrg = query(collection(dbFS, 'organizations'), orderBy('createdAt', 'desc'));
     const unsubscribeOrg = onSnapshot(qOrg, (snapshot) => {
       const data = snapshot.docs.map(d => ({ orgId: d.id, ...d.data() } as FirebaseOrg));
@@ -66,9 +67,23 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
       setRequests(data);
     });
 
+    // Realtime: Fetch all users — build uid→{email, phone} map for identification
+    const unsubscribeUsers = onSnapshot(collection(dbFS, 'users'), (snapshot) => {
+      const map: Record<string, { email: string; phone?: string }> = {};
+      snapshot.docs.forEach(d => {
+        const data = d.data();
+        map[d.id] = {
+          email: data.email || '',
+          phone: data.phone || data.phoneNumber || ''
+        };
+      });
+      setUsersMap(map);
+    });
+
     return () => {
       unsubscribeReq();
       unsubscribeOrg();
+      unsubscribeUsers();
     };
   }, []);
 
@@ -348,11 +363,21 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
       if (planFilter === 'paid' && !isPaidTier(o.subscriptionTier)) return false;
       if (planFilter === 'expired' && o.subscriptionStatus !== 'expired') return false;
 
-      // Apply search
+      // Apply search — also matches email and phone
       const q = searchQuery.toLowerCase();
-      return !q || o.name.toLowerCase().includes(q) || o.orgId.toLowerCase().includes(q);
+      if (!q) return true;
+      const userInfo = usersMap[o.ownerId];
+      const reqEmail = requests.find(r => r.orgId === o.orgId)?.userEmail || '';
+      const email = userInfo?.email || reqEmail;
+      const phone = userInfo?.phone || '';
+      return (
+        o.name.toLowerCase().includes(q) ||
+        o.orgId.toLowerCase().includes(q) ||
+        email.toLowerCase().includes(q) ||
+        phone.includes(q)
+      );
     });
-  }, [organizations, planFilter, searchQuery]);
+  }, [organizations, planFilter, searchQuery, usersMap, requests]);
 
   const planCounts = useMemo(() => ({
     all: organizations.length,
@@ -598,9 +623,14 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
                         >
                           <td className="p-4">
                             <div className="font-bold text-slate-900">{org.name}</div>
-                            <div className="text-xs text-slate-400 mt-0.5">
-                              {requests.find(r => r.orgId === org.orgId)?.userEmail || <span className="italic">No email on record</span>}
+                            {/* Email — prefer usersMap (real Firebase), fall back to request email */}
+                            <div className="text-xs text-blue-600 mt-0.5 flex items-center gap-1">
+                              ✉️ {usersMap[org.ownerId]?.email || requests.find(r => r.orgId === org.orgId)?.userEmail || <span className="text-slate-300 italic">No email</span>}
                             </div>
+                            {/* Phone — from users collection */}
+                            {usersMap[org.ownerId]?.phone && (
+                              <div className="text-xs text-slate-500 mt-0.5">📞 {usersMap[org.ownerId].phone}</div>
+                            )}
                             <div className="text-[10px] text-slate-300 font-mono mt-0.5 truncate max-w-[200px]">{org.orgId}</div>
                           </td>
                           <td className="p-4">
@@ -632,11 +662,23 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
               <div className="w-1/2 bg-white rounded-[24px] border border-slate-200 shadow-sm flex flex-col overflow-hidden animate-in slide-in-from-right-4">
                 <div className="bg-slate-900 p-6 text-white shrink-0">
                   <div className="flex justify-between items-start">
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <h2 className="text-xl font-bold">{selectedOrg.name}</h2>
-                      <p className="text-slate-400 font-mono text-sm mt-1">{selectedOrg.orgId}</p>
+                      {/* Email from usersMap (most reliable) */}
+                      {(usersMap[selectedOrg.ownerId]?.email || requests.find(r => r.orgId === selectedOrg.orgId)?.userEmail) && (
+                        <p className="text-blue-300 text-sm mt-1 flex items-center gap-1">
+                          ✉️ {usersMap[selectedOrg.ownerId]?.email || requests.find(r => r.orgId === selectedOrg.orgId)?.userEmail}
+                        </p>
+                      )}
+                      {/* Phone from usersMap */}
+                      {usersMap[selectedOrg.ownerId]?.phone && (
+                        <p className="text-slate-300 text-sm mt-0.5 flex items-center gap-1">
+                          📞 {usersMap[selectedOrg.ownerId].phone}
+                        </p>
+                      )}
+                      <p className="text-slate-500 font-mono text-xs mt-1">{selectedOrg.orgId}</p>
                     </div>
-                    <div className="bg-white/10 px-3 py-1 rounded-lg text-sm font-bold flex items-center gap-2 backdrop-blur-sm">
+                    <div className="bg-white/10 px-3 py-1 rounded-lg text-sm font-bold flex items-center gap-2 backdrop-blur-sm shrink-0 ml-4">
                       <Calendar className="w-4 h-4" />
                       Client for {getTenure(selectedOrg)}
                     </div>
