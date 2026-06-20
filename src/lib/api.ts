@@ -14,7 +14,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
 
   // 1. Check if there's a custom backend JWT token (Local mode)
   const localToken = localStorage.getItem('fuelpro_auth_token');
-  const isMockUser = localStorage.getItem('fuelpro_mock_user') === 'true';
+  const isMockUser = typeof window !== 'undefined' && window.location.search.includes('mock=1');
 
   if (isMockUser) {
     headers.set('Authorization', `Bearer mock_token_owner`);

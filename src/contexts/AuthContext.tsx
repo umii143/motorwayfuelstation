@@ -205,8 +205,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       if (!active) return;
-      if (window.location.search.includes('mock=1') || localStorage.getItem('fuelpro_mock_user') === 'true') {
-        localStorage.setItem('fuelpro_mock_user', 'true');
+      if (window.location.search.includes('mock=1')) {
         const mockProfile: UserProfile = {
           uid: 'mock_uid_123',
           email: 'admin@fuelpro.local',
