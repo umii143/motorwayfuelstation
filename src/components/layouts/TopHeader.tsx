@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, Globe, ChevronDown, Search, Bell, Fuel, Sun, Moon, Settings, Palette, Store } from 'lucide-react';
+import { Menu, Globe, ChevronDown, Search, Bell, Fuel, Sun, Moon, Settings, Palette, Store, Cylinder } from 'lucide-react';
 import { GlobalSettings, Station } from '../../types';
 
 interface TopHeaderProps {
@@ -7,6 +7,7 @@ interface TopHeaderProps {
   onLanguageToggle?: () => void;
   onThemeToggle?: () => void;
   onSettingsClick?: () => void;
+  onTankWizardTrigger?: () => void;
   onJarvisTrigger?: () => void;
   settings: GlobalSettings;
   stations?: Station[];
@@ -19,6 +20,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   onLanguageToggle,
   onThemeToggle,
   onSettingsClick,
+  onTankWizardTrigger,
   onJarvisTrigger,
   settings,
   stations = [],
@@ -97,6 +99,15 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors"
         >
           <Settings className="w-5 h-5" />
+        </button>
+
+        {/* Tank Wizard */}
+        <button 
+          onClick={onTankWizardTrigger}
+          title="Tank Configuration Wizard"
+          className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors"
+        >
+          <Cylinder className="w-5 h-5" />
         </button>
 
         {/* Search */}

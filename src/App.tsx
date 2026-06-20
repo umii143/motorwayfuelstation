@@ -1,6 +1,8 @@
 import { StationProvider, useStation } from './contexts/StationContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ScannerProvider } from './contexts/ScannerContext';
+import { useInventoryStore } from './stores/useInventoryStore';
+import { useStationStore } from './stores/useStationStore';
 
 import { AutoUpdatePrompt } from './components/shared/AutoUpdatePrompt';
 import { firestoreDb } from './data/firestore';
@@ -70,6 +72,7 @@ const StaffPanel = lazyWithRetry(() => import('./components/features/Staff'));
 const SettingsPanel = lazyWithRetry(() => import('./components/features/Settings'));
 const SystemAuditTrail = lazyWithRetry(() => import('./components/features/Settings/SystemAuditTrail'));
 const OnboardingWizard = lazyWithRetry(() => import('./components/features/OnboardingWizard'));
+const TankConfigurationWizard = lazyWithRetry(() => import('./components/features/TankConfigurationWizard'));
 const LocalStorageMigrationWizard = lazyWithRetry(() => import('./components/features/LocalStorageMigrationWizard'));
 const SecurityHub = lazyWithRetry(() => import('./components/features/SecurityHub'));
 const SubscriptionHub = lazyWithRetry(() => import('./components/features/SubscriptionHub'));
@@ -113,7 +116,10 @@ import { usePullToRefresh } from './hooks/usePullToRefresh';
 
 import {
   Pump,
-  Station
+  Station,
+  Product,
+  Tank,
+  Nozzle
 } from './types';
 
 function MainApp() {
@@ -121,6 +127,7 @@ function MainApp() {
   const [activeView, setActiveView] = useState<string>('dashboard');
   const [searchOpen, setSearchOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isTankWizardOpen, setIsTankWizardOpen] = useState(false);
 
   // Centralized Auth Context connection
   const { user: authenticatedUser, checkingAuth, isSuperAdmin, logout } = useAuth();
@@ -969,6 +976,9 @@ function MainApp() {
         onSettingsClick={() => {
           handleViewChange('configuration');
         }}
+        onTankWizardTrigger={() => {
+          setIsTankWizardOpen(true);
+        }}
         onJarvisTrigger={() => {
           useStationStore.getState().setAIAssistantVisible(true);
           handleViewChange('jarvis');
@@ -1009,6 +1019,40 @@ function MainApp() {
           handleViewChange(viewId);
         }}
       />
+
+      {/* Tank Configuration Wizard */}
+      <AnimatePresence>
+        {isTankWizardOpen && (
+          <React.Suspense fallback={<LoadingScreen />}>
+            <TankConfigurationWizard 
+              onCancel={() => setIsTankWizardOpen(false)}
+              onComplete={(data) => {
+                const inventoryStore = useInventoryStore.getState();
+                
+                // Add new products
+                data.products.forEach(p => {
+                  inventoryStore.handleAddProduct(p as Product);
+                });
+                
+                // Add new tanks
+                data.tanks.forEach(t => {
+                  inventoryStore.handleAddTank(t as Tank);
+                });
+                
+                // Add new nozzles
+                data.nozzles.forEach(n => {
+                  inventoryStore.handleAddNozzle(n as Nozzle);
+                });
+                
+                useStationStore.getState().showToast('Configuration successfully added', 'success');
+                setIsTankWizardOpen(false);
+              }}
+              currentLanguage={settings.language || 'en'}
+              settings={settings}
+            />
+          </React.Suspense>
+        )}
+      </AnimatePresence>
 
       {/* Main Container Workspace */}
       <main 
