@@ -63,7 +63,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
     hidden: { y: '100%' },
     visible: { 
       y: 0, 
-      height: isFullscreen ? '100vh' : snapPoints[snapPoints.length - 1],
+      height: isFullscreen ? '100dvh' : snapPoints[snapPoints.length - 1],
       transition: { type: 'spring', damping: 25, stiffness: 200 }
     }
   };
@@ -79,7 +79,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className={`w-full ${maxWidth} rounded-2xl border border-slate-200 bg-white shadow-2xl flex flex-col max-h-[90vh]`}
+              className={`w-full ${maxWidth} rounded-2xl border border-slate-200 bg-white shadow-2xl flex flex-col max-h-[90dvh]`}
             >
               {title && (
                 <div className="flex items-center justify-between p-6 pb-4 border-b border-slate-100">
@@ -121,8 +121,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             variants={variants}
             className={`fixed bottom-0 left-0 right-0 z-[70] bg-[var(--bg-app)] lg:hidden flex flex-col ${isFullscreen ? 'rounded-none' : 'rounded-t-3xl shadow-2xl mt-10'}`}
             style={{ 
-              maxHeight: isFullscreen ? '100vh' : snapPoints[snapPoints.length - 1], 
-              height: isFullscreen ? '100vh' : snapPoints[snapPoints.length - 1] 
+              maxHeight: isFullscreen ? '100dvh' : snapPoints[snapPoints.length - 1], 
+              height: isFullscreen ? '100dvh' : snapPoints[snapPoints.length - 1] 
             }}
           >
             {/* Drag Handle */}

@@ -182,7 +182,7 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-amber-600/10 blur-[120px] rounded-full" />
       </div>
 
-      <div className="w-full max-w-2xl bg-[var(--bg-card)]/90 backdrop-blur-xl border border-[var(--border-main)] rounded-3xl shadow-2xl relative z-10 flex flex-col max-h-[90vh]">
+      <div className="w-full max-w-2xl bg-[var(--bg-card)]/90 backdrop-blur-xl border border-[var(--border-main)] rounded-3xl shadow-2xl relative z-10 flex flex-col max-h-[90dvh]">
         
         {/* Wizard Header / Stepper */}
         <div className="p-6 border-b border-[var(--border-main)] shrink-0">

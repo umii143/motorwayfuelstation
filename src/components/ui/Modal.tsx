@@ -71,7 +71,7 @@ export const Modal: React.FC<ModalProps> = ({
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
                 transition={{ duration: 0.2, type: 'spring', damping: 25, stiffness: 300 }}
                 className={`w-full ${maxWidthClasses[maxWidth]} bg-white dark:bg-[#1a1b23] rounded-3xl shadow-2xl text-left pointer-events-auto border border-slate-200 dark:border-slate-800 flex flex-col`}
-                style={{ maxHeight: 'calc(100vh - 40px)' }}
+                style={{ maxHeight: 'calc(100dvh - 40px)' }}
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Header */}
