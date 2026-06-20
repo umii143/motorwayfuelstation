@@ -35,39 +35,53 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
   const [inputValue, setInputValue] = useState('');
 
   useEffect(() => {
-    const DUMMY_KEYWORDS = ['rahim abdur', 'daniyal khokhar', 'ahmad mujtaba', 'irfan khan'];
-    const isDummy = (str?: string) => str ? DUMMY_KEYWORDS.some(k => str.toLowerCase().includes(k)) : false;
-
-    let dummyOrgIds = new Set<string>();
-
-    // Fetch Organizations
+    // Fetch Organizations — deduplicate by ownerId, keep newest entry per owner
     const qOrg = query(collection(dbFS, 'organizations'), orderBy('createdAt', 'desc'));
-    const unsubscribeOrg = onSnapshot(qOrg, (snapshot) => {
+    const unsubscribeOrg = onSnapshot(qOrg, async (snapshot) => {
       const data = snapshot.docs.map(d => ({ orgId: d.id, ...d.data() } as Organization));
-      const validOrgs = data.filter(org => {
-        if (isDummy(org.name) || isDummy(org.ownerId)) {
-          dummyOrgIds.add(org.orgId);
-          // Auto-cleanup from DB
-          deleteDoc(doc(dbFS, 'organizations', org.orgId)).catch(console.error);
-          return false;
+
+      // Deduplicate: for each unique ownerId, keep only the FIRST (newest) entry and delete the rest
+      const seenOwners = new Map<string, string>(); // ownerId -> orgId (newest)
+      const toDelete: string[] = [];
+
+      for (const org of data) {
+        const key = org.ownerId || org.orgId;
+        if (seenOwners.has(key)) {
+          // This is a duplicate — mark for deletion
+          toDelete.push(org.orgId);
+        } else {
+          seenOwners.set(key, org.orgId);
         }
-        return true;
-      });
+      }
+
+      // Auto-delete duplicate orgs from Firestore
+      for (const dupId of toDelete) {
+        deleteDoc(doc(dbFS, 'organizations', dupId)).catch(console.error);
+      }
+
+      // Only show non-duplicate orgs
+      const validOrgs = data.filter(org => !toDelete.includes(org.orgId));
       setOrganizations(validOrgs);
       setLoading(false);
     });
 
-    // Fetch Requests
+    // Fetch Requests — deduplicate by orgId, keep only newest per org
     const qReq = query(collection(dbFS, 'subscriptionRequests'), orderBy('createdAt', 'desc'));
     const unsubscribeReq = onSnapshot(qReq, (snapshot) => {
       const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      // Deduplicate requests by orgId
+      const seenReqOrgs = new Set<string>();
       const validReqs = data.filter(req => {
-        if (dummyOrgIds.has(req.orgId) || isDummy(req.userEmail)) {
+        const key = req.orgId || req.id;
+        if (seenReqOrgs.has(key)) {
           deleteDoc(doc(dbFS, 'subscriptionRequests', req.id)).catch(console.error);
           return false;
         }
+        seenReqOrgs.add(key);
         return true;
       });
+
       setRequests(validReqs);
     });
 
