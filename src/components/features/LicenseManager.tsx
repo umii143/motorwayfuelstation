@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { ShieldCheck, CheckCircle2, XCircle, Search, Clock, ExternalLink, Users, Calendar, CreditCard, ChevronRight, Play, Square, Edit2, History, Trash2 } from 'lucide-react';
 import { dbFS } from '../../lib/firebase';
 import { GlobalSettings } from '../../types';
@@ -29,6 +29,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
   const [requests, setRequests] = useState<any[]>([]);
   const [organizations, setOrganizations] = useState<FirebaseOrg[]>([]);
   const [usersMap, setUsersMap] = useState<Record<string, { email: string; phone?: string }>>({});
+  const [superAdminUid, setSuperAdminUid] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOrg, setSelectedOrg] = useState<FirebaseOrg | null>(null);
@@ -80,21 +81,41 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
       setUsersMap(map);
     });
 
+    // Fetch super admin UID — this account is NEVER expired
+    getDoc(doc(dbFS, 'systemSettings', 'superAdmin')).then(snap => {
+      if (snap.exists()) setSuperAdminUid(snap.data().uid || '');
+    }).catch(() => {});
+
     return () => {
       unsubscribeReq();
       unsubscribeOrg();
       unsubscribeUsers();
     };
-  }, []);
+  }, []);;
 
   // ─── AUTO-EXPIRY ENFORCEMENT ENGINE ─────────────────────────────────────────
   // Runs every time organizations list changes (realtime). Checks every org
   // and auto-marks as 'expired' in Firebase if their trial or paid period ended.
+  // CRITICAL: Super Admin org is ALWAYS protected — never auto-expired.
   useEffect(() => {
     if (organizations.length === 0) return;
     const now = new Date();
 
     organizations.forEach(org => {
+      // ★ SUPER ADMIN PROTECTION: Never expire the owner's org
+      if (superAdminUid && org.ownerId === superAdminUid) {
+        // If their org is expired, immediately fix it to permanent enterprise
+        if (org.subscriptionStatus === 'expired' || org.subscriptionStatus === 'trialing') {
+          const permanentExpiry = new Date('2099-12-31T23:59:59.999Z');
+          updateDoc(doc(dbFS, 'organizations', org.orgId), {
+            subscriptionStatus: 'active',
+            subscriptionTier: 'enterprise',
+            expiryDate: permanentExpiry.toISOString(),
+          }).catch(e => console.error('[AutoExpiry] Could not protect owner org:', e));
+        }
+        return; // Never expire owner
+      }
+
       // Skip already-expired or manually disabled
       if (org.subscriptionStatus === 'expired' || org.subscriptionStatus === 'canceled') return;
 
@@ -113,7 +134,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
         }).catch(e => console.error('[AutoExpiry] Failed to expire org:', org.orgId, e));
       }
     });
-  }, [organizations]);;
+  }, [organizations, superAdminUid]);
 
   // Sync selected org if updated
   useEffect(() => {
@@ -606,23 +627,37 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
                       </td></tr>
                     ) : filteredOrganizations.map((org) => {
                       const days = calculateDaysRemaining(org);
-                      const isExpired = days === 0 || org.subscriptionStatus === 'expired';
+                      const isOwner = superAdminUid && org.ownerId === superAdminUid;
+                      const isExpired = !isOwner && (days === 0 || org.subscriptionStatus === 'expired');
                       const tier = (org.subscriptionTier || 'trial').toLowerCase();
                       const tierConfig: Record<string, { label: string; classes: string }> = {
                         trial:        { label: 'Trial',        classes: 'bg-slate-100 text-slate-700' },
                         basic:        { label: 'Basic',        classes: 'bg-blue-100 text-blue-700' },
                         professional: { label: 'Professional', classes: 'bg-purple-100 text-purple-700' },
+                        quarterly:    { label: '3 Months',     classes: 'bg-emerald-100 text-emerald-700' },
+                        yearly:       { label: 'Yearly',       classes: 'bg-sky-100 text-sky-700' },
                         enterprise:   { label: 'Enterprise',   classes: 'bg-amber-100 text-amber-700' },
                       };
-                      const badge = tierConfig[tier] || tierConfig.trial;
+                      const badge = isOwner
+                        ? { label: '👑 OWNER', classes: 'bg-yellow-400 text-yellow-900' }
+                        : (tierConfig[tier] || tierConfig.trial);
                       return (
                         <tr
                           key={org.orgId}
                           onClick={() => setSelectedOrg(org)}
-                          className={`hover:bg-indigo-50/50 transition-colors cursor-pointer ${selectedOrg?.orgId === org.orgId ? 'bg-indigo-50 border-l-2 border-indigo-500' : 'border-l-2 border-transparent'}`}
+                          className={`hover:bg-indigo-50/50 transition-colors cursor-pointer ${
+                            isOwner
+                              ? 'bg-amber-50/40 border-l-4 border-yellow-400'
+                              : selectedOrg?.orgId === org.orgId
+                              ? 'bg-indigo-50 border-l-2 border-indigo-500'
+                              : 'border-l-2 border-transparent'
+                          }`}
                         >
                           <td className="p-4">
-                            <div className="font-bold text-slate-900">{org.name}</div>
+                            <div className="font-bold text-slate-900 flex items-center gap-2">
+                              {org.name}
+                              {isOwner && <span className="text-[10px] font-black bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded uppercase tracking-wider">Developer</span>}
+                            </div>
                             {/* Email — prefer usersMap (real Firebase), fall back to request email */}
                             <div className="text-xs text-blue-600 mt-0.5 flex items-center gap-1">
                               ✉️ {usersMap[org.ownerId]?.email || requests.find(r => r.orgId === org.orgId)?.userEmail || <span className="text-slate-300 italic">No email</span>}
@@ -635,8 +670,8 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
                           </td>
                           <td className="p-4">
                             <span className={`inline-block px-2.5 py-1 rounded-lg text-xs font-bold ${badge.classes}`}>{badge.label}</span>
-                            <div className={`text-xs font-bold mt-1.5 ${isExpired ? 'text-red-500' : 'text-emerald-600'}`}>
-                              {isExpired ? 'Expired' : `${days} days left`}
+                            <div className={`text-xs font-bold mt-1.5 ${isExpired ? 'text-red-500' : isOwner ? 'text-yellow-600' : 'text-emerald-600'}`}>
+                              {isOwner ? '♾️ Permanent' : isExpired ? 'Expired' : `${days} days left`}
                             </div>
                           </td>
                           <td className="p-4">

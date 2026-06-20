@@ -273,6 +273,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         setUser(profile);
 
+        // ─── SUPER ADMIN PROTECTION ────────────────────────────────────────
+        // If this is the developer's account and their org got accidentally expired, heal it
+        if (orgProfile && orgProfile.orgId && superAdminStatus) {
+          const permanentExpiry = new Date('2099-12-31T23:59:59.999Z');
+          const needsHeal = orgProfile.subscriptionStatus !== 'active' || orgProfile.subscriptionTier !== 'enterprise';
+          if (needsHeal) {
+            try {
+              await updateDoc(doc(dbFS, 'organizations', orgProfile.orgId), {
+                subscriptionStatus: 'active',
+                subscriptionTier: 'enterprise',
+                expiryDate: permanentExpiry.toISOString(),
+              });
+              orgProfile = { ...orgProfile, subscriptionStatus: 'active', subscriptionTier: 'enterprise', expiryDate: permanentExpiry.toISOString() };
+            } catch (e) { console.warn('[Auth] Could not heal super admin org:', e); }
+          }
+        }
+        // ──────────────────────────────────────────────────────────────────
+
         // ─── SUBSCRIPTION EXPIRY ENFORCEMENT ──────────────────────────────
         // Check on every login: if trial or paid period has ended, mark expired.
         // This is the financial safety gate \u2014 prevents free usage past due date.
