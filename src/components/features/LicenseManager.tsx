@@ -35,19 +35,40 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
   const [inputValue, setInputValue] = useState('');
 
   useEffect(() => {
-    // Fetch Requests
-    const qReq = query(collection(dbFS, 'subscriptionRequests'), orderBy('createdAt', 'desc'));
-    const unsubscribeReq = onSnapshot(qReq, (snapshot) => {
-      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      setRequests(data);
-    });
+    const DUMMY_KEYWORDS = ['rahim abdur', 'daniyal khokhar', 'ahmad mujtaba', 'irfan khan'];
+    const isDummy = (str?: string) => str ? DUMMY_KEYWORDS.some(k => str.toLowerCase().includes(k)) : false;
+
+    let dummyOrgIds = new Set<string>();
 
     // Fetch Organizations
     const qOrg = query(collection(dbFS, 'organizations'), orderBy('createdAt', 'desc'));
     const unsubscribeOrg = onSnapshot(qOrg, (snapshot) => {
       const data = snapshot.docs.map(d => ({ orgId: d.id, ...d.data() } as Organization));
-      setOrganizations(data);
+      const validOrgs = data.filter(org => {
+        if (isDummy(org.name) || isDummy(org.ownerId)) {
+          dummyOrgIds.add(org.orgId);
+          // Auto-cleanup from DB
+          deleteDoc(doc(dbFS, 'organizations', org.orgId)).catch(console.error);
+          return false;
+        }
+        return true;
+      });
+      setOrganizations(validOrgs);
       setLoading(false);
+    });
+
+    // Fetch Requests
+    const qReq = query(collection(dbFS, 'subscriptionRequests'), orderBy('createdAt', 'desc'));
+    const unsubscribeReq = onSnapshot(qReq, (snapshot) => {
+      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      const validReqs = data.filter(req => {
+        if (dummyOrgIds.has(req.orgId) || isDummy(req.userEmail)) {
+          deleteDoc(doc(dbFS, 'subscriptionRequests', req.id)).catch(console.error);
+          return false;
+        }
+        return true;
+      });
+      setRequests(validReqs);
     });
 
     return () => {
