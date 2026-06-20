@@ -34,55 +34,22 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
   }>({ isOpen: false, type: null, title: '', description: '', confirmText: '' });
   const [inputValue, setInputValue] = useState('');
 
+  const [planFilter, setPlanFilter] = useState<'all' | 'trial' | 'paid' | 'expired'>('all');
+
   useEffect(() => {
-    // Fetch Organizations — deduplicate by ownerId, keep newest entry per owner
+    // Realtime: Fetch all organizations from Firebase — no auto-delete, show real users
     const qOrg = query(collection(dbFS, 'organizations'), orderBy('createdAt', 'desc'));
-    const unsubscribeOrg = onSnapshot(qOrg, async (snapshot) => {
+    const unsubscribeOrg = onSnapshot(qOrg, (snapshot) => {
       const data = snapshot.docs.map(d => ({ orgId: d.id, ...d.data() } as Organization));
-
-      // Deduplicate: for each unique ownerId, keep only the FIRST (newest) entry and delete the rest
-      const seenOwners = new Map<string, string>(); // ownerId -> orgId (newest)
-      const toDelete: string[] = [];
-
-      for (const org of data) {
-        const key = org.ownerId || org.orgId;
-        if (seenOwners.has(key)) {
-          // This is a duplicate — mark for deletion
-          toDelete.push(org.orgId);
-        } else {
-          seenOwners.set(key, org.orgId);
-        }
-      }
-
-      // Auto-delete duplicate orgs from Firestore
-      for (const dupId of toDelete) {
-        deleteDoc(doc(dbFS, 'organizations', dupId)).catch(console.error);
-      }
-
-      // Only show non-duplicate orgs
-      const validOrgs = data.filter(org => !toDelete.includes(org.orgId));
-      setOrganizations(validOrgs);
+      setOrganizations(data);
       setLoading(false);
     });
 
-    // Fetch Requests — deduplicate by orgId, keep only newest per org
+    // Realtime: Fetch all subscription requests from Firebase
     const qReq = query(collection(dbFS, 'subscriptionRequests'), orderBy('createdAt', 'desc'));
     const unsubscribeReq = onSnapshot(qReq, (snapshot) => {
       const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-
-      // Deduplicate requests by orgId
-      const seenReqOrgs = new Set<string>();
-      const validReqs = data.filter(req => {
-        const key = req.orgId || req.id;
-        if (seenReqOrgs.has(key)) {
-          deleteDoc(doc(dbFS, 'subscriptionRequests', req.id)).catch(console.error);
-          return false;
-        }
-        seenReqOrgs.add(key);
-        return true;
-      });
-
-      setRequests(validReqs);
+      setRequests(data);
     });
 
     return () => {
@@ -309,14 +276,27 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
     return `${(diffDays / 365).toFixed(1)} years`;
   };
 
-  const DUMMY_KEYWORDS = ['rahim abdur', 'daniyal khokhar', 'ahmad mujtaba', 'irfan khan'];
-  const isDummy = (str?: string) => str ? DUMMY_KEYWORDS.some(k => str.toLowerCase().includes(k)) : false;
+  const isPaidTier = (tier: string) => ['basic', 'professional', 'enterprise'].includes((tier || '').toLowerCase());
 
-  const filteredOrganizations = organizations.filter(o => {
-    if (isDummy(o.name)) return false;
-    return o.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-           o.orgId.toLowerCase().includes(searchQuery.toLowerCase());
-  });
+  const filteredOrganizations = useMemo(() => {
+    return organizations.filter(o => {
+      // Apply plan filter
+      if (planFilter === 'trial' && o.subscriptionTier !== 'trial') return false;
+      if (planFilter === 'paid' && !isPaidTier(o.subscriptionTier)) return false;
+      if (planFilter === 'expired' && o.subscriptionStatus !== 'expired') return false;
+
+      // Apply search
+      const q = searchQuery.toLowerCase();
+      return !q || o.name.toLowerCase().includes(q) || o.orgId.toLowerCase().includes(q);
+    });
+  }, [organizations, planFilter, searchQuery]);
+
+  const planCounts = useMemo(() => ({
+    all: organizations.length,
+    trial: organizations.filter(o => o.subscriptionTier === 'trial').length,
+    paid: organizations.filter(o => isPaidTier(o.subscriptionTier)).length,
+    expired: organizations.filter(o => o.subscriptionStatus === 'expired').length,
+  }), [organizations]);
 
   return (
     <div className="space-y-6 pb-12 h-full flex flex-col relative">
@@ -385,51 +365,22 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-b border-slate-200 px-4">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setActiveTab('requests')}
-            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${
-              activeTab === 'requests' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            <div className="flex items-center gap-2"><Clock className="w-4 h-4" /> Pending Requests</div>
-          </button>
-          <button
-            onClick={() => setActiveTab('clients')}
-            className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${
-              activeTab === 'clients' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            <div className="flex items-center gap-2"><Users className="w-4 h-4" /> Client Directory</div>
-          </button>
-        </div>
-        
+      <div className="flex items-center gap-2 border-b border-slate-200 px-4">
         <button
-          onClick={async () => {
-            const DUMMY_KEYWORDS = ['rahim abdur', 'daniyal khokhar', 'ahmad mujtaba', 'irfan khan', 'test'];
-            const isDummy = (str?: string) => str ? DUMMY_KEYWORDS.some(k => str.toLowerCase().includes(k)) : false;
-            
-            setOrganizations(prev => prev.filter(o => !isDummy(o.name)));
-            setRequests(prev => prev.filter(r => !isDummy(r.userEmail)));
-            
-            let count = 0;
-            for (const org of organizations) {
-              if (isDummy(org.name)) {
-                try {
-                  await deleteDoc(doc(dbFS, 'organizations', org.orgId));
-                  count++;
-                } catch(e: any) {
-                  console.error(e);
-                  alert("Failed to delete from DB: " + e.message);
-                }
-              }
-            }
-            alert(`Filtered from UI! Successfully deleted ${count} entries from database.`);
-          }}
-          className="px-4 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 font-bold text-xs rounded-lg flex items-center gap-2 transition-colors"
+          onClick={() => setActiveTab('requests')}
+          className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${
+            activeTab === 'requests' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700'
+          }`}
         >
-          <Trash2 className="w-4 h-4" /> Force Clean Dummy Data
+          <div className="flex items-center gap-2"><Clock className="w-4 h-4" /> Pending Requests <span className="ml-1 bg-orange-100 text-orange-700 text-xs font-bold px-1.5 py-0.5 rounded-full">{requests.filter(r => r.status === 'pending').length}</span></div>
+        </button>
+        <button
+          onClick={() => setActiveTab('clients')}
+          className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${
+            activeTab === 'clients' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          <div className="flex items-center gap-2"><Users className="w-4 h-4" /> Client Directory <span className="ml-1 bg-slate-100 text-slate-600 text-xs font-bold px-1.5 py-0.5 rounded-full">{organizations.length}</span></div>
         </button>
       </div>
 
@@ -507,18 +458,45 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
           <div className="flex h-full gap-4 absolute inset-0">
             {/* Client Directory List */}
             <div className={`bg-white rounded-[24px] border border-slate-200 shadow-sm flex flex-col transition-all duration-300 ${selectedOrg ? 'w-1/2' : 'w-full'}`}>
-              <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 rounded-t-[24px]">
-                <div className="relative w-64 group">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 group-focus-within:text-indigo-500 transition-colors" />
-                  <input 
-                    type="text" 
-                    placeholder="Search clients..." 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                  />
+              {/* Search + Plan Filter */}
+              <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-[24px] space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="relative flex-1 max-w-xs group">
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 group-focus-within:text-indigo-500 transition-colors" />
+                    <input
+                      type="text"
+                      placeholder="Search by name..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                    />
+                  </div>
+                  <span className="text-xs text-slate-500 font-medium">{filteredOrganizations.length} clients shown</span>
+                </div>
+                {/* Plan Filter Chips */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {([
+                    { key: 'all', label: 'All Users', color: 'bg-slate-800 text-white', inactive: 'bg-slate-100 text-slate-600 hover:bg-slate-200' },
+                    { key: 'trial', label: '🔵 Trial', color: 'bg-blue-600 text-white', inactive: 'bg-blue-50 text-blue-700 hover:bg-blue-100' },
+                    { key: 'paid', label: '🟢 Paid / Pro', color: 'bg-emerald-600 text-white', inactive: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' },
+                    { key: 'expired', label: '🔴 Expired', color: 'bg-red-600 text-white', inactive: 'bg-red-50 text-red-700 hover:bg-red-100' },
+                  ] as const).map(f => (
+                    <button
+                      key={f.key}
+                      onClick={() => setPlanFilter(f.key)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+                        planFilter === f.key ? f.color : f.inactive
+                      }`}
+                    >
+                      {f.label}
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                        planFilter === f.key ? 'bg-white/20' : 'bg-black/10'
+                      }`}>{planCounts[f.key]}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
+
               <div className="flex-1 overflow-y-auto">
                 <table className="w-full text-left border-collapse">
                   <thead className="sticky top-0 bg-white z-10">
@@ -531,28 +509,41 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-sm">
                     {loading ? (
-                      <tr><td colSpan={4} className="p-8 text-center text-slate-500">Loading clients...</td></tr>
+                      <tr><td colSpan={4} className="p-8 text-center text-slate-500">Loading clients from Firebase...</td></tr>
                     ) : filteredOrganizations.length === 0 ? (
-                      <tr><td colSpan={4} className="p-8 text-center text-slate-500">No clients found.</td></tr>
+                      <tr><td colSpan={4} className="p-8 text-center">
+                        <div className="text-slate-400 text-4xl mb-3">🔍</div>
+                        <p className="text-slate-500 font-medium">No {planFilter !== 'all' ? planFilter : ''} clients found.</p>
+                        {planFilter !== 'all' && <button onClick={() => setPlanFilter('all')} className="mt-2 text-indigo-600 text-sm font-bold hover:underline">Show all clients</button>}
+                      </td></tr>
                     ) : filteredOrganizations.map((org) => {
                       const days = calculateDaysRemaining(org);
                       const isExpired = days === 0 || org.subscriptionStatus === 'expired';
+                      const tier = (org.subscriptionTier || 'trial').toLowerCase();
+                      const tierConfig: Record<string, { label: string; classes: string }> = {
+                        trial:        { label: 'Trial',        classes: 'bg-slate-100 text-slate-700' },
+                        basic:        { label: 'Basic',        classes: 'bg-blue-100 text-blue-700' },
+                        professional: { label: 'Professional', classes: 'bg-purple-100 text-purple-700' },
+                        enterprise:   { label: 'Enterprise',   classes: 'bg-amber-100 text-amber-700' },
+                      };
+                      const badge = tierConfig[tier] || tierConfig.trial;
                       return (
-                        <tr 
-                          key={org.orgId} 
+                        <tr
+                          key={org.orgId}
                           onClick={() => setSelectedOrg(org)}
                           className={`hover:bg-indigo-50/50 transition-colors cursor-pointer ${selectedOrg?.orgId === org.orgId ? 'bg-indigo-50 border-l-2 border-indigo-500' : 'border-l-2 border-transparent'}`}
                         >
                           <td className="p-4">
-                            <div className="font-bold text-slate-900 flex items-center gap-2">
-                              {org.name}
+                            <div className="font-bold text-slate-900">{org.name}</div>
+                            <div className="text-xs text-slate-400 mt-0.5">
+                              {requests.find(r => r.orgId === org.orgId)?.userEmail || <span className="italic">No email on record</span>}
                             </div>
-                            <div className="text-xs text-slate-400 font-mono mt-0.5 truncate max-w-[150px]">{org.orgId}</div>
+                            <div className="text-[10px] text-slate-300 font-mono mt-0.5 truncate max-w-[200px]">{org.orgId}</div>
                           </td>
                           <td className="p-4">
-                            <div className="font-bold text-slate-900 capitalize">{org.subscriptionTier}</div>
-                            <div className={`text-xs font-bold mt-0.5 ${isExpired ? 'text-red-500' : 'text-emerald-600'}`}>
-                              {days} days left
+                            <span className={`inline-block px-2.5 py-1 rounded-lg text-xs font-bold ${badge.classes}`}>{badge.label}</span>
+                            <div className={`text-xs font-bold mt-1.5 ${isExpired ? 'text-red-500' : 'text-emerald-600'}`}>
+                              {isExpired ? 'Expired' : `${days} days left`}
                             </div>
                           </td>
                           <td className="p-4">
