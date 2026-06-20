@@ -23,8 +23,21 @@ export function resolveStationId(stationId?: string): string {
   return stationId || DEFAULT_FUEL_STATION_ID;
 }
 
+import { db } from '../data/db';
+
 export function getBusinessTypeForStation(stationId?: string): BusinessType {
-  return resolveStationId(stationId) === LUBE_STATION_ID ? 'lube' : 'fuel_station';
+  const resolvedId = resolveStationId(stationId);
+  if (resolvedId === LUBE_STATION_ID) return 'lube';
+  
+  try {
+    const stations = db.getStationsList();
+    const st = stations.find(s => s.id === resolvedId);
+    if (st && st.businessType) return st.businessType;
+  } catch(e) {
+    // Fallback if db isn't ready
+  }
+  
+  return 'fuel_station';
 }
 
 export function isLubeBusinessStation(stationId?: string): boolean {

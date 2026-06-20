@@ -54,6 +54,7 @@ import { PoweredByUmarAli } from '../shared/PoweredByUmarAli';
 import { TankCircularGauge } from '../ui/TankCircularGauge';
 import { DashboardAIInsights } from './DashboardAIInsights';
 import { useAuth } from '../../contexts/AuthContext';
+import { isLubeBusinessStation } from '../../lib/businessScope';
 
 const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
 const fadeUp = {
@@ -122,7 +123,7 @@ export default React.memo(function Dashboard({
   stockTxns = []
 }: DashboardProps) {
   const t = (en: string, ur: string) => translate(en, ur, settings);
-  const isLube = activeStationId === 'st_lube';
+  const isLube = isLubeBusinessStation(activeStationId);
   const { user } = useAuth();
 
   // Logged-in user name

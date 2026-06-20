@@ -36,6 +36,7 @@ import LicenseSubscription from './Settings/LicenseSubscription';
 import TreasurySettings from './Settings/TreasurySettings';
 import { SetupBanner } from './ConfigurationHub/SetupBanner';
 import { SetupNavigationFooter } from './ConfigurationHub/SetupNavigationFooter';
+import { isLubeBusinessStation } from '../../lib/businessScope';
 
 export type SettingsView =
   | 'profile' | 'station' | 'security' | 'treasury'
@@ -96,7 +97,7 @@ export default function SettingsPanel({
   const { isSuperAdmin } = useAuth();
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
-  const isLube = activeStationId === 'st_lube';
+  const isLube = isLubeBusinessStation(activeStationId);
 
   const [activeTab, setActiveTab] = useState<SettingsView>((initialTab as SettingsView) || 'profile');
   const [sidebarSearch, setSidebarSearch] = useState('');
@@ -467,7 +468,7 @@ export default function SettingsPanel({
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-bold text-slate-700 leading-none">FuelPro Enterprise</p>
-                <p className="text-[10px] text-slate-400 leading-none mt-0.5">v3.0 · {activeStationId === 'st_lube' ? 'LubeManager' : 'Fuel Station'}</p>
+                <p className="text-[10px] text-slate-400 leading-none mt-0.5">v3.0 · {isLubeBusinessStation(activeStationId) ? 'LubeManager' : 'Fuel Station'}</p>
               </div>
             </div>
           </div>

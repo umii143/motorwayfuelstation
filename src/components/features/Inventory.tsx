@@ -52,6 +52,7 @@ import SupplierScorecard from './SupplierCommandCenter/SupplierScorecard';
 import SupplierPayablesPanel from './SupplierCommandCenter/SupplierPayablesPanel';
 import SupplierClaimsPanel from './SupplierCommandCenter/SupplierClaimsPanel';
 import AdvancedFuelStock from './FuelStock/AdvancedFuelStock';
+import { isLubeBusinessStation } from '../../lib/businessScope';
 
 interface InventoryProps {
   settings: GlobalSettings;
@@ -87,7 +88,7 @@ export default function Inventory({
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
 
   // Single source of truth: use activeStationId, not product-type heuristic
-  const isLube = activeStationId === 'st_lube';
+  const isLube = isLubeBusinessStation(activeStationId);
   const { stockBatches, supplierClaims } = useInventoryStore(useShallow(state => ({
     stockBatches: state.stockBatches,
     supplierClaims: state.supplierClaims

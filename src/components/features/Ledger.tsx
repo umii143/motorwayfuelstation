@@ -26,6 +26,7 @@ import { useFinancialStore } from '../../stores/useFinancialStore';
 import { useStaffStore } from '../../stores/useStaffStore';
 import { useStationStore } from '../../stores/useStationStore';
 import { DataConfidenceBadge } from '../ui/DataConfidenceBadge';
+import { isLubeBusinessStation } from '../../lib/businessScope';
 
 
 interface LedgerProps {
@@ -156,7 +157,7 @@ export default function Ledger({
   const journalEntries = useFinancialStore((state) => state.journalEntries);
   const staff = useStaffStore((state) => state.staff);
   const activeStationId = useStationStore((state) => state.activeStationId);
-  const activeBType = activeStationId === 'st_lube' ? 'lube' : 'fuel_station';
+  const activeBType = isLubeBusinessStation(activeStationId) ? 'lube' : 'fuel_station';
 
   // Bootstrapping auto-seeding for legacy data
   useEffect(() => {

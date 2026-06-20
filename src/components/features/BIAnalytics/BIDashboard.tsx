@@ -6,6 +6,7 @@ import { generateBenchmarks } from '../../../services/analytics/benchmarkEngine'
 import { LineChart, BarChart } from '../../../services/charts/chartAdapter';
 import { TrendingUp, TrendingDown, DollarSign, Fuel, Activity } from 'lucide-react';
 import RoleGuard from '../../ui/RoleGuard';
+import { isLubeBusinessStation } from '../../../lib/businessScope';
 
 export const BIDashboard: React.FC = () => {
   const { shifts, products, customers, tanks, standaloneExpenses, lubePosSales, nozzles, activeStationId } = useStation();
@@ -22,7 +23,7 @@ export const BIDashboard: React.FC = () => {
     
     let revenue = 0;
 
-    if (activeStationId === 'st_lube') {
+    if (isLubeBusinessStation(activeStationId)) {
       const dailySales = lubePosSales.filter(s => s.date === dateStr);
       revenue = dailySales.reduce((acc, s) => acc + s.total, 0);
     } else {

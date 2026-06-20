@@ -31,6 +31,7 @@ import { ExpenseEntry, GlobalSettings, Shift } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
 import { useStation } from '../../contexts/StationContext';
+import { isLubeBusinessStation } from '../../lib/businessScope';
 
 interface ExpensesProps {
   settings: GlobalSettings;
@@ -85,7 +86,7 @@ export default function Expenses({
   const [showExport, setShowExport] = useState(false);
 
   // Single source of truth: use activeStationId, not shift-existence heuristic
-  const isLube = activeStationId === 'st_lube';
+  const isLube = isLubeBusinessStation(activeStationId);
 
   // Categories list helper — lube-appropriate labels
   const baseExpenseCategories = isLube ? [

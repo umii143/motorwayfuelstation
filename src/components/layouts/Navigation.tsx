@@ -79,6 +79,7 @@ import { ConfigSidebarItem } from './ConfigSidebarItem';
 import { motion } from 'framer-motion';
 import { haptic } from '../../utils/haptics';
 import { BottomSheet } from '../shared/BottomSheet';
+import { isLubeBusinessStation } from '../../lib/businessScope';
 
 interface NavigationProps {
   activeView: string;
@@ -138,7 +139,7 @@ const Navigation = React.memo(function Navigation({
   // Translates helper
   const t = (en: string, ur: string) => translate(en, ur, settings);
 
-  const isLube = activeStationId === 'st_lube';
+  const isLube = isLubeBusinessStation(activeStationId);
 
   const allMenuItems = [
     // MAIN
@@ -589,7 +590,7 @@ const Navigation = React.memo(function Navigation({
                 type="button"
                 onClick={() => handlePerformSwitch('st_lube')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  activeStationId === 'st_lube'
+                  isLubeBusinessStation(activeStationId)
                     ? 'bg-blue-600 text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900 font-semibold'
                 }`}
@@ -893,7 +894,7 @@ const Navigation = React.memo(function Navigation({
                 type="button"
                 onClick={() => handlePerformSwitch('st_lube')}
                 className={`flex-1 flex items-center justify-center gap-1 rounded-lg py-1.5 px-1 text-center font-sans text-[11px] font-bold transition-all cursor-pointer ${
-                  activeStationId === 'st_lube'
+                  isLubeBusinessStation(activeStationId)
                     ? 'bg-blue-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
@@ -1037,7 +1038,7 @@ const Navigation = React.memo(function Navigation({
               type="button"
               onClick={() => handlePerformSwitch('st_default')}
               className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 px-1 text-center font-sans text-xs font-bold transition-all cursor-pointer ${
-                activeStationId === 'st_default'
+                !isLubeBusinessStation(activeStationId)
                   ? 'bg-orange-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
@@ -1049,7 +1050,7 @@ const Navigation = React.memo(function Navigation({
               type="button"
               onClick={() => handlePerformSwitch('st_lube')}
               className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 px-1 text-center font-sans text-xs font-bold transition-all cursor-pointer ${
-                activeStationId === 'st_lube'
+                isLubeBusinessStation(activeStationId)
                   ? 'bg-blue-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}

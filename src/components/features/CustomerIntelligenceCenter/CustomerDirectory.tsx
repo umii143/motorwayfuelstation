@@ -35,6 +35,7 @@ import { formatCurrency, getCurrencySymbol } from '../../../lib/currency';
 import { t as translate } from '../../../lib/translations';
 import { fetchWithAuth } from '../../../lib/api';
 import CustomerCreditDrillDownModal from '../ExecutiveDashboard/CustomerCreditDrillDownModal';
+import { isLubeBusinessStation } from '../../../lib/businessScope';
 
 interface CustomersProps {
   settings: GlobalSettings;
@@ -143,7 +144,7 @@ export default function CustomerDirectory({
   const { showToast, showConfirm, showAlert } = useStation();
   const t = (en: string, ur: string) => translate(en, ur, settings);
   // Single source of truth: use activeStationId, not product-type heuristic
-  const isLubeBusiness = activeStationId === 'st_lube';
+  const isLubeBusiness = isLubeBusinessStation(activeStationId);
 
   // States
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);

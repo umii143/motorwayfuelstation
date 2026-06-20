@@ -10,7 +10,7 @@ import { writeBatch, doc, setDoc } from 'firebase/firestore';
 import { dbFS } from './lib/firebase';
 import { fetchWithAuth } from './lib/api';
 import { migrateAccountsPayable } from './utils/migrations';
-import { getBusinessTypeForStation, resolveViewForBusiness } from './lib/businessScope';
+import { getBusinessTypeForStation, resolveViewForBusiness, isLubeBusinessStation } from './lib/businessScope';
 import { initDatabase } from './data/db';
 
 /**
@@ -251,7 +251,7 @@ function MainApp() {
   const { requireBiometric } = useNativeAuth();
 
   // Single source of truth — always use activeStationId, never product sniffing
-  const isLubeBusiness = activeStationId === 'st_lube';
+  const isLubeBusiness = isLubeBusinessStation(activeStationId);
   const resolveActiveView = React.useCallback(
     (view: string) => resolveViewForBusiness(view, activeStationId),
     [activeStationId]
