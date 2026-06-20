@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { collection, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore';
-import { ShieldCheck, CheckCircle2, XCircle, Search, Clock, ExternalLink, Users, Calendar, CreditCard, ChevronRight, Phone, Play, Square, Edit2, History } from 'lucide-react';
+import { ShieldCheck, CheckCircle2, XCircle, Search, Clock, ExternalLink, Users, Calendar, CreditCard, ChevronRight, Play, Square, Edit2, History } from 'lucide-react';
 import { dbFS } from '../../lib/firebase';
 import { GlobalSettings, Organization } from '../../types';
 
 interface LicenseManagerProps {
   settings: GlobalSettings;
 }
+
+type ModalType = 'approve' | 'reject' | 'toggle' | 'addDays' | 'setExpiry' | 'changePlan' | null;
 
 export default function LicenseManager({ settings }: LicenseManagerProps) {
   const [activeTab, setActiveTab] = useState<'requests' | 'clients'>('requests');
@@ -15,6 +17,22 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
+
+  // Custom Modal State
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    type: ModalType;
+    targetOrg?: Organization | null;
+    targetReq?: any | null;
+    title: string;
+    description: string;
+    inputPlaceholder?: string;
+    inputType?: 'text' | 'number' | 'date' | 'select';
+    selectOptions?: string[];
+    confirmText: string;
+    confirmColor?: string;
+  }>({ isOpen: false, type: null, title: '', description: '', confirmText: '' });
+  const [inputValue, setInputValue] = useState('');
 
   useEffect(() => {
     // Fetch Requests
@@ -46,53 +64,170 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
     }
   }, [organizations]);
 
-  const handleApprove = async (req: any) => {
-    if (!confirm('Approve this subscription and activate 30 days?')) return;
-    
-    try {
-      await updateDoc(doc(dbFS, 'subscriptionRequests', req.id), {
-        status: 'approved',
-        approvedAt: new Date().toISOString()
-      });
 
-      const newExpiry = new Date();
-      newExpiry.setDate(newExpiry.getDate() + 30);
-      
-      await updateDoc(doc(dbFS, 'organizations', req.orgId), {
-        subscriptionStatus: 'active',
-        subscriptionTier: req.plan,
-        expiryDate: newExpiry.toISOString()
-      });
-      
-      alert('Subscription Approved Successfully!');
+  // ---------------------------------------------------------------------------
+  // Action Triggers
+  // ---------------------------------------------------------------------------
+  const handleApprove = (req: any) => {
+    setModalConfig({
+      isOpen: true,
+      type: 'approve',
+      targetReq: req,
+      title: 'Approve Subscription',
+      description: 'Are you sure you want to approve this subscription and activate 30 days?',
+      confirmText: 'Approve',
+      confirmColor: 'bg-emerald-600 hover:bg-emerald-700'
+    });
+    setInputValue('');
+  };
+
+  const handleReject = (req: any) => {
+    setModalConfig({
+      isOpen: true,
+      type: 'reject',
+      targetReq: req,
+      title: 'Reject Subscription',
+      description: 'Reason for rejection? (Will be shown to user)',
+      inputType: 'text',
+      inputPlaceholder: 'e.g. Invalid receipt',
+      confirmText: 'Reject',
+      confirmColor: 'bg-rose-600 hover:bg-rose-700'
+    });
+    setInputValue('');
+  };
+
+  const handleToggleStatus = (org: Organization) => {
+    const isDisabling = org.subscriptionStatus !== 'expired' && org.subscriptionStatus !== 'unpaid';
+    setModalConfig({
+      isOpen: true,
+      type: 'toggle',
+      targetOrg: org,
+      title: isDisabling ? 'Disable Access' : 'Enable Access',
+      description: `Are you sure you want to ${isDisabling ? 'DISABLE' : 'ENABLE'} access for this client?`,
+      confirmText: isDisabling ? 'Disable Client' : 'Enable Client',
+      confirmColor: isDisabling ? 'bg-rose-600 hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700'
+    });
+    setInputValue('');
+  };
+
+  const handleManualAddDays = (org: Organization) => {
+    setModalConfig({
+      isOpen: true,
+      type: 'addDays',
+      targetOrg: org,
+      title: 'Add Free Days',
+      description: 'Enter the number of days to add to their current expiry date:',
+      inputType: 'number',
+      inputPlaceholder: 'e.g. 15',
+      confirmText: 'Add Days',
+      confirmColor: 'bg-indigo-600 hover:bg-indigo-700'
+    });
+    setInputValue('');
+  };
+
+  const handleSetExactExpiry = (org: Organization) => {
+    setModalConfig({
+      isOpen: true,
+      type: 'setExpiry',
+      targetOrg: org,
+      title: 'Set Exact Expiry',
+      description: 'Select the exact expiry date:',
+      inputType: 'date',
+      confirmText: 'Update Expiry',
+      confirmColor: 'bg-blue-600 hover:bg-blue-700'
+    });
+    setInputValue(org.expiryDate ? new Date(org.expiryDate).toISOString().split('T')[0] : '');
+  };
+
+  const handleChangePlan = (org: Organization) => {
+    setModalConfig({
+      isOpen: true,
+      type: 'changePlan',
+      targetOrg: org,
+      title: 'Change Plan Tier',
+      description: `Current plan is ${org.subscriptionTier}. Select a new plan:`,
+      inputType: 'select',
+      selectOptions: ['trial', 'basic', 'professional', 'enterprise'],
+      confirmText: 'Update Plan',
+      confirmColor: 'bg-purple-600 hover:bg-purple-700'
+    });
+    setInputValue(org.subscriptionTier || '');
+  };
+
+
+  // ---------------------------------------------------------------------------
+  // Modal Confirm Logic
+  // ---------------------------------------------------------------------------
+  const handleModalConfirm = async () => {
+    setModalConfig(prev => ({ ...prev, isOpen: false }));
+    const { type, targetReq, targetOrg } = modalConfig;
+
+    try {
+      if (type === 'approve' && targetReq) {
+        await updateDoc(doc(dbFS, 'subscriptionRequests', targetReq.id), {
+          status: 'approved',
+          approvedAt: new Date().toISOString()
+        });
+        const newExpiry = new Date();
+        newExpiry.setDate(newExpiry.getDate() + 30);
+        await updateDoc(doc(dbFS, 'organizations', targetReq.orgId), {
+          subscriptionStatus: 'active',
+          subscriptionTier: targetReq.plan,
+          expiryDate: newExpiry.toISOString()
+        });
+      } 
+      else if (type === 'reject' && targetReq) {
+        if (!inputValue.trim()) return;
+        await updateDoc(doc(dbFS, 'subscriptionRequests', targetReq.id), {
+          status: 'rejected',
+          rejectReason: inputValue,
+          rejectedAt: new Date().toISOString()
+        });
+        await updateDoc(doc(dbFS, 'organizations', targetReq.orgId), {
+          subscriptionStatus: 'expired'
+        });
+      }
+      else if (type === 'toggle' && targetOrg) {
+        const isDisabling = targetOrg.subscriptionStatus !== 'expired' && targetOrg.subscriptionStatus !== 'unpaid';
+        await updateDoc(doc(dbFS, 'organizations', targetOrg.orgId), {
+          subscriptionStatus: isDisabling ? 'expired' : 'active'
+        });
+      }
+      else if (type === 'addDays' && targetOrg) {
+        const days = parseInt(inputValue, 10);
+        if (isNaN(days) || days <= 0) return;
+        const currentExpiry = new Date(targetOrg.expiryDate || targetOrg.trialEndDate || new Date());
+        currentExpiry.setDate(currentExpiry.getDate() + days);
+        await updateDoc(doc(dbFS, 'organizations', targetOrg.orgId), {
+          expiryDate: currentExpiry.toISOString(),
+          subscriptionStatus: 'active'
+        });
+      }
+      else if (type === 'setExpiry' && targetOrg) {
+        if (!inputValue) return;
+        const newDate = new Date(inputValue);
+        if (isNaN(newDate.getTime())) return;
+        await updateDoc(doc(dbFS, 'organizations', targetOrg.orgId), {
+          expiryDate: newDate.toISOString(),
+          subscriptionStatus: newDate > new Date() ? 'active' : 'expired'
+        });
+      }
+      else if (type === 'changePlan' && targetOrg) {
+        if (!inputValue) return;
+        await updateDoc(doc(dbFS, 'organizations', targetOrg.orgId), {
+          subscriptionTier: inputValue.toLowerCase()
+        });
+      }
     } catch (e) {
       console.error(e);
-      alert('Failed to approve subscription');
+      // Optional: Add a toast notification system here in the future
     }
   };
 
-  const handleReject = async (req: any) => {
-    const reason = prompt('Reason for rejection? (Will be shown to user)');
-    if (reason === null) return;
 
-    try {
-      await updateDoc(doc(dbFS, 'subscriptionRequests', req.id), {
-        status: 'rejected',
-        rejectReason: reason,
-        rejectedAt: new Date().toISOString()
-      });
-
-      await updateDoc(doc(dbFS, 'organizations', req.orgId), {
-        subscriptionStatus: 'expired'
-      });
-      
-      alert('Subscription Rejected');
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  // Profile specific logic
+  // ---------------------------------------------------------------------------
+  // Profile Logic
+  // ---------------------------------------------------------------------------
   const orgRequests = useMemo(() => {
     if (!selectedOrg) return [];
     return requests.filter(r => r.orgId === selectedOrg.orgId).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -115,88 +250,12 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
 
   const getTenure = (org: Organization) => {
     const start = new Date(org.createdAt);
+    if (isNaN(start.getTime())) return 'Unknown';
     const diffDays = Math.ceil((new Date().getTime() - start.getTime()) / (1000 * 3600 * 24));
     if (diffDays < 30) return `${diffDays} days`;
     if (diffDays < 365) return `${Math.floor(diffDays / 30)} months`;
     return `${(diffDays / 365).toFixed(1)} years`;
   };
-
-  const handleToggleStatus = async (org: Organization) => {
-    const isDisabling = org.subscriptionStatus !== 'expired' && org.subscriptionStatus !== 'unpaid';
-    if (!confirm(`Are you sure you want to ${isDisabling ? 'DISABLE' : 'ENABLE'} access for this client?`)) return;
-
-    try {
-      await updateDoc(doc(dbFS, 'organizations', org.orgId), {
-        subscriptionStatus: isDisabling ? 'expired' : 'active'
-      });
-    } catch (e) {
-      console.error(e);
-      alert('Failed to update status');
-    }
-  };
-
-  const handleManualAddDays = async (org: Organization) => {
-    const daysStr = prompt('Enter number of days to add:');
-    if (!daysStr) return;
-    const days = parseInt(daysStr, 10);
-    if (isNaN(days) || days <= 0) return;
-
-    try {
-      const currentExpiry = new Date(org.expiryDate || org.trialEndDate || new Date());
-      currentExpiry.setDate(currentExpiry.getDate() + days);
-
-      await updateDoc(doc(dbFS, 'organizations', org.orgId), {
-        expiryDate: currentExpiry.toISOString(),
-        subscriptionStatus: 'active'
-      });
-      alert(`Added ${days} days successfully.`);
-    } catch(e) {
-      console.error(e);
-      alert('Failed to update days');
-    }
-  };
-
-  const handleSetExactExpiry = async (org: Organization) => {
-    const dateStr = prompt('Enter exact expiry date (YYYY-MM-DD):');
-    if (!dateStr) return;
-    const newDate = new Date(dateStr);
-    if (isNaN(newDate.getTime())) {
-      alert('Invalid date format');
-      return;
-    }
-
-    try {
-      await updateDoc(doc(dbFS, 'organizations', org.orgId), {
-        expiryDate: newDate.toISOString(),
-        subscriptionStatus: newDate > new Date() ? 'active' : 'expired'
-      });
-      alert('Expiry date updated.');
-    } catch(e) {
-      console.error(e);
-      alert('Failed to update expiry date');
-    }
-  };
-
-  const handleChangePlan = async (org: Organization) => {
-    const newPlan = prompt(`Change plan for ${org.name}.\nCurrent: ${org.subscriptionTier}\n\nEnter new plan (basic, professional, enterprise):`);
-    if (!newPlan) return;
-    const validPlans = ['basic', 'professional', 'enterprise', 'trial'];
-    if (!validPlans.includes(newPlan.toLowerCase())) {
-      alert('Invalid plan type.');
-      return;
-    }
-
-    try {
-      await updateDoc(doc(dbFS, 'organizations', org.orgId), {
-        subscriptionTier: newPlan.toLowerCase()
-      });
-      alert('Plan updated successfully.');
-    } catch (e) {
-      console.error(e);
-      alert('Failed to change plan.');
-    }
-  };
-
 
   const filteredOrganizations = organizations.filter(o => 
     o.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -204,7 +263,60 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
   );
 
   return (
-    <div className="space-y-6 pb-12 h-full flex flex-col">
+    <div className="space-y-6 pb-12 h-full flex flex-col relative">
+      {/* Custom Unified Modal */}
+      {modalConfig.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-slate-900">{modalConfig.title}</h3>
+              <p className="text-slate-500 text-sm mt-2">{modalConfig.description}</p>
+              
+              {modalConfig.inputType && modalConfig.inputType !== 'select' && (
+                <input
+                  type={modalConfig.inputType}
+                  placeholder={modalConfig.inputPlaceholder}
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  className="w-full mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 font-medium"
+                  autoFocus
+                />
+              )}
+              
+              {modalConfig.inputType === 'select' && (
+                <select
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  className="w-full mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 font-medium capitalize"
+                >
+                  <option value="">Select an option</option>
+                  {modalConfig.selectOptions?.map(opt => (
+                    <option key={opt} value={opt} className="capitalize">{opt}</option>
+                  ))}
+                </select>
+              )}
+            </div>
+            
+            <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+              <button 
+                onClick={() => setModalConfig({ ...modalConfig, isOpen: false })}
+                className="px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleModalConfirm}
+                disabled={modalConfig.inputType && !inputValue}
+                className={`px-5 py-2.5 text-sm font-bold text-white rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${modalConfig.confirmColor || 'bg-indigo-600 hover:bg-indigo-700'}`}
+              >
+                {modalConfig.confirmText}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
       <div className="flex flex-row items-center justify-between premium-card p-6 border relative overflow-hidden bg-emerald-900 text-white border-emerald-800 shrink-0">
         <div className="flex items-center gap-4 relative z-10">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-800 text-emerald-100 shadow-lg">

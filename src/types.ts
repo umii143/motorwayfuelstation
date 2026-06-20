@@ -893,7 +893,7 @@ export interface Organization {
   ownerId: string;
   trialStartDate: number;
   trialEndDate?: number;
-  subscriptionStatus: 'active' | 'past_due' | 'canceled' | 'trialing' | 'expired';
+  subscriptionStatus: 'active' | 'past_due' | 'canceled' | 'trialing' | 'expired' | 'pending_verification';
   subscriptionPlan: string;
   subscriptionTier?: string;
   subscriptionStartDate?: number;
