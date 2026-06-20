@@ -43,6 +43,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   }, []);
 
   const activeStation = stations.find(s => s.id === activeStationId) || stations[0];
+  const isLube = activeStation?.businessType === 'lube';
 
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-white dark:bg-[#151521] border-b border-slate-200 dark:border-white/5 z-[60] flex items-center justify-between px-4 lg:px-6 transition-colors shadow-sm dark:shadow-none">
@@ -103,13 +104,15 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         </button>
 
         {/* Tank Wizard */}
-        <button 
-          onClick={onTankWizardTrigger}
-          title="Tank Configuration Wizard"
-          className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors"
-        >
-          <Cylinder className="w-5 h-5" />
-        </button>
+        {!isLube && (
+          <button 
+            onClick={onTankWizardTrigger}
+            title="Tank Configuration Wizard"
+            className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors"
+          >
+            <Cylinder className="w-5 h-5" />
+          </button>
+        )}
 
         {/* Search */}
         <div className="hidden sm:flex items-center relative group">

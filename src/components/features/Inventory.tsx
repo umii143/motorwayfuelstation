@@ -1430,7 +1430,7 @@ export default function Inventory({
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: 20, opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-              className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
+              className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-2xl mx-4 my-auto"
             >
               <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-5">
                 <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-2">

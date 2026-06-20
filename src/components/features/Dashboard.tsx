@@ -386,7 +386,7 @@ export default React.memo(function Dashboard({
             {getGreeting()}, {userName} 👋
           </h2>
           <h1 className="text-3xl font-black text-slate-800 dark:text-white mb-4">
-            Dashboard
+            {isLube ? 'Lube Dashboard' : 'Dashboard'}
           </h1>
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-200/50 dark:bg-white/5 border border-slate-200 dark:border-white/10">

@@ -290,7 +290,7 @@ export default function SettingsPanel({
           </div>
           <div className="min-w-0">
             <h2 className="font-sans text-base sm:text-lg font-bold tracking-tight text-slate-900 truncate">
-              {t('Configuration Center', 'ترتیبات مرکز')}
+              {isLube ? t('Lube Configuration Center', 'لیوب ترتیبات مرکز') : t('Configuration Center', 'ترتیبات مرکز')}
             </h2>
             <p className="font-sans text-[11px] text-slate-400 hidden sm:block truncate">
               {activeItem ? activeItem.label : t('Select a settings module', 'ترتیبات منتخب کریں')}
