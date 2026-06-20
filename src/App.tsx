@@ -700,6 +700,11 @@ function MainApp() {
         return <SubscriptionHub settings={settings} />;
 
       case 'license_manager':
+        if (!isSuperAdmin) {
+          console.warn('Unauthorized access attempt to license_manager');
+          setTimeout(() => setActiveView('dashboard'), 0);
+          return null;
+        }
         return <LicenseManager settings={settings} />;
 
       case 'price_management':
