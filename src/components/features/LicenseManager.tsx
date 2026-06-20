@@ -9,7 +9,7 @@ interface FirebaseOrg {
   orgId: string;  // document id
   name: string;
   ownerId: string;
-  subscriptionStatus: 'active' | 'trialing' | 'expired' | 'past_due' | 'canceled' | 'pending_verification';
+  subscriptionStatus: 'active' | 'trialing' | 'expired' | 'unpaid' | 'past_due' | 'canceled' | 'pending_verification';
   subscriptionTier: string; // 'trial' | 'basic' | 'professional' | 'enterprise'
   trialStartDate: string;
   trialEndDate: string;
