@@ -5,6 +5,7 @@ import { GlobalSettings, Shift, Product, Customer, Tank, Nozzle, Staff } from '.
 import { aiAssistantService } from '../../../services/aiAssistantService';
 import { useInventoryStore } from '../../../stores/useInventoryStore';
 import { useTreasuryStore } from '../../../stores/useTreasuryStore';
+import { useStationStore } from '../../../stores/useStationStore';
 
 interface Message {
   id: string;
@@ -120,7 +121,8 @@ export default function AIAssistant({
     }
   };
 
-  const [isVisible, setIsVisible] = useState(true);
+  const isVisible = useStationStore(state => state.isAIAssistantVisible);
+  const setAIAssistantVisible = useStationStore(state => state.setAIAssistantVisible);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -138,24 +140,21 @@ export default function AIAssistant({
         {!isOpen && (
           <motion.div
             drag
-            dragConstraints={{ left: -window.innerWidth + 80, right: 0, top: -window.innerHeight + 80, bottom: 0 }}
-            dragElastic={0.1}
+            dragConstraints={{ left: -window.innerWidth + 80, right: window.innerWidth - 80, top: -window.innerHeight + 80, bottom: 0 }}
+            dragElastic={0.5}
             dragMomentum={false}
+            onDragEnd={(e, info) => {
+              // Swipe right or left to dismiss
+              if (info.offset.x > 100 || info.offset.x < -100 || Math.abs(info.velocity.x) > 500) {
+                setAIAssistantVisible(false);
+              }
+            }}
             initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            animate={{ scale: 1, opacity: 1, x: 0, y: 0 }}
             exit={{ scale: 0, opacity: 0 }}
             className="fixed bottom-28 lg:bottom-10 right-6 z-[250] flex flex-col items-end gap-1 cursor-grab active:cursor-grabbing"
             style={{ touchAction: 'none' }}
           >
-            {/* Tiny Close Button to hide the AI */}
-            <button
-              onClick={(e) => { e.stopPropagation(); setIsVisible(false); }}
-              className="absolute -top-1 -right-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-slate-800 text-slate-300 shadow-md hover:bg-slate-700 hover:text-white transition-colors"
-              title="Hide AI Assistant"
-            >
-              <X className="h-3 w-3" />
-            </button>
-
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}

@@ -970,6 +970,7 @@ function MainApp() {
           handleViewChange('configuration');
         }}
         onJarvisTrigger={() => {
+          useStationStore.getState().setAIAssistantVisible(true);
           handleViewChange('jarvis');
         }}
       />

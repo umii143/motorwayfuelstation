@@ -11,6 +11,9 @@ interface StationState {
   toast: ToastConfig;
   confirmDialog: ConfirmConfig;
   
+  isAIAssistantVisible: boolean;
+  setAIAssistantVisible: (visible: boolean) => void;
+  
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
   showConfirm: (title: string, message: string, onConfirm: () => void, isAlert?: boolean, confirmText?: string, cancelText?: string) => void;
   showAlert: (title: string, message: string, onConfirm?: () => void) => void;
@@ -39,6 +42,7 @@ export const useStationStore = create<StationState>((set, get) => {
     activeStationId: db.getActiveStationId(),
     stations: db.getStationsList(),
     settings: db.getSettings(db.getActiveStationId()),
+    isAIAssistantVisible: true,
     toast: { message: '', type: 'success', visible: false },
     confirmDialog: {
       title: '',
@@ -47,6 +51,8 @@ export const useStationStore = create<StationState>((set, get) => {
       onConfirm: () => {},
       onCancel: () => {}
     },
+
+    setAIAssistantVisible: (visible) => set({ isAIAssistantVisible: visible }),
 
     showToast: (message, type = 'success') => {
       if (toastTimeout) {
