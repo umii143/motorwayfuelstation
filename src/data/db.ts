@@ -448,9 +448,9 @@ export const db = {
     try {
       const list = (memoryCache['fuelpro_stations'] ?? null);
       if (!list) {
-        const defaultList = [
-          withBusinessScope(SEED_FUEL_STATION, DEFAULT_STATION_ID),
-          withBusinessScope(SEED_LUBE_STATION, LUBE_STATION_ID)
+        const defaultList: Station[] = [
+          { ...SEED_FUEL_STATION, stationId: DEFAULT_STATION_ID, businessId: DEFAULT_STATION_ID, businessType: 'fuel_station' },
+          { ...SEED_LUBE_STATION, stationId: LUBE_STATION_ID, businessId: LUBE_STATION_ID, businessType: 'lube' }
         ];
         if (dbInitialized) {
           ((memoryCache['fuelpro_stations'] = JSON.stringify(defaultList)), flushToIndexedDB('fuelpro_stations', JSON.stringify(defaultList)));
@@ -458,20 +458,38 @@ export const db = {
         return defaultList;
       }
       const parsed = JSON.parse(list) as Station[];
+      let modified = false;
       if (!parsed.some(s => s.id === DEFAULT_STATION_ID)) {
-        parsed.unshift(SEED_FUEL_STATION);
+        parsed.unshift({ ...SEED_FUEL_STATION, stationId: DEFAULT_STATION_ID, businessId: DEFAULT_STATION_ID, businessType: 'fuel_station' });
+        modified = true;
       }
       if (!parsed.some(s => s.id === LUBE_STATION_ID)) {
-        parsed.push(SEED_LUBE_STATION);
+        parsed.push({ ...SEED_LUBE_STATION, stationId: LUBE_STATION_ID, businessId: LUBE_STATION_ID, businessType: 'lube' });
+        modified = true;
       }
-      const scopedStations = parsed.map((station) => withBusinessScope(station, station.id));
-      ((memoryCache['fuelpro_stations'] = JSON.stringify(scopedStations)), flushToIndexedDB('fuelpro_stations', JSON.stringify(scopedStations)));
+      
+      const scopedStations = parsed.map((station) => {
+        if (!station.businessType) {
+          modified = true;
+          return {
+            ...station,
+            stationId: station.id,
+            businessId: station.id,
+            businessType: station.id === LUBE_STATION_ID ? 'lube' : 'fuel_station'
+          };
+        }
+        return station;
+      });
+
+      if (modified) {
+        ((memoryCache['fuelpro_stations'] = JSON.stringify(scopedStations)), flushToIndexedDB('fuelpro_stations', JSON.stringify(scopedStations)));
+      }
       return scopedStations;
     } catch {
       return [
-        withBusinessScope(SEED_FUEL_STATION, DEFAULT_STATION_ID),
-        withBusinessScope(SEED_LUBE_STATION, LUBE_STATION_ID)
-      ];
+        { ...SEED_FUEL_STATION, stationId: DEFAULT_STATION_ID, businessId: DEFAULT_STATION_ID, businessType: 'fuel_station' },
+        { ...SEED_LUBE_STATION, stationId: LUBE_STATION_ID, businessId: LUBE_STATION_ID, businessType: 'lube' }
+      ] as Station[];
     }
   },
 

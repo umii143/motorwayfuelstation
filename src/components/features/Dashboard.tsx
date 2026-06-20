@@ -63,6 +63,20 @@ const fadeUp = {
   transition: spring,
 };
 
+const ClockWidget = () => {
+  const [time, setTime] = useState(new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 60000); // Only update every minute
+    return () => clearInterval(timer);
+  }, []);
+
+  const timeStr = time.toLocaleTimeString('en-PK', {
+    hour: '2-digit', minute: '2-digit', hour12: true
+  });
+
+  return <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">{timeStr}</span>;
+};
+
 interface DashboardProps {
   settings: GlobalSettings;
   activeStationId: string;
@@ -140,13 +154,6 @@ export default React.memo(function Dashboard({
     return new Date().toISOString().split('T')[0];
   });
 
-  const [time, setTime] = useState(new Date());
-
-  useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
   const todayStr = new Date().toISOString().split('T')[0];
   const yesterdayStr = (() => {
     const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().split('T')[0];
@@ -216,9 +223,7 @@ export default React.memo(function Dashboard({
     return staff.find(st => st.id === activeShift.staffId)?.name || 'Operator';
   }, [activeShift, staff]);
 
-  const timeStr = time.toLocaleTimeString('en-PK', {
-    hour: '2-digit', minute: '2-digit', hour12: true
-  });
+
 
   // ─── REAL: Sales Overview Chart (hourly POS data, no fake outflow line) ───
   const hourlyData = useMemo(() => {
@@ -386,37 +391,51 @@ export default React.memo(function Dashboard({
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-200/50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
               <Clock className="w-3.5 h-3.5 text-slate-500" />
-              <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">{timeStr}</span>
+              <ClockWidget />
             </div>
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-200/50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
               <FileText className="w-3.5 h-3.5 text-slate-500" />
               <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">{new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
             </div>
-            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${activeShift ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-slate-200/50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500'}`}>
-              <div className={`w-1.5 h-1.5 rounded-full ${activeShift ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
-              <span className="text-xs font-bold">{activeShift ? `Shift Active · ${activeStaffName}` : 'No Active Shift'}</span>
-            </div>
+            {!isLube && (
+              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${activeShift ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-slate-200/50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500'}`}>
+                <div className={`w-1.5 h-1.5 rounded-full ${activeShift ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                <span className="text-xs font-bold">{activeShift ? `Shift Active · ${activeStaffName}` : 'No Active Shift'}</span>
+              </div>
+            )}
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => {
-              if (onStartShiftQuick) onStartShiftQuick();
-              else onNavigate('shift_wizard');
-            }}
-            className="flex items-center gap-2 bg-[#FF7A00] hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-[0_8px_16px_rgba(255,122,0,0.3)]"
-          >
-            <Play className="w-5 h-5 fill-current" />
-            Start Shift
-          </button>
-          <button
-            onClick={() => onNavigate('shift_logs')}
-            className="flex items-center gap-2 bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-white px-6 py-3 rounded-xl font-bold transition-all"
-          >
-            <FileText className="w-5 h-5" />
-            Shift Logs
-          </button>
+          {isLube ? (
+            <button
+              onClick={() => onNavigate('lube_pos')}
+              className="flex items-center gap-2 bg-[#FF7A00] hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-[0_8px_16px_rgba(255,122,0,0.3)]"
+            >
+              <Play className="w-5 h-5 fill-current" />
+              Open POS
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => {
+                  if (onStartShiftQuick) onStartShiftQuick();
+                  else onNavigate('shift_wizard');
+                }}
+                className="flex items-center gap-2 bg-[#FF7A00] hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-[0_8px_16px_rgba(255,122,0,0.3)]"
+              >
+                <Play className="w-5 h-5 fill-current" />
+                Start Shift
+              </button>
+              <button
+                onClick={() => onNavigate('shift_logs')}
+                className="flex items-center gap-2 bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-white px-6 py-3 rounded-xl font-bold transition-all"
+              >
+                <FileText className="w-5 h-5" />
+                Shift Logs
+              </button>
+            </>
+          )}
         </div>
       </div>
 
