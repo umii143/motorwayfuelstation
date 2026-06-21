@@ -394,21 +394,50 @@ export default React.memo(function Dashboard({
     );
   }
 
+  const [useV2, setUseV2] = useState(() => localStorage.getItem('useV2Dashboard') === 'true');
+
+  const toggleV2 = () => {
+    const nextState = !useV2;
+    setUseV2(nextState);
+    localStorage.setItem('useV2Dashboard', String(nextState));
+  };
+
+  if (useV2) {
+    const { DashboardShell } = require('./widgets/DashboardShell');
+    return (
+      <div className="relative">
+        <div className="absolute top-4 right-4 z-50">
+          <button onClick={toggleV2} className="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold border border-slate-700 hover:bg-slate-700">
+            Switch back to V1 Dashboard
+          </button>
+        </div>
+        <DashboardShell />
+      </div>
+    );
+  }
+
   return (
-    <FuelDashboard
-      settings={settings}
-      activeStationId={activeStationId}
-      shifts={shifts}
-      products={products}
-      customers={customers}
-      suppliers={suppliers}
-      banks={banks}
-      nozzles={nozzles}
-      tanks={tanks}
-      stockTxns={stockTxns}
-      onNavigate={onNavigate}
-      onStartShiftQuick={onStartShiftQuick}
-      userName={userName}
-    />
+    <div className="relative">
+      <div className="absolute top-4 right-4 z-50">
+        <button onClick={toggleV2} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold border border-indigo-500 hover:bg-indigo-500 shadow-lg shadow-indigo-500/20">
+          Try Enterprise Widget Studio (V2)
+        </button>
+      </div>
+      <FuelDashboard
+        settings={settings}
+        activeStationId={activeStationId}
+        shifts={shifts}
+        products={products}
+        customers={customers}
+        suppliers={suppliers}
+        banks={banks}
+        nozzles={nozzles}
+        tanks={tanks}
+        stockTxns={stockTxns}
+        onNavigate={onNavigate}
+        onStartShiftQuick={onStartShiftQuick}
+        userName={userName}
+      />
+    </div>
   );
 });

@@ -18,6 +18,11 @@ export interface WidgetManifest {
   permissions: WidgetPermissions;
   lazy: boolean;
   enabled: boolean;
+  removable: boolean;
+  systemWidget: boolean;
+  premium?: boolean;
+  layoutVersion: number;
+  workerDependencies?: string[];
   defaultSettings?: Record<string, any>;
   previewImage?: string; // Optional URL for the Marketplace
   minWidth?: number;     // For react-grid-layout grid units

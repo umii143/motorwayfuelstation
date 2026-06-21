@@ -11,6 +11,9 @@ export const CORE_WIDGETS: WidgetManifest[] = [
     permissions: { visibleTo: ['owner', 'manager'] },
     lazy: true,
     enabled: true,
+    removable: false,
+    systemWidget: true,
+    layoutVersion: 1,
     minWidth: 2,
     minHeight: 1
   },
@@ -24,6 +27,9 @@ export const CORE_WIDGETS: WidgetManifest[] = [
     permissions: { visibleTo: ['owner', 'manager', 'salesman'] },
     lazy: true,
     enabled: true,
+    removable: true,
+    systemWidget: true,
+    layoutVersion: 1,
     minWidth: 2,
     minHeight: 2,
     defaultSettings: { showForecast: true, showCapacity: true }
@@ -38,6 +44,9 @@ export const CORE_WIDGETS: WidgetManifest[] = [
     permissions: { visibleTo: ['owner', 'manager', 'salesman', 'accountant'] },
     lazy: true,
     enabled: true,
+    removable: true,
+    systemWidget: true,
+    layoutVersion: 1,
     minWidth: 2,
     minHeight: 1
   },
@@ -51,6 +60,10 @@ export const CORE_WIDGETS: WidgetManifest[] = [
     permissions: { visibleTo: ['owner'] },
     lazy: true,
     enabled: true,
+    removable: true,
+    systemWidget: false,
+    layoutVersion: 1,
+    workerDependencies: ['forecast.worker.ts'],
     minWidth: 2,
     minHeight: 1
   }

@@ -70,17 +70,26 @@ export function DashboardCanvas() {
       >
         {activeLayout.widgets.map((widget) => {
           const manifest = manifests[widget.manifestId];
-          if (!manifest) return <div key={widget.instanceId} />; // Missing manifest
+          if (!manifest) return <div key={widget.instanceId} />;
 
-          // Lazy load the actual component (We'll build the loader later)
-          // For now, we'll just render a placeholder inside the Wrapper
+          let WidgetComponent = null;
+          if (manifest.id === 'hero-performance') {
+             const { HeroPerformanceWidget } = require('./instances/HeroPerformanceWidget');
+             WidgetComponent = <HeroPerformanceWidget />;
+          } else if (manifest.id === 'active-shift') {
+             const { ActiveShiftWidget } = require('./instances/ActiveShiftWidget');
+             WidgetComponent = <ActiveShiftWidget />;
+          }
+
           return (
             <div key={widget.instanceId}>
               <WidgetWrapper instance={widget} manifest={manifest}>
-                <div className="w-full h-full flex flex-col items-center justify-center">
-                  <div className="text-xs font-bold text-slate-400">{manifest.name}</div>
-                  <div className="text-[10px] text-slate-500 mt-1">Component not mapped yet</div>
-                </div>
+                {WidgetComponent ? WidgetComponent : (
+                  <div className="w-full h-full flex flex-col items-center justify-center p-4">
+                    <div className="text-xs font-bold text-slate-400">{manifest.name}</div>
+                    <div className="text-[10px] text-slate-500 mt-1">Component not mapped yet</div>
+                  </div>
+                )}
               </WidgetWrapper>
             </div>
           );
