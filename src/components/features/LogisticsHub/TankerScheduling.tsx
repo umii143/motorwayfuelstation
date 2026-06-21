@@ -233,7 +233,7 @@ export default function TankerScheduling({ settings, stationId }: TankerScheduli
             </div>
             
             <div className="p-6 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">OMC / Supplier *</label>
                   <select value={supplierId} onChange={e => setSupplierId(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white">
@@ -269,7 +269,7 @@ export default function TankerScheduling({ settings, stationId }: TankerScheduli
                 
                 <div className="md:col-span-2 pt-4 border-t border-slate-100">
                   <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Logistics Details (Optional)</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">Tanker Reg No.</label>
                       <input type="text" value={vehicleRegNo} onChange={e => setVehicleRegNo(e.target.value.toUpperCase())} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono uppercase" placeholder="TTR-123" />

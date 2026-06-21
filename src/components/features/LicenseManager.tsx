@@ -412,7 +412,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
       {/* Custom Unified Modal */}
       {modalConfig.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-xl overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-6">
               <h3 className="text-xl font-bold text-slate-900">{modalConfig.title}</h3>
               <p className="text-slate-500 text-sm mt-2">{modalConfig.description}</p>

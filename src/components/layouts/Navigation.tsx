@@ -868,8 +868,8 @@ const Navigation = React.memo(function Navigation({
 
       {/* DESKTOP SIDEBAR */}
       <aside 
-        className={`fixed bottom-0 top-[65px] left-0 z-40 hidden border-r border-border glass py-4 lg:block animate-fade-in shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)] transition-all duration-300 ${
-          isSidebarCollapsed ? 'w-full max-w-[72px]' : 'w-64'
+        className={`fixed bottom-0 top-[65px] left-0 z-40 hidden border-r border-border glass py-3 lg:block animate-fade-in shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)] transition-all duration-300 ${
+          isSidebarCollapsed ? 'w-full max-w-[72px]' : 'w-56'
         }`}
       >
         <div className="flex flex-col h-full justify-between overflow-x-hidden">
@@ -946,14 +946,14 @@ const Navigation = React.memo(function Navigation({
                               setExpandedMenus(prev => ({ ...prev, [item.id]: !expanded }));
                               if (isSidebarCollapsed && onToggleSidebar) onToggleSidebar(false);
                             }}
-                            className={`flex w-full items-center justify-between gap-3 rounded-lg py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
-                              isSidebarCollapsed ? 'px-2 justify-center' : 'px-3'
+                            className={`flex w-full items-center justify-between gap-2 rounded-lg py-1.5 font-sans text-[11px] font-semibold transition-all cursor-pointer ${
+                              isSidebarCollapsed ? 'px-1.5 justify-center' : 'px-2'
                             } ${
                               isChildActive
                                 ? isLube
-                                  ? 'bg-blue-50 text-blue-600 font-bold border-l-4 border-blue-600 shadow-xs'
-                                  : 'bg-orange-50 text-orange-600 font-bold border-l-4 border-orange-600 shadow-xs'
-                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent'
+                                  ? 'bg-blue-50/50 text-blue-600 font-bold border-l-[3px] border-blue-600 shadow-sm'
+                                  : 'bg-orange-50/50 text-orange-600 font-bold border-l-[3px] border-orange-600 shadow-sm'
+                                : 'text-slate-500 hover:bg-slate-50/50 hover:text-slate-800 border-l-[3px] border-transparent'
                             }`}
                             title={isSidebarCollapsed ? t(item.label, item.urdu) : undefined}
                           >
@@ -973,8 +973,8 @@ const Navigation = React.memo(function Navigation({
                                   <button
                                     key={child.id}
                                     onClick={() => handleItemClick(child.id)}
-                                    className={`flex w-full items-center gap-3 rounded-lg py-2 font-sans text-xs font-semibold transition-all cursor-pointer ${
-                                      isSidebarCollapsed ? 'px-2 justify-center' : 'px-3'
+                                    className={`flex w-full items-center gap-2 rounded-lg py-1.5 font-sans text-[11px] font-semibold transition-all cursor-pointer ${
+                                      isSidebarCollapsed ? 'px-1.5 justify-center' : 'px-2'
                                     } ${
                                       isChildItemActive
                                         ? isLube
@@ -1000,14 +1000,14 @@ const Navigation = React.memo(function Navigation({
                       <button
                         key={item.id}
                         onClick={() => handleItemClick(item.id)}
-                        className={`flex w-full items-center gap-3 rounded-lg py-2.5 font-sans text-sm font-medium transition-all cursor-pointer ${
-                          isSidebarCollapsed ? 'px-2 justify-center' : 'px-3'
+                        className={`flex w-full items-center gap-2 rounded-lg py-1.5 font-sans text-[11px] font-semibold transition-all cursor-pointer ${
+                          isSidebarCollapsed ? 'px-1.5 justify-center' : 'px-2'
                         } ${
                           isActive
                             ? isLube
-                              ? 'bg-blue-50 text-blue-600 font-bold border-l-4 border-blue-600 shadow-xs'
-                              : 'bg-orange-50 text-orange-600 font-bold border-l-4 border-orange-600 shadow-xs'
-                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent'
+                              ? 'bg-blue-50/50 text-blue-600 font-bold border-l-[3px] border-blue-600 shadow-sm'
+                              : 'bg-orange-50/50 text-orange-600 font-bold border-l-[3px] border-orange-600 shadow-sm'
+                            : 'text-slate-500 hover:bg-slate-50/50 hover:text-slate-800 border-l-[3px] border-transparent'
                         }`}
                         title={isSidebarCollapsed ? t(item.label, item.urdu) : undefined}
                       >

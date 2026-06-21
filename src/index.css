@@ -17,6 +17,7 @@
 html, body {
   overflow-x: hidden;
   max-width: 100vw;
+  background: var(--bg-app-gradient, var(--bg-app));
   background-color: var(--bg-app);
   color: var(--text-main);
   font-family: 'Inter', 'Noto Nastaliq Urdu', system-ui, sans-serif;
@@ -176,8 +177,9 @@ textarea {
 
 /* Custom CSS Variable themed classes */
 .theme-white {
-  --bg-app: #FFFFFF;
-  --bg-card: #FFFFFF;
+  --bg-app: #f8fafc;
+  --bg-app-gradient: linear-gradient(180deg, #fafafa, #f3f4f6);
+  --bg-card: rgba(255, 255, 255, 0.65);
   --bg-hover: #F8FAFC;
   --bg-subtle: #F1F5F9;
   --text-main: #0F172A;
@@ -194,6 +196,7 @@ textarea {
 
 .theme-dark, .dark {
   --bg-app: #020617; /* Dark Mode Surface */
+  --bg-app-gradient: none;
   --bg-card: #0F172A; /* Dark Mode Surface */
   --bg-hover: #1E293B;
   --bg-subtle: #020617;
@@ -211,6 +214,7 @@ textarea {
 
 .theme-blue {
   --bg-app: #030712; /* Gray 950 */
+  --bg-app-gradient: none;
   --bg-card: #0f172a; /* Slate 900 */
   --bg-hover: #1e293b; /* Slate 800 */
   --bg-subtle: #020617; /* Slate 950 */
@@ -225,6 +229,7 @@ textarea {
 
 .theme-emerald {
   --bg-app: #022c22; /* Emerald 950 */
+  --bg-app-gradient: none;
   --bg-card: #064e3b; /* Emerald 900 */
   --bg-hover: #047857; /* Emerald 700 */
   --bg-subtle: #022c22;
@@ -239,6 +244,7 @@ textarea {
 
 .theme-orange {
   --bg-app: #1c1917; /* Stone 900 */
+  --bg-app-gradient: none;
   --bg-card: #292524; /* Stone 800 */
   --bg-hover: #44403c; /* Stone 700 */
   --bg-subtle: #1c1917;

@@ -437,7 +437,7 @@ export default function Expenses({
           
           {/* SEARCH & FILTER CONTROLS CARD */}
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3.5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
               <div>
                 <select
@@ -613,7 +613,7 @@ export default function Expenses({
 
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Paid From Account:', 'رقم کہاں سے ادا کی گئی:')}</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <button
                       type="button"
                       onClick={() => setFormPaidFrom('cash')}
@@ -670,7 +670,7 @@ export default function Expenses({
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: 15, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 350 }}
-              className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-xl"
+              className="w-full max-w-xl rounded-xl border border-slate-200 bg-white p-6 shadow-xl"
             >
               <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
                 <h3 className="font-sans text-sm font-bold text-slate-900 flex items-center gap-2">

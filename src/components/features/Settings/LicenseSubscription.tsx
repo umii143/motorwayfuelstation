@@ -124,7 +124,7 @@ export default function LicenseSubscription({ settings }: { settings: GlobalSett
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
               <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                 <div className="flex items-center gap-2 text-slate-500 text-sm font-semibold mb-1">
                   <Calendar className="h-4 w-4" /> 

@@ -114,7 +114,7 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
 
   return (
     <div className="premium-modal-overlay">
-      <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
+      <div className="w-full max-w-xl rounded-xl border border-theme-main bg-theme-card p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
           <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-2">
             <CreditCard className="h-5 w-5 text-emerald-600" />
@@ -130,7 +130,7 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
               required
               value={selectedSupplierId}
               onChange={(e) => setSelectedSupplierId(e.target.value)}
-              className="premium-input border bg-white px-3 font-sans text-sm focus:border-emerald-500 outline-none"
+              className="premium-input border bg-theme-card px-3 font-sans text-sm focus:border-emerald-500 outline-none"
             >
               <option value="">{t('-- Select Supplier --', '-- سپلائر منتخب کریں --')}</option>
               {suppliers.map(s => (
@@ -138,7 +138,7 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
               ))}
             </select>
             {selectedSupplier && (
-              <div className="mt-2 text-xs text-slate-600 bg-slate-50 p-2 rounded-md border border-slate-200 flex justify-between">
+              <div className="mt-2 text-xs text-slate-600 bg-theme-bg p-2 rounded-md border border-theme-main flex justify-between">
                 <span>{t('Current Payable Balance:', 'موجودہ واجب الادا بیلنس:')}</span>
                 <strong className={selectedSupplier.balance > 0 ? 'text-red-600' : 'text-emerald-600'}>
                   Rs. {selectedSupplier.balance.toLocaleString()}
@@ -155,7 +155,7 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
                 setPaymentMode(e.target.value as any);
                 setAccountId('');
               }}
-              className="premium-input border bg-white px-3 font-sans text-sm focus:border-emerald-500 outline-none"
+              className="premium-input border bg-theme-card px-3 font-sans text-sm focus:border-emerald-500 outline-none"
             >
               <option value="bank">{t('Bank Transfer', 'بینک ٹرانسفر')}</option>
               <option value="cash">{t('Cash / Safe', 'نقد')}</option>
@@ -168,7 +168,7 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
             <select
               value={accountId}
               onChange={(e) => setAccountId(e.target.value)}
-              className="premium-input border bg-white px-3 font-sans text-sm focus:border-emerald-500 outline-none"
+              className="premium-input border bg-theme-card px-3 font-sans text-sm focus:border-emerald-500 outline-none"
             >
               <option value="">{t('-- Select Account --', '-- اکاؤنٹ منتخب کریں --')}</option>
               {paymentMode === 'bank' && banks.map(b => (
@@ -196,12 +196,12 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
-                className="premium-input border bg-white pl-9 pr-3 font-mono text-sm focus:border-emerald-500 outline-none"
+                className="premium-input border bg-theme-card pl-9 pr-3 font-mono text-sm focus:border-emerald-500 outline-none"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
              <div>
                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Date:', 'تاریخ:')}</label>
                <input
@@ -209,7 +209,7 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
                  required
                  value={date}
                  onChange={(e) => setDate(e.target.value)}
-                 className="premium-input border bg-white px-3 font-sans text-sm focus:border-emerald-500 outline-none"
+                 className="premium-input border bg-theme-card px-3 font-sans text-sm focus:border-emerald-500 outline-none"
                />
              </div>
              <div>
@@ -219,7 +219,7 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
                  value={reference}
                  onChange={(e) => setReference(e.target.value)}
                  placeholder="e.g. CHQ-293"
-                 className="premium-input border bg-white px-3 font-sans text-sm focus:border-emerald-500 outline-none"
+                 className="premium-input border bg-theme-card px-3 font-sans text-sm focus:border-emerald-500 outline-none"
                />
              </div>
           </div>

@@ -52,7 +52,7 @@ function RecoveryModal({
 
   return (
     <div className="premium-modal-overlay">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+      <div className="bg-theme-card rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
         <div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-4 text-white">
           <h3 className="font-black text-base">💰 Record Recovery</h3>
           <p className="text-emerald-100 text-xs mt-0.5">{claim.claimNumber} · Total: Rs.{claim.claimAmount.toLocaleString('en-PK', { maximumFractionDigits: 0 })}</p>
@@ -66,7 +66,7 @@ function RecoveryModal({
               onChange={e => setAmount(e.target.value)}
               placeholder={`Max: ${claim.claimAmount}`}
               max={claim.claimAmount}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-sm font-mono focus:outline-none focus:border-emerald-500"
+              className="w-full border border-theme-main rounded-xl px-3 py-2 text-slate-800 text-sm font-mono focus:outline-none focus:border-emerald-500"
               autoFocus
             />
             {parseFloat(amount) > 0 && (
@@ -83,11 +83,11 @@ function RecoveryModal({
               value={notes}
               onChange={e => setNotes(e.target.value)}
               placeholder="e.g. Credit note received from PSO..."
-              className="w-full border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-sm focus:outline-none focus:border-emerald-500"
+              className="w-full border border-theme-main rounded-xl px-3 py-2 text-slate-800 text-sm focus:outline-none focus:border-emerald-500"
             />
           </div>
           <div className="flex gap-2 pt-1">
-            <button onClick={onClose} className="flex-1 py-2 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50">Cancel</button>
+            <button onClick={onClose} className="flex-1 py-2 rounded-xl border border-theme-main text-slate-600 text-sm font-semibold hover:bg-slate-50">Cancel</button>
             <button
               onClick={() => {
                 const amt = parseFloat(amount);
@@ -252,8 +252,8 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
 
   const recoveryClaimObj = recoveryClaimId ? supplierClaims.find(c => c.id === recoveryClaimId) : null;
 
-  const inputCls = "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none text-sm";
-  const selectCls = "w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800 focus:border-orange-500 focus:bg-white focus:outline-none text-sm";
+  const inputCls = "w-full rounded-xl border border-theme-main bg-theme-card px-3 py-2 text-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none text-sm";
+  const selectCls = "w-full rounded-xl border border-theme-main bg-theme-bg px-3 py-2 text-slate-800 focus:border-orange-500 focus:bg-white focus:outline-none text-sm";
 
   return (
     <div className="space-y-4">
@@ -279,7 +279,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
       {/* KPI Header */}
       <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: t('Total Claims', 'کل کلیمز'), value: intelligence.total, icon: AlertTriangle, bg: 'bg-slate-50 border-slate-200', color: 'text-slate-700', valueColor: 'text-slate-800' },
+          { label: t('Total Claims', 'کل کلیمز'), value: intelligence.total, icon: AlertTriangle, bg: 'bg-theme-bg border-theme-main', color: 'text-slate-700', valueColor: 'text-slate-800' },
           { label: t('Recovery Rate', 'وصولی شرح'), value: `${intelligence.recoveryPct.toFixed(1)}%`, icon: TrendingUp, bg: intelligence.recoveryPct >= 70 ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200', color: intelligence.recoveryPct >= 70 ? 'text-emerald-600' : 'text-red-600', valueColor: intelligence.recoveryPct >= 70 ? 'text-emerald-800' : 'text-red-800' },
           { label: t('Avg Resolution', 'اوسط حل وقت'), value: intelligence.avgResolutionDays > 0 ? `${intelligence.avgResolutionDays.toFixed(0)}d` : '—', icon: Clock, bg: intelligence.avgResolutionDays > 30 ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200', color: 'text-blue-600', valueColor: 'text-blue-800' },
           { label: t('Outstanding', 'بقایا'), value: `Rs.${(intelligence.totalOutstanding / 1000).toFixed(0)}K`, icon: BarChart2, bg: intelligence.totalOutstanding > 0 ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-200', color: intelligence.totalOutstanding > 0 ? 'text-red-600' : 'text-emerald-600', valueColor: intelligence.totalOutstanding > 0 ? 'text-red-800' : 'text-emerald-800' },
@@ -297,7 +297,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
       </div>
 
       {/* Intelligence Recovery Bar */}
-      <div className="premium-card border border-slate-200">
+      <div className="premium-card border border-theme-main">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{t('Claim Recovery Pipeline', 'کلیم وصولی')}</span>
           <span className="text-xs font-black text-emerald-700">
@@ -324,7 +324,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
               key={v}
               onClick={() => setActiveView(v)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all capitalize ${
-                activeView === v ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                activeView === v ? 'bg-theme-card text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               {v === 'list' ? '📋 Claims List' : '📊 By Supplier'}
@@ -349,7 +349,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
             </h4>
             <button onClick={() => setShowAddForm(false)} className="text-red-200 hover:text-white">✕</button>
           </div>
-          <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">{t('Linked Batch *', 'منسلک بیچ *')}</label>
               <select value={newClaim.batchId || ''} onChange={e => {
@@ -406,7 +406,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
             </div>
           </div>
           <div className="flex gap-3 px-5 pb-5">
-            <button onClick={() => setShowAddForm(false)} className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50">Cancel</button>
+            <button onClick={() => setShowAddForm(false)} className="px-4 py-2.5 rounded-xl border border-theme-main text-slate-600 text-sm font-semibold hover:bg-slate-50">Cancel</button>
             <button
               onClick={handleSaveClaim}
               disabled={saving || !newClaim.batchId || !newClaim.supplierId || !newClaim.claimAmount}
@@ -420,7 +420,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
 
       {/* ─── ANALYTICS VIEW ─────────────────────────────────────────────────── */}
       {activeView === 'analytics' && (
-        <div className="premium-card border border-slate-200 space-y-4">
+        <div className="premium-card border border-theme-main space-y-4">
           <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
             <BarChart2 className="size-4" />
             {t('Claims by Supplier', 'سپلائر کے مطابق کلیمز')}
@@ -430,7 +430,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
           ) : (
             <div className="space-y-3">
               {intelligence.bySupplier.map(s => (
-                <div key={s.supplier.id} className="bg-slate-50 rounded-xl p-3 border border-slate-200">
+                <div key={s.supplier.id} className="bg-theme-bg rounded-xl p-3 border border-theme-main">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <Building2 className="size-4 text-slate-500" />
@@ -488,7 +488,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
             <div className="flex flex-wrap gap-1.5">
               {(['all', 'pending', 'submitted', 'approved', 'rejected', 'recovered', 'partial'] as const).map(s => (
                 <button key={s} onClick={() => setFilterStatus(s)}
-                  className={`px-2.5 py-1 rounded-full text-xs font-bold border transition-colors ${filterStatus === s ? 'bg-red-600 text-white border-red-600' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}>
+                  className={`px-2.5 py-1 rounded-full text-xs font-bold border transition-colors ${filterStatus === s ? 'bg-red-600 text-white border-red-600' : 'bg-theme-card text-slate-600 border-theme-main hover:border-slate-300'}`}>
                   {s.charAt(0).toUpperCase() + s.slice(1)}
                 </button>
               ))}
@@ -496,7 +496,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
             <select
               value={filterSupplier}
               onChange={e => setFilterSupplier(e.target.value)}
-              className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:border-orange-500 ml-auto"
+              className="text-xs border border-theme-main rounded-lg px-2 py-1.5 bg-theme-card text-slate-700 focus:outline-none focus:border-orange-500 ml-auto"
             >
               <option value="all">{t('All Suppliers', 'سب سپلائرز')}</option>
               {suppliers.filter(s => supplierClaims.some(c => c.supplierId === s.id)).map(s => (
@@ -565,13 +565,13 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
                     {/* Expanded */}
                     {isExpanded && (
                       <div className="px-4 pb-4 pt-0">
-                        <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3 shadow-inner">
+                        <div className="bg-theme-card border border-theme-main rounded-xl p-4 space-y-3 shadow-inner">
                           <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                             {[
-                              { label: 'Claim Amount', value: `Rs.${claim.claimAmount.toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, color: 'text-slate-800', bg: 'bg-slate-50 border-slate-100' },
+                              { label: 'Claim Amount', value: `Rs.${claim.claimAmount.toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, color: 'text-slate-800', bg: 'bg-theme-bg border-slate-100' },
                               { label: 'Recovered', value: `Rs.${claim.recoveredAmount.toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-100' },
                               { label: 'Outstanding', value: `Rs.${claim.outstandingClaim.toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, color: 'text-red-700', bg: 'bg-red-50 border-red-100' },
-                              { label: 'Days Pending', value: `${daysSinceRaised}d`, color: daysSinceRaised > 30 ? 'text-red-700' : 'text-slate-700', bg: daysSinceRaised > 30 ? 'bg-red-50 border-red-100' : 'bg-slate-50 border-slate-100' },
+                              { label: 'Days Pending', value: `${daysSinceRaised}d`, color: daysSinceRaised > 30 ? 'text-red-700' : 'text-slate-700', bg: daysSinceRaised > 30 ? 'bg-red-50 border-red-100' : 'bg-theme-bg border-slate-100' },
                             ].map((item, i) => (
                               <div key={i} className={`rounded-lg p-2.5 border ${item.bg} text-center`}>
                                 <p className="text-slate-400 mb-0.5">{item.label}</p>

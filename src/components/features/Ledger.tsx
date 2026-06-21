@@ -17,6 +17,7 @@ import {
   ChevronRight,
   CheckCircle,
   TrendingUp,
+  TrendingDown,
   FileSpreadsheet,
   X
 } from 'lucide-react';
@@ -501,7 +502,7 @@ export default function Ledger({
         
         {/* LEFT COLUMN: ACTIVE PARTIES DATABASE */}
         <div className="space-y-4">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3.5">
+          <div className="rounded-xl border border-theme-main bg-theme-card p-4 shadow-xs space-y-3.5">
             <div className="relative">
               <Search className="absolute top-2.5 left-3 h-4 w-4 text-slate-400" />
               <input
@@ -509,7 +510,7 @@ export default function Ledger({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('Search party name...', 'کھاتہ دار کا نام تلاش کریں...')}
-                className="w-full rounded-md border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-3 font-sans text-xs focus:bg-white focus:outline-hidden"
+                className="w-full rounded-md border border-theme-main bg-theme-bg py-1.5 pl-8 pr-3 font-sans text-xs focus:bg-white focus:outline-hidden"
               />
             </div>
 
@@ -651,7 +652,7 @@ export default function Ledger({
         {selectedParty && activePartyDetails && (
           <div className="space-y-6">
             <div className="flex flex-col gap-4 items-center border-b border-slate-100 pb-4">
-              <div className="rounded-lg bg-slate-50 border border-slate-100 px-4 py-3 text-center w-full">
+              <div className="rounded-lg bg-theme-bg border border-slate-100 px-4 py-3 text-center w-full">
                 <span className="font-sans text-[10px] text-slate-400 font-bold uppercase block mb-1">
                   {selectedParty.type === 'customer' ? t('Owed to Station:', 'کسٹمر بقایا قرض:') : t('Owed by Station:', 'سپلائر بِل بقایا:')}
                 </span>
@@ -665,7 +666,7 @@ export default function Ledger({
                 {t('Chronological Ledger Transactions History', 'تاریخ برقی کاروباری لیجر')}
               </h4>
 
-              <div className="overflow-x-auto rounded-lg border border-slate-200">
+              <div className="overflow-x-auto rounded-lg border border-theme-main">
                 <div className="min-w-full max-w-[600px]">
                   <ResponsiveTable
                     data={activePartyLedgerTimeline}

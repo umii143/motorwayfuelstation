@@ -269,7 +269,7 @@ export default function DipCalculator({ settings, tanks }: DipCalculatorProps) {
               </div>
 
               {/* Breakdown Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-[var(--bg-card)] rounded-xl border border-[var(--border-main)] p-4">
                   <p className="font-mono text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-1">Raw Volume</p>
                   <p className="font-mono text-2xl font-black text-[var(--text-main)]">{result.rawLiters.toLocaleString()} L</p>
@@ -302,7 +302,7 @@ export default function DipCalculator({ settings, tanks }: DipCalculatorProps) {
                       Variance vs System Stock
                     </h4>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-center">
                     <div>
                       <p className="font-mono text-lg font-black text-[var(--text-main)]">{selectedTank.currentStock.toLocaleString()}</p>
                       <p className="font-sans text-[10px] text-[var(--text-muted)]">System Stock</p>

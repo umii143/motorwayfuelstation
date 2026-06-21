@@ -155,7 +155,7 @@ export default function ServiceSchedules({ settings, stationId }: ServiceSchedul
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {filteredRecords.map(record => (
           <div key={record.id} className="premium-card border border-slate-200 hover:shadow-md transition">
             <div className="flex justify-between items-start mb-3">
@@ -226,7 +226,7 @@ export default function ServiceSchedules({ settings, stationId }: ServiceSchedul
             </div>
             
             <div className="p-6 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Target Asset *</label>
                   <select value={assetId} onChange={e => setAssetId(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white">
@@ -253,7 +253,7 @@ export default function ServiceSchedules({ settings, stationId }: ServiceSchedul
                   <input type="text" value={provider} onChange={e => setProvider(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="e.g. John (Internal) or ABC Tech" />
                 </div>
 
-                <div className="border-t border-slate-100 pt-4 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="border-t border-slate-100 pt-4 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Scheduled Date *</label>
                     <input type="date" value={scheduledDate} onChange={e => setScheduledDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />

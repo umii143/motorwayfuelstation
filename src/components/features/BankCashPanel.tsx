@@ -201,7 +201,7 @@ export default function BankCashPanel({
   return (
     <div className="space-y-6 pb-20 lg:pb-5">
       {/* HEADER ROW WITH INTEGRATED DYNAMIC TIME FILTER */}
-      <div className="flex flex-row flex-wrap items-start items-center justify-between gap-4 border-b border-slate-200 pb-4">
+      <div className="flex flex-row flex-wrap items-start items-center justify-between gap-4 border-b border-theme-main pb-4">
         <div>
           <span className="font-mono text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-0.5">OPERATIONS</span>
           <h2 className="font-sans text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
@@ -215,7 +215,7 @@ export default function BankCashPanel({
 
         {/* TIME FILTER & TRIGGER ROW */}
         <div className="flex flex-wrap items-center gap-2 lg:self-center">
-          <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200 shadow-sm shrink-0">
+          <div className="flex bg-slate-100 rounded-lg p-1 border border-theme-main shadow-sm shrink-0">
             {(['all', 'weekly', 'monthly', 'yearly'] as const).map((filter) => (
               <button
                 key={filter}
@@ -326,7 +326,7 @@ export default function BankCashPanel({
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 items-start">
         {/* LEFT COLUMN (2/3): BANKS DIRECTORY & MANUAL ADJUSTMENTS */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+          <div className="rounded-xl border border-theme-main bg-theme-card p-5 shadow-xs space-y-4">
             <div className="flex flex-row items-center sm:justify-between gap-3">
               <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider">
                 {t('Registered Banking Institutions Directory', 'بینک اکاؤنٹ معلوماتی فہرست')}
@@ -338,7 +338,7 @@ export default function BankCashPanel({
                   placeholder={t('Search bank name...', 'تلاش بینک...')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="rounded-lg border border-slate-250 bg-white pl-8 pr-3 py-1.5 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
+                  className="rounded-lg border border-slate-250 bg-theme-card pl-8 pr-3 py-1.5 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
                 />
               </div>
             </div>
@@ -383,7 +383,7 @@ export default function BankCashPanel({
           </div>
 
           {/* HISTORICAL SHIFTS REFRESH BAGS DIRECTORY */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+          <div className="rounded-xl border border-theme-main bg-theme-card p-5 shadow-xs space-y-4">
             <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
               {t('Shift Transactions Bank Deposits Ledger', 'شفٹ وار بینک ڈیپازٹس کا تاریخی کھاتہ')}
             </h3>
@@ -428,7 +428,7 @@ export default function BankCashPanel({
 
         {/* RIGHT COLUMN (1/3): QUICK RECONCILIATIONS STATEMENT */}
         <div className="space-y-6">
-          <div className="rounded-xl border border-slate-200 bg-amber-50/20 p-5 shadow-xs border-l-4 border-l-amber-500 space-y-2">
+          <div className="rounded-xl border border-theme-main bg-amber-50/20 p-5 shadow-xs border-l-4 border-l-amber-500 space-y-2">
             <h4 className="font-sans text-xs font-bold text-amber-800 uppercase tracking-widest flex items-center gap-1.5">
               <Clock className="h-4 w-4" />
               <span>{t('Double-Entry Bank Compliance Note', 'بینکنگ ڈبل انٹری رولز')}</span>
@@ -441,13 +441,13 @@ export default function BankCashPanel({
             </p>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+          <div className="rounded-xl border border-theme-main bg-theme-card p-5 shadow-xs space-y-4">
             <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block border-b border-slate-100 pb-1.5">
               {t('Station Banks Directory Summary', 'بینکوں کی مجموعی صورتحال')}
             </span>
             <div className="space-y-2">
               {banks.map((b) => (
-                <div key={b.id} className="p-3 bg-slate-50 rounded-lg flex items-center justify-between">
+                <div key={b.id} className="p-3 bg-theme-bg rounded-lg flex items-center justify-between">
                   <div>
                     <strong className="text-slate-800 text-xs block truncate max-w-full max-w-[150px]">{b.name}</strong>
                     <span className="text-[10px] text-slate-400 font-mono mt-0.5">{b.accountNo}</span>
@@ -468,7 +468,7 @@ export default function BankCashPanel({
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-xl space-y-4"
+              className="w-full max-w-sm rounded-xl border border-theme-main bg-theme-card p-6 shadow-xl space-y-4"
             >
               <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-2">
                 <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-2">
@@ -494,7 +494,7 @@ export default function BankCashPanel({
                     placeholder="e.g. Meezan Bank Ltd"
                     value={newBankName}
                     onChange={(e) => setNewBankName(e.target.value)}
-                    className="premium-input border bg-white px-3 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-theme-card px-3 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
                   />
                 </div>
 
@@ -508,7 +508,7 @@ export default function BankCashPanel({
                     placeholder="e.g. PK83MEZN000109283910"
                     value={newAccountNo}
                     onChange={(e) => setNewAccountNo(e.target.value)}
-                    className="premium-input border bg-white px-3 font-mono text-xs focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-theme-card px-3 font-mono text-xs focus:border-orange-500 focus:outline-hidden"
                   />
                 </div>
 
@@ -521,7 +521,7 @@ export default function BankCashPanel({
                     placeholder="e.g. 500000"
                     value={newBalance}
                     onChange={(e) => setNewBalance(e.target.value)}
-                    className="premium-input border bg-white px-3 .5 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-theme-card px-3 .5 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
                   />
                 </div>
 
@@ -545,7 +545,7 @@ export default function BankCashPanel({
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-xl space-y-4"
+              className="w-full max-w-sm rounded-xl border border-theme-main bg-theme-card p-6 shadow-xl space-y-4"
             >
               <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-1">
                 <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-1.5">
@@ -565,14 +565,14 @@ export default function BankCashPanel({
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
                     {t('Adjustment Action Type:', 'تبدیلی کی نوعیت:')}
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                     <button
                       type="button"
                       onClick={() => setAdjustType('deposit')}
                       className={`py-1.5 font-bold rounded-lg border transition-all cursor-pointer ${
                         adjustType === 'deposit'
                           ? 'border-emerald-500 bg-emerald-50 text-emerald-700 font-extrabold'
-                          : 'border-slate-200 bg-white text-slate-500'
+                          : 'border-theme-main bg-theme-card text-slate-500'
                       }`}
                     >
                       {t('Deposit / Credit (+)', 'رقم جمع کریں')}
@@ -583,7 +583,7 @@ export default function BankCashPanel({
                       className={`py-1.5 font-bold rounded-lg border transition-all cursor-pointer ${
                         adjustType === 'withdrawal'
                           ? 'border-rose-500 bg-rose-50 text-rose-700 font-extrabold'
-                          : 'border-slate-200 bg-white text-slate-500'
+                          : 'border-theme-main bg-theme-card text-slate-500'
                       }`}
                     >
                       {t('Withdrawal / Debit (-)', 'رقم نکالیں')}
@@ -601,7 +601,7 @@ export default function BankCashPanel({
                     placeholder="e.g. 25000"
                     value={adjustAmount}
                     onChange={(e) => setAdjustAmount(e.target.value)}
-                    className="premium-input border bg-white px-3 .5 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-theme-card px-3 .5 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
                   />
                 </div>
 
@@ -615,7 +615,7 @@ export default function BankCashPanel({
                     placeholder="e.g. Interbank Profit Credit"
                     value={adjustReason}
                     onChange={(e) => setAdjustReason(e.target.value)}
-                    className="premium-input border bg-white px-3 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-theme-card px-3 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
                   />
                 </div>
 

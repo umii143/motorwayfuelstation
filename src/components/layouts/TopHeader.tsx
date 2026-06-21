@@ -6,6 +6,7 @@ interface TopHeaderProps {
   onMenuClick: () => void;
   onLanguageToggle?: () => void;
   onThemeToggle?: () => void;
+  onSetTheme?: (theme: string) => void;
   onSettingsClick?: () => void;
   onTankWizardTrigger?: () => void;
   onJarvisTrigger?: () => void;
@@ -20,6 +21,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   onMenuClick, 
   onLanguageToggle,
   onThemeToggle,
+  onSetTheme,
   onSettingsClick,
   onTankWizardTrigger,
   onJarvisTrigger,
@@ -30,17 +32,33 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   onCreateStation
 }) => {
   const [isStationMenuOpen, setIsStationMenuOpen] = useState(false);
+  const [isThemeOpen, setIsThemeOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const themeDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsStationMenuOpen(false);
       }
+      if (themeDropdownRef.current && !themeDropdownRef.current.contains(event.target as Node)) {
+        setIsThemeOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const availableThemes = [
+    { id: 'light', label: 'Light', icon: Sun },
+    { id: 'dark', label: 'Executive', icon: Moon },
+    { id: 'white', label: 'Pure White', icon: Sun },
+    { id: 'blue', label: 'Corporate Blue', icon: Palette },
+    { id: 'emerald', label: 'Emerald', icon: Palette },
+    { id: 'orange', label: 'Sunset', icon: Palette },
+  ];
+  
+  const currentThemeObj = availableThemes.find(t => t.id === settings.theme) || availableThemes[0];
 
   const activeStation = stations.find(s => s.id === activeStationId) || stations[0];
   const isLube = activeStation?.businessType === 'lube';
@@ -87,13 +105,43 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           <span className="text-xs font-bold hidden sm:inline">{settings.language === 'ur' ? 'UR' : 'EN'}</span>
         </button>
 
-        {/* Theme Toggle */}
-        <button 
-          onClick={onThemeToggle}
-          className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors"
-        >
-          <Palette className="w-5 h-5" />
-        </button>
+        {/* Theme Dropdown */}
+        <div className="relative" ref={themeDropdownRef}>
+          <button 
+            onClick={() => setIsThemeOpen(!isThemeOpen)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors border border-transparent dark:border-white/5"
+            title="Select Theme"
+          >
+            <currentThemeObj.icon className="w-4 h-4" />
+            <span className="text-xs font-bold hidden sm:inline">{currentThemeObj.label}</span>
+            <ChevronDown className={`w-3 h-3 transition-transform ${isThemeOpen ? 'rotate-180' : ''}`} />
+          </button>
+          
+          {isThemeOpen && (
+            <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-[#1A1A24] rounded-xl shadow-xl border border-slate-200 dark:border-white/10 py-2 z-50 animate-in fade-in slide-in-from-top-2">
+              <div className="px-3 pb-2 mb-2 border-b border-slate-100 dark:border-white/10">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Theme</p>
+              </div>
+              {availableThemes.map(theme => (
+                <button
+                  key={theme.id}
+                  onClick={() => {
+                    onSetTheme?.(theme.id);
+                    setIsThemeOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors ${
+                    settings.theme === theme.id 
+                      ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold' 
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5'
+                  }`}
+                >
+                  <theme.icon className="w-4 h-4" />
+                  {theme.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Settings (Tanks/Config) */}
         <button 

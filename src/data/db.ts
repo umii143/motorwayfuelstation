@@ -475,7 +475,7 @@ export const db = {
             ...station,
             stationId: station.id,
             businessId: station.id,
-            businessType: station.id === LUBE_STATION_ID ? 'lube' : 'fuel_station'
+            businessType: (station.id === LUBE_STATION_ID ? 'lube' : 'fuel_station') as 'lube' | 'fuel_station' | 'cng'
           };
         }
         return station;

@@ -48,7 +48,7 @@ export const KPIDrillDownModal: React.FC<KPIDrillDownModalProps> = ({ isOpen, on
     if (metric === 'revaluation') {
       return (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
               <p className="text-xs font-bold text-slate-500 uppercase">Calculation Formula</p>
               <p className="text-sm font-semibold text-slate-700 mt-2">Rate Diff × Stock On Hand</p>
@@ -84,7 +84,7 @@ export const KPIDrillDownModal: React.FC<KPIDrillDownModalProps> = ({ isOpen, on
       case 'overview':
         return (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                 <p className="text-xs font-bold text-slate-500 uppercase">Calculation Formula</p>
                 {metric === 'profit' ? (
@@ -309,7 +309,7 @@ export const KPIDrillDownModal: React.FC<KPIDrillDownModalProps> = ({ isOpen, on
             </div>
             
             {/* KPI Summary for Trends */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
                  <p className="text-xs font-bold text-blue-600 uppercase mb-1">Avg Daily Revenue</p>
                  <p className="text-xl font-black text-blue-900">{fmt(kpis.revenue.averageDaily)}</p>

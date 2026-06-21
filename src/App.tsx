@@ -876,19 +876,24 @@ function MainApp() {
             }}
             onComplete={async (completedData) => {
               setSettings(completedData.settings);
-              setTanks(completedData.tanks);
-              setNozzles(completedData.nozzles);
-              setProducts(completedData.products);
-            setStaff(completedData.staff);
+              
+              const injectStation = <T extends object>(arr: T[]): T[] => 
+                arr.map(item => ({ ...item, stationId: activeStationId }) as T);
 
-            // Extract pumps that nozzles refer to and populate them automatically
-            const uniquePumpIds = Array.from(new Set(completedData.nozzles.map(n => n.pumpId))) as string[];
-            const generatedPumps: Pump[] = uniquePumpIds.map(pId => ({
-              id: pId,
-              name: `Dispenser ${pId.replace('pump_', '#')}`,
-              status: 'active'
-            }));
-            setPumps(generatedPumps);
+              setTanks(injectStation(completedData.tanks));
+              setNozzles(injectStation(completedData.nozzles));
+              setProducts(injectStation(completedData.products));
+              setStaff(injectStation(completedData.staff));
+
+              // Extract pumps that nozzles refer to and populate them automatically
+              const uniquePumpIds = Array.from(new Set(completedData.nozzles.map(n => n.pumpId))) as string[];
+              const generatedPumps: Pump[] = uniquePumpIds.map(pId => ({
+                id: pId,
+                name: `Dispenser ${pId.replace('pump_', '#')}`,
+                status: 'active',
+                stationId: activeStationId
+              }));
+              setPumps(generatedPumps);
 
             const orgId = authenticatedUser?.orgId;
             if (orgId) {
@@ -978,6 +983,7 @@ function MainApp() {
           const nextIndex = (currentIndex + 1) % themes.length;
           setSettings({ ...settings, theme: themes[nextIndex] as any });
         }}
+        onSetTheme={(theme) => setSettings({ ...settings, theme: theme as any })}
         onSettingsClick={() => {
           handleViewChange('configuration');
         }}
@@ -1153,7 +1159,11 @@ function MainApp() {
                     {toast.message}
                   </p>
                   <div className="mt-2.5 flex items-center justify-between border-t border-[var(--border-main)]/40 pt-2 text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-widest">
-                    <span>{settings.language === 'ur' ? 'کامیابی سے مکمل ہوا' : 'Successfully processed'}</span>
+                    <span>
+                      {toast.type === 'error' 
+                        ? (settings.language === 'ur' ? 'انتباہ / خرابی' : 'Error / Alert') 
+                        : (settings.language === 'ur' ? 'کامیابی سے مکمل ہوا' : 'Successfully processed')}
+                    </span>
                     <PoweredByUmarAli variant="compact" />
                   </div>
                 </div>

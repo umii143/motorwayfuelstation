@@ -74,7 +74,7 @@ export default function MidShiftRateModal({
 
   return createPortal(
     <div className="fixed inset-0 z-[105] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         
         <div className="bg-amber-50 border-b border-amber-100 p-6 flex items-start gap-4">
           <div className="size-12 rounded-full bg-amber-100 flex items-center justify-center shrink-0">

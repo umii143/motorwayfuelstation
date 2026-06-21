@@ -72,7 +72,7 @@ import { useInventoryStore } from "../../stores/useInventoryStore";
 import {
   processCreditSale, processRecovery, processExpense,
   processBankDeposit, processDigitalPayment, processSupplierPayment,
-  processDiscount, processReversal, processDebitSale, processRecovery as procRecovery, processExpense as procExpense, processBankCash, processDigitalCash, processSupplierPaymentShiftOpen, processShiftClose as eocShiftClose,
+  processDiscount, processReversal, processShiftClose as eocShiftClose,
 } from "../../services/core/operationalCore";
 
 // Helper to classify fuel product IDs into hardcoded categories expected by the shift closeout logic
@@ -168,6 +168,7 @@ export default function ShiftWizard({
   const { requireBiometric } = useNativeAuth();
   const isUrdu = settings.language === "ur";
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
+  const isLubeBusiness = activeStationId === 'st_lube';
 
   // Active running shift checks
   const activeShift = useMemo(() => {
@@ -1980,7 +1981,7 @@ export default function ShiftWizard({
                 <h3 className="text-lg font-bold text-white">Shift Summary Preview</h3>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6 mb-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6 mb-6">
                 <div>
                   <p className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5"><User className="w-3.5 h-3.5 text-orange-400" /> Operator</p>
                   <p className="font-bold text-white text-sm truncate">{selectedStaffId ? (staff.find(s=>s.id===selectedStaffId)?.name || 'Unknown') : 'Not selected'}</p>
@@ -3489,7 +3490,7 @@ export default function ShiftWizard({
 
           <div className="p-6 space-y-5 font-sans">
             {/* Metadata Rows */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs border-b border-dashed border-slate-700/50 pb-3 pt-0.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs border-b border-dashed border-slate-700/50 pb-3 pt-0.5">
               <div>
                 <span className="text-slate-400 block">
                   {t("Operator In-charge:", "ڈیوٹی آپریٹر:")}
@@ -3822,7 +3823,7 @@ export default function ShiftWizard({
 
                   {/* Totals */}
                   <div className="bg-slate-800 rounded-lg p-3 text-white">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                       {[
                         { label: 'Total Revenue', value: `Rs.${fifoResults.reduce((s,r) => s + r.result.totalRevenue, 0).toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, color: 'text-blue-300' },
                         { label: 'Total COGS', value: `Rs.${fifoResults.reduce((s,r) => s + r.result.totalCOGS, 0).toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, color: 'text-amber-300' },

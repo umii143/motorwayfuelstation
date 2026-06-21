@@ -47,6 +47,8 @@ import BatchHistory from './BatchHistory';
 import { useInventoryStore } from '../../stores/useInventoryStore';
 import { useSupplierStore } from '../../stores/useSupplierStore';
 import InventoryDrillDownModal from './ExecutiveDashboard/InventoryDrillDownModal';
+import LubeInventoryDrillDownModal from './LubeInventoryDrillDownModal';
+import SingleProductDrillDownModal from './SingleProductDrillDownModal';
 import InventoryAgingDashboard from './InventoryAgingDashboard';
 import SupplierScorecard from './SupplierCommandCenter/SupplierScorecard';
 import SupplierPayablesPanel from './SupplierCommandCenter/SupplierPayablesPanel';
@@ -109,6 +111,8 @@ export default function Inventory({
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'fuel' | 'lube' | 'low'>('all');
   const [isInventoryDrillDownOpen, setIsInventoryDrillDownOpen] = useState(false);
+  const [isLubeDrillDownOpen, setIsLubeDrillDownOpen] = useState(false);
+  const [drillDownProduct, setDrillDownProduct] = useState<Product | null>(null);
   const [isAuditSheetOpen, setIsAuditSheetOpen] = useState(false);
 
   // Interactive Calibrator Calculator
@@ -123,6 +127,7 @@ export default function Inventory({
   // Add/Edit Product form fields
   const [prodName, setProdName] = useState('');
   const [prodUrduName, setProdUrduName] = useState('');
+  const [prodPurchasePrice, setProdPurchasePrice] = useState('');
   const [prodRate, setProdRate] = useState('');
   const [prodUnit, setProdUnit] = useState('Pcs');
   const [prodType, setProdType] = useState<'lube' | 'fuel' | 'other'>('lube');
@@ -131,7 +136,7 @@ export default function Inventory({
 
   const openAddProduct = () => {
     setEditingProduct(null);
-    setProdName(''); setProdUrduName(''); setProdRate(''); setProdUnit('Pcs');
+    setProdName(''); setProdUrduName(''); setProdPurchasePrice(''); setProdRate(''); setProdUnit('Pcs');
     // Default type is 'fuel' for fuel stations, 'lube' for lube businesses
     setProdType(isLube ? 'lube' : 'fuel');
     setProdMinStock(''); setProdOpeningStock('');
@@ -140,7 +145,9 @@ export default function Inventory({
 
   const openEditProduct = (prod: Product) => {
     setEditingProduct(prod);
-    setProdName(prod.name); setProdUrduName(prod.urduName); setProdRate(String(prod.rate));
+    setProdName(prod.name); setProdUrduName(prod.urduName); 
+    setProdPurchasePrice(String(prod.purchasePrice || prod.rate || ''));
+    setProdRate(String(prod.rate));
     setProdUnit(prod.unit); setProdType(prod.type as any); setProdMinStock(String(prod.minStock));
     setProdOpeningStock(String(prod.currentStock));
     setShowAddProductModal(true);
@@ -154,6 +161,7 @@ export default function Inventory({
         ...editingProduct,
         name: prodName,
         urduName: prodUrduName || prodName,
+        purchasePrice: Number(prodPurchasePrice) || Number(prodRate),
         rate: Number(prodRate),
         unit: prodUnit,
         type: prodType,
@@ -164,6 +172,7 @@ export default function Inventory({
         id: `prod_${Date.now()}`,
         name: prodName,
         urduName: prodUrduName || prodName,
+        purchasePrice: Number(prodPurchasePrice) || Number(prodRate),
         rate: Number(prodRate),
         unit: prodUnit,
         type: prodType,
@@ -172,6 +181,7 @@ export default function Inventory({
         capacity: 0
       });
     }
+    setSearchQuery('');
     setShowAddProductModal(false);
   };
 
@@ -355,11 +365,25 @@ export default function Inventory({
       : products.filter(p => p.type === 'fuel').reduce((sum, p) => sum + p.currentStock, 0);
   }, [products, tanks]);
 
-  const totalLubricantsQty = useMemo(() => {
-    return products
-      .filter(p => p.type === 'lube')
-      .reduce((sum, p) => sum + p.currentStock, 0);
+  const lubeMetrics = useMemo(() => {
+    const lubeProducts = products.filter(p => p.type === 'lube');
+    const totalQty = lubeProducts.reduce((sum, p) => sum + p.currentStock, 0);
+    const totalValue = lubeProducts.reduce((sum, p) => sum + (p.currentStock * p.rate), 0);
+    const totalCost = lubeProducts.reduce((sum, p) => sum + (p.currentStock * (p.purchasePrice || p.rate)), 0);
+    
+    // Profit margin can be totalValue - totalCost
+    const expectedProfit = totalValue - totalCost;
+    const profitMarginPct = totalValue > 0 ? (expectedProfit / totalValue) * 100 : 0;
+
+    return {
+      totalQty,
+      totalValue,
+      expectedProfit,
+      profitMarginPct
+    };
   }, [products]);
+
+  const totalLubricantsQty = lubeMetrics.totalQty;
 
   const lowStockCount = useMemo(() => {
     return products.filter(p => p.currentStock <= p.minStock).length;
@@ -586,11 +610,11 @@ export default function Inventory({
       />
 
       {/* BEN-TO ROW INVENTORY STATS OVERVIEWS */}
-      <div className={`grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3 sm:gap-4 ${isLube ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+      <div className={`grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3 sm:gap-4 ${isLube ? 'sm:grid-cols-2' : 'sm:grid-cols-2'}`}>
         {/* Total Fuels — hidden for lube businesses */}
         {!isLube && (
         <div 
-           className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs flex items-center gap-3 cursor-pointer hover:border-orange-300 hover:bg-orange-50/30 transition-colors group"
+           className="rounded-xl border border-theme-main bg-theme-card p-4 shadow-xs flex items-center gap-3 cursor-pointer hover:border-orange-300 hover:bg-orange-50/30 transition-colors group"
            onClick={() => setIsInventoryDrillDownOpen(true)}
            title="Open Enterprise Inventory Intelligence"
         >
@@ -609,24 +633,36 @@ export default function Inventory({
         {/* Total Lubes — ONLY shown for lube businesses */}
         {isLube && (
         <div 
-           className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs flex items-center gap-3 cursor-pointer hover:border-sky-300 hover:bg-sky-50/30 transition-colors group"
-           onClick={() => setIsInventoryDrillDownOpen(true)}
-           title="Open Enterprise Inventory Intelligence"
+           className="rounded-xl border border-theme-main bg-theme-card p-4 shadow-xs flex flex-col gap-3 cursor-pointer hover:border-sky-300 hover:bg-sky-50/30 transition-colors group"
+           onClick={() => setIsLubeDrillDownOpen(true)}
+           title="View Detailed Stock Metrics"
         >
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600 group-hover:scale-110 transition-transform">
-            <Package className="h-5 w-5" />
+          <div className="flex items-center gap-3">
+             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600 group-hover:scale-110 transition-transform">
+               <Package className="h-5 w-5" />
+             </div>
+             <div>
+               <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block group-hover:text-sky-600 transition-colors">{t('Lubricants / Accessories', 'کل انجن آئل اسٹاک')}</span>
+               <strong className="font-mono text-base font-bold text-slate-800 tracking-tight mt-1 block">
+                 {lubeMetrics.totalQty.toLocaleString()} Units
+               </strong>
+             </div>
           </div>
-          <div>
-            <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block group-hover:text-sky-600 transition-colors">{t('Lubricants / Accessories', 'کل انجن آئل اسٹاک')}</span>
-            <strong className="font-mono text-base font-bold text-slate-800 tracking-tight mt-1 block">
-              {totalLubricantsQty.toLocaleString()} Units
-            </strong>
+          <div className="grid grid-cols-2 gap-2 mt-2 border-t pt-2 border-slate-100">
+             <div>
+               <span className="text-[9px] font-bold text-slate-400 uppercase">Stock Value</span>
+               <div className="text-xs font-mono font-bold text-slate-700">Rs. {lubeMetrics.totalValue.toLocaleString()}</div>
+             </div>
+             <div>
+               <span className="text-[9px] font-bold text-slate-400 uppercase">Profit Margin</span>
+               <div className="text-xs font-mono font-bold text-emerald-600">+{lubeMetrics.profitMarginPct.toFixed(1)}%</div>
+             </div>
           </div>
         </div>
         )}
 
         {/* Low warning stock items */}
-        <div className={`rounded-xl border p-4 shadow-xs flex items-center gap-3 transition-colors ${lowStockCount > 0 ? 'border-red-250 bg-red-50/20' : 'border-slate-200 bg-white'}`}>
+        <div className={`rounded-xl border p-4 shadow-xs flex items-center gap-3 transition-colors ${lowStockCount > 0 ? 'border-red-250 bg-red-50/20' : 'border-theme-main bg-theme-card'}`}>
           <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${lowStockCount > 0 ? 'bg-red-100 text-red-655' : 'bg-slate-100 text-slate-400'}`}>
             <AlertTriangle className="h-5 w-5" />
           </div>
@@ -808,9 +844,9 @@ export default function Inventory({
             </div>
 
             {/* PRODUCT LISTING CARD GRID */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <AnimatePresence>
-                {filteredProducts.map((prod, idx) => {
+                {[...filteredProducts].reverse().map((prod, idx) => {
                   const capacity = prod.capacity || 100;
                   const fillPct = prod.type === 'fuel' ? Math.round((prod.currentStock / capacity) * 100) : null;
                   const isLow = prod.currentStock <= prod.minStock;
@@ -822,7 +858,8 @@ export default function Inventory({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.05 }}
                       key={prod.id} 
-                      className="kpi-card p-2 group"
+                      className="kpi-card p-2 group cursor-pointer hover:border-blue-300"
+                      onClick={() => setDrillDownProduct(prod)}
                     >
                       <div className="flex justify-between items-start mb-2">
                         <div className="truncate pr-2">
@@ -877,14 +914,14 @@ export default function Inventory({
                       {/* Edit / Delete action bar */}
                       <div className="flex gap-1.5">
                         <button
-                          onClick={() => openEditProduct(prod)}
+                          onClick={(e) => { e.stopPropagation(); openEditProduct(prod); }}
                           className="flex-1 flex items-center justify-center gap-1 py-1 rounded bg-theme-card border border-theme-main text-slate-600 dark:text-slate-300 hover:border-orange-500 hover:text-orange-500 font-bold text-[10px] transition-colors"
                         >
                           <Pencil className="h-3 w-3" />
                           {t('Edit', 'ترمیم')}
                         </button>
                         <button
-                          onClick={() => handleDeleteProduct(prod)}
+                          onClick={(e) => { e.stopPropagation(); handleDeleteProduct(prod); }}
                           className="flex items-center justify-center gap-1 px-2 py-1 rounded bg-red-500/10 text-red-600 hover:bg-red-500/20 font-bold text-[10px] transition-colors"
                         >
                           <Trash2 className="h-3 w-3" />
@@ -1346,7 +1383,7 @@ export default function Inventory({
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: 15, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 350 }}
-              className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-xl"
+              className="w-full max-w-sm rounded-xl border border-theme-main bg-theme-card p-6 shadow-xl"
             >
               <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
                 <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-2">
@@ -1372,7 +1409,7 @@ export default function Inventory({
                   <select
                     value={reconProductId}
                     onChange={(e) => setReconProductId(e.target.value)}
-                    className="premium-input border bg-white px-2.5 font-sans text-sm focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-theme-card px-2.5 font-sans text-sm focus:border-orange-500 focus:outline-hidden"
                   >
                     {products.map(p => <option key={p.id} value={p.id}>{p.name} ({p.currentStock} {p.unit} in hand)</option>)}
                   </select>
@@ -1386,7 +1423,7 @@ export default function Inventory({
                     value={reconActualQty}
                     onChange={(e) => setReconActualQty(e.target.value)}
                     placeholder="e.g. 14200"
-                    className="premium-input border bg-white px-3 .5 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-theme-card px-3 .5 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
                   />
                 </div>
 
@@ -1398,7 +1435,7 @@ export default function Inventory({
                     value={reconReason}
                     onChange={(e) => setReconReason(e.target.value)}
                     placeholder="e.g. Weekly physical calibration check correction"
-                    className="premium-input border bg-white px-3 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border bg-theme-card px-3 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
                   />
                 </div>
 
@@ -1430,7 +1467,7 @@ export default function Inventory({
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: 20, opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-              className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-2xl mx-4 my-auto"
+              className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-theme-main bg-theme-card p-4 sm:p-6 shadow-2xl mx-4 my-auto"
             >
               <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-5">
                 <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-2">
@@ -1444,29 +1481,35 @@ export default function Inventory({
               </div>
 
               <form onSubmit={handleProductModalSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Product Name (English):', 'نام (انگریزی):')}</label>
                     <input type="text" required value={prodName} onChange={e => setProdName(e.target.value)}
                       placeholder="e.g. Mobil 1 5W-30"
-                      className="premium-input border bg-white px-3 font-sans text-sm focus:border-emerald-500 outline-none" />
+                      className="premium-input border bg-theme-card px-3 font-sans text-sm focus:border-emerald-500 outline-none" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Product Name (Urdu):', 'نام (اردو):')}</label>
                     <input type="text" value={prodUrduName} onChange={e => setProdUrduName(e.target.value)}
                       placeholder="مثال: موبل ون"
-                      className="premium-input border bg-white px-3 font-sans text-sm focus:border-emerald-500 outline-none" />
+                      className="premium-input border bg-theme-card px-3 font-sans text-sm focus:border-emerald-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Purchase Price (Rs):', 'خرید قیمت (روپے):')}</label>
+                    <input type="number" min="0" step="0.01" value={prodPurchasePrice} onChange={e => setProdPurchasePrice(e.target.value)}
+                      placeholder="e.g. 1200"
+                      className="premium-input border bg-theme-card px-3 font-mono text-sm focus:border-emerald-500 outline-none" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Selling Rate (Rs):', 'فروخت قیمت (روپے):')}</label>
                     <input type="number" required min="0" step="0.01" value={prodRate} onChange={e => setProdRate(e.target.value)}
                       placeholder="e.g. 1500"
-                      className="premium-input border bg-white px-3 font-mono text-sm focus:border-emerald-500 outline-none" />
+                      className="premium-input border bg-theme-card px-3 font-mono text-sm focus:border-emerald-500 outline-none" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Unit of Measure:', 'پیمائش کی اکائی:')}</label>
                     <select value={prodUnit} onChange={e => setProdUnit(e.target.value)}
-                      className="premium-input border bg-white px-3 font-sans text-sm focus:border-emerald-500 outline-none">
+                      className="premium-input border bg-theme-card px-3 font-sans text-sm focus:border-emerald-500 outline-none">
                       <option value="Pcs">Pcs (Pieces)</option>
                       <option value="Ltr">Ltr (Litres)</option>
                       <option value="Kg">Kg (Kilogram)</option>
@@ -1486,7 +1529,7 @@ export default function Inventory({
                           className={`flex-1 py-1.5 rounded-lg border font-sans text-xs font-bold cursor-pointer ${
                             prodType === pt
                               ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                              : 'border-slate-200 text-slate-500'
+                              : 'border-theme-main text-slate-500'
                           }`}>
                           {pt === 'fuel' ? '⛽ Fuel' : pt === 'lube' ? '🛢️ Lube' : '📦 Other'}
                         </button>
@@ -1497,14 +1540,14 @@ export default function Inventory({
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Min Stock Alert Level:', 'انتباہی اسٹاک حد:')}</label>
                     <input type="number" min="0" value={prodMinStock} onChange={e => setProdMinStock(e.target.value)}
                       placeholder="e.g. 10"
-                      className="premium-input border bg-white px-3 font-mono text-sm focus:border-emerald-500 outline-none" />
+                      className="premium-input border bg-theme-card px-3 font-mono text-sm focus:border-emerald-500 outline-none" />
                   </div>
                   {!editingProduct && (
                     <div className="sm:col-span-2">
                       <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{t('Opening Stock Quantity:', 'ابتدائی اسٹاک مقدار:')}</label>
                       <input type="number" min="0" value={prodOpeningStock} onChange={e => setProdOpeningStock(e.target.value)}
                         placeholder="e.g. 50"
-                        className="premium-input border bg-white px-3 font-mono text-sm focus:border-emerald-500 outline-none" />
+                        className="premium-input border bg-theme-card px-3 font-mono text-sm focus:border-emerald-500 outline-none" />
                     </div>
                   )}
                 </div>
@@ -1535,6 +1578,23 @@ export default function Inventory({
         isOpen={isInventoryDrillDownOpen}
         onClose={() => setIsInventoryDrillDownOpen(false)}
         settings={settings}
+      />
+      <LubeInventoryDrillDownModal
+        isOpen={isLubeDrillDownOpen}
+        onClose={() => setIsLubeDrillDownOpen(false)}
+        settings={settings}
+        products={products}
+      />
+      
+      <SingleProductDrillDownModal
+        isOpen={!!drillDownProduct}
+        onClose={() => setDrillDownProduct(null)}
+        product={drillDownProduct}
+        stockTransactions={stockTransactions}
+        suppliers={suppliers}
+        settings={settings}
+        onEdit={openEditProduct}
+        onDelete={handleDeleteProduct}
       />
     </div>
   );

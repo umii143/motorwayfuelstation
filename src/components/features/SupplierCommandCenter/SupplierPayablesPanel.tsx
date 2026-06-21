@@ -67,7 +67,7 @@ function PaymentModal({
 
   return (
     <div className="premium-modal-overlay">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+      <div className="bg-theme-card rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden">
         <div className="bg-gradient-to-r from-slate-800 to-slate-900 p-5 text-white">
           <h3 className="font-black text-lg">💳 Record Payment</h3>
           <p className="text-slate-300 text-sm mt-0.5">To: {supplier.name}</p>
@@ -80,19 +80,19 @@ function PaymentModal({
               value={amount}
               onChange={e => setAmount(e.target.value)}
               placeholder="e.g. 500000"
-              className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-slate-800 text-sm font-mono focus:outline-none focus:border-orange-500"
+              className="w-full border border-theme-main rounded-xl px-4 py-2.5 text-slate-800 text-sm font-mono focus:outline-none focus:border-orange-500"
               autoFocus
             />
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Payment Mode</label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {(['cash', 'bank', 'cheque'] as const).map(m => (
                 <button
                   key={m}
                   onClick={() => setMode(m)}
                   className={`py-2 rounded-xl text-xs font-bold border transition-all capitalize ${
-                    mode === m ? 'bg-orange-600 text-white border-orange-600' : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300'
+                    mode === m ? 'bg-orange-600 text-white border-orange-600' : 'bg-theme-bg text-slate-600 border-theme-main hover:border-slate-300'
                   }`}
                 >
                   {m}
@@ -107,11 +107,11 @@ function PaymentModal({
               value={note}
               onChange={e => setNote(e.target.value)}
               placeholder="Cheque no. / Transfer ref..."
-              className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-orange-500"
+              className="w-full border border-theme-main rounded-xl px-4 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-orange-500"
             />
           </div>
           <div className="flex gap-3 pt-2">
-            <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50">
+            <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-theme-main text-slate-600 text-sm font-bold hover:bg-slate-50">
               Cancel
             </button>
             <button
@@ -206,9 +206,9 @@ export default function SupplierPayablesPanel({
       {/* Summary Header */}
       <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: t('Total Payable', 'کل ادائیگی'), value: `Rs.${(totalPayable / 1000000).toFixed(2)}M`, icon: Wallet, color: 'text-slate-700', bg: 'bg-slate-50 border-slate-200' },
-          { label: t('Overdue', 'مدت گزر گئی'), value: `Rs.${(overduePayable / 1000).toFixed(0)}K`, icon: AlertTriangle, color: 'text-red-700', bg: overduePayable > 0 ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-200' },
-          { label: t('Due in 7 Days', '7 دن میں واجب'), value: `Rs.${(next7DaysRequired / 1000).toFixed(0)}K`, icon: Calendar, color: 'text-orange-700', bg: next7DaysRequired > 0 ? 'bg-orange-50 border-orange-200' : 'bg-slate-50 border-slate-200' },
+          { label: t('Total Payable', 'کل ادائیگی'), value: `Rs.${(totalPayable / 1000000).toFixed(2)}M`, icon: Wallet, color: 'text-slate-700', bg: 'bg-theme-bg border-theme-main' },
+          { label: t('Overdue', 'مدت گزر گئی'), value: `Rs.${(overduePayable / 1000).toFixed(0)}K`, icon: AlertTriangle, color: 'text-red-700', bg: overduePayable > 0 ? 'bg-red-50 border-red-200' : 'bg-theme-bg border-theme-main' },
+          { label: t('Due in 7 Days', '7 دن میں واجب'), value: `Rs.${(next7DaysRequired / 1000).toFixed(0)}K`, icon: Calendar, color: 'text-orange-700', bg: next7DaysRequired > 0 ? 'bg-orange-50 border-orange-200' : 'bg-theme-bg border-theme-main' },
           { label: t('Largest Liability', 'سب سے بڑی ذمہ داری'), value: `Rs.${(largestLiability / 1000).toFixed(0)}K`, icon: Building2, color: 'text-indigo-700', bg: 'bg-indigo-50 border-indigo-200' },
         ].map((s, i) => (
           <div key={i} className={`rounded-2xl border p-4 ${s.bg} flex items-center gap-3`}>
@@ -254,7 +254,7 @@ export default function SupplierPayablesPanel({
             className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
               filterTier === f.id
                 ? 'bg-slate-800 text-white border-slate-800'
-                : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+                : 'bg-theme-card text-slate-600 border-theme-main hover:border-slate-300'
             }`}
           >
             {f.label}
@@ -264,7 +264,7 @@ export default function SupplierPayablesPanel({
 
       {/* Supplier Payable List */}
       {payables.length === 0 ? (
-        <div className="premium-card border border-slate-200 text-center">
+        <div className="premium-card border border-theme-main text-center">
           <CheckCircle className="size-12 mx-auto text-emerald-400 mb-3" />
           <p className="font-bold text-slate-400 text-lg">{t('No outstanding payables', 'کوئی واجب الادا رقم نہیں')}</p>
           <p className="text-xs text-slate-400 mt-1">{t('All supplier balances are settled.', 'تمام سپلائر بیلنس صاف ہیں۔')}</p>
@@ -276,7 +276,7 @@ export default function SupplierPayablesPanel({
             const daysOverdue = getDaysOverdue(p.oldestDueDate || undefined);
 
             return (
-              <div key={p.supplier.id} className={`bg-white rounded-2xl border shadow-sm overflow-hidden ${p.isOverdue ? 'border-red-200' : 'border-slate-200'}`}>
+              <div key={p.supplier.id} className={`bg-theme-card rounded-2xl border shadow-sm overflow-hidden ${p.isOverdue ? 'border-red-200' : 'border-theme-main'}`}>
                 {/* Main row */}
                 <div
                   className="p-4 flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-colors"
@@ -329,7 +329,7 @@ export default function SupplierPayablesPanel({
 
                 {/* Expanded */}
                 {isExpanded && (
-                  <div className="border-t border-slate-100 bg-slate-50 p-4">
+                  <div className="border-t border-slate-100 bg-theme-bg p-4">
                     {/* Aging breakdown */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
                       {[
@@ -352,7 +352,7 @@ export default function SupplierPayablesPanel({
                       <div className="space-y-2">
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Outstanding Batches</p>
                         {p.batches.filter(b => (b.outstandingBalance || 0) > 0).map(b => (
-                          <div key={b.id} className="flex justify-between items-center bg-white rounded-lg border border-slate-200 px-3 py-2 text-xs">
+                          <div key={b.id} className="flex justify-between items-center bg-theme-card rounded-lg border border-theme-main px-3 py-2 text-xs">
                             <div>
                               <span className="font-mono font-bold text-slate-700">{b.batchNumber}</span>
                               <span className="text-slate-400 ml-2">{new Date(b.deliveryDate || b.date).toLocaleDateString('en-PK', { day: '2-digit', month: 'short' })}</span>

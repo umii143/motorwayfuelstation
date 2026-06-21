@@ -111,7 +111,7 @@ export function TanksStep({ tanks, products, onUpdate, onContinue, language }: P
                 </select>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700">{t('Capacity (Liters)', 'گنجائش (لیٹر)', language)}</label>
                   <input
@@ -185,7 +185,7 @@ export function TanksStep({ tanks, products, onUpdate, onContinue, language }: P
                         <X className="size-5" />
                       </button>
                     </div>
-                    <div className="ml-9 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm pt-2 border-t border-blue-100/50">
+                    <div className="ml-9 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm pt-2 border-t border-blue-100/50">
                       <div>
                         <span className="text-slate-500 font-medium">{t('Capacity:', 'گنجائش:', language)} </span>
                         <span className="font-bold text-slate-700">{Number(tank.capacity).toLocaleString()} L</span>

@@ -25,7 +25,7 @@ export default function IntegrationDashboard({ settings, stationId }: Integratio
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {integrations.map(int => (
             <div key={int.id} className="premium-card border border-slate-200 hover:shadow-md transition">
               <div className="flex justify-between items-start mb-4">

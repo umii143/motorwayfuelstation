@@ -46,7 +46,7 @@ export default function BillingAndReports({ settings, stationId }: BillingAndRep
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="premium-card p-4 border flex flex-col justify-center">
           <span className="text-xs font-bold text-slate-500 uppercase">Total Billed</span>
           <span className="text-2xl font-black font-mono text-rose-600 mt-1">{settings.currency} {totalConsumption.toLocaleString()}</span>

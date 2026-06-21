@@ -79,7 +79,7 @@ export default function DealerMarginWizard({ language, onLogAudit, stationId }: 
 
       {isAdding && (
         <form onSubmit={handleSave} className="bg-orange-50 border border-orange-100 rounded-xl p-4 animate-in slide-in-from-top-2">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-600 mb-1">{t('Fuel Type', 'پراڈکٹ', language)} *</label>
               <select
@@ -135,7 +135,7 @@ export default function DealerMarginWizard({ language, onLogAudit, stationId }: 
         </form>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {products.map(prod => {
           const settingsForProd = dealerMarginSettings
             .filter(s => s.productType === prod)

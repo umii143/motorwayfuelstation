@@ -4,20 +4,31 @@ import { t } from '../../../lib/translations';
 import { Product } from '../../../types';
 
 interface ProductWizardProps {
+  isLube?: boolean;
   products: Product[];
   language: string;
   onUpdateProducts: (products: Product[]) => void;
   onLogAudit: (category: string, action: string, details: string) => void;
 }
 
-const PRESET_PRODUCTS = [
+const PRESET_FUEL_PRODUCTS = [
   { name: "Petrol", color: "bg-emerald-500" },
   { name: "Diesel", color: "bg-blue-500" },
   { name: "HOBC", color: "bg-amber-500" },
 ];
 
-export default function ProductWizard({ products, language, onUpdateProducts, onLogAudit }: ProductWizardProps) {
+const PRESET_LUBE_PRODUCTS = [
+  { name: "Engine Oil (1L)", color: "bg-amber-600" },
+  { name: "Gear Oil (1L)", color: "bg-slate-600" },
+  { name: "Brake Fluid", color: "bg-red-500" },
+  { name: "Coolant", color: "bg-blue-400" },
+];
+
+export default function ProductWizard({ isLube, products, language, onUpdateProducts, onLogAudit }: ProductWizardProps) {
   const [customName, setCustomName] = useState("");
+  const presets = isLube ? PRESET_LUBE_PRODUCTS : PRESET_FUEL_PRODUCTS;
+  const productType = isLube ? 'lube' : 'fuel';
+  const productUnit = isLube ? 'Pieces' : 'Liters';
 
   const addPresetProduct = (preset: { name: string; color: string }) => {
     if (products.find((p) => p.name === preset.name)) return;
@@ -28,8 +39,8 @@ export default function ProductWizard({ products, language, onUpdateProducts, on
         name: preset.name,
         urduName: preset.name,
         rate: 0,
-        type: 'fuel' as const,
-        unit: 'Liters',
+        type: productType,
+        unit: productUnit,
         currentStock: 0,
         minStock: 100
       },
@@ -48,8 +59,8 @@ export default function ProductWizard({ products, language, onUpdateProducts, on
         name: customName.trim(), 
         urduName: customName.trim(),
         rate: 0,
-        type: 'fuel' as const,
-        unit: 'Liters',
+        type: productType,
+        unit: productUnit,
         currentStock: 0,
         minStock: 100
       },
@@ -80,10 +91,12 @@ export default function ProductWizard({ products, language, onUpdateProducts, on
             </div>
           </div>
           <h2 className="text-2xl font-black text-slate-800">
-            {t('Fuel Products', 'فیول پراڈکٹس', language)}
+            {isLube ? t('Lube Products', 'لیوب پراڈکٹس', language) : t('Fuel Products', 'فیول پراڈکٹس', language)}
           </h2>
           <p className="text-slate-500 font-medium mt-2">
-            {t('Manage the fuel types available at your station', 'اپنے اسٹیشن پر دستیاب فیول کی اقسام کو ترتیب دیں', language)}
+            {isLube 
+              ? t('Manage the lube products available at your station', 'اپنے اسٹیشن پر دستیاب لیوب کی اقسام کو ترتیب دیں', language)
+              : t('Manage the fuel types available at your station', 'اپنے اسٹیشن پر دستیاب فیول کی اقسام کو ترتیب دیں', language)}
           </p>
         </div>
 
@@ -94,8 +107,8 @@ export default function ProductWizard({ products, language, onUpdateProducts, on
             <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">
               {t('Quick Add', 'جلدی شامل کریں', language)}
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {PRESET_PRODUCTS.map((preset) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {presets.map((preset) => (
                 <button
                   key={preset.name}
                   onClick={() => addPresetProduct(preset)}

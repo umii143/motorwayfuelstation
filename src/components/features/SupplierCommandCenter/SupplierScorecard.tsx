@@ -187,7 +187,7 @@ export default function SupplierScorecard({ suppliers, batches, supplierClaims, 
 
   if (metrics.length === 0) {
     return (
-      <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center shadow-sm">
+      <div className="bg-theme-card rounded-3xl border border-theme-main p-12 text-center shadow-sm">
         <Award className="size-12 mx-auto text-slate-200 mb-3" />
         <p className="font-bold text-slate-400">{t('No supplier delivery data yet', 'سپلائر ڈیلیوری ڈیٹا موجود نہیں')}</p>
         <p className="text-xs text-slate-400 mt-1">{t('Add stock batches to see supplier scores.', 'اسکور دیکھنے کیلئے اسٹاک بیچ شامل کریں۔')}</p>
@@ -205,7 +205,7 @@ export default function SupplierScorecard({ suppliers, batches, supplierClaims, 
           { label: t('Total Qty Short', 'کل کم وصول'), value: `${totalShortLiters.toLocaleString()}L`, icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50' },
           { label: t('Open Claims', 'کھلے کلیمز'), value: openClaims, icon: ShieldCheck, color: 'text-orange-600', bg: 'bg-orange-50' },
         ].map((s, i) => (
-          <div key={i} className="premium-card border border-slate-200 p-4 flex items-center ga">
+          <div key={i} className="premium-card border border-theme-main p-4 flex items-center ga">
             <div className={`size-10 rounded-xl ${s.bg} flex items-center justify-center shrink-0`}>
               <s.icon className={`size-5 ${s.color}`} />
             </div>
@@ -219,7 +219,7 @@ export default function SupplierScorecard({ suppliers, batches, supplierClaims, 
 
       {/* Top + Worst Supplier Banner */}
       {metrics.length >= 2 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Primary Recommendation */}
           <div className="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-2xl p-4 text-white shadow-md">
             <div className="flex items-center gap-2 mb-2">
@@ -345,21 +345,21 @@ export default function SupplierScorecard({ suppliers, batches, supplierClaims, 
 
               {/* Expanded detail */}
               {isExpanded && (
-                <div className="border-t border-slate-100 bg-slate-50 p-4">
+                <div className="border-t border-slate-100 bg-theme-bg p-4">
                   <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
                     {[
                       { label: 'Total Delivered', value: `${m.totalQtyDelivered.toLocaleString()}L`, color: 'text-blue-700', bg: 'bg-blue-50 border-blue-100' },
                       { label: 'Qty Short', value: `${m.totalQtyShort.toLocaleString()}L`, color: m.totalQtyShort > 0 ? 'text-red-700' : 'text-emerald-700', bg: m.totalQtyShort > 0 ? 'bg-red-50 border-red-100' : 'bg-emerald-50 border-emerald-100' },
-                      { label: 'Shortage %', value: `${m.shortagePercent.toFixed(2)}%`, color: m.shortagePercent > 1 ? 'text-red-700' : 'text-emerald-700', bg: 'bg-white border-slate-200' },
+                      { label: 'Shortage %', value: `${m.shortagePercent.toFixed(2)}%`, color: m.shortagePercent > 1 ? 'text-red-700' : 'text-emerald-700', bg: 'bg-theme-card border-theme-main' },
                       { label: 'Claims Raised', value: m.claimsRaised, color: 'text-amber-700', bg: 'bg-amber-50 border-amber-100' },
                       { label: 'Claims Resolved', value: m.claimsResolved, color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-100' },
                       { label: 'Recovery Rate', value: `${m.claimRecoveryPct.toFixed(0)}%`, color: 'text-indigo-700', bg: 'bg-indigo-50 border-indigo-100' },
-                      { label: 'Avg Margin/L', value: `Rs.${m.avgMargin.toFixed(2)}`, color: 'text-slate-700', bg: 'bg-white border-slate-200' },
-                      { label: 'Margin StdDev', value: m.marginStdDeviation.toFixed(3), color: m.marginStdDeviation > 1 ? 'text-red-700' : 'text-emerald-700', bg: 'bg-white border-slate-200' },
+                      { label: 'Avg Margin/L', value: `Rs.${m.avgMargin.toFixed(2)}`, color: 'text-slate-700', bg: 'bg-theme-card border-theme-main' },
+                      { label: 'Margin StdDev', value: m.marginStdDeviation.toFixed(3), color: m.marginStdDeviation > 1 ? 'text-red-700' : 'text-emerald-700', bg: 'bg-theme-card border-theme-main' },
                       { label: 'Quality Issues', value: m.qualityIssues, color: m.qualityIssues > 0 ? 'text-red-700' : 'text-emerald-700', bg: m.qualityIssues > 0 ? 'bg-red-50 border-red-100' : 'bg-emerald-50 border-emerald-100' },
-                      { label: 'Total Exposure', value: `Rs.${(m.totalExposure / 1000).toFixed(0)}K`, color: 'text-slate-700', bg: 'bg-white border-slate-200' },
-                      { label: 'Avg Resolution', value: m.avgResolutionDays > 0 ? `${m.avgResolutionDays.toFixed(0)} days` : 'N/A', color: 'text-slate-700', bg: 'bg-white border-slate-200' },
-                      { label: 'Last Delivery', value: m.lastDelivery ? new Date(m.lastDelivery).toLocaleDateString('en-PK', { day: '2-digit', month: 'short' }) : 'N/A', color: 'text-slate-700', bg: 'bg-white border-slate-200' },
+                      { label: 'Total Exposure', value: `Rs.${(m.totalExposure / 1000).toFixed(0)}K`, color: 'text-slate-700', bg: 'bg-theme-card border-theme-main' },
+                      { label: 'Avg Resolution', value: m.avgResolutionDays > 0 ? `${m.avgResolutionDays.toFixed(0)} days` : 'N/A', color: 'text-slate-700', bg: 'bg-theme-card border-theme-main' },
+                      { label: 'Last Delivery', value: m.lastDelivery ? new Date(m.lastDelivery).toLocaleDateString('en-PK', { day: '2-digit', month: 'short' }) : 'N/A', color: 'text-slate-700', bg: 'bg-theme-card border-theme-main' },
                     ].map((item, i) => (
                       <div key={i} className={`rounded-xl p-3 border ${item.bg} text-xs`}>
                         <p className="text-slate-400 font-semibold mb-0.5">{item.label}</p>

@@ -162,7 +162,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
       </div>
 
       {/* ── Top KPI Row ──────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {[
           { label: 'Shifts Processed', value: stats?.totalShiftsProcessed ?? 0, icon: Activity, color: 'text-indigo-600', bg: 'bg-indigo-50' },
           { label: 'Validated', value: stats?.validatedShifts ?? 0, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
@@ -409,7 +409,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg"
+              className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl"
             >
               <div className="p-5 border-b border-slate-100 flex items-center justify-between">
                 <h3 className="font-black text-slate-900">Drift Investigation</h3>
@@ -426,7 +426,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
                 </div>
 
                 {/* Values Comparison */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-center">
                   <div className="p-3 bg-slate-50 rounded-xl">
                     <div className="text-xs font-bold text-slate-500 mb-1">Legacy Value</div>
                     <div className="text-lg font-black text-slate-800">Rs {Math.round(selectedLog.legacyValue).toLocaleString()}</div>
@@ -442,7 +442,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
                 </div>
 
                 {/* Details */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs text-slate-600">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-slate-600">
                   <div><span className="font-bold text-slate-800">Shift: </span>{selectedLog.shiftId}</div>
                   <div><span className="font-bold text-slate-800">Module: </span>{MODULE_CONFIG[selectedLog.module]?.label || selectedLog.module}</div>
                   <div><span className="font-bold text-slate-800">Detected: </span>{new Date(selectedLog.timestamp).toLocaleString()}</div>

@@ -178,7 +178,7 @@ export default function PriceImpactSimulatorModal({
                 <Activity className="size-4" />
                 {t('Projected 30-Day Margin Impact', 'متوقع 30 دن کا مارجن امپیکٹ', language)}
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-sm">
                   <p className="text-xs text-slate-500 font-bold mb-2">Conservative (30d Avg)</p>
                   <p className={`text-lg font-black ${forecast.conservative >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>

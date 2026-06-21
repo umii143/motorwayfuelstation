@@ -46,7 +46,7 @@ describe('End-to-End Operational Workflows', () => {
         expenseEntries: [],
         bankCashEntries: [],
         digitalCashEntries: [],
-        lubeSales: [],
+
         supplierPayments: [],
         expectedCash: 0,
         submittedCash: 0,

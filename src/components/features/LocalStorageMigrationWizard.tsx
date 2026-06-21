@@ -198,7 +198,7 @@ export default function LocalStorageMigrationWizard() {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden"
+            className="w-full max-w-2xl relative overflow-hidden"
           >
             {/* Ambient Background Glows */}
             <div className="absolute -top-[20%] -right-[20%] w-[60%] h-[60%] rounded-full bg-orange-600/10 blur-[80px]" />

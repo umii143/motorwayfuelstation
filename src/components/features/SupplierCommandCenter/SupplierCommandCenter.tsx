@@ -134,7 +134,7 @@ export default function SupplierCommandCenter({
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-sans text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
                 isActive 
                   ? 'bg-slate-900 text-white shadow-md' 
-                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+                  : 'bg-theme-card text-slate-600 hover:bg-slate-50 border border-theme-main'
               }`}
             >
               <Icon className="h-4 w-4" />

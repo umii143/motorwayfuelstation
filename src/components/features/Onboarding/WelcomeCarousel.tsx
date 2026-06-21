@@ -77,7 +77,7 @@ export const WelcomeCarousel: React.FC<WelcomeCarouselProps> = ({ language, onCo
         </AnimatePresence>
       </div>
 
-      <div className="px-8 pb-12 w-full max-w-md mx-auto flex flex-col items-center">
+      <div className="px-8 pb-12 w-full max-w-xl mx-auto flex flex-col items-center">
         {/* Indicators */}
         <div className="flex gap-2 mb-8">
           {slides.map((_, idx) => (

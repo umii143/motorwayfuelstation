@@ -140,24 +140,22 @@ export default function SettingsPanel({
         ...(isSuperAdmin ? [{ id: 'license' as SettingsView,  label: t('License & Plan', 'لائسنس اور پلان'),         icon: Key,           badge: null }] : []),
       ]
     },
-    {
+    ...(!isLube ? [{
       id: 'hardware',
       title: t('Hardware & Inventory', 'ہارڈویئر اور انوینٹری'),
       items: [
         { id: 'products', label: t('Products', 'مصنوعات'),                         icon: Package,       badge: null },
-        ...(!isLube ? [
-          { id: 'tanks',  label: t('Tanks & Storage', 'ٹینک اور اسٹوریج'),       icon: Database,      badge: null },
-          { id: 'nozzles',label: t('Dispenser Nozzles', 'ڈسپینسر نوزلز'),        icon: Fuel,          badge: null },
-          { id: 'meter',  label: t('Meter Management', 'میٹر مینجمنٹ'),          icon: Activity,      badge: null },
-        ] : []),
+        { id: 'tanks',  label: t('Tanks & Storage', 'ٹینک اور اسٹوریج'),       icon: Database,      badge: null },
+        { id: 'nozzles',label: t('Dispenser Nozzles', 'ڈسپینسر نوزلز'),        icon: Fuel,          badge: null },
+        { id: 'meter',  label: t('Meter Management', 'میٹر مینجمنٹ'),          icon: Activity,      badge: null },
       ]
-    },
+    }] : []),
     {
       id: 'financial',
       title: t('Financial & Pricing', 'مالیاتی اور قیمتیں'),
       items: [
-        { id: 'price',    label: t('Price Settings', 'قیمت کی ترتیبات'),          icon: Tag,           badge: null },
         ...(!isLube ? [
+          { id: 'price',    label: t('Price Settings', 'قیمت کی ترتیبات'),          icon: Tag,           badge: null },
           { id: 'margins',label: t('Dealer Margin', 'ڈیلر مارجن'),               icon: Percent,       badge: null },
         ] : []),
         { id: 'treasury', label: t('Treasury Config', 'ٹریژری ترتیبات'),          icon: Landmark,      badge: null },
@@ -227,9 +225,9 @@ export default function SettingsPanel({
   const renderContent = () => {
     switch (activeTab) {
       case 'products':
-        return <ProductWizard products={products} language={settings.language} onUpdateProducts={onUpdateProducts} onLogAudit={handleLogAudit} />;
+        return <ProductWizard isLube={isLube} products={products} language={settings.language} onUpdateProducts={onUpdateProducts} onLogAudit={handleLogAudit} />;
       case 'price':
-        return <RateWizard products={products} tanks={tanks} rateHistory={rateHistory} language={settings.language} settings={settings} onUpdateProductRate={onUpdateProductRate} onLogAudit={handleLogAudit} onUpdateProducts={onUpdateProducts} />;
+        return <RateWizard isLube={isLube} products={products} tanks={tanks} rateHistory={rateHistory} language={settings.language} settings={settings} onUpdateProductRate={onUpdateProductRate} onLogAudit={handleLogAudit} onUpdateProducts={onUpdateProducts} />;
       case 'margins':
         return <DealerMarginWizard language={settings.language} onLogAudit={handleLogAudit} stationId={activeStationId} />;
       case 'tanks':

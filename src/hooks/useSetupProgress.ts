@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { SETUP_STEPS, StepStatus, SetupStep } from '../config/setupSteps';
+import { getSetupSteps, StepStatus, SetupStep } from '../config/setupSteps';
+import { isLubeBusinessStation } from '../lib/businessScope';
 import { useStation } from '../contexts/StationContext';
 
 export interface StepWithStatus extends SetupStep {
@@ -11,14 +12,17 @@ export function useSetupProgress() {
   const store = useStation();
 
   const stepsWithStatus = useMemo((): StepWithStatus[] => {
+    const isLube = isLubeBusinessStation(store.activeStationId);
+    const steps = getSetupSteps(isLube);
+    
     // First pass: compute completion
     const completionMap: Record<string, boolean> = {};
-    SETUP_STEPS.forEach(step => {
+    steps.forEach(step => {
       completionMap[step.id] = step.completionCheck(store);
     });
 
     // Second pass: compute status and accessibility
-    return SETUP_STEPS.map(step => {
+    return steps.map(step => {
       const isCompleted = completionMap[step.id];
       const dependenciesMet = step.dependsOn.every(dep => completionMap[dep]);
       
@@ -37,10 +41,10 @@ export function useSetupProgress() {
         isAccessible: isCompleted || dependenciesMet,
       };
     });
-  }, [store.tanks, store.nozzles, store.products, store.settings]);
+  }, [store.tanks, store.nozzles, store.products, store.settings, store.activeStationId]);
 
+  const totalCount = stepsWithStatus.length;
   const completedCount = stepsWithStatus.filter(s => s.status === 'completed').length;
-  const totalCount = SETUP_STEPS.length;
   const setupComplete = completedCount === totalCount;
   
   // Find first incomplete accessible step (for smart navigation)

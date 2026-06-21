@@ -262,7 +262,7 @@ export default function UnifiedAccountManager({
 
           {showBankForm ? (
             /* SEPARATED SAVING AND UPDATING ACCOUNT SECTION */
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 rounded-xl border border-emerald-250 bg-emerald-50/5 animate-fade-in">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl border border-emerald-250 bg-emerald-50/5 animate-fade-in">
               <form onSubmit={handleSaveBank} className="space-y-3 font-sans text-xs text-slate-650">
                 <h5 className="font-bold text-slate-800 uppercase tracking-tight text-[11px] border-b border-dashed border-slate-100 pb-1 flex items-center gap-1">
                   <Database className="h-3.5 w-3.5 text-emerald-600" />
@@ -350,7 +350,7 @@ export default function UnifiedAccountManager({
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {normalBanks.length === 0 ? (
                 <div className="col-span-2 text-center py-8 text-slate-400 text-xs border border-dashed rounded-xl bg-white">{t('No registered traditional bank accounts yet.', 'کوئی عمومی بینک اکاؤنٹ رجسٹرڈ نہیں ہے۔')}</div>
               ) : (
@@ -406,7 +406,7 @@ export default function UnifiedAccountManager({
 
           {showWalletForm ? (
             /* SEPARATED SAVING AND UPDATING MOBILE SECTION */
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 rounded-xl border border-violet-250 bg-violet-50/5 animate-fade-in">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl border border-violet-250 bg-violet-50/5 animate-fade-in">
               <form onSubmit={handleSaveWallet} className="space-y-3 font-sans text-xs text-slate-650">
                 <h5 className="font-bold text-slate-800 uppercase tracking-tight text-[11px] border-b border-dashed border-slate-100 pb-1 flex items-center gap-1">
                   <Wallet className="h-3.5 w-3.5 text-violet-600" />
@@ -501,7 +501,7 @@ export default function UnifiedAccountManager({
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {digitalWallets.length === 0 ? (
                 <div className="col-span-2 text-center py-8 text-slate-400 text-xs border border-dashed rounded-xl bg-white">{t('No mobile wallets registered in system.', 'کوئی موبائل یا ڈیجیٹل تجارتی والٹ درج نہیں ہے۔')}</div>
               ) : (
@@ -553,14 +553,14 @@ export default function UnifiedAccountManager({
 
           {showProductForm ? (
             /* SEPARATED SAVING AND UPDATING PRODUCT SECTION */
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 rounded-xl border border-orange-250 bg-orange-50/5 animate-fade-in">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl border border-orange-250 bg-orange-50/5 animate-fade-in">
               <form onSubmit={handleSaveProduct} className="space-y-3 font-sans text-xs text-slate-655">
                 <h5 className="font-bold text-slate-800 uppercase tracking-tight text-[11px] border-b border-dashed border-slate-100 pb-1 flex items-center gap-1">
                   <Database className="h-3.5 w-3.5 text-orange-600" />
                   <span>{editingProduct ? t('UPDATE INVENTORY SKU', 'کیٹلاگ کارڈ ترمیم کریں (Update)') : t('REGISTER NEW PRODUCT BRAND', 'کیٹلاگ مصنوع درج کریں (SaveNew)')}</span>
                 </h5>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="font-bold block">{t('Product Name (English):', 'پراڈکٹ نام (English):')}</label>
                     <input
@@ -586,7 +586,7 @@ export default function UnifiedAccountManager({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="font-bold block">{t('Category Classification:', 'آئٹم کیٹیگری ٹائپ:')}</label>
                     <select
@@ -613,7 +613,7 @@ export default function UnifiedAccountManager({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="font-bold block">{t('Retail tariff (Rs):', 'فی اکائی قیمت (Rs):')}</label>
                     <input
@@ -665,7 +665,7 @@ export default function UnifiedAccountManager({
                   <span className="block text-slate-450 font-medium text-[11px] mt-0.5">{prodForm.urduName || t('سامان کا اردو نام', 'سامان کا اردو نام')}</span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 border-t border-dashed border-slate-200 pt-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-dashed border-slate-200 pt-3">
                   <div>
                     <span className="block text-[8px] text-slate-400 uppercase tracking-widest">{t('Current retail rate:', 'سیلز ریٹ:')}</span>
                     <strong className="block font-sans text-xs text-slate-800">Rs. {prodForm.rate} / {prodForm.unit}</strong>
@@ -678,7 +678,7 @@ export default function UnifiedAccountManager({
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {products.length === 0 ? (
                 <div className="col-span-2 text-center py-8 text-slate-400 text-xs border border-dashed rounded-xl bg-white">{t('No registered product catalogues yet.', 'کوئی بھی مصنوعات رجسٹرڈ نہیں ہے۔')}</div>
               ) : (

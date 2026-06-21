@@ -9,6 +9,7 @@ import { useShiftStore } from '../../../stores/useShiftStore';
 import { useInventoryStore } from '../../../stores/useInventoryStore';
 
 interface RateWizardProps {
+  isLube?: boolean;
   products: Product[];
   tanks: Tank[];
   rateHistory: RateHistoryEntry[];
@@ -30,6 +31,7 @@ interface RateWizardProps {
 }
 
 export default function RateWizard({
+  isLube,
   products,
   tanks,
   rateHistory,
@@ -170,20 +172,24 @@ export default function RateWizard({
             </div>
           </div>
           <h2 className="text-2xl font-black text-slate-800 dark:text-white">
-            {t('Set Fuel Rates', 'فیول ریٹس مقرر کریں', language)}
+            {isLube ? t('Set Product Rates', 'پراڈکٹ ریٹس مقرر کریں', language) : t('Set Fuel Rates', 'فیول ریٹس مقرر کریں', language)}
           </h2>
           <p className="text-slate-500 dark:text-slate-400 font-medium mt-2">
-            {t('Enter the exact effective date and current selling price per liter', 'مؤثر تاریخ اور موجودہ فروخت کی قیمت درج کریں', language)}
+            {isLube
+              ? t('Enter the exact effective date and current selling price', 'مؤثر تاریخ اور موجودہ فروخت کی قیمت درج کریں', language)
+              : t('Enter the exact effective date and current selling price per liter', 'مؤثر تاریخ اور موجودہ فروخت کی قیمت فی لیٹر درج کریں', language)}
           </p>
         </div>
 
         <div className="p-6 space-y-4">
-          {products.filter(p => p.type !== 'lube').length === 0 ? (
+          {products.filter(p => isLube ? p.type === 'lube' : p.type !== 'lube').length === 0 ? (
              <div className="text-center py-6 text-slate-400 bg-slate-50 dark:bg-slate-800/30 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
-               {t('No fuel products configured yet.', 'ابھی تک کوئی فیول پراڈکٹس شامل نہیں ہیں۔', language)}
+               {isLube 
+                 ? t('No lube products configured yet.', 'ابھی تک کوئی لیوب پراڈکٹس شامل نہیں ہیں۔', language)
+                 : t('No fuel products configured yet.', 'ابھی تک کوئی فیول پراڈکٹس شامل نہیں ہیں۔', language)}
              </div>
           ) : (
-            products.filter(p => p.type !== 'lube').map((product) => (
+            products.filter(p => isLube ? p.type === 'lube' : p.type !== 'lube').map((product) => (
               <div 
                 key={product.id}
                 className="p-5 border border-slate-200 dark:border-slate-700 rounded-2xl bg-white dark:bg-[#0B1120] shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
@@ -194,7 +200,7 @@ export default function RateWizard({
                   </div>
                   <div>
                     <h3 className="font-bold text-lg text-slate-800 dark:text-white">{product.name}</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Rs. {product.rate} {t('per Liter', 'فی لیٹر', language)}</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Rs. {product.rate} {isLube ? t('per Item', 'فی آئٹم', language) : t('per Liter', 'فی لیٹر', language)}</p>
                   </div>
                 </div>
 

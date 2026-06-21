@@ -88,7 +88,7 @@ const MemoizedCustomerCard = React.memo(({
       className={`relative w-full text-left rounded-xl border p-4 shadow-xs transition-all flex items-center justify-between cursor-pointer ${
         isSelected
           ? 'border-orange-500 bg-orange-50/20'
-          : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-md'
+          : 'border-theme-main bg-theme-card hover:border-slate-300 hover:shadow-md'
       }`}
     >
       <div className={`absolute top-0 bottom-0 left-0 w-1.5 rounded-l-md ${stateColorBar}`}></div>
@@ -703,7 +703,7 @@ export default function CustomerDirectory({
     <div className="space-y-6 pb-16 lg:pb-0">
       
       {/* HEADER ROW WITH INTEGRATED DYNAMIC TIME FILTER */}
-      <div className="flex flex-col gap-4 border-b border-slate-200 pb-4">
+      <div className="flex flex-col gap-4 border-b border-theme-main pb-4">
         <div className="flex flex-row items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
             <span className="font-mono text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-0.5">OPERATIONS</span>
@@ -737,7 +737,7 @@ export default function CustomerDirectory({
         </div>
 
         {/* TIME FILTER ROW */}
-        <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200 shadow-sm overflow-x-auto no-scrollbar sm:w-max">
+        <div className="flex bg-slate-100 rounded-lg p-1 border border-theme-main shadow-sm overflow-x-auto no-scrollbar sm:w-max">
           {(['all', 'weekly', 'monthly', 'yearly'] as const).map((filter) => (
             <button
               key={filter}
@@ -844,7 +844,7 @@ export default function CustomerDirectory({
         
         {/* LEFT COLUMN: CUSTOMER ACCOUNTS LISTINGS */}
         <div className="space-y-4">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3.5">
+          <div className="rounded-xl border border-theme-main bg-theme-card p-4 shadow-xs space-y-3.5">
             {/* Filter buttons track */}
             <div className="flex flex-wrap gap-1.5">
               {[
@@ -859,7 +859,7 @@ export default function CustomerDirectory({
                   className={`rounded-md px-2.5 py-1 text-[11px] font-sans font-bold cursor-pointer transition-colors ${
                     filterType === f.id
                       ? 'bg-orange-600 text-white shadow-xs'
-                      : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                      : 'bg-theme-bg text-slate-500 hover:bg-slate-100'
                   }`}
                 >
                   {t(f.label, f.urdu)}
@@ -880,7 +880,7 @@ export default function CustomerDirectory({
                 onAction={() => setShowAddModal(true)}
               />
             ) : filteredCustomers.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-200 py-12 text-center text-slate-400 font-sans text-xs bg-white">
+              <div className="rounded-xl border border-dashed border-theme-main py-12 text-center text-slate-400 font-sans text-xs bg-theme-card">
                 {t('No customers matched filters.', 'کوئی کھاتہ میچ نہیں ہوا۔')}
               </div>
             ) : (
@@ -905,7 +905,7 @@ export default function CustomerDirectory({
         {/* RIGHT COLUMN (2/3 WIDTH): DETAILED CLIENT LEDGER Timelines */}
         <div className="lg:col-span-2">
           {currentCustomer ? (
-            <div className="rounded-xl border border-slate-200 bg-white shadow-xs p-5 space-y-6">
+            <div className="rounded-xl border border-theme-main bg-theme-card shadow-xs p-5 space-y-6">
               
               {/* Client detailed profile row */}
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-4">
@@ -936,7 +936,7 @@ export default function CustomerDirectory({
 
                   <button
                     onClick={() => window.print()}
-                    className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-sans text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                    className="flex items-center gap-1.5 rounded-lg border border-theme-main bg-theme-card px-3 py-1.5 font-sans text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
                   >
                     <FileText className="h-3.5 w-3.5" />
                     <span>{t('Statement PDF', 'اکاؤنٹ لیجر PDF')}</span>
@@ -986,8 +986,8 @@ export default function CustomerDirectory({
               </div>
 
               {/* Outstanding metrics display & credit limit warning bar */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="rounded-lg p-4 bg-slate-50 border border-slate-100 font-sans text-xs flex flex-col justify-between relative overflow-hidden">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="rounded-lg p-4 bg-theme-bg border border-slate-100 font-sans text-xs flex flex-col justify-between relative overflow-hidden">
                   <div className="absolute top-0 bottom-0 left-0 w-1 bg-red-400"></div>
                   <span className="text-slate-400 font-bold uppercase tracking-wider">{t('Remaining Credit Space:', 'باقی گنجائش بقایا قرض:')}</span>
                   <div className="mt-2.5 flex items-end justify-between">
@@ -1015,7 +1015,7 @@ export default function CustomerDirectory({
               </div>
 
               {/* Fast Transaction Action Drawer */}
-              <div className="border border-slate-200 border-dashed rounded-lg p-4 bg-slate-50/50">
+              <div className="border border-theme-main border-dashed rounded-lg p-4 bg-slate-50/50">
                 {!isAddingTxn ? (
                   <button
                     onClick={() => setIsAddingTxn(true)}
@@ -1039,7 +1039,7 @@ export default function CustomerDirectory({
                             type="button"
                             onClick={() => setTxnType('debit')}
                             className={`py-1.5 rounded-md border font-sans text-xs font-bold ${
-                              txnType === 'debit' ? 'border-red-500 bg-red-50 text-red-700 shadow-xs font-bold' : 'border-slate-200 text-slate-550'
+                              txnType === 'debit' ? 'border-red-500 bg-red-50 text-red-700 shadow-xs font-bold' : 'border-theme-main text-slate-550'
                             }`}
                           >
                             📈 {t('DEBIT (Credit Sale)', 'قرض / بل فیس')}
@@ -1048,7 +1048,7 @@ export default function CustomerDirectory({
                             type="button"
                             onClick={() => setTxnType('credit')}
                             className={`py-1.5 rounded-md border font-sans text-xs font-bold ${
-                              txnType === 'credit' ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-xs font-bold' : 'border-slate-200 text-slate-550'
+                              txnType === 'credit' ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-xs font-bold' : 'border-theme-main text-slate-550'
                             }`}
                           >
                             📉 {t('CREDIT (Payment Rcvd)', 'ادائیگی وصولی')}
@@ -1064,7 +1064,7 @@ export default function CustomerDirectory({
                           required
                           onChange={(e) => setTxnAmount(e.target.value)}
                           placeholder="e.g. 5000"
-                          className="w-full rounded-md border border-slate-200 bg-white px-3 py-1 font-mono text-sm focus:border-orange-500"
+                          className="w-full rounded-md border border-theme-main bg-theme-card px-3 py-1 font-mono text-sm focus:border-orange-500"
                         />
                       </div>
 
@@ -1072,7 +1072,7 @@ export default function CustomerDirectory({
                         <>
                           <div>
                             <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t('Product:', 'پراڈکٹ:')}</label>
-                            <select value={txnProdId} onChange={(e) => setTxnProdId(e.target.value)} className="w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-xs">
+                            <select value={txnProdId} onChange={(e) => setTxnProdId(e.target.value)} className="w-full rounded-md border border-theme-main bg-theme-card px-2 py-1 text-xs">
                               {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                             </select>
                           </div>
@@ -1083,14 +1083,14 @@ export default function CustomerDirectory({
                               value={txnQty}
                               onChange={(e) => setTxnQty(e.target.value)}
                               placeholder="e.g. 20"
-                              className="w-full rounded-md border border-slate-200 bg-white px-3 py-1 font-mono text-xs focus:border-orange-500"
+                              className="w-full rounded-md border border-theme-main bg-theme-card px-3 py-1 font-mono text-xs focus:border-orange-500"
                             />
                           </div>
                         </>
                       ) : (
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t('Method:', 'طریقہ:')}</label>
-                          <select value={txnMode} onChange={(e) => setTxnMode(e.target.value as any)} className="w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-xs">
+                          <select value={txnMode} onChange={(e) => setTxnMode(e.target.value as any)} className="w-full rounded-md border border-theme-main bg-theme-card px-2 py-1 text-xs">
                             <option value="cash">Cash</option>
                             <option value="cheque">Cheque</option>
                             <option value="transfer">Bank transfer</option>
@@ -1105,7 +1105,7 @@ export default function CustomerDirectory({
                           value={txnNote}
                           onChange={(e) => setTxnNote(e.target.value)}
                           placeholder="e.g. Account adjustment direct balance clearing"
-                          className="w-full rounded-md border border-slate-200 bg-white px-3 py-1 font-sans text-xs focus:border-orange-500"
+                          className="w-full rounded-md border border-theme-main bg-theme-card px-3 py-1 font-sans text-xs focus:border-orange-500"
                         />
                       </div>
                     </div>
@@ -1129,7 +1129,7 @@ export default function CustomerDirectory({
                 <div className="overflow-x-auto rounded-lg border border-slate-105">
                   <div className="min-w-full">
                     {ledgerEntries.length === 0 ? (
-                      <div className="py-8 text-center text-slate-400 font-medium bg-white">
+                      <div className="py-8 text-center text-slate-400 font-medium bg-theme-card">
                         {t('No shift transaction ledger cards matched this debtor history.', 'اس گاہک کی پچھلی کوئی انٹری تاحال درج نہیں ہے۔')}
                       </div>
                     ) : (
@@ -1201,7 +1201,7 @@ export default function CustomerDirectory({
 
             </div>
           ) : (
-            <div className="h-full rounded-xl border border-dashed border-slate-200 py-32 text-center text-slate-400 font-sans text-sm flex flex-col justify-center items-center gap-4 bg-white/50">
+            <div className="h-full rounded-xl border border-dashed border-theme-main py-32 text-center text-slate-400 font-sans text-sm flex flex-col justify-center items-center gap-4 bg-white/50">
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 text-slate-400 ring-4 ring-white shadow-sm">
                 <Coins className="h-10 w-10" strokeWidth={2} />
               </div>
@@ -1226,7 +1226,7 @@ export default function CustomerDirectory({
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: 15, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 350 }}
-              className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-xl"
+              className="w-full max-w-xl rounded-xl border border-theme-main bg-theme-card p-6 shadow-xl"
             >
               <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
                 <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-2">
@@ -1245,7 +1245,7 @@ export default function CustomerDirectory({
                     value={addName}
                     onChange={(e) => setAddName(e.target.value)}
                     placeholder="e.g. Umar Ali"
-                    className="premium-input border bg-white px-3 font-sans text-sm focus:border-orange-500 outline-hidden"
+                    className="premium-input border bg-theme-card px-3 font-sans text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
 
@@ -1256,7 +1256,7 @@ export default function CustomerDirectory({
                     value={addUrduName}
                     onChange={(e) => setAddUrduName(e.target.value)}
                     placeholder="مثال: حسیب روڈ ملز"
-                    className="premium-input border bg-white px-3 font-sans text-sm focus:border-orange-500 outline-hidden"
+                    className="premium-input border bg-theme-card px-3 font-sans text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
 
@@ -1267,7 +1267,7 @@ export default function CustomerDirectory({
                     value={addContact}
                     onChange={(e) => setAddContact(e.target.value)}
                     placeholder="e.g. 03168432329"
-                    className="premium-input border bg-white px-3 font-mono text-sm focus:border-orange-500 outline-hidden"
+                    className="premium-input border bg-theme-card px-3 font-mono text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
 
@@ -1278,11 +1278,11 @@ export default function CustomerDirectory({
                     value={addAddress}
                     onChange={(e) => setAddAddress(e.target.value)}
                     placeholder="e.g. Plot 10-A, Korangi, Karachi"
-                    className="premium-input border bg-white px-3 font-sans text-sm focus:border-orange-500 outline-hidden"
+                    className="premium-input border bg-theme-card px-3 font-sans text-sm focus:border-orange-500 outline-hidden"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t(`Credit Limit (${getCurrencySymbol(settings)}):`, 'قرض کی انتہائ حد:')}</label>
                     <input
@@ -1290,7 +1290,7 @@ export default function CustomerDirectory({
                       value={addLimit}
                       onChange={(e) => setAddLimit(e.target.value)}
                       placeholder="e.g. 200000"
-                      className="premium-input border bg-white px-3 .5 font-mono text-sm focus:border-orange-500 outline-hidden"
+                      className="premium-input border bg-theme-card px-3 .5 font-mono text-sm focus:border-orange-500 outline-hidden"
                     />
                   </div>
                   <div>
@@ -1300,7 +1300,7 @@ export default function CustomerDirectory({
                       value={addOpeningBal}
                       onChange={(e) => setAddOpeningBal(e.target.value)}
                       placeholder="0"
-                      className="premium-input border bg-white px-3 .5 font-mono text-sm focus:border-orange-500 outline-hidden"
+                      className="premium-input border bg-theme-card px-3 .5 font-mono text-sm focus:border-orange-500 outline-hidden"
                     />
                   </div>
                 </div>
@@ -1333,7 +1333,7 @@ export default function CustomerDirectory({
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: 20, opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-              className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
+              className="w-full max-w-2xl"
             >
               <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-5">
                 <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-2">
@@ -1357,31 +1357,31 @@ export default function CustomerDirectory({
                 setShowEditModal(false);
                 showToast(t('Customer profile updated!', 'کھاتہ دار معلومات اپڈیٹ ہو گئی!'), 'success');
               }} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Name (English):', 'نام (انگریزی):')}</label>
                     <input type="text" required value={editCustName} onChange={e => setEditCustName(e.target.value)}
-                      className="premium-input border bg-white px-3 font-sans text-sm focus:border-blue-500 outline-none" />
+                      className="premium-input border bg-theme-card px-3 font-sans text-sm focus:border-blue-500 outline-none" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Name (Urdu):', 'نام (اردو):')}</label>
                     <input type="text" value={editCustUrduName} onChange={e => setEditCustUrduName(e.target.value)}
-                      className="premium-input border bg-white px-3 font-sans text-sm focus:border-blue-500 outline-none" />
+                      className="premium-input border bg-theme-card px-3 font-sans text-sm focus:border-blue-500 outline-none" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Contact:', 'رابطہ:')}</label>
                     <input type="text" value={editCustContact} onChange={e => setEditCustContact(e.target.value)}
-                      className="premium-input border bg-white px-3 font-sans text-sm focus:border-blue-500 outline-none" />
+                      className="premium-input border bg-theme-card px-3 font-sans text-sm focus:border-blue-500 outline-none" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Address:', 'پتہ:')}</label>
                     <input type="text" value={editCustAddress} onChange={e => setEditCustAddress(e.target.value)}
-                      className="premium-input border bg-white px-3 font-sans text-sm focus:border-blue-500 outline-none" />
+                      className="premium-input border bg-theme-card px-3 font-sans text-sm focus:border-blue-500 outline-none" />
                   </div>
                   <div className="sm:col-span-2">
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Credit Limit (Rs):', 'ادھار حد (روپے):')}</label>
                     <input type="number" min="0" value={editCustLimit} onChange={e => setEditCustLimit(e.target.value)}
-                      className="premium-input border bg-white px-3 font-mono text-sm focus:border-blue-500 outline-none" />
+                      className="premium-input border bg-theme-card px-3 font-mono text-sm focus:border-blue-500 outline-none" />
                   </div>
                 </div>
                 <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-sans text-sm font-bold tracking-wider rounded-lg shadow-md cursor-pointer">
