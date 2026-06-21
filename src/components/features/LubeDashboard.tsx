@@ -270,7 +270,7 @@ export default React.memo(function LubeDashboard({
   const glassLayer3 = "backdrop-blur-[20px] bg-slate-100/50 dark:bg-white/[0.02] border border-slate-200/50 dark:border-white/[0.04] shadow-[inset_0_2px_4px_rgb(0,0,0,0.02)] dark:shadow-[inset_0_4px_8px_rgba(0,0,0,0.6)] rounded-[24px] transition-colors duration-300";
 
   // Dock Layer
-  const dockLayer = "fixed bottom-6 left-1/2 -translate-x-1/2 backdrop-blur-[60px] bg-white/80 dark:bg-[#111827]/80 border border-slate-200/60 dark:border-white/[0.15] shadow-[0_20px_80px_rgb(0,0,0,0.15)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_40px_100px_rgba(0,0,0,0.9)] rounded-[2rem] px-3 py-3 flex items-center gap-1 z-[100] transition-transform duration-300 hover:scale-[1.02] transform-gpu";
+  const dockLayer = "hidden lg:flex fixed bottom-6 left-1/2 -translate-x-1/2 backdrop-blur-[60px] bg-white/80 dark:bg-[#111827]/80 border border-slate-200/60 dark:border-white/[0.15] shadow-[0_20px_80px_rgb(0,0,0,0.15)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_40px_100px_rgba(0,0,0,0.9)] rounded-[2rem] px-3 py-3 items-center gap-1 z-[100] transition-transform duration-300 hover:scale-[1.02] transform-gpu";
 
   const textSubtle = "text-slate-500 dark:text-slate-400";
   const textPrimary = "text-slate-900 dark:text-white";

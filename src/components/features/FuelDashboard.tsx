@@ -221,7 +221,7 @@ export default React.memo(function FuelDashboard({
   
   const liquidGlass = "relative overflow-hidden backdrop-blur-[30px] saturate-[150%] bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/[0.08] shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_20px_80px_rgba(0,0,0,0.6)] rounded-[24px] transition-all duration-500";
   
-  const dockLayer = "fixed bottom-6 left-1/2 -translate-x-1/2 backdrop-blur-[60px] bg-[#0F172A]/80 border border-white/[0.15] shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_40px_100px_rgba(0,0,0,0.9)] rounded-[2rem] px-3 py-3 flex items-center gap-1 z-[100] transition-transform duration-300 hover:scale-[1.02] transform-gpu";
+  const dockLayer = "hidden lg:flex fixed bottom-6 left-1/2 -translate-x-1/2 backdrop-blur-[60px] bg-[#0F172A]/80 border border-white/[0.15] shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_40px_100px_rgba(0,0,0,0.9)] rounded-[2rem] px-3 py-3 items-center gap-1 z-[100] transition-transform duration-300 hover:scale-[1.02] transform-gpu";
 
   return (
     <div className={themeWrap}>
