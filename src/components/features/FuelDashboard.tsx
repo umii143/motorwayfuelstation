@@ -16,6 +16,8 @@ import {
   GlobalSettings, Shift, Product, Customer, Supplier, BankAccount, Nozzle, Tank, StockTransaction 
 } from '../../types';
 import { formatCurrency } from '../../lib/currency';
+import { useForecastEngine } from '../../hooks/useForecastEngine';
+import { BusinessOutlookWidget } from './BusinessOutlookWidget';
 
 interface FuelDashboardProps {
   settings: GlobalSettings;
@@ -60,6 +62,8 @@ export default React.memo(function FuelDashboard({
 }: FuelDashboardProps) {
 
   const todayStr = new Date().toISOString().split('T')[0];
+  
+  const { forecast, isComputing } = useForecastEngine(shifts, tanks, products);
   
   const activeShift = (shifts as any[]).find(s => s.status === 'Open' || s.status === 'active');
 
@@ -565,6 +569,8 @@ export default React.memo(function FuelDashboard({
                  </div>
              </div>
              </DeferredWidget>
+
+             <BusinessOutlookWidget forecast={forecast} isComputing={isComputing} settings={settings} />
 
              {/* 10. ALERTS CENTER */}
              <DeferredWidget delay={900} skeleton={<div className={`h-[200px] ${liquidGlass} animate-pulse bg-white/5`}></div>}>
