@@ -270,8 +270,8 @@ export default React.memo(function FuelDashboard({
 
         {/* 2. EXECUTIVE OPERATIONS HERO CARD */}
         <div className={`${liquidGlass} p-6 border-orange-500/20 shadow-[0_0_50px_rgba(249,115,22,0.05)]`}>
-           <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
-              <div className="col-span-2 lg:col-span-1 border-r border-white/10 pr-6 flex flex-col justify-center">
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+              <div className="col-span-1 sm:col-span-2 lg:col-span-1 sm:border-r border-white/10 pr-0 sm:pr-6 flex flex-col justify-center">
                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-2">
                    <Target className="w-4 h-4 text-orange-500" />
                    Health Score

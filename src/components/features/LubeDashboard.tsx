@@ -354,7 +354,7 @@ export default React.memo(function LubeDashboard({
             </div>
           </div>
           
-          <div className="grid grid-cols-3 gap-8 relative z-10">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 relative z-10">
             <div>
               <div className={`text-xs font-medium uppercase tracking-wider mb-2 ${textSubtle}`}>Gross Revenue</div>
               <div className={`text-4xl sm:text-5xl font-black tracking-tight ${textValue} drop-shadow-sm dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]`}>
@@ -375,7 +375,7 @@ export default React.memo(function LubeDashboard({
             </div>
           </div>
           
-          <div className="mt-8 pt-6 border-t border-slate-200 dark:border-white/[0.05] grid grid-cols-3 gap-8 relative z-10">
+          <div className="mt-8 pt-6 border-t border-slate-200 dark:border-white/[0.05] grid grid-cols-1 sm:grid-cols-3 gap-8 relative z-10">
             <div className="flex items-center gap-3">
               <div className={`p-2.5 rounded-xl flex items-center justify-center border shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] ${stats.revenueGrowth >= 0 ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400'}`}>
                 {stats.revenueGrowth >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingUp className="w-5 h-5 rotate-180" />}
