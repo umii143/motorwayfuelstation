@@ -411,7 +411,7 @@ export default React.memo(function Dashboard({
             Switch back to V1 Dashboard
           </button>
         </div>
-        <DashboardShell />
+        <DashboardShell onStartShiftQuick={onStartShiftQuick} onNavigate={onNavigate} />
       </div>
     );
   }

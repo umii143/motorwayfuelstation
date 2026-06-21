@@ -5,9 +5,11 @@ import { CORE_WIDGETS, DEFAULT_OWNER_LAYOUT } from './registry';
 import { DashboardCanvas } from './DashboardCanvas';
 import { WidgetStudioDrawer } from './WidgetStudioDrawer';
 
-export function DashboardShell() {
+export function DashboardShell({ onStartShiftQuick, onNavigate }: { onStartShiftQuick?: () => void, onNavigate?: (path: string) => void }) {
   const { registerWidget, setActiveLayout, activeLayout, isEditMode, setEditMode } = useWidgetEngine();
+  const { shifts } = useStation();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const activeShift = shifts.find(s => s.status === 'active');
 
   useEffect(() => {
     // 1. Register Core Widgets
@@ -63,6 +65,14 @@ export function DashboardShell() {
           </div>
 
           <div className="flex items-center gap-3">
+            {!activeShift && (
+              <button onClick={onStartShiftQuick} className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-xl text-xs font-bold border border-orange-500 hover:border-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.3)] transition-all">
+                Start Shift
+              </button>
+            )}
+            <button onClick={() => onNavigate?.('shifts')} className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold border border-white/10 transition-colors">
+              Shift Logs
+            </button>
             <button 
               onClick={toggleEditMode}
               className={`px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${

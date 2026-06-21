@@ -10,12 +10,12 @@ export function ActiveShiftWidget() {
 
   if (!activeShift) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center p-6 bg-white/[0.02] rounded-2xl border border-white/[0.05]">
-        <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-3 border border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
-          <Power className="w-8 h-8 text-slate-500" />
-        </div>
-        <h3 className="text-white font-black text-lg">No Active Shift</h3>
-        <p className="text-sm text-slate-400 mt-1">Start a shift to track sales.</p>
+      <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-white/[0.02] rounded-2xl border border-white/[0.05]">
+        <h3 className="text-white font-bold text-sm flex items-center gap-2">
+          <Power className="w-4 h-4 text-slate-500" />
+          No Active Shift
+        </h3>
+        <p className="text-xs text-slate-400 mt-1">Start a shift from the top bar.</p>
       </div>
     );
   }

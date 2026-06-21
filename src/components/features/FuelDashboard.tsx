@@ -259,6 +259,14 @@ export default React.memo(function FuelDashboard({
                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Operator</div>
                 <div className="text-sm font-black text-white">{userName}</div>
              </div>
+             {!activeShift && (
+               <button onClick={onStartShiftQuick} className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-xl text-xs font-bold border border-orange-500 hover:border-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.3)] transition-all">
+                 Start Shift
+               </button>
+             )}
+             <button onClick={() => onNavigate?.('shifts')} className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold border border-white/10 transition-colors">
+               Shift Logs
+             </button>
              <button className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors">
                <Bell className="w-4 h-4" />
              </button>
@@ -309,26 +317,24 @@ export default React.memo(function FuelDashboard({
           {/* MIDDLE COLUMN (WIDER) */}
           <div className="lg:col-span-2 space-y-6">
              {/* 3. FUEL OPERATIONS COMMAND CENTER */}
-             <div className={`${liquidGlass} p-6`}>
-                <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] border border-orange-500/30">
-                      <Power className="w-5 h-5 text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]" />
+             {activeShift && (
+               <div className={`${liquidGlass} p-6`}>
+                  <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] border border-orange-500/30">
+                        <Power className="w-5 h-5 text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-black text-white tracking-tight">Fuel Operations Center</h2>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Shift Intelligence</p>
+                      </div>
                     </div>
-                    <div>
-                      <h2 className="text-lg font-black text-white tracking-tight">Fuel Operations Center</h2>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Shift Intelligence</p>
-                    </div>
-                  </div>
-                  {activeShift && (
                     <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold flex items-center gap-2">
                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]"></div>
                        Running: {stats.shiftDuration}
                     </div>
-                  )}
-                </div>
+                  </div>
 
-                {activeShift ? (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                      <div className="bg-white/[0.03] rounded-2xl p-4 border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] hover:bg-white/[0.05] transition-colors">
                         <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Operator</div>
@@ -349,19 +355,8 @@ export default React.memo(function FuelDashboard({
                         </div>
                      </div>
                   </div>
-                ) : (
-                  <div className="text-center py-8">
-                     <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3 border border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
-                       <Power className="w-8 h-8 text-slate-500" />
-                     </div>
-                     <h3 className="text-white font-black text-lg">No Active Shift</h3>
-                     <p className="text-sm text-slate-400 mt-1 mb-4">Start a shift to begin operations and track sales.</p>
-                     <button onClick={onStartShiftQuick} className="bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 px-6 rounded-xl transition-all shadow-[0_10px_20px_rgba(249,115,22,0.3),inset_0_1px_1px_rgba(255,255,255,0.4)] hover:shadow-[0_15px_30px_rgba(249,115,22,0.4),inset_0_1px_1px_rgba(255,255,255,0.4)] hover:-translate-y-0.5">
-                        Start Shift
-                     </button>
-                  </div>
-                )}
-             </div>
+               </div>
+             )}
 
              {/* 4. FUEL INTELLIGENCE CENTER */}
              <DeferredWidget delay={300} skeleton={<div className={`h-[400px] ${liquidGlass} animate-pulse bg-white/5`}></div>}>
