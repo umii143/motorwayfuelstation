@@ -35,7 +35,7 @@ const containerVariant = {
 
 const itemVariant = {
   hidden: { opacity: 0, y: 30, scale: 0.95 },
-  visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 200, damping: 20 } }
+  visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring' as const, stiffness: 200, damping: 20 } }
 };
 
 export default React.memo(function LubeDashboard({

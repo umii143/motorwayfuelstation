@@ -87,6 +87,8 @@ interface PartyLedgerModalProps {
   accentColor?: 'orange' | 'violet' | 'blue' | 'emerald';
 }
 
+import { useDebounce } from '../../hooks/useDebounce';
+
 // Preset date ranges
 const PRESETS = [
   { id: 'all',     label: 'All Time',    days: 0 },
@@ -110,6 +112,9 @@ export default function PartyLedgerModal({
   const [endDate, setEndDate] = useState('');
   const [activePreset, setActivePreset] = useState('all');
   const [searchText, setSearchText] = useState('');
+  const debouncedSearchText = useDebounce(searchText, 300);
+  const [isPending, startTransition] = React.useTransition();
+  const [visibleLimit, setVisibleLimit] = useState(100);
 
   const accentClasses = {
     orange:  { bg: 'bg-orange-600',  text: 'text-orange-600',  light: 'bg-orange-50',  border: 'border-orange-200' },
@@ -140,13 +145,13 @@ export default function PartyLedgerModal({
     return entries.filter(entry => {
       if (startDate && entry.date < startDate) return false;
       if (endDate   && entry.date > endDate)   return false;
-      if (searchText) {
-        const q = searchText.toLowerCase();
+      if (debouncedSearchText) {
+        const q = debouncedSearchText.toLowerCase();
         if (!entry.description.toLowerCase().includes(q) && !entry.date.includes(q) && !(entry.tag || '').toLowerCase().includes(q)) return false;
       }
       return true;
     });
-  }, [entries, startDate, endDate, searchText]);
+  }, [entries, startDate, endDate, debouncedSearchText]);
 
   // Totals
   const totals = useMemo(() => {
@@ -155,6 +160,8 @@ export default function PartyLedgerModal({
     const net = totalDebit - totalCredit;
     return { totalDebit, totalCredit, net };
   }, [filteredEntries]);
+
+  const displayedEntries = filteredEntries.slice(0, visibleLimit);
 
   // CSV Export
   const exportCSV = () => {
@@ -393,12 +400,30 @@ export default function PartyLedgerModal({
 
             {/* ─── TRANSACTION TABLE ─── */}
             <div className="flex-1 overflow-auto bg-[var(--bg-card)]">
-              <ResponsiveTable
-                data={filteredEntries}
-                columns={ledgerColumns}
-                keyExtractor={(entry) => entry.id}
-                emptyMessage="No transactions found for selected date range."
-              />
+              {isPending ? (
+                <div className="flex items-center justify-center h-40">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                </div>
+              ) : (
+                <div className="flex flex-col h-full pb-6">
+                  <ResponsiveTable
+                    data={displayedEntries}
+                    columns={ledgerColumns}
+                    keyExtractor={(entry) => entry.id}
+                    emptyMessage="No transactions found for selected date range."
+                  />
+                  {filteredEntries.length > displayedEntries.length && (
+                    <div className="mt-4 flex justify-center pb-8 shrink-0">
+                      <button 
+                        onClick={() => setVisibleLimit(prev => prev + 100)}
+                        className={`px-6 py-2 ${accentClasses.light} ${accentClasses.text} hover:opacity-80 rounded-full font-bold text-sm transition-colors border ${accentClasses.border}`}
+                      >
+                        Load More Transactions ({filteredEntries.length - displayedEntries.length} remaining)
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* ─── TOTALS FOOTER ─── */}

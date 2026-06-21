@@ -183,7 +183,7 @@ export default function LubeInventoryDrillDownModal({
                             <td className="p-3">
                               <div className="font-bold text-slate-800 text-xs flex items-center gap-2">
                                 {isUrdu ? prod.urduName : prod.name}
-                                {isLow && <AlertTriangle className="h-3 w-3 text-red-500" title="Low Stock" />}
+                                {isLow && <span title="Low Stock"><AlertTriangle className="h-3 w-3 text-red-500" /></span>}
                               </div>
                             </td>
                             <td className="p-3 text-right">

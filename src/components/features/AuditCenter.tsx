@@ -6,11 +6,14 @@ import { ResponsiveTable } from '../shared/ResponsiveTable';
 import { db } from '../../data/db';
 import { AuditTrailEntry, InventoryMovement } from '../../types';
 import DataIntegrityTab from './IntegrityCenter/DataIntegrityTab';
+import { useDebounce } from '../../hooks/useDebounce';
 
 const AuditCenter: React.FC = () => {
   const { meterResets, settings, staff } = useStation();
   const [activeTab, setActiveTab] = useState('Data Integrity');
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const [dateRange, setDateRange] = useState<'today' | 'this_week' | 'this_month' | 'all'>('this_week');
   const [auditTrails, setAuditTrails] = useState<AuditTrailEntry[]>([]);
   const [inventoryMovements, setInventoryMovements] = useState<InventoryMovement[]>([]);
   const [verificationStatus, setVerificationStatus] = useState<Record<string, boolean | null>>({});
@@ -18,10 +21,28 @@ const AuditCenter: React.FC = () => {
   React.useEffect(() => {
     const stationId = db.getActiveStationId();
     if (stationId) {
-      setAuditTrails(db.getSettingsAuditTrail(stationId));
-      setInventoryMovements(db.getInventoryMovements(stationId));
+      // In a real DB, you'd pass limit and offset here. For local DB array, we slice it after filtering.
+      const rawTrails = db.getSettingsAuditTrail(stationId);
+      const rawMovements = db.getInventoryMovements(stationId);
+
+      const now = new Date();
+      const filterByDate = (dateStr: string) => {
+        if (dateRange === 'all') return true;
+        const d = new Date(dateStr);
+        const diffMs = now.getTime() - d.getTime();
+        const diffDays = diffMs / (1000 * 60 * 60 * 24);
+        
+        if (dateRange === 'today') return diffDays <= 1;
+        if (dateRange === 'this_week') return diffDays <= 7;
+        if (dateRange === 'this_month') return diffDays <= 30;
+        return true;
+      };
+
+      // Cap at 500 for initial render to prevent RAM explosion. The rest can be loaded incrementally if needed.
+      setAuditTrails(rawTrails.filter(t => filterByDate(t.timestamp)).slice(0, 500));
+      setInventoryMovements(rawMovements.filter(m => filterByDate(m.date)).slice(0, 500));
     }
-  }, []);
+  }, [dateRange]);
 
   const verifyHash = async (reset: any) => {
     try {
@@ -48,6 +69,14 @@ const AuditCenter: React.FC = () => {
     'System Events'
   ];
 
+  const [visibleLimit, setVisibleLimit] = useState(100);
+  const [isPending, startTransition] = React.useTransition();
+
+  // Reset limit when tab or search changes
+  React.useEffect(() => {
+    setVisibleLimit(100);
+  }, [activeTab, debouncedSearchQuery, dateRange]);
+
   const renderMeterResets = () => {
     const columns = [
       { accessor: 'timestamp', header: settings.language === 'ur' ? 'تاریخ' : 'Date/Time' },
@@ -59,13 +88,13 @@ const AuditCenter: React.FC = () => {
       { accessor: 'severity', header: settings.language === 'ur' ? 'سنگینی' : 'Severity' }
     ];
 
-    const data = meterResets
-      .filter(r => 
-        r.nozzleName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        r.reason.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.authorizedBy.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-      .map(r => ({
+    const filtered = meterResets.filter(r => 
+      r.nozzleName.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) || 
+      r.reason.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+      r.authorizedBy.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+    );
+
+    const data = filtered.slice(0, visibleLimit).map(r => ({
         id: r.id,
         timestamp: new Date(r.timestamp).toLocaleString(),
         nozzle: r.nozzleName,
@@ -96,7 +125,21 @@ const AuditCenter: React.FC = () => {
         )
       }));
 
-    return <ResponsiveTable columns={[...columns, { accessor: 'hash', header: 'Integrity' }] as any} data={data} keyExtractor={r => r.id} />;
+    return (
+      <div className="flex flex-col">
+        <ResponsiveTable columns={[...columns, { accessor: 'hash', header: 'Integrity' }] as any} data={data} keyExtractor={r => r.id} />
+        {filtered.length > visibleLimit && (
+          <div className="p-4 flex justify-center shrink-0">
+            <button 
+              onClick={() => setVisibleLimit(p => p + 100)}
+              className="px-6 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-full font-bold text-sm transition-colors border border-slate-200"
+            >
+              Load More ({filtered.length - visibleLimit} remaining)
+            </button>
+          </div>
+        )}
+      </div>
+    );
   };
 
   const renderAuditTrails = (categoryFilter?: string) => {
@@ -108,14 +151,15 @@ const AuditCenter: React.FC = () => {
       { accessor: 'user', header: 'User' }
     ];
 
-    const data = auditTrails
+    const filtered = auditTrails
       .filter(a => categoryFilter ? a.category === categoryFilter : true)
       .filter(a => 
-        a.details.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        a.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        a.user.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-      .map(a => ({
+        a.details.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) || 
+        a.action.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+        a.user.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+      );
+
+    const data = filtered.slice(0, visibleLimit).map(a => ({
         id: a.id,
         timestamp: a.timestamp,
         category: (
@@ -128,7 +172,21 @@ const AuditCenter: React.FC = () => {
         user: a.user
       }));
 
-    return <ResponsiveTable columns={columns as any} data={data} keyExtractor={a => a.id} />;
+    return (
+      <div className="flex flex-col">
+        <ResponsiveTable columns={columns as any} data={data} keyExtractor={a => a.id} />
+        {filtered.length > visibleLimit && (
+          <div className="p-4 flex justify-center shrink-0">
+            <button 
+              onClick={() => setVisibleLimit(p => p + 100)}
+              className="px-6 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-full font-bold text-sm transition-colors border border-slate-200"
+            >
+              Load More ({filtered.length - visibleLimit} remaining)
+            </button>
+          </div>
+        )}
+      </div>
+    );
   };
 
   const renderInventoryMovements = () => {
@@ -140,13 +198,14 @@ const AuditCenter: React.FC = () => {
       { accessor: 'reference', header: 'Reference' }
     ];
 
-    const data = inventoryMovements
+    const filtered = inventoryMovements
       .filter(m => 
-        m.type.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        m.referenceId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.notes?.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-      .map(m => ({
+        m.type.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) || 
+        m.referenceId?.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+        m.notes?.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+      );
+
+    const data = filtered.slice(0, visibleLimit).map(m => ({
         id: m.id,
         date: new Date(m.date).toLocaleString(),
         type: (
@@ -163,7 +222,21 @@ const AuditCenter: React.FC = () => {
         reference: m.referenceId || m.notes || '-'
       }));
 
-    return <ResponsiveTable columns={columns as any} data={data} keyExtractor={m => m.id} />;
+    return (
+      <div className="flex flex-col">
+        <ResponsiveTable columns={columns as any} data={data} keyExtractor={m => m.id} />
+        {filtered.length > visibleLimit && (
+          <div className="p-4 flex justify-center shrink-0">
+            <button 
+              onClick={() => setVisibleLimit(p => p + 100)}
+              className="px-6 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-full font-bold text-sm transition-colors border border-slate-200"
+            >
+              Load More ({filtered.length - visibleLimit} remaining)
+            </button>
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -203,15 +276,27 @@ const AuditCenter: React.FC = () => {
           <CardHeader>
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
               <CardTitle>{activeTab}</CardTitle>
-              <div className="relative w-full sm:w-64">
-                <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder={settings.language === 'ur' ? 'تلاش کریں...' : 'Search records...'}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
-                />
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <select
+                  value={dateRange}
+                  onChange={(e) => setDateRange(e.target.value as any)}
+                  className="px-3 py-2 border rounded-xl bg-slate-50 focus:ring-2 focus:ring-red-500 outline-none text-sm text-slate-700"
+                >
+                  <option value="today">Today</option>
+                  <option value="this_week">This Week</option>
+                  <option value="this_month">This Month</option>
+                  <option value="all">All Time</option>
+                </select>
+                <div className="relative flex-1 sm:w-64">
+                  <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder={settings.language === 'ur' ? 'تلاش کریں...' : 'Search records...'}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
+                  />
+                </div>
               </div>
             </div>
           </CardHeader>

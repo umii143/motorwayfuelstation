@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { GlobalSettings, VarianceIncident } from '../../../types';
 import { db } from '../../../data/db';
-import { ShieldAlert, TrendingDown, Scale, DollarSign, Search, Plus, XCircle, Droplets } from 'lucide-react';
+import { ShieldAlert, TrendingDown, Scale, DollarSign, Search, Plus, XCircle, Droplets, Activity } from 'lucide-react';
+import { useVarianceAnalytics } from '../../../hooks/useVarianceAnalytics';
 
 interface LossDashboardProps {
   settings: GlobalSettings;
@@ -33,6 +34,10 @@ export default function LossDashboard({ settings, stationId }: LossDashboardProp
       default: return 'bg-slate-100 text-slate-700 border-slate-200';
     }
   };
+
+  // Integration with Variance Web Worker
+  const shifts = db.getShifts(stationId);
+  const varianceAnalytics = useVarianceAnalytics(shifts, []);
 
   return (
     <div className="space-y-6">
@@ -76,6 +81,24 @@ export default function LossDashboard({ settings, stationId }: LossDashboardProp
             </div>
             <div className="text-2xl font-black font-mono text-rose-600">{settings.currency} {totalFinancialLoss.toLocaleString()}</div>
             <div className="text-xs text-slate-500 mt-2 font-medium">Capital tied up in shrinkage/loss</div>
+          </div>
+        </div>
+
+        <div className="premium-card p-5 border relative overflow-hidden group bg-slate-900 border-slate-800">
+          <div className="absolute -right-4 -top-4 w-24 h-24 bg-slate-800 rounded-full group-hover:scale-110 transition-transform"></div>
+          <div className="relative">
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-xs font-bold text-slate-400 uppercase">AI System Variance</span>
+              <div className="p-2 bg-slate-800 text-slate-300 rounded-lg">
+                <Activity className="h-4 w-4" />
+              </div>
+            </div>
+            <div className={`text-2xl font-black font-mono ${varianceAnalytics.status === 'Critical' ? 'text-rose-500' : 'text-emerald-400'}`}>
+              {varianceAnalytics.totalSystemVariance.toLocaleString()} L
+            </div>
+            <div className="text-xs text-slate-500 mt-2 font-medium">
+              Worst Nozzle: <span className="text-slate-300">{varianceAnalytics.worstNozzleId}</span> ({varianceAnalytics.worstNozzleLoss.toLocaleString()}L)
+            </div>
           </div>
         </div>
       </div>

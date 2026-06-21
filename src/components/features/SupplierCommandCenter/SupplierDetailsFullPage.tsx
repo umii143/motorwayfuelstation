@@ -8,6 +8,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Supplier, Shift, GlobalSettings, BankAccount, StockBatch } from '../../../types';
 import { formatCurrency, getCurrencySymbol } from '../../../lib/currency';
 import { t as translate } from '../../../lib/translations';
+import { useDebounce } from '../../../hooks/useDebounce';
 
 interface SupplierDetailsFullPageProps {
   supplier: Supplier;
@@ -101,6 +102,11 @@ export default function SupplierDetailsFullPage({ supplier, settings, shifts, ba
     { name: 'Available Credit', value: availableCredit, color: '#3b82f6' } 
   ], [totalPaymentsYear, supplier.balance, availableCredit]);
 
+  const [visibleLimit, setVisibleLimit] = useState(100);
+  const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const [isPending, startTransition] = React.useTransition();
+
   // 4. Construct Unified Transaction Ledger
   const transactions = useMemo(() => {
     const combined: any[] = [];
@@ -147,6 +153,18 @@ export default function SupplierDetailsFullPage({ supplier, settings, shifts, ba
       return { ...t, bal: runningBal };
     }).reverse();
   }, [supplierBatches, supplierPayments]);
+
+  const filteredTransactions = useMemo(() => {
+    if (!debouncedSearchTerm) return transactions;
+    const lower = debouncedSearchTerm.toLowerCase();
+    return transactions.filter(t => 
+      t.desc.toLowerCase().includes(lower) || 
+      t.ref.toLowerCase().includes(lower) || 
+      t.type.toLowerCase().includes(lower)
+    );
+  }, [transactions, debouncedSearchTerm]);
+
+  const displayedTransactions = filteredTransactions.slice(0, visibleLimit);
 
   return (
     <div className="min-h-screen bg-slate-950 pb-20 -mx-4 lg:-mx-8 -mt-4 lg:-mt-8">
@@ -335,7 +353,13 @@ export default function SupplierDetailsFullPage({ supplier, settings, shifts, ba
                   <h3 className="text-white font-semibold">Transactions (A to Z)</h3>
                   <div className="flex items-center gap-3">
                     <div className="relative">
-                      <input type="text" placeholder="Search transactions..." className="bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-3 py-2 focus:outline-hidden" />
+                      <input 
+                        type="text" 
+                        placeholder="Search transactions..." 
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-3 py-2 focus:outline-hidden" 
+                      />
                     </div>
                     <select className="bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-3 py-2 outline-hidden">
                       <option>All Types</option>
@@ -368,7 +392,7 @@ export default function SupplierDetailsFullPage({ supplier, settings, shifts, ba
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800 text-slate-300">
-                      {transactions.map(txn => (
+                      {displayedTransactions.map(txn => (
                         <tr key={txn.id} className="hover:bg-slate-800/30 transition-colors">
                           <td className="px-4 py-3">{txn.date}</td>
                           <td className="px-4 py-3">
@@ -386,16 +410,27 @@ export default function SupplierDetailsFullPage({ supplier, settings, shifts, ba
                           <td className="px-4 py-3 text-emerald-500">{txn.status}</td>
                         </tr>
                       ))}
-                      {transactions.length === 0 && (
+                      {displayedTransactions.length === 0 && (
                         <tr>
-                          <td colSpan={10} className="px-4 py-8 text-center text-slate-500 italic">No transactions found for this supplier.</td>
+                          <td colSpan={10} className="px-4 py-8 text-center text-slate-500 italic">No transactions found.</td>
                         </tr>
                       )}
                     </tbody>
                   </table>
+                  
+                  {filteredTransactions.length > displayedTransactions.length && (
+                    <div className="p-4 flex justify-center border-t border-slate-800 shrink-0">
+                      <button 
+                        onClick={() => setVisibleLimit(prev => prev + 100)}
+                        className="px-6 py-2 bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white rounded-full font-bold text-sm transition-colors border border-slate-700"
+                      >
+                        Load More Transactions ({filteredTransactions.length - displayedTransactions.length} remaining)
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className="p-3 border-t border-slate-800 flex justify-between items-center text-xs text-slate-400 bg-slate-800/20">
-                  <span>Showing {transactions.length > 0 ? 1 : 0} to {Math.min(10, transactions.length)} of {transactions.length} records</span>
+                  <span>Showing {displayedTransactions.length > 0 ? 1 : 0} to {displayedTransactions.length} of {filteredTransactions.length} records</span>
                   <div className="flex gap-1">
                     <button className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-50" disabled>Prev</button>
                     <button className="px-2 py-1 rounded bg-orange-600 text-white">1</button>

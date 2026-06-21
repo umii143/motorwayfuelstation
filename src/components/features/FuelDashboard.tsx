@@ -61,7 +61,7 @@ export default React.memo(function FuelDashboard({
 
   const todayStr = new Date().toISOString().split('T')[0];
   
-  const activeShift = shifts.find(s => s.status === 'Open');
+  const activeShift = (shifts as any[]).find(s => s.status === 'Open' || s.status === 'active');
 
   // --- 1. CORE DATA CALCULATIONS ---
   const stats = useMemo(() => {
@@ -74,9 +74,9 @@ export default React.memo(function FuelDashboard({
     if (totalTxns === 0 && todayShifts.length > 0) totalTxns = todayShifts.length;
     
     // Revenue and Liters from Today's Shifts
-    todayShifts.forEach(shift => {
+    todayShifts.forEach((shift: any) => {
       todayRevenue += shift.totalSales || 0;
-      shift.nozzleReadings?.forEach(nr => {
+      shift.nozzleReadings?.forEach((nr: any) => {
         const product = products.find(p => p.id === nr.productId);
         const saleVolume = nr.closingReading > 0 ? Math.max(0, nr.closingReading - nr.openingReading) : 0;
         todayLiters += saleVolume;
@@ -103,19 +103,20 @@ export default React.memo(function FuelDashboard({
     let totalTankCapacity = 0;
     let totalCurrentStock = 0;
     
-    tanks.forEach(t => {
+    (tanks as any[]).forEach(t => {
       totalTankCapacity += t.capacity;
       totalCurrentStock += t.currentStock;
+      const pct = t.capacity > 0 ? (t.currentStock / t.capacity) * 100 : 0;
+      if (pct < 15) lowStockCount++;
       if (t.currentStock <= 0) outOfStockCount++;
-      else if (t.currentStock <= (t.capacity * 0.15)) lowStockCount++; // 15% threshold
     });
     
     const tankHealthPct = totalTankCapacity > 0 ? (totalCurrentStock / totalTankCapacity) * 100 : 100;
 
     // Nozzles
-    const onlineNozzles = nozzles.filter(n => n.status === 'Active' || !n.status).length;
-    const offlineNozzles = nozzles.filter(n => n.status === 'Inactive').length;
-    const maintenanceNozzles = nozzles.filter(n => n.status === 'Maintenance').length;
+    const onlineNozzles = (nozzles as any[]).filter(n => n.status === 'Active' || !n.status).length;
+    const maintenanceNozzles = (nozzles as any[]).filter(n => n.status === 'Maintenance').length;
+    const offlineNozzles = nozzles.length - onlineNozzles - maintenanceNozzles;
     const nozzleHealthPct = nozzles.length > 0 ? (onlineNozzles / nozzles.length) * 100 : 100;
 
     // Recovery
@@ -124,22 +125,22 @@ export default React.memo(function FuelDashboard({
 
     // Variance
     let todayVariance = 0;
-    todayShifts.forEach(s => todayVariance += (s.difference || 0));
+    todayShifts.forEach((s: any) => todayVariance += (s.difference || 0));
     const varianceScore = Math.max(0, 100 - Math.abs(todayVariance / 1000));
 
     // Station Health Score (e.g. 96%)
     const stationHealthScore = Math.round((tankHealthPct + nozzleHealthPct + recoveryScore + varianceScore) / 4) || 100;
 
     // Shift Operations
-    const shiftOperator = activeShift?.cashierName || 'Not Assigned';
-    const openingCash = activeShift?.openingCash || 0;
-    const currentCash = (activeShift?.totalSales || 0) + openingCash; // Approximate
-    const expectedCash = activeShift?.totalSales || 0;
-    const variance = activeShift?.difference || 0;
+    const shiftOperator = (activeShift as any)?.cashierName || 'Not Assigned';
+    const openingCash = (activeShift as any)?.openingCash || 0;
+    const currentCash = ((activeShift as any)?.totalSales || 0) + openingCash;
+    const expectedCash = (activeShift as any)?.totalSales || 0;
+    const variance = (activeShift as any)?.difference || 0;
     
     let shiftDuration = '0h 0m';
     if (activeShift) {
-      const start = new Date(`${activeShift.date} ${activeShift.time || '00:00'}`);
+      const start = new Date(`${(activeShift as any).date} ${(activeShift as any).time || '00:00'}`);
       const now = new Date();
       const diffMs = Math.max(0, now.getTime() - start.getTime());
       const diffHrs = Math.floor(diffMs / 3600000);
@@ -153,8 +154,8 @@ export default React.memo(function FuelDashboard({
       fuelIntel[p.id] = { name: p.name, liters: 0, revenue: 0, profit: 0, color: p.name.toLowerCase().includes('diesel') ? '#10B981' : p.name.toLowerCase().includes('octane') ? '#8B5CF6' : p.name.toLowerCase().includes('cng') ? '#06B6D4' : '#F97316' };
     });
     
-    todayShifts.forEach(shift => {
-      shift.nozzleReadings?.forEach(nr => {
+    todayShifts.forEach((shift: any) => {
+      shift.nozzleReadings?.forEach((nr: any) => {
         if (fuelIntel[nr.productId]) {
           const vol = nr.closingReading > 0 ? Math.max(0, nr.closingReading - nr.openingReading) : 0;
           fuelIntel[nr.productId].liters += vol;
@@ -174,28 +175,28 @@ export default React.memo(function FuelDashboard({
     if (outOfStockCount > 0) alerts.push({ type: 'danger', msg: `🔴 ${outOfStockCount} Tanks are completely Out of Stock.` });
     if (lowStockCount > 0) alerts.push({ type: 'warning', msg: `🟠 ${lowStockCount} Tanks are below 15% stock.` });
     if (Math.abs(variance) > 500) alerts.push({ type: 'danger', msg: `🔴 Shift Variance exceeds threshold (${formatCurrency(variance, settings)}).` });
-    if (topSuppliers.length > 0 && topSuppliers[0].balance > 50000) alerts.push({ type: 'warning', msg: `🟠 Supplier ${topSuppliers[0].name} payment due.` });
+    if (topSuppliers.length > 0 && (topSuppliers[0] as any).balance > 50000) alerts.push({ type: 'warning', msg: `🟠 Supplier ${topSuppliers[0].name} payment due.` });
     if (maintenanceNozzles > 0) alerts.push({ type: 'danger', msg: `🔴 ${maintenanceNozzles} Nozzles require maintenance.` });
 
     // Activity Feed
     const feed = [
       ...shifts.slice(0, 5).map(s => ({
-        id: s.id, type: 'shift', title: `Shift ${s.status}`, desc: s.cashierName || 'System', amount: formatCurrency(s.totalSales || 0, settings),
-        time: s.time || '12:00 PM', timestamp: new Date(`${s.date} ${s.time || '12:00 PM'}`).getTime(), icon: Power, color: s.status === 'Open' ? 'text-emerald-500' : 'text-slate-400', bg: 'bg-white/5'
+        id: (s as any).id, type: 'shift', title: `Shift ${(s as any).status}`, desc: (s as any).cashierName || 'System', amount: formatCurrency((s as any).totalSales || 0, settings),
+        time: (s as any).time || '12:00 PM', timestamp: new Date(`${(s as any).date} ${(s as any).time || '12:00 PM'}`).getTime(), icon: Power, color: (s as any).status === 'Open' ? 'text-emerald-500' : 'text-slate-400', bg: 'bg-white/5'
       })),
       ...stockTxns.slice(0, 5).map(tx => ({
-        id: tx.id, type: 'stock', title: tx.type === 'receipt' ? 'Tank Refilled' : 'Inventory Adj', desc: products.find(p => p.id === tx.itemId)?.name || 'Product', amount: `${tx.quantity}L`,
-        time: '10:00 AM', timestamp: new Date(`${tx.date} 10:00 AM`).getTime(), icon: Droplets, color: 'text-blue-500', bg: 'bg-white/5'
+        id: (tx as any).id, type: 'stock', title: (tx as any).type === 'receipt' ? 'Tank Refilled' : 'Inventory Adj', desc: products.find(p => p.id === (tx as any).itemId)?.name || 'Product', amount: `${(tx as any).quantity}L`,
+        time: '10:00 AM', timestamp: new Date(`${(tx as any).date} 10:00 AM`).getTime(), icon: Droplets, color: 'text-blue-500', bg: 'bg-white/5'
       }))
-    ].sort((a,b) => b.timestamp - a.timestamp).slice(0, 8);
+    ].sort((a: any,b: any) => b.timestamp - a.timestamp).slice(0, 8);
 
     // Chart Data (Last 7 Days)
     const chartData = Array.from({length: 7}, (_, i) => {
       const d = new Date(); d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split('T')[0];
-      const dayShifts = shifts.filter(s => s.date === dateStr);
+      const dayShifts = shifts.filter(s => (s as any).date === dateStr);
       let dayRev = 0;
-      dayShifts.forEach(s => dayRev += (s.totalSales || 0));
+      dayShifts.forEach(s => dayRev += ((s as any).totalSales || 0));
       return { date: d.toLocaleDateString('en-US', { weekday: 'short' }), revenue: dayRev };
     }).reverse();
 
@@ -207,7 +208,7 @@ export default React.memo(function FuelDashboard({
       shiftOperator, openingCash, currentCash, expectedCash, variance, shiftDuration,
       fuelIntel: sortedFuelIntel,
       onlineNozzles, offlineNozzles, maintenanceNozzles,
-      alerts, feed, chartData, todayVariance
+      alerts, feed, chartData, todayVariance, outOfStockCount
     };
   }, [shifts, products, customers, suppliers, banks, tanks, nozzles, stockTxns, todayStr, settings]);
 
@@ -215,7 +216,6 @@ export default React.memo(function FuelDashboard({
   const themeWrap = "min-h-screen bg-[#020617] text-slate-100 font-sans overflow-x-hidden pb-32 relative transition-colors duration-500";
   
   const liquidGlass = "relative overflow-hidden backdrop-blur-[30px] saturate-[150%] bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/[0.08] shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_20px_80px_rgba(0,0,0,0.6)] rounded-[24px] transition-all duration-500";
-  const liquidGlassHover = "hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(249,115,22,0.1),inset_0_1px_2px_rgba(255,255,255,0.2)]";
   
   const dockLayer = "fixed bottom-6 left-1/2 -translate-x-1/2 backdrop-blur-[60px] bg-[#0F172A]/80 border border-white/[0.15] shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_40px_100px_rgba(0,0,0,0.9)] rounded-[2rem] px-3 py-3 flex items-center gap-1 z-[100] transition-transform duration-300 hover:scale-[1.02] transform-gpu";
 
@@ -425,15 +425,15 @@ export default React.memo(function FuelDashboard({
                 </div>
                 <div className="space-y-4">
                   {tanks.length > 0 ? tanks.map((tank) => {
-                    const pct = tank.capacity > 0 ? (tank.currentStock / tank.capacity) * 100 : 0;
-                    // Mock days remaining based on stock (since no historical avg directly available)
-                    const daysRemaining = Math.max(1, Math.round(tank.currentStock / 5000));
+                    const t = tank as any;
+                    const pct = t.capacity > 0 ? (t.currentStock / t.capacity) * 100 : 0;
+                    const daysRemaining = Math.max(1, Math.round(t.currentStock / 5000));
                     return (
-                      <div key={tank.id} className="bg-white/[0.03] rounded-2xl p-5 border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+                      <div key={t.id} className="bg-white/[0.03] rounded-2xl p-5 border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
                         <div className="flex justify-between items-start mb-3">
                           <div>
-                            <div className="text-sm font-black text-white">{tank.name}</div>
-                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{tank.productName}</div>
+                            <div className="text-sm font-black text-white">{t.name}</div>
+                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.productName}</div>
                           </div>
                           <div className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg ${pct < 15 ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
                             {pct < 15 ? 'Low Stock' : 'Healthy'}
@@ -491,7 +491,7 @@ export default React.memo(function FuelDashboard({
                 {/* Nozzle Grid */}
                 {nozzles.length > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {nozzles.map(n => {
+                    {(nozzles as any[]).map(n => {
                       const isActive = n.status === 'Active' || !n.status;
                       const isMaint = n.status === 'Maintenance';
                       return (

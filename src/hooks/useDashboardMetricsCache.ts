@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { Shift, Product, Customer, Supplier, BankAccount, Nozzle, Tank, StockTransaction } from '../types';
 
 interface FuelMetricsParams {
@@ -14,13 +14,13 @@ interface FuelMetricsParams {
 }
 
 export function useFuelDashboardMetricsCache(params: FuelMetricsParams) {
+  const {
+    shifts, products, customers, suppliers, banks, tanks, nozzles, stockTxns, todayStr
+  } = params;
+
   // By extracting this to a custom hook, we ensure the heavy calculations
   // are completely decoupled from the rendering cycle of the dashboard.
-  return useMemo(() => {
-    const {
-      shifts, products, customers, suppliers, banks, tanks, nozzles, stockTxns, todayStr
-    } = params;
-
+  const baseMetrics = useMemo(() => {
     const todayShifts = shifts.filter(s => s.date === todayStr);
     
     let todayRevenue = 0;
@@ -30,15 +30,14 @@ export function useFuelDashboardMetricsCache(params: FuelMetricsParams) {
     if (totalTxns === 0 && todayShifts.length > 0) totalTxns = todayShifts.length;
     
     todayShifts.forEach(shift => {
-      todayRevenue += shift.totalSales || 0;
-      shift.nozzleReadings?.forEach(nr => {
-        const product = products.find(p => p.id === nr.productId);
-        const saleVolume = nr.closingReading > 0 ? Math.max(0, nr.closingReading - nr.openingReading) : 0;
-        todayLiters += saleVolume;
+      shift.segments?.forEach(seg => {
+        todayRevenue += seg.revenue || 0;
+        todayLiters += seg.litersSold || 0;
         
+        const product = products.find(p => p.id === seg.productId);
         if (product) {
           const cost = product.purchasePrice || product.rate || 0;
-          todayProfit += saleVolume * ((nr.rate || product.rate || 0) - cost);
+          todayProfit += (seg.litersSold || 0) * (seg.newRate - cost);
         }
       });
     });
@@ -63,16 +62,16 @@ export function useFuelDashboardMetricsCache(params: FuelMetricsParams) {
       if (t.currentStock <= 0) outOfStockCount++;
     });
 
-    const onlineNozzles = nozzles.filter(n => n.status === 'Active' || !n.status).length;
-    const maintenanceNozzles = nozzles.filter(n => n.status === 'Maintenance').length;
+    const onlineNozzles = nozzles.filter(n => (n as any).status === 'Active' || !(n as any).status).length;
+    const maintenanceNozzles = nozzles.filter(n => (n as any).status === 'Maintenance').length;
     const offlineNozzles = nozzles.length - onlineNozzles - maintenanceNozzles;
 
     const varianceByProduct: Record<string, number> = {};
     todayShifts.forEach(s => {
-      s.nozzleReadings?.forEach(nr => {
-        const pId = nr.productId;
+      s.segments?.forEach(seg => {
+        const pId = seg.productId;
         if (!varianceByProduct[pId]) varianceByProduct[pId] = 0;
-        varianceByProduct[pId] += (nr.variance || 0);
+        varianceByProduct[pId] += ((seg as any).variance || 0);
       });
     });
 
@@ -91,13 +90,6 @@ export function useFuelDashboardMetricsCache(params: FuelMetricsParams) {
     if (maintenanceNozzles > 0) alerts.push({ msg: `${maintenanceNozzles} nozzle(s) require urgent maintenance.`, type: 'warning' });
     if (Math.abs(maxVariance) > 50) alerts.push({ msg: `High variance detected in ${worstProduct}: ${maxVariance.toFixed(1)}L. Check dip readings.`, type: 'danger' });
     if (totalPayables > totalCash) alerts.push({ msg: `Critical: Total payables exceed current cash position.`, type: 'danger' });
-
-    let stationHealthScore = 100;
-    if (lowStockTanks > 0) stationHealthScore -= 15;
-    if (maintenanceNozzles > 0) stationHealthScore -= (maintenanceNozzles * 5);
-    if (Math.abs(maxVariance) > 100) stationHealthScore -= 20;
-    if (totalPayables > totalCash * 1.5) stationHealthScore -= 10;
-    if (stationHealthScore < 0) stationHealthScore = 0;
 
     const feed: any[] = [];
     // Feed population is handled normally
@@ -124,10 +116,55 @@ export function useFuelDashboardMetricsCache(params: FuelMetricsParams) {
       worstProduct,
       maxVariance,
       alerts,
-      stationHealthScore,
       feed
     };
   }, [
     shifts, products, customers, suppliers, banks, tanks, nozzles, stockTxns, todayStr
   ]);
+
+  const [stationHealthScore, setStationHealthScore] = useState(100);
+  const [healthLevel, setHealthLevel] = useState("Excellent");
+  const [healthIssues, setHealthIssues] = useState<string[]>([]);
+  const [profitVolatility, setProfitVolatility] = useState(0);
+
+  const workerRef = useRef<Worker | null>(null);
+
+  useEffect(() => {
+    workerRef.current = new Worker(new URL('../workers/businessHealth.worker.ts', import.meta.url), { type: 'module' });
+    workerRef.current.onmessage = (e) => {
+      setStationHealthScore(e.data.score);
+      setHealthLevel(e.data.level);
+      setHealthIssues(e.data.issues);
+      setProfitVolatility(e.data.volatility);
+    };
+    return () => {
+      workerRef.current?.terminate();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (workerRef.current) {
+      // Create an array of historical profits (simulated from recent shifts)
+      const dailyProfits = params.shifts.slice(-30).map(s => ((s as any).totalSales || 0) * 0.05); // Rough profit mock
+      
+      workerRef.current.postMessage({
+        summary: {
+          lowStockTanks: baseMetrics.lowStockTanks,
+          maintenanceNozzles: baseMetrics.maintenanceNozzles,
+          maxVariance: baseMetrics.maxVariance,
+          totalPayables: baseMetrics.totalPayables,
+          totalCash: baseMetrics.totalCash,
+          dailyProfits
+        }
+      });
+    }
+  }, [baseMetrics, params.shifts]);
+
+  return {
+    ...baseMetrics,
+    stationHealthScore,
+    healthLevel,
+    healthIssues,
+    profitVolatility
+  };
 }

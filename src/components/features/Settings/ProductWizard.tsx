@@ -27,7 +27,7 @@ const PRESET_LUBE_PRODUCTS = [
 export default function ProductWizard({ isLube, products, language, onUpdateProducts, onLogAudit }: ProductWizardProps) {
   const [customName, setCustomName] = useState("");
   const presets = isLube ? PRESET_LUBE_PRODUCTS : PRESET_FUEL_PRODUCTS;
-  const productType = isLube ? 'lube' : 'fuel';
+  const productType = (isLube ? 'lube' : 'fuel') as 'lube' | 'fuel';
   const productUnit = isLube ? 'Pieces' : 'Liters';
 
   const addPresetProduct = (preset: { name: string; color: string }) => {

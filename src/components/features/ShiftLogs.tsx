@@ -22,6 +22,8 @@ import { ShiftSidebar } from './ShiftSidebar';
 import { useInventoryStore } from '../../stores/useInventoryStore';
 import { InvestigationEngine } from '../../lib/investigationEngine';
 import { FuelVarianceHeatmap } from './FuelVarianceHeatmap';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { useDebounce } from '../../hooks/useDebounce';
 
 interface ShiftLogsProps {
   shifts: Shift[];
@@ -56,8 +58,12 @@ export default function ShiftLogs({
   const [operatorFilter, setOperatorFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
   const [activeGlobalModal, setActiveGlobalModal] = useState<string | null>(null);
+  
+  // Pagination / Incremental Loading state
+  const [visibleLimit, setVisibleLimit] = useState(100);
 
   const filteredShifts = useMemo(() => {
     return shifts
@@ -66,14 +72,26 @@ export default function ShiftLogs({
         if (statusFilter !== 'all' && s.status !== statusFilter) return false;
         if (operatorFilter !== 'all' && s.staffId !== operatorFilter) return false;
         
-        if (searchQuery) {
+        if (debouncedSearchQuery) {
           const sName = getStaffName(s.staffId).toLowerCase();
-          return sName.includes(searchQuery.toLowerCase()) || s.id.includes(searchQuery);
+          return sName.includes(debouncedSearchQuery.toLowerCase()) || s.id.includes(debouncedSearchQuery);
         }
         return true;
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [shifts, filterType, statusFilter, operatorFilter, searchQuery]);
+  }, [shifts, filterType, statusFilter, operatorFilter, debouncedSearchQuery]);
+
+  const parentRef = React.useRef<HTMLDivElement>(null);
+  
+  // Cap the array passed to virtualizer to prevent massive iteration initially
+  const displayedShifts = filteredShifts.slice(0, visibleLimit);
+
+  const rowVirtualizer = useVirtualizer({
+    count: displayedShifts.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 64, // Estimated height of a row
+    overscan: 10,
+  });
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat(isUrdu ? 'ur-PK' : 'en-PK', {
@@ -295,23 +313,26 @@ export default function ShiftLogs({
           </div>
 
           {/* Table Data */}
-          <div className="overflow-x-auto flex-1">
+          <div ref={parentRef} className="overflow-auto flex-1 relative min-h-[400px]">
             <table className="w-full text-left border-collapse min-w-[800px]">
-              <thead>
+              <thead className="sticky top-0 z-10">
                 <tr className="bg-slate-50 dark:bg-[#0B0F19] text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
-                  <th className="px-6 py-4">SHIFT ID</th>
-                  <th className="px-6 py-4">SHIFT TYPE</th>
-                  <th className="px-6 py-4">OPERATOR</th>
-                  <th className="px-6 py-4">DATE & TIME</th>
-                  <th className="px-6 py-4">SALES (Rs.)</th>
-                  <th className="px-6 py-4">CASH IN HAND (Rs.)</th>
-                  <th className="px-6 py-4 text-center">STATUS</th>
+                  <th className="px-6 py-4 w-[15%]">SHIFT ID</th>
+                  <th className="px-6 py-4 w-[15%]">SHIFT TYPE</th>
+                  <th className="px-6 py-4 w-[20%]">OPERATOR</th>
+                  <th className="px-6 py-4 w-[20%]">DATE & TIME</th>
+                  <th className="px-6 py-4 w-[15%]">SALES (Rs.)</th>
+                  <th className="px-6 py-4 w-[15%]">CASH IN HAND (Rs.)</th>
+                  <th className="px-6 py-4 w-[15%] text-center">STATUS</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {filteredShifts.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="px-6 py-24 text-center">
+              <tbody 
+                className="divide-y divide-slate-100 dark:divide-slate-800 relative block"
+                style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
+              >
+                {displayedShifts.length === 0 ? (
+                  <tr className="absolute w-full flex justify-center">
+                    <td className="px-6 py-24 text-center">
                       <div className="flex flex-col items-center justify-center text-slate-400">
                         <FolderOpen className="w-16 h-16 mb-4 opacity-50" />
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">No shift logs found</h3>
@@ -320,7 +341,8 @@ export default function ShiftLogs({
                     </td>
                   </tr>
                 ) : (
-                  filteredShifts.map(shift => {
+                  rowVirtualizer.getVirtualItems().map(virtualRow => {
+                    const shift = displayedShifts[virtualRow.index];
                     // Quick calculation for row
                     let shiftSales = 0;
                     if (shift.closingReadings && shift.openingReadings) {
@@ -340,17 +362,25 @@ export default function ShiftLogs({
 
                     return (
                       <tr 
-                        key={shift.id} 
+                        key={virtualRow.key}
+                        data-index={virtualRow.index}
+                        ref={rowVirtualizer.measureElement}
                         onClick={() => setSelectedShift(shift)}
-                        className={`cursor-pointer transition-colors ${isSelected ? 'bg-orange-50 dark:bg-orange-500/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+                        className={`cursor-pointer transition-colors absolute w-full flex items-center ${isSelected ? 'bg-orange-50 dark:bg-orange-500/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+                        style={{
+                          top: 0,
+                          left: 0,
+                          transform: `translateY(${virtualRow.start}px)`,
+                          height: `${virtualRow.size}px`,
+                        }}
                       >
-                        <td className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">#{shift.id.slice(-5)}</td>
-                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{shift.type === 'day' ? 'Day Shift' : 'Night Shift'}</td>
-                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{getStaffName(shift.staffId)}</td>
-                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{shift.date} <span className="text-slate-400 text-xs ml-1">{shift.startTime}</span></td>
-                        <td className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">{formatCurrency(shiftSales).replace('PKR', '').trim()}</td>
-                        <td className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">{formatCurrency(shift.submittedCash || 0).replace('PKR', '').trim()}</td>
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white w-[15%] truncate">#{shift.id.slice(-5)}</td>
+                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300 w-[15%] truncate">{shift.type === 'day' ? 'Day Shift' : 'Night Shift'}</td>
+                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300 w-[20%] truncate">{getStaffName(shift.staffId)}</td>
+                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300 w-[20%] truncate">{shift.date} <span className="text-slate-400 text-xs ml-1">{shift.startTime}</span></td>
+                        <td className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white w-[15%] truncate">{formatCurrency(shiftSales).replace('PKR', '').trim()}</td>
+                        <td className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white w-[15%] truncate">{formatCurrency(shift.submittedCash || 0).replace('PKR', '').trim()}</td>
+                        <td className="px-6 py-4 text-center w-[15%] truncate">
                           {shift.status === 'closed' ? (
                             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 uppercase tracking-widest">CLOSED</span>
                           ) : (
@@ -367,9 +397,19 @@ export default function ShiftLogs({
           
           {/* Pagination Footer */}
           <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <div>Showing {filteredShifts.length > 0 ? 1 : 0} to {filteredShifts.length} of {filteredShifts.length} entries</div>
+            <div>Showing {displayedShifts.length > 0 ? 1 : 0} to {displayedShifts.length} of {filteredShifts.length} entries</div>
+            
+            {filteredShifts.length > displayedShifts.length && (
+              <button 
+                onClick={() => setVisibleLimit(prev => prev + 100)}
+                className="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full font-bold transition-colors"
+              >
+                Load More
+              </button>
+            )}
+
             <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> Real-time</span>
+              <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> Real-time Virtualized</span>
               <History className="w-3.5 h-3.5" />
             </div>
           </div>
