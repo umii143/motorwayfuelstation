@@ -1,9 +1,9 @@
 import React from 'react';
 import { DollarSign, Droplets, Zap, Clock } from 'lucide-react';
-import { useFinancialMetrics } from '../../hooks/useFinancialMetrics';
-import { useShiftMetrics } from '../../hooks/useShiftMetrics';
-import { useStation } from '../../contexts/StationContext';
-import { formatCurrency } from '../../lib/currency';
+import { useFinancialMetrics } from '../../../hooks/useFinancialMetrics';
+import { useShiftMetrics } from '../../../hooks/useShiftMetrics';
+import { useStation } from '../../../contexts/StationContext';
+import { formatCurrency } from '../../../lib/currency';
 
 export function HeroPerformanceWidget() {
   const { settings } = useStation();

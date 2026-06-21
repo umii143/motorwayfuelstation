@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { Database } from 'lucide-react';
-import { useTankMetrics } from '../../hooks/useTankMetrics';
+import { useTankMetrics } from '../../../hooks/useTankMetrics';
 
 function TankHealthContent() {
   const { tanks } = useTankMetrics();

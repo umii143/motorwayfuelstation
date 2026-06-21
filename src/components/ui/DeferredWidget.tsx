@@ -31,10 +31,7 @@ export const DeferredWidget: React.FC<DeferredWidgetProps> = ({
   }
 
   return (
-    <div 
-      className={className} 
-      style={{ contentVisibility: 'auto' }}
-    >
+    <div className={className}>
       {children}
     </div>
   );

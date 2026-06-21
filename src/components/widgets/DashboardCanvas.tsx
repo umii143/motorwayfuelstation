@@ -1,12 +1,38 @@
-import React, { useMemo } from 'react';
-import { Responsive, WidthProvider } from 'react-grid-layout';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { Responsive } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import { useWidgetEngine } from '../../store/useWidgetEngine';
 import { WidgetWrapper } from './WidgetWrapper';
 import { Activity } from 'lucide-react';
+import { HeroPerformanceWidget } from './instances/HeroPerformanceWidget';
+import { ActiveShiftWidget } from './instances/ActiveShiftWidget';
+import { TankHealthWidget } from './instances/TankHealthWidget';
+import { TreasuryWidget } from './instances/TreasuryWidget';
+import { SalesOverviewWidget } from './instances/SalesOverviewWidget';
+import { ActivityFeedWidget } from './instances/ActivityFeedWidget';
 
-const ResponsiveGridLayout = WidthProvider(Responsive);
+function ResponsiveGridLayout(props: any) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(1200);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    const observer = new ResizeObserver((entries) => {
+      if (entries[0]) {
+        setWidth(entries[0].contentRect.width);
+      }
+    });
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref} className="w-full h-full">
+      <Responsive width={width} {...props} />
+    </div>
+  );
+}
 
 export function DashboardCanvas() {
   const { activeLayout, manifests, isEditMode, updateWidgetLayouts } = useWidgetEngine();
@@ -74,17 +100,17 @@ export function DashboardCanvas() {
 
           let WidgetComponent = null;
           if (manifest.id === 'hero-performance') {
-             const { HeroPerformanceWidget } = require('./instances/HeroPerformanceWidget');
              WidgetComponent = <HeroPerformanceWidget />;
           } else if (manifest.id === 'active-shift') {
-             const { ActiveShiftWidget } = require('./instances/ActiveShiftWidget');
              WidgetComponent = <ActiveShiftWidget />;
           } else if (manifest.id === 'tank-health') {
-             const { TankHealthWidget } = require('./instances/TankHealthWidget');
              WidgetComponent = <TankHealthWidget />;
           } else if (manifest.id === 'treasury') {
-             const { TreasuryWidget } = require('./instances/TreasuryWidget');
              WidgetComponent = <TreasuryWidget />;
+          } else if (manifest.id === 'sales-overview') {
+             WidgetComponent = <SalesOverviewWidget />;
+          } else if (manifest.id === 'activity-feed') {
+             WidgetComponent = <ActivityFeedWidget />;
           }
 
           return (

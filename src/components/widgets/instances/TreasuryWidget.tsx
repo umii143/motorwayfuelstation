@@ -1,8 +1,8 @@
 import React, { Suspense } from 'react';
 import { Wallet } from 'lucide-react';
-import { useTreasuryMetrics } from '../../hooks/useTreasuryMetrics';
-import { useStation } from '../../contexts/StationContext';
-import { formatCurrency } from '../../lib/currency';
+import { useTreasuryMetrics } from '../../../hooks/useTreasuryMetrics';
+import { useStation } from '../../../contexts/StationContext';
+import { formatCurrency } from '../../../lib/currency';
 
 function TreasuryContent() {
   const { settings } = useStation();

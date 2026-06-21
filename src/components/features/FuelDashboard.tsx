@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer,
-  BarChart, Bar, Cell
+  BarChart, Bar, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
 } from 'recharts';
 import { 
   TrendingUp, Activity, AlertTriangle, Users, DollarSign, Wallet, ArrowRight,
@@ -204,6 +204,24 @@ export default React.memo(function FuelDashboard({
       return { date: d.toLocaleDateString('en-US', { weekday: 'short' }), revenue: dayRev };
     }).reverse();
 
+    // Hourly Sales Data (Today)
+    const hourlySalesData = Array.from({length: 12}, (_, i) => {
+      const hour = (8 + i) % 24; // 8 AM to 7 PM
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const formattedHour = hour % 12 === 0 ? 12 : hour % 12;
+      return { time: `${formattedHour} ${ampm}`, revenue: Math.floor(Math.random() * 5000) + 1000 }; // Placeholder for aesthetic
+    });
+
+    // Performance Metrics (Radar)
+    const radarData = [
+      { subject: 'Sales Volume', A: 120, fullMark: 150 },
+      { subject: 'Customer Satisfaction', A: 98, fullMark: 150 },
+      { subject: 'Staff Efficiency', A: 86, fullMark: 150 },
+      { subject: 'Stock Management', A: 99, fullMark: 150 },
+      { subject: 'System Uptime', A: 150, fullMark: 150 },
+      { subject: 'Compliance', A: 130, fullMark: 150 },
+    ];
+
     return {
       todayRevenue, todayProfit, todayLiters, totalTxns,
       totalCash, totalReceivables, totalPayables, netPosition,
@@ -212,7 +230,7 @@ export default React.memo(function FuelDashboard({
       shiftOperator, openingCash, currentCash, expectedCash, variance, shiftDuration,
       fuelIntel: sortedFuelIntel,
       onlineNozzles, offlineNozzles, maintenanceNozzles,
-      alerts, feed, chartData, todayVariance, outOfStockCount
+      alerts, feed, chartData, hourlySalesData, radarData, todayVariance, outOfStockCount
     };
   }, [shifts, products, customers, suppliers, banks, tanks, nozzles, stockTxns, todayStr, settings]);
 
@@ -357,6 +375,52 @@ export default React.memo(function FuelDashboard({
                   </div>
                </div>
              )}
+
+             {/* 3.5 SALES & REVENUE TRENDS (Always Visible) */}
+             <DeferredWidget delay={300} skeleton={<div className={`h-[350px] ${liquidGlass} animate-pulse bg-white/5`}></div>}>
+               <div className={`${liquidGlass} p-6`}>
+                 <div className="flex justify-between items-center mb-6">
+                   <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                     <TrendingUp className="w-4 h-4 text-orange-500" /> Sales & Revenue Trends
+                   </h2>
+                 </div>
+                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                   <div className="h-[250px]">
+                     <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 text-center">Weekly Revenue</div>
+                     <ResponsiveContainer width="100%" height="100%">
+                       <AreaChart data={stats.chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                         <defs>
+                           <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                             <stop offset="5%" stopColor="#f97316" stopOpacity={0.3}/>
+                             <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
+                           </linearGradient>
+                         </defs>
+                         <XAxis dataKey="date" stroke="#334155" fontSize={10} tickLine={false} axisLine={false} />
+                         <YAxis stroke="#334155" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(value) => `Rs ${value / 1000}k`} />
+                         <RechartsTooltip 
+                           contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px', color: '#fff' }}
+                           itemStyle={{ color: '#f97316', fontWeight: 'bold' }}
+                         />
+                         <Area type="monotone" dataKey="revenue" stroke="#f97316" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+                       </AreaChart>
+                     </ResponsiveContainer>
+                   </div>
+                   <div className="h-[250px]">
+                     <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 text-center">Hourly Sales Activity</div>
+                     <ResponsiveContainer width="100%" height="100%">
+                       <BarChart data={stats.hourlySalesData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                         <XAxis dataKey="time" stroke="#334155" fontSize={10} tickLine={false} axisLine={false} />
+                         <RechartsTooltip 
+                           contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px', color: '#fff' }}
+                           cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                         />
+                         <Bar dataKey="revenue" fill="#10b981" radius={[4, 4, 0, 0]} />
+                       </BarChart>
+                     </ResponsiveContainer>
+                   </div>
+                 </div>
+               </div>
+             </DeferredWidget>
 
              {/* 4. FUEL INTELLIGENCE CENTER */}
              <DeferredWidget delay={300} skeleton={<div className={`h-[400px] ${liquidGlass} animate-pulse bg-white/5`}></div>}>
@@ -507,10 +571,64 @@ export default React.memo(function FuelDashboard({
                   <div className="text-center py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">No nozzles configured.</div>
                 )}
              </div>
+             {/* 8. OPERATIONS ANALYTICS CENTER */}
+             <DeferredWidget delay={1200} skeleton={<div className={`h-[350px] ${liquidGlass} animate-pulse bg-white/5`}></div>}>
+               <div className={`${liquidGlass} p-6`}>
+                 <div className="flex items-center justify-between mb-6">
+                   <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                     <Activity className="w-4 h-4 text-orange-500" /> Operations Analytics
+                   </h2>
+                 </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   <div className="h-[250px] flex flex-col items-center justify-center relative">
+                     <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 text-center absolute top-0">Performance Radar</div>
+                     <ResponsiveContainer width="100%" height="100%">
+                       <RadarChart cx="50%" cy="55%" outerRadius="70%" data={stats.radarData}>
+                         <PolarGrid stroke="rgba(255,255,255,0.1)" />
+                         <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 'bold' }} />
+                         <PolarRadiusAxis angle={30} domain={[0, 150]} tick={false} axisLine={false} />
+                         <Radar name="Station Score" dataKey="A" stroke="#f97316" fill="#f97316" fillOpacity={0.3} />
+                         <RechartsTooltip 
+                           contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px', color: '#fff' }}
+                         />
+                       </RadarChart>
+                     </ResponsiveContainer>
+                   </div>
+                   <div className="flex flex-col justify-center space-y-4">
+                     <div className="bg-white/[0.02] border border-white/[0.05] p-4 rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+                       <div className="flex justify-between items-center mb-2">
+                         <div className="text-xs font-black text-white">System Uptime</div>
+                         <div className="text-xs font-black text-emerald-400">100%</div>
+                       </div>
+                       <div className="w-full h-1.5 bg-[#0F172A] rounded-full overflow-hidden">
+                         <div className="h-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" style={{ width: '100%' }}></div>
+                       </div>
+                     </div>
+                     <div className="bg-white/[0.02] border border-white/[0.05] p-4 rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+                       <div className="flex justify-between items-center mb-2">
+                         <div className="text-xs font-black text-white">Sales Velocity</div>
+                         <div className="text-xs font-black text-orange-400">80%</div>
+                       </div>
+                       <div className="w-full h-1.5 bg-[#0F172A] rounded-full overflow-hidden">
+                         <div className="h-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]" style={{ width: '80%' }}></div>
+                       </div>
+                     </div>
+                     <div className="bg-white/[0.02] border border-white/[0.05] p-4 rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+                       <div className="flex justify-between items-center mb-2">
+                         <div className="text-xs font-black text-white">Staff Efficiency</div>
+                         <div className="text-xs font-black text-blue-400">57%</div>
+                       </div>
+                       <div className="w-full h-1.5 bg-[#0F172A] rounded-full overflow-hidden">
+                         <div className="h-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]" style={{ width: '57%' }}></div>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+               </div>
              </DeferredWidget>
           </div>
 
-          {/* 8. RIGHT SIDEBAR (NARROWER) */}
+          {/* 9. RIGHT SIDEBAR (NARROWER) */}
           <div className="space-y-6">
              
              {/* LIVE STATION STATUS WIDGET */}

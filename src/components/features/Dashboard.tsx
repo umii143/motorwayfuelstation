@@ -57,6 +57,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { isLubeBusinessStation } from '../../lib/businessScope';
 import LubeDashboard from './LubeDashboard';
 import FuelDashboard from './FuelDashboard';
+import { DashboardShell } from '../widgets/DashboardShell';
 
 const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
 const fadeUp = {
@@ -378,6 +379,14 @@ export default React.memo(function Dashboard({
       .slice(0, 6);
   }, [shifts, staff, rateHistory, stockTxns, products, todayStr]);
 
+  const [useV2, setUseV2] = useState(() => localStorage.getItem('useV2Dashboard') === 'true');
+
+  const toggleV2 = () => {
+    const nextState = !useV2;
+    setUseV2(nextState);
+    localStorage.setItem('useV2Dashboard', String(nextState));
+  };
+
   if (isLube) {
     return (
       <LubeDashboard 
@@ -394,16 +403,7 @@ export default React.memo(function Dashboard({
     );
   }
 
-  const [useV2, setUseV2] = useState(() => localStorage.getItem('useV2Dashboard') === 'true');
-
-  const toggleV2 = () => {
-    const nextState = !useV2;
-    setUseV2(nextState);
-    localStorage.setItem('useV2Dashboard', String(nextState));
-  };
-
   if (useV2) {
-    const { DashboardShell } = require('./widgets/DashboardShell');
     return (
       <div className="relative">
         <div className="absolute top-4 right-4 z-50">

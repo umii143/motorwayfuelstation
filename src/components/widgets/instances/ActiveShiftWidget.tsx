@@ -1,8 +1,8 @@
 import React from 'react';
 import { Power } from 'lucide-react';
-import { useShiftMetrics } from '../../hooks/useShiftMetrics';
-import { useStation } from '../../contexts/StationContext';
-import { formatCurrency } from '../../lib/currency';
+import { useShiftMetrics } from '../../../hooks/useShiftMetrics';
+import { useStation } from '../../../contexts/StationContext';
+import { formatCurrency } from '../../../lib/currency';
 
 export function ActiveShiftWidget() {
   const { settings } = useStation();

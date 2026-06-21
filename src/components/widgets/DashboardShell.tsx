@@ -4,6 +4,7 @@ import { useWidgetEngine } from '../../store/useWidgetEngine';
 import { CORE_WIDGETS, DEFAULT_OWNER_LAYOUT } from './registry';
 import { DashboardCanvas } from './DashboardCanvas';
 import { WidgetStudioDrawer } from './WidgetStudioDrawer';
+import { useStation } from '../../contexts/StationContext';
 
 export function DashboardShell({ onStartShiftQuick, onNavigate }: { onStartShiftQuick?: () => void, onNavigate?: (path: string) => void }) {
   const { registerWidget, setActiveLayout, activeLayout, isEditMode, setEditMode } = useWidgetEngine();
