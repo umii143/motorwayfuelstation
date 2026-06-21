@@ -1,18 +1,19 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer,
-  LineChart, Line
-} from 'recharts';
 import { 
   TrendingUp, Coins, Activity, PackageOpen, AlertTriangle, 
   Users, DollarSign, Wallet, ArrowRight, Search, Bell, Clock, ChevronDown, CheckCircle2,
   PlusCircle, FileText, ShoppingCart, Truck, CreditCard, Sparkles, Building, Briefcase, Info, BadgeAlert, Layers, Receipt, Plus, ShieldCheck, Zap, Cloud, Headphones, Phone
 } from 'lucide-react';
+import { LiveClock } from '../ui/LiveClock';
+import { DeferredWidget } from '../ui/DeferredWidget';
 import { 
   GlobalSettings, LubePosSale, Product, Customer, Supplier, BankAccount, StockTransaction 
 } from '../../types';
 import { formatCurrency } from '../../lib/currency';
+
+const LazyLubeSparklineChart = React.lazy(() => import('./charts/LubeSparklineChart'));
+const LazyLubeCashFlowChart = React.lazy(() => import('./charts/LubeCashFlowChart'));
 
 interface LubeDashboardProps {
   settings: GlobalSettings;
@@ -37,7 +38,7 @@ const itemVariant = {
   visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 200, damping: 20 } }
 };
 
-export default function LubeDashboard({
+export default React.memo(function LubeDashboard({
   settings,
   lubePosSales,
   products,
@@ -262,7 +263,7 @@ export default function LubeDashboard({
   const glassLayer1 = "backdrop-blur-[40px] bg-white/70 dark:bg-white/[0.04] border border-slate-200/60 dark:border-white/[0.08] shadow-[0_20px_80px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_20px_80px_rgba(0,0,0,0.4)] rounded-[32px] relative overflow-hidden transition-all duration-300";
   
   // THE 10/10 LIQUID GLASS KPI CAPSULE
-  const liquidGlass = "relative overflow-hidden backdrop-blur-[30px] saturate-[150%] bg-white/65 dark:bg-gradient-to-br dark:from-white/[0.1] dark:to-white/[0.02] border border-white/80 dark:border-white/[0.08] shadow-[0_20px_60px_rgba(15,23,42,0.08)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.15),0_20px_80px_rgba(0,0,0,0.6)] rounded-[32px] transition-all duration-500 group";
+  const liquidGlass = "relative overflow-hidden backdrop-blur-[30px] saturate-[150%] bg-white/65 dark:bg-transparent dark:bg-gradient-to-br dark:from-white/[0.08] dark:to-white/[0.02] border border-white/80 dark:border-white/[0.08] shadow-[0_20px_60px_rgba(15,23,42,0.08)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.15),0_20px_80px_rgba(0,0,0,0.6)] rounded-[32px] transition-all duration-500 group";
   const liquidGlassHover = "hover:-translate-y-2 hover:shadow-[0_40px_100px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_40px_100px_rgba(0,0,0,0.8),inset_0_1px_3px_rgba(255,255,255,0.3)]";
   
   // Layer 3: Inner recessed areas
@@ -313,10 +314,7 @@ export default function LubeDashboard({
                 Operational
               </span>
               <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></span>
-              <span className={`text-xs font-semibold ${textSubtle} flex items-center gap-1.5`}>
-                <Clock className="w-3.5 h-3.5" />
-                {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-              </span>
+              <LiveClock className={`text-xs font-semibold ${textSubtle} flex items-center gap-1.5`} iconClassName="w-3.5 h-3.5" />
             </div>
           </div>
         </div>
@@ -479,18 +477,9 @@ export default function LubeDashboard({
           </div>
           
           <div className="absolute bottom-0 left-0 right-0 h-20 opacity-40 dark:opacity-50 pointer-events-none translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-             <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={stats.chartData}>
-                  <defs>
-                    <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#10b981" stopOpacity={0}/>
-                      <stop offset="50%" stopColor="#10b981" stopOpacity={1}/>
-                      <stop offset="100%" stopColor="#10b981" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <Line type="monotone" dataKey="sales" stroke="url(#lineGrad)" strokeWidth={3} dot={false} strokeLinecap="round" isAnimationActive={true} animationDuration={2000} />
-                </LineChart>
-             </ResponsiveContainer>
+             <Suspense fallback={<div className="w-full h-full animate-pulse bg-white/5"></div>}>
+               <LazyLubeSparklineChart data={stats.chartData} dataKey="sales" color="#10b981" />
+             </Suspense>
           </div>
         </motion.div>
 
@@ -550,18 +539,9 @@ export default function LubeDashboard({
             </div>
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-20 opacity-40 dark:opacity-50 pointer-events-none translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-             <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={stats.chartData}>
-                  <defs>
-                    <linearGradient id="profitGrad" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor={stats.profitGrowth >= 0 ? "#10b981" : "#ef4444"} stopOpacity={0}/>
-                      <stop offset="50%" stopColor={stats.profitGrowth >= 0 ? "#10b981" : "#ef4444"} stopOpacity={1}/>
-                      <stop offset="100%" stopColor={stats.profitGrowth >= 0 ? "#10b981" : "#ef4444"} stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <Line type="monotone" dataKey="profit" stroke="url(#profitGrad)" strokeWidth={3} dot={false} strokeLinecap="round" isAnimationActive={true} animationDuration={2000} />
-                </LineChart>
-             </ResponsiveContainer>
+             <Suspense fallback={<div className="w-full h-full animate-pulse bg-white/5"></div>}>
+               <LazyLubeSparklineChart data={stats.chartData} dataKey="profit" color={stats.profitGrowth >= 0 ? "#10b981" : "#ef4444"} />
+             </Suspense>
           </div>
         </motion.div>
 
@@ -570,7 +550,8 @@ export default function LubeDashboard({
         {/* ========================================================= */}
         
         {/* Financial Command Center */}
-        <motion.div variants={itemVariant} className={`md:col-span-4 ${glassLayer1} p-6`}>
+        <DeferredWidget delay={300} className="md:col-span-4" skeleton={<div className={`h-[300px] ${glassLayer1} animate-pulse bg-white/5`}></div>}>
+          <motion.div variants={itemVariant} className={`${glassLayer1} p-6 h-full`}>
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
           <div className="flex justify-between items-center mb-6">
             <h3 className={`text-sm font-bold flex items-center gap-2 drop-shadow-sm ${textPrimary}`}>
@@ -608,10 +589,12 @@ export default function LubeDashboard({
               </button>
             </div>
           </div>
-        </motion.div>
+          </motion.div>
+        </DeferredWidget>
 
         {/* Chart (With Smaller Empty State) */}
-        <motion.div variants={itemVariant} className={`md:col-span-8 ${glassLayer1} p-6`}>
+        <DeferredWidget delay={600} className="md:col-span-8" skeleton={<div className={`h-[300px] ${glassLayer1} animate-pulse bg-white/5`}></div>}>
+          <motion.div variants={itemVariant} className={`${glassLayer1} p-6 h-full`}>
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
           <div className="flex justify-between items-center mb-6">
             <h3 className={`text-sm font-bold flex items-center gap-2 drop-shadow-sm ${textPrimary}`}>
@@ -632,40 +615,22 @@ export default function LubeDashboard({
               </div>
             ) : (
               <div className="h-[210px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={stats.chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#f97316" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
-                      </linearGradient>
-                      <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} tickFormatter={(val) => `Rs${val/1000}k`} />
-                    <RechartsTooltip 
-                      contentStyle={{ borderRadius: '16px', border: 'none', backgroundColor: 'var(--tooltip-bg, rgba(3, 7, 18, 0.9))', backdropFilter: 'blur(20px)', color: 'var(--tooltip-color, #fff)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}
-                      itemStyle={{ fontWeight: 'bold' }}
-                      formatter={(value: number) => formatCurrency(value, settings)}
-                    />
-                    <Area type="monotone" dataKey="sales" stroke="#f97316" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" />
-                    <Area type="monotone" dataKey="profit" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorProfit)" />
-                  </AreaChart>
-                </ResponsiveContainer>
+                 <Suspense fallback={<div className="w-full h-full flex items-center justify-center animate-pulse bg-slate-100/50 dark:bg-white/5 rounded-2xl"></div>}>
+                   <LazyLubeCashFlowChart data={stats.chartData} settings={settings} />
+                 </Suspense>
               </div>
             )}
           </div>
         </motion.div>
+        </DeferredWidget>
 
         {/* ========================================================= */}
         {/* ROW 4: ALERTS & LEADERBOARDS */}
         {/* ========================================================= */}
 
         {/* Real-Time Activity Feed */}
-        <motion.div variants={itemVariant} className={`md:col-span-4 ${glassLayer1} p-6 flex flex-col`}>
+        <DeferredWidget delay={900} className="md:col-span-4 flex flex-col" skeleton={<div className={`h-[300px] ${glassLayer1} animate-pulse bg-white/5`}></div>}>
+          <motion.div variants={itemVariant} className={`${glassLayer1} p-6 h-full flex flex-col`}>
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
           <div className="flex justify-between items-center mb-6">
             <h3 className={`text-sm font-bold flex items-center gap-2 drop-shadow-sm ${textPrimary}`}>
@@ -704,9 +669,11 @@ export default function LubeDashboard({
             )}
           </div>
         </motion.div>
+        </DeferredWidget>
 
-        {/* Leaderboard */}
-        <motion.div variants={itemVariant} className={`md:col-span-8 ${glassLayer1} p-6 flex flex-col`}>
+        {/* AI Business Assistant */}
+        <DeferredWidget delay={900} className="md:col-span-8 flex flex-col" skeleton={<div className={`h-[300px] ${glassLayer1} animate-pulse bg-white/5`}></div>}>
+          <motion.div variants={itemVariant} className={`${glassLayer1} p-6 h-full flex flex-col justify-between`}>
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
           <div className="flex justify-between items-center mb-6">
             <h3 className={`text-sm font-bold flex items-center gap-2 drop-shadow-sm ${textPrimary}`}>
@@ -785,6 +752,7 @@ export default function LubeDashboard({
             </div>
           </div>
         </motion.div>
+        </DeferredWidget>
 
       </motion.div>
 
@@ -812,4 +780,4 @@ export default function LubeDashboard({
 
     </div>
   );
-}
+});

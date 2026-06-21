@@ -5,6 +5,7 @@ import { GlobalSettings, Shift, Product, Customer, Tank, Nozzle, Staff } from '.
 import { aiAssistantService } from '../../../services/aiAssistantService';
 import { useInventoryStore } from '../../../stores/useInventoryStore';
 import { useTreasuryStore } from '../../../stores/useTreasuryStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useStationStore } from '../../../stores/useStationStore';
 
 interface Message {
@@ -49,7 +50,11 @@ export default function AIAssistant({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const rateHistory = useInventoryStore(state => state.rateHistory);
-  const { cashAccounts, treasuryTransactions, ownerDrawings } = useTreasuryStore();
+  const { cashAccounts, treasuryTransactions, ownerDrawings } = useTreasuryStore(useShallow(s => ({
+    cashAccounts: s.cashAccounts,
+    treasuryTransactions: s.treasuryTransactions,
+    ownerDrawings: s.ownerDrawings
+  })));
 
   useEffect(() => {
     if (isOpen) {

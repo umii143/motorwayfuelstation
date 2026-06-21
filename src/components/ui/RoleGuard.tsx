@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAuthStore, UserRole, UserPermissions } from '../../stores/useAuthStore';
+import { useShallow } from 'zustand/react/shallow';
 
 interface RoleGuardProps {
   children: React.ReactNode;
@@ -20,7 +21,10 @@ export default function RoleGuard({
   fallback = null,
   fallbackMessage
 }: RoleGuardProps) {
-  const { user, hasPermission } = useAuthStore();
+  const { user, hasPermission } = useAuthStore(useShallow(s => ({
+    user: s.user,
+    hasPermission: s.hasPermission
+  })));
 
   if (!user) {
     return <>{fallback}</>;

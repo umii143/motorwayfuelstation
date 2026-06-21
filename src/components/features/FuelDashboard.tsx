@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer,
@@ -8,8 +8,10 @@ import {
   TrendingUp, Activity, AlertTriangle, Users, DollarSign, Wallet, ArrowRight,
   Clock, CheckCircle2, FileText, Truck, CreditCard, ShieldCheck, Zap, Receipt, ShieldAlert,
   Fuel, Settings, Power, Banknote, Database, Droplets, Target, ActivityIcon,
-  CircleDot, Bell
+  CircleDot, Bell, Gauge, Anchor
 } from 'lucide-react';
+import { LiveClock } from '../ui/LiveClock';
+import { DeferredWidget } from '../ui/DeferredWidget';
 import { 
   GlobalSettings, Shift, Product, Customer, Supplier, BankAccount, Nozzle, Tank, StockTransaction 
 } from '../../types';
@@ -42,7 +44,7 @@ const itemVariant = {
   visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 200, damping: 20 } }
 };
 
-export default function FuelDashboard({
+export default React.memo(function FuelDashboard({
   settings,
   shifts,
   products,
@@ -58,16 +60,6 @@ export default function FuelDashboard({
 }: FuelDashboardProps) {
 
   const todayStr = new Date().toISOString().split('T')[0];
-  
-  const [time, setTime] = useState(new Date());
-  useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 60000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const timeStr = time.toLocaleTimeString('en-US', {
-    hour: '2-digit', minute: '2-digit', hour12: true
-  });
   
   const activeShift = shifts.find(s => s.status === 'Open');
 
@@ -254,10 +246,7 @@ export default function FuelDashboard({
                 <span className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border ${activeShift ? 'text-orange-400 bg-orange-500/10 border-orange-500/20' : 'text-slate-400 bg-slate-500/10 border-slate-500/20'}`}>
                   {activeShift ? 'Shift Active' : 'No Shift'}
                 </span>
-                <span className="text-xs font-bold text-slate-400 border-l border-white/10 pl-3 flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5" />
-                  {timeStr}
-                </span>
+                <LiveClock className="text-xs font-bold text-slate-400 border-l border-white/10 pl-3 flex items-center gap-1" iconClassName="w-3.5 h-3.5" />
               </div>
             </div>
           </div>
@@ -371,6 +360,7 @@ export default function FuelDashboard({
              </div>
 
              {/* 4. FUEL INTELLIGENCE CENTER */}
+             <DeferredWidget delay={300} skeleton={<div className={`h-[400px] ${liquidGlass} animate-pulse bg-white/5`}></div>}>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className={`${liquidGlass} p-6`}>
                    <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -423,8 +413,10 @@ export default function FuelDashboard({
                    </div>
                 </div>
              </div>
+             </DeferredWidget>
 
              {/* 6. TANK INTELLIGENCE CENTER (Upgraded) */}
+             <DeferredWidget delay={600} skeleton={<div className={`h-[400px] ${liquidGlass} animate-pulse bg-white/5`}></div>}>
              <div className={`${liquidGlass} p-6`}>
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
@@ -470,8 +462,10 @@ export default function FuelDashboard({
                   )}
                 </div>
              </div>
+             </DeferredWidget>
 
              {/* 7. NOZZLE OPERATIONS CENTER */}
+             <DeferredWidget delay={900} skeleton={<div className={`h-[400px] ${liquidGlass} animate-pulse bg-white/5`}></div>}>
              <div className={`${liquidGlass} p-6`}>
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
@@ -514,6 +508,7 @@ export default function FuelDashboard({
                   <div className="text-center py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">No nozzles configured.</div>
                 )}
              </div>
+             </DeferredWidget>
           </div>
 
           {/* 8. RIGHT SIDEBAR (NARROWER) */}
@@ -541,7 +536,8 @@ export default function FuelDashboard({
              </div>
 
              {/* 9. TREASURY COMMAND CENTER */}
-             <div className={`${liquidGlass} p-6`}>
+             <DeferredWidget delay={600} skeleton={<div className={`h-[250px] ${liquidGlass} animate-pulse bg-white/5`}></div>}>
+               <div className={`${liquidGlass} p-6`}>
                 <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                   <Wallet className="w-4 h-4 text-orange-500" /> Treasury Center
                 </h2>
@@ -566,11 +562,13 @@ export default function FuelDashboard({
                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Net Position</span>
                      <span className="text-lg font-black text-white">{formatCurrency(stats.netPosition, settings)}</span>
                    </div>
-                </div>
+                 </div>
              </div>
+             </DeferredWidget>
 
              {/* 10. ALERTS CENTER */}
-             <div className={`${liquidGlass} p-6`}>
+             <DeferredWidget delay={900} skeleton={<div className={`h-[200px] ${liquidGlass} animate-pulse bg-white/5`}></div>}>
+               <div className={`${liquidGlass} p-6`}>
                 <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-orange-500" /> Actionable Alerts
                 </h2>
@@ -587,9 +585,11 @@ export default function FuelDashboard({
                   )}
                 </div>
              </div>
+             </DeferredWidget>
 
              {/* 11. REAL-TIME ACTIVITY FEED */}
-             <div className={`${liquidGlass} p-6`}>
+             <DeferredWidget delay={900} skeleton={<div className={`h-[300px] ${liquidGlass} animate-pulse bg-white/5`}></div>}>
+               <div className={`${liquidGlass} p-6`}>
                 <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                   <Activity className="w-4 h-4 text-orange-500" /> Activity Feed
                 </h2>
@@ -615,6 +615,7 @@ export default function FuelDashboard({
                   )}
                 </div>
              </div>
+             </DeferredWidget>
 
           </div>
         </div>
@@ -650,4 +651,4 @@ export default function FuelDashboard({
       `}</style>
     </div>
   );
-}
+});

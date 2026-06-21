@@ -11,7 +11,7 @@ import TreasuryLedgerModal from './TreasuryLedgerModal';
 import { DataConfidenceBadge } from '../../ui/DataConfidenceBadge';
 
 export default function TreasuryDashboard() {
-  const { stationId } = useAuthStore();
+  const stationId = useAuthStore((s) => s.stationId);
   const [position, setPosition] = useState<TreasuryPosition | null>(null);
   
   // Modal state
