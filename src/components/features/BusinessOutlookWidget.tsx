@@ -53,10 +53,10 @@ export function BusinessOutlookWidget({ forecast, isComputing, settings }: Busin
             </div>
           </div>
         ) : (
-          <div className="space-y-6 flex-1 flex flex-col">
+          <div className="space-y-6 flex-1 flex flex-col overflow-y-auto pr-2 custom-scrollbar">
             
-            {/* Projected Profit */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* Projected Profit & Demand */}
+            <div className="grid grid-cols-2 gap-4 shrink-0">
               <div className="bg-white/[0.03] rounded-2xl p-4 border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Proj. Weekly Profit</div>
                 {forecast.projectedWeeklyProfit !== null ? (
@@ -76,12 +76,77 @@ export function BusinessOutlookWidget({ forecast, isComputing, settings }: Busin
               </div>
             </div>
 
+            {/* Seasonality Outlook (Phase 3B) */}
+            {forecast.seasonality && (
+              <div className="shrink-0 space-y-4">
+                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                  <Calendar className="w-3.5 h-3.5 text-slate-400" /> Seasonal Outlook
+                </div>
+                
+                {!forecast.seasonality.isAvailable ? (
+                  <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.05] text-center">
+                    <div className="text-xs font-bold text-slate-500">Insufficient Seasonal History</div>
+                    <div className="text-[10px] font-medium text-slate-600 mt-1">Requires 12 months of data</div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Busiest Day */}
+                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+                       <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Busiest Day</div>
+                       <div className="text-sm font-black text-indigo-400">{forecast.seasonality.busiestDay}</div>
+                       {forecast.seasonality.weeklyTrend[forecast.seasonality.busiestDay] && (
+                         <div className="text-[10px] font-bold text-slate-500 mt-1">
+                           {(forecast.seasonality.weeklyTrend[forecast.seasonality.busiestDay] * 100 - 100).toFixed(0)}% above avg
+                         </div>
+                       )}
+                    </div>
+                    
+                    {/* Upcoming Event */}
+                    {forecast.seasonality.upcomingEvent ? (
+                      <div className="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+                         <div className="text-[10px] font-black text-indigo-400/70 uppercase tracking-widest mb-1">Upcoming Event</div>
+                         <div className="text-sm font-black text-indigo-400">{forecast.seasonality.upcomingEvent.name}</div>
+                         <div className="text-[10px] font-bold text-indigo-300 mt-1 flex justify-between">
+                           <span>{forecast.seasonality.upcomingEvent.expectedDemand > 0 ? '+' : ''}{forecast.seasonality.upcomingEvent.expectedDemand}% Demand</span>
+                           <span className="opacity-70">{forecast.seasonality.upcomingEvent.confidence}% Conf.</span>
+                         </div>
+                      </div>
+                    ) : (
+                       <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+                         <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Month Trend</div>
+                         <div className="text-sm font-black text-white">{forecast.seasonality.monthlySeasonStrength.status}</div>
+                         <div className="text-[10px] font-bold text-slate-500 mt-1">
+                           {forecast.seasonality.monthlySeasonStrength.impactPct > 0 ? '+' : ''}{forecast.seasonality.monthlySeasonStrength.impactPct}% vs Year Avg
+                         </div>
+                      </div>
+                    )}
+                    
+                    {/* Day/Night Shift Trend */}
+                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.05] sm:col-span-2 flex justify-between items-center">
+                       <div>
+                         <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Shift Pattern Shift</div>
+                         <div className="text-xs font-bold text-slate-300">Day vs Night comparison</div>
+                       </div>
+                       <div className="text-right">
+                          <div className={`text-xs font-black ${forecast.seasonality.dayPartTrend.day > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            Day: {forecast.seasonality.dayPartTrend.day > 0 ? '+' : ''}{forecast.seasonality.dayPartTrend.day}%
+                          </div>
+                          <div className={`text-xs font-black ${forecast.seasonality.dayPartTrend.night > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            Night: {forecast.seasonality.dayPartTrend.night > 0 ? '+' : ''}{forecast.seasonality.dayPartTrend.night}%
+                          </div>
+                       </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Tank Depletion Risks */}
-            <div className="flex-1">
+            <div className="shrink-0 mt-4">
               <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                 <Package className="w-3.5 h-3.5 text-slate-400" /> Stock Depletion Risks
               </div>
-              <div className="space-y-2 max-h-[140px] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-2">
                 {forecast.tankForecasts.length > 0 ? (
                   forecast.tankForecasts.map(tf => {
                     if (tf.status === 'Insufficient Data') return null;

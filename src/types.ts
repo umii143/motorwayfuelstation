@@ -694,6 +694,15 @@ export interface GlobalSettings extends TenantDocument {
     autoLockPeriodMinutes?: number;
     defaultOwnerSafe?: string;
   };
+  eventCalendar?: {
+    ramadanStart?: string;
+    eidUlFitr?: string;
+    eidUlAdha?: string;
+    muharram?: string;
+    independenceDay?: string;
+    ramadanMultiplier?: number;
+    eidMultiplier?: number;
+  };
   customExpenseCategories?: { id: string; label: string; urdu: string }[];
   phone?: string;
   email?: string;

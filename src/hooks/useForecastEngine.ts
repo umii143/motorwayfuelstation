@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Shift, Tank, Product } from '../types';
-import { ForecastResult, ForecastInput } from '../workers/forecast.worker';
+import { GlobalSettings } from '../types';
 
-export function useForecastEngine(shifts: Shift[], tanks: Tank[], products: Product[]) {
+export function useForecastEngine(shifts: Shift[], tanks: Tank[], products: Product[], settings?: GlobalSettings) {
   const [forecast, setForecast] = useState<ForecastResult | null>(null);
   const [isComputing, setIsComputing] = useState(false);
   const workerRef = useRef<Worker | null>(null);
@@ -81,11 +81,33 @@ export function useForecastEngine(shifts: Shift[], tanks: Tank[], products: Prod
       currentStock: t.currentStock
     }));
 
+    const shiftsData = shifts.map(s => {
+      let shiftVolume = 0;
+      if (s.segments && s.segments.length > 0) {
+        s.segments.forEach(seg => { shiftVolume += seg.litersSold || 0; });
+      } else {
+        const anyShift = s as any;
+        if (anyShift.nozzleReadings) {
+          anyShift.nozzleReadings.forEach((nr: any) => {
+            const vol = nr.closingReading > 0 ? Math.max(0, nr.closingReading - nr.openingReading) : 0;
+            shiftVolume += vol;
+          });
+        }
+      }
+      return {
+        date: s.date,
+        shiftType: s.type,
+        volume: shiftVolume
+      };
+    });
+
     return {
       dailyData: Array.from(dailyMap.values()),
-      tanks: mappedTanks
+      shiftsData,
+      tanks: mappedTanks,
+      settings
     };
-  }, [shifts, tanks, products]);
+  }, [shifts, tanks, products, settings]);
 
   useEffect(() => {
     if (workerRef.current && summary.dailyData.length > 0) {
