@@ -624,11 +624,10 @@ export default React.memo(function FuelDashboard({
                          <div className="h-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]" style={{ width: '57%' }}></div>
                        </div>
                      </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </DeferredWidget>
+                   </div>
+                 </div>
+               </div>
+             </DeferredWidget>
            </div>
 
           {/* 9. RIGHT SIDEBAR (NARROWER) */}
