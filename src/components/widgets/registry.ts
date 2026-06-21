@@ -29,7 +29,7 @@ export const CORE_WIDGETS: WidgetManifest[] = [
     enabled: true,
     removable: true,
     systemWidget: true,
-    layoutVersion: 1,
+    layoutVersion: 2,
     minWidth: 2,
     minHeight: 2,
     defaultSettings: { showForecast: true, showCapacity: true }
@@ -49,6 +49,25 @@ export const CORE_WIDGETS: WidgetManifest[] = [
     layoutVersion: 1,
     minWidth: 2,
     minHeight: 1
+  },
+  {
+    id: 'treasury',
+    name: 'Treasury Center',
+    description: 'Financial oversight including cash, bank, receivables, and payables.',
+    size: 'large',
+    type: 'analytical',
+    category: 'treasury',
+    permissions: { 
+      visibleTo: ['owner', 'manager', 'accountant'],
+      editableBy: ['owner']
+    },
+    lazy: true,
+    enabled: true,
+    removable: false,
+    systemWidget: true,
+    layoutVersion: 2,
+    minWidth: 2,
+    minHeight: 2
   },
   {
     id: 'seasonal-outlook',
@@ -80,6 +99,6 @@ export const DEFAULT_OWNER_LAYOUT = {
     { instanceId: 'hero-1', manifestId: 'hero-performance', x: 0, y: 0, w: 4, h: 1, settings: {} },
     { instanceId: 'tank-1', manifestId: 'tank-health', x: 0, y: 1, w: 2, h: 2, settings: {} },
     { instanceId: 'shift-1', manifestId: 'active-shift', x: 2, y: 1, w: 2, h: 1, settings: {} },
-    { instanceId: 'seasonal-1', manifestId: 'seasonal-outlook', x: 2, y: 2, w: 2, h: 1, settings: {} }
+    { instanceId: 'treasury-1', manifestId: 'treasury', x: 2, y: 2, w: 2, h: 1, settings: {} }
   ]
 };

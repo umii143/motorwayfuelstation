@@ -79,6 +79,12 @@ export function DashboardCanvas() {
           } else if (manifest.id === 'active-shift') {
              const { ActiveShiftWidget } = require('./instances/ActiveShiftWidget');
              WidgetComponent = <ActiveShiftWidget />;
+          } else if (manifest.id === 'tank-health') {
+             const { TankHealthWidget } = require('./instances/TankHealthWidget');
+             WidgetComponent = <TankHealthWidget />;
+          } else if (manifest.id === 'treasury') {
+             const { TreasuryWidget } = require('./instances/TreasuryWidget');
+             WidgetComponent = <TreasuryWidget />;
           }
 
           return (
