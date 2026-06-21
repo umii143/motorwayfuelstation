@@ -44,27 +44,27 @@ export function ActivityFeedWidget() {
       </div>
       
       <div className="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar">
-        {feed.length > 0 ? feed.map((item, idx) => (
-          <div key={`${item.id}-${idx}`} className="flex gap-3 relative">
-            {idx !== feed.length - 1 && (
-              <div className="absolute top-8 left-4 bottom-[-16px] w-px bg-white/10 -translate-x-1/2"></div>
-            )}
-            <div className={`w-8 h-8 rounded-full ${item.bg} border border-white/10 flex items-center justify-center shrink-0 z-10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]`}>
-              <item.icon className={`w-3.5 h-3.5 ${item.color}`} />
-            </div>
-            <div className="pt-1.5 flex-1 pb-2">
-              <div className="flex justify-between items-start">
-                <span className="text-xs font-black text-white">{item.title}</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{item.time}</span>
+        {shifts.slice(0, 5).map(s => {
+          const shift = s as any;
+          return (
+            <div key={shift.id} className="relative flex gap-4 pb-4">
+              <div className="absolute left-2.5 top-8 bottom-0 w-px bg-white/5"></div>
+              <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 border border-white/10 ${shift.status === 'active' ? 'bg-orange-500/20 text-orange-400' : 'bg-[#0f172a] text-slate-400'}`}>
+                <Power className="w-3 h-3" />
               </div>
-              <div className="text-[10px] font-bold text-slate-400 mt-0.5">{item.desc} • {item.amount}</div>
+              <div className="flex-1">
+                <div className="flex justify-between items-start mb-1">
+                  <span className="text-xs font-black text-white">Shift {shift.status === 'active' ? 'Started' : 'Closed'}</span>
+                  <span className="text-[9px] font-bold text-slate-500">{shift.time || '12:00 PM'}</span>
+                </div>
+                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{shift.cashierName || 'System'}</div>
+                {shift.status === 'closed' && (
+                  <div className="text-xs font-bold text-emerald-400 mt-1">Rs {(shift.totalSales || 0).toLocaleString()}</div>
+                )}
+              </div>
             </div>
-          </div>
-        )) : (
-          <div className="text-center py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">
-            No activity recorded.
-          </div>
-        )}
+          );
+        })}
       </div>
     </div>
   );

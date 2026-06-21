@@ -571,6 +571,8 @@ export default React.memo(function FuelDashboard({
                   <div className="text-center py-6 text-[10px] font-black uppercase tracking-widest text-slate-500">No nozzles configured.</div>
                 )}
              </div>
+             </DeferredWidget>
+             
              {/* 8. OPERATIONS ANALYTICS CENTER */}
              <DeferredWidget delay={1200} skeleton={<div className={`h-[350px] ${liquidGlass} animate-pulse bg-white/5`}></div>}>
                <div className={`${liquidGlass} p-6`}>
@@ -622,11 +624,12 @@ export default React.memo(function FuelDashboard({
                          <div className="h-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]" style={{ width: '57%' }}></div>
                        </div>
                      </div>
-                   </div>
-                 </div>
-               </div>
-             </DeferredWidget>
-          </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </DeferredWidget>
+           </div>
 
           {/* 9. RIGHT SIDEBAR (NARROWER) */}
           <div className="space-y-6">
