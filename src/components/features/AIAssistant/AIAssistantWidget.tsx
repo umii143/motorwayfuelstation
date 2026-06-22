@@ -81,6 +81,7 @@ export const AIAssistantWidget: React.FC = () => {
         whileHover={{ scale: 1.05 }}
         whileDrag={{ scale: 1.1, cursor: "grabbing" }}
         onClick={() => setIsOpen(true)}
+        aria-label="Open AI Assistant"
         className={`fixed bottom-24 md:bottom-6 right-4 md:right-6 z-50 p-4 bg-indigo-600 text-white rounded-full shadow-2xl transition-colors active:scale-95 touch-none ${isOpen ? 'scale-0 opacity-0 pointer-events-none' : 'scale-100 opacity-100'}`}
       >
         <Bot className="w-6 h-6 pointer-events-none" />
@@ -114,6 +115,7 @@ export const AIAssistantWidget: React.FC = () => {
               </div>
               <button 
                 onClick={() => setIsOpen(false)}
+                aria-label="Close AI Assistant"
                 className="p-1.5 text-indigo-200 hover:bg-white/20 hover:text-white rounded-md transition-colors"
               >
                 <X className="w-5 h-5" />
@@ -166,6 +168,7 @@ export const AIAssistantWidget: React.FC = () => {
                 />
                 <button
                   onClick={handleSend}
+                  aria-label="Send Message"
                   disabled={!input.trim() || isTyping}
                   className="p-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 disabled:opacity-50 disabled:hover:bg-indigo-600 transition-colors shadow-sm"
                 >

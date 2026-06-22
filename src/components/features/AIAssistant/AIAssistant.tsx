@@ -167,6 +167,7 @@ export default function AIAssistant({
               id="ai_assistant_trigger"
               className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-2xl shadow-violet-500/40 hover:shadow-violet-500/60 transition-shadow"
               title="FuelPro AI Assistant"
+              aria-label="Open FuelPro AI Assistant"
             >
               <Sparkles className="h-6 w-6 pointer-events-none" />
               <span className="absolute h-14 w-14 rounded-full bg-violet-500/30 animate-ping pointer-events-none" />
@@ -200,7 +201,8 @@ export default function AIAssistant({
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 hover:bg-white/25 transition-colors"
+                aria-label="Close AI Assistant"
+                className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 hover:bg-white/25 transition-colors cursor-pointer"
               >
                 <ChevronDown className="h-4 w-4" />
               </button>
@@ -284,13 +286,15 @@ export default function AIAssistant({
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Ask for stock updates, shifts..."
+                aria-label="Message to AI Assistant"
                 disabled={isLoading}
                 className="flex-1 rounded-xl border border-[var(--border-main)] bg-[var(--bg-hover)] px-3.5 py-2.5 font-sans text-xs text-[var(--text-main)] placeholder:text-[var(--text-muted)] focus:border-violet-500 focus:outline-none transition-colors disabled:opacity-60"
               />
               <button
                 onClick={() => sendMessage(input)}
                 disabled={!input.trim() || isLoading}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-500/30 hover:shadow-violet-500/50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                aria-label="Send message"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-500/30 hover:shadow-violet-500/50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
               >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

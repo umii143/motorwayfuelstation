@@ -19,8 +19,11 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
   // General Settings State
   const [requirePinForMeterReset, setRequirePinForMeterReset] = useState(settings.security?.requirePinForMeterReset ?? true);
   const [requirePinForFactoryReset, setRequirePinForFactoryReset] = useState(settings.security?.requirePinForFactoryReset ?? true);
-  const [sessionTimeoutMinutes, setSessionTimeoutMinutes] = useState(settings.security?.sessionTimeoutMinutes?.toString() || '30');
+  const [sessionTimeoutMinutes, setSessionTimeoutMinutes] = useState(settings.security?.sessionTimeoutMinutes?.toString() || '5');
   const [biometricEnabled, setBiometricEnabled] = useState(settings.security?.biometricEnabled ?? false);
+  const [screenLockEnabled, setScreenLockEnabled] = useState(settings.security?.screenLockEnabled ?? false);
+  const [screenLockPin, setScreenLockPin] = useState(settings.security?.screenLockPin || '');
+  const [confirmScreenLockPin, setConfirmScreenLockPin] = useState(settings.security?.screenLockPin || '');
   const [isEditing, setIsEditing] = useState(false);
 
   // PIN Management State
@@ -43,14 +46,27 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
 
   const handleGeneralSave = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (screenLockEnabled && screenLockPin !== confirmScreenLockPin) {
+      showToast(t('Screen Lock PINs do not match.', 'سکرین لاک پن آپس میں نہیں مل رہے۔'), 'error');
+      return;
+    }
+
+    if (screenLockEnabled && screenLockPin.length < 4) {
+      showToast(t('Screen Lock PIN must be at least 4 digits.', 'سکرین لاک پن کم از کم 4 ہندسوں کا ہونا چاہیے۔'), 'error');
+      return;
+    }
+
     const updatedSettings: GlobalSettings = {
       ...settings,
       security: {
         ...settings.security,
         requirePinForMeterReset,
         requirePinForFactoryReset,
-        sessionTimeoutMinutes: parseInt(sessionTimeoutMinutes) || 30,
-        biometricEnabled
+        sessionTimeoutMinutes: parseFloat(sessionTimeoutMinutes) || 5,
+        biometricEnabled,
+        screenLockEnabled,
+        screenLockPin
       }
     };
     onUpdateSettings(updatedSettings);
@@ -433,31 +449,28 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
                 </div>
 
                 <div className="pt-4 border-t border-slate-100">
-                  <h4 className="text-sm font-bold text-slate-800 mb-4">{t('Session & Biometrics', 'سیشن اور بائیو میٹرکس')}</h4>
+                  <h4 className="text-sm font-bold text-slate-800 mb-4">{t('Screen Lock Settings', 'سکرین لاک سیٹنگز')}</h4>
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('Auto-Lock Timeout', 'آٹو لاک ٹائم آؤٹ')}</label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Clock className="h-4 w-4 text-slate-400" />
+                  <div className="space-y-6">
+                    {/* Toggles Row */}
+                    <div className="flex flex-col sm:flex-row gap-6">
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <div className="relative">
+                          <input 
+                            type="checkbox" 
+                            className="sr-only peer" 
+                            checked={screenLockEnabled}
+                            onChange={(e) => setScreenLockEnabled(e.target.checked)}
+                            disabled={!isEditing}
+                          />
+                          <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                         </div>
-                        <select 
-                          value={sessionTimeoutMinutes}
-                          onChange={(e) => setSessionTimeoutMinutes(e.target.value)}
-                          disabled={!isEditing}
-                          className="w-full pl-10 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold text-slate-800 focus:border-slate-500 disabled:opacity-70"
-                        >
-                          <option value="5">5 {t('Minutes', 'منٹ')}</option>
-                          <option value="15">15 {t('Minutes', 'منٹ')}</option>
-                          <option value="30">30 {t('Minutes', 'منٹ')}</option>
-                          <option value="60">1 {t('Hour', 'گھنٹہ')}</option>
-                          <option value="0">{t('Never Lock', 'کبھی لاک نہ کریں')}</option>
-                        </select>
-                      </div>
-                    </div>
+                        <div className="flex items-center gap-2">
+                          <Lock className="h-5 w-5 text-slate-500" />
+                          <span className="text-sm font-bold text-slate-700">{t('Enable Screen Lock', 'سکرین لاک فعال کریں')}</span>
+                        </div>
+                      </label>
 
-                    <div className="pt-6">
                       <label className="flex items-center gap-3 cursor-pointer">
                         <div className="relative">
                           <input 
@@ -465,16 +478,72 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
                             className="sr-only peer" 
                             checked={biometricEnabled}
                             onChange={(e) => setBiometricEnabled(e.target.checked)}
-                            disabled={!isEditing}
+                            disabled={!isEditing || !screenLockEnabled}
                           />
-                          <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                          <div className={`w-11 h-6 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${!isEditing || !screenLockEnabled ? 'bg-slate-100' : 'bg-slate-200 peer-checked:bg-emerald-500'}`}></div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className={`flex items-center gap-2 ${!screenLockEnabled ? 'opacity-50' : ''}`}>
                           <Fingerprint className="h-5 w-5 text-slate-500" />
-                          <span className="text-sm font-bold text-slate-700">{t('Biometric Ready', 'بائیو میٹرک فعال')}</span>
+                          <span className="text-sm font-bold text-slate-700">{t('Biometric Unlock', 'بائیو میٹرک انلاک')}</span>
                         </div>
                       </label>
                     </div>
+
+                    {/* Timeout Dropdown */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('Auto-Lock Timeout', 'آٹو لاک ٹائم آؤٹ')}</label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Clock className="h-4 w-4 text-slate-400" />
+                          </div>
+                          <select 
+                            value={sessionTimeoutMinutes}
+                            onChange={(e) => setSessionTimeoutMinutes(e.target.value)}
+                            disabled={!isEditing || !screenLockEnabled}
+                            className="w-full pl-10 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold text-slate-800 focus:border-slate-500 disabled:opacity-70"
+                          >
+                            <option value="0.5">30 {t('Seconds', 'سیکنڈز')}</option>
+                            <option value="1">1 {t('Minute', 'منٹ')}</option>
+                            <option value="3">3 {t('Minutes', 'منٹ')}</option>
+                            <option value="5">5 {t('Minutes', 'منٹ')}</option>
+                            <option value="10">10 {t('Minutes', 'منٹ')}</option>
+                            <option value="15">15 {t('Minutes', 'منٹ')}</option>
+                            <option value="0">{t('Never', 'کبھی نہیں')}</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* PIN Inputs */}
+                    {screenLockEnabled && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-50">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('Screen Lock PIN', 'سکرین لاک پن')}</label>
+                          <input 
+                            type="password"
+                            maxLength={6}
+                            value={screenLockPin}
+                            onChange={(e) => setScreenLockPin(e.target.value.replace(/\D/g, ''))}
+                            disabled={!isEditing}
+                            placeholder="******"
+                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold text-slate-800 focus:border-slate-500 disabled:opacity-70 tracking-widest"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('Confirm PIN', 'پن کی تصدیق کریں')}</label>
+                          <input 
+                            type="password"
+                            maxLength={6}
+                            value={confirmScreenLockPin}
+                            onChange={(e) => setConfirmScreenLockPin(e.target.value.replace(/\D/g, ''))}
+                            disabled={!isEditing}
+                            placeholder="******"
+                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold text-slate-800 focus:border-slate-500 disabled:opacity-70 tracking-widest"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

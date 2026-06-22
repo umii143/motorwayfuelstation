@@ -686,6 +686,9 @@ export interface GlobalSettings extends TenantDocument {
     enforceShiftHours?: boolean;
     autoCloseShifts?: boolean;
     maxShiftDurationHours?: number;
+    screenLockEnabled?: boolean;
+    screenLockPin?: string;
+    failedAttempts?: number;
   };
   treasury?: {
     cashVarianceThreshold?: number;

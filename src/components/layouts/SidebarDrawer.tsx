@@ -138,6 +138,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
           </span>
           <button 
             onClick={onClose}
+            aria-label="Close Navigation"
             className="p-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-white/5 rounded-full transition-colors lg:hidden"
           >
             <X className="w-5 h-5" />
@@ -234,7 +235,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
                       <div key={item.id} className="space-y-1">
                         <button
                           onClick={() => setExpandedMenus(prev => ({ ...prev, [item.id]: !expanded }))}
-                          className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 font-sans text-sm font-semibold transition-all cursor-pointer ${
+                          className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 font-sans text-base font-semibold transition-all cursor-pointer ${
                             isChildActive
                               ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 border-l-4 border-orange-600'
                               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white border-l-4 border-transparent'
@@ -259,7 +260,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
                                 <button
                                   key={child.id}
                                   onClick={() => handleItemClick(child.id)}
-                                  className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 font-sans text-xs font-semibold transition-all cursor-pointer ${
+                                  className={`flex w-full items-center gap-3 rounded-lg px-3 py-3 font-sans text-sm font-semibold transition-all cursor-pointer ${
                                     childActive
                                       ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 font-bold'
                                       : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
@@ -282,7 +283,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
                     <button
                       key={item.id}
                       onClick={() => handleItemClick(item.id)}
-                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 font-sans text-sm font-semibold transition-all cursor-pointer ${
+                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 font-sans text-base font-semibold transition-all cursor-pointer ${
                         isActive
                           ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 border-l-4 border-orange-600'
                           : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white border-l-4 border-transparent'
@@ -303,14 +304,14 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
           <div className="flex gap-2">
             <button
               onClick={onLanguageToggle}
-              className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-white/10 px-3 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-orange-600 hover:border-orange-200 transition-colors shadow-xs"
+              className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-white/10 px-3 py-2.5 text-sm font-bold text-slate-800 dark:text-slate-200 hover:text-orange-600 hover:border-orange-200 transition-colors shadow-xs"
             >
               <Globe className="w-4 h-4 text-slate-400" />
               {settings.language === 'ur' ? 'اردو' : 'English'}
             </button>
             <button
               onClick={onThemeToggle}
-              className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-white/10 px-3 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-orange-600 hover:border-orange-200 transition-colors shadow-xs"
+              className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-white/10 px-3 py-2.5 text-sm font-bold text-slate-800 dark:text-slate-200 hover:text-orange-600 hover:border-orange-200 transition-colors shadow-xs"
             >
               {settings.theme === 'dark' ? <Sun className="w-4 h-4 text-slate-400" /> : <Moon className="w-4 h-4 text-slate-400" />}
               {t('Theme', 'تھیم', settings)}
@@ -318,7 +319,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
           </div>
           <button
             onClick={onLogout}
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 px-3 py-2.5 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors shadow-xs"
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 px-3 py-2.5 text-sm font-bold text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors shadow-xs"
           >
             <LogOut className="w-4 h-4" />
             {t('Sign Out', 'لاگ آؤٹ', settings)}

@@ -117,7 +117,7 @@ export const PoweredByUmarAli: React.FC<PoweredByUmarAliProps> = ({
 
   if (variant === 'dashboard') {
     return (
-      <div className={`w-full bg-[#161618] border border-white/5 rounded-3xl p-5 md:p-6 relative overflow-hidden flex flex-col md:flex-row items-center md:items-stretch gap-6 shadow-2xl ${className}`}>
+      <div className={`w-full bg-[#161618] border border-white/5 rounded-2xl md:rounded-3xl p-4 md:p-6 relative overflow-hidden flex flex-col md:flex-row items-center md:items-stretch gap-4 md:gap-6 shadow-2xl ${className}`}>
         
         {/* Version Badge */}
         <div className="absolute top-4 right-4 bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">
@@ -125,55 +125,55 @@ export const PoweredByUmarAli: React.FC<PoweredByUmarAliProps> = ({
         </div>
 
         {/* Left Section */}
-        <div className="flex flex-col items-center md:items-start justify-center pt-3 md:pt-0">
-          <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-1">Powered By</span>
-          <div className="flex items-center gap-1.5 font-black text-2xl tracking-tight mb-4 drop-shadow-[0_0_8px_rgba(255,122,0,0.15)]">
+        <div className="flex flex-col items-center md:items-start justify-center pt-1 md:pt-0">
+          <span className="text-[9px] md:text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-0.5">Powered By</span>
+          <div className="flex items-center gap-1.5 font-black text-xl md:text-2xl tracking-tight mb-2 md:mb-4 drop-shadow-[0_0_8px_rgba(255,122,0,0.15)]">
              <span className="text-white">UMAR</span>
              <span className="text-orange-500">ALI</span>
-             <Zap className="w-5 h-5 text-orange-500 fill-orange-500 ml-0.5" />
+             <Zap className="w-4 h-4 md:w-5 md:h-5 text-orange-500 fill-orange-500 ml-0.5" />
           </div>
           
           <a 
             href="https://wa.me/923168432329" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="flex items-center gap-2 bg-[#1A251D] border border-[#233524] px-4 py-2 rounded-xl transition-all hover:bg-[#1E2B22]"
+            className="flex items-center gap-2 bg-[#1A251D] border border-[#233524] px-3 py-1.5 md:px-4 md:py-2 rounded-xl transition-all hover:bg-[#1E2B22]"
           >
-            <Phone className="w-4 h-4 text-emerald-400" />
-            <span className="text-emerald-400 font-medium text-sm">0316-8432329</span>
+            <Phone className="w-3 h-3 md:w-4 md:h-4 text-emerald-400" />
+            <span className="text-emerald-400 font-medium text-xs md:text-sm">0316-8432329</span>
           </a>
         </div>
 
         {/* Divider */}
         <div className="hidden md:block w-px bg-white/5 my-2 mx-2"></div>
-        <div className="block md:hidden h-px w-full bg-white/5 my-2"></div>
+        <div className="block md:hidden h-px w-3/4 mx-auto bg-white/5 my-0.5"></div>
 
         {/* Right Section */}
-        <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-2 items-center justify-items-center md:pt-2 pb-2">
+        <div className="flex-1 w-full grid grid-cols-3 gap-2 sm:gap-2 items-start justify-items-center md:pt-2 pb-1 md:pb-2">
            {/* Item 1 */}
-           <div className="flex flex-col items-center text-center gap-2">
-             <ShieldCheck className="w-7 h-7 text-orange-500 stroke-[1.5]" />
-             <div className="flex flex-col items-center gap-0.5 mt-1">
-               <span className="text-orange-500 text-[10px] md:text-xs font-bold uppercase tracking-wider">Fast & Secure</span>
-               <span className="text-slate-400 text-[9px] md:text-[10px] leading-tight max-w-[120px]">Your data is always protected</span>
+           <div className="flex flex-col items-center text-center gap-1 md:gap-2">
+             <ShieldCheck className="w-5 h-5 md:w-7 md:h-7 text-orange-500 stroke-[1.5]" />
+             <div className="flex flex-col items-center gap-0.5 md:mt-1">
+               <span className="text-orange-500 text-[8px] md:text-xs font-bold uppercase tracking-wider leading-tight text-center">Fast & Secure</span>
+               <span className="hidden md:block text-slate-400 text-[9px] md:text-[10px] leading-tight max-w-[120px]">Your data is always protected</span>
              </div>
            </div>
            
            {/* Item 2 */}
-           <div className="flex flex-col items-center text-center gap-2">
-             <Cloud className="w-7 h-7 text-orange-500 stroke-[1.5]" />
-             <div className="flex flex-col items-center gap-0.5 mt-1">
-               <span className="text-orange-500 text-[10px] md:text-xs font-bold uppercase tracking-wider">Cloud Sync</span>
-               <span className="text-slate-400 text-[9px] md:text-[10px] leading-tight max-w-[120px]">Real-time backup and sync</span>
+           <div className="flex flex-col items-center text-center gap-1 md:gap-2">
+             <Cloud className="w-5 h-5 md:w-7 md:h-7 text-orange-500 stroke-[1.5]" />
+             <div className="flex flex-col items-center gap-0.5 md:mt-1">
+               <span className="text-orange-500 text-[8px] md:text-xs font-bold uppercase tracking-wider leading-tight text-center">Cloud Sync</span>
+               <span className="hidden md:block text-slate-400 text-[9px] md:text-[10px] leading-tight max-w-[120px]">Real-time backup and sync</span>
              </div>
            </div>
 
            {/* Item 3 */}
-           <div className="flex flex-col items-center text-center gap-2">
-             <Headphones className="w-7 h-7 text-orange-500 stroke-[1.5]" />
-             <div className="flex flex-col items-center gap-0.5 mt-1">
-               <span className="text-orange-500 text-[10px] md:text-xs font-bold uppercase tracking-wider">24/7 Support</span>
-               <span className="text-slate-400 text-[9px] md:text-[10px] leading-tight max-w-[120px]">We are always here to help</span>
+           <div className="flex flex-col items-center text-center gap-1 md:gap-2">
+             <Headphones className="w-5 h-5 md:w-7 md:h-7 text-orange-500 stroke-[1.5]" />
+             <div className="flex flex-col items-center gap-0.5 md:mt-1">
+               <span className="text-orange-500 text-[8px] md:text-xs font-bold uppercase tracking-wider leading-tight text-center">24/7 Support</span>
+               <span className="hidden md:block text-slate-400 text-[9px] md:text-[10px] leading-tight max-w-[120px]">We are always here to help</span>
              </div>
            </div>
         </div>

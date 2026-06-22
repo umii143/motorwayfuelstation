@@ -70,6 +70,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
       <div className="flex items-center gap-4">
         <button 
           onClick={onMenuClick}
+          aria-label="Open Navigation Menu"
           className="p-2 -ml-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors"
         >
           <Menu className="w-5 h-5" />
@@ -99,7 +100,8 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         {/* Language Switcher */}
         <button 
           onClick={onLanguageToggle}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors border border-transparent dark:border-white/5"
+          aria-label="Toggle Language"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors border border-transparent dark:border-white/5"
         >
           <Globe className="w-4 h-4" />
           <span className="text-xs font-bold hidden sm:inline">{settings.language === 'ur' ? 'UR' : 'EN'}</span>
@@ -109,8 +111,9 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         <div className="relative" ref={themeDropdownRef}>
           <button 
             onClick={() => setIsThemeOpen(!isThemeOpen)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors border border-transparent dark:border-white/5"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors border border-transparent dark:border-white/5"
             title="Select Theme"
+            aria-label="Select Theme"
           >
             <currentThemeObj.icon className="w-4 h-4" />
             <span className="text-xs font-bold hidden sm:inline">{currentThemeObj.label}</span>
@@ -146,6 +149,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         {/* Settings (Tanks/Config) */}
         <button 
           onClick={onSettingsClick}
+          aria-label="Open Settings"
           className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors"
         >
           <Settings className="w-5 h-5" />
@@ -156,6 +160,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           <button 
             onClick={onTankWizardTrigger}
             title="Tank Configuration Wizard"
+            aria-label="Tank Configuration Wizard"
             className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors"
           >
             <Cylinder className="w-5 h-5" />
@@ -168,6 +173,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           <input 
             type="text" 
             placeholder="Search or ask Jarvis..." 
+            aria-label="Search or ask Jarvis"
             className="w-56 lg:w-72 h-9 pl-9 pr-10 rounded-full bg-slate-100 dark:bg-[#1A1A24] text-sm font-medium text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 border border-transparent dark:border-white/5 transition-all"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && onJarvisTrigger) {
@@ -178,6 +184,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           <button 
             onClick={onJarvisTrigger}
             title="Ask Jarvis"
+            aria-label="Ask Jarvis AI Assistant"
             className="absolute right-1.5 p-1.5 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-full hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-500 dark:hover:text-white transition-colors"
           >
             <BrainCircuit className="w-4 h-4 text-orange-500 group-hover:text-white transition-colors" />
@@ -185,7 +192,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         </div>
 
         {/* Notifications */}
-        <button className="relative p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors">
+        <button aria-label="View Notifications" className="relative p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors">
           <Bell className="w-5 h-5" />
           <span className="absolute top-1 right-1.5 w-4 h-4 bg-orange-500 text-white text-[9px] font-bold flex items-center justify-center rounded-full border-2 border-white dark:border-[#151521]">5</span>
         </button>
@@ -202,9 +209,10 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                window.location.reload();
             }
           }}
+          aria-label="User Profile and Sign Out"
           className="flex items-center gap-2.5 hover:bg-slate-50 dark:hover:bg-white/5 p-1 rounded-full md:rounded-xl md:pr-3 transition-colors">
           <div className="relative">
-            <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#1A1A24] border border-slate-200 dark:border-white/10 flex items-center justify-center text-xs font-bold text-slate-600 dark:text-slate-300">
+            <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#1A1A24] border border-slate-200 dark:border-white/10 flex items-center justify-center text-xs font-bold text-slate-800 dark:text-slate-100">
               UA
             </div>
             <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-[#151521] rounded-full"></div>

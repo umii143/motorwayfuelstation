@@ -100,21 +100,22 @@ import LoadingScreen from './components/ui/LoadingScreen';
 import { Footer } from './components/layouts/Footer';
 import { SplashSequence } from './components/features/SplashSequence';
 import { LanguageSelect } from './components/features/Onboarding/LanguageSelect';
-import { WelcomeCarousel } from './components/features/Onboarding/WelcomeCarousel';
+const WelcomeCarousel = React.lazy(() => import('./components/features/Onboarding/WelcomeCarousel').then(module => ({ default: module.WelcomeCarousel })));
 import { NativeAuthProvider, useNativeAuth } from './contexts/NativeAuthContext';
 import { SecurityScreen } from './components/features/SecurityScreen';
 import { mobileEngine } from './services/mobile/MobileExperienceEngine';
 
 import AuthInterface from './components/layouts/AuthInterface'; // Kept static for immediate auth render
 import { PageTransition } from './components/shared/PageTransition';
-import { GlobalSearchModal } from './components/shared/GlobalSearchModal';
+const GlobalSearchModal = React.lazy(() => import('./components/shared/GlobalSearchModal').then(module => ({ default: module.GlobalSearchModal })));
 import { SmartSuggestions } from './components/shared/SmartSuggestions';
 import { useKeyboardShortcut, SHORTCUTS } from './hooks/useKeyboardShortcut';
 import { buildSearchIndex, rebuildModuleIndex } from './services/searchService';
 import { CrashCenter as ErrorBoundary } from './components/ui/CrashCenter';
 import { RefreshCw, CheckCircle2, AlertTriangle, XCircle, Info, X } from 'lucide-react';
 import { usePullToRefresh } from './hooks/usePullToRefresh';
-
+import { useAppLock } from './hooks/useAppLock';
+import ScreenLock from './components/ui/ScreenLock';
 import {
   Pump,
   Station,
@@ -138,6 +139,8 @@ function MainApp() {
     await new Promise(resolve => setTimeout(resolve, 800));
     window.location.reload();
   });
+
+  const { isAppLocked, unlockApp, lockApp } = useAppLock(useStation().settings);
 
   const organization = useAuth().organization;
   const daysRemaining = React.useMemo(() => {
@@ -1024,15 +1027,16 @@ function MainApp() {
         onLogout={handleLogout}
       />
 
-      <GlobalSearchModal
-        isOpen={searchOpen}
-        onClose={() => setSearchOpen(false)}
-        onNavigate={(viewId, context) => {
-          handleViewChange(viewId);
-        }}
-      />
-
-      {/* Tank Configuration Wizard */}
+      <React.Suspense fallback={null}>
+        <GlobalSearchModal
+          isOpen={searchOpen}
+          onClose={() => setSearchOpen(false)}
+          onNavigate={(viewId, context) => {
+            setSearchOpen(false);
+            handleViewChange(viewId);
+          }}
+        />
+      </React.Suspense>{/* Tank Configuration Wizard */}
       <AnimatePresence>
         {isTankWizardOpen && (
           <React.Suspense fallback={<LoadingScreen />}>
@@ -1295,6 +1299,28 @@ function MainApp() {
           },
         }} 
       />
+
+      <AnimatePresence>
+        {isAppLocked && (
+          <motion.div
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-[10000]"
+          >
+            <ScreenLock 
+              stationName={settings.stationName || 'Motorway Petroleum'}
+              address={settings.address || 'Bakhshali - Mardan'}
+              logoUrl={settings.logoUrl}
+              correctPin={settings.security?.screenLockPin || settings.security?.masterPin || '123456'}
+              biometricEnabled={settings.security?.biometricEnabled || false}
+              onUnlock={unlockApp}
+              onEmergencyLogout={handleLogout}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -1353,7 +1379,9 @@ export default function App() {
       )}
 
       {splashDone && languageSelected && !carouselDone && (
-         <WelcomeCarousel language={preferredLang} onComplete={handleCarouselComplete} />
+         <React.Suspense fallback={<LoadingScreen message="Loading Welcome Experience..." />}>
+           <WelcomeCarousel language={preferredLang} onComplete={handleCarouselComplete} />
+         </React.Suspense>
       )}
 
       {splashDone && languageSelected && carouselDone && !dbReady && <LoadingScreen />}

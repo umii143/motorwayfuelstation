@@ -47,7 +47,7 @@ export function DashboardShell({ onStartShiftQuick, onNavigate }: { onStartShift
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[140px] mix-blend-screen"></div>
       </div>
 
-      <div className="px-6 py-6 relative z-10 max-w-[1600px] mx-auto space-y-6">
+      <main className="px-6 py-6 relative z-10 max-w-[1600px] mx-auto space-y-6">
         
         {/* HEADER COMMAND CENTER */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -67,7 +67,7 @@ export function DashboardShell({ onStartShiftQuick, onNavigate }: { onStartShift
 
           <div className="flex items-center gap-3">
             {!activeShift && (
-              <button onClick={onStartShiftQuick} className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-xl text-xs font-bold border border-orange-500 hover:border-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.3)] transition-all">
+              <button onClick={onStartShiftQuick} className="px-5 py-2.5 min-h-[44px] min-w-[44px] bg-[#C2410C] hover:bg-[#9A3412] text-white rounded-xl text-base font-bold border border-[#C2410C] shadow-[0_0_15px_rgba(194,65,12,0.3)] transition-all">
                 Start Shift
               </button>
             )}
@@ -98,7 +98,7 @@ export function DashboardShell({ onStartShiftQuick, onNavigate }: { onStartShift
         {/* WIDGET ENGINE CANVAS */}
         <DashboardCanvas />
 
-      </div>
+      </main>
 
       {/* WIDGET STUDIO DRAWER */}
       <WidgetStudioDrawer 

@@ -293,7 +293,7 @@ export default React.memo(function FuelDashboard({
                 <div className="text-sm font-black text-white">{userName}</div>
              </div>
              {!activeShift && (
-               <button onClick={onStartShiftQuick} className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-xl text-xs font-bold border border-orange-500 hover:border-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.3)] transition-all">
+               <button onClick={onStartShiftQuick} className="px-5 py-2.5 min-h-[44px] min-w-[44px] bg-[#C2410C] hover:bg-[#9A3412] text-white rounded-xl text-base font-bold border border-[#C2410C] shadow-[0_0_15px_rgba(194,65,12,0.3)] transition-all">
                  Start Shift
                </button>
              )}
@@ -305,10 +305,10 @@ export default React.memo(function FuelDashboard({
              <button onClick={() => onNavigate?.('shift_logs')} className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold border border-white/10 transition-colors">
                Shift Logs
              </button>
-             <button className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors">
+             <button aria-label="Notifications" className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors">
                <Bell className="w-4 h-4" />
              </button>
-             <button className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors">
+             <button aria-label="Settings" className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors">
                <Settings className="w-4 h-4" />
              </button>
           </div>
@@ -405,7 +405,7 @@ export default React.memo(function FuelDashboard({
                    </h2>
                  </div>
                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                   <div className="h-[250px]">
+                   <div className="h-[250px] w-full min-w-0">
                      <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 text-center">Weekly Revenue</div>
                      <ResponsiveContainer width="100%" height="100%">
                        <AreaChart data={stats.chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -425,7 +425,7 @@ export default React.memo(function FuelDashboard({
                        </AreaChart>
                      </ResponsiveContainer>
                    </div>
-                   <div className="h-[250px]">
+                   <div className="h-[250px] w-full min-w-0">
                      <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 text-center">Hourly Sales Activity</div>
                      <ResponsiveContainer width="100%" height="100%">
                        <BarChart data={stats.hourlySalesData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -602,7 +602,7 @@ export default React.memo(function FuelDashboard({
                    </h2>
                  </div>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                   <div className="h-[250px] flex flex-col items-center justify-center relative">
+                   <div className="h-[250px] w-full min-w-0 flex flex-col items-center justify-center relative">
                      <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 text-center absolute top-0">Performance Radar</div>
                      <ResponsiveContainer width="100%" height="100%">
                        <RadarChart cx="50%" cy="55%" outerRadius="70%" data={stats.radarData}>

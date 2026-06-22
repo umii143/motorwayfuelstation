@@ -1306,7 +1306,7 @@ export default function StaffPanel({
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: 15, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 350 }}
-              className="bg-white rounded-xl border border-slate-200 w-full max-w-xl p-5 space-y-4 shadow-xl"
+              className="bg-white rounded-xl border border-slate-200 w-full max-w-xl p-5 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center border-b border-slate-100 pb-2.5">
                 <h4 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
@@ -1465,7 +1465,7 @@ export default function StaffPanel({
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: 15, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 350 }}
-              className="bg-white rounded-xl border border-slate-200 w-full max-w-2xl"
+              className="bg-white rounded-xl border border-slate-200 w-full max-w-2xl p-5 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center border-b border-slate-100 pb-2.5">
                 <h4 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
