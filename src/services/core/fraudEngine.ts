@@ -6,6 +6,7 @@
  */
 
 import { Shift } from '../../types';
+import { safeGetItem, safeSetItem } from './coreStorage';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -160,7 +161,7 @@ export async function analyzeShiftRisk(
   };
 
   // Persist risk score
-  localStorage.setItem(_riskKey(shift.id, stationId), JSON.stringify(result));
+  await safeSetItem(_riskKey(shift.id, stationId), JSON.stringify(result));
 
   return result;
 }
@@ -170,7 +171,7 @@ export async function getShiftRiskScore(
   shiftId: string,
   stationId: string
 ): Promise<ShiftRiskScore | null> {
-  const raw = localStorage.getItem(_riskKey(shiftId, stationId));
+  const raw = await safeGetItem(_riskKey(shiftId, stationId));
   if (!raw) return null;
   try { return JSON.parse(raw); } catch { return null; }
 }

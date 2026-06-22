@@ -15,31 +15,35 @@ export async function initDatabase() {
     const keys = await localforage.keys();
     
     // Optimize: Bulk load all items concurrently using iterate (drastically faster than sequential awaits)
-    await localforage.iterate((value, key) => {
-      if (value !== null) {
-        memoryCache[key] = value as string;
-      }
-    });
-    // Fallback migration from localStorage to IndexedDB if it has data but localforage is empty
-    if (keys.length === 0 && typeof window !== 'undefined' && localStorage.length > 0) {
-       console.log('Migrating localStorage to localforage...');
+    try {
+      await localforage.iterate((value, key) => {
+        if (value !== null) {
+          memoryCache[key] = value as string;
+        }
+      });
+    } catch (e) {
+      console.warn('localforage.iterate failed', e);
+    }
+
+    // Comprehensive Fallback: Sync from localStorage for any missing keys
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
        for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
-          if (key) {
+          if (key && !memoryCache[key]) {
              const val = localStorage.getItem(key);
              if (val !== null) {
                memoryCache[key] = val;
-               await localforage.setItem(key, val);
+               localforage.setItem(key, val).catch(() => {});
              }
           }
        }
     }
 
     if (!(memoryCache['fuelpro_fresh_v5_nodummies'] ?? null)) {
-      await localforage.clear();
-      memoryCache = {};
+      // Safely register the marker without wiping anything to prevent accidental data loss
       memoryCache['fuelpro_fresh_v5_nodummies'] = 'true';
-      await localforage.setItem('fuelpro_fresh_v5_nodummies', 'true');
+      await localforage.setItem('fuelpro_fresh_v5_nodummies', 'true').catch(() => {});
+      try { if (typeof localStorage !== 'undefined') localStorage.setItem('fuelpro_fresh_v5_nodummies', 'true'); } catch (e) {}
     }
 
     dbInitialized = true;
@@ -51,8 +55,10 @@ export async function initDatabase() {
 function flushToIndexedDB(key: string, value: string | null) {
   if (value === null) {
     localforage.removeItem(key).catch(console.error);
+    try { if (typeof localStorage !== 'undefined') localStorage.removeItem(key); } catch (e) {}
   } else {
     localforage.setItem(key, value).catch(console.error);
+    try { if (typeof localStorage !== 'undefined') localStorage.setItem(key, value); } catch (e) {}
   }
 }
 

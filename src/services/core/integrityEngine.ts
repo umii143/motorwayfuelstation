@@ -6,6 +6,7 @@
  */
 
 import { ReconciliationReport } from './reconciliationEngine';
+import { safeGetItem, safeSetItem } from './coreStorage';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -44,7 +45,7 @@ const _scoreKey = (stationId: string, date: string) => `fuelpro_integrity_${stat
 /**
  * Compute daily integrity score from all shift reconciliation reports.
  */
-export function computeIntegrityScore(
+export async function computeIntegrityScore(
   stationId: string,
   date: string,
   shiftReports: ReconciliationReport[],
@@ -53,7 +54,7 @@ export function computeIntegrityScore(
     reversalCount?: number;         // Total reversals in day
     missingShifts?: number;         // Expected shifts not found
   }
-): IntegrityScore {
+): Promise<IntegrityScore> {
   const checks: IntegrityCheck[] = [];
   let totalScore = 100;
   const ctx = extraContext ?? {};
@@ -155,7 +156,7 @@ export function computeIntegrityScore(
   };
 
   // Persist score
-  localStorage.setItem(_scoreKey(stationId, date), JSON.stringify(result));
+  await safeSetItem(_scoreKey(stationId, date), JSON.stringify(result));
 
   return result;
 }
@@ -165,7 +166,7 @@ export async function getIntegrityScore(
   stationId: string,
   date: string
 ): Promise<IntegrityScore | null> {
-  const raw = localStorage.getItem(_scoreKey(stationId, date));
+  const raw = await safeGetItem(_scoreKey(stationId, date));
   if (!raw) return null;
   try { return JSON.parse(raw); } catch { return null; }
 }

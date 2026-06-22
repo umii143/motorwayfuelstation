@@ -7,6 +7,7 @@
 
 import { createDoubleEntry, getAllJournalEntries, TxnMeta } from './journalEngine';
 import { JournalEntry } from '../../types';
+import { safeGetItem, safeSetItem } from './coreStorage';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -200,7 +201,7 @@ async function _markJournalsAsReversed(
   reversalTxnId: string
 ): Promise<void> {
   const key = `fuelpro_journal_entries_${stationId}`;
-  const raw = localStorage.getItem(key);
+  const raw = await safeGetItem(key);
   if (!raw) return;
   const entries: JournalEntry[] = JSON.parse(raw);
   const updated = entries.map(e =>
@@ -208,11 +209,11 @@ async function _markJournalsAsReversed(
       ? { ...e, description: `[REVERSED by ${reversalTxnId}] ${e.description}`, isLocked: true }
       : e
   );
-  localStorage.setItem(key, JSON.stringify(updated));
+  await safeSetItem(key, JSON.stringify(updated));
 }
 
 async function _getAllReversals(stationId: string): Promise<ReversalEntry[]> {
-  const raw = localStorage.getItem(_reversalsKey(stationId));
+  const raw = await safeGetItem(_reversalsKey(stationId));
   if (!raw) return [];
   try { return JSON.parse(raw) ?? []; } catch { return []; }
 }
@@ -220,5 +221,5 @@ async function _getAllReversals(stationId: string): Promise<ReversalEntry[]> {
 async function _saveReversalRecord(stationId: string, record: ReversalEntry): Promise<void> {
   const all = await _getAllReversals(stationId);
   all.push(record);
-  localStorage.setItem(_reversalsKey(stationId), JSON.stringify(all));
+  await safeSetItem(_reversalsKey(stationId), JSON.stringify(all));
 }

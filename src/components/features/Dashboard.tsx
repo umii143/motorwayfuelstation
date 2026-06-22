@@ -399,6 +399,7 @@ export default React.memo(function Dashboard({
         banks={banks}
         stockTxns={stockTxns || []}
         onNavigate={onNavigate}
+        onToggleV2={toggleV2}
       />
     );
   }
@@ -418,11 +419,6 @@ export default React.memo(function Dashboard({
 
   return (
     <div className="relative">
-      <div className="absolute top-4 right-4 z-50">
-        <button onClick={toggleV2} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold border border-indigo-500 hover:bg-indigo-500 shadow-lg shadow-indigo-500/20">
-          Try Enterprise Widget Studio (V2)
-        </button>
-      </div>
       <FuelDashboard
         settings={settings}
         activeStationId={activeStationId}
@@ -437,6 +433,7 @@ export default React.memo(function Dashboard({
         onNavigate={onNavigate}
         onStartShiftQuick={onStartShiftQuick}
         userName={userName}
+        onToggleV2={toggleV2}
       />
     </div>
   );

@@ -97,6 +97,7 @@ const FuelProJarvis = lazyWithRetry(() => import('./components/features/AI/FuelP
 const EnterpriseDashboard = lazyWithRetry(() => import('./components/features/EnterpriseDashboard/EnterpriseDashboard'));
 
 import LoadingScreen from './components/ui/LoadingScreen';
+import { Footer } from './components/layouts/Footer';
 import { SplashSequence } from './components/features/SplashSequence';
 import { LanguageSelect } from './components/features/Onboarding/LanguageSelect';
 import { WelcomeCarousel } from './components/features/Onboarding/WelcomeCarousel';
@@ -1104,9 +1105,8 @@ function MainApp() {
               </ErrorBoundary>
             </PageTransition>
           </div>
-
-
         </div>
+        <Footer />
       </main>
 
       {/* Dynamic Mobile Bottom Navigation */}

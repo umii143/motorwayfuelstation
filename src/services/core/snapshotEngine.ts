@@ -6,6 +6,7 @@
  */
 
 import { Customer, Supplier, Tank, Product, BankAccount, Shift, JournalEntry } from '../../types';
+import { safeGetItem, safeSetItem } from './coreStorage';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -71,13 +72,13 @@ export async function createDailySnapshot(
   const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 
   // Read all current data from localStorage
-  const customers = _readKey<Customer[]>(`fuelpro_customers`, []);
-  const suppliers = _readKey<Supplier[]>(`fuelpro_suppliers`, []);
-  const tanks = _readKey<Tank[]>(`fuelpro_tanks`, []);
-  const products = _readKey<Product[]>(`fuelpro_products`, []);
-  const banks = _readKey<BankAccount[]>(`fuelpro_banks`, []);
-  const shifts = _readKey<Shift[]>(`fuelpro_shifts`, []);
-  const journalEntries = _readKey<JournalEntry[]>(`fuelpro_journal_entries_${stationId}`, []);
+  const customers = await _readKey<Customer[]>(`fuelpro_customers`, []);
+  const suppliers = await _readKey<Supplier[]>(`fuelpro_suppliers`, []);
+  const tanks = await _readKey<Tank[]>(`fuelpro_tanks`, []);
+  const products = await _readKey<Product[]>(`fuelpro_products`, []);
+  const banks = await _readKey<BankAccount[]>(`fuelpro_banks`, []);
+  const shifts = await _readKey<Shift[]>(`fuelpro_shifts`, []);
+  const journalEntries = await _readKey<JournalEntry[]>(`fuelpro_journal_entries_${stationId}`, []);
 
   const recordCounts = {
     customers: customers.length,
@@ -105,7 +106,7 @@ export async function createDailySnapshot(
   };
 
   // Store snapshot
-  localStorage.setItem(_snapshotKey(stationId, date), JSON.stringify(snapshot));
+  await safeSetItem(_snapshotKey(stationId, date), JSON.stringify(snapshot));
 
   // Update snapshot index
   const index = await listSnapshots(stationId);
@@ -126,14 +127,14 @@ export async function createDailySnapshot(
   } else {
     index.push(meta);
   }
-  localStorage.setItem(_snapshotIndexKey(stationId), JSON.stringify(index));
+  await safeSetItem(_snapshotIndexKey(stationId), JSON.stringify(index));
 
   return snapshot;
 }
 
 /** Verify a snapshot's integrity by recomputing checksum. */
 export async function verifySnapshot(stationId: string, date: string): Promise<boolean> {
-  const raw = localStorage.getItem(_snapshotKey(stationId, date));
+  const raw = await safeGetItem(_snapshotKey(stationId, date));
   if (!raw) return false;
 
   try {
@@ -155,19 +156,19 @@ export async function restoreFromSnapshot(
     return { success: false, message: `Snapshot for ${date} failed integrity check. Restore aborted.` };
   }
 
-  const raw = localStorage.getItem(_snapshotKey(stationId, date));
+  const raw = await safeGetItem(_snapshotKey(stationId, date));
   if (!raw) return { success: false, message: 'Snapshot not found.' };
 
   const snapshot: DisasterRecoverySnapshot = JSON.parse(raw);
 
   // Restore all data
-  localStorage.setItem('fuelpro_customers', JSON.stringify(snapshot.customers));
-  localStorage.setItem('fuelpro_suppliers', JSON.stringify(snapshot.suppliers));
-  localStorage.setItem('fuelpro_tanks', JSON.stringify(snapshot.tanks));
-  localStorage.setItem('fuelpro_products', JSON.stringify(snapshot.products));
-  localStorage.setItem('fuelpro_banks', JSON.stringify(snapshot.banks));
-  localStorage.setItem('fuelpro_shifts', JSON.stringify(snapshot.shifts));
-  localStorage.setItem(`fuelpro_journal_entries_${stationId}`, JSON.stringify(snapshot.journalEntries));
+  await safeSetItem('fuelpro_customers', JSON.stringify(snapshot.customers));
+  await safeSetItem('fuelpro_suppliers', JSON.stringify(snapshot.suppliers));
+  await safeSetItem('fuelpro_tanks', JSON.stringify(snapshot.tanks));
+  await safeSetItem('fuelpro_products', JSON.stringify(snapshot.products));
+  await safeSetItem('fuelpro_banks', JSON.stringify(snapshot.banks));
+  await safeSetItem('fuelpro_shifts', JSON.stringify(snapshot.shifts));
+  await safeSetItem(`fuelpro_journal_entries_${stationId}`, JSON.stringify(snapshot.journalEntries));
 
   return {
     success: true,
@@ -177,7 +178,7 @@ export async function restoreFromSnapshot(
 
 /** List all available snapshots for a station. */
 export async function listSnapshots(stationId: string): Promise<SnapshotMeta[]> {
-  const raw = localStorage.getItem(_snapshotIndexKey(stationId));
+  const raw = await safeGetItem(_snapshotIndexKey(stationId));
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
@@ -187,15 +188,15 @@ export async function listSnapshots(stationId: string): Promise<SnapshotMeta[]> 
 
 /** Get a specific snapshot. */
 export async function getSnapshot(stationId: string, date: string): Promise<DisasterRecoverySnapshot | null> {
-  const raw = localStorage.getItem(_snapshotKey(stationId, date));
+  const raw = await safeGetItem(_snapshotKey(stationId, date));
   if (!raw) return null;
   try { return JSON.parse(raw); } catch { return null; }
 }
 
 // ─── Internal ─────────────────────────────────────────────────────────────────
 
-function _readKey<T>(key: string, fallback: T): T {
-  const raw = localStorage.getItem(key);
+async function _readKey<T>(key: string, fallback: T): Promise<T> {
+  const raw = await safeGetItem(key);
   if (!raw) return fallback;
   try { return JSON.parse(raw) ?? fallback; } catch { return fallback; }
 }

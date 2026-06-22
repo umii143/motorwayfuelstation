@@ -45,14 +45,31 @@ class SyncEngineClass {
     private listeners: ((state: { pending: number; failed: number; isOnline: boolean; isProcessing: boolean }) => void)[] = [];
     private isOnline = true;
 
-    async start() {
-        if (this.initialized) return;
-
-        // Load queue from storage
-        const storedQueue = await localforage.getItem<MutationQueueItem[]>(QUEUE_KEY);
+    private async loadQueue() {
+        let storedQueue: MutationQueueItem[] | null = null;
+        try {
+            storedQueue = await localforage.getItem<MutationQueueItem[]>(QUEUE_KEY);
+        } catch (e) {
+            console.warn('SyncEngine localforage load failed:', e);
+        }
+        
+        if (!storedQueue && typeof localStorage !== 'undefined') {
+            try {
+                const lsQueue = localStorage.getItem(QUEUE_KEY);
+                if (lsQueue) storedQueue = JSON.parse(lsQueue);
+            } catch (e) {}
+        }
+        
         if (storedQueue) {
             this.queue = storedQueue;
         }
+        this.notifyListeners();
+    }
+
+    async start() {
+        if (this.initialized) return;
+
+        await this.loadQueue();
 
         // Initialize Network listener
         const status = await Network.getStatus();
@@ -206,7 +223,8 @@ class SyncEngineClass {
             }
         }
         
-        await localforage.setItem(QUEUE_KEY, this.queue);
+        await localforage.setItem(QUEUE_KEY, this.queue).catch(() => {});
+        try { if (typeof localStorage !== 'undefined') localStorage.setItem(QUEUE_KEY, JSON.stringify(this.queue)); } catch(e) {}
     }
 
     private async logIntegrityDrift(item: MutationQueueItem) {
@@ -219,9 +237,10 @@ class SyncEngineClass {
             resolved: false
         };
 
-        const existingLogs = await localforage.getItem<IntegrityDriftLog[]>(INTEGRITY_LOG_KEY) || [];
+        const existingLogs = await localforage.getItem<IntegrityDriftLog[]>(INTEGRITY_LOG_KEY).catch(() => null) || [];
         existingLogs.push(log);
-        await localforage.setItem(INTEGRITY_LOG_KEY, existingLogs);
+        await localforage.setItem(INTEGRITY_LOG_KEY, existingLogs).catch(() => {});
+        try { if (typeof localStorage !== 'undefined') localStorage.setItem(INTEGRITY_LOG_KEY, JSON.stringify(existingLogs)); } catch(e) {}
     }
 
     getQueueStatus() {

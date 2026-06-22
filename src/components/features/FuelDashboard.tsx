@@ -33,6 +33,7 @@ interface FuelDashboardProps {
   onNavigate: (view: string) => void;
   onStartShiftQuick?: () => void;
   userName: string;
+  onToggleV2?: () => void;
 }
 
 // LUXURY ENTERPRISE ANIMATION VARIANTS
@@ -58,7 +59,8 @@ export default React.memo(function FuelDashboard({
   stockTxns,
   onNavigate,
   onStartShiftQuick,
-  userName
+  userName,
+  onToggleV2
 }: FuelDashboardProps) {
 
   const todayStr = new Date().toISOString().split('T')[0];
@@ -209,7 +211,20 @@ export default React.memo(function FuelDashboard({
       const hour = (8 + i) % 24; // 8 AM to 7 PM
       const ampm = hour >= 12 ? 'PM' : 'AM';
       const formattedHour = hour % 12 === 0 ? 12 : hour % 12;
-      return { time: `${formattedHour} ${ampm}`, revenue: Math.floor(Math.random() * 5000) + 1000 }; // Placeholder for aesthetic
+      let revenue = 0;
+      
+      todayShifts.forEach((shift: any) => {
+        const startHour = shift.time ? parseInt(shift.time.split(':')[0]) : 8;
+        let endHour = shift.endTime ? parseInt(shift.endTime.split(':')[0]) : new Date().getHours();
+        if (endHour <= startHour) endHour = startHour + 1; // At least 1 hour duration assumption
+        const duration = endHour - startHour;
+        
+        if (hour >= startHour && hour < endHour) {
+          revenue += (shift.totalSales || 0) / duration;
+        }
+      });
+      
+      return { time: `${formattedHour} ${ampm}`, revenue: Math.round(revenue) };
     });
 
     // Performance Metrics (Radar)
@@ -280,6 +295,11 @@ export default React.memo(function FuelDashboard({
              {!activeShift && (
                <button onClick={onStartShiftQuick} className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-xl text-xs font-bold border border-orange-500 hover:border-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.3)] transition-all">
                  Start Shift
+               </button>
+             )}
+             {onToggleV2 && (
+               <button onClick={onToggleV2} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold border border-indigo-500 hover:border-indigo-400 shadow-[0_0_15px_rgba(79,70,229,0.3)] transition-all hidden lg:block">
+                 Try Enterprise Widget Studio (V2)
                </button>
              )}
              <button onClick={() => onNavigate?.('shifts')} className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold border border-white/10 transition-colors">

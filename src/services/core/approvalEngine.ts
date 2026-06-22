@@ -5,6 +5,8 @@
  * Powered by Umar Ali ⚡
  */
 
+import { safeGetItem, safeSetItem } from './coreStorage';
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type ApprovalRole = 'auto' | 'cashier' | 'manager' | 'owner';
@@ -75,7 +77,7 @@ const _rulesKey = (stationId: string) => `fuelpro_approval_rules_${stationId}`;
 
 /** Get approval rules for a station (uses defaults if not customized). */
 export async function getApprovalRules(stationId: string): Promise<ApprovalRule[]> {
-  const raw = localStorage.getItem(_rulesKey(stationId));
+  const raw = await safeGetItem(_rulesKey(stationId));
   if (!raw) return DEFAULT_RULES;
   try { return JSON.parse(raw) ?? DEFAULT_RULES; } catch { return DEFAULT_RULES; }
 }
@@ -160,7 +162,7 @@ export async function createApprovalRequest(
 
   const all = await getAllApprovalRequests(stationId);
   all.push(request);
-  _persistRequests(stationId, all);
+  await _persistRequests(stationId, all);
   return request;
 }
 
@@ -182,7 +184,7 @@ export async function approveTransaction(
     reviewedAt: new Date().toISOString(),
     justification,
   };
-  _persistRequests(stationId, all);
+  await _persistRequests(stationId, all);
   return all[idx];
 }
 
@@ -204,7 +206,7 @@ export async function rejectTransaction(
     reviewedAt: new Date().toISOString(),
     rejectionReason: reason,
   };
-  _persistRequests(stationId, all);
+  await _persistRequests(stationId, all);
   return all[idx];
 }
 
@@ -235,13 +237,13 @@ export async function isTransactionApproved(
 
 /** Get all approval requests. */
 export async function getAllApprovalRequests(stationId: string): Promise<ApprovalRequest[]> {
-  const raw = localStorage.getItem(_requestsKey(stationId));
+  const raw = await safeGetItem(_requestsKey(stationId));
   if (!raw) return [];
   try { return JSON.parse(raw) ?? []; } catch { return []; }
 }
 
 // ─── Storage Helpers ──────────────────────────────────────────────────────────
 
-function _persistRequests(stationId: string, requests: ApprovalRequest[]): void {
-  localStorage.setItem(_requestsKey(stationId), JSON.stringify(requests));
+async function _persistRequests(stationId: string, requests: ApprovalRequest[]): Promise<void> {
+  await safeSetItem(_requestsKey(stationId), JSON.stringify(requests));
 }

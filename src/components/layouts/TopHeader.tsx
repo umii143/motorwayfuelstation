@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, Globe, ChevronDown, Search, Bell, Fuel, Sun, Moon, Settings, Palette, Store, Cylinder } from 'lucide-react';
+import { Menu, Globe, ChevronDown, Search, Bell, Fuel, Sun, Moon, Settings, Palette, Store, Cylinder, BrainCircuit } from 'lucide-react';
 import { GlobalSettings, Station } from '../../types';
 
 interface TopHeaderProps {
@@ -180,7 +180,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             title="Ask Jarvis"
             className="absolute right-1.5 p-1.5 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-full hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-500 dark:hover:text-white transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+            <BrainCircuit className="w-4 h-4 text-orange-500 group-hover:text-white transition-colors" />
           </button>
         </div>
 

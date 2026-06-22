@@ -5,6 +5,8 @@
  * Powered by Umar Ali ⚡
  */
 
+import { safeGetItem, safeSetItem } from './coreStorage';
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type TreasuryAccountType =
@@ -89,13 +91,13 @@ export async function initTreasuryAccounts(stationId: string): Promise<TreasuryA
     lastUpdated: now,
   }));
 
-  _persistAccounts(stationId, accounts);
+  await _persistAccounts(stationId, accounts);
   return accounts;
 }
 
 /** Get all treasury accounts for a station. */
 export async function getTreasuryAccounts(stationId: string): Promise<TreasuryAccount[]> {
-  const raw = localStorage.getItem(_accountsKey(stationId));
+  const raw = await safeGetItem(_accountsKey(stationId));
   if (!raw) return [];
   try { return JSON.parse(raw) ?? []; } catch { return []; }
 }
@@ -126,7 +128,7 @@ export async function recordCashIn(
 
   accounts[idx].balance += amount;
   accounts[idx].lastUpdated = new Date().toISOString();
-  _persistAccounts(stationId, accounts);
+  await _persistAccounts(stationId, accounts);
 
   await _appendLedgerLine(stationId, {
     id: `tl_in_${txnId}`,
@@ -163,7 +165,7 @@ export async function recordCashOut(
 
   accounts[idx].balance -= amount;
   accounts[idx].lastUpdated = new Date().toISOString();
-  _persistAccounts(stationId, accounts);
+  await _persistAccounts(stationId, accounts);
 
   await _appendLedgerLine(stationId, {
     id: `tl_out_${txnId}`,
@@ -243,12 +245,12 @@ export async function getTreasuryBalance(stationId: string, linkedAccountId: str
 
 // ─── Storage Helpers ──────────────────────────────────────────────────────────
 
-function _persistAccounts(stationId: string, accounts: TreasuryAccount[]): void {
-  localStorage.setItem(_accountsKey(stationId), JSON.stringify(accounts));
+async function _persistAccounts(stationId: string, accounts: TreasuryAccount[]): Promise<void> {
+  await safeSetItem(_accountsKey(stationId), JSON.stringify(accounts));
 }
 
 async function _getAllLedgerLines(stationId: string): Promise<TreasuryLedgerLine[]> {
-  const raw = localStorage.getItem(_ledgerKey(stationId));
+  const raw = await safeGetItem(_ledgerKey(stationId));
   if (!raw) return [];
   try { return JSON.parse(raw) ?? []; } catch { return []; }
 }
@@ -256,5 +258,5 @@ async function _getAllLedgerLines(stationId: string): Promise<TreasuryLedgerLine
 async function _appendLedgerLine(stationId: string, line: TreasuryLedgerLine): Promise<void> {
   const all = await _getAllLedgerLines(stationId);
   all.push(line);
-  localStorage.setItem(_ledgerKey(stationId), JSON.stringify(all));
+  await safeSetItem(_ledgerKey(stationId), JSON.stringify(all));
 }

@@ -5,6 +5,8 @@
  * Powered by Umar Ali ⚡
  */
 
+import { safeGetItem, safeSetItem } from './coreStorage';
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type LedgerType =
@@ -97,7 +99,7 @@ export async function postToLedger(
   // Append to the ledger
   const allLines = await _getAllLedgerLines(stationId, ledgerType);
   allLines.push(line);
-  _persistLedger(stationId, ledgerType, allLines);
+  await _persistLedger(stationId, ledgerType, allLines);
 
   return line;
 }
@@ -261,7 +263,7 @@ export async function getLedgerByShift(shiftId: string, stationId: string): Prom
 
 async function _getAllLedgerLines(stationId: string, ledgerType: LedgerType): Promise<LedgerLine[]> {
   const key = _ledgerKey(stationId, ledgerType);
-  const raw = localStorage.getItem(key);
+  const raw = await safeGetItem(key);
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
@@ -271,7 +273,7 @@ async function _getAllLedgerLines(stationId: string, ledgerType: LedgerType): Pr
   }
 }
 
-function _persistLedger(stationId: string, ledgerType: LedgerType, lines: LedgerLine[]): void {
+async function _persistLedger(stationId: string, ledgerType: LedgerType, lines: LedgerLine[]): Promise<void> {
   const key = _ledgerKey(stationId, ledgerType);
-  localStorage.setItem(key, JSON.stringify(lines));
+  await safeSetItem(key, JSON.stringify(lines));
 }

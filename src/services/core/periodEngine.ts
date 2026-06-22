@@ -5,6 +5,8 @@
  * Powered by Umar Ali ⚡
  */
 
+import { safeGetItem, safeSetItem } from './coreStorage';
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type PeriodStatus = 'open' | 'closing' | 'closed' | 'locked';
@@ -73,7 +75,7 @@ export async function getOrCreatePeriod(
   };
 
   all.push(period);
-  _persistPeriods(stationId, all);
+  await _persistPeriods(stationId, all);
   return period;
 }
 
@@ -118,7 +120,7 @@ export async function closePeriod(
     ...summary,
   };
 
-  _persistPeriods(stationId, all);
+  await _persistPeriods(stationId, all);
   return all[idx];
 }
 
@@ -141,7 +143,7 @@ export async function lockPeriod(
     lockedAt: new Date().toISOString(),
   };
 
-  _persistPeriods(stationId, all);
+  await _persistPeriods(stationId, all);
   return all[idx];
 }
 
@@ -153,7 +155,7 @@ export async function getCurrentPeriod(stationId: string): Promise<AccountingPer
 
 /** List all periods for a station. */
 export async function listPeriods(stationId: string): Promise<AccountingPeriod[]> {
-  const raw = localStorage.getItem(_periodsKey(stationId));
+  const raw = await safeGetItem(_periodsKey(stationId));
   if (!raw) return [];
   try { return JSON.parse(raw) ?? []; } catch { return []; }
 }
@@ -166,6 +168,6 @@ export async function getPeriod(stationId: string, periodId: string): Promise<Ac
 
 // ─── Storage Helper ───────────────────────────────────────────────────────────
 
-function _persistPeriods(stationId: string, periods: AccountingPeriod[]): void {
-  localStorage.setItem(_periodsKey(stationId), JSON.stringify(periods));
+async function _persistPeriods(stationId: string, periods: AccountingPeriod[]): Promise<void> {
+  await safeSetItem(_periodsKey(stationId), JSON.stringify(periods));
 }

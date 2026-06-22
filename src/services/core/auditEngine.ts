@@ -6,6 +6,8 @@
  */
 
 import { useAuthStore } from '../../stores/useAuthStore';
+import { safeGetItem, safeSetItem } from './coreStorage';
+import localforage from 'localforage';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -107,9 +109,9 @@ export async function logShiftEvent(
   };
 
   const key = _timelineKey(stationId, shiftId);
-  const existing = _readKey<ShiftEvent[]>(key, []);
+  const existing = await _readKey<ShiftEvent[]>(key, []);
   existing.push(event);
-  localStorage.setItem(key, JSON.stringify(existing));
+  await safeSetItem(key, JSON.stringify(existing));
 
   return event;
 }
@@ -139,9 +141,9 @@ export async function logSecurityEvent(
     userAgent: navigator.userAgent,
   };
 
-  const existing = _readKey<SecurityEvent[]>(_securityKey(stationId), []);
+  const existing = await _readKey<SecurityEvent[]>(_securityKey(stationId), []);
   existing.push(event);
-  localStorage.setItem(_securityKey(stationId), JSON.stringify(existing));
+  await safeSetItem(_securityKey(stationId), JSON.stringify(existing));
 
   return event;
 }
@@ -150,8 +152,8 @@ export async function logSecurityEvent(
  * Get full operational timeline for a shift.
  */
 export async function getShiftTimeline(shiftId: string, stationId: string): Promise<ShiftEvent[]> {
-  return _readKey<ShiftEvent[]>(_timelineKey(stationId, shiftId), [])
-    .sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  const events = await _readKey<ShiftEvent[]>(_timelineKey(stationId, shiftId), []);
+  return events.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
 }
 
 /**
@@ -161,7 +163,7 @@ export async function getSecurityEvents(
   stationId: string,
   severityFilter?: SecurityEvent['severity']
 ): Promise<SecurityEvent[]> {
-  const all = _readKey<SecurityEvent[]>(_securityKey(stationId), []);
+  const all = await _readKey<SecurityEvent[]>(_securityKey(stationId), []);
   if (severityFilter) return all.filter(e => e.severity === severityFilter);
   return all.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
 }
@@ -176,10 +178,19 @@ export async function getEventsByDateRange(
 ): Promise<ShiftEvent[]> {
   // Collect all timeline keys and aggregate
   const all: ShiftEvent[] = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key?.startsWith(`fuelpro_timeline_${stationId}_`)) {
-      const events = _readKey<ShiftEvent[]>(key, []);
+  const keys = new Set<string>();
+  const lfKeys = await localforage.keys();
+  lfKeys.forEach(k => keys.add(k));
+  if (typeof localStorage !== 'undefined') {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k) keys.add(k);
+    }
+  }
+
+  for (const key of keys) {
+    if (key.startsWith(`fuelpro_timeline_${stationId}_`)) {
+      const events = await _readKey<ShiftEvent[]>(key, []);
       events.forEach(e => {
         if (e.timestamp >= fromDate && e.timestamp <= toDate + 'T23:59:59') {
           all.push(e);
@@ -200,8 +211,8 @@ export function formatEventForDisplay(event: ShiftEvent): string {
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
 
-function _readKey<T>(key: string, fallback: T): T {
-  const raw = localStorage.getItem(key);
+async function _readKey<T>(key: string, fallback: T): Promise<T> {
+  const raw = await safeGetItem(key);
   if (!raw) return fallback;
   try { return JSON.parse(raw) ?? fallback; } catch { return fallback; }
 }

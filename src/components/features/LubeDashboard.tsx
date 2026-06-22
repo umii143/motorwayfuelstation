@@ -25,6 +25,7 @@ interface LubeDashboardProps {
   banks: BankAccount[];
   stockTxns: StockTransaction[];
   onNavigate: (view: string) => void;
+  onToggleV2?: () => void;
 }
 
 // LUXURY ENTERPRISE ANIMATION VARIANTS
@@ -46,7 +47,8 @@ export default React.memo(function LubeDashboard({
   suppliers,
   banks,
   stockTxns,
-  onNavigate
+  onNavigate,
+  onToggleV2
 }: LubeDashboardProps) {
 
   const [timeRange, setTimeRange] = useState('today');
@@ -320,6 +322,11 @@ export default React.memo(function LubeDashboard({
         </div>
 
         <div className="flex items-center gap-3">
+          {onToggleV2 && (
+            <button onClick={onToggleV2} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold border border-indigo-500 hover:border-indigo-400 shadow-[0_0_15px_rgba(79,70,229,0.3)] transition-all hidden lg:block">
+              Try Enterprise Widget Studio (V2)
+            </button>
+          )}
           <button className="flex items-center gap-2 px-4 py-2.5 bg-white/50 dark:bg-white/[0.05] hover:bg-white/80 dark:hover:bg-white/[0.1] border border-slate-200 dark:border-white/10 rounded-full text-sm font-semibold transition-colors backdrop-blur-xl shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
             <span className={textPrimary}>Branch: Main</span>
             <ChevronDown className={`w-4 h-4 ${textSubtle}`} />

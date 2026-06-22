@@ -7,6 +7,7 @@
 
 import { JournalEntry } from '../../types';
 import { db } from '../../data/db';
+import { safeGetItem, safeSetItem } from './coreStorage';
 
 // ─── Account Chart ────────────────────────────────────────────────────────────
 
@@ -130,7 +131,7 @@ export async function lockJournalEntry(journalId: string, stationId: string): Pr
   const updated = entries.map(e =>
     e.id === journalId ? { ...e, isLocked: true } : e
   );
-  _persistJournalEntries(stationId, updated);
+  await _persistJournalEntries(stationId, updated);
 }
 
 /**
@@ -143,7 +144,7 @@ export async function lockShiftJournals(shiftId: string, stationId: string): Pro
       ? { ...e, isLocked: true }
       : e
   );
-  _persistJournalEntries(stationId, updated);
+  await _persistJournalEntries(stationId, updated);
 }
 
 /**
@@ -197,7 +198,7 @@ export async function getRunningBalance(
  * Get all journal entries for a station, sorted by date ascending.
  */
 export async function getAllJournalEntries(stationId: string): Promise<JournalEntry[]> {
-  const raw = localStorage.getItem(`fuelpro_journal_entries_${stationId}`);
+  const raw = await safeGetItem(`fuelpro_journal_entries_${stationId}`);
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
@@ -213,9 +214,9 @@ async function _saveJournalEntries(stationId: string, newEntries: JournalEntry[]
   const existing = await getAllJournalEntries(stationId);
   const existingIds = new Set(existing.map(e => e.id));
   const toAdd = newEntries.filter(e => !existingIds.has(e.id));
-  _persistJournalEntries(stationId, [...existing, ...toAdd]);
+  await _persistJournalEntries(stationId, [...existing, ...toAdd]);
 }
 
-function _persistJournalEntries(stationId: string, entries: JournalEntry[]): void {
-  localStorage.setItem(`fuelpro_journal_entries_${stationId}`, JSON.stringify(entries));
+async function _persistJournalEntries(stationId: string, entries: JournalEntry[]): Promise<void> {
+  await safeSetItem(`fuelpro_journal_entries_${stationId}`, JSON.stringify(entries));
 }

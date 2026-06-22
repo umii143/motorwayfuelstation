@@ -37,6 +37,7 @@ import { eventBus, EOC_EVENTS } from './eventBus';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { countShiftReversals } from './reversalEngine';
 import { getPendingApprovals } from './approvalEngine';
+import { safeGetItem, safeSetItem } from './coreStorage';
 
 // ─── EOC Transaction ──────────────────────────────────────────────────────────
 
@@ -85,11 +86,11 @@ export interface ShiftClosePayload { submittedCash: number; expectedCash: number
 const _txnKey = (stationId: string) => `fuelpro_eoc_transactions_${stationId}`;
 
 async function _saveTxn(stationId: string, txn: EOCTransaction): Promise<void> {
-  const raw = localStorage.getItem(_txnKey(stationId));
+  const raw = await safeGetItem(_txnKey(stationId));
   const all: EOCTransaction[] = raw ? JSON.parse(raw) : [];
   const idx = all.findIndex(t => t.id === txn.id);
   if (idx !== -1) all[idx] = txn; else all.push(txn);
-  localStorage.setItem(_txnKey(stationId), JSON.stringify(all));
+  await safeSetItem(_txnKey(stationId), JSON.stringify(all));
 }
 
 function _makeTxnId(type: EOCTxnType): string {
@@ -362,7 +363,7 @@ export async function processReversal(
   const reversal = await reverseTransaction(originalTxnId, reason, user.name, stationId, branchId, shiftId);
 
   // Mark original txn as archived
-  const raw = localStorage.getItem(_txnKey(stationId));
+  const raw = await safeGetItem(_txnKey(stationId));
   if (raw) {
     const all: EOCTransaction[] = JSON.parse(raw);
     const idx = all.findIndex(t => t.id === originalTxnId);
@@ -370,7 +371,7 @@ export async function processReversal(
       all[idx].status = 'archived';
       all[idx].reversedAt = new Date().toISOString();
       all[idx].reversalId = reversal.id;
-      localStorage.setItem(_txnKey(stationId), JSON.stringify(all));
+      await safeSetItem(_txnKey(stationId), JSON.stringify(all));
     }
   }
 
@@ -420,7 +421,7 @@ export async function processShiftClose(
 
   // Integrity Score (daily)
   const date = shift.date;
-  computeIntegrityScore(stationId, date, [recon], {
+  await computeIntegrityScore(stationId, date, [recon], {
     pendingApprovals: pendingApprovals.length,
     reversalCount: reversals,
   });
@@ -438,7 +439,7 @@ export async function processShiftClose(
 
 /** Get all EOC transactions for a shift. */
 export async function getShiftTransactions(shiftId: string, stationId: string): Promise<EOCTransaction[]> {
-  const raw = localStorage.getItem(_txnKey(stationId));
+  const raw = await safeGetItem(_txnKey(stationId));
   if (!raw) return [];
   const all: EOCTransaction[] = JSON.parse(raw);
   return all.filter(t => t.shiftId === shiftId).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
@@ -446,7 +447,7 @@ export async function getShiftTransactions(shiftId: string, stationId: string): 
 
 /** Get all pending transactions (pending approval). */
 export async function getPendingTransactions(stationId: string): Promise<EOCTransaction[]> {
-  const raw = localStorage.getItem(_txnKey(stationId));
+  const raw = await safeGetItem(_txnKey(stationId));
   if (!raw) return [];
   const all: EOCTransaction[] = JSON.parse(raw);
   return all.filter(t => t.status === 'pending_approval');
