@@ -302,7 +302,7 @@ export default React.memo(function FuelDashboard({
                  Try Enterprise Widget Studio (V2)
                </button>
              )}
-             <button onClick={() => onNavigate?.('shifts')} className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold border border-white/10 transition-colors">
+             <button onClick={() => onNavigate?.('shift_logs')} className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold border border-white/10 transition-colors">
                Shift Logs
              </button>
              <button className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors">

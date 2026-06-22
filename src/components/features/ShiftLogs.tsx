@@ -14,7 +14,10 @@ import {
   FolderOpen,
   BrainCircuit,
   ShieldAlert,
-  Flame
+  Flame,
+  Globe,
+  Settings,
+  X
 } from 'lucide-react';
 import { Shift, Staff, Customer, Supplier, BankAccount, DigitalAccount, Product, Tank, Nozzle, GlobalSettings } from '../../types';
 import { t as translate } from '../../lib/translations';
@@ -526,8 +529,6 @@ function KpiCard({ icon, iconBg, border, title, value, onClick }: any) {
     </div>
   );
 }
-
-import { X } from 'lucide-react';
 
 function GlobalTransactionModal({ title, onClose, items, columns }: any) {
   return (

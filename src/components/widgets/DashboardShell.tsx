@@ -71,7 +71,7 @@ export function DashboardShell({ onStartShiftQuick, onNavigate }: { onStartShift
                 Start Shift
               </button>
             )}
-            <button onClick={() => onNavigate?.('shifts')} className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold border border-white/10 transition-colors">
+            <button onClick={() => onNavigate?.('shift_logs')} className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold border border-white/10 transition-colors">
               Shift Logs
             </button>
             <button 

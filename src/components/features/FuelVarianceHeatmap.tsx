@@ -12,7 +12,7 @@ export function FuelVarianceHeatmap({ tanks, shifts, nozzles }: FuelVarianceHeat
   // Get last 7 closed shifts (or fewer if not available)
   const last7Shifts = useMemo(() => {
     return [...shifts]
-      .filter(s => s.status === 'closed' && s.date)
+      .filter(s => s.status === 'closed' && s.date && !isNaN(new Date(s.date).getTime()))
       .sort((a, b) => new Date(b.date!).getTime() - new Date(a.date!).getTime())
       .slice(0, 7)
       .reverse(); // chronological order left to right
@@ -83,7 +83,7 @@ export function FuelVarianceHeatmap({ tanks, shifts, nozzles }: FuelVarianceHeat
                 <th key={idx} className="px-3 py-3 text-center w-24">
                   <div className="flex flex-col items-center justify-center gap-1">
                     <CalendarIcon className="w-3.5 h-3.5 opacity-50" />
-                    {new Date(shift.date!).toLocaleDateString(undefined, { weekday: 'short' })}
+                    {!isNaN(new Date(shift.date!).getTime()) ? new Date(shift.date!).toLocaleDateString(undefined, { weekday: 'short' }) : '---'}
                   </div>
                 </th>
               ))}
