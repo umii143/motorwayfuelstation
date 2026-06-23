@@ -10,7 +10,7 @@ interface UseSmartSearchOptions {
   onNavigate?: (result: SearchResult) => void;
 }
 
-export function useSmartSearch(options: UseSmartSearchOptions = {}) {
+export function useSmartSearch(options: UseSmartSearchOptions = { /* empty */ }) {
   const { module, debounceMs = 300, maxResults = 20, onNavigate } = options;
 
   const [query, setQuery] = useState('');

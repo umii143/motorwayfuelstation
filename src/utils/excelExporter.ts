@@ -11,17 +11,20 @@ interface ExcelExportOptions {
   fileName: string;
   sheetName?: string;
   columns: ExportColumn[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[];
   title?: string;
 }
 
 export const exportToExcel = ({ fileName, sheetName = 'Sheet1', columns, data, title }: ExcelExportOptions) => {
   // Extract headers
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const headers = columns.map(col => col.header);
   
   // Format data
   const formattedData = data.map(item => {
-    const row: any = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const row: any = { /* empty */ };
     columns.forEach(col => {
       row[col.header] = item[col.key];
     });

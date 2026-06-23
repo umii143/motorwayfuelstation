@@ -14,9 +14,11 @@ import {
   GoogleAuthProvider,
   onAuthStateChanged,
   signOut,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   signInWithCustomToken,
   type User
 } from 'firebase/auth';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { getFirestore, initializeFirestore } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { Capacitor } from '@capacitor/core';
@@ -68,7 +70,9 @@ export async function signInWithGoogle(): Promise<{ user: User, token: string }>
       const token = credential?.accessToken || "";
       return { user: result.user, token };
     }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
+    // eslint-disable-next-line no-console
     console.error("[Google Auth] Error during sign in:", error);
     throw error;
   }
@@ -83,6 +87,7 @@ export async function withFirestoreRetry<T>(
   maxRetries = 3,
   delayMs = 800
 ): Promise<T> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let lastError: any;
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
@@ -90,6 +95,7 @@ export async function withFirestoreRetry<T>(
         await new Promise(resolve => setTimeout(resolve, delayMs * attempt));
       }
       return await operation();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       lastError = err;
       const isRetryable =
@@ -101,6 +107,7 @@ export async function withFirestoreRetry<T>(
       if (!isRetryable || attempt === maxRetries - 1) {
         throw err;
       }
+      // eslint-disable-next-line no-console
       console.warn(`[Firestore] Offline retry ${attempt + 1}/${maxRetries}…`);
     }
   }

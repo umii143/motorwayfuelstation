@@ -5,9 +5,9 @@
  */
 import React, { useState, useMemo } from 'react';
 import {
-  AlertTriangle, Plus, Check, X, Clock, ChevronDown, ChevronUp,
-  FileText, Building2, RefreshCw, CheckCircle, XCircle,
-  BarChart2, TrendingUp, ShieldAlert, Award, AlertCircle
+  AlertTriangle, Plus, Check, Clock, ChevronDown, ChevronUp,
+  FileText, Building2, CheckCircle, XCircle,
+  BarChart2, TrendingUp, ShieldAlert
 } from 'lucide-react';
 import { SupplierClaim, StockBatch, Supplier } from '../../../types';
 import { useInventoryStore } from '../../../stores/useInventoryStore';
@@ -245,6 +245,8 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
       resolvedDate: (['recovered', 'approved', 'rejected', 'partial'].includes(newStatus))
         ? new Date().toISOString().split('T')[0] : undefined,
       notes: notes || claim.notes,
+       
+      // eslint-disable-next-line react-hooks/purity
       updatedAt: Date.now(),
     };
     await handleUpdateSupplierClaim(updated);
@@ -374,7 +376,9 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
             </div>
 
             <div>
+              { }
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">{t('Claim Type *', 'کلیم قسم *')}</label>
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               <select value={newClaim.claimType} onChange={e => setNewClaim(prev => ({ ...prev, claimType: e.target.value as any }))} className={selectCls}>
                 {Object.entries(CLAIM_TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>

@@ -3,9 +3,9 @@ import {
   X, LayoutDashboard, RefreshCw, History, Users, Factory, 
   BookOpen, Landmark, Smartphone, Fuel, TrendingDown, 
   FileBarChart, Building, Building2, Wrench, DollarSign, Settings,
-  Shield, CreditCard, MessageCircle, Database, AlertTriangle,
+  Shield, CreditCard, MessageCircle, Database,
   Sun, Moon, Globe, LogOut, Users2, Tag, Droplets, ShieldCheck, 
-  Sparkles, LineChart, Briefcase, ShieldAlert, BarChart3, Truck, ArrowRightLeft, Link, ChevronDown, Zap, Camera, Store
+  Sparkles, LineChart, Briefcase, ShieldAlert, BarChart3, Truck, ArrowRightLeft, Link, ChevronDown, Zap, Camera
 } from 'lucide-react';
 import { GlobalSettings, Station } from '../../types';
 import { t } from '../../lib/translations';
@@ -43,7 +43,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
   onSwitchStation,
   onCreateStation
 }) => {
-  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({ /* empty */ });
   const [isStationMenuOpen, setIsStationMenuOpen] = useState(false);
 
   const activeStation = stations.find(s => s.id === activeStationId) || stations[0];
@@ -250,6 +250,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
                         
                         {expanded && (
                           <div className="mt-1 ml-4 space-y-1 border-l border-slate-200 dark:border-white/10 pl-2">
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                             {item.children.map((child: any) => {
                               if (isLubeBusiness && !child.showInLube) return null;
                               if (child.ownerOnly && !isSuperAdmin) return null;

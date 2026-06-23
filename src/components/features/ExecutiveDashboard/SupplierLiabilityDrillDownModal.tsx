@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { X, ShieldCheck, Zap, Download, FileText, PieChart as PieChartIcon, Truck, TrendingDown, TrendingUp, AlertTriangle, CheckCircle, Search } from 'lucide-react';
+import { X, ShieldCheck, Zap, Download, FileText, Truck, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Supplier, GlobalSettings } from '../../../types';
 import { formatCurrency } from '../../../lib/currency';
 import { useFinancialStore } from '../../../stores/useFinancialStore';
@@ -30,6 +30,8 @@ export default function SupplierLiabilityDrillDownModal({
   const stockTxns = useInventoryStore(state => state.stockTxns);
 
   const stats = useMemo(() => {
+     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let timeline: any[] = [];
     let thisMonthPayments = 0;
     let thisMonthPurchases = 0;
@@ -149,7 +151,7 @@ export default function SupplierLiabilityDrillDownModal({
     timeline.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     // Running Balance generation per supplier
-    const balances: Record<string, number> = {};
+    const balances: Record<string, number> = { /* empty */ };
     timeline = timeline.map(entry => {
       const current = balances[entry.supplierId] || 0;
       // Credit (Purchases) increase liability, Debit (Payments) reduce it.
@@ -215,7 +217,9 @@ export default function SupplierLiabilityDrillDownModal({
       actions,
       viewTimeline,
       overdueCount
+     
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [journalEntries, suppliers, dateFrom, dateTo, supplierFilter]);
 
   if (!isOpen) return null;

@@ -45,7 +45,7 @@ export default function BusinessIntelligenceDashboard() {
       <BIDateFilter filter={filter} setFilter={setFilter} products={products} />
 
       {/* ROW 1: KPI Cards */}
-      <BIMasterKPIs metrics={metrics} settings={{}} />
+      <BIMasterKPIs metrics={metrics} settings={{ /* empty */ }} />
 
       {/* ROW 2: Charts */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 mb-6">

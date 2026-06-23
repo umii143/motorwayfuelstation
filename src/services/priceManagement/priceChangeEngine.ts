@@ -8,9 +8,11 @@ export const priceChangeEngine = {
     tanks: Tank[],
     newPrice: number,
     userId: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     reason: any = 'Manual Correction',
     orgId?: string,
     stationId?: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     attachments: any[] = []
   ) => {
     // 1. Calculate Impact first to get oldPrice cleanly

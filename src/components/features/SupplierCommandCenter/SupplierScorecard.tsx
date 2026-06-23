@@ -5,9 +5,9 @@
  */
 import React, { useMemo, useState } from 'react';
 import {
-  Star, TrendingUp, TrendingDown, Award, AlertTriangle,
-  Truck, BarChart2, Package, CheckCircle, XCircle,
-  ChevronDown, ChevronUp, ShieldCheck, Zap, Crown
+  Star, Award, AlertTriangle,
+  Truck, BarChart2, XCircle,
+  ChevronDown, ChevronUp, ShieldCheck, Crown
 } from 'lucide-react';
 import { StockBatch, Supplier, SupplierClaim } from '../../../types';
 import { calculateSupplierScore } from '../../../services/fifoEngine';
@@ -124,6 +124,8 @@ const GRADE_CONFIG: Record<string, { bg: string; text: string; ring: string; lab
 
 function ScoreRing({ score, grade }: { score: number; grade: string }) {
   const cfg = GRADE_CONFIG[grade] || GRADE_CONFIG['C'];
+   
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const GradeIcon = cfg.icon;
   const circumference = 2 * Math.PI * 38;
   const offset = circumference - (score / 100) * circumference;

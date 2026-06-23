@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Wallet, FileText, AlertCircle } from 'lucide-react';
+import { User } from 'lucide-react';
 import { Customer, Shift, Product, GlobalSettings, LubePosSale } from '../../../types';
 import { t as translate } from '../../../lib/translations';
 import CustomerDirectory from './CustomerDirectory';
@@ -59,6 +59,7 @@ export default function CustomerIntelligenceCenter({
           return (
             <button
               key={tab.id}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-sans text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
                 isActive 

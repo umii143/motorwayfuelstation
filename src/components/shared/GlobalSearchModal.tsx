@@ -1,12 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 import { useSmartSearch } from '../../hooks/useSmartSearch';
-import { useKeyboardShortcut, SHORTCUTS } from '../../hooks/useKeyboardShortcut';
+import { useKeyboardShortcut } from '../../hooks/useKeyboardShortcut';
 import { SearchResultCard } from './SearchResultCard';
 import { COMMAND_ACTIONS } from './CommandPalette';
 
 interface GlobalSearchModalProps {
   isOpen: boolean;
   onClose: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onNavigate: (viewId: string, contextData?: any) => void;
 }
 

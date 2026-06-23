@@ -1,14 +1,17 @@
 import { useState } from 'react';
-import { generateWhatsAppLink, nativeWebShare, formatPhoneForDisplay } from '../utils/whatsappShare';
+import { generateWhatsAppLink, nativeWebShare } from '../utils/whatsappShare';
 import { getWhatsAppTemplate, WhatsAppTemplateType } from '../utils/whatsappTemplates';
 import { fileStorageService } from '../services/fileStorage.service';
 
 export interface WhatsAppShareState {
   isOpen: boolean;
   documentType: WhatsAppTemplateType;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   documentData: any;
   pdfBlob?: Blob;
   pdfFileName?: string;
+   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pdfDocument?: React.ReactElement<any, any>;
 }
 
@@ -16,14 +19,17 @@ export const useWhatsAppShare = () => {
   const [shareState, setShareState] = useState<WhatsAppShareState>({
     isOpen: false,
     documentType: 'custom',
-    documentData: {}
+    documentData: { /* empty */ }
   });
 
   const openShareModal = (
     documentType: WhatsAppTemplateType, 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     documentData: any, 
     pdfBlob?: Blob, 
     pdfFileName?: string,
+     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     pdfDocument?: React.ReactElement<any, any>
   ) => {
     setShareState({

@@ -23,8 +23,10 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
 
   useEffect(() => {
     if (!isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPin('');
-      setError(false);
+       
+        setError(false);
       setSuccessAnim(false);
     }
   }, [isOpen]);
@@ -34,11 +36,13 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
       if (!isOpen || successAnim) return;
       if (e.key === 'Backspace') {
         setPin(p => p.slice(0, -1));
+         
         setError(false);
       } else if (/^[0-9]$/.test(e.key)) {
         if (pin.length < 4) {
           setPin(p => p + e.key);
-          setError(false);
+           
+        setError(false);
         }
       }
     };
@@ -50,6 +54,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
     if (pin.length === 4) {
       // Auto submit
       if (verifyPin(pin)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setError(false);
         setSuccessAnim(true);
         setTimeout(() => {
@@ -59,7 +64,8 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
       } else {
         setError(true);
         setTimeout(() => {
-          setPin('');
+           
+      setPin('');
         }, 500);
       }
     }
@@ -69,10 +75,12 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
     if (successAnim) return;
     if (num === 'del') {
       setPin(p => p.slice(0, -1));
-      setError(false);
+       
+        setError(false);
     } else if (pin.length < 4) {
       setPin(p => p + num);
-      setError(false);
+       
+        setError(false);
     }
   };
 

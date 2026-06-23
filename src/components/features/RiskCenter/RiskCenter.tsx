@@ -1,12 +1,13 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useStation } from '../../../contexts/StationContext';
-import { generateKPIs } from '../../../services/analytics/kpiEngine';
 import { forecastFuelDemand } from '../../../services/analytics/demandForecastEngine';
-import { ShieldAlert, AlertTriangle, AlertOctagon, TrendingDown, Clock, Scale, BrainCircuit, Sparkles, Activity, CheckCircle2, ChevronRight, Truck, MessageSquareWarning, Search } from 'lucide-react';
+import { AlertTriangle, AlertOctagon, TrendingDown, BrainCircuit, Sparkles, Activity, CheckCircle2, Truck, MessageSquareWarning, Search } from 'lucide-react';
 import RoleGuard from '../../ui/RoleGuard';
 import { aiAssistantService } from '../../../services/aiAssistantService';
 
 export const RiskCenter: React.FC = () => {
+   
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { shifts, products, customers, tanks, nozzles, activeStationId, staff } = useStation();
 
   const forecasts = useMemo(() => forecastFuelDemand(shifts, tanks, nozzles, activeStationId), [shifts, tanks, nozzles, activeStationId]);
@@ -41,7 +42,9 @@ export const RiskCenter: React.FC = () => {
         Operational Risks: ${operationalRisks.length} shifts with massive variance.`;
         
         const response = await aiAssistantService.askQuestion(prompt, null, 'chat');
+         
         setAiInsight(response.rawResponse.replace(/⚡ Powered by Umar Ali ⚡/g, '').trim());
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (e) {
         setAiInsight('Immediate attention required on critical inventory and financial exposures. System recommends halting credit lines.');
       } finally {
@@ -50,8 +53,10 @@ export const RiskCenter: React.FC = () => {
     };
     
     if (inventoryRisks.length > 0 || financialRisks.length > 0 || operationalRisks.length > 0) {
+       
       analyzeRisks();
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAiInsight('All systems stable. Predictor engine shows zero immediate enterprise vulnerabilities. Keep it up.');
       setIsAnalyzing(false);
     }

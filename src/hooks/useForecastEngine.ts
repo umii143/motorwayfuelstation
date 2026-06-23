@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Shift, Tank, Product } from '../types';
 import { GlobalSettings } from '../types';
+import { ForecastResult, ForecastInput } from '../workers/forecast.worker';
 
 export function useForecastEngine(shifts: Shift[], tanks: Tank[], products: Product[], settings?: GlobalSettings) {
   const [forecast, setForecast] = useState<ForecastResult | null>(null);
@@ -31,7 +32,7 @@ export function useForecastEngine(shifts: Shift[], tanks: Tank[], products: Prod
           totalVolume: 0,
           totalProfit: 0,
           txnCount: 0,
-          productVolumes: {}
+          productVolumes: { /* empty */ }
         });
       }
 
@@ -56,9 +57,16 @@ export function useForecastEngine(shifts: Shift[], tanks: Tank[], products: Prod
         });
       } else {
         // Legacy fallback
-        const anyShift = shift as any;
-        if (anyShift.nozzleReadings) {
-          anyShift.nozzleReadings.forEach((nr: any) => {
+        const legacyShift = shift as Shift & {
+          nozzleReadings?: {
+            closingReading: number;
+            openingReading: number;
+            productId?: string;
+            rate?: number;
+          }[]
+        };
+        if (legacyShift.nozzleReadings) {
+          legacyShift.nozzleReadings.forEach((nr) => {
             const vol = nr.closingReading > 0 ? Math.max(0, nr.closingReading - nr.openingReading) : 0;
             day.totalVolume += vol;
             if (nr.productId) {
@@ -86,9 +94,11 @@ export function useForecastEngine(shifts: Shift[], tanks: Tank[], products: Prod
       if (s.segments && s.segments.length > 0) {
         s.segments.forEach(seg => { shiftVolume += seg.litersSold || 0; });
       } else {
-        const anyShift = s as any;
-        if (anyShift.nozzleReadings) {
-          anyShift.nozzleReadings.forEach((nr: any) => {
+        const legacyShift = s as Shift & {
+          nozzleReadings?: { closingReading: number; openingReading: number }[]
+        };
+        if (legacyShift.nozzleReadings) {
+          legacyShift.nozzleReadings.forEach((nr) => {
             const vol = nr.closingReading > 0 ? Math.max(0, nr.closingReading - nr.openingReading) : 0;
             shiftVolume += vol;
           });

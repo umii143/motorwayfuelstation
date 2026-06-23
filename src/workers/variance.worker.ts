@@ -8,7 +8,7 @@ self.onmessage = (e: MessageEvent) => {
   const { summary } = e.data;
   
   let totalSystemVariance = 0;
-  const nozzleLosses: Record<string, number> = {};
+  const nozzleLosses: Record<string, number> = { /* empty */ };
   const tankDeviations: string[] = [];
   
   const len = summary.shifts?.length || 0;

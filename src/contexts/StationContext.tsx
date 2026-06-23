@@ -271,6 +271,7 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
   const setDigitalAccounts = useFinancialStore((state) => state.setDigitalAccounts);
   const setStandaloneExpenses = useFinancialStore((state) => state.setStandaloneExpenses);
   const setLubePosSales = useFinancialStore((state) => state.setLubePosSales);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const setJournalEntries = useFinancialStore((state) => state.setJournalEntries);
 
   const handleAddBank = (b: BankAccount) => useFinancialStore.getState().handleAddBank(b, orgId, activeStationId);

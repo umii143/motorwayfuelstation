@@ -4,19 +4,16 @@ import {
   X, 
   TrendingUp, 
   TrendingDown, 
-  Clock, 
   AlertTriangle,
   History,
   Activity,
-  CheckCircle,
   Database,
-  Search,
-  Filter
+  Search
 } from 'lucide-react';
 import { useStation } from '../../../contexts/StationContext';
 import { formatCurrency } from '../../../lib/currency';
-import { GlobalSettings, Shift, Staff } from '../../../types';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
+import { GlobalSettings } from '../../../types';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 interface ShiftDrillDownModalProps {
   isOpen: boolean;
@@ -54,11 +51,11 @@ export default function ShiftDrillDownModal({
     let totalCashCollected = 0;
     let totalShortage = 0;
     let totalOverage = 0;
-    let totalShifts = processedShifts.length;
+    const totalShifts = processedShifts.length;
     let closedShifts = 0;
     let activeShifts = 0;
     
-    const staffPerformance: Record<string, { totalCash: number; shortage: number; overage: number; shifts: number }> = {};
+    const staffPerformance: Record<string, { totalCash: number; shortage: number; overage: number; shifts: number }> = { /* empty */ };
 
     processedShifts.forEach(shift => {
       totalCashCollected += shift.submittedCash || 0;

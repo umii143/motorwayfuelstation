@@ -5,6 +5,7 @@ import { useTankMetrics } from '../../../hooks/useTankMetrics';
 function TankHealthContent() {
   const { tanks } = useTankMetrics();
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const liquidGlass = "relative overflow-hidden backdrop-blur-[30px] saturate-[150%] bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/[0.08] shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_20px_80px_rgba(0,0,0,0.6)] rounded-[24px]";
 
   return (

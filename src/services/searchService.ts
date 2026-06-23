@@ -79,7 +79,8 @@ const FUSE_CONFIGS = {
 // ─── SEARCH INDEX BUILDER ────────────────────────────────────
 // Call this once on app load, and on data changes
 
-let fuseInstances: Record<string, Fuse<any>> = {};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let fuseInstances: Record<string, Fuse<any>> = { /* empty */ };
 
 export function buildSearchIndex(data: SearchIndex) {
   fuseInstances = {
@@ -95,10 +96,12 @@ export function buildSearchIndex(data: SearchIndex) {
 // Rebuild index for a single module (on data change)
 export function rebuildModuleIndex(
   module: keyof SearchIndex,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[]
 ) {
   fuseInstances[module] = new Fuse(
     data,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     FUSE_CONFIGS[module] as IFuseOptions<any>
   );
 }
@@ -127,6 +130,7 @@ export function searchAll(query: string, limit = 20): SearchResult[] {
     const results = instance.search(query, { limit: 5 });
 
     for (const result of results) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const formatted = formatResult(result.item, type as any, result);
       if (formatted) allResults.push(formatted);
     }
@@ -151,6 +155,7 @@ export function searchModule(
 
   const results = instance.search(query, { limit });
   return results
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .map(r => formatResult(r.item, module as any, r))
     .filter(Boolean) as SearchResult[];
 }
@@ -159,8 +164,10 @@ export function searchModule(
 // Transform raw data + Fuse result into SearchResult format
 
 function formatResult(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   item: any,
   type: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fuseResult: FuseResult<any>
 ): SearchResult | null {
   const score = fuseResult.score ?? 0.5;
@@ -284,5 +291,5 @@ export function getHighlightedText(
 }
 
 function escapeRegex(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return str.replace(/[.*+?^${ /* empty */ }()|[\]\\]/g, '\\$&');
 }

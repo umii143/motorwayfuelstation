@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Database, AlertTriangle, ArrowRight, CheckCircle, RefreshCw, UploadCloud } from 'lucide-react';
+import { AlertTriangle, ArrowRight, CheckCircle, RefreshCw, UploadCloud } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { firestoreDb } from '../../data/firestore';
 import { db } from '../../data/db';
@@ -79,6 +79,8 @@ export default function LocalStorageMigrationWizard() {
       const expL = db.getStandaloneExpenses('st_lube').length;
       const lubeSales = db.getLubePosSales('st_lube').length;
 
+       
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSummary({
         staffCount: staffF + staffL,
         productCount: prodF + prodL,
@@ -182,7 +184,9 @@ export default function LocalStorageMigrationWizard() {
         setShowWizard(false);
         window.location.reload(); // Refresh to hook up all real-time Firestore syncs
       }, 2000);
+     
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error(err);
       setMigrationState('error');
     }

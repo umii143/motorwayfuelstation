@@ -1,6 +1,7 @@
 import React from 'react';
 import { CreditCard, PieChart } from 'lucide-react';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function BIPaymentCostBreakdown({ metrics }: any) {
   const { paymentBreakdown, costs } = metrics;
 

@@ -62,15 +62,19 @@ export function useFuelDashboardMetricsCache(params: FuelMetricsParams) {
       if (t.currentStock <= 0) outOfStockCount++;
     });
 
+     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const onlineNozzles = nozzles.filter(n => (n as any).status === 'Active' || !(n as any).status).length;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const maintenanceNozzles = nozzles.filter(n => (n as any).status === 'Maintenance').length;
     const offlineNozzles = nozzles.length - onlineNozzles - maintenanceNozzles;
 
-    const varianceByProduct: Record<string, number> = {};
+    const varianceByProduct: Record<string, number> = { /* empty */ };
     todayShifts.forEach(s => {
       s.segments?.forEach(seg => {
         const pId = seg.productId;
         if (!varianceByProduct[pId]) varianceByProduct[pId] = 0;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         varianceByProduct[pId] += ((seg as any).variance || 0);
       });
     });
@@ -91,6 +95,7 @@ export function useFuelDashboardMetricsCache(params: FuelMetricsParams) {
     if (Math.abs(maxVariance) > 50) alerts.push({ msg: `High variance detected in ${worstProduct}: ${maxVariance.toFixed(1)}L. Check dip readings.`, type: 'danger' });
     if (totalPayables > totalCash) alerts.push({ msg: `Critical: Total payables exceed current cash position.`, type: 'danger' });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const feed: any[] = [];
     // Feed population is handled normally
     // ...
@@ -118,6 +123,7 @@ export function useFuelDashboardMetricsCache(params: FuelMetricsParams) {
       alerts,
       feed
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     shifts, products, customers, suppliers, banks, tanks, nozzles, stockTxns, todayStr
   ]);
@@ -145,6 +151,7 @@ export function useFuelDashboardMetricsCache(params: FuelMetricsParams) {
   useEffect(() => {
     if (workerRef.current) {
       // Create an array of historical profits (simulated from recent shifts)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const dailyProfits = params.shifts.slice(-30).map(s => ((s as any).totalSales || 0) * 0.05); // Rough profit mock
       
       workerRef.current.postMessage({

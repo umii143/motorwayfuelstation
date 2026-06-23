@@ -2,6 +2,8 @@ import React from "react";
 import { Camera, Network } from "lucide-react";
 import { GlobalSettings } from "../../types";
 
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function CCTVIntegration({ settings }: { settings: GlobalSettings }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white flex flex-col p-8 items-center justify-center text-center">
@@ -11,7 +13,9 @@ export function CCTVIntegration({ settings }: { settings: GlobalSettings }) {
     </div>
   );
 }
+  
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function APIGateway({ settings }: { settings: GlobalSettings }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white flex flex-col p-8 items-center justify-center text-center">

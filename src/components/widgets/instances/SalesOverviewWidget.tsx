@@ -46,7 +46,7 @@ export function SalesOverviewWidget() {
             <Tooltip 
               contentStyle={{ backgroundColor: '#0F172A', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px' }}
               itemStyle={{ color: '#fff', fontSize: '12px', fontWeight: 'bold' }}
-              formatter={(value: number) => [formatCurrency(value, settings), 'Revenue']}
+              formatter={(value: any) => [formatCurrency(value, settings), 'Revenue']}
             />
             <Area type="monotone" dataKey="revenue" stroke="#F97316" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
           </AreaChart>

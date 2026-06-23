@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { WhatsAppProvider, WhatsAppPayload } from './whatsappProvider';
 import { SmsProvider } from './smsProvider';
 import { EmailProvider } from './emailProvider';
@@ -33,6 +34,7 @@ export class CommunicationManager {
           throw new Error('Unsupported communication channel');
       }
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error(`Failed to send message via ${channel}:`, err);
       return false;
     }

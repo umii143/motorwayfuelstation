@@ -147,10 +147,12 @@ export default function Reports({
   const [reconciledShiftIds, setReconciledShiftIds] = useState<string[]>(() =>
     db.getReconciledShiftIds(activeStationId)
   );
+  const [prevStationId, setPrevStationId] = useState(activeStationId);
 
-  useEffect(() => {
+  if (activeStationId !== prevStationId) {
+    setPrevStationId(activeStationId);
     setReconciledShiftIds(db.getReconciledShiftIds(activeStationId));
-  }, [activeStationId]);
+  }
 
   const handleToggleReconcile = (shiftId: string) => {
     const isReconciled = reconciledShiftIds.includes(shiftId);
@@ -232,20 +234,20 @@ export default function Reports({
     const list: { category: string; amount: number; description: string; date: string; paidFrom: string }[] = [];
     standaloneExpenses.forEach(exp => {
       list.push({
-        category: exp.category,
+        category: exp.category || 'Uncategorized',
         amount: exp.amount,
-        description: exp.description,
-        date: exp.date,
+        description: exp.description || '',
+        date: exp.date || '',
         paidFrom: exp.paidFrom
       });
     });
     shifts.forEach(s => {
       s.expenseEntries.forEach(e => {
         list.push({
-          category: e.category,
+          category: e.category || 'Uncategorized',
           amount: e.amount,
-          description: e.description,
-          date: s.date,
+          description: e.description || '',
+          date: s.date || '',
           paidFrom: 'cash'
         });
       });
@@ -260,10 +262,10 @@ export default function Reports({
       });
     });
     return list;
-  }, [shifts, standaloneExpenses, staffFinance, staff]);
+  }, [shifts, standaloneExpenses, staffFinance, staff, t]);
 
   const pricingRevaluationImpact = useMemo(() => {
-    return rateHistory.reduce((sum, entry) => sum + entry.impactAmount, 0);
+    return rateHistory.reduce((sum, entry) => sum + (entry.impactAmount || 0), 0);
   }, [rateHistory]);
 
   // Aggregate stats per date for visual Area Chart
@@ -349,7 +351,7 @@ export default function Reports({
       { name: t('HSD Diesel', 'ڈیزل HSD'), Litres: dieselLiters },
       { name: t('CNG Gas', 'سی این جی'), Litres: cngKgs }
     ];
-  }, [shifts, nozzles]);
+  }, [shifts, nozzles, products, t]);
 
   const summaryTotals = useMemo(() => {
     const totalSales = statsTimelineData.reduce((sum, item) => sum + item.Sales, 0);
@@ -441,8 +443,8 @@ export default function Reports({
   const sortedRows = useMemo(() => {
     if (!sortField) return filteredRows;
     return [...filteredRows].sort((a, b) => {
-      const aVal = a[sortField];
-      const bVal = b[sortField];
+      const aVal = (a as any)[sortField];
+      const bVal = (b as any)[sortField];
 
       if (typeof aVal === 'number' && typeof bVal === 'number') {
         return sortAscending ? aVal - bVal : bVal - aVal;
@@ -456,7 +458,7 @@ export default function Reports({
   // Compute live aggregates of active report
   const tableAggregates = useMemo(() => {
     let sumAmount = 0;
-    let recordsCount = sortedRows.length;
+    const recordsCount = sortedRows.length;
 
     sortedRows.forEach(r => {
       if (typeof r.amount === 'number') {
@@ -477,7 +479,7 @@ export default function Reports({
     const headers = activeTemplate.headers.map(h => h.label).join(',');
     const csvLines = sortedRows.map(r => {
       return activeTemplate.headers.map(h => {
-        let v = r[h.key as keyof ReportRow] || '';
+        let v = (r as any)[h.key] || '';
         // escape string commas
         if (typeof v === 'string') v = `"${v.replace(/"/g, '""')}"`;
         return v;

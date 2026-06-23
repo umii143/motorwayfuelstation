@@ -83,6 +83,7 @@ export async function initTreasuryAccounts(stationId: string): Promise<TreasuryA
   if (existing.length > 0) return existing;
 
   const now = new Date().toISOString();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const accounts: TreasuryAccount[] = DEFAULT_ACCOUNTS.map((def, i) => ({
     ...def,
     id: `tac_${stationId}_${def.accountType}`,

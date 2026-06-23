@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
-  X,
   Share2,
   Edit2,
   MoreVertical,
@@ -13,11 +12,9 @@ import {
   Printer,
   Flag,
   RotateCcw,
-  History,
   Info
 } from 'lucide-react';
-import { GlobalSettings, Shift, Staff, Product, Customer, Supplier, BankAccount, DigitalAccount, Nozzle } from '../../types';
-import { useInventoryStore } from '../../stores/useInventoryStore';
+import { Shift, Staff, Product, Customer, Supplier, BankAccount, DigitalAccount, Nozzle } from '../../types';
 
 interface ShiftDetailsDrawerProps {
   shift: Shift;
@@ -29,6 +26,8 @@ interface ShiftDetailsDrawerProps {
   banks: BankAccount[];
   digitalAccounts: DigitalAccount[];
   nozzles: Nozzle[];
+   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   settings: any;
 }
 
@@ -100,7 +99,9 @@ export function ShiftDetailsDrawer({
       }
     });
   }
+  
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const totalFuelSold = petrolSold + dieselSold;
   const totalSales = petrolRevenue + dieselRevenue;
   
@@ -357,8 +358,10 @@ export function ShiftDetailsDrawer({
       </div>
     </div>
   );
+ 
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function FinancialCard({ title, amount, icon, bg }: any) {
   return (
     <div className="p-4 bg-white dark:bg-[#111827] rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
@@ -370,9 +373,11 @@ function FinancialCard({ title, amount, icon, bg }: any) {
         <div className="font-bold text-slate-900 dark:text-white text-sm">{amount}</div>
       </div>
     </div>
+   
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ProgressBar({ label, value, color, amount }: any) {
   return (
     <div className="flex items-center gap-4 text-sm">
@@ -382,10 +387,12 @@ function ProgressBar({ label, value, color, amount }: any) {
       </div>
       <div className="w-12 text-right text-xs text-slate-500 dark:text-slate-400">{value}%</div>
       <div className="w-24 text-right font-medium text-slate-900 dark:text-white text-xs">{amount}</div>
+    { }
     </div>
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function PaymentRow({ icon, label, amount, percent }: any) {
   return (
     <div className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-slate-800/50 last:border-0">
@@ -398,11 +405,13 @@ function PaymentRow({ icon, label, amount, percent }: any) {
         <div className="px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 min-w-[40px] text-center">
           {percent}
         </div>
+      { }
       </div>
     </div>
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ActionButton({ icon, label, color, border }: any) {
   return (
     <button className={`flex items-center justify-center gap-2 p-3 rounded-xl border bg-white dark:bg-[#111827] hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${border} ${color}`}>

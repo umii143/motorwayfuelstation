@@ -66,6 +66,10 @@ export interface Product extends TenantDocument {
   sellingPrice?: number;
   dealerMarginPerUnit?: number;
   currentDealerMargin?: number;
+  
+  // Backward compatibility / UI requirements
+  purchaseRate?: number;
+  currentRate?: number;
 }
 
 export interface Nozzle extends TenantDocument {
@@ -350,6 +354,13 @@ export interface Shift extends TenantDocument {
   shortage: number;
   overage: number;
   cashVariance?: number;
+  
+  // Backward compatibility / UI requirements
+  cashierName?: string;
+  totalSales?: number;
+  time?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  pumpReadings?: any;
 }
 
 export interface ReceiptLine {
@@ -738,6 +749,7 @@ export interface Tank extends TenantDocument {
   currentStock: number;
   openingStock: number;
   physicalLabel?: string;
+  calibrationDue?: string;
   dipChart: { cm: number; liters: number }[];
 }
 

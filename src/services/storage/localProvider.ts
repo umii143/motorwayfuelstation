@@ -47,6 +47,7 @@ export class LocalProvider implements StorageProvider {
     return attachment.url;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async deleteFile(attachment: Attachment): Promise<void> {
     // In this mock, there's nothing to delete since the data URI is 
     // stored directly in the database record of RateHistoryEntry.

@@ -113,7 +113,7 @@ export default function PartyLedgerModal({
   const [activePreset, setActivePreset] = useState('all');
   const [searchText, setSearchText] = useState('');
   const debouncedSearchText = useDebounce(searchText, 300);
-  const [isPending, startTransition] = React.useTransition();
+  const [isPending] = React.useTransition();
   const [visibleLimit, setVisibleLimit] = useState(100);
 
   const accentClasses = {

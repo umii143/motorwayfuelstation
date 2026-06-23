@@ -26,16 +26,27 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const controls = useAnimation();
-  const y = useRef(0);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(min-width: 1024px)').matches;
+    }
+    return false;
+  });
 
   useEffect(() => {
     const media = window.matchMedia('(min-width: 1024px)');
-    setIsDesktop(media.matches);
     const listener = () => setIsDesktop(media.matches);
     media.addEventListener('change', listener);
     return () => media.removeEventListener('change', listener);
   }, []);
+
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (!isOpen) {
+      setIsFullscreen(false);
+    }
+  }
 
   useEffect(() => {
     if (isOpen) {
@@ -43,7 +54,6 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       controls.start('visible');
       document.body.style.overflow = 'hidden';
     } else {
-      setIsFullscreen(false);
       document.body.style.overflow = '';
     }
     return () => {

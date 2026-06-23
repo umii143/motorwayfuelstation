@@ -17,6 +17,7 @@ interface RecentItemsState {
 
 export const useRecentItemsStore = create<RecentItemsState>()(
   persist(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     (set, get) => ({
       items: [],
       addItem: (newItem) => {

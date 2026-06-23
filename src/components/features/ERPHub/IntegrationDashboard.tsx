@@ -7,6 +7,8 @@ interface IntegrationDashboardProps {
   stationId: string;
 }
 
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function IntegrationDashboard({ settings, stationId }: IntegrationDashboardProps) {
   const integrations = [
     { id: 1, name: 'SAP S/4HANA', type: 'ERP', status: 'connected', lastSync: '2 mins ago', nextSync: 'In 13 mins' },

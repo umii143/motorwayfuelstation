@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { AlertTriangle, Droplet, TrendingDown, Thermometer, ShieldAlert, FileText, Download } from 'lucide-react';
+import { AlertTriangle, Droplet, TrendingDown, Thermometer, ShieldAlert, Download } from 'lucide-react';
 import { GlobalSettings } from '../../../types';
 
 interface Props {
@@ -7,6 +7,8 @@ interface Props {
   stationId: string;
 }
 
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function TransitShrinkageTracker({ settings, stationId }: Props) {
   // Generate historical delivery datasets for demonstration
   const deliveries = useMemo(() => {
@@ -85,7 +87,7 @@ export default function TransitShrinkageTracker({ settings, stationId }: Props) 
                 const loss = del.dispatched - del.decanted;
                 const percentage = parseFloat(getLossPercentage(del.dispatched, del.decanted));
                 
-                let isCritical = percentage > 0.5; // Above 0.5% is considered critical theft/loss
+                const isCritical = percentage > 0.5; // Above 0.5% is considered critical theft/loss
                 
                 return (
                   <tr key={del.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">

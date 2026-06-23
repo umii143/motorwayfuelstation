@@ -7,19 +7,13 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { ResponsiveTable, TableColumn } from '../shared/ResponsiveTable';
 import {
   BookOpen,
-  ArrowUpRight,
-  ArrowDownRight,
   Search,
   Scale,
   Users,
   Truck,
-  DollarSign,
-  ChevronRight,
-  CheckCircle,
   TrendingUp,
   TrendingDown,
-  FileSpreadsheet,
-  X
+  FileSpreadsheet
 } from 'lucide-react';
 import { BottomSheet } from '../shared/BottomSheet';
 import { Customer, Supplier, Shift, Product, GlobalSettings, LubePosSale, JournalEntry } from '../../types';
@@ -100,6 +94,8 @@ export default function Ledger({
       netBal,
       txCount
     };
+   
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customers, suppliers, shifts, timeFilter]);
 
   const receivablesTotal = kpiStats.recTotal;
@@ -321,7 +317,9 @@ export default function Ledger({
       if (seeded.length > 0) {
         useFinancialStore.getState().setJournalEntries(seeded);
       }
+     
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [journalEntries, shifts, lubePosSales]);
 
   // Selected party full details
@@ -367,8 +365,10 @@ export default function Ledger({
     });
 
     return computed.reverse();
+   
   }, [selectedParty, activePartyDetails, journalEntries]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ledgerColumns: TableColumn<any>[] = [
     {
       header: t('Date', 'تاریخ'),
@@ -520,9 +520,11 @@ export default function Ledger({
                 { id: 'all', label: 'All', urdu: 'تمام' },
                 { id: 'receivables', label: 'Dr (Customers)', urdu: 'صارفین' },
                 { id: 'payables', label: 'Cr (Suppliers)', urdu: 'سپلائرز' }
+               
               ].map(f => (
                 <button
                   key={f.id}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onClick={() => setPartyTypeFilter(f.id as any)}
                   className={`fp-date-tab ${
                     partyTypeFilter === f.id

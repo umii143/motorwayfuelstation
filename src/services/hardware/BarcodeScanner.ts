@@ -1,8 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 import { 
   BarcodeScanner as MLKitScanner, 
-  BarcodeFormat, 
-  LensFacing 
+  BarcodeFormat
 } from '@capacitor-mlkit/barcode-scanning';
 
 export class NativeBarcodeScanner {
@@ -45,8 +44,8 @@ export class NativeBarcodeScanner {
         formats,
       });
 
-      return result.barcodes.length > 0 ? result.barcodes[0].rawValue : null;
-    } catch (error: any) {
+      return result.barcodes.length > 0 ? (result.barcodes[0].rawValue || null) : null;
+    } catch (error: unknown) {
       console.error("Scanning failed:", error);
       throw error;
     } finally {
@@ -60,7 +59,7 @@ export class NativeBarcodeScanner {
   static async toggleTorch(): Promise<void> {
     if (!Capacitor.isNativePlatform()) return;
     try {
-      const res = await MLKitScanner.isTorchEnabled() as any;
+      const res = await MLKitScanner.isTorchEnabled() as { enabled?: boolean; isEnabled?: boolean };
       if (res.enabled || res.isEnabled) {
         await MLKitScanner.disableTorch();
       } else {

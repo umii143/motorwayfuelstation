@@ -12,6 +12,8 @@ interface AddSupplierModalProps {
 }
 
 export function AddSupplierModal({ settings, onClose, onAdd }: AddSupplierModalProps) {
+   
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const t = (en: string, ur: string) => translate(en, ur, settings);
 
   const [name, setName] = useState('');
@@ -92,7 +94,9 @@ export function AddSupplierModal({ settings, onClose, onAdd }: AddSupplierModalP
                     <input type="text" value={urduName} onChange={e => setUrduName(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-hidden focus:border-blue-500 transition-colors font-urdu" dir="rtl" placeholder="پاکستان سٹیٹ آئل" />
                   </div>
                   <div>
+                    { }
                     <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Supplier Type</label>
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     <select value={supplierType} onChange={e => setSupplierType(e.target.value as any)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-hidden focus:border-blue-500 transition-colors">
                       <option value="Fuel Supplier">Fuel Supplier</option>
                       <option value="Lubricant Supplier">Lubricant Supplier</option>

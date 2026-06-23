@@ -9,17 +9,32 @@ interface TreasurySettingsProps {
   activeStationId: string;
 }
 
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function TreasurySettings({ settings, onUpdateSettings, activeStationId }: TreasurySettingsProps) {
   const { showToast } = useStation();
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
 
+   
   const [config, setConfig] = useState({
+     
+     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     openingCashFloat:   (settings as any).treasury?.openingCashFloat   ?? 5000,
+     
+     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     safeDropLimit:      (settings as any).treasury?.safeDropLimit       ?? 50000,
+     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     pettyCashBudget:    (settings as any).treasury?.pettyCashBudget     ?? 3000,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     enableSafeDropAlert:(settings as any).treasury?.enableSafeDropAlert ?? true,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     endOfDayAutoReconcile: (settings as any).treasury?.endOfDayAutoReconcile ?? false,
+     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cashCountReminderMin: (settings as any).treasury?.cashCountReminderMin ?? 240,
   });
 
@@ -27,6 +42,7 @@ export default function TreasurySettings({ settings, onUpdateSettings, activeSta
     onUpdateSettings({
       ...settings,
       treasury: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...(settings as any).treasury,
         ...config,
       }

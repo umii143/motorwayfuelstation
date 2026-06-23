@@ -47,6 +47,7 @@ export const NativeAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     try {
       const info = await BiometricAuth.checkBiometry();
       if (!info.isAvailable) {
+        // eslint-disable-next-line no-console
         console.warn("Biometrics not available on device");
         return false; // Real device without biometry fails security check
       }
@@ -58,6 +59,7 @@ export const NativeAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       // The promise resolves if authenticated, rejects if failed or canceled.
       return true;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error("Biometric error:", error);
       // FAILED AUTHENTICATION
       return false; 

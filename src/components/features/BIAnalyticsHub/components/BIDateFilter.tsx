@@ -10,15 +10,17 @@ export interface BIFilter {
 interface BIDateFilterProps {
   filter: BIFilter;
   setFilter: (filter: BIFilter) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   products: any[];
 }
 
 export function BIDateFilter({ filter, setFilter, products }: BIDateFilterProps) {
   
   const handlePreset = (preset: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const today = new Date();
     let start = new Date();
-    let end = new Date();
+    const end = new Date();
     
     switch (preset) {
       case 'today':

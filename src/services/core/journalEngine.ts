@@ -6,6 +6,7 @@
  */
 
 import { JournalEntry } from '../../types';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { db } from '../../data/db';
 import { safeGetItem, safeSetItem } from './coreStorage';
 

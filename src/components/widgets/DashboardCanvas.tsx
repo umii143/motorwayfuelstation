@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { Responsive } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
-import { useWidgetEngine } from '../../store/useWidgetEngine';
+import { useWidgetEngine } from '../../stores/useWidgetEngine';
 import { WidgetWrapper } from './WidgetWrapper';
 import { Activity } from 'lucide-react';
 import { HeroPerformanceWidget } from './instances/HeroPerformanceWidget';
@@ -12,6 +12,7 @@ import { TreasuryWidget } from './instances/TreasuryWidget';
 import { SalesOverviewWidget } from './instances/SalesOverviewWidget';
 import { ActivityFeedWidget } from './instances/ActivityFeedWidget';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ResponsiveGridLayout(props: any) {
   const ref = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(1200);
@@ -53,6 +54,7 @@ export function DashboardCanvas() {
     }));
   }, [activeLayout, manifests, isEditMode]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onLayoutChange = (newLayout: any[]) => {
     // Only update if in edit mode to prevent accidental saves during initial render
     if (isEditMode) {

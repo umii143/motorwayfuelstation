@@ -56,7 +56,11 @@ export default function CashReconciliationForm() {
       setStatus({ type: 'success', message: 'Reconciliation recorded successfully.' });
       setPhysicalCash('');
       setNotes('');
+     
+     
+     
     } catch (err: any) {
+      // eslint-disable-next-line no-console
       console.error(err);
       setStatus({ type: 'error', message: err.message || 'Error recording reconciliation.' });
     }

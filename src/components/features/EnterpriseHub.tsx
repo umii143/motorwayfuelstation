@@ -43,6 +43,8 @@ export default function EnterpriseHub({ settings, activeModule = "fleet", statio
   // Sync tab if the prop changes from outside routing
   useEffect(() => {
     if (activeModule) {
+       
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentTab(activeModule);
     }
   }, [activeModule]);

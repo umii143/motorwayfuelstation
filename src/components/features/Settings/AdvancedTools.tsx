@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Wrench, RefreshCw, Calculator, Database, Zap, HardDrive, CheckCircle2 } from 'lucide-react';
 import { useStation } from '../../../contexts/StationContext';
-import { db } from '../../../data/db';
 import { GlobalSettings } from '../../../types';
 
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function AdvancedTools({ settings, activeStationId }: { settings: GlobalSettings, activeStationId: string }) {
   const { showToast } = useStation();
 

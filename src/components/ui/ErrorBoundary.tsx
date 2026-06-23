@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import React, { ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
@@ -22,6 +22,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // In production, you'd send this to an error tracking service (e.g., Sentry)
+    // eslint-disable-next-line no-console
     console.error('[ErrorBoundary] Caught an error:', error, errorInfo);
   }
 

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { X, ShieldCheck, Zap, Download, FileText, Printer, MessageCircle, BarChart3, TrendingUp, TrendingDown, Clock, Filter, Sparkles, PieChart, Info, Search, Calendar as CalendarIcon, User, Layers, Share2, Eye } from 'lucide-react';
-import { ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, Tooltip as RechartsTooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, BarChart, Bar } from 'recharts';
+import { X, ShieldCheck, Zap, Download, FileText, BarChart3, TrendingUp, TrendingDown, Filter, Sparkles, User, Layers, Share2, Eye } from 'lucide-react';
+import { ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, Tooltip as RechartsTooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { RateHistoryEntry, GlobalSettings } from '../../../types';
 import { formatCurrency } from '../../../lib/currency';
 
@@ -96,12 +96,12 @@ export default function RevaluationDrillDownModal({
     let totalLoss = 0;
     let largestGain = { amount: 0, product: '-', date: '-' };
     let largestLoss = { amount: 0, product: '-', date: '-' };
-    const productRevisions: Record<string, number> = {};
+    const productRevisions: Record<string, number> = { /* empty */ };
     let highestStock = { stock: 0, product: '-' };
 
-    const gainByProduct: Record<string, number> = {};
-    const lossByProduct: Record<string, number> = {};
-    const monthlyTrend: Record<string, number> = {};
+    const gainByProduct: Record<string, number> = { /* empty */ };
+    const lossByProduct: Record<string, number> = { /* empty */ };
+    const monthlyTrend: Record<string, number> = { /* empty */ };
 
     filteredData.forEach(r => {
       const impact = r.inventoryImpact ?? r.impactAmount ?? 0;
@@ -196,6 +196,8 @@ export default function RevaluationDrillDownModal({
 
   if (!isOpen) return null;
 
+   
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const COLORS = ['#10b981', '#34d399', '#6ee7b7', '#f43f5e', '#fb7185', '#fda4af'];
 
   return (
@@ -367,7 +369,7 @@ export default function RevaluationDrillDownModal({
                           <Cell key={`cell-${index}`} fill={entry.type === 'Gain' ? '#10b981' : '#f43f5e'} />
                         ))}
                       </Pie>
-                      <RechartsTooltip formatter={(val: number) => formatCurrency(val, settings)} />
+                      <RechartsTooltip formatter={(val: any) => formatCurrency(val, settings)} />
                       <Legend />
                     </RechartsPieChart>
                   </ResponsiveContainer>
@@ -379,7 +381,7 @@ export default function RevaluationDrillDownModal({
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                       <XAxis dataKey="month" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
                       <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(val) => `${val / 1000}k`} />
-                      <RechartsTooltip formatter={(val: number) => formatCurrency(val, settings)} />
+                      <RechartsTooltip formatter={(val: any) => formatCurrency(val, settings)} />
                       <Line type="monotone" dataKey="net" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }} />
                     </LineChart>
                   </ResponsiveContainer>

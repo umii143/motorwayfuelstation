@@ -7,19 +7,19 @@ import {
 // Wrapping Recharts in a standalone file so we can lazy load them.
 // Recharts blocks the main thread during large renders.
 
-export const LazyAreaChart = (props: any) => <AreaChart {...props} />;
-export const LazyArea = (props: any) => <Area {...props} />;
-export const LazyXAxis = (props: any) => <XAxis {...props} />;
-export const LazyYAxis = (props: any) => <YAxis {...props} />;
-export const LazyTooltip = (props: any) => <Tooltip {...props} />;
-export const LazyResponsiveContainer = (props: any) => <ResponsiveContainer {...props} />;
-export const LazyBarChart = (props: any) => <BarChart {...props} />;
-export const LazyBar = (props: any) => <Bar {...props} />;
-export const LazyCell = (props: any) => <Cell {...props} />;
-export const LazyLineChart = (props: any) => <LineChart {...props} />;
-export const LazyLine = (props: any) => <Line {...props} />;
-export const LazyPieChart = (props: any) => <PieChart {...props} />;
-export const LazyPie = (props: any) => <Pie {...props} />;
+export const LazyAreaChart = (props: React.ComponentProps<typeof AreaChart>) => <AreaChart {...props} />;
+export const LazyArea = (props: React.ComponentProps<typeof Area>) => <Area {...props} />;
+export const LazyXAxis = (props: React.ComponentProps<typeof XAxis>) => <XAxis {...props} />;
+export const LazyYAxis = (props: React.ComponentProps<typeof YAxis>) => <YAxis {...props} />;
+export const LazyTooltip = (props: React.ComponentProps<typeof Tooltip>) => <Tooltip {...props} />;
+export const LazyResponsiveContainer = (props: React.ComponentProps<typeof ResponsiveContainer>) => <ResponsiveContainer {...props} />;
+export const LazyBarChart = (props: React.ComponentProps<typeof BarChart>) => <BarChart {...props} />;
+export const LazyBar = (props: React.ComponentProps<typeof Bar>) => <Bar {...props} />;
+export const LazyCell = (props: React.ComponentProps<typeof Cell>) => <Cell {...props} />;
+export const LazyLineChart = (props: React.ComponentProps<typeof LineChart>) => <LineChart {...props} />;
+export const LazyLine = (props: React.ComponentProps<typeof Line>) => <Line {...props} />;
+export const LazyPieChart = (props: React.ComponentProps<typeof PieChart>) => <PieChart {...props} />;
+export const LazyPie = (props: React.ComponentProps<typeof Pie>) => <Pie {...props} />;
 
 export default function RechartsModule() {
   return null; // Dummy export for dynamic import root if needed

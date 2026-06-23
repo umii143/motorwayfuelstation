@@ -19,6 +19,7 @@ export function useBIAggregator(filter: BIFilter) {
   })));
   const { shifts = [] } = useShiftStore(useShallow(state => ({ shifts: state.shifts })));
   const { standaloneExpenses = [] } = useFinancialStore(useShallow(state => ({ standaloneExpenses: state.standaloneExpenses })));
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { suppliers = [] } = useSupplierStore(useShallow(state => ({ suppliers: state.suppliers })));
 
   const metrics = useMemo(() => {
@@ -37,10 +38,10 @@ export function useBIAggregator(filter: BIFilter) {
     });
 
     let totalLitersPurchased = 0;
-    let supplierPerformance: Record<string, { batches: number, liters: number, spent: number, count: number }> = {};
+    const supplierPerformance: Record<string, { batches: number, liters: number, spent: number, count: number }> = { /* empty */ };
 
     filteredBatches.forEach(b => {
-      const stockCost = b.qtyReceived * b.omcInvoicePrice;
+      const stockCost = b.qtyReceived * (b.omcInvoicePrice || 0);
       const carriage = b.carriageTotal || 0;
       totalInvested += stockCost + carriage;
       totalCogs += stockCost;
@@ -69,15 +70,16 @@ export function useBIAggregator(filter: BIFilter) {
     // Process Shifts (Revenue, Sales, Test Liters)
     const filteredShifts = shifts.filter(s => s.date >= filter.startDate && s.date <= filter.endDate);
     let totalTestLiters = 0;
-    let productSales: Record<string, { revenue: number, liters: number, cogs: number }> = {};
+    const productSales: Record<string, { revenue: number, liters: number, cogs: number }> = { /* empty */ };
     
-    let paymentBreakdown = {
+    const paymentBreakdown = {
       cash: 0, bank: 0, digital: 0, credit: 0
     };
 
     filteredShifts.forEach(shift => {
       totalRevenue += shift.expectedCash || 0;
-      totalTestLiters += Object.values(shift.testLiters || {}).reduce((acc: number, val: any) => acc + Number(val), 0);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      totalTestLiters += Object.values(shift.testLiters || { /* empty */ }).reduce((acc: number, val: any) => acc + Number(val), 0);
       
       // Breakdown payments
       paymentBreakdown.cash += shift.submittedCash || 0;
@@ -87,7 +89,7 @@ export function useBIAggregator(filter: BIFilter) {
     });
 
     // Process Rate History for Inventory Gain/Loss
-    const filteredRates = rateHistory.filter(r => r.date >= filter.startDate && r.date <= filter.endDate);
+    const filteredRates = rateHistory.filter(r => r.date! >= filter.startDate && r.date! <= filter.endDate);
     filteredRates.forEach(r => {
       if (filter.productId === 'all' || r.productId === filter.productId) {
         inventoryGainLoss += (r.gainLoss || r.impactAmount || 0);

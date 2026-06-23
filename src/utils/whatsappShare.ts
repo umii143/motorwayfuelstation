@@ -42,6 +42,7 @@ export const formatPhoneForDisplay = (phone: string): string => {
   try {
     const normalized = normalizePakistanPhoneNumber(phone);
     return `+${normalized.substring(0, 2)} ${normalized.substring(2, 5)} ${normalized.substring(5)}`;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     // If it can't be normalized, just return original or formatted best-effort
     return phone;
@@ -63,6 +64,7 @@ export const generateWhatsAppLink = (phone: string, text: string, isBusiness: bo
     }
     
     return `https://wa.me/${normalizedPhone}?text=${encodedText}`;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     // Fallback if no valid phone (e.g., share to anyone)
     return `https://wa.me/?text=${encodeURIComponent(text)}`;
@@ -83,6 +85,7 @@ export const nativeWebShare = async (title: string, text: string, url?: string, 
       await navigator.share(shareData);
       return true;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error sharing natively:', error);
       return false;
     }

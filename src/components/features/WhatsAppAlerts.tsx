@@ -39,7 +39,7 @@ export default function WhatsAppAlerts({ settings, onUpdateSettings }: Props) {
   const [waStatus, setWaStatus] = useState({ ready: false, qr: '', initializing: false });
   
   useEffect(() => {
-    const fetchStatus = () => fetchWithAuth('/api/wa/status').then(r => r.json()).then(setWaStatus).catch(() => {});
+    const fetchStatus = () => fetchWithAuth('/api/wa/status').then(r => r.json()).then(setWaStatus).catch(() => { /* empty */ });
     fetchStatus();
     const interval = setInterval(fetchStatus, 3000);
     return () => clearInterval(interval);
@@ -49,14 +49,18 @@ export default function WhatsAppAlerts({ settings, onUpdateSettings }: Props) {
     setWaStatus(prev => ({ ...prev, initializing: true }));
     try {
       await fetchWithAuth('/api/wa/init', { method: 'POST' });
-    } catch(e) {}
+     
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) { /* ignore */ }
   };
 
   const handleLogoutWA = async () => {
     try {
       await fetchWithAuth('/api/wa/logout', { method: 'POST' });
+       
       setWaStatus({ ready: false, qr: '', initializing: false });
-    } catch(e) {}
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) { /* ignore */ }
   };
 
   return (

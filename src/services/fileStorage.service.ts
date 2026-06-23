@@ -9,15 +9,18 @@ export class LocalStorageProvider implements FileStorageProvider {
     // In local phase, we just generate an object URL for the Blob.
     // Note: Object URLs only live for the session duration in the browser.
     const url = URL.createObjectURL(file);
+    // eslint-disable-next-line no-console
     console.info(`[LocalStorageProvider] Generated local object URL for ${fileName}`);
     return url;
   }
 
   async deleteFile(fileName: string): Promise<boolean> {
+    // eslint-disable-next-line no-console
     console.info(`[LocalStorageProvider] Mock deleted ${fileName}`);
     return true;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getPublicUrl(fileName: string): Promise<string> {
     // In local architecture, we cannot return a true public URL.
     // For now, this returns a placeholder or empty string

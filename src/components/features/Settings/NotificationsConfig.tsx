@@ -43,6 +43,8 @@ function NotificationToggle({ icon: Icon, iconColor, title, description, checked
 export default function NotificationsConfig({
   settings,
   onUpdateSettings,
+   
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   activeStationId,
 }: {
   settings: GlobalSettings;
@@ -52,8 +54,10 @@ export default function NotificationsConfig({
   const { showToast } = useStation();
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
+  
 
-  const saved = (settings as any).notifications ?? {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const saved = (settings as any).notifications ?? { /* empty */ };
 
   const [notif, setNotif] = useState({
     shiftClose:      saved.shiftClose      ?? true,
@@ -64,8 +68,10 @@ export default function NotificationsConfig({
     priceChange:     saved.priceChange     ?? false,
     whatsappEnabled: saved.whatsappEnabled ?? false,
     whatsappNumber:  saved.whatsappNumber  ?? (settings.ownerContact || ''),
+   
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const set = (key: keyof typeof notif, val: any) =>
     setNotif(prev => ({ ...prev, [key]: val }));
 

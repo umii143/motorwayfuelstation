@@ -32,6 +32,7 @@ export async function checkForUpdates(): Promise<ReleaseInfo | null> {
     const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`);
     
     if (!response.ok) {
+      // eslint-disable-next-line no-console
       console.error('Failed to fetch GitHub releases');
       return null;
     }
@@ -40,6 +41,7 @@ export async function checkForUpdates(): Promise<ReleaseInfo | null> {
     const latestVersion = release.tag_name.replace('v', '');
     
     // 3. Find the APK asset in the release
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const apkAsset = release.assets?.find((asset: any) => asset.name.endsWith('.apk'));
     
     if (!apkAsset) {
@@ -57,6 +59,7 @@ export async function checkForUpdates(): Promise<ReleaseInfo | null> {
     };
 
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error checking for updates:', error);
     return null;
   }

@@ -26,10 +26,14 @@ export default function ShiftExceptions({ settings, stationId }: ShiftExceptions
   const [resolutionNotes, setResolutionNotes] = useState('');
 
   useEffect(() => {
+     
+     
+     
     loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stationId]);
 
-  const loadData = () => {
+  function loadData() {
     const allIncidents = db.getVarianceIncidents(stationId);
     setIncidents(allIncidents.filter(i => i.type === 'cash_variance'));
     setShifts(db.getShifts(stationId));
@@ -244,8 +248,10 @@ export default function ShiftExceptions({ settings, stationId }: ShiftExceptions
                     ))}
                   </select>
                 </div>
+                { }
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Severity Level</label>
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   <select value={severity} onChange={e => setSeverity(e.target.value as any)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white">
                     <option value="low">Low (Acceptable loose change error)</option>
                     <option value="medium">Medium</option>
@@ -268,9 +274,11 @@ export default function ShiftExceptions({ settings, stationId }: ShiftExceptions
                 <div className="md:col-span-2 border-t border-slate-100 pt-4">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Investigation Status</label>
                   <div className="flex gap-2">
+                    { }
                     {['open', 'investigating', 'resolved'].map((s) => (
                       <button
                         key={s}
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         onClick={() => setStatus(s as any)}
                         className={`flex-1 py-2 text-sm font-bold rounded-lg border transition ${
                           status === s 

@@ -4,7 +4,7 @@ import { GlobalSettings, FleetAccount, Shift } from '../../../types';
 import { db } from '../../../data/db';
 import { formatCurrency } from '../../../lib/currency';
 import { 
-  Building2, Plus, Search, ChevronDown, Download, Users, AlertCircle, Wallet, Clock, UsersRound, XCircle, MoreVertical
+  Building2, Plus, Search, ChevronDown, Download, AlertCircle, Wallet, Clock, UsersRound, XCircle, MoreVertical
 } from 'lucide-react';
 
 interface AccountsManagerProps {
@@ -40,10 +40,14 @@ export default function AccountsManager({ settings, stationId }: AccountsManager
   const [status, setStatus] = useState<'active' | 'suspended' | 'closed'>('active');
 
   useEffect(() => {
+     
+     
+     
     loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stationId]);
 
-  const loadData = () => {
+  function loadData() {
     setAccounts(db.getFleetAccounts(stationId));
     setShifts(db.getShifts(stationId));
   };
@@ -269,7 +273,7 @@ export default function AccountsManager({ settings, stationId }: AccountsManager
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.05 }}
-              onClick={() => window.history.pushState({}, '', '/fleet/' + acc.id)}
+              onClick={() => window.history.pushState({ /* empty */ }, '', '/fleet/' + acc.id)}
               className="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-600 transition-colors cursor-pointer group flex flex-col"
             >
               <div className="flex items-start justify-between mb-6">
@@ -315,7 +319,7 @@ export default function AccountsManager({ settings, stationId }: AccountsManager
 
               <div className="mt-auto pt-4 border-t border-slate-800 flex justify-between">
                 <button 
-                  onClick={(e) => { e.stopPropagation(); window.history.pushState({}, '', '/fleet/' + acc.id); }}
+                  onClick={(e) => { e.stopPropagation(); window.history.pushState({ /* empty */ }, '', '/fleet/' + acc.id); }}
                   className="flex flex-col items-center gap-1.5 text-slate-400 hover:text-white transition-colors"
                 >
                   <Building2 className="w-4 h-4" />
@@ -385,8 +389,10 @@ export default function AccountsManager({ settings, stationId }: AccountsManager
                   <label className="block text-xs font-bold text-slate-400 mb-1.5">Credit Limit ({settings.currency}) *</label>
                   <input type="number" value={creditLimit} onChange={e => setCreditLimit(e.target.value)} className="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none focus:border-orange-500" placeholder="500000" />
                 </div>
+                { }
                 <div>
                   <label className="block text-xs font-bold text-slate-400 mb-1.5">Account Status</label>
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   <select value={status} onChange={e => setStatus(e.target.value as any)} className="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none focus:border-orange-500">
                     <option value="active">Active</option>
                     <option value="suspended">Suspended</option>

@@ -66,6 +66,7 @@ export interface SecurityEvent {
 
 const _timelineKey = (stationId: string, shiftId: string) => `fuelpro_timeline_${stationId}_${shiftId}`;
 const _securityKey = (stationId: string) => `fuelpro_security_events_${stationId}`;
+ 
 const _auditKey = (stationId: string) => `fuelpro_settings_audit_trail_${stationId}`;
 
 // ─── Core Functions ───────────────────────────────────────────────────────────

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, CheckCircle, Info, Database, DollarSign, Wallet, FileText } from 'lucide-react';
+import { Plus, Edit, Trash2, Database, Wallet } from 'lucide-react';
 import { Product, BankAccount, Pump } from '../../../types';
 import { t as translate } from '../../../lib/translations';
 import { useStation } from '../../../contexts/StationContext';
@@ -18,10 +18,14 @@ interface UnifiedAccountManagerProps {
 export default function UnifiedAccountManager({
   products,
   banks,
+   
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   pumps,
   language,
   onUpdateProducts,
+   
   onUpdateBanks,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onUpdatePumps,
   onLogAudit
 }: UnifiedAccountManagerProps) {
@@ -33,8 +37,10 @@ export default function UnifiedAccountManager({
 
   // ==========================================
   // PRODUCTS SUBSECTION
+   
   // ==========================================
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [prodForm, setProdForm] = useState({ name: '', urduName: '', type: 'fuel' as any, rate: 250, unit: 'Litre', currentStock: 0, minStock: 500 });
   const [showProductForm, setShowProductForm] = useState<boolean>(false);
 
@@ -588,9 +594,11 @@ export default function UnifiedAccountManager({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
+                    { }
                     <label className="font-bold block">{t('Category Classification:', 'آئٹم کیٹیگری ٹائپ:')}</label>
                     <select
                       value={prodForm.type}
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       onChange={(e) => setProdForm({ ...prodForm, type: e.target.value as any })}
                       className="w-full rounded border border-slate-200 bg-white p-2 text-xs font-sans"
                     >

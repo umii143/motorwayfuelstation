@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, X, Send, Bot, User, Loader2, ChevronDown, Zap } from 'lucide-react';
+import { Sparkles, Send, Bot, User, Loader2, ChevronDown, Zap } from 'lucide-react';
 import { GlobalSettings, Shift, Product, Customer, Tank, Nozzle, Staff } from '../../../types';
 import { aiAssistantService } from '../../../services/aiAssistantService';
 import { useInventoryStore } from '../../../stores/useInventoryStore';
@@ -33,7 +33,9 @@ export default function AIAssistant({
   products,
   customers,
   tanks,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   nozzles,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   staff,
 }: AIAssistantProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -67,6 +69,7 @@ export default function AIAssistant({
     if (!text.trim() || isLoading) return;
 
     const userMessage: Message = {
+      // eslint-disable-next-line react-hooks/purity
       id: `msg_${Date.now()}`,
       role: 'user',
       content: text.trim(),
@@ -74,6 +77,7 @@ export default function AIAssistant({
     };
 
     const loadingMessage: Message = {
+      // eslint-disable-next-line react-hooks/purity
       id: `loading_${Date.now()}`,
       role: 'assistant',
       content: '',

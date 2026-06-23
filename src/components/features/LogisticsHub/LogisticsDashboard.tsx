@@ -11,9 +11,13 @@ interface LogisticsDashboardProps {
 export default function LogisticsDashboard({ settings, stationId }: LogisticsDashboardProps) {
   const [deliveries, setDeliveries] = useState<TankerDelivery[]>([]);
   const [schedules, setSchedules] = useState<TankerSchedule[]>([]);
+   
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
 
+   
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDeliveries(db.getTankerDeliveries(stationId));
     setSchedules(db.getTankerSchedules(stationId));
     setSuppliers(db.getSuppliers(stationId));

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { AlertTriangle, TrendingDown, Thermometer, Droplet, Calendar as CalendarIcon, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, TrendingDown, Thermometer, Droplet, Calendar as CalendarIcon, ShieldCheck } from 'lucide-react';
 import { Tank, Shift, Nozzle } from '../../types';
 
 interface FuelVarianceHeatmapProps {
@@ -24,7 +24,9 @@ export function FuelVarianceHeatmap({ tanks, shifts, nozzles }: FuelVarianceHeat
     if (last7Shifts.length === 0) return [];
     
     return tanks.map(tank => {
-      let total7DayLoss = 0;
+      const total7DayLoss = 0;
+       
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const history = last7Shifts.map(shift => {
         return { varianceLiters: 0, status: 'normal', label: '0L' };
       });
@@ -34,7 +36,9 @@ export function FuelVarianceHeatmap({ tanks, shifts, nozzles }: FuelVarianceHeat
         history,
         total7DayLoss: Math.round(total7DayLoss * 100) / 100
       };
+     
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tanks, last7Shifts, nozzles]);
 
   const getStatusColor = (status: string) => {

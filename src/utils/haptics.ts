@@ -7,6 +7,7 @@ export const haptic = {
     NativeSounds.playClick();
     try {
       await Haptics.impact({ style: ImpactStyle.Light });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       // Ignore if not on a device that supports haptics
     }
@@ -17,6 +18,7 @@ export const haptic = {
     NativeSounds.playClick();
     try {
       await Haptics.impact({ style: ImpactStyle.Medium });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       // Ignore
     }
@@ -27,6 +29,7 @@ export const haptic = {
     NativeSounds.playClick();
     try {
       await Haptics.impact({ style: ImpactStyle.Heavy });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       // Ignore
     }
@@ -37,6 +40,7 @@ export const haptic = {
     NativeSounds.playSuccess();
     try {
       await Haptics.notification({ type: NotificationType.Success });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       // Ignore
     }
@@ -47,6 +51,7 @@ export const haptic = {
     NativeSounds.playError();
     try {
       await Haptics.notification({ type: NotificationType.Warning });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       // Ignore
     }
@@ -57,6 +62,7 @@ export const haptic = {
     NativeSounds.playError();
     try {
       await Haptics.notification({ type: NotificationType.Error });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       // Ignore
     }

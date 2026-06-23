@@ -38,6 +38,7 @@ export class WhatsAppProvider {
       window.open(link, '_blank');
       return true;
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('WhatsApp Provider Error:', err);
       return false;
     }

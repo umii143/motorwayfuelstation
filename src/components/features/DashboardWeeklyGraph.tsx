@@ -62,7 +62,7 @@ export function DashboardWeeklyGraph({ data }: Props) {
             <Tooltip 
               contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
               itemStyle={{ fontWeight: 'bold' }}
-              formatter={(value: number) => [`PKR ${value.toLocaleString()}`, undefined]}
+              formatter={(value: any) => [`PKR ${value.toLocaleString()}`, undefined]}
             />
             <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: '20px', marginTop: '-40px' }} />
             <Area 

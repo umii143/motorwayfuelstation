@@ -7,6 +7,8 @@ interface CredentialsManagerProps {
   stationId: string;
 }
 
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function CredentialsManager({ settings, stationId }: CredentialsManagerProps) {
   const credentials = [
     { id: 'sap_prod', name: 'SAP Production API', key: 'pk_live_*************************', status: 'active' },

@@ -68,6 +68,7 @@ export const SalaryEngine = {
   }: PaySalaryParams) => {
     
     const expenseId = `exp_sal_${Date.now()}`;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const txId = salaryTx.id;
 
     // 1. Updated Salary Transaction

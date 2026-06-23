@@ -100,11 +100,13 @@ export default function SettingsPanel({
   const isLube = isLubeBusinessStation(activeStationId);
 
   const [activeTab, setActiveTab] = useState<SettingsView>((initialTab as SettingsView) || 'profile');
+  const [prevInitialTab, setPrevInitialTab] = useState(initialTab);
   const [sidebarSearch, setSidebarSearch] = useState('');
   // Track which accordion sections are open on mobile
   const [mobileOpenSections, setMobileOpenSections] = useState<Set<string>>(new Set(['enterprise']));
 
-  React.useEffect(() => {
+  if (initialTab !== prevInitialTab) {
+    setPrevInitialTab(initialTab);
     if (initialTab) {
       const tabToSet = initialTab === 'tariff' ? 'price' :
                        initialTab === 'users' ? 'security' :   // redirect users → security
@@ -112,7 +114,7 @@ export default function SettingsPanel({
                        (initialTab as SettingsView);
       setActiveTab(tabToSet);
     }
-  }, [initialTab]);
+  }
 
   const handleLogAudit = (category: string, action: string, details: string) => {
     const existing = db.getSettingsAuditTrail(activeStationId);
@@ -186,7 +188,7 @@ export default function SettingsPanel({
         { id: 'factory_reset', label: t('Factory Reset', 'فیکٹری ری سیٹ'),      icon: AlertTriangle, badge: null, isDanger: true, biometric: true },
       ]
     },
-  ], [isLube, isUrdu]);
+  ], [t, isSuperAdmin, isLube]);
 
   // Filtered items for desktop search
   const filteredSections = useMemo(() => {
@@ -203,7 +205,7 @@ export default function SettingsPanel({
 
   const handleTabChange = async (id: SettingsView) => {
     const item = allItems.find(i => i.id === id);
-    if (item?.biometric) {
+    if ((item as any)?.biometric) {
       const auth = await requireBiometric(`Access ${id}`);
       if (!auth) return;
     }
@@ -356,19 +358,19 @@ export default function SettingsPanel({
                                 onClick={() => handleTabChange(item.id as SettingsView)}
                                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer border max-w-full ${
                                   isActive
-                                    ? (item.isDanger
+                                    ? ((item as any).isDanger
                                         ? 'bg-red-600 text-white border-red-600 shadow-sm'
                                         : 'bg-orange-600 text-white border-orange-600 shadow-sm shadow-orange-200')
-                                    : (item.isDanger
+                                    : ((item as any).isDanger
                                         ? 'bg-white text-red-600 border-red-200 hover:bg-red-50'
                                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100 hover:border-slate-300')
                                 }`}
                               >
                                 <Icon className={`h-3.5 w-3.5 shrink-0 ${
-                                  isActive ? 'text-white' : (item.isDanger ? 'text-red-500' : 'text-slate-400')
+                                  isActive ? 'text-white' : ((item as any).isDanger ? 'text-red-500' : 'text-slate-400')
                                 }`} />
                                 <span className="whitespace-nowrap">{item.label}</span>
-                                {item.biometric && !isActive && (
+                                {(item as any).biometric && !isActive && (
                                   <Fingerprint className="h-3 w-3 text-slate-300" />
                                 )}
                               </button>
@@ -432,19 +434,19 @@ export default function SettingsPanel({
                             onClick={() => handleTabChange(item.id as SettingsView)}
                             className={`w-full group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                               isActive
-                                ? (item.isDanger
+                                ? ((item as any).isDanger
                                     ? 'bg-red-50 text-red-700 border border-red-200 shadow-xs'
                                     : 'bg-orange-50 text-orange-800 border border-orange-200 shadow-xs')
-                                : (item.isDanger
+                                : ((item as any).isDanger
                                     ? 'text-slate-500 hover:bg-red-50 hover:text-red-600 border border-transparent'
                                     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-transparent')
                             }`}
                           >
                             <Icon className={`h-4 w-4 shrink-0 transition-colors ${
-                              isActive ? (item.isDanger ? 'text-red-500' : 'text-orange-600') : 'text-slate-400 group-hover:text-slate-600'
+                              isActive ? ((item as any).isDanger ? 'text-red-500' : 'text-orange-600') : 'text-slate-400 group-hover:text-slate-600'
                             }`} />
                             <span className="flex-1 text-left truncate">{item.label}</span>
-                            {item.biometric && (
+                            {(item as any).biometric && (
                               <Fingerprint className={`h-3.5 w-3.5 shrink-0 ${isActive ? 'opacity-60' : 'opacity-30'}`} />
                             )}
                             {isActive && <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-40" />}

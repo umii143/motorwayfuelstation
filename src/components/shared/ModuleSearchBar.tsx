@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Filter, ArrowUpDown, FileText, Download, Mic, MicOff } from 'lucide-react';
+import { Search, Filter, ArrowUpDown, Download, Mic, MicOff } from 'lucide-react';
 import { useStation } from '../../contexts/StationContext';
 
 // Define types for Web Speech API
 declare global {
   interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     SpeechRecognition: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     webkitSpeechRecognition: any;
   }
 }
@@ -32,6 +34,7 @@ export function ModuleSearchBar({
   const { settings, showAlert } = useStation();
   const [query, setQuery] = useState('');
   const [isListening, setIsListening] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
   const isUrdu = settings.language === 'ur';
 
@@ -45,6 +48,7 @@ export function ModuleSearchBar({
       // Set language based on app settings
       recognition.lang = isUrdu ? 'ur-PK' : 'en-US';
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
         setQuery(transcript);
@@ -52,7 +56,9 @@ export function ModuleSearchBar({
         setIsListening(false);
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognition.onerror = (event: any) => {
+        // eslint-disable-next-line no-console
         console.error('Speech recognition error', event.error);
         setIsListening(false);
         showAlert('error', isUrdu ? 'آواز کی شناخت میں مسئلہ ہوا' : 'Voice recognition failed');
@@ -85,6 +91,7 @@ export function ModuleSearchBar({
         recognitionRef.current.start();
         setIsListening(true);
       } catch (e) {
+        // eslint-disable-next-line no-console
         console.error(e);
       }
     }

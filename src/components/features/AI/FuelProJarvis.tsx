@@ -1,6 +1,6 @@
 import React from 'react';
 import { useJarvis } from '../../../hooks/useJarvis';
-import { Mic, MicOff, BrainCircuit, Loader2, Sparkles, Phone } from 'lucide-react';
+import { Mic, BrainCircuit, Loader2, Sparkles, Phone } from 'lucide-react';
 
 export default function FuelProJarvis() {
   const {

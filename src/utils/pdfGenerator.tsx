@@ -90,6 +90,7 @@ const styles = StyleSheet.create({
 
 interface PdfDocumentProps {
   title: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[];
   columns: { key: string; label: string }[];
   isThermal?: boolean; // If true, optimize for 80mm thermal
@@ -102,6 +103,7 @@ export const MotorwayPetroleumReport = ({ title, data, columns, isThermal = fals
 
   return (
     <Document>
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       <Page size={pageSize as any} style={pageStyle}>
         {/* Header */}
         <View style={styles.header}>
@@ -150,6 +152,7 @@ export const generatePdfBlob = async (props: PdfDocumentProps): Promise<Blob> =>
 };
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const PdfHeader = ({ title, documentNo, date, generatedBy }: any) => (
   <View style={styles.header}>
     <Text style={styles.title}>MOTORWAY PETROLEUM</Text>
@@ -168,6 +171,7 @@ export const PdfFooter = () => (
   </View>
 );
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const PdfSignatures = ({ leftLabel = 'Prepared By', rightLabel = 'Authorized Signature' }: any) => (
   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 50, paddingHorizontal: 20 }}>
     <View style={{ alignItems: 'center' }}>

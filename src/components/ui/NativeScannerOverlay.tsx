@@ -22,6 +22,21 @@ export const NativeScannerOverlay: React.FC<NativeScannerOverlayProps> = ({
   const [torchOn, setTorchOn] = useState(false);
 
   useEffect(() => {
+    const startScanning = async () => {
+      try {
+        const result = await NativeBarcodeScanner.startScan(formats);
+        if (result) {
+          onScanResult(result);
+          onClose(); // Automatically close after successful scan
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error("Scanner failed to start", error);
+        alert("Failed to start scanner. Please ensure camera permissions are granted.");
+        onClose();
+      }
+    };
+
     if (isOpen) {
       if (Capacitor.isNativePlatform()) {
         document.body.style.background = 'transparent';
@@ -44,21 +59,7 @@ export const NativeScannerOverlay: React.FC<NativeScannerOverlayProps> = ({
         document.documentElement.style.background = '';
       }
     };
-  }, [isOpen]);
-
-  const startScanning = async () => {
-    try {
-      const result = await NativeBarcodeScanner.startScan(formats);
-      if (result) {
-        onScanResult(result);
-        onClose(); // Automatically close after successful scan
-      }
-    } catch (error) {
-      console.error("Scanner failed to start", error);
-      alert("Failed to start scanner. Please ensure camera permissions are granted.");
-      onClose();
-    }
-  };
+  }, [isOpen, formats, onClose, onScanResult]);
 
   const toggleTorch = async () => {
     await NativeBarcodeScanner.toggleTorch();

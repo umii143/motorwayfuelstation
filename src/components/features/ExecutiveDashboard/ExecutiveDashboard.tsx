@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useStation } from '../../../contexts/StationContext';
 import { generateKPIs } from '../../../services/analytics/kpiEngine';
 import { generateHealthScore } from '../../../services/analytics/executiveInsights';
-import { Activity, Briefcase, ChevronRight, PieChart, TrendingUp, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Briefcase, ChevronRight, PieChart, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 import RoleGuard from '../../ui/RoleGuard';
 import { KPIDrillDownModal } from './KPIDrillDownModal';
 import CustomerCreditDrillDownModal from './CustomerCreditDrillDownModal';

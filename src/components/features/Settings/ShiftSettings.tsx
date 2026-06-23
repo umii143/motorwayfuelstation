@@ -3,6 +3,8 @@ import { Clock, Save } from 'lucide-react';
 import { useStation } from '../../../contexts/StationContext';
 import { GlobalSettings } from '../../../types';
 
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function ShiftSettings({ settings, onUpdateSettings, activeStationId }: { settings: GlobalSettings, onUpdateSettings: (s: GlobalSettings) => void, activeStationId: string }) {
   const { showToast } = useStation();
 
@@ -25,7 +27,7 @@ export default function ShiftSettings({ settings, onUpdateSettings, activeStatio
     const newSettings = { 
       ...settings, 
       security: {
-        ...(settings.security || {}),
+        ...(settings.security || { /* empty */ }),
         enforceShiftHours: shiftSettings.enforceShiftHours,
         autoCloseShifts: shiftSettings.autoCloseShifts,
         maxShiftDurationHours: Number(shiftSettings.maxShiftDurationHours)

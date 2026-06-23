@@ -2,34 +2,24 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../../contexts/AuthContext";
 import {
-  Shield, Lock, Mail, ArrowRight, RefreshCw, AlertTriangle,
-  CheckCircle, ChevronLeft, MailCheck, Fuel, Database, Users, 
+  Lock, Mail, RefreshCw, AlertTriangle,
+  CheckCircle, Fuel, Database, Users, 
   UserSquare, Truck, BarChart3, ShieldCheck, MapPin, Phone, 
-  Clock, User, LogIn, KeyRound
+  Clock, User, LogIn
 } from "lucide-react";
 import { GlobalSettings } from "../../types";
-import { useStation } from "../../contexts/StationContext";
 import { NativeHaptics } from '../../services/hardware/Haptics';
-import { updatePassword } from "firebase/auth";
-import { auth } from "../../lib/firebase";
 
 interface AuthInterfaceProps {
   settings: GlobalSettings;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onLoginSuccess: (user: any, token: string) => void;
 }
 
-type AuthMode =
-  | "email_otp_request"
-  | "email_otp_verify"
-  | "mfa_challenge";
-
 export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfaceProps) {
-  const { showAlert } = useStation();
   const {
     loginWithGoogle,
-    loginWithEmail,
-    requestOTP,
-    verifyOTP
+    loginWithEmail
   } = useAuth();
   const isUrdu = settings.language === "ur";
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
@@ -40,10 +30,6 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
   // Core inputs
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [otpCode, setOtpCode] = useState("");
-
-  // Token state
-  const [tempToken, setTempToken] = useState("");
 
   // UX feedback
   const [isLoading, setIsLoading] = useState(false);
@@ -54,7 +40,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
     // Clear URL params if any leftover from old flows
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("verified") || urlParams.get("token")) {
-      window.history.replaceState({}, document.title, window.location.pathname);
+      window.history.replaceState({ /* empty */ }, document.title, window.location.pathname);
     }
   }, []);
 
@@ -75,6 +61,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
     try {
       await loginWithEmail(email, password);
       NativeHaptics.success();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setErrorMsg(err.message || "Failed to sign in.");
       NativeHaptics.error();
@@ -83,57 +70,6 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
     }
   };
 
-  const handleSignupRequest = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password || password.length < 6) {
-      setErrorMsg(t("Please enter a valid email and a password (min 6 chars).", "براہ کرم درست ای میل اور پاس ورڈ درج کریں (کم از کم 6 ہندسے)۔"));
-      NativeHaptics.error();
-      return;
-    }
-    resetFeedback();
-    setIsLoading(true);
-    try {
-      await requestOTP(email);
-      setAuthMode("signup_otp");
-      setSuccessMsg(t(
-        `A 6-digit OTP has been sent to ${email}.`,
-        `آپ کی ای میل پر ایک 6 ہندسوں کا OTP بھیج دیا گیا ہے۔`
-      ));
-      NativeHaptics.success();
-    } catch (err: any) {
-      setErrorMsg(err.message || "Failed to send OTP. Make sure email service is configured.");
-      NativeHaptics.error();
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleVerifySignupOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!otpCode || otpCode.length !== 6) {
-      setErrorMsg(t("Please enter the 6-digit OTP.", "براہ کرم 6 ہندسوں کا OTP درج کریں۔"));
-      NativeHaptics.error();
-      return;
-    }
-    resetFeedback();
-    setIsLoading(true);
-    try {
-      const data = await verifyOTP(email, otpCode);
-      if (password && auth.currentUser) {
-         try {
-           await updatePassword(auth.currentUser, password);
-         } catch(e) {
-           console.error("Failed to set password", e);
-         }
-      }
-      NativeHaptics.success();
-    } catch (err: any) {
-      setErrorMsg(err.message || "Invalid OTP or expired.");
-      NativeHaptics.error();
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleFirebaseGoogleLogin = async () => {
     resetFeedback();
@@ -142,6 +78,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
       const data = await loginWithGoogle();
       onLoginSuccess(data.user, data.token || "");
       NativeHaptics.success();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setErrorMsg(err.message || "Google sign-in failed.");
       NativeHaptics.error();

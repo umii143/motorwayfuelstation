@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Building, Save, Camera, MapPin, Phone, Mail } from 'lucide-react';
 import { useStation } from '../../../contexts/StationContext';
-import { db } from '../../../data/db';
 import { GlobalSettings } from '../../../types';
 
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function StationIdentity({ settings, onUpdateSettings, activeStationId }: { settings: GlobalSettings, onUpdateSettings: (s: GlobalSettings) => void, activeStationId: string }) {
   const { showToast } = useStation();
 

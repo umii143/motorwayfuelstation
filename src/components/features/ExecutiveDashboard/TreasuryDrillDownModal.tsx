@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { X, ShieldCheck, Zap, Download, FileText, Wallet, Building2, Smartphone, DollarSign, TrendingUp, TrendingDown, ArrowRightLeft, Landmark } from 'lucide-react';
-import { GlobalSettings, CashAccount, TreasuryTransaction, BankAccount, DigitalAccount } from '../../../types';
+import { X, ShieldCheck, Zap, Download, Wallet, Building2, Smartphone, TrendingUp, TrendingDown, ArrowRightLeft, Landmark } from 'lucide-react';
+import { GlobalSettings } from '../../../types';
 import { formatCurrency } from '../../../lib/currency';
 import { useTreasuryStore } from '../../../stores/useTreasuryStore';
 import { useFinancialStore } from '../../../stores/useFinancialStore';
@@ -43,6 +43,8 @@ export default function TreasuryDrillDownModal({
     let monthlyOutflow = 0;
     let digitalCollections = 0;
 
+     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const timeline: any[] = [];
 
     // Map Treasury Transactions

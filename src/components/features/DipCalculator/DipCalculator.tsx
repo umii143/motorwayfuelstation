@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import {
   Droplets, Thermometer, Calculator, CheckCircle2,
-  AlertTriangle, Info, ChevronDown, ChevronUp, FileDown
+  AlertTriangle, Info, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { GlobalSettings, Tank } from '../../../types';
 import { fetchWithAuth } from '../../../lib/api';
-import { formatCurrency } from '../../../lib/currency';
 
 interface DipCalculatorProps {
   settings: GlobalSettings;

@@ -1,4 +1,5 @@
 import { Shift, Product, Customer, Tank } from '../../types';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { forecastFuelDemand } from './demandForecastEngine';
 
 export interface KPIResult {
@@ -47,6 +48,7 @@ export const generateKPIs = (
   products: Product[],
   customers: Customer[],
   tanks: Tank[],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   branchId: string = 'main'
 ): KPIResult => {
   return {

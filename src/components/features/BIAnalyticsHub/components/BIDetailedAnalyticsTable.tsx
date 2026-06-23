@@ -5,6 +5,7 @@ import { useShiftStore } from '../../../../stores/useShiftStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useFinancialStore } from '../../../../stores/useFinancialStore';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function BIDetailedAnalyticsTable({ filter }: any) {
   const { stockBatches: batches = [] } = useInventoryStore(useShallow(state => ({ stockBatches: state.stockBatches })));
   const { shifts = [] } = useShiftStore(useShallow(state => ({ shifts: state.shifts })));
@@ -14,7 +15,7 @@ export function BIDetailedAnalyticsTable({ filter }: any) {
     new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', minimumFractionDigits: 0 }).format(val);
 
   // Group data by Month (YYYY-MM)
-  const monthlyData: Record<string, { revenue: number, invested: number, expenses: number }> = {};
+  const monthlyData: Record<string, { revenue: number, invested: number, expenses: number }> = { /* empty */ };
 
   const getMonthKey = (date: string) => {
     return date ? date.substring(0, 7) : 'Unknown';
@@ -25,7 +26,7 @@ export function BIDetailedAnalyticsTable({ filter }: any) {
     const key = getMonthKey(s.date);
     if (!monthlyData[key]) monthlyData[key] = { revenue: 0, invested: 0, expenses: 0 };
     
-    let shiftRev = s.expectedCash || 0;
+    const shiftRev = s.expectedCash || 0;
     // We'd ideally reconstruct sales accurately from expectedCash formula or just use expectedCash.
     monthlyData[key].revenue += shiftRev;
   });
@@ -35,7 +36,7 @@ export function BIDetailedAnalyticsTable({ filter }: any) {
     const key = getMonthKey(b.date);
     if (!monthlyData[key]) monthlyData[key] = { revenue: 0, invested: 0, expenses: 0 };
     
-    const amountReceived = b.qtyReceived * b.omcInvoicePrice;
+    const amountReceived = b.qtyReceived * b.omcInvoicePrice!;
     const totalCost = amountReceived + (b.carriageTotal || 0);
     monthlyData[key].invested += totalCost;
   });
@@ -76,6 +77,7 @@ export function BIDetailedAnalyticsTable({ filter }: any) {
             ) : (
               sortedMonths.map(month => {
                 const data = monthlyData[month];
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const getShiftProductSales = (shiftId: string, productId: string) => {
                   const shift = shifts.find(s => s.id === shiftId);
                   if (!shift) return 0;

@@ -1,8 +1,9 @@
 import React from 'react';
 import { LinkIcon, Server, Database } from 'lucide-react';
-import { useStation } from '../../../contexts/StationContext';
 import { GlobalSettings } from '../../../types';
 
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function Integrations({ settings, activeStationId }: { settings: GlobalSettings, activeStationId: string }) {
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => (isUrdu ? ur : en);

@@ -3,6 +3,8 @@ import { Sliders, Save, Globe, Monitor, Printer, AlertTriangle } from 'lucide-re
 import { useStation } from '../../../contexts/StationContext';
 import { GlobalSettings } from '../../../types';
 
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function SystemPreferences({ settings, onUpdateSettings, activeStationId }: { settings: GlobalSettings, onUpdateSettings: (s: GlobalSettings) => void, activeStationId: string }) {
   const { showToast } = useStation();
 

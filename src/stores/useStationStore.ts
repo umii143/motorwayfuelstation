@@ -36,7 +36,7 @@ const getBusinessType = (stationId: string): 'fuel_station' | 'cng' | 'lube' => 
 };
 
 export const useStationStore = create<StationState>((set, get) => {
-  let toastTimeout: any = null;
+  let toastTimeout: ReturnType<typeof setTimeout> | null = null;
 
   return {
     activeStationId: db.getActiveStationId(),
@@ -48,8 +48,8 @@ export const useStationStore = create<StationState>((set, get) => {
       title: '',
       message: '',
       visible: false,
-      onConfirm: () => {},
-      onCancel: () => {}
+      onConfirm: () => { /* empty */ },
+      onCancel: () => { /* empty */ }
     },
 
     setAIAssistantVisible: (visible) => set({ isAIAssistantVisible: visible }),
@@ -68,6 +68,7 @@ export const useStationStore = create<StationState>((set, get) => {
         } else {
           Haptics.impact({ style: ImpactStyle.Light });
         }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err) {
          // ignore on web
       }

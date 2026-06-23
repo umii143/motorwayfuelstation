@@ -1,4 +1,5 @@
 import { Product, Customer, Shift } from '../types';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useStation } from '../contexts/StationContext';
 
 export interface AlertNotification {

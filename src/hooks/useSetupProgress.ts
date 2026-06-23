@@ -8,7 +8,16 @@ export interface StepWithStatus extends SetupStep {
   isAccessible: boolean;
 }
 
-export function useSetupProgress() {
+export interface SetupProgressResult {
+  steps: StepWithStatus[];
+  completedCount: number;
+  totalCount: number;
+  setupComplete: boolean;
+  firstIncompleteStep: StepWithStatus | undefined;
+  progressPercent: number;
+}
+
+export function useSetupProgress(): SetupProgressResult {
   const store = useStation();
 
   const stepsWithStatus = useMemo((): StepWithStatus[] => {
@@ -16,7 +25,7 @@ export function useSetupProgress() {
     const steps = getSetupSteps(isLube);
     
     // First pass: compute completion
-    const completionMap: Record<string, boolean> = {};
+    const completionMap: Record<string, boolean> = { /* empty */ };
     steps.forEach(step => {
       completionMap[step.id] = step.completionCheck(store);
     });
@@ -41,7 +50,7 @@ export function useSetupProgress() {
         isAccessible: isCompleted || dependenciesMet,
       };
     });
-  }, [store.tanks, store.nozzles, store.products, store.settings, store.activeStationId]);
+  }, [store]);
 
   const totalCount = stepsWithStatus.length;
   const completedCount = stepsWithStatus.filter(s => s.status === 'completed').length;
@@ -58,6 +67,6 @@ export function useSetupProgress() {
     totalCount,
     setupComplete,
     firstIncompleteStep,
-    progressPercent: Math.round((completedCount / totalCount) * 100),
+    progressPercent: totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0,
   };
 }

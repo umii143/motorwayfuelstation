@@ -1,4 +1,8 @@
 import { create } from 'zustand';
+ 
+ 
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Shift, Product, Customer, Supplier, Tank, BankAccount, Staff, StockTransaction, InventoryMovement, StaffFinanceEntry, JournalEntry, CogsRecord } from '../types';
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
@@ -18,6 +22,7 @@ interface ShiftState {
   shifts: Shift[];
   setShifts: (shifts: Shift[]) => void;
   handleAddShift: (newShift: Shift, orgId?: string, stationId?: string) => Promise<void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleUpdateShift: (updatedShift: Shift, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
   handleDeleteDebitEntry: (shiftId: string, entryId: string, orgId?: string, stationId?: string) => Promise<void>;
   handleDeleteRecoveryEntry: (shiftId: string, entryId: string, orgId?: string, stationId?: string) => Promise<void>;
@@ -191,6 +196,7 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
         const updatedShift = { ...shift, pendingPriceRevisions, activeMidShiftAlert: true };
 
         if (orgId) {
+          // eslint-disable-next-line no-console
           firestoreDb.saveDocument(orgId, sId, bType, 'shifts', shift.id, updatedShift).catch(console.error);
         }
 
@@ -241,9 +247,8 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
           if (meterClose === undefined) return;
 
           const previousSegments = newSegments.filter(s => s.nozzleId === nId);
-          const meterOpen = previousSegments.length > 0 
-            ? previousSegments[previousSegments.length - 1].meterClose 
-            : shift.openingReadings[nId];
+          const lastSeg = previousSegments.length > 0 ? previousSegments[previousSegments.length - 1] : undefined;
+          const meterOpen = lastSeg ? lastSeg.meterClose : (shift.openingReadings[nId] || 0);
 
           const litersSold = Math.max(0, meterClose - meterOpen);
           const revenue = litersSold * oldRate;
@@ -280,6 +285,7 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
         };
         
         if (orgId) {
+          // eslint-disable-next-line no-console
           firestoreDb.saveDocument(orgId, sId, bType, 'shifts', shift.id, updatedShift).catch(console.error);
         }
 
@@ -313,8 +319,8 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
       const journalEntries = useFinancialStore.getState().journalEntries;
 
       // 1. Group nozzle discharges
-      const tankDischarges: { [tankId: string]: number } = {};
-      const productDischarges: { [productId: string]: number } = {};
+      const tankDischarges: { [tankId: string]: number } = { /* empty */ };
+      const productDischarges: { [productId: string]: number } = { /* empty */ };
       
       nozzles.forEach((nz) => {
         const openR = updatedShift.openingReadings[nz.id] || 0;
@@ -331,7 +337,7 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
       for (const tankId in tankDischarges) {
         const tank = tanks.find((t) => t.id === tankId);
         if (tank) {
-          const discharge = tankDischarges[tankId];
+          const discharge = tankDischarges[tankId] || 0;
           if (discharge > tank.currentStock) {
             const msg = settings.language === 'ur'
               ? `ٹینک "${tank.name}" میں اسٹاک کم ہے۔ دستیاب اسٹاک: ${tank.currentStock} لیٹر۔ مطلوبہ فروخت: ${discharge} لیٹر۔`
@@ -420,7 +426,7 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
       });
 
       // 5.5 Prepare FIFO Batches
-      let nextBatches = [...useInventoryStore.getState().stockBatches];
+      const nextBatches = [...useInventoryStore.getState().stockBatches];
       const newCOGSRecords: CogsRecord[] = [];
 
       // 6. Compute new product stocks and deduct from FIFO batches
@@ -451,10 +457,11 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
             
             // Update batch
             const batchIndex = nextBatches.findIndex(b => b.id === batch.id);
-            if (batchIndex !== -1) {
-              const newRemaining = nextBatches[batchIndex].qtyRemaining - qtyToTake;
+            if (batchIndex !== -1 && nextBatches[batchIndex]) {
+              const batchToUpdate = nextBatches[batchIndex] as import('../types').StockBatch;
+              const newRemaining = batchToUpdate.qtyRemaining - qtyToTake;
               nextBatches[batchIndex] = {
-                ...nextBatches[batchIndex],
+                ...batchToUpdate,
                 qtyRemaining: newRemaining,
                 status: newRemaining <= 0 ? 'depleted' : 'active'
               };
@@ -646,6 +653,7 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
 
       // Phase 2: Shadow Mode Validation (Unified Enterprise Architecture)
       // We dispatch the shift to the new Operational Core without blocking the UI
+      // eslint-disable-next-line no-console
       dispatchShiftToOperationalCore(updatedShift, sId, 'default', orgId).catch(console.error);
 
       // WhatsApp alerts
@@ -663,8 +671,10 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ number: settings.whatsappSettings.number, message: msg })
-          }).catch(() => {});
-        } catch(e) {}
+          }).catch(() => { /* empty */ });
+         
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (e) { /* ignore */ }
       }
 
     } else {

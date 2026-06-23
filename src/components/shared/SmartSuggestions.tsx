@@ -118,6 +118,7 @@ export const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ onClose }) =
                         if (suggestion.actionPath) {
                           // In a real app with React Router, we'd navigate
                           // navigate(suggestion.actionPath);
+                          // eslint-disable-next-line no-console
                           console.log('Navigate to', suggestion.actionPath);
                         }
                       }}

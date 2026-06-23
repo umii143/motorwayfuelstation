@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Product, RateChangeReason, Attachment, Tank } from '../../../types';
-import { X, TrendingUp, TrendingDown, Upload, File as FileIcon, XCircle, AlertCircle, Info, Activity, CheckCircle } from 'lucide-react';
+import { Product, RateChangeReason, Attachment } from '../../../types';
+import { X, TrendingUp, TrendingDown, Upload, File as FileIcon, XCircle, Activity, CheckCircle } from 'lucide-react';
 import { t } from '../../../lib/translations';
 import { forecastImpactEngine, ForecastImpactResult } from '../../../services/priceManagement/forecastImpactEngine';
 import { storage } from '../../../services/storage/localProvider';
@@ -50,11 +50,13 @@ export default function PriceImpactSimulatorModal({
       // 1. Get Stock
       const relevantTanks = tanks.filter(t => t.productId === product.id);
       const stock = relevantTanks.reduce((sum, t) => sum + (t.currentStock || 0), 0) || product.currentStock || 0;
+       
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTotalStock(stock);
 
       // Calculate average sales based on historical shifts
       let totalSold = 0;
-      let daysWithSales = new Set<string>();
+      const daysWithSales = new Set<string>();
       
       shifts.forEach(s => {
         if (s.status === 'closed') {
@@ -106,7 +108,9 @@ export default function PriceImpactSimulatorModal({
 
       const attachment = await storage.uploadFile(file, 'Admin', type);
       setAttachments(prev => [...prev, attachment]);
+     
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error("Upload failed", error);
     } finally {
       setIsUploading(false);

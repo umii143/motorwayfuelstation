@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { X, LayoutTemplate, Plus, Shield, Search } from 'lucide-react';
-import { useWidgetEngine } from '../../store/useWidgetEngine';
-import { WidgetManifest } from '../../types/widget.types';
+import { useWidgetEngine } from '../../stores/useWidgetEngine';
 
 interface WidgetStudioDrawerProps {
   isOpen: boolean;
@@ -67,6 +66,7 @@ export function WidgetStudioDrawer({ isOpen, onClose }: WidgetStudioDrawerProps)
             {['available', 'installed', 'recommended', 'favorites'].map((tab) => (
               <button
                 key={tab}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onClick={() => setActiveTab(tab as any)}
                 className={`pb-3 text-xs font-black uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === tab 

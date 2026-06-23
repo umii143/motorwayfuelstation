@@ -2,13 +2,8 @@ import React, { useState, useMemo } from "react";
 import {
   Tag,
   Search,
-  Calendar,
-  Filter,
-  TrendingDown,
-  Users,
   ShieldCheck,
   Download,
-  AlertTriangle,
   LineChart,
 } from "lucide-react";
 import { GlobalSettings, Shift, DiscountEntry, Product } from "../../types";
@@ -27,6 +22,8 @@ export default function DiscountsHub({
   products,
 }: DiscountsHubProps) {
   const [searchTerm, setSearchTerm] = useState("");
+   
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [dateFilter, setDateFilter] = useState("all"); // 'all', 'today', 'week', 'month'
   const [typeFilter, setTypeFilter] = useState("all");
 
@@ -34,7 +31,7 @@ export default function DiscountsHub({
 
   // Compile all discounts from shifts
   const allDiscounts = useMemo(() => {
-    let list: (DiscountEntry & {
+    const list: (DiscountEntry & {
       shiftId: string;
       date: string;
       shiftType: string;
@@ -54,7 +51,7 @@ export default function DiscountsHub({
     // Sort descending by timestamp
     return list.sort(
       (a, b) =>
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+        new Date((b.timestamp || '')).getTime() - new Date((a.timestamp || '')).getTime(),
     );
   }, [shifts]);
 
@@ -90,7 +87,7 @@ export default function DiscountsHub({
       acc[d.type] = (acc[d.type] || 0) + d.amount;
       return acc;
     },
-    {} as Record<string, number>,
+    { /* empty */ } as Record<string, number>,
   );
 
   return (
@@ -219,7 +216,9 @@ export default function DiscountsHub({
                     No discount records match your filters.
                   </td>
                 </tr>
+               
               ) : (
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 filteredDiscounts.map((d, i) => (
                   <tr
                     key={d.id}

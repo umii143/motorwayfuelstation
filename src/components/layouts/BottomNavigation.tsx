@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, LineChart, BookOpen, Grid, Plus, BrainCircuit } from 'lucide-react';
+import { Home, LineChart, BookOpen, Grid, BrainCircuit } from 'lucide-react';
 
 interface BottomNavigationProps {
   activeView: string;

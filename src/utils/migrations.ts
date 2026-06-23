@@ -3,6 +3,7 @@ import { useSupplierStore } from '../stores/useSupplierStore';
 import { useFinancialStore } from '../stores/useFinancialStore';
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { JournalEntry, SupplierPayment, StockTransaction, Supplier } from '../types';
 import { useShiftStore } from '../stores/useShiftStore';
 import { getBusinessTypeForStation } from '../lib/businessScope';
@@ -17,6 +18,7 @@ export const migrateAccountsPayable = async (orgId?: string) => {
     return;
   }
 
+  // eslint-disable-next-line no-console
   console.log('--- STARTING ACCOUNTS PAYABLE RETROACTIVE MIGRATION ---');
 
   const bType = getBusinessTypeForStation(sId);
@@ -31,6 +33,7 @@ export const migrateAccountsPayable = async (orgId?: string) => {
   const shifts = shiftStore.shifts;
   
   if (!suppliers || suppliers.length === 0) {
+     // eslint-disable-next-line no-console
      console.log('No suppliers found. Skipping migration.');
      localStorage.setItem(migrationKey, 'true');
      return;
@@ -38,6 +41,7 @@ export const migrateAccountsPayable = async (orgId?: string) => {
 
   // Find all historical purchases
   const purchases = stockTxns.filter(t => t.type === 'receipt' && t.supplierId);
+  // eslint-disable-next-line no-console
   console.log(`Found ${purchases.length} historical stock purchases.`);
 
   // Find all historical payments inside shifts
@@ -47,6 +51,7 @@ export const migrateAccountsPayable = async (orgId?: string) => {
         shiftPayments.push(...shift.supplierPayments);
      }
   });
+  // eslint-disable-next-line no-console
   console.log(`Found ${shiftPayments.length} historical supplier payments from shifts.`);
 
   const newJournalEntries: JournalEntry[] = [];
@@ -122,6 +127,7 @@ export const migrateAccountsPayable = async (orgId?: string) => {
         ...supplier,
         balance: calculatedBalance
      });
+     // eslint-disable-next-line no-console
      console.log(`Supplier [${supplier.name}] balance recalculated: Rs. ${calculatedBalance}`);
   }
 
@@ -130,7 +136,7 @@ export const migrateAccountsPayable = async (orgId?: string) => {
      financialStore.setJournalEntries([...newJournalEntries, ...financialStore.journalEntries]);
      newJournalEntries.forEach(entry => {
         if (orgId) {
-           firestoreDb.saveDocument(orgId, sId, bType, 'journalEntries', entry.id, entry).catch(() => {});
+           firestoreDb.saveDocument(orgId, sId, bType, 'journalEntries', entry.id, entry).catch(() => { /* empty */ });
         }
      });
   }
@@ -140,5 +146,6 @@ export const migrateAccountsPayable = async (orgId?: string) => {
   });
 
   localStorage.setItem(migrationKey, 'true');
+  // eslint-disable-next-line no-console
   console.log('--- ACCOUNTS PAYABLE MIGRATION COMPLETED SUCCESSFULLY ---');
 };

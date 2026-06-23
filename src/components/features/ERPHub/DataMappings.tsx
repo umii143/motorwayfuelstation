@@ -7,6 +7,8 @@ interface DataMappingsProps {
   stationId: string;
 }
 
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function DataMappings({ settings, stationId }: DataMappingsProps) {
   const mappings = [
     { local: 'Super (Tank 1)', external: 'MATERIAL_1001_SUPER', type: 'Product Code' },

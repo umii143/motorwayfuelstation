@@ -24,6 +24,8 @@ export function ProductsStep({ products, onUpdate, onContinue, language }: Props
     onUpdate([
       ...products,
       { 
+         
+        // eslint-disable-next-line react-hooks/purity
         id: 'prod_' + Date.now(), 
         name: preset.name,
         urduName: preset.name,

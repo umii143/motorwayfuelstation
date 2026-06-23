@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Sparkles, BrainCircuit, AlertTriangle, ShieldAlert, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { BrainCircuit, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { Shift, GlobalSettings } from '../../types';
 import { InvestigationEngine } from '../../lib/investigationEngine';
 
@@ -8,9 +8,13 @@ interface Props {
   shifts: Shift[];
 }
 
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function DashboardAIInsights({ settings, shifts }: Props) {
   
+   
   const insights = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const alerts: any[] = [];
     
     // Evaluate the last 5 shifts

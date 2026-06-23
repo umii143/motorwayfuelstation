@@ -73,6 +73,7 @@ export const generateKPIs = (
   standaloneExpenses: ExpenseEntry[] = [],
   lubePosSales: LubePosSale[] = [],
   branchId: string = 'main',
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   nozzles: any[] = [],
   rateHistory: RateHistoryEntry[] = [],
   dateRange?: { from: string; to: string }
@@ -87,14 +88,14 @@ export const generateKPIs = (
 
   // Breakdowns
   const breakdowns: KPIBreakdowns = {
-    revenueByProduct: {},
-    revenueByCategory: {},
-    grossProfitByProduct: {},
-    grossProfitByCategory: {},
-    netProfitByCategory: {},
-    expensesByCategory: {},
-    expensesByMonth: {},
-    expensesByBranch: {},
+    revenueByProduct: { /* empty */ },
+    revenueByCategory: { /* empty */ },
+    grossProfitByProduct: { /* empty */ },
+    grossProfitByCategory: { /* empty */ },
+    netProfitByCategory: { /* empty */ },
+    expensesByCategory: { /* empty */ },
+    expensesByMonth: { /* empty */ },
+    expensesByBranch: { /* empty */ },
     salaryDetails: [],
     trendData: [],
     ledgerTransactions: []
@@ -244,7 +245,7 @@ export const generateKPIs = (
   });
 
   // Shifts
-  const productSalesMap: Record<string, number> = {};
+  const productSalesMap: Record<string, number> = { /* empty */ };
 
   branchShifts.forEach(shift => {
     const d = shift.date.split('T')[0];
@@ -340,6 +341,7 @@ export const generateKPIs = (
   const grossProfit = totalRevenue - totalCogs;
   const netProfit = grossProfit - totalExpenses;
   const marginPercent = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const avgPerLiter = totalLitersSold > 0 ? (totalExpenses / totalLitersSold) : 0; // Expense per liter
 
   // Calculate netProfitByCategory

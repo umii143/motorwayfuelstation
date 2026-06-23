@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Building2, Cylinder, Fuel, CheckCircle2, RefreshCw, ChevronRight, ChevronLeft, 
-  Plus, Trash2, Users, User, Phone, Lock, Hash, Store, Droplets, ArrowRight 
+  Building2, Cylinder, Fuel, CheckCircle2, RefreshCw, ChevronLeft, 
+  Plus, Trash2, Users, User, Hash, Store, Droplets, ArrowRight 
 } from 'lucide-react';
 import { GlobalSettings, Tank, Nozzle, Product, Staff } from '../../types';
 import { useStation } from '../../contexts/StationContext';
@@ -21,6 +21,8 @@ interface OnboardingWizardProps {
 
 export default function OnboardingWizard({ onComplete, onCancel, currentLanguage }: OnboardingWizardProps) {
   const { settings } = useStation();
+   
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const isUrdu = currentLanguage === 'ur';
 
   const [step, setStep] = useState(1);
@@ -384,7 +386,7 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
                     {/* Added Nozzles List */}
                     {nozzles.length > 0 && (
                       <div className="space-y-2 mb-4">
-                        {nozzles.map((n, idx) => {
+                        {nozzles.map((n: any, idx: any) => {
                           const tankName = tanks[parseInt(n.tankId)]?.name || 'Unknown';
                           return (
                             <div key={idx} className="flex items-center justify-between bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">

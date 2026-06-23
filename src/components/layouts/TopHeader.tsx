@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, Globe, ChevronDown, Search, Bell, Fuel, Sun, Moon, Settings, Palette, Store, Cylinder, BrainCircuit } from 'lucide-react';
+import { Menu, Globe, ChevronDown, Search, Bell, Fuel, Sun, Moon, Settings, Palette, Cylinder, BrainCircuit } from 'lucide-react';
 import { GlobalSettings, Station } from '../../types';
 
 interface TopHeaderProps {
   onMenuClick: () => void;
   onLanguageToggle?: () => void;
-  onThemeToggle?: () => void;
+  
   onSetTheme?: (theme: string) => void;
   onSettingsClick?: () => void;
   onTankWizardTrigger?: () => void;
@@ -13,34 +13,26 @@ interface TopHeaderProps {
   settings: GlobalSettings;
   stations?: Station[];
   activeStationId?: string;
-  onSwitchStation?: (id: string) => void;
-  onCreateStation?: () => void;
 }
 
 export const TopHeader: React.FC<TopHeaderProps> = ({ 
   onMenuClick, 
   onLanguageToggle,
-  onThemeToggle,
   onSetTheme,
   onSettingsClick,
   onTankWizardTrigger,
   onJarvisTrigger,
   settings,
   stations = [],
-  activeStationId,
-  onSwitchStation,
-  onCreateStation
+  activeStationId
 }) => {
-  const [isStationMenuOpen, setIsStationMenuOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  
   const themeDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsStationMenuOpen(false);
-      }
+
       if (themeDropdownRef.current && !themeDropdownRef.current.contains(event.target as Node)) {
         setIsThemeOpen(false);
       }

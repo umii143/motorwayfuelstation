@@ -14,11 +14,13 @@ let qrCodeData = '';
 let isInitializing = false;
 
 waClient.on('qr', (qr) => {
+    // eslint-disable-next-line no-console
     console.log('WhatsApp Client QR RECEIVED');
     qrCodeData = qr; 
 });
 
 waClient.on('ready', () => {
+    // eslint-disable-next-line no-console
     console.log('WhatsApp Client is ready!');
     isReady = true;
     qrCodeData = ''; 
@@ -26,6 +28,7 @@ waClient.on('ready', () => {
 });
 
 waClient.on('disconnected', (reason) => {
+    // eslint-disable-next-line no-console
     console.log('WhatsApp Client disconnected', reason);
     isReady = false;
     isInitializing = false;
@@ -34,8 +37,10 @@ waClient.on('disconnected', (reason) => {
 export const initWhatsApp = () => {
     if (isReady || isInitializing) return;
     isInitializing = true;
+    // eslint-disable-next-line no-console
     console.log("Initializing WhatsApp Web client...");
     waClient.initialize().catch(err => {
+        // eslint-disable-next-line no-console
         console.error("Failed to init WhatsApp client:", err);
         isInitializing = false;
     });

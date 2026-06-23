@@ -5,29 +5,19 @@ import {
   TrendingUp, 
   TrendingDown, 
   Activity,
-  AlertTriangle,
   PieChart as PieChartIcon,
-  BarChart2,
-  DollarSign,
-  Info
+  DollarSign
 } from 'lucide-react';
 import { formatCurrency } from '../../../lib/currency';
 import { GlobalSettings } from '../../../types';
 import { KPIResult } from '../../../services/analytics/kpiEngine';
 import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
   Tooltip, 
   ResponsiveContainer, 
-  CartesianGrid, 
   Cell,
   PieChart,
   Pie,
-  Legend,
-  LineChart,
-  Line
+  Legend
 } from 'recharts';
 
 interface ProfitDrillDownModalProps {
@@ -260,7 +250,7 @@ export default function ProfitDrillDownModal({
                           ))}
                         </Pie>
                         <Tooltip 
-                          formatter={(value: number) => formatCurrency(value, settings)}
+                          formatter={(value: any) => formatCurrency(value, settings)}
                           contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                         />
                         <Legend />

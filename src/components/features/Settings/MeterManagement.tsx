@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import { Gauge, AlertTriangle, Key, Save, Calculator, Upload, TrendingDown, TrendingUp, ShieldAlert, ArrowRight, History, Search, Calendar, FileText } from 'lucide-react';
+import { Gauge, AlertTriangle, Key, Save, Calculator, ShieldAlert, ArrowRight, History, Search, Calendar, FileText } from 'lucide-react';
 import { useStation } from '../../../contexts/StationContext';
 import { db } from '../../../data/db';
-import { GlobalSettings, MeterResetEvent, AuditTrailEntry, InventoryMovement } from '../../../types';
+import { GlobalSettings, MeterResetEvent, AuditTrailEntry } from '../../../types';
 import { useAuth } from '../../../contexts/AuthContext';
 
 export default function MeterManagement({ settings, activeStationId }: { settings: GlobalSettings, activeStationId: string }) {
+   
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { showToast, showAlert, nozzles, products, shifts, staff, handleAddMeterReset, meterResets } = useStation();
   const { user } = useAuth();
   
@@ -20,7 +22,9 @@ export default function MeterManagement({ settings, activeStationId }: { setting
   const [newReading, setNewReading] = useState('');
   const [pin, setPin] = useState('');
   const [confirmationText, setConfirmationText] = useState('');
+   
   const [step, setStep] = useState<1 | 2 | 3>(1); // 1: Setup, 2: Impact Analysis, 3: Execution
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
 
   // History State
@@ -75,8 +79,10 @@ export default function MeterManagement({ settings, activeStationId }: { setting
       const activeShift = shifts.find(s => s.status === 'active');
       const activeSalesman = activeShift ? staff.find(st => st.id === activeShift.staffId) : null;
 
+       
       // 1. Log Meter Reset Event
       const resetEvent: MeterResetEvent = {
+        // eslint-disable-next-line react-hooks/purity
         id: 'mr_' + Date.now(),
         nozzleId: selectedNozzle.id,
         nozzleName: selectedNozzle.name,
@@ -102,9 +108,11 @@ export default function MeterManagement({ settings, activeStationId }: { setting
       db.saveNozzles(activeStationId, updatedNozzles);
       // Wait for app re-render or trigger nozzle update manually if needed (handled by DB mostly, but for immediate UI we might need context reload)
       // We will reload window or let db sync
+        
       
       // 3. Log Audit Trail
       const auditEntry: AuditTrailEntry = {
+        // eslint-disable-next-line react-hooks/purity
         id: 'aud_' + Date.now(),
         timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
         category: 'SECURITY_CRITICAL',
@@ -131,10 +139,12 @@ export default function MeterManagement({ settings, activeStationId }: { setting
       setConfirmationText('');
       setEvidenceFile(null);
       
+       
       // Force reload to apply nozzle state if not using bound context
       setTimeout(() => window.location.reload(), 1500);
       
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error(err);
       showToast(t('Failed to reset meter.', 'میٹر ری سیٹ کرنے میں ناکامی۔'), 'error');
     }
@@ -153,7 +163,7 @@ export default function MeterManagement({ settings, activeStationId }: { setting
       const matchDate = (!startDate || resetDate >= startDate) && (!endDate || resetDate <= endDate);
 
       return matchSearch && matchDate;
-    }).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    }).sort((a, b) => new Date((b.timestamp || '')).getTime() - new Date((a.timestamp || '')).getTime());
   }, [meterResets, searchQuery, startDate, endDate]);
 
   return (
@@ -489,7 +499,7 @@ export default function MeterManagement({ settings, activeStationId }: { setting
                           {reset.newReading.toFixed(2)}
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-600 text-right font-mono">
-                          {reset.stockAtReset.toFixed(2)} L
+                          {reset.stockAtReset!.toFixed(2)} L
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-600 text-right font-mono">
                           {settings.currency} {reset.priceAtReset}

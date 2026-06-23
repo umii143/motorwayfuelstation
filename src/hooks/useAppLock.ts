@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { GlobalSettings } from '../types';
 
 export function useAppLock(settings: GlobalSettings) {
@@ -9,18 +9,13 @@ export function useAppLock(settings: GlobalSettings) {
   const sessionTimeoutMinutes = settings.security?.sessionTimeoutMinutes ?? 5; // Default 5 mins
   const timeoutMs = sessionTimeoutMinutes * 60 * 1000;
 
-  const lockApp = () => {
+  const lockApp = useCallback(() => {
     if (screenLockEnabled) {
       setIsAppLocked(true);
     }
-  };
+  }, [screenLockEnabled]);
 
-  const unlockApp = () => {
-    setIsAppLocked(false);
-    resetTimer();
-  };
-
-  const resetTimer = () => {
+  const resetTimer = useCallback(() => {
     if (lockTimeoutRef.current) {
       clearTimeout(lockTimeoutRef.current);
     }
@@ -28,7 +23,12 @@ export function useAppLock(settings: GlobalSettings) {
     if (screenLockEnabled && sessionTimeoutMinutes > 0) {
       lockTimeoutRef.current = setTimeout(lockApp, timeoutMs);
     }
-  };
+  }, [screenLockEnabled, sessionTimeoutMinutes, timeoutMs, lockApp]);
+
+  const unlockApp = useCallback(() => {
+    setIsAppLocked(false);
+    resetTimer();
+  }, [resetTimer]);
 
   useEffect(() => {
     // Initial setup
@@ -76,7 +76,7 @@ export function useAppLock(settings: GlobalSettings) {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('blur', handleWindowBlur);
     };
-  }, [screenLockEnabled, sessionTimeoutMinutes, isAppLocked, timeoutMs]);
+  }, [screenLockEnabled, isAppLocked, lockApp, resetTimer]);
 
   return {
     isAppLocked,

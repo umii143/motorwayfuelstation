@@ -33,6 +33,7 @@ export function getBusinessTypeForStation(stationId?: string): BusinessType {
     const stations = db.getStationsList();
     const st = stations.find(s => s.id === resolvedId);
     if (st && st.businessType) return st.businessType;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch(e) {
     // Fallback if db isn't ready
   }

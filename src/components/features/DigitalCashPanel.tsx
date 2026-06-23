@@ -5,15 +5,10 @@ import {
   PlusCircle,
   Clock,
   Search,
-  ArrowUpRight,
-  ArrowDownRight,
   Notebook,
-  HelpCircle,
-  Save,
-  CheckCircle,
   SmartphoneNfc
 } from 'lucide-react';
-import { ResponsiveTable, TableColumn } from '../shared/ResponsiveTable';
+import { ResponsiveTable } from '../shared/ResponsiveTable';
 import { DigitalAccount, Shift, GlobalSettings, LubePosSale } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
@@ -117,6 +112,8 @@ export default function DigitalCashPanel({
     });
 
     return list.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+   
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shifts, timeFilter, lubePosSales, settings]);
 
 

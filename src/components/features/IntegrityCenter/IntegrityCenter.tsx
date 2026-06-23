@@ -2,8 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ShieldCheck, Activity, AlertTriangle, CheckCircle2, XCircle,
-  RefreshCw, ChevronRight, Clock, Zap, Lock, TrendingUp, Info,
-  Eye, FileText, CheckSquare, ArrowRight, Building, Users, Package,
+  RefreshCw, ChevronRight, Zap, Lock, Info, FileText, CheckSquare, Building, Users, Package,
   Landmark, Smartphone, DollarSign, BarChart3, X
 } from 'lucide-react';
 import {
@@ -19,10 +18,6 @@ import {
   IntegrityDriftLog,
   ShadowModeStats,
 } from '../../../services/core/integrityDriftLog';
-import { getAllCustomerBalances, getAllSupplierBalances } from '../../../services/core/ledgerEngine';
-import { useFinancialStore } from '../../../stores/useFinancialStore';
-import { useCustomerStore } from '../../../stores/useCustomerStore';
-import { useSupplierStore } from '../../../stores/useSupplierStore';
 import { useAuthStore } from '../../../stores/useAuthStore';
 
 interface IntegrityCenterProps {
@@ -47,6 +42,8 @@ const MODULE_CONFIG: Record<string, { label: string; icon: React.ElementType; un
   shift_variance: { label: 'Shift Variance', icon: Activity, unit: 'PKR' },
 };
 
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCenterProps) {
   const [driftLogs, setDriftLogs] = useState<IntegrityDriftLog[]>([]);
   const [stats, setStats] = useState<ShadowModeStats | null>(null);
@@ -75,7 +72,9 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
     setTimeout(() => setIsRefreshing(false), 600);
   }, [stationId]);
 
+   
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
     const interval = setInterval(refresh, 30000); // Auto-refresh every 30s
     return () => clearInterval(interval);
@@ -93,7 +92,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
     if (activeFilter === 'unresolved') return !l.resolved;
     if (activeFilter === 'critical') return !l.resolved && l.severity === 'CRITICAL';
     return true;
-  }).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  }).sort((a, b) => new Date((b.timestamp || '')).getTime() - new Date((a.timestamp || '')).getTime());
 
   const unresolvedCritical = getUnresolvedCriticalCount(stationId);
   const openCount = getOpenDriftCount(stationId);
@@ -104,7 +103,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
     .reduce<Record<string, number>>((acc, l) => {
       acc[l.module] = (acc[l.module] || 0) + l.difference;
       return acc;
-    }, {});
+    }, { /* empty */ });
 
   const scoreColor = integrityScore >= 98 ? 'text-emerald-600' : integrityScore >= 90 ? 'text-amber-500' : integrityScore >= 75 ? 'text-orange-500' : 'text-rose-600';
   const scoreStroke = integrityScore >= 98 ? '#10b981' : integrityScore >= 90 ? '#f59e0b' : integrityScore >= 75 ? '#f97316' : '#ef4444';

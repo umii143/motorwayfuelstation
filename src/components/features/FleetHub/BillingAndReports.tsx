@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GlobalSettings, FleetTransaction, FleetAccount } from '../../../types';
 import { db } from '../../../data/db';
-import { FileSpreadsheet, Download, Filter, Search, Receipt } from 'lucide-react';
+import { Download, Filter, Receipt } from 'lucide-react';
 import { ResponsiveTable } from '../../shared/ResponsiveTable';
 
 interface BillingAndReportsProps {
@@ -17,6 +17,8 @@ export default function BillingAndReports({ settings, stationId }: BillingAndRep
   const [dateTo, setDateTo] = useState<string>('');
 
   useEffect(() => {
+     
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTransactions(db.getFleetTransactions(stationId));
     setAccounts(db.getFleetAccounts(stationId));
 

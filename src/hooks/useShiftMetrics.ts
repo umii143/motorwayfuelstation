@@ -1,5 +1,13 @@
 import { useMemo } from 'react';
 import { useStation } from '../contexts/StationContext';
+import { Shift } from '../types';
+
+type ExtendedShift = Shift & {
+  pumpReadings?: { nozzleReadings?: { nozzleId: string }[] }[];
+  cashierName?: string;
+  openingCash?: number;
+  totalSales?: number;
+};
 
 export function useShiftMetrics() {
   const { shifts, nozzles } = useStation();
@@ -18,8 +26,8 @@ export function useShiftMetrics() {
 
     const activeNozzles = new Set<string>();
     activeShifts.forEach(shift => {
-      shift.pumpReadings?.forEach(pr => {
-        pr.nozzleReadings?.forEach(nr => {
+      (shift as ExtendedShift).pumpReadings?.forEach((pr) => {
+        pr.nozzleReadings?.forEach((nr) => {
           activeNozzles.add(nr.nozzleId);
         });
       });
@@ -33,14 +41,14 @@ export function useShiftMetrics() {
     let shiftDuration = '0h 0m';
 
     if (activeShift) {
-      shiftOperator = (activeShift as any).cashierName || 'System';
-      openingCash = (activeShift as any).openingCash || 0;
-      expectedCash = openingCash + ((activeShift as any).totalSales || 0);
+      shiftOperator = (activeShift as ExtendedShift).cashierName || 'System';
+      openingCash = (activeShift as ExtendedShift).openingCash || 0;
+      expectedCash = openingCash + ((activeShift as ExtendedShift).totalSales || 0);
       const currentCash = expectedCash; // Need proper tracking if possible
       variance = currentCash - expectedCash;
 
       const startMs = new Date(activeShift.startTime).getTime();
-      const diffMs = Date.now() - startMs;
+      const diffMs = new Date().getTime() - startMs;
       const diffHrs = Math.floor(diffMs / 3600000);
       const diffMins = Math.floor((diffMs % 3600000) / 60000);
       shiftDuration = `${diffHrs}h ${diffMins}m`;

@@ -15,12 +15,16 @@ export default function FleetDashboard({ settings, stationId }: FleetDashboardPr
   const [transactions, setTransactions] = useState<FleetTransaction[]>([]);
 
   useEffect(() => {
+     
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAccounts(db.getFleetAccounts(stationId));
     setVehicles(db.getFleetVehicles(stationId));
     setTransactions(db.getFleetTransactions(stationId));
   }, [stationId]);
 
+   
   const totalReceivables = accounts.reduce((sum, acc) => sum + acc.balance, 0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const activeAccounts = accounts.filter(a => a.status === 'active').length;
   const totalVehicles = vehicles.length;
   const activeVehicles = vehicles.filter(v => v.status === 'active').length;

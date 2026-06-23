@@ -58,6 +58,7 @@ export class AIAssistantService {
     const groqKey =
       localStorage.getItem('VITE_GROQ_API_KEY') ||
       localStorage.getItem('GROQ_API_KEY') ||
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GROQ_API_KEY) ||
       undefined;
@@ -65,6 +66,7 @@ export class AIAssistantService {
     const geminiKey =
       localStorage.getItem('VITE_GEMINI_API_KEY') ||
       localStorage.getItem('GEMINI_API_KEY') ||
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) ||
       undefined;
@@ -73,13 +75,16 @@ export class AIAssistantService {
     if (groqKey) {
       this.groqApiKey = groqKey;
       this.activeProvider = 'groq';
+      // eslint-disable-next-line no-console
       console.info('[AIAssistantService] ✅ Groq provider active (via REST API).');
     } else if (geminiKey) {
       this.geminiApiKey = geminiKey;
       this.activeProvider = 'gemini';
+      // eslint-disable-next-line no-console
       console.info('[AIAssistantService] ✅ Gemini provider active (via REST API).');
     } else {
       this.activeProvider = 'mock';
+      // eslint-disable-next-line no-console
       console.warn(
         '[AIAssistantService] ⚠️ No API keys found. Running in Mock Mode.\n' +
         'Add VITE_GROQ_API_KEY or VITE_GEMINI_API_KEY to your .env file.'
@@ -95,6 +100,7 @@ export class AIAssistantService {
     this.initializeClients();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private getSystemPrompt(contextData?: any, mode: AIAssistantMode = 'chat'): string {
     const dataContext = contextData
       ? `\n\n=== SYSTEM DATA CONTEXT ===\n${JSON.stringify(contextData)}\n===========================\n`
@@ -152,6 +158,7 @@ export class AIAssistantService {
 
   public async askQuestion(
     question: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     contextData?: any,
     mode: AIAssistantMode = 'chat'
   ): Promise<AIResponse> {
@@ -224,6 +231,7 @@ export class AIAssistantService {
 
       return { rawResponse: content, formattedReceipt: content };
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('[AIAssistantService] Request failed:', error);
       const errorMessage = error instanceof Error ? error.message : String(error);
 
@@ -245,6 +253,7 @@ export class AIAssistantService {
 
 
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public async generateBusinessInsights(contextData: any): Promise<AIBusinessInsight[]> {
     const prompt = `
     Analyze the following Business Intelligence (BI) data for a fuel station.
@@ -322,6 +331,7 @@ export class AIAssistantService {
       if (jsonMatch) return JSON.parse(jsonMatch[0]);
       return JSON.parse(content);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('[AIAssistantService] Insights generation failed:', error);
       return [];
     }

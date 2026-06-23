@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GlobalSettings, VarianceIncident } from '../../../types';
 import { db } from '../../../data/db';
-import { ShieldAlert, TrendingDown, Scale, DollarSign, Search, Plus, XCircle, Droplets, Activity } from 'lucide-react';
+import { ShieldAlert, TrendingDown, Scale, DollarSign, Droplets, Activity } from 'lucide-react';
 import { useVarianceAnalytics } from '../../../hooks/useVarianceAnalytics';
 
 interface LossDashboardProps {
@@ -13,6 +13,8 @@ export default function LossDashboard({ settings, stationId }: LossDashboardProp
   const [incidents, setIncidents] = useState<VarianceIncident[]>([]);
 
   useEffect(() => {
+     
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIncidents(db.getVarianceIncidents(stationId));
   }, [stationId]);
 

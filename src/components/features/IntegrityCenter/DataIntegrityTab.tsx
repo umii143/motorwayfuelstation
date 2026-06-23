@@ -8,6 +8,8 @@ interface DataIntegrityTabProps {
   settings: GlobalSettings;
 }
 
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function DataIntegrityTab({ stationId, settings }: DataIntegrityTabProps) {
   const [dataStats, setDataStats] = useState({
     shifts: 0,
@@ -17,7 +19,9 @@ export default function DataIntegrityTab({ stationId, settings }: DataIntegrityT
   });
 
   useEffect(() => {
+     
     if (!stationId) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDataStats({
       shifts: db.getShifts(stationId).filter(s => s.status === 'closed').length,
       treasury: db.getTreasuryTransactions(stationId).length,

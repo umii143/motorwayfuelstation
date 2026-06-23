@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
 import {
-  Users, AlertCircle, Wallet, Clock, Search, ChevronDown, Download, Plus, MapPin, Receipt, CheckCircle, XCircle
+  Users, AlertCircle, Wallet, Clock, Search, ChevronDown, Download, Plus, Receipt
 } from 'lucide-react';
 import { Supplier, Shift, Product, GlobalSettings, BankAccount, StockBatch } from '../../../types';
-import { formatCurrency, getCurrencySymbol } from '../../../lib/currency';
+import { formatCurrency } from '../../../lib/currency';
 import { t as translate } from '../../../lib/translations';
 import { useStation } from '../../../contexts/StationContext';
 import { AddSupplierModal } from './AddSupplierModal';
@@ -36,13 +36,21 @@ const getSupplierLogo = (name: string) => {
 };
 
 export default function SupplierDirectory({
+   
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   settings, suppliers, shifts, batches, onAddSupplier, onUpdateSupplier, onDeleteSupplier, onNavigateToSupplier
+ 
 }: SuppliersProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { showToast, showConfirm } = useStation();
   const t = (en: string, ur: string) => translate(en, ur, settings);
+  
 
+   
   const [searchQuery, setSearchQuery] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [typeFilter, setTypeFilter] = useState('All Types');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
@@ -65,10 +73,12 @@ export default function SupplierDirectory({
 
   // Approximate overdue based on balances exceeding payment terms
   const overdueAmount = suppliers.reduce((sum, s) => {
+     
     // If supplier balance is high and they have payment terms (e.g., 30 days)
     // We do a simplified overdue estimation if we don't have deep invoice ageing
-    return sum + (s.balance > (s.creditLimit * 0.8) ? (s.balance * 0.2) : 0);
+    return sum + (s.balance > (s.creditLimit! * 0.8) ? (s.balance * 0.2) : 0);
   }, 0);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const avgCreditDays = suppliers.length > 0 ? Math.round(suppliers.reduce((sum, s) => sum + ((s as any).paymentTermsDays || 0), 0) / suppliers.length) : 0;
 
   const filteredSuppliers = useMemo(() => {

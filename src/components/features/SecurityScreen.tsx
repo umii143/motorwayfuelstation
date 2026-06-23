@@ -7,6 +7,8 @@ import { BiometricService } from '../../services/security/BiometricService';
 import { NativeHaptics } from '../../services/hardware/Haptics';
 
 export const SecurityScreen: React.FC = () => {
+   
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { unlock, forceUnlock, lockApp } = useNativeAuth();
   const { logout } = useAuth();
   const [pin, setPin] = useState('');
@@ -93,7 +95,9 @@ export const SecurityScreen: React.FC = () => {
                   } else {
                     NativeHaptics.error();
                     setShowPin(true);
+                   
                   }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
                 } catch (err: any) {
                   NativeHaptics.error();
                   setShowPin(true);

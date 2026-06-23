@@ -7,6 +7,8 @@ interface FuelQualityHubProps {
   settings: GlobalSettings;
 }
 
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function FuelQualityHub({ settings }: FuelQualityHubProps) {
   const [activeTab, setActiveTab] = useState<'density' | 'volume'>('density');
 

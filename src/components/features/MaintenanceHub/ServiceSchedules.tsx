@@ -28,10 +28,14 @@ export default function ServiceSchedules({ settings, stationId }: ServiceSchedul
   const [notes, setNotes] = useState('');
 
   useEffect(() => {
+     
+     
+     
     loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stationId]);
 
-  const loadData = () => {
+  function loadData() {
     setRecords(db.getMaintenanceRecords(stationId));
     setAssets(db.getAssets(stationId));
   };
@@ -241,8 +245,10 @@ export default function ServiceSchedules({ settings, stationId }: ServiceSchedul
                   <input type="text" value={description} onChange={e => setDescription(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="e.g. Replace dispenser hose" />
                 </div>
 
+                { }
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Service Type</label>
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   <select value={type} onChange={e => setType(e.target.value as any)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white">
                     <option value="preventive">Preventive (Routine)</option>
                     <option value="corrective">Corrective (Repair)</option>
@@ -267,9 +273,11 @@ export default function ServiceSchedules({ settings, stationId }: ServiceSchedul
                 <div className="md:col-span-2 border-t border-slate-100 pt-4">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Service Status</label>
                   <div className="flex gap-2">
+                    { }
                     {['scheduled', 'in_progress', 'completed', 'cancelled'].map((s) => (
                       <button
                         key={s}
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         onClick={() => setStatus(s as any)}
                         className={`flex-1 py-2 text-[11px] font-bold rounded-lg border transition ${
                           status === s 

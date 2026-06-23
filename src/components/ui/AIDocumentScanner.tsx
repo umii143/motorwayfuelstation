@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Upload, X, ScanLine, FileText, CheckCircle2, AlertTriangle, Sparkles, Image as ImageIcon } from 'lucide-react';
+import { X, ScanLine, FileText, AlertTriangle, Sparkles, Image as ImageIcon } from 'lucide-react';
 import { fetchWithAuth } from '../../lib/api';
 import { GlobalSettings } from '../../types';
 import { t as translate } from '../../lib/translations';
@@ -8,6 +8,7 @@ interface AIDocumentScannerProps {
   isOpen: boolean;
   onClose: () => void;
   settings: GlobalSettings;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onDataExtracted?: (data: any) => void;
   extractionPrompt?: string;
 }
@@ -73,6 +74,7 @@ export default function AIDocumentScanner({ isOpen, onClose, settings, onDataExt
             onDataExtracted(parsed);
             setExtractedData("Data successfully extracted and auto-filled!");
           } catch (e) {
+            // eslint-disable-next-line no-console
             console.error("Failed to parse JSON response:", e);
             setExtractedData(data.reply);
           }
@@ -81,7 +83,9 @@ export default function AIDocumentScanner({ isOpen, onClose, settings, onDataExt
         }
       };
       reader.readAsDataURL(selectedFile);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
+      // eslint-disable-next-line no-console
       console.error(err);
       setError(t('Failed to extract data. Please try again.', 'ڈیٹا نکالنے میں ناکامی۔ براہ کرم دوبارہ کوشش کریں۔'));
     } finally {

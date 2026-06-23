@@ -34,6 +34,7 @@ export class CrashCenter extends Component<Props, State> {
       error,
       errorInfo
     });
+    // eslint-disable-next-line no-console
     console.error("CrashCenter caught an error:", error, errorInfo);
   }
 

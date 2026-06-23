@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, Search, Shield, Trash2, Clock } from 'lucide-react';
-import { ResponsiveTable, TableColumn } from '../../shared/ResponsiveTable';
+import { Search, Shield, Trash2, Clock } from 'lucide-react';
+import { ResponsiveTable } from '../../shared/ResponsiveTable';
 import { t as translate } from '../../../lib/translations';
 import { db } from '../../../data/db';
 import { AuditTrailEntry } from '../../../types';
@@ -21,6 +21,8 @@ export default function SystemAuditTrail({ language, stationId }: SystemAuditTra
 
   // Read logs from the active station's isolated audit ledger
   useEffect(() => {
+     
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLogs(db.getSettingsAuditTrail(stationId));
   }, [stationId]);
 

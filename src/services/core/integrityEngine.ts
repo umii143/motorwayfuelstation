@@ -57,7 +57,7 @@ export async function computeIntegrityScore(
 ): Promise<IntegrityScore> {
   const checks: IntegrityCheck[] = [];
   let totalScore = 100;
-  const ctx = extraContext ?? {};
+  const ctx = extraContext ?? { /* empty */ };
 
   // ─── Check 1: Journal Balance (25 pts) ────────────────────────────────
   const unbalancedShifts = shiftReports.filter(r => !r.journalBalanced);

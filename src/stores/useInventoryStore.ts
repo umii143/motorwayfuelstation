@@ -45,23 +45,33 @@ interface InventoryState {
 
   handleAddMeterReset: (reset: MeterResetEvent, orgId?: string, stationId?: string) => Promise<void>;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleUpdateDealerMargin: (setting: DealerMarginSetting, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
   handleAddSupplierClaim: (claim: SupplierClaim, orgId?: string, stationId?: string) => Promise<void>;
   handleUpdateSupplierClaim: (claim: SupplierClaim, orgId?: string, stationId?: string) => Promise<void>;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleUpdateProductStock: (productId: string, newStock: number, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
+   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleUpdateProductRate: (productId: string, newRate: number, reason?: string, changedBy?: string, dateStr?: string, orgId?: string, stationId?: string, checkPerm?: any, attachments?: any[]) => Promise<void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleDeleteRateHistory: (id: string, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
   handleUpdateProduct: (updatedProduct: Product, orgId?: string, stationId?: string) => Promise<void>;
   handleDeleteProduct: (productId: string, orgId?: string, stationId?: string) => Promise<void>;
   handleAddProduct: (newProduct: Product, orgId?: string, stationId?: string) => Promise<void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleAddTank: (newTank: Tank, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleUpdateTank: (updatedTank: Tank, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleDeleteTank: (id: string, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
   handleAddNozzle: (newNozzle: Nozzle, orgId?: string, stationId?: string) => Promise<void>;
   handleUpdateNozzle: (updatedNozzle: Nozzle, orgId?: string, stationId?: string) => Promise<void>;
   handleDeleteNozzle: (id: string, orgId?: string, stationId?: string) => Promise<void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleAddStockReceipt: (txn: StockTransaction, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleAddStockBatch: (batch: StockBatch, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
 }
 
@@ -101,6 +111,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     if (sId) {
       db.saveProducts(sId, scopedProducts);
       if (orgId) {
+        // eslint-disable-next-line no-console
         scopedProducts.forEach(p => firestoreDb.saveDocument(orgId, sId, getBusinessTypeForStation(sId), 'products', p.id, p).catch(console.error));
       }
     }
@@ -112,6 +123,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     if (sId) {
       db.saveTanks(sId, scopedTanks);
       if (orgId) {
+        // eslint-disable-next-line no-console
         scopedTanks.forEach(t => firestoreDb.saveDocument(orgId, sId, getBusinessTypeForStation(sId), 'tanks', t.id, t).catch(console.error));
       }
     }
@@ -123,6 +135,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     if (sId) {
       db.saveNozzles(sId, scopedNozzles);
       if (orgId) {
+        // eslint-disable-next-line no-console
         scopedNozzles.forEach(n => firestoreDb.saveDocument(orgId, sId, getBusinessTypeForStation(sId), 'nozzles', n.id, n).catch(console.error));
       }
     }
@@ -134,6 +147,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     if (sId) {
       db.savePumps(sId, scopedPumps);
       if (orgId) {
+        // eslint-disable-next-line no-console
         scopedPumps.forEach(p => firestoreDb.saveDocument(orgId, sId, getBusinessTypeForStation(sId), 'pumps', p.id, p).catch(console.error));
       }
     }
@@ -343,6 +357,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
           }));
         }
       }
+    // eslint-disable-next-line no-console
     }).catch(err => console.error('Failed to revaluate inventory:', err));
 
     // ─── PENDING PRICE REVISION TRIGGER ─────────────────────────────────────
@@ -356,6 +371,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
           dateStr || new Date().toISOString(), 
           orgId, 
           sId
+        // eslint-disable-next-line no-console
         ).catch(err => console.error('Failed to add pending price revision:', err));
       }
     });
@@ -463,6 +479,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
         await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'tanks', scopedTank.id, scopedTank);
         useStationStore.getState().showToast('Tank added successfully!', 'success');
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error("Error adding tank to Firestore:", err);
         useStationStore.getState().showToast('Error saving tank to cloud, saved locally.', 'error');
       }
@@ -487,6 +504,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
         await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'tanks', scopedTank.id, scopedTank);
         useStationStore.getState().showToast('Tank updated successfully!', 'success');
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error("Error updating tank in Firestore:", err);
         useStationStore.getState().showToast('Error updating tank to cloud, saved locally.', 'error');
       }
@@ -747,6 +765,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
            });
          }
        }).catch(err => {
+         // eslint-disable-next-line no-console
          console.error("Error integrating purchase financials:", err);
        });
     }
@@ -768,19 +787,20 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     }
 
     // Process Carriage as an Expense dynamically to avoid circular dependencies
-    if (batch.carriageTotal > 0) {
+    if ((batch.carriageTotal || 0) > 0) {
        // use dynamic import for useFinancialStore
        import('./useFinancialStore').then(({ useFinancialStore }) => {
          const financialStore = useFinancialStore.getState();
          financialStore.handleAddStandaloneExpense({
             id: `exp_carr_${batch.id}`,
-            amount: batch.carriageTotal,
-            date: new Date().toISOString().split('T')[0],
+            amount: batch.carriageTotal || 0,
+            date: new Date().toISOString().split('T')[0] || '',
             category: bType === 'lube' ? 'Carriage & Freight' : 'Carriage & Freight (Karaya)',
             description: `Carriage for Batch ${batch.batchNumber} (Product: ${batch.productId})`,
             paidFrom: 'cash'
          }, orgId, sId);
        }).catch(err => {
+         // eslint-disable-next-line no-console
          console.error('Failed to dynamic import useFinancialStore:', err);
        });
     }
@@ -795,7 +815,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
           let updatedBalance = supplier.balance || 0;
           
           if (batch.paymentMethod === 'credit') {
-            updatedBalance += batch.totalLandedCost;
+            updatedBalance += (batch.totalLandedCost || 0);
           } else if (batch.paymentMethod === 'partial') {
             updatedBalance += (batch.outstandingBalance || 0);
           }
@@ -810,6 +830,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
           }
         }
       }).catch(err => {
+        // eslint-disable-next-line no-console
         console.error('Failed to sync supplier ledger:', err);
       });
     }

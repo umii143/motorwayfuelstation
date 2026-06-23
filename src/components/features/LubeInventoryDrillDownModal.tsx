@@ -4,8 +4,7 @@ import {
   X, 
   Package, 
   TrendingUp, 
-  DollarSign, 
-  Wallet,
+  DollarSign,
   AlertTriangle
 } from 'lucide-react';
 import { formatCurrency } from '../../lib/currency';

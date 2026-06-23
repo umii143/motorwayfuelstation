@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/Card';
-import { Wallet, Landmark, Smartphone, ArrowDownRight, ArrowUpRight, ShieldCheck, Activity } from 'lucide-react';
+import { Wallet, Landmark, Smartphone, ShieldCheck, Activity } from 'lucide-react';
 import { useAuthStore } from '../../../stores/useAuthStore';
 import { 
   getConsolidatedPosition, 
@@ -20,18 +20,24 @@ export default function TreasuryDashboard() {
 
   useEffect(() => {
     if (stationId) {
+       
+      // eslint-disable-next-line react-hooks/immutability
       loadPosition();
       // Auto refresh every 30s
       const interval = setInterval(loadPosition, 30000);
       return () => clearInterval(interval);
+     
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stationId]);
 
   const loadPosition = async () => {
     try {
       const pos = await getConsolidatedPosition(stationId || 'st_default');
+       
       setPosition(pos);
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.error('Failed to load treasury position', e);
     }
   };

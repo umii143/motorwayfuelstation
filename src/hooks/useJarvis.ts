@@ -58,7 +58,9 @@ export function useJarvis() {
             try {
               recognitionRef.current.start();
               setIsListening(true);
-            } catch (e) {}
+            } catch (error) {
+              // ignore
+            }
           }
         };
       }
@@ -97,7 +99,7 @@ export function useJarvis() {
     synthRef.current.speak(utterance);
   };
 
-  const processAudioInput = async (finalTranscript: string) => {
+  const processAudioInput = useCallback(async (finalTranscript: string) => {
     if (!finalTranscript.trim()) return;
     
     // Check if user wants to end call manually via voice
@@ -190,7 +192,7 @@ export function useJarvis() {
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [chatHistory]);
 
   useEffect(() => {
     processAudioInputRef.current = processAudioInput;
@@ -224,7 +226,7 @@ export function useJarvis() {
       recognitionRef.current.stop();
       processAudioInput(transcript);
     }
-  }, [isListening, transcript]);
+  }, [isListening, transcript, processAudioInput]);
 
   const toggleCallMode = useCallback(() => {
     if (callModeRef.current) {

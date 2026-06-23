@@ -34,23 +34,15 @@ import {
   ArrowRightLeft,
   Wrench,
   ShieldAlert,
-  Gift,
   LineChart,
   BarChart3,
-  Network,
-  Camera,
   Link,
   Tag,
   CreditCard,
   Sun,
   Moon,
-  Bell,
   HelpCircle,
   Search,
-  Play,
-  Package,
-  AlertTriangle,
-  Clock,
   CheckCircle2,
   Sliders,
   Database,
@@ -60,8 +52,6 @@ import {
   Sparkles,
   ScanLine,
   Briefcase,
-  Beaker,
-  FlaskConical,
   PlusCircle,
   BrainCircuit,
   Building2
@@ -73,9 +63,6 @@ import AIDocumentScanner from '../ui/AIDocumentScanner';
 import { NotificationCenter } from '../shared/NotificationCenter';
 import { useStation } from '../../contexts/StationContext';
 import { fetchWithAuth } from '../../lib/api';
-import { useSetupProgress } from '../../hooks/useSetupProgress';
-import { PoweredByUmarAli } from '../shared/PoweredByUmarAli';
-import { ConfigSidebarItem } from './ConfigSidebarItem';
 import { motion } from 'framer-motion';
 import { haptic } from '../../utils/haptics';
 import { BottomSheet } from '../shared/BottomSheet';
@@ -86,6 +73,7 @@ interface NavigationProps {
   onViewChange: (view: string) => void;
   settings: GlobalSettings;
   onSettingsUpdate: (settings: GlobalSettings) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   user?: any;
   onLogout?: () => void;
   stations?: Station[];
@@ -118,7 +106,7 @@ const Navigation = React.memo(function Navigation({
 }: NavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [stationDropdownOpen, setStationDropdownOpen] = useState(false);
-  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({ /* empty */ });
   
   // Modal controllers
   const [showAddModal, setShowAddModal] = useState(false);
@@ -134,7 +122,7 @@ const Navigation = React.memo(function Navigation({
   const [formNtn, setFormNtn] = useState('');
   const [formContact, setFormContact] = useState('');
 
-  const isUrdu = settings.language === 'ur';
+
 
   // Translates helper
   const t = (en: string, ur: string) => translate(en, ur, settings);
@@ -211,12 +199,9 @@ const Navigation = React.memo(function Navigation({
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   // NEW CONTEXT & STATES
-  const { products, customers, staff, shifts, banks, standaloneExpenses, stockTxns, tanks, suppliers, nozzles } = useStation();
-  const { steps, setupComplete, progressPercent, firstIncompleteStep } = useSetupProgress();
-  const [isConfigExpanded, setIsConfigExpanded] = useState(false);
+  const { products, customers, staff, shifts, banks, standaloneExpenses, stockTxns, suppliers } = useStation();
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [isSetupOpen, setIsSetupOpen] = useState(false);
-  const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState('');
   
@@ -259,38 +244,10 @@ const Navigation = React.memo(function Navigation({
   ];
 
   const handleSelectTheme = (themeId: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onSettingsUpdate({ ...settings, theme: themeId as any });
     setIsThemeOpen(false);
   };
-
-  // 2. Notification Logic
-  const notifications = React.useMemo(() => {
-    const alerts: any[] = [];
-    const lowStockProducts = products.filter(p => p.currentStock <= p.minStock);
-    const highBalanceCustomers = customers.filter(c => c.balance > (c.creditLimit || 50000));
-    
-    lowStockProducts.forEach(p => {
-      alerts.push({
-        id: `stock_${p.id}`,
-        type: 'warning',
-        title: t('Low Stock Alert', 'اسٹاک کم ہے'),
-        message: `${t(p.name, p.urduName)}: ${p.currentStock} ${p.unit} ${t('remaining', 'باقی')}`,
-        icon: Package
-      });
-    });
-
-    highBalanceCustomers.forEach(c => {
-      alerts.push({
-        id: `credit_${c.id}`,
-        type: 'danger',
-        title: t('High Credit Balance', 'زیادہ ادھار'),
-        message: `${t(c.name, c.urduName)}: ${c.balance.toLocaleString()}`,
-        icon: AlertTriangle
-      });
-    });
-
-    return alerts;
-  }, [products, customers, settings.language]);
 
   // 3. Search Logic
   const searchResults = React.useMemo(() => {
@@ -348,6 +305,7 @@ const Navigation = React.memo(function Navigation({
       const data = await response.json();
       setAiSearchResult(data.reply);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error(error);
       setAiSearchResult("⚠️ Failed to reach AI services or data context too large.");
     } finally {

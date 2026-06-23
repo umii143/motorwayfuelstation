@@ -26,7 +26,7 @@ export function InvestigationModal({
 
   // Fuel sales
   let shiftSales = 0;
-  const nozzleSales = [];
+  const nozzleSales: { nozzleName: string, start: number, end: number, liters: number, rate: number, total: number }[] = [];
   if (shift.closingReadings && shift.openingReadings) {
     Object.keys(shift.closingReadings).forEach((nozzleId) => {
       const start = shift.openingReadings[nozzleId] || 0;

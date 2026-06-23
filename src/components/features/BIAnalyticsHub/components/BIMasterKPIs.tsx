@@ -7,13 +7,15 @@ import {
   Wallet, 
   Database 
 } from 'lucide-react';
-import { t } from '../../../../lib/translations';
 
 interface BIMasterKPIsProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metrics: any; // Type it with the biAggregator output later
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   settings: any;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function BIMasterKPIs({ metrics, settings }: BIMasterKPIsProps) {
   const { kpi, stock } = metrics;
   

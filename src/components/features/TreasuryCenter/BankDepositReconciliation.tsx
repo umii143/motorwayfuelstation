@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Building2, Search, CheckCircle2, AlertTriangle, ArrowRightLeft } from 'lucide-react';
+import { Search, CheckCircle2, AlertTriangle, ArrowRightLeft } from 'lucide-react';
 
 export default function BankDepositReconciliation() {
   const transactions = useMemo(() => {

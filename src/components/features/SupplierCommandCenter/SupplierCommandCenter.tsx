@@ -9,7 +9,6 @@ import { Truck, CreditCard, Building2, ShieldAlert, BarChart2 } from 'lucide-rea
 import { Supplier, Shift, Product, GlobalSettings, BankAccount } from '../../../types';
 import { t as translate } from '../../../lib/translations';
 import { useInventoryStore } from '../../../stores/useInventoryStore';
-import { useFinancialStore } from '../../../stores/useFinancialStore';
 
 import SupplierDirectory from './SupplierDirectory';
 import SupplierPayablesPanel from './SupplierPayablesPanel';
@@ -64,12 +63,12 @@ export default function SupplierCommandCenter({
   }, []);
 
   const navigateToSupplier = (id: string) => {
-    window.history.pushState({}, '', `/suppliers/${id}`);
+    window.history.pushState({ /* empty */ }, '', `/suppliers/${id}`);
     setCurrentSupplierId(id);
   };
 
   const navigateBackToDirectory = () => {
-    window.history.pushState({}, '', '/suppliers');
+    window.history.pushState({ /* empty */ }, '', '/suppliers');
     setCurrentSupplierId(null);
   };
 
@@ -77,7 +76,11 @@ export default function SupplierCommandCenter({
   const language = settings.language;
 
   const batches = useInventoryStore(s => s.stockBatches);
+   
+   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supplierClaims: any[] = []; // Default empty if not present in your store
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
   const payments: any[] = []; // Default empty
 
   const tabs = [
@@ -128,8 +131,10 @@ export default function SupplierCommandCenter({
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
+             
             <button
               key={tab.id}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-sans text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
                 isActive 

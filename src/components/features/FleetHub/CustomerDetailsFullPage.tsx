@@ -42,13 +42,13 @@ export default function CustomerDetailsFullPage({ account, settings, shifts, ban
   const customerSales = useMemo(() => {
     return shifts.flatMap(s => s.debitEntries || [])
       .filter(d => d.customerId === account.id)
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      .sort((a, b) => new Date(a.date || '').getTime() - new Date(b.date || '').getTime());
   }, [shifts, account.id]);
 
   const customerRecoveries = useMemo(() => {
     return shifts.flatMap(s => s.recoveryEntries || [])
       .filter(r => r.customerId === account.id)
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      .sort((a, b) => new Date(a.date || '').getTime() - new Date(b.date || '').getTime());
   }, [shifts, account.id]);
 
   // 2. Compute KPI values
@@ -79,14 +79,14 @@ export default function CustomerDetailsFullPage({ account, settings, shifts, ban
     const data = months.map(m => ({ name: m, sales: 0, recoveries: 0 }));
     
     customerSales.forEach(b => {
-      const d = new Date(b.date);
+      const d = new Date(b.date || '');
       if (d.getFullYear() === currentYear) {
         data[d.getMonth()].sales += b.amount;
       }
     });
 
     customerRecoveries.forEach(p => {
-      const d = new Date(p.date);
+      const d = new Date(p.date || '');
       if (d.getFullYear() === currentYear) {
         data[d.getMonth()].recoveries += p.amount;
       }
@@ -102,12 +102,24 @@ export default function CustomerDetailsFullPage({ account, settings, shifts, ban
 
   // 4. Construct Unified Transaction Ledger
   const transactions = useMemo(() => {
-    const combined: any[] = [];
+    const combined: Array<{
+      id: string;
+      date: string;
+      type: 'Credit Sale' | 'Recovery';
+      ref: string;
+      desc: string;
+      debit: number;
+      credit: number;
+      by: string;
+      branch: string;
+      status: string;
+      timestamp: number;
+    }> = [];
     
     customerSales.forEach(s => {
       combined.push({
         id: s.id,
-        date: s.date,
+        date: s.date || '',
         type: 'Credit Sale',
         ref: s.slipNumber || s.vehicleNo || 'N/A',
         desc: `${s.productType?.toUpperCase() || 'Product'} ${s.quantity} Liters`,
@@ -116,14 +128,14 @@ export default function CustomerDetailsFullPage({ account, settings, shifts, ban
         by: 'Admin',
         branch: 'Main',
         status: 'Completed',
-        timestamp: new Date(s.date).getTime()
+        timestamp: new Date(s.date || '').getTime()
       });
     });
 
     customerRecoveries.forEach(r => {
       combined.push({
         id: r.id,
-        date: r.date,
+        date: r.date || '',
         type: 'Recovery',
         ref: r.receiptNumber || r.paymentMode || 'N/A',
         desc: `Payment via ${r.paymentMode}`,
@@ -132,7 +144,7 @@ export default function CustomerDetailsFullPage({ account, settings, shifts, ban
         by: 'Finance',
         branch: 'HQ',
         status: 'Completed',
-        timestamp: new Date(r.date).getTime()
+        timestamp: new Date(r.date || '').getTime()
       });
     });
 
@@ -199,10 +211,10 @@ export default function CustomerDetailsFullPage({ account, settings, shifts, ban
             {transactions.slice(0, 3).map((t, i) => (
               <React.Fragment key={t.id}>
                 <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${t.type === 'Sale' ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]' : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]'}`}></div>
+                  <div className={`w-2 h-2 rounded-full ${t.type === 'Credit Sale' ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]' : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]'}`}></div>
                   <div>
                     <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">{t.date}</p>
-                    <p className="text-xs text-white">{t.type === 'Sale' ? 'Sale Created' : 'Recovery Received'}</p>
+                    <p className="text-xs text-white">{t.type === 'Credit Sale' ? 'Sale Created' : 'Recovery Received'}</p>
                   </div>
                 </div>
                 {i < Math.min(transactions.length - 1, 2) && <div className="w-8 h-px bg-slate-700"></div>}
@@ -259,7 +271,7 @@ export default function CustomerDetailsFullPage({ account, settings, shifts, ban
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-400 text-sm">Last Sale</span>
-                    <span className="text-white font-bold text-sm">{lastPurchaseDate !== 'No Sales' ? new Date(lastPurchaseDate).toLocaleDateString() : 'No Sales'}</span>
+                    <span className="text-white font-bold text-sm">{lastPurchaseDate !== 'No Sales' ? new Date(lastPurchaseDate || '').toLocaleDateString() : 'No Sales'}</span>
                   </div>
                 </div>
               </div>
@@ -312,7 +324,7 @@ export default function CustomerDetailsFullPage({ account, settings, shifts, ban
                         <tr key={txn.id} className="hover:bg-slate-800/30 transition-colors">
                           <td className="px-4 py-3">{txn.date}</td>
                           <td className="px-4 py-3">
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${txn.type === 'Purchase' ? 'bg-blue-500/10 text-blue-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${txn.type === 'Recovery' ? 'bg-blue-500/10 text-blue-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
                               {txn.type}
                             </span>
                           </td>

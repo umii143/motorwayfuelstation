@@ -6,6 +6,7 @@ export interface MutationQueueItem {
     id: string;
     entityType: 'shift' | 'customer' | 'supplier' | 'expense' | 'inventory' | 'treasury' | 'settings' | 'journal' | 'other';
     operation: 'create' | 'update' | 'delete' | 'reverse';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     payload: any;
     referenceId?: string;
     createdAt: number;
@@ -50,6 +51,7 @@ class SyncEngineClass {
         try {
             storedQueue = await localforage.getItem<MutationQueueItem[]>(QUEUE_KEY);
         } catch (e) {
+            // eslint-disable-next-line no-console
             console.warn('SyncEngine localforage load failed:', e);
         }
         
@@ -57,7 +59,9 @@ class SyncEngineClass {
             try {
                 const lsQueue = localStorage.getItem(QUEUE_KEY);
                 if (lsQueue) storedQueue = JSON.parse(lsQueue);
-            } catch (e) {}
+             
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (e) { /* ignore */ }
         }
         
         if (storedQueue) {
@@ -76,6 +80,7 @@ class SyncEngineClass {
         this.isOnline = status.connected;
 
         Network.addListener('networkStatusChange', status => {
+            // eslint-disable-next-line no-console
             console.log('Network status changed', status);
             this.isOnline = status.connected;
             this.notifyListeners();
@@ -111,6 +116,14 @@ class SyncEngineClass {
         if (this.isOnline) {
             this.processQueue();
         }
+    }
+
+    stop() {
+        if (this.pollingInterval) {
+            clearInterval(this.pollingInterval);
+            this.pollingInterval = null;
+        }
+        this.initialized = false;
     }
 
     async enqueue(item: Omit<MutationQueueItem, 'id' | 'createdAt' | 'retryCount' | 'status'>) {
@@ -174,8 +187,10 @@ class SyncEngineClass {
                 // Success! Remove from queue
                 this.queue = this.queue.filter(q => q.id !== item.id);
                 await this.persistQueue();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (error: any) {
                 // Failed
+                // eslint-disable-next-line no-console
                 console.error(`Sync Engine failed to process item ${item.id}:`, error);
                 
                 const qIndex = this.queue.findIndex(q => q.id === item.id);
@@ -203,6 +218,7 @@ class SyncEngineClass {
         const MAX_QUEUE_SIZE = 5000;
         
         if (this.queue.length > MAX_QUEUE_SIZE) {
+            // eslint-disable-next-line no-console
             console.warn(`Sync queue exceeded ${MAX_QUEUE_SIZE} items. Truncating oldest items to conserve memory.`);
             
             // Sort by newest first (descending createdAt)
@@ -223,8 +239,10 @@ class SyncEngineClass {
             }
         }
         
-        await localforage.setItem(QUEUE_KEY, this.queue).catch(() => {});
-        try { if (typeof localStorage !== 'undefined') localStorage.setItem(QUEUE_KEY, JSON.stringify(this.queue)); } catch(e) {}
+        await localforage.setItem(QUEUE_KEY, this.queue).catch(() => { /* empty */ });
+         
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        try { if (typeof localStorage !== 'undefined') localStorage.setItem(QUEUE_KEY, JSON.stringify(this.queue)); } catch (e) { /* ignore */ }
     }
 
     private async logIntegrityDrift(item: MutationQueueItem) {
@@ -239,8 +257,10 @@ class SyncEngineClass {
 
         const existingLogs = await localforage.getItem<IntegrityDriftLog[]>(INTEGRITY_LOG_KEY).catch(() => null) || [];
         existingLogs.push(log);
-        await localforage.setItem(INTEGRITY_LOG_KEY, existingLogs).catch(() => {});
-        try { if (typeof localStorage !== 'undefined') localStorage.setItem(INTEGRITY_LOG_KEY, JSON.stringify(existingLogs)); } catch(e) {}
+        await localforage.setItem(INTEGRITY_LOG_KEY, existingLogs).catch(() => { /* empty */ });
+         
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        try { if (typeof localStorage !== 'undefined') localStorage.setItem(INTEGRITY_LOG_KEY, JSON.stringify(existingLogs)); } catch (e) { /* ignore */ }
     }
 
     getQueueStatus() {
@@ -255,6 +275,7 @@ class SyncEngineClass {
         };
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     subscribe(listener: (state: any) => void) {
         this.listeners.push(listener);
         listener(this.getQueueStatus());

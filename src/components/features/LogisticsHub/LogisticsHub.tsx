@@ -51,6 +51,8 @@ export default function LogisticsHub({ settings }: LogisticsHubProps) {
           return (
             <button
               key={tab.id}
+               
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick={() => setActiveTab(tab.id as any)}
               className={`fp-date-tab flex items-center gap-1.5 ${isActive ? 'fp-date-tab--active !text-rose-600 !border-rose-600 bg-rose-50/50' : ''}`}
             >

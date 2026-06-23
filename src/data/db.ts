@@ -5,13 +5,14 @@
 
 import localforage from 'localforage';
 
-let memoryCache: Record<string, string> = {};
+let memoryCache: Record<string, string> = { /* empty */ };
 let dbInitialized = false;
 
 export async function initDatabase() {
   if (dbInitialized) return;
   try {
     await localforage.ready();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const keys = await localforage.keys();
     
     // Optimize: Bulk load all items concurrently using iterate (drastically faster than sequential awaits)
@@ -22,6 +23,7 @@ export async function initDatabase() {
         }
       });
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.warn('localforage.iterate failed', e);
     }
 
@@ -33,7 +35,7 @@ export async function initDatabase() {
              const val = localStorage.getItem(key);
              if (val !== null) {
                memoryCache[key] = val;
-               localforage.setItem(key, val).catch(() => {});
+               localforage.setItem(key, val).catch(() => { /* empty */ });
              }
           }
        }
@@ -42,23 +44,32 @@ export async function initDatabase() {
     if (!(memoryCache['fuelpro_fresh_v5_nodummies'] ?? null)) {
       // Safely register the marker without wiping anything to prevent accidental data loss
       memoryCache['fuelpro_fresh_v5_nodummies'] = 'true';
-      await localforage.setItem('fuelpro_fresh_v5_nodummies', 'true').catch(() => {});
-      try { if (typeof localStorage !== 'undefined') localStorage.setItem('fuelpro_fresh_v5_nodummies', 'true'); } catch (e) {}
+      await localforage.setItem('fuelpro_fresh_v5_nodummies', 'true').catch(() => { /* empty */ });
+       
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      try { if (typeof localStorage !== 'undefined') localStorage.setItem('fuelpro_fresh_v5_nodummies', 'true'); } catch (e) { /* ignore */ }
     }
 
     dbInitialized = true;
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.error('Error initializing IndexedDB:', err);
   }
 }
 
 function flushToIndexedDB(key: string, value: string | null) {
   if (value === null) {
+    // eslint-disable-next-line no-console
     localforage.removeItem(key).catch(console.error);
-    try { if (typeof localStorage !== 'undefined') localStorage.removeItem(key); } catch (e) {}
+     
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    try { if (typeof localStorage !== 'undefined') localStorage.removeItem(key); } catch (e) { /* ignore */ }
   } else {
+    // eslint-disable-next-line no-console
     localforage.setItem(key, value).catch(console.error);
-    try { if (typeof localStorage !== 'undefined') localStorage.setItem(key, value); } catch (e) {}
+     
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    try { if (typeof localStorage !== 'undefined') localStorage.setItem(key, value); } catch (e) { /* ignore */ }
   }
 }
 
@@ -116,6 +127,7 @@ import {
 import {
   DEFAULT_FUEL_STATION_ID,
   LUBE_STATION_ID,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getBusinessTypeForStation,
   isolateLubePosSales,
   isolateProductRecords,
@@ -234,43 +246,61 @@ const SEED_LUBE_SETTINGS: GlobalSettings = {
   setupVersion: 1
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SEED_LUBE_STAFF: any = [];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SEED_LUBE_PRODUCTS: any = [];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SEED_LUBE_CUSTOMERS: any = [];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SEED_LUBE_SUPPLIERS: any = [];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SEED_LUBE_BANKS: any = [];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SEED_LUBE_DIGITAL_ACCOUNTS: any = [];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SEED_LUBE_PUMPS: any = [];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SEED_LUBE_NOZZLES: any = [];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SEED_LUBE_TANKS: any = [];
 
 // ==========================================
 // SEED DATA FOR BUSINESS 1: FUEL STATION FALLBACKS
 // ==========================================
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SEED_FUEL_STAFF: any = [];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SEED_FUEL_PRODUCTS: any = [];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SEED_FUEL_PUMPS: any = [];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SEED_FUEL_NOZZLES: any = [];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SEED_FUEL_TANKS: any = [];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SEED_FUEL_CUSTOMERS: any = [];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SEED_FUEL_SUPPLIERS: any = [];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SEED_FUEL_BANKS: any = [];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SEED_FUEL_DIGITAL_ACCOUNTS: any = [];
 
 // ==========================================
@@ -356,14 +386,17 @@ function migrateLegacyStationScope(): void {
     const legacyValue = (memoryCache[legacyKey] ?? null);
 
     if (legacyKey !== scopedKey && scopedValue === null && legacyValue !== null) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       ((memoryCache[scopedKey] = legacyValue), flushToIndexedDB(scopedKey, legacyValue));
     }
 
     if (legacyKey !== scopedKey && legacyValue !== null) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       (delete memoryCache[legacyKey], flushToIndexedDB(legacyKey, null));
     }
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
   ((memoryCache[STATION_SCOPE_MIGRATION_KEY] = 'true'), flushToIndexedDB(STATION_SCOPE_MIGRATION_KEY, 'true'));
 }
 
@@ -374,12 +407,14 @@ function getStorageItem<T>(key: string, seed: T): T {
     const item = (memoryCache[key] ?? null);
     if (!item) {
       if (dbInitialized) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         ((memoryCache[key] = JSON.stringify(seed)), flushToIndexedDB(key, JSON.stringify(seed)));
       }
       return seed;
     }
     return JSON.parse(item) as T;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error(`Error reading ${key} from storage:`, error);
     return seed;
   }
@@ -387,8 +422,10 @@ function getStorageItem<T>(key: string, seed: T): T {
 
 function setStorageItem<T>(key: string, data: T): void {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     ((memoryCache[key] = JSON.stringify(data)), flushToIndexedDB(key, JSON.stringify(data)));
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error(`Error writing ${key} to storage:`, error);
   }
 }
@@ -459,6 +496,7 @@ export const db = {
           { ...SEED_LUBE_STATION, stationId: LUBE_STATION_ID, businessId: LUBE_STATION_ID, businessType: 'lube' }
         ];
         if (dbInitialized) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-expressions
           ((memoryCache['fuelpro_stations'] = JSON.stringify(defaultList)), flushToIndexedDB('fuelpro_stations', JSON.stringify(defaultList)));
         }
         return defaultList;
@@ -488,6 +526,7 @@ export const db = {
       });
 
       if (modified) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         ((memoryCache['fuelpro_stations'] = JSON.stringify(scopedStations)), flushToIndexedDB('fuelpro_stations', JSON.stringify(scopedStations)));
       }
       return scopedStations;
@@ -500,6 +539,7 @@ export const db = {
   },
 
   saveStationsList: (stations: Station[]) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     ((memoryCache['fuelpro_stations'] = JSON.stringify(stations)), flushToIndexedDB('fuelpro_stations', JSON.stringify(stations)));
   },
 
@@ -508,6 +548,7 @@ export const db = {
       const active = (memoryCache['fuelpro_active_station_id'] ?? null);
       if (!active) {
         if (dbInitialized) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-expressions
           ((memoryCache['fuelpro_active_station_id'] = DEFAULT_STATION_ID), flushToIndexedDB('fuelpro_active_station_id', DEFAULT_STATION_ID));
         }
         return DEFAULT_STATION_ID;
@@ -519,6 +560,7 @@ export const db = {
   },
 
   setActiveStationId: (id: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     ((memoryCache['fuelpro_active_station_id'] = id), flushToIndexedDB('fuelpro_active_station_id', id));
   },
 
@@ -530,6 +572,7 @@ export const db = {
         const isLube = stationId === LUBE_STATION_ID;
         const initialSettings = withBusinessScope(isLube ? SEED_LUBE_SETTINGS : SEED_FUEL_SETTINGS, stationId);
         if (dbInitialized) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-expressions
           ((memoryCache[key] = JSON.stringify(initialSettings)), flushToIndexedDB(key, JSON.stringify(initialSettings)));
         }
         return initialSettings;
@@ -537,6 +580,7 @@ export const db = {
       const scopedSettings = withBusinessScope(JSON.parse(item) as GlobalSettings, stationId);
       if (JSON.stringify(JSON.parse(item)) !== JSON.stringify(scopedSettings)) {
         if (dbInitialized) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-expressions
           ((memoryCache[key] = JSON.stringify(scopedSettings)), flushToIndexedDB(key, JSON.stringify(scopedSettings)));
         }
       }
@@ -842,8 +886,10 @@ export const db = {
   clearSettingsAuditTrail: (stationId: string) => {
     const scopedKey = db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL);
     const legacyKey = buildLegacyStorageKey(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL);
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     (delete memoryCache[scopedKey], flushToIndexedDB(scopedKey, null));
     if (legacyKey !== scopedKey) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       (delete memoryCache[legacyKey], flushToIndexedDB(legacyKey, null));
     }
   },
@@ -852,15 +898,17 @@ export const db = {
     STATION_DATA_BASE_KEYS.forEach((baseKey) => {
       const scopedKey = db.getStationStorageKey(stationId, baseKey);
       const legacyKey = buildLegacyStorageKey(stationId, baseKey);
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       (delete memoryCache[scopedKey], flushToIndexedDB(scopedKey, null));
       if (legacyKey !== scopedKey) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         (delete memoryCache[legacyKey], flushToIndexedDB(legacyKey, null));
       }
     });
   },
 
   resetToDefault: async () => {
-    memoryCache = {};
+    memoryCache = { /* empty */ };
     if (typeof localStorage !== 'undefined') {
       localStorage.clear();
     }

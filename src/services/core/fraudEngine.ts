@@ -59,11 +59,13 @@ export async function analyzeShiftRisk(
   shift: Shift,
   stationId: string,
   reversalCount: number = 0,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   operatorName?: string
 ): Promise<ShiftRiskScore> {
   const flags: FraudFlag[] = [];
   let riskScore = 0;
   const now = new Date().toISOString();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const shiftStart = new Date(`${shift.date}T${shift.startTime ?? '08:00'}`);
 
   // ─── Flag 1: Excessive Discounts (same shift) ────────────────────────
@@ -128,7 +130,7 @@ export async function analyzeShiftRisk(
   // ─── Flag 6: Single Customer Dominance ───────────────────────────────
   const totalDebitValue = shift.debitEntries.reduce((s, d) => s + d.amount, 0);
   if (totalDebitValue > 0) {
-    const customerGroups: Record<string, number> = {};
+    const customerGroups: Record<string, number> = { /* empty */ };
     shift.debitEntries.forEach(d => {
       customerGroups[d.customerId] = (customerGroups[d.customerId] ?? 0) + d.amount;
     });

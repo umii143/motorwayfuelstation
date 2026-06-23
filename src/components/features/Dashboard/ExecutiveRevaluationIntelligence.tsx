@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { RateHistoryEntry, GlobalSettings } from '../../../types';
 import { formatCurrency } from '../../../lib/currency';
 import { t } from '../../../lib/translations';
-import { TrendingUp, TrendingDown, DollarSign, Award, AlertTriangle, Calendar, Activity } from 'lucide-react';
+import { DollarSign, Award, AlertTriangle, Calendar, Activity } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell } from 'recharts';
 import RevaluationDrillDownModal from '../PriceManagement/RevaluationDrillDownModal';
 
@@ -39,11 +39,11 @@ export default function ExecutiveRevaluationIntelligence({
     let largestGain = 0;
     let largestLoss = 0;
 
-    const monthlyDataMap: Record<string, number> = {};
+    const monthlyDataMap: Record<string, number> = { /* empty */ };
 
     rateHistory.forEach(rh => {
       const impact = rh.inventoryImpact ?? rh.impactAmount ?? 0;
-      const date = rh.effectiveDate || rh.date;
+      const date = rh.effectiveDate || (rh.date || '');
       
       // Timeframes
       if (date === today) todayImpact += impact;
@@ -185,7 +185,7 @@ export default function ExecutiveRevaluationIntelligence({
               <Tooltip 
                 cursor={{ fill: '#f8fafc' }}
                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                formatter={(value: number) => [formatCurrency(value, settings), 'Impact']}
+                formatter={(value: any) => [formatCurrency(value, settings), 'Impact']}
               />
               <Bar dataKey="impact" radius={[6, 6, 6, 6]}>
                 {stats.chartData.map((entry, index) => (

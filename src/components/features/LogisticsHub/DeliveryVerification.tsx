@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GlobalSettings, TankerDelivery, TankerSchedule, Tank, Staff } from '../../../types';
 import { db } from '../../../data/db';
-import { ClipboardCheck, Search, Plus, XCircle, Droplets, AlertTriangle, Scale } from 'lucide-react';
+import { Search, Plus, XCircle, Scale } from 'lucide-react';
 import { ResponsiveTable } from '../../shared/ResponsiveTable';
 
 interface DeliveryVerificationProps {
@@ -31,10 +31,14 @@ export default function DeliveryVerification({ settings, stationId }: DeliveryVe
   const [notes, setNotes] = useState('');
 
   useEffect(() => {
+     
+     
+     
     loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stationId]);
 
-  const loadData = () => {
+  function loadData() {
     setDeliveries(db.getTankerDeliveries(stationId));
     setSchedules(db.getTankerSchedules(stationId));
     setTanks(db.getTanks(stationId));
@@ -322,8 +326,10 @@ export default function DeliveryVerification({ settings, stationId }: DeliveryVe
                   </div>
                 </div>
 
+                { }
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Delivery Status</label>
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   <select value={status} onChange={e => setStatus(e.target.value as any)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white">
                     <option value="verified">Verified & Accepted</option>
                     <option value="disputed">Disputed (High Shortage)</option>

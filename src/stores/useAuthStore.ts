@@ -39,8 +39,13 @@ interface AuthState {
   logout: () => void;
   verifyPin: (pin: string) => boolean; // For security hardening
   hasPermission: (permission: keyof UserPermissions) => boolean;
+  isScreenLocked: boolean;
+  setScreenLocked: (locked: boolean) => void;
 }
 
+import { useStationStore } from './useStationStore';
+
+// Default user code...
 const DEFAULT_OWNER: UserSession = {
   userId: 'u_owner_001',
   name: 'Umar Ali',
@@ -60,15 +65,13 @@ const DEFAULT_OWNER: UserSession = {
   lastLogin: Date.now(),
 };
 
-// Hardcoded PIN for MVP security hardening. In a real system, this would be hashed and checked against the DB.
-const OWNER_PIN = '1234';
-
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       // Defaulting to Owner for development purposes
       user: DEFAULT_OWNER,
       isAuthenticated: true,
+      isScreenLocked: false,
 
       login: (user) => {
         set({ user, isAuthenticated: true });
@@ -79,10 +82,14 @@ export const useAuthStore = create<AuthState>()(
       },
 
       verifyPin: (pin: string) => {
-        // For MVP, we only require PIN for the Owner role's sensitive actions
         const state = get();
         if (state.user?.role === 'Owner') {
-          return pin === OWNER_PIN;
+          const masterPin = useStationStore.getState().settings?.security?.masterPin ?? null;
+          if (!masterPin) {
+            throw new Error("Master PIN not configured");
+          }
+          const isValid = pin.trim() === masterPin.trim();
+          return isValid;
         }
         return false;
       },
@@ -92,6 +99,10 @@ export const useAuthStore = create<AuthState>()(
         if (!state.user) return false;
         if (state.user.role === 'Owner') return true; // Owner always has all permissions
         return !!state.user.permissions[permission];
+      },
+
+      setScreenLocked: (locked) => {
+        set({ isScreenLocked: locked });
       },
     }),
     {

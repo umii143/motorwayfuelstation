@@ -11,14 +11,16 @@ interface Props {
 }
 
 export function RatesStep({ products, onUpdate, onContinue, language }: Props) {
-  const [rates, setRates] = useState<Record<string, string>>({});
+  const [rates, setRates] = useState<Record<string, string>>({ /* empty */ });
 
   useEffect(() => {
     // Initialize rates from products
-    const initial: Record<string, string> = {};
+    const initial: Record<string, string> = { /* empty */ };
     products.forEach((p) => {
       initial[p.id] = p.rate ? p.rate.toString() : "";
     });
+     
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRates(initial);
   }, [products]);
 

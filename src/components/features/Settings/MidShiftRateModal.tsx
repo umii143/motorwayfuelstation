@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { AlertCircle, CheckCircle, X } from 'lucide-react';
+import { AlertCircle, CheckCircle } from 'lucide-react';
 import { Product, Shift, Nozzle } from '../../../types';
 import { useInventoryStore } from '../../../stores/useInventoryStore';
 import { t } from '../../../lib/translations';
@@ -25,7 +25,7 @@ export default function MidShiftRateModal({
   onCancel
 }: MidShiftRateModalProps) {
   const nozzles = useInventoryStore(state => state.nozzles);
-  const [readings, setReadings] = useState<Record<string, string>>({});
+  const [readings, setReadings] = useState<Record<string, string>>({ /* empty */ });
   const [error, setError] = useState<string>('');
 
   // Find all nozzles related to the active shifts that dispense the target product
@@ -41,7 +41,9 @@ export default function MidShiftRateModal({
 
   useEffect(() => {
     if (isOpen) {
-      setReadings({});
+       
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setReadings({ /* empty */ });
       setError('');
     }
   }, [isOpen]);
@@ -49,7 +51,7 @@ export default function MidShiftRateModal({
   if (!isOpen || !product) return null;
 
   const handleConfirm = () => {
-    const finalReadings: Record<string, number> = {};
+    const finalReadings: Record<string, number> = { /* empty */ };
     
     for (const nz of relevantNozzles) {
       const val = readings[nz.id];

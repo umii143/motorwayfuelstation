@@ -4,10 +4,8 @@
  * Powered by Umar Ali ⚡ | Motorway Petroleum, Mardan KPK
  */
 import React, { useMemo, useState } from 'react';
-import {
-  DollarSign, Calendar, AlertTriangle, CheckCircle, Clock,
-  TrendingUp, Building2, CreditCard, ChevronDown, ChevronUp,
-  Wallet, BarChart2, AlertCircle, Package
+import { Calendar, AlertTriangle, CheckCircle, Building2, ChevronDown, ChevronUp,
+  Wallet
 } from 'lucide-react';
 import { StockBatch, Supplier } from '../../../types';
 
@@ -250,6 +248,8 @@ export default function SupplierPayablesPanel({
         ].map(f => (
           <button
             key={f.id}
+             
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onClick={() => setFilterTier(f.id as any)}
             className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
               filterTier === f.id

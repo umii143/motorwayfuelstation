@@ -17,6 +17,7 @@ export function trackSearch(query: string, resultsCount: number) {
     stored.push({ query, resultsCount, timestamp: new Date().toISOString() });
     localStorage.setItem('search_analytics', JSON.stringify(stored.slice(-100)));
   } catch (e) {
+    // eslint-disable-next-line no-console
     console.warn('Could not save search analytics', e);
   }
 }
@@ -24,7 +25,7 @@ export function trackSearch(query: string, resultsCount: number) {
 export function getTopSearches(): { query: string; count: number }[] {
   try {
     const stored = JSON.parse(localStorage.getItem('search_analytics') || '[]');
-    const counts: Record<string, number> = {};
+    const counts: Record<string, number> = { /* empty */ };
     stored.forEach((e: SearchEvent) => {
       counts[e.query] = (counts[e.query] || 0) + 1;
     });
@@ -32,6 +33,7 @@ export function getTopSearches(): { query: string; count: number }[] {
       .map(([query, count]) => ({ query, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     return [];
   }

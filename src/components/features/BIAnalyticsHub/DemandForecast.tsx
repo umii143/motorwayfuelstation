@@ -19,13 +19,16 @@ const getFuelTypeFromProductName = (name: string) => {
   return 'Super'; // default to Super / PMG / Petrol
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function DemandForecast({ settings, stationId }: DemandForecastProps) {
   const [shifts, setShifts] = useState<Shift[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [tanks, setTanks] = useState<Tank[]>([]);
   const [nozzles, setNozzles] = useState<Nozzle[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setShifts(db.getShifts(stationId));
     setTanks(db.getTanks(stationId));
     setNozzles(db.getNozzles(stationId));

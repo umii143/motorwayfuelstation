@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Key, ShieldCheck, CreditCard, ExternalLink, Calendar, Clock, Search, CheckCircle2, Zap, AlertTriangle, Building, History, Activity, Power, Download } from 'lucide-react';
+import { Key, ShieldCheck, CreditCard, ExternalLink, Calendar, Clock, Search, CheckCircle2, Zap, Building, History, Activity, Power, Download } from 'lucide-react';
 import { GlobalSettings } from '../../../types';
 
 export default function LicenseSubscription({ settings }: { settings: GlobalSettings }) {

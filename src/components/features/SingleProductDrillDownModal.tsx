@@ -3,8 +3,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   X, 
   Package, 
-  TrendingUp, 
-  DollarSign, 
   AlertTriangle,
   History,
   ShoppingCart,

@@ -373,16 +373,16 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
         const prod = products.find(p => p.id === h.productId);
         return {
           id: `A5-${h.id}`,
-          date: h.date,
+          date: h.date || '',
           time: '00:00 AM',
           staffName: h.changedBy,
           role: 'ADMIN',
           sourceRef: `REF-${h.id.slice(0, 5)}`,
           productCategory: prod?.name || h.productId,
-          quantity: `Rs. ${h.oldRate.toFixed(2)}`,
-          rate: `Rs. ${h.newRate.toFixed(2)}`,
-          amount: h.impactAmount,
-          approvalStatus: `${h.stockAtTime.toLocaleString()} Ltr`,
+          quantity: `Rs. ${(h.oldRate || 0).toFixed(2)}`,
+          rate: `Rs. ${(h.newRate || 0).toFixed(2)}`,
+          amount: h.impactAmount || 0,
+          approvalStatus: `${(h.stockAtTime || 0).toLocaleString()} Ltr`,
           balanceAfter: `${h.reason} (by ${h.changedBy})`,
           productId: h.productId
         };
@@ -508,7 +508,7 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
       { key: 'approvalStatus', label: 'Valuation Variance', urduLabel: 'مالیاتی نقصان اثر' },
       { key: 'balanceAfter', label: 'Variance Status', urduLabel: 'حالت' }
     ],
-    compile: ({ shifts, products, tanks }) => {
+    compile: ({ products, tanks }) => {
       const rows: ReportRow[] = [];
       tanks.forEach(tnk => {
         const prod = products.find(p => p.id === tnk.productId);
@@ -667,7 +667,7 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
       const expensesAmt = standaloneExpenses.reduce((sum, e) => sum + e.amount, 0) +
         shifts.reduce((sum, s) => sum + (s.expenseEntries?.reduce((acc, ex) => acc + ex.amount, 0) || 0), 0);
 
-      const revalProfit = rateHistory.reduce((sum, entry) => sum + entry.impactAmount, 0);
+      const revalProfit = rateHistory.reduce((sum, entry) => sum + (entry.impactAmount || 0), 0);
       const netProfit = (grossFuelSales + revalProfit) - cogsAmt - expensesAmt;
 
       return [
@@ -769,16 +769,16 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
         const prod = products.find(p => p.id === h.productId);
         return {
           id: `B4-${h.id}`,
-          date: h.date,
+          date: h.date || '',
           time: 'Tariff Sync',
           staffName: h.changedBy,
           role: 'OWNER',
           sourceRef: `T-CODE-${h.id.slice(0, 4)}`,
           productCategory: prod?.name || h.productId,
-          quantity: `Rs. ${h.oldRate.toFixed(2)}`,
-          rate: `Rs. ${h.newRate.toFixed(2)}`,
-          amount: h.impactAmount,
-          approvalStatus: `${h.stockAtTime.toLocaleString()} Ltr`,
+          quantity: `Rs. ${(h.oldRate || 0).toFixed(2)}`,
+          rate: `Rs. ${(h.newRate || 0).toFixed(2)}`,
+          amount: h.impactAmount || 0,
+          approvalStatus: `${(h.stockAtTime || 0).toLocaleString()} Ltr`,
           balanceAfter: `${h.reason} (by ${h.changedBy})`,
           productId: h.productId
         };
@@ -1082,20 +1082,20 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
     compile: ({ rateHistory, products }) => {
       return rateHistory.map(h => {
         const prod = products.find(p => p.id === h.productId);
-        const diff = h.difference !== undefined ? h.difference : (h.newRate - h.oldRate);
+        const diff = h.difference !== undefined ? h.difference : ((h.newRate || 0) - (h.oldRate || 0));
         const diffStr = `${diff >= 0 ? '+' : ''}Rs. ${diff.toFixed(2)}`;
-        const stockVal = h.stockAtChange !== undefined ? h.stockAtChange : h.stockAtTime;
-        const gainLossVal = h.gainLoss !== undefined ? h.gainLoss : h.impactAmount;
+        const stockVal = h.stockAtChange !== undefined ? h.stockAtChange : (h.stockAtTime || 0);
+        const gainLossVal = h.gainLoss !== undefined ? h.gainLoss : (h.impactAmount || 0);
         return {
           id: `B11-${h.id}`,
-          date: h.date,
+          date: h.date || '',
           time: 'Reval Sync',
           staffName: h.changedBy,
           role: 'OWNER',
           sourceRef: diffStr,
           productCategory: prod ? `${prod.name}` : h.productId,
-          quantity: h.oldRate === 0 ? 'Initial Setup' : `Rs. ${h.oldRate.toFixed(2)}`,
-          rate: `Rs. ${h.newRate.toFixed(2)}`,
+          quantity: h.oldRate === 0 ? 'Initial Setup' : `Rs. ${(h.oldRate || 0).toFixed(2)}`,
+          rate: `Rs. ${(h.newRate || 0).toFixed(2)}`,
           amount: gainLossVal,
           approvalStatus: `${stockVal.toLocaleString()} Ltr`,
           balanceAfter: `${h.reason}`
@@ -2104,7 +2104,7 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
         if (!cats[cat]) cats[cat] = { c: 0, s: 0 };
         cats[cat].c += 1; cats[cat].s += e.amount;
       }));
-      const total = Object.values(cats).reduce((acc: any, curr: any) => acc + (curr.s || 0), 0) || 1;
+      const total = Object.values(cats).reduce((acc: number, curr: {c: number; s: number}) => acc + (curr.s || 0), 0) || 1;
       return Object.keys(cats).map((c, idx) => ({
         id: `G2-${idx}`, date: 'Aggregated Matrix', time: 'Active',
         staffName: 'P&L desk', role: 'SYSTEM', sourceRef: `CONF-R-${idx}`,
@@ -2269,11 +2269,11 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
       });
       rateHistory.forEach(rh => {
         r.push({
-          id: `H1-R-${rh.id}`, date: rh.date, time: 'Overridded',
+          id: `H1-R-${rh.id}`, date: rh.date || '' || '', time: 'Overridded',
           staffName: rh.changedBy, role: 'ADMIN', sourceRef: `TAR-REV-${rh.id.slice(0, 4)}`,
           productCategory: 'PRODUCT REVALUATION SUBSYSTEM', quantity: '—', rate: '—',
-          amount: rh.impactAmount, approvalStatus: 'ADMIN SECURE PASS',
-          balanceAfter: `Fuel rate altered on ${rh.productId} to Rs. ${rh.newRate}. Reasons: ${rh.reason}`
+          amount: (rh.impactAmount || 0) || 0, approvalStatus: 'ADMIN SECURE PASS',
+          balanceAfter: `Fuel rate altered on ${rh.productId} to Rs. ${(rh.newRate || 0)}. Reasons: ${rh.reason}`
         });
       });
       return r.sort((a,b)=> b.date.localeCompare(a.date));
@@ -2298,10 +2298,10 @@ export const REPORT_TEMPLATES: ReportTemplate[] = [
     compile: ({ rateHistory, products }) => rateHistory.map(rh => {
       const pr = products.find(p => p.id === rh.productId);
       return {
-        id: `H2-${rh.id}`, date: rh.date, time: 'Price Tick',
+        id: `H2-${rh.id}`, date: rh.date || '' || '', time: 'Price Tick',
         staffName: rh.changedBy, role: 'ADMIN', sourceRef: `REVAL-${rh.id.slice(0, 5).toUpperCase()}`,
         productCategory: pr?.name || rh.productId.toUpperCase(),
-        quantity: `Rs. ${rh.oldRate}`, rate: `Rs. ${rh.newRate}`, amount: rh.impactAmount,
+        quantity: `Rs. ${(rh.oldRate || 0)}`, rate: `Rs. ${(rh.newRate || 0)}`, amount: (rh.impactAmount || 0) || 0,
         approvalStatus: 'Audited pricing change completed', balanceAfter: `Justification Code Note: ${rh.reason}`
       };
     })

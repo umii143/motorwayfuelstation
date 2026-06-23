@@ -35,6 +35,8 @@ export default function ProductWizard({ isLube, products, language, onUpdateProd
     const newProducts = [
       ...products,
       { 
+         
+        // eslint-disable-next-line react-hooks/purity
         id: 'prod_' + Date.now(), 
         name: preset.name,
         urduName: preset.name,

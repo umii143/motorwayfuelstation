@@ -63,7 +63,7 @@ export default function AdvancedPriceManagement({
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
   const changesThisMonth = rateHistory.filter(rh => {
-    const d = new Date(rh.date || rh.effectiveDate || Date.now());
+    const d = new Date((rh.date || '') || rh.effectiveDate || Date.now());
     return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
   }).length;
 
@@ -129,13 +129,13 @@ export default function AdvancedPriceManagement({
   // Price History Line Chart Data
   // Group by date, create keys for each product
   const historyData = useMemo(() => {
-    const dates = Array.from(new Set(rateHistory.map(r => r.effectiveDate || r.date).slice(0, 10))).reverse();
+    const dates = Array.from(new Set(rateHistory.map(r => r.effectiveDate || r.date).filter(Boolean).slice(0, 10))).reverse() as string[];
     return dates.map(date => {
       const point: any = { date };
       fuelProducts.forEach(p => {
         // find the price at this date or the last known price before this date
-        const historyUpToDate = rateHistory.filter(r => (r.effectiveDate || r.date) <= date && r.productId === p.id);
-        point[p.name] = historyUpToDate.length > 0 ? (historyUpToDate[0].newRate ?? historyUpToDate[0].newPrice) : p.rate;
+        const historyUpToDate = rateHistory.filter(r => (r.effectiveDate || r.date || '') <= date && r.productId === p.id);
+        point[p.name] = historyUpToDate.length > 0 ? (historyUpToDate[0]?.newRate ?? historyUpToDate[0]?.newPrice) : p.rate;
       });
       return point;
     });
@@ -187,7 +187,7 @@ export default function AdvancedPriceManagement({
           </div>
           <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2 relative z-10">Price Updated</span>
           <div className="flex items-end gap-2 relative z-10">
-            <span className="text-xl font-bold text-white">{lastUpdate ? (lastUpdate.effectiveDate || lastUpdate.date).split(' ')[0] : 'N/A'}</span>
+            <span className="text-xl font-bold text-white">{lastUpdate ? (lastUpdate.effectiveDate || lastUpdate.date || '').split(' ')[0] : 'N/A'}</span>
           </div>
           <span className="text-xs text-slate-500 mt-1 relative z-10">Last Update Time</span>
         </div>
@@ -291,7 +291,7 @@ export default function AdvancedPriceManagement({
                         </div>
                       </td>
                       <td className="py-4 px-2">
-                        <span className="text-xs text-slate-400">{p.effectiveTime.split(' ')[0]}</span>
+                        <span className="text-xs text-slate-400">{(p.effectiveTime || '').split(' ')[0]}</span>
                       </td>
                       <td className="py-4 px-2 text-right">
                         <button 
@@ -440,7 +440,7 @@ export default function AdvancedPriceManagement({
             {rateHistory.slice(0, 8).map(rh => {
               const product = products.find(p => p.id === rh.productId);
               const color = product ? getProductColor(product.name) : COLORS.Default;
-              const diff = rh.newRate - rh.oldRate;
+              const diff = (rh.newRate || 0) - (rh.oldRate || 0);
               const isIncrease = diff >= 0;
 
               return (
@@ -457,14 +457,14 @@ export default function AdvancedPriceManagement({
                      </div>
                      <div className="flex justify-between text-[10px] text-slate-400 mt-1">
                        <span className="flex items-center gap-2">
-                         <span>Previous: {rh.oldRate.toFixed(2)}</span>
+                         <span>Previous: {(rh.oldRate || 0).toFixed(2)}</span>
                          <span>→</span>
-                         <span className="text-slate-300">New: {rh.newRate.toFixed(2)}</span>
+                         <span className="text-slate-300">New: {(rh.newRate || 0).toFixed(2)}</span>
                        </span>
                      </div>
                    </div>
                    <div className="text-right shrink-0">
-                      <p className="text-[9px] text-slate-500 mb-0.5">{rh.date.split(' ')[0]}</p>
+                      <p className="text-[9px] text-slate-500 mb-0.5">{(rh.date || '').split(' ')[0]}</p>
                       <p className="text-[9px] font-medium text-slate-400 max-w-[60px] truncate">{rh.changedBy}</p>
                    </div>
                 </div>

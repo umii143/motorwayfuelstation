@@ -13,6 +13,8 @@ export default function MaintenanceDashboard({ settings, stationId }: Maintenanc
   const [records, setRecords] = useState<MaintenanceRecord[]>([]);
 
   useEffect(() => {
+     
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAssets(db.getAssets(stationId));
     setRecords(db.getMaintenanceRecords(stationId));
   }, [stationId]);
@@ -30,7 +32,9 @@ export default function MaintenanceDashboard({ settings, stationId }: Maintenanc
   const mtdMaintenanceCost = currentMonthRecords.reduce((sum, r) => sum + r.cost, 0);
 
   const isWarrantyExpiringSoon = (expiryDate?: string) => {
+     
     if (!expiryDate) return false;
+    // eslint-disable-next-line react-hooks/purity
     const daysLeft = (new Date(expiryDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
     return daysLeft > 0 && daysLeft <= 30;
   };

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Fuel, Edit3, Save } from 'lucide-react';
-import { useWidgetEngine } from '../../store/useWidgetEngine';
+import { useWidgetEngine } from '../../stores/useWidgetEngine';
 import { CORE_WIDGETS, DEFAULT_OWNER_LAYOUT } from './registry';
 import { DashboardCanvas } from './DashboardCanvas';
 import { WidgetStudioDrawer } from './WidgetStudioDrawer';
@@ -23,6 +23,7 @@ export function DashboardShell({ onStartShiftQuick, onNavigate }: { onStartShift
     if (!activeLayout) {
       setActiveLayout(DEFAULT_OWNER_LAYOUT);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const toggleEditMode = () => {

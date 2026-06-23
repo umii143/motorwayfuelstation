@@ -11,12 +11,12 @@ const ScannerContext = createContext<ScannerContextType | undefined>(undefined);
 
 export const ScannerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [scanConfig, setScanConfig] = useState<{ formats?: BarcodeFormat[], title?: string }>({});
-  const [resolver, setResolver] = useState<(value: string | null) => void>(() => () => {});
+  const [scanConfig, setScanConfig] = useState<{ formats?: BarcodeFormat[], title?: string }>({ /* empty */ });
+  const [resolver, setResolver] = useState<(value: string | null) => void>(() => () => { /* empty */ });
 
   const scanBarcode = useCallback((options?: { formats?: BarcodeFormat[], title?: string }) => {
     return new Promise<string | null>((resolve) => {
-      setScanConfig(options || {});
+      setScanConfig(options || { /* empty */ });
       setResolver(() => resolve);
       setIsOpen(true);
     });

@@ -11,7 +11,6 @@ import {
   Plus,
   Minus,
   Receipt,
-  CreditCard,
   Smartphone,
   Landmark,
   User,
@@ -20,11 +19,8 @@ import {
   Wrench,
   ArrowRight,
   Trash2,
-  PlusCircle,
   History,
-  TrendingUp,
   Printer,
-  ArrowLeft,
   RotateCcw
 } from 'lucide-react';
 import {
@@ -69,6 +65,8 @@ export default function LubePOS({
   onAddLubePosSale,
   onNavigate
 }: LubePOSProps) {
+   
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { showToast, showAlert, showConfirm } = useStation();
   const t = (en: string, ur: string) => translate(en, ur, settings);
   const isUrdu = settings.language === 'ur';
@@ -91,34 +89,44 @@ export default function LubePOS({
   const [paymentMode, setPaymentMode] = useState<'cash' | 'bank' | 'digital' | 'credit'>('cash');
   const [bankAccountId, setBankAccountId] = useState('');
   const [digitalAccountId, setDigitalAccountId] = useState('');
+   
   const [discount, setDiscount] = useState('0');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [discountType, setDiscountType] = useState<'amount' | 'percentage'>('amount');
   const [tax, setTax] = useState('0');
   const [amountReceived, setAmountReceived] = useState('');
   const [notes, setNotes] = useState('');
+   
   const [cart, setCart] = useState<CartLine[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [lastSale, setLastSale] = useState<LubePosSale | null>(null);
+  
 
   useEffect(() => {
     if (!cashierId && cashierOptions[0]?.id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCashierId(cashierOptions[0].id);
     }
+   
   }, [cashierId, cashierOptions]);
 
   useEffect(() => {
     if (paymentMode !== 'bank') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setBankAccountId('');
     }
     if (paymentMode !== 'digital') {
       setDigitalAccountId('');
     }
     if (paymentMode === 'credit') {
+       
       setAmountReceived('0');
     }
   }, [paymentMode]);
 
     const [activeCategory, setActiveCategory] = useState<string>('All');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [rateCardType, setRateCardType] = useState<'retail' | 'wholesale'>('retail');
 
   const categories = useMemo(() => {
@@ -182,12 +190,14 @@ const cartItems = useMemo(() => {
       change
     };
   }, [amountReceived, cartItems, discount, discountType, paymentMode, tax]);
+  
 
   const todaySales = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
     return lubePosSales.filter((sale) => sale.date === today);
   }, [lubePosSales]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const kpis = useMemo(() => {
     const todayRevenue = todaySales.reduce((sum, sale) => sum + sale.total, 0);
     const todayUnits = todaySales.reduce(

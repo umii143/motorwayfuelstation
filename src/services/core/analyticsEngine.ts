@@ -6,8 +6,7 @@
  */
 
 import { Shift, Nozzle, Product, Customer } from '../../types';
-import { getAllJournalEntries } from './journalEngine';
-import { getLedgerSummary, getAllCustomerBalances } from './ledgerEngine';
+import { getAllCustomerBalances } from './ledgerEngine';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -207,7 +206,7 @@ export async function computeRevenueDrillThrough(
     unit: 'PKR',
     formula: 'Σ (Nozzle Liters × Product Rate)',
     generatedAt: new Date().toISOString(),
-    components: Object.entries(productRevMap).map(([id, data]) => ({
+    components: Object.values(productRevMap).map((data) => ({
       label: `${data.name} (${data.liters.toLocaleString()}L)`,
       value: data.revenue,
       sourceType: 'shift' as const,
@@ -280,7 +279,8 @@ export function getExpenseCategoryTrend(
     const month = shift.date.substring(0, 7); // YYYY-MM
     if (!monthCategoryMap[month]) monthCategoryMap[month] = {};
     shift.expenseEntries.forEach(e => {
-      monthCategoryMap[month][e.category] = (monthCategoryMap[month][e.category] ?? 0) + e.amount;
+      const cat = e.category || 'Uncategorized';
+      monthCategoryMap[month][cat] = (monthCategoryMap[month][cat] ?? 0) + e.amount;
     });
   });
 

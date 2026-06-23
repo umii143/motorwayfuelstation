@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { SyncEngine } from '../../services/core/SyncEngine';
-import { Wifi, WifiOff, RefreshCw, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { WifiOff, RefreshCw, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function OfflineIndicator() {

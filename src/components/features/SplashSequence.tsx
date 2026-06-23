@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Fuel, Droplets } from 'lucide-react';
+import { Fuel } from 'lucide-react';
 import { SplashScreen } from '@capacitor/splash-screen';
 
 interface SplashSequenceProps {
@@ -14,6 +14,8 @@ export const SplashSequence: React.FC<SplashSequenceProps> = ({ onComplete }) =>
     const hideNativeSplash = async () => {
       try {
         await SplashScreen.hide();
+       
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err) {
         // Capacitor might not be available
       }

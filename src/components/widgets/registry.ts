@@ -1,4 +1,4 @@
-import { WidgetManifest } from '../../types/widget.types';
+import { WidgetManifest, DashboardLayoutSnapshot } from '../../types/widget.types';
 
 export const CORE_WIDGETS: WidgetManifest[] = [
   {
@@ -120,7 +120,7 @@ export const CORE_WIDGETS: WidgetManifest[] = [
   }
 ];
 
-export const DEFAULT_OWNER_LAYOUT = {
+export const DEFAULT_OWNER_LAYOUT: DashboardLayoutSnapshot = {
   id: 'default-owner-layout',
   name: 'Owner Command Center',
   description: 'Default layout for station owners focusing on profit, tanks, and treasury.',
@@ -128,11 +128,11 @@ export const DEFAULT_OWNER_LAYOUT = {
   isDefault: true,
   roleRestriction: ['owner'],
   widgets: [
-    { instanceId: 'hero-1', manifestId: 'hero-performance', x: 0, y: 0, w: 12, h: 2, settings: {} },
-    { instanceId: 'tank-1', manifestId: 'tank-health', x: 0, y: 2, w: 8, h: 3, settings: {} },
-    { instanceId: 'shift-1', manifestId: 'active-shift', x: 8, y: 2, w: 4, h: 2, settings: {} },
-    { instanceId: 'treasury-1', manifestId: 'treasury', x: 8, y: 4, w: 4, h: 2, settings: {} },
-    { instanceId: 'sales-1', manifestId: 'sales-overview', x: 0, y: 5, w: 8, h: 3, settings: {} },
-    { instanceId: 'activity-1', manifestId: 'activity-feed', x: 8, y: 6, w: 4, h: 3, settings: {} }
+    { instanceId: 'hero-1', manifestId: 'hero-performance', x: 0, y: 0, w: 12, h: 2, settings: { /* empty */ } },
+    { instanceId: 'tank-1', manifestId: 'tank-health', x: 0, y: 2, w: 8, h: 3, settings: { /* empty */ } },
+    { instanceId: 'shift-1', manifestId: 'active-shift', x: 8, y: 2, w: 4, h: 2, settings: { /* empty */ } },
+    { instanceId: 'treasury-1', manifestId: 'treasury', x: 8, y: 4, w: 4, h: 2, settings: { /* empty */ } },
+    { instanceId: 'sales-1', manifestId: 'sales-overview', x: 0, y: 5, w: 8, h: 3, settings: { /* empty */ } },
+    { instanceId: 'activity-1', manifestId: 'activity-feed', x: 8, y: 6, w: 4, h: 3, settings: { /* empty */ } }
   ]
 };

@@ -49,6 +49,8 @@ export default function LossPreventionHub({ settings }: LossPreventionHubProps) 
           return (
             <button
               key={tab.id}
+               
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-4 py-2 rounded-t-xl font-sans text-xs font-bold whitespace-nowrap transition-all border-b-2 ${
                 isActive

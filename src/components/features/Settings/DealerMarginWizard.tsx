@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DollarSign, Plus, Save, Activity, Trash2, ShieldAlert } from 'lucide-react';
+import { DollarSign, Plus, Save, Activity } from 'lucide-react';
 import { DealerMarginSetting } from '../../../types';
 import { useInventoryStore } from '../../../stores/useInventoryStore';
 import { t } from '../../../lib/translations';
@@ -31,6 +31,8 @@ export default function DealerMarginWizard({ language, onLogAudit, stationId }: 
 
     // Previous active setting for this product should be marked as ended
     // We do this by checking if there's an active one that starts before this
+     
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const activeSettings = dealerMarginSettings.filter(s => s.productType === productType && !s.effectiveTo);
     
     // We can just add the new one. The getter logic uses the latest effectiveFrom date that is <= atDate

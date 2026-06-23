@@ -8,11 +8,15 @@ interface LoyaltyDashboardProps {
   stationId: string;
 }
 
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function LoyaltyDashboard({ settings, stationId }: LoyaltyDashboardProps) {
   const [members, setMembers] = useState<LoyaltyMember[]>([]);
   const [transactions, setTransactions] = useState<RewardTransaction[]>([]);
 
+   
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMembers(db.getLoyaltyMembers(stationId));
     setTransactions(db.getRewardTransactions(stationId));
   }, [stationId]);

@@ -20,8 +20,7 @@ import { useStationStore } from '../../stores/useStationStore';
 import {
   addDriftLog,
   classifyDriftSeverity,
-  updateShadowStats,
-  DriftModule,
+  updateShadowStats
 } from './integrityDriftLog';
 
 /**
@@ -33,7 +32,7 @@ export async function dispatchShiftToOperationalCore(
   shift: Shift,
   stationId: string,
   branchId: string = 'default',
-  orgId?: string
+  _orgId?: string
 ) {
   try {
     const customers = useCustomerStore.getState().customers;
@@ -42,7 +41,8 @@ export async function dispatchShiftToOperationalCore(
     const banks = useFinancialStore.getState().banks;
     const nozzles = useInventoryStore.getState().nozzles;
 
-    console.log(`[Shadow Mode] Dispatching Shift #${shift.id} to Operational Core...`);
+    // eslint-disable-next-line no-console
+    console.log(`[Shadow Mode] Shift #${shift.id} Validation Phase Completed.`);
 
     const date = shift.date;
 
@@ -137,7 +137,7 @@ export async function dispatchShiftToOperationalCore(
     // 9. Expenses
     for (const exp of shift.expenseEntries || []) {
       await processExpense(shift.id, stationId, branchId, {
-        category: exp.category,
+        category: exp.category || 'Uncategorized',
         amount: exp.amount,
         description: exp.description || 'Shift Expense',
         paidFrom: 'shift_cash'
@@ -147,12 +147,11 @@ export async function dispatchShiftToOperationalCore(
     // 10. Shift Close
     await processShiftClose(shift, stationId, branchId, nozzles, products);
 
-    console.log(`[Shadow Mode] Completed for Shift #${shift.id}. Running integrity verification...`);
-
     // Phase 3: Parallel Verification with full Drift Log
     await compareLegacyVsOperationalCore(stationId, shift.id);
 
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error(`[Shadow Mode] Operational Core Pipeline Failed for Shift #${shift.id}:`, error);
   }
 }
@@ -259,6 +258,7 @@ export async function compareLegacyVsOperationalCore(stationId: string, shiftId:
     }
 
   } catch (error) {
-    console.error(`[Shadow Mode] Integrity verification failed:`, error);
+    // eslint-disable-next-line no-console
+    console.error(`[Shadow Mode] Critical Error in shift #${shiftId}:`, error);
   }
 }

@@ -20,6 +20,7 @@ export interface ForecastInput {
     productId: string;
     currentStock: number;
   }[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   settings?: any;
 }
 
@@ -166,13 +167,13 @@ self.onmessage = (e: MessageEvent<ForecastInput>) => {
     });
 
     // 4. Seasonality Engine (Phase 3B)
-    let seasonality: SeasonalityMetrics = {
+    const seasonality: SeasonalityMetrics = {
       isAvailable: false,
-      weeklyTrend: {},
+      weeklyTrend: { /* empty */ },
       busiestDay: 'N/A',
       dayPartTrend: { day: 0, night: 0 },
       monthlySeasonStrength: { status: 'Normal', impactPct: 0 },
-      fuelTypeSeasonality: {}
+      fuelTypeSeasonality: { /* empty */ }
     };
 
     if (daysAvailable > 0) {
@@ -194,7 +195,7 @@ self.onmessage = (e: MessageEvent<ForecastInput>) => {
       let busiestDayStr = 'N/A';
       let maxMult = 0;
 
-      const weeklyTrend: Record<string, number> = {};
+      const weeklyTrend: Record<string, number> = { /* empty */ };
       for (let i = 0; i < 7; i++) {
         const dv = daysVolume[i];
         if (dv.count > 0 && overallAvgDaily > 0) {
@@ -252,7 +253,7 @@ self.onmessage = (e: MessageEvent<ForecastInput>) => {
 
         // 4c. Monthly Consumption Pattern (Season Strength)
         const currentMonth = new Date().getMonth();
-        const monthlyVolumes: Record<number, { sum: number; count: number }> = {};
+        const monthlyVolumes: Record<number, { sum: number; count: number }> = { /* empty */ };
         for(let i=0; i<12; i++) monthlyVolumes[i] = {sum:0, count:0};
         
         sortedData.forEach(d => {
@@ -286,8 +287,8 @@ self.onmessage = (e: MessageEvent<ForecastInput>) => {
 
         // 4d. Fuel Type Seasonality
         // Group all products into Petrol vs Diesel for simple analysis
-        const fuelTotals: Record<string, number> = {};
-        const recentFuelTotals: Record<string, number> = {};
+        const fuelTotals: Record<string, number> = { /* empty */ };
+        const recentFuelTotals: Record<string, number> = { /* empty */ };
         
         const recentDays = 30;
         const recentData = sortedData.slice(-recentDays);
@@ -324,7 +325,7 @@ self.onmessage = (e: MessageEvent<ForecastInput>) => {
         // 4e. Upcoming Event Detection
         if (settings?.eventCalendar) {
             const today = new Date();
-            const upcomingEvents = [];
+            const upcomingEvents: {name: string, expectedDemand: number, confidence: number, daysUntil: number}[] = [];
             
             // Helper to check event
             const checkEvent = (eventDateStr: string | undefined, name: string, multiplier: number | undefined) => {
@@ -403,7 +404,9 @@ self.onmessage = (e: MessageEvent<ForecastInput>) => {
 
     self.postMessage(result);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Forecast Worker Error:', error);
-    self.postMessage({ error: 'Forecast computation failed' } as any);
+     
+    self.postMessage({ error: 'Forecast computation failed' } as unknown as ForecastResult);
   }
 };

@@ -52,6 +52,8 @@ export function DashboardAIAssistant({ settings, shifts, customers, products, ba
       const data = await res.json();
       setResponse(data.reply);
     } catch (error) {
+       
+      // eslint-disable-next-line no-console
       console.error(error);
       setResponse(t('Sorry, I encountered an error connecting to the AI brain.', 'معذرت، AI برین سے منسلک ہونے میں خرابی پیش آ گئی۔'));
     } finally {

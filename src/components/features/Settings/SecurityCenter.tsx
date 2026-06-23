@@ -10,6 +10,8 @@ interface SecurityCenterProps {
 }
 
 export default function SecurityCenter({ settings, onUpdateSettings }: SecurityCenterProps) {
+   
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user, reauthenticateWithPassword } = useAuth();
   const { showToast } = useStation();
 
@@ -118,7 +120,9 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
       // If verification succeeds, we move them to 'setup' mode to create a new PIN
       setPinMode('setup');
       setForgotMethod(null);
+       
       showToast(t('Identity verified. Please set a new PIN.', 'شناخت کی تصدیق ہو گئی۔ نیا پن درج کریں۔'), 'success');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       showToast(err.message || t('Verification failed', 'تصدیق ناکام'), 'error');
     } finally {

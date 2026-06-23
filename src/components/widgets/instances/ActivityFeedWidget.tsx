@@ -16,9 +16,7 @@ export function ActivityFeedWidget() {
         amount: formatCurrency(s.totalSales || 0, settings),
         time: s.time || '12:00 PM', 
         timestamp: new Date(`${s.date} ${s.time || '12:00 PM'}`).getTime(), 
-        icon: Power, 
-        color: s.status === 'Open' || s.status === 'active' ? 'text-emerald-500' : 'text-slate-400', 
-        bg: 'bg-white/5'
+        color: s.status === ('active' as any) || s.status === ('closed' as any) ? 'text-emerald-500' : 'text-slate-400',
       })),
       ...stockTxns.slice(0, 5).map(tx => ({
         id: tx.id, 

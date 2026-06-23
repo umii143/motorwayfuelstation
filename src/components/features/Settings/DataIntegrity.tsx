@@ -21,9 +21,13 @@ export default function DataIntegrity({ settings, activeStationId, onNavigate }:
   const [score, setScore] = useState(100);
   const [openDrift, setOpenDrift] = useState(0);
   const [criticalDrift, setCriticalDrift] = useState(0);
+   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [stats, setStats] = useState<any>(null);
 
+   
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setScore(calculateIntegrityScore(activeStationId));
     setOpenDrift(getOpenDriftCount(activeStationId));
     setCriticalDrift(getUnresolvedCriticalCount(activeStationId));

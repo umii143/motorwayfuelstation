@@ -5,8 +5,7 @@
  */
 import React, { useMemo, useState } from 'react';
 import {
-  Clock, AlertTriangle, Flame, Zap, CheckCircle, Package,
-  TrendingDown, BarChart2, Droplets, Filter, ChevronDown, ChevronUp
+  Clock, AlertTriangle, Flame, CheckCircle, Package, BarChart2, Droplets, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { StockBatch, Product, Supplier } from '../../types';
 import { getBatchAgingDays } from '../../services/fifoEngine';

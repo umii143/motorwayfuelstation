@@ -163,6 +163,7 @@ export const BIDashboard: React.FC = () => {
 };
 
 // Mini component for KPI cards
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const KPICard = React.memo(({ title, value, icon: Icon, benchmark, subValue }: any) => {
   return (
     <div className="premium-card p-5 border">

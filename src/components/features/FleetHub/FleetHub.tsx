@@ -71,7 +71,7 @@ export default function FleetHub({ settings }: FleetHubProps) {
           vehicles={db.getFleetVehicles(stationId)}
           drivers={db.getFleetDrivers(stationId)}
           onBack={() => {
-            window.history.pushState({}, '', '/fleet');
+            window.history.pushState({ /* empty */ }, '', '/fleet');
           }}
         />
       );
@@ -101,6 +101,8 @@ export default function FleetHub({ settings }: FleetHubProps) {
           return (
             <button
               key={tab.id}
+               
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick={() => setActiveTab(tab.id as any)}
               className={`fp-date-tab flex items-center gap-1.5 ${isActive ? 'fp-date-tab--active' : ''}`}
             >

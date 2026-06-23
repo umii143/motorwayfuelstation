@@ -112,8 +112,12 @@ export default function FundTransferForm() {
         id: `trx_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
         date: new Date().toISOString(),
         sourceAccountId: sourceId,
+         
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         sourceAccountType: srcAcc.type as any,
+         
         destinationAccountId: destId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         destinationAccountType: destAcc.type as any,
         amount: val,
         type: 'transfer',
@@ -123,9 +127,13 @@ export default function FundTransferForm() {
       }, orgId || '', stationId || '');
 
       setStatus({ type: 'success', message: 'Funds transferred successfully!' });
+       
       setAmount('');
+       
       setDescription('');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
+      // eslint-disable-next-line no-console
       console.error(err);
       setStatus({ type: 'error', message: err.message || 'An error occurred during transfer.' });
     }

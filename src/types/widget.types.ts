@@ -23,6 +23,7 @@ export interface WidgetManifest {
   premium?: boolean;
   layoutVersion: number;
   workerDependencies?: string[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   defaultSettings?: Record<string, any>;
   previewImage?: string; // Optional URL for the Marketplace
   minWidth?: number;     // For react-grid-layout grid units
@@ -36,6 +37,7 @@ export interface WidgetInstance {
   y: number;
   w: number;
   h: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   settings: Record<string, any>;
 }
 

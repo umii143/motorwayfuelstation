@@ -13,6 +13,8 @@ interface SupplierDetailsPanelProps {
   onClose: () => void;
 }
 
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function SupplierDetailsPanel({ supplier, settings, shifts, onClose }: SupplierDetailsPanelProps) {
   const t = (en: string, ur: string) => translate(en, ur, settings);
 

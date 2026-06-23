@@ -7,37 +7,39 @@ interface PoweredByUmarAliProps {
   showLogo?: boolean;
 }
 
+const whatsappSvg = (
+  <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-emerald-400 shrink-0 drop-shadow-[0_0_2px_rgba(52,211,153,0.8)]" viewBox="0 0 24 24">
+    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.058 5.348 5.4 0 12.008 0c3.2 0 6.21 1.244 8.475 3.512 2.262 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.346 12.003-11.95 12.003-2.002-.001-3.968-.5-5.713-1.448L0 24zm6.59-4.817c1.661.988 3.287 1.477 4.912 1.478 5.483 0 9.95-4.466 9.953-9.95 0-2.657-1.035-5.155-2.914-7.034C16.711 1.797 14.198.761 11.53.761c-5.485 0-9.952 4.467-9.955 9.953-.001 1.944.512 3.844 1.487 5.534l-.98 3.578 3.665-.961zm11.332-6.526c-.347-.174-2.054-1.014-2.372-1.129-.317-.116-.549-.174-.78.174-.23.348-.895 1.129-1.096 1.359-.202.232-.404.261-.751.087-.348-.174-1.468-.541-2.798-1.728-1.034-.922-1.731-2.06-1.933-2.408-.202-.348-.022-.536.152-.709.157-.156.347-.406.52-.609.174-.203.232-.348.348-.58.116-.232.058-.435-.028-.609-.087-.174-.78-1.884-1.069-2.58-.282-.677-.568-.584-.78-.595-.201-.01-.433-.012-.664-.012-.231 0-.606.087-.923.435-.317.348-1.211 1.188-1.211 2.9s1.24 3.362 1.413 3.593c.174.232 2.44 3.725 5.911 5.225.824.356 1.468.57 1.969.729.829.263 1.583.226 2.18.136.664-.1 2.053-.84 2.34-1.652.287-.812.287-1.507.202-1.651-.086-.144-.316-.231-.663-.405z"/>
+    </svg>
+);
+
+const DeveloperTag = () => (
+  <span className="inline-flex items-center gap-1 font-black tracking-tight">
+    <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#FF7A00] to-[#FF004D] drop-shadow-[0_0_8px_rgba(255,122,0,0.5)]">UMAR ALI</span>
+    <Zap className="w-3.5 h-3.5 text-[#FFD700] fill-[#FFD700] drop-shadow-[0_0_6px_rgba(255,215,0,0.8)] animate-pulse" />
+  </span>
+);
+
+const ContactTag = () => (
+  <a 
+    href="https://wa.me/923168432329" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    className="inline-flex items-center gap-1.5 hover:scale-105 transition-transform bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md backdrop-blur-sm group"
+    title="Contact Developer on WhatsApp"
+    onClick={(e) => e.stopPropagation()}
+  >
+    {whatsappSvg}
+    <span className="font-mono font-bold text-[10px] sm:text-xs text-emerald-400 group-hover:text-emerald-300 drop-shadow-[0_0_4px_rgba(52,211,153,0.4)]">0316-8432329</span>
+  </a>
+);
+
 export const PoweredByUmarAli: React.FC<PoweredByUmarAliProps> = ({ 
   variant = 'compact', 
   className = '',
   showLogo = true
 }) => {
-  const whatsappSvg = (
-    <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-emerald-400 shrink-0 drop-shadow-[0_0_2px_rgba(52,211,153,0.8)]" viewBox="0 0 24 24">
-      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.058 5.348 5.4 0 12.008 0c3.2 0 6.21 1.244 8.475 3.512 2.262 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.346 12.003-11.95 12.003-2.002-.001-3.968-.5-5.713-1.448L0 24zm6.59-4.817c1.661.988 3.287 1.477 4.912 1.478 5.483 0 9.95-4.466 9.953-9.95 0-2.657-1.035-5.155-2.914-7.034C16.711 1.797 14.198.761 11.53.761c-5.485 0-9.952 4.467-9.955 9.953-.001 1.944.512 3.844 1.487 5.534l-.98 3.578 3.665-.961zm11.332-6.526c-.347-.174-2.054-1.014-2.372-1.129-.317-.116-.549-.174-.78.174-.23.348-.895 1.129-1.096 1.359-.202.232-.404.261-.751.087-.348-.174-1.468-.541-2.798-1.728-1.034-.922-1.731-2.06-1.933-2.408-.202-.348-.022-.536.152-.709.157-.156.347-.406.52-.609.174-.203.232-.348.348-.58.116-.232.058-.435-.028-.609-.087-.174-.78-1.884-1.069-2.58-.282-.677-.568-.584-.78-.595-.201-.01-.433-.012-.664-.012-.231 0-.606.087-.923.435-.317.348-1.211 1.188-1.211 2.9s1.24 3.362 1.413 3.593c.174.232 2.44 3.725 5.911 5.225.824.356 1.468.57 1.969.729.829.263 1.583.226 2.18.136.664-.1 2.053-.84 2.34-1.652.287-.812.287-1.507.202-1.651-.086-.144-.316-.231-.663-.405z"/>
-    </svg>
-  );
 
-  const DeveloperTag = () => (
-    <span className="inline-flex items-center gap-1 font-black tracking-tight">
-      <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#FF7A00] to-[#FF004D] drop-shadow-[0_0_8px_rgba(255,122,0,0.5)]">UMAR ALI</span>
-      <Zap className="w-3.5 h-3.5 text-[#FFD700] fill-[#FFD700] drop-shadow-[0_0_6px_rgba(255,215,0,0.8)] animate-pulse" />
-    </span>
-  );
-
-  const ContactTag = () => (
-    <a 
-      href="https://wa.me/923168432329" 
-      target="_blank" 
-      rel="noopener noreferrer"
-      className="inline-flex items-center gap-1.5 hover:scale-105 transition-transform bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md backdrop-blur-sm group"
-      title="Contact Developer on WhatsApp"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {whatsappSvg}
-      <span className="font-mono font-bold text-[10px] sm:text-xs text-emerald-400 group-hover:text-emerald-300 drop-shadow-[0_0_4px_rgba(52,211,153,0.4)]">0316-8432329</span>
-    </a>
-  );
 
   if (variant === 'full') {
     return (

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Check, X, Gauge, AlertTriangle } from 'lucide-react';
+import { Plus, X, Gauge, AlertTriangle } from 'lucide-react';
 import { useStationStore } from '../../../stores/useStationStore';
 import { Nozzle, Tank, Pump, Product } from '../../../types';
 import { t } from '../../../lib/translations';

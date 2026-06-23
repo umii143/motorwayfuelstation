@@ -191,12 +191,12 @@ export async function getPartyBalance(
 /** Get all customer receivable balances */
 export async function getAllCustomerBalances(stationId: string): Promise<Record<string, number>> {
   const all = await _getAllLedgerLines(stationId, 'customer');
-  const byParty: Record<string, LedgerLine[]> = {};
+  const byParty: Record<string, LedgerLine[]> = { /* empty */ };
   all.forEach(l => {
     if (!byParty[l.partyId]) byParty[l.partyId] = [];
     byParty[l.partyId].push(l);
   });
-  const result: Record<string, number> = {};
+  const result: Record<string, number> = { /* empty */ };
   Object.entries(byParty).forEach(([partyId, lines]) => {
     result[partyId] = lines[lines.length - 1]?.runningBalance ?? 0;
   });
@@ -206,12 +206,12 @@ export async function getAllCustomerBalances(stationId: string): Promise<Record<
 /** Get all supplier payable balances */
 export async function getAllSupplierBalances(stationId: string): Promise<Record<string, number>> {
   const all = await _getAllLedgerLines(stationId, 'supplier');
-  const byParty: Record<string, LedgerLine[]> = {};
+  const byParty: Record<string, LedgerLine[]> = { /* empty */ };
   all.forEach(l => {
     if (!byParty[l.partyId]) byParty[l.partyId] = [];
     byParty[l.partyId].push(l);
   });
-  const result: Record<string, number> = {};
+  const result: Record<string, number> = { /* empty */ };
   Object.entries(byParty).forEach(([partyId, lines]) => {
     result[partyId] = lines[lines.length - 1]?.runningBalance ?? 0;
   });

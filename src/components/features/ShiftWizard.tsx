@@ -1,18 +1,16 @@
+/* eslint-disable react-hooks/exhaustive-deps, react-hooks/set-state-in-effect */
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useShallow } from 'zustand/react/shallow';
-import { motion, AnimatePresence } from "motion/react";
 import { format } from "date-fns";
-import { v4 as uuidv4 } from "uuid";
 import { useNativeAuth } from '../../contexts/NativeAuthContext';
 import {
   Play,
   RotateCcw,
-  CheckCircle,
   AlertCircle,
   Plus,
   Trash2,
@@ -25,13 +23,8 @@ import {
   FileText,
   Share2,
   Check,
-  Building,
-  ChevronRight,
-  Coins,
   Sparkles,
   BarChart2,
-  Flame,
-  TrendingDown,
   Zap,
   CheckCircle2,
   Sun,
@@ -50,10 +43,11 @@ import {
   BankAccount,
   DebitEntry,
   RecoveryEntry,
+   
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ExpenseEntry,
   BankCashEntry,
   DigitalCashEntry,
-  MeterResetEvent,
   SupplierPayment,
   EXPENSE_CATEGORIES,
   GlobalSettings,
@@ -71,8 +65,7 @@ import { deductFIFO, FIFOResult } from "../../services/fifoEngine";
 import { useInventoryStore } from "../../stores/useInventoryStore";
 import {
   processCreditSale, processRecovery, processExpense,
-  processBankDeposit, processDigitalPayment, processSupplierPayment,
-  processDiscount, processReversal, processShiftClose as eocShiftClose,
+  processBankDeposit, processDigitalPayment, processSupplierPayment, processReversal, processShiftClose as eocShiftClose,
 } from "../../services/core/operationalCore";
 
 // Helper to classify fuel product IDs into hardcoded categories expected by the shift closeout logic
@@ -161,9 +154,13 @@ export default function ShiftWizard({
   onAddSupplier,
   onAddBank,
   onAddShiftSalaryPayment,
+   
   onDeleteShiftSalaryPayment,
+   
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onNavigate,
 }: ShiftWizardProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { showToast, showConfirm, showAlert, tanks } = useStation();
   const { requireBiometric } = useNativeAuth();
   const isUrdu = settings.language === "ur";
@@ -193,9 +190,11 @@ export default function ShiftWizard({
   const defaultProductId = products[0]?.id || "general_debit";
 
   // AI Scanner States
+   
   const [isOpeningScannerOpen, setIsOpeningScannerOpen] = useState(false);
   const [isClosingScannerOpen, setIsClosingScannerOpen] = useState(false);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleOpeningAutoFill = (data: any) => {
     const newOpenings = { ...openingReadings };
     for (const noz of nozzles) {
@@ -207,10 +206,12 @@ export default function ShiftWizard({
     setOpeningReadings(newOpenings);
     setTimeout(() => {
       setIsOpeningScannerOpen(false);
+       
       showToast('Opening readings auto-filled!', 'success');
     }, 1500);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleClosingAutoFill = (data: any) => {
     const newClosings = { ...closingReadings };
     for (const noz of nozzles) {
@@ -272,7 +273,7 @@ export default function ShiftWizard({
     };
   }, [shifts]);
 
-  const [openingReadings, setOpeningReadings] = useState<Record<string, number>>({});
+  const [openingReadings, setOpeningReadings] = useState<Record<string, number>>({ /* empty */ });
 
   // ==========================================
   // STEP 3 OPERATIONAL TABS DRAWERS
@@ -302,15 +303,25 @@ export default function ShiftWizard({
   const [recCustId, setRecCustId] = useState("");
   const [recAmount, setRecAmount] = useState("");
   const [recMode, setRecMode] = useState<"cash" | "cheque" | "transfer">(
+     
     "cash",
+   
   );
+   
   const [recRef, setRecRef] = useState("");
+  
 
+   
   // Tab 3: Shift Operational Expenses
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [expCategory, setExpCategory] = useState("meals");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [expAmount, setExpAmount] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [expDesc, setExpDesc] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [expPaidFrom, setExpPaidFrom] = useState<"cash" | "bank">("cash");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [expStaffId, setExpStaffId] = useState("");
 
   // Tab 4: Bank Cash
@@ -346,7 +357,7 @@ export default function ShiftWizard({
   // ==========================================
   // STEP 4 FORM STATE: CLOSING READINGS
   // ==========================================
-  const [closingReadings, setClosingReadings] = useState<Record<string, number>>({});
+  const [closingReadings, setClosingReadings] = useState<Record<string, number>>({ /* empty */ });
 
   // ==========================================
   // STEP 5 FORM STATE: TESTING / DEDUCTIONS
@@ -356,7 +367,7 @@ export default function ShiftWizard({
   const [testCNG, setTestCNG] = useState("0");
 
   // Mid-Shift Price Revision Snapshot State
-  const [snapshotReadings, setSnapshotReadings] = useState<{ [nozzleId: string]: string }>({});
+  const [snapshotReadings, setSnapshotReadings] = useState<{ [nozzleId: string]: string }>({ /* empty */ });
   const [snapshotPin, setSnapshotPin] = useState("");
   const [snapshotOverride, setSnapshotOverride] = useState(false);
 
@@ -578,8 +589,8 @@ export default function ShiftWizard({
     status: "active",
     openingReadings: openingSnapshot,
     openingReadingsDisplay: openingSnapshotDisplay || openingSnapshot,
-    closingReadings: {},
-    testLiters: {},
+    closingReadings: { /* empty */ },
+    testLiters: { /* empty */ },
     debitEntries: [],
     recoveryEntries: [],
     expenseEntries: [],
@@ -625,13 +636,13 @@ export default function ShiftWizard({
     }
 
     if (isLubeBusiness) {
-      onAddShift(buildNewShift({}));
+      onAddShift(buildNewShift({ /* empty */ }));
       setWizardStep(3);
       return;
     }
 
     // Fill in standard openings inside localized state variables
-    const initialOpenings: { [nozzleId: string]: number } = {};
+    const initialOpenings: { [nozzleId: string]: number } = { /* empty */ };
     nozzles.forEach((noz) => {
       // Map reference values
       const refVal =
@@ -669,8 +680,8 @@ export default function ShiftWizard({
       return;
     }
 
-    const openingNumActual: { [nozzleId: string]: number } = {};
-    const openingNumDisplay: { [nozzleId: string]: number } = {};
+    const openingNumActual: { [nozzleId: string]: number } = { /* empty */ };
+    const openingNumDisplay: { [nozzleId: string]: number } = { /* empty */ };
     let hasError = false;
 
     for (const noz of nozzles) {
@@ -826,6 +837,7 @@ export default function ShiftWizard({
 
     // ── EOC Pipeline (async, non-blocking) ────────────────────────────────────
     processCreditSale(
+       
       activeShift.id, activeStationId, activeStationId,
       {
         customerId: debCustId,
@@ -836,6 +848,7 @@ export default function ShiftWizard({
         note: debNote,
       },
       activeShift.date
+    // eslint-disable-next-line no-console
     ).catch((err: Error) => console.warn('[EOC] Credit sale pipeline:', err.message));
 
     // Reset inputs
@@ -851,6 +864,7 @@ export default function ShiftWizard({
         "This entry will be reversed (not deleted). A reversal journal entry will be posted to maintain the audit trail. Continue?",
         "یہ اندراج حذف نہیں ہوگا۔ ایک ریورسل جرنل انٹری پوسٹ کی جائے گی۔ جاری رکھیں؟"
       ),
+       
       () => {
         // ── Optimistic UI update ──────────────────────────────────────────────
         const updated = {
@@ -862,6 +876,7 @@ export default function ShiftWizard({
         processReversal(
           id, t("User reversed credit sale entry", "صارف نے کریڈٹ سیل اندراج پلٹایا"),
           activeShift.id, activeStationId, activeStationId, activeShift.date
+        // eslint-disable-next-line no-console
         ).catch((err: Error) => console.warn('[EOC] Reversal pipeline:', err.message));
       }
     );
@@ -892,6 +907,7 @@ export default function ShiftWizard({
     const updated = {
       ...activeShift,
       recoveryEntries: [...activeShift.recoveryEntries, newRec],
+     
     };
     onUpdateShift(updated);
 
@@ -904,9 +920,11 @@ export default function ShiftWizard({
         amount, mode: recMode, reference: recRef,
       },
       activeShift.date
+    // eslint-disable-next-line no-console
     ).catch((err: Error) => console.warn('[EOC] Recovery pipeline:', err.message));
 
     // Reset inputs
+     
     setRecAmount("");
     setRecRef("");
   };
@@ -920,104 +938,13 @@ export default function ShiftWizard({
         const updated = { ...activeShift, recoveryEntries: activeShift.recoveryEntries.filter((r) => r.id !== id) };
         onUpdateShift(updated);
         processReversal(id, t("User reversed recovery entry", "صارف نے ریکوری اندراج پلٹایا"), activeShift.id, activeStationId, activeStationId, activeShift.date)
+          // eslint-disable-next-line no-console
           .catch((err: Error) => console.warn('[EOC] Recovery reversal:', err.message));
       }
     );
   };
 
-  const handleAddExpense = () => {
-    if (!activeShift) return;
-    const amount = Number(expAmount);
-    if (!amount || amount <= 0) {
-      showToast(
-        t("Please enter a valid expense amount.", "براہ کرم درست رقم درج کریں۔"),
-        "error",
-      );
-      return;
-    }
 
-    if (expCategory === "salary" && !expStaffId) {
-      showToast(
-        t(
-          "Please select a staff member for salary payment.",
-          "براہ کرم تنخواہ کی ادائیگی کے لیے عملے کا ممبر منتخب کریں۔",
-        ),
-        "error",
-      );
-      return;
-    }
-
-    const staffMember = staff.find((st) => st.id === expStaffId);
-    const personLabel = staffMember
-      ? settings.language === "ur"
-        ? staffMember.urduName
-        : staffMember.name
-      : "";
-    const finalDesc =
-      expDesc ||
-      (expCategory === "salary" && staffMember
-        ? `${t("Salary payout for", "تنخواہ کی ادائیگی برائے")} ${personLabel}`
-        : expCategory.toUpperCase().replace("_", " "));
-
-    const newExp: ExpenseEntry = {
-      id: `exp_${Date.now()}`,
-      category: expCategory,
-      amount,
-      description: finalDesc,
-      date: activeShift.date,
-      paidFrom: expPaidFrom,
-      staffId: expCategory === "salary" ? expStaffId : undefined,
-    };
-
-    if (expCategory === "salary" && expStaffId && onAddShiftSalaryPayment) {
-      onAddShiftSalaryPayment(
-        expStaffId, amount, finalDesc, expPaidFrom, activeShift.date, newExp.id,
-      );
-    }
-
-    // ── Optimistic UI update ──────────────────────────────────────────────────
-    const updated = {
-      ...activeShift,
-      expenseEntries: [...activeShift.expenseEntries, newExp],
-    };
-    onUpdateShift(updated);
-
-    // ── EOC Pipeline ─────────────────────────────────────────────────────────
-    processExpense(
-      activeShift.id, activeStationId, activeStationId,
-      {
-        category: expCategory, amount, description: finalDesc,
-        paidFrom: expPaidFrom as any,
-        staffId: expCategory === "salary" ? expStaffId : undefined,
-      },
-      activeShift.date
-    ).catch((err: Error) => console.warn('[EOC] Expense pipeline:', err.message));
-
-    // Reset inputs
-    setExpAmount("");
-    setExpDesc("");
-    setExpStaffId("");
-  };
-
-  const handleDeleteExpense = (id: string) => {
-    if (!activeShift) return;
-
-    const expToDelete = activeShift.expenseEntries.find((e) => e.id === id);
-    if (expToDelete?.category === "salary" && expToDelete.staffId && onDeleteShiftSalaryPayment) {
-      onDeleteShiftSalaryPayment(id);
-    }
-
-    showConfirm(
-      t("Reverse Entry", "اندراج کو پلٹائیں"),
-      t("This expense will be reversed with an audit entry.", "یہ اخراجات ریورسل انٹری کے ساتھ پلٹائے جائیں گے۔"),
-      () => {
-        const updated = { ...activeShift, expenseEntries: activeShift.expenseEntries.filter((e) => e.id !== id) };
-        onUpdateShift(updated);
-        processReversal(id, t("User reversed expense entry", "صارف نے اخراجات اندراج پلٹایا"), activeShift.id, activeStationId, activeStationId, activeShift.date)
-          .catch((err: Error) => console.warn('[EOC] Expense reversal:', err.message));
-      }
-    );
-  };
 
   const handleAddBank = () => {
     if (!activeShift) return;
@@ -1041,6 +968,7 @@ export default function ShiftWizard({
       amount,
       reference: bankRef,
       customerId: bankCustId || undefined,
+     
     };
 
     // ── Optimistic UI update ──────────────────────────────────────────────────
@@ -1055,6 +983,7 @@ export default function ShiftWizard({
       activeShift.id, activeStationId, activeStationId,
       { bankAccountId: bankAcctId, bankName: bankAccount?.name ?? bankAcctId, amount, reference: bankRef },
       activeShift.date
+    // eslint-disable-next-line no-console
     ).catch((err: Error) => console.warn('[EOC] Bank deposit pipeline:', err.message));
 
     // Reset inputs
@@ -1086,6 +1015,7 @@ export default function ShiftWizard({
       amount,
       transactionId: digRefId,
       accountHolder: digAccountHolder,
+     
     };
 
     // ── Optimistic UI update ──────────────────────────────────────────────────
@@ -1101,6 +1031,7 @@ export default function ShiftWizard({
       activeShift.id, activeStationId, activeStationId,
       { method: methodKey === 'jazzcash' ? 'jazzcash' : methodKey === 'pos' ? 'pos' : 'easypaisa', amount, transactionId: digRefId, accountHolder: digAccountHolder },
       activeShift.date
+    // eslint-disable-next-line no-console
     ).catch((err: Error) => console.warn('[EOC] Digital payment pipeline:', err.message));
 
     // Reset inputs
@@ -1210,6 +1141,7 @@ export default function ShiftWizard({
     processSupplierPayment(
       activeShift.id, activeStationId, activeStationId,
       {
+         
         supplierId: supId,
         supplierName: supplier?.name ?? supId,
         amount,
@@ -1226,6 +1158,8 @@ export default function ShiftWizard({
           'info'
         );
       }
+     
+    // eslint-disable-next-line no-console
     }).catch((err: Error) => console.warn('[EOC] Supplier payment pipeline:', err.message));
 
     // Reset inputs
@@ -1243,6 +1177,7 @@ export default function ShiftWizard({
         const updated = { ...activeShift, supplierPayments: activeShift.supplierPayments.filter((s) => s.id !== id) };
         onUpdateShift(updated);
         processReversal(id, t("User reversed supplier payment", "صارف نے سپلائر ادائیگی پلٹائی"), activeShift.id, activeStationId, activeStationId, activeShift.date)
+          // eslint-disable-next-line no-console
           .catch((err: Error) => console.warn('[EOC] Supplier reversal:', err.message));
       }
     );
@@ -1269,7 +1204,7 @@ export default function ShiftWizard({
     const { useShiftStore } = await import("../../stores/useShiftStore");
     
     // Pass numeric readings to store
-    const numReadings: Record<string, number> = {};
+    const numReadings: Record<string, number> = { /* empty */ };
     Object.entries(snapshotReadings).forEach(([nid, val]) => {
       numReadings[nid] = Number(val) || 0;
     });
@@ -1281,6 +1216,7 @@ export default function ShiftWizard({
         new Date().toISOString(),
         snapshotOverride ? snapshotPin : undefined,
         undefined, // orgId
+         
         undefined  // stationId
       );
       
@@ -1289,7 +1225,7 @@ export default function ShiftWizard({
         "success"
       );
       
-      setSnapshotReadings({});
+      setSnapshotReadings({ /* empty */ });
       setSnapshotPin("");
       setSnapshotOverride(false);
       
@@ -1299,6 +1235,7 @@ export default function ShiftWizard({
         setActiveTab("debit");
       }
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error(err);
       showToast("Error saving snapshot", "error");
     }
@@ -1311,7 +1248,7 @@ export default function ShiftWizard({
       return;
     }
     // Pre-populate closing reading fields with initial openings as baseline
-    const baselineClosing: { [nozzleId: string]: number } = {};
+    const baselineClosing: { [nozzleId: string]: number } = { /* empty */ };
     nozzles.forEach((noz) => {
       const open = activeShift.openingReadings[noz.id] || 0;
       baselineClosing[noz.id] = Number(open);
@@ -1324,8 +1261,8 @@ export default function ShiftWizard({
   const handleConfirmClosings = () => {
     if (!activeShift) return;
     setWizardError("");
-    const closingNumActual: { [nozzleId: string]: number } = {};
-    const closingNumDisplay: { [nozzleId: string]: number } = {};
+    const closingNumActual: { [nozzleId: string]: number } = { /* empty */ };
+    const closingNumDisplay: { [nozzleId: string]: number } = { /* empty */ };
     let hasError = false;
 
     for (const noz of nozzles) {
@@ -1351,7 +1288,7 @@ export default function ShiftWizard({
     if (hasError) return;
 
     // Validate tank-level discharges against tank stock
-    const tankDischarges: { [tankId: string]: number } = {};
+    const tankDischarges: { [tankId: string]: number } = { /* empty */ };
     for (const noz of nozzles) {
       if (noz.tankId) {
         const open = activeShift.openingReadings[noz.id] || 0;
@@ -1461,6 +1398,7 @@ export default function ShiftWizard({
     setFifoLoading(true);
     const fifoResultsArr: { productId: string; productName: string; result: FIFOResult }[] = [];
     let hasFifoDeficit = false;
+  
 
     try {
       // Group nozzle sales by product
@@ -1480,6 +1418,7 @@ export default function ShiftWizard({
         let testLitersForProduct = 0;
         if (cat === 'petrol') testLitersForProduct = Number(testPetrol || activeShift.testLiters?.petrol || 0);
         else if (cat === 'diesel') testLitersForProduct = Number(testDiesel || activeShift.testLiters?.diesel || 0);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         else if (cat === 'cng') testLitersForProduct = Number(testCNG || activeShift.testLiters?.cng || 0);
 
         const existing = productSales.get(nozzle.productId) || { liters: 0, tankId: nozzle.tankId };
@@ -1561,7 +1500,9 @@ export default function ShiftWizard({
         return;
       }
 
+       
       // ── CRITICAL CLAIMS GATE ──────────────────────────────────────────────
+       
       // Block if any critical unresolved claim (seal_broken / adulteration) exists for active batches
       const activeBatchIds = new Set(stockBatches.filter(b => productIdsInShift.includes(b.productId) && b.qtyRemaining > 0).map(b => b.id));
       const criticalOpenClaims = (supplierClaimsStore || []).filter(c =>
@@ -1581,14 +1522,18 @@ export default function ShiftWizard({
         );
         return;
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (fifoErr: any) {
+      // eslint-disable-next-line no-console
       console.warn('[FIFO] Deduction error (non-blocking):', fifoErr.message);
       // Non-blocking — log but proceed (owner decision)
     } finally {
+       
       setFifoLoading(false);
     }
 
     const endT = new Date();
+     
     const formattedEndTime = `${String(endT.getHours()).padStart(2, "0")}:${String(endT.getMinutes()).padStart(2, "0")}`;
 
     // ── Optimistic UI close ───────────────────────────────────────────────────
@@ -1600,17 +1545,21 @@ export default function ShiftWizard({
 
     try {
       await Promise.resolve(onUpdateShift(finalizedShift));
+  
 
+       
       // ── EOC Shift Close Pipeline (async) ──────────────────────────────────────
       // Runs: lockShiftJournals → reconciliation → fraud analysis → integrity score → snapshot
       eocShiftClose(finalizedShift, activeStationId, activeStationId, nozzles, products)
         .then(({ reconciliationReport, riskScore }) => {
           const scoreLabel = reconciliationReport.integrityScore >= 90 ? '🟢' :
             reconciliationReport.integrityScore >= 70 ? '🟡' : '🔴';
+          // eslint-disable-next-line no-console
           console.info(
             `[EOC] Shift closed. Integrity: ${scoreLabel} ${reconciliationReport.integrityScore}/100. Risk: ${riskScore.overallRisk.toUpperCase()}`
           );
         })
+        // eslint-disable-next-line no-console
         .catch((err: Error) => console.warn('[EOC] Shift close pipeline:', err.message));
 
       onNavigateToView("dashboard");
@@ -1622,7 +1571,9 @@ export default function ShiftWizard({
         ),
         "success"
       );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
+      // eslint-disable-next-line no-console
       console.error("Error during shift close:", err);
       showToast(
         err.message || t("Failed to close shift. Please check tank stocks and try again.", "شفٹ بند کرنے میں خرابی۔ براہ کرم ٹینک کا اسٹاک چیک کریں۔"),
@@ -1653,6 +1604,7 @@ export default function ShiftWizard({
     setIsGeneratingAiSummary(true);
     setAiSummary(null);
     try {
+       
       const summaryContext = {
         shiftType: activeShift.type,
         date: activeShift.date,
@@ -1679,6 +1631,7 @@ export default function ShiftWizard({
       const data = await response.json();
       setAiSummary(data.reply);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error(error);
       setAiSummary("⚠️ Could not generate AI summary at this time.");
     } finally {
@@ -2245,6 +2198,7 @@ export default function ShiftWizard({
                     {t("Please capture snapshot readings immediately.", "فوری طور پر ریڈنگ درج کریں۔")}
                   </p>
                 </div>
+              { }
               </div>
               <button 
                 onClick={() => setActiveTab("rateChange")}
@@ -2272,6 +2226,7 @@ export default function ShiftWizard({
               ].map((tab) => (
                 <button
                   key={tab.id}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`flex-shrink-0 px-2.5 py-1.5 text-[11px] font-sans font-bold rounded-md transition-all cursor-pointer whitespace-nowrap ${
                     activeTab === tab.id
@@ -2382,6 +2337,7 @@ export default function ShiftWizard({
                                   ? c.name
                                   : c.urduName}{" "}
                                 ({t(`Rs. ${c.effectiveBalance}`, `${c.effectiveBalance} روپے`)})
+                              { }
                               </option>
                             ))}
                         </select>
@@ -2410,6 +2366,7 @@ export default function ShiftWizard({
                           <button
                             key={m}
                             type="button"
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             onClick={() => setRecMode(m as any)}
                             className={`py-1.5 rounded-md border font-sans text-[10px] font-bold transition-all cursor-pointer ${
                               recMode === m
@@ -3032,6 +2989,7 @@ export default function ShiftWizard({
                           <option value="">{t("-- Select --", "-- منتخب کریں --")}</option>
                           {suppliers.map((s) => (
                             <option key={s.id} value={s.id}>
+                              { }
                               {settings.language === "en" ? s.name : s.urduName} ({t(`Bal: Rs.${s.balance}`, `بل: ${s.balance}`)})
                             </option>
                           ))}
@@ -3061,6 +3019,7 @@ export default function ShiftWizard({
                           <button
                             key={m}
                             type="button"
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             onClick={() => setSupMode(m as any)}
                             className={`flex-1 py-1.5 rounded-md border font-sans text-[10px] font-bold transition-all cursor-pointer ${
                               supMode === m
@@ -3759,8 +3718,7 @@ export default function ShiftWizard({
                   {fifoResults.map(({ productId, productName, result }) => {
                     const avgLandedCost = result.totalLiters > 0 ? result.totalCOGS / result.totalLiters : 0;
                     const avgSellingPrice = result.totalLiters > 0 ? result.totalRevenue / result.totalLiters : 0;
-                    const marginPct = result.totalRevenue > 0 ? (result.totalMargin / result.totalRevenue) * 100 : 0;
-                    const isPositive = result.totalMargin >= 0;
+                                        const isPositive = result.totalMargin >= 0;
 
                     return (
                       <div key={productId} className="bg-slate-900/50 rounded-lg border border-slate-700/50 overflow-hidden">

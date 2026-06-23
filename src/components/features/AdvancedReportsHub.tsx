@@ -3,7 +3,6 @@ import {
   Zap,
   Search,
   Activity,
-  Calendar,
   AlertTriangle,
   TrendingUp,
   DollarSign,
@@ -21,15 +20,11 @@ import {
   ShoppingBag,
   FileCheck,
   Star,
-  ChevronRight,
-  TrendingDown,
 } from "lucide-react";
 import {
   GlobalSettings,
   Shift,
   Product,
-  Tank,
-  RateHistoryEntry,
   Staff,
 } from "../../types";
 
@@ -774,9 +769,13 @@ const REPORT_MODULES = [
 ];
 
 export default function AdvancedReportsHub({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   settings,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   shifts,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   products,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   staff,
 }: AdvancedReportsHubProps) {
   const [activeFilter, setActiveFilter] = useState<string>("all");

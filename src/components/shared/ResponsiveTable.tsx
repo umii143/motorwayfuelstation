@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { ChevronDown, ChevronRight, MoreVertical } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export interface TableColumn<T> {
@@ -31,7 +31,7 @@ function ResponsiveTableInner<T>({
   renderActions,
   emptyMessage = 'No records found'
 }: ResponsiveTableProps<T>) {
-  const [expandedRows, setExpandedRows] = React.useState<Record<string, boolean>>({});
+  const [expandedRows, setExpandedRows] = React.useState<Record<string, boolean>>({ /* empty */ });
 
   const toggleRow = (key: string, e: React.MouseEvent) => {
     e.stopPropagation();

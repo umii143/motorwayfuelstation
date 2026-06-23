@@ -6,9 +6,7 @@ export function useTreasuryMetrics() {
 
   return useMemo(() => {
     // Only subscribe to relevant context fields
-    const totalBankCash = banks.reduce((sum, b) => sum + b.balance, 0);
     const totalDigitalCash = (digitalAccounts || []).reduce((sum, d) => sum + d.balance, 0);
-    const cashInHand = totalBankCash + totalDigitalCash; // Approximation if banks includes cash register, or split out based on type
 
     // In FuelPro, 'banks' array actually contains all cash/bank accounts. 
     // Usually type === 'cash' vs 'bank'. Let's segregate them if type is available.
@@ -16,6 +14,7 @@ export function useTreasuryMetrics() {
     let bankBalance = 0;
 
     banks.forEach(b => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((b as any).type?.toLowerCase() === 'cash') {
         cashBalance += b.balance;
       } else {

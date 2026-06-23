@@ -34,8 +34,8 @@ export function usePullToRefresh(onRefresh: () => Promise<void>) {
     if (isRefreshing) {
       try {
         await Haptics.impact({ style: ImpactStyle.Medium });
-      } catch (err) {
-        // ignore if not supported
+      } catch {
+        // silently ignore error if refresh fails
       }
       await onRefresh();
       setIsRefreshing(false);

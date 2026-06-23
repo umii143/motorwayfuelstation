@@ -9,7 +9,9 @@ class MobileExperienceEngine {
   private fpsHistory: number[] = [];
   private lastFrameTime: number = 0;
   private frameCount: number = 0;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private monitoringInterval: any = null;
+  private logInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
     this.isMobile = Capacitor.isNativePlatform();
@@ -35,6 +37,7 @@ class MobileExperienceEngine {
         }
       });
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.warn('[MobileExperienceEngine] Status/Nav bar setup failed', e);
     }
 
@@ -63,13 +66,28 @@ class MobileExperienceEngine {
     this.monitoringInterval = requestAnimationFrame(loop);
     
     // Log average FPS every 10 seconds
-    setInterval(() => {
+    this.logInterval = setInterval(() => {
       if (this.fpsHistory.length === 0) return;
       const avgFps = this.fpsHistory.reduce((a, b) => a + b, 0) / this.fpsHistory.length;
       if (avgFps < 45) {
+        // eslint-disable-next-line no-console
         console.warn(`[MobileExperienceEngine] LOW FPS DETECTED: ${Math.round(avgFps)} fps`);
       }
     }, 10000);
+  }
+
+  /**
+   * Cleans up intervals and monitoring to prevent memory leaks
+   */
+  dispose() {
+    if (this.monitoringInterval) {
+      cancelAnimationFrame(this.monitoringInterval);
+      this.monitoringInterval = null;
+    }
+    if (this.logInterval) {
+      clearInterval(this.logInterval);
+      this.logInterval = null;
+    }
   }
 
   /**
@@ -78,6 +96,7 @@ class MobileExperienceEngine {
   trackInteractionLatency(actionName: string, startTime: number) {
     const latency = performance.now() - startTime;
     if (latency > 150) {
+      // eslint-disable-next-line no-console
       console.warn(`[MobileExperienceEngine] SLOW INTERACTION (${actionName}): ${Math.round(latency)}ms`);
     }
   }
@@ -89,8 +108,10 @@ class MobileExperienceEngine {
     if (!this.isMobile) return;
     try {
       await KeepAwake.keepAwake();
+      // eslint-disable-next-line no-console
       console.log('[MobileExperienceEngine] Screen wake lock acquired.');
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.warn('[MobileExperienceEngine] Failed to acquire wake lock', e);
     }
   }
@@ -102,8 +123,10 @@ class MobileExperienceEngine {
     if (!this.isMobile) return;
     try {
       await KeepAwake.allowSleep();
+      // eslint-disable-next-line no-console
       console.log('[MobileExperienceEngine] Screen wake lock released.');
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.warn('[MobileExperienceEngine] Failed to release wake lock', e);
     }
   }
@@ -115,6 +138,7 @@ class MobileExperienceEngine {
     if (!this.isMobile) return;
     try {
       await Haptics.impact({ style: ImpactStyle.Heavy });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       // Ignored
     }
@@ -127,6 +151,7 @@ class MobileExperienceEngine {
     if (!this.isMobile) return;
     try {
       await Haptics.impact({ style: ImpactStyle.Light });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       // Ignored
     }

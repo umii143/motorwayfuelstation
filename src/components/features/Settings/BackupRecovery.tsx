@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { DownloadCloud, UploadCloud, ShieldAlert, FileJson, Clock, Calendar, Database, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { DownloadCloud, UploadCloud, ShieldAlert, FileJson, Clock, Calendar, Database, CheckCircle2 } from 'lucide-react';
 import { useStation } from '../../../contexts/StationContext';
 import { db } from '../../../data/db';
 import { GlobalSettings } from '../../../types';
@@ -18,17 +18,21 @@ export default function BackupRecovery({ settings, activeStationId }: { settings
   const generateBackup = async (type: 'quick' | 'daily' | 'full') => {
     setIsExporting(true);
     try {
+       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const backupData: any = {
         version: "3.0",
         createdAt: new Date().toISOString(),
         stationId: activeStationId,
         type: type,
-        data: {}
+        data: { /* empty */ }
       };
 
       // Helper to fetch data safely
+       
       const fetchData = () => {
-        const data: any = {};
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const data: any = { /* empty */ };
         
         if (type === 'quick' || type === 'full') {
           data.settings = db.getSettings(activeStationId);
@@ -81,8 +85,10 @@ export default function BackupRecovery({ settings, activeStationId }: { settings
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
+       
       showToast(t(`Backup (${type}) created successfully!`, `بیک اپ (${type}) کامیابی سے بن گیا!`), 'success');
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Backup failed:', err);
       showToast(t('Failed to generate backup.', 'بیک اپ بنانے میں ناکامی۔'), 'error');
     } finally {
@@ -162,9 +168,11 @@ export default function BackupRecovery({ settings, activeStationId }: { settings
 
             showToast(t('Database restored successfully! Reloading...', 'ڈیٹا بیس کامیابی سے بحال ہو گیا! ری لوڈ ہو رہا ہے...'), 'success');
             setTimeout(() => {
+               
               window.location.reload();
             }, 2000);
           } catch (err) {
+            // eslint-disable-next-line no-console
             console.error('Restore failed:', err);
             showToast(t('Failed to parse backup file.', 'بیک اپ فائل پڑھنے میں ناکامی۔'), 'error');
             setIsRestoring(false);

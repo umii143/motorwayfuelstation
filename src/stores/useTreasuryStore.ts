@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { CashAccount, TreasuryTransaction, OwnerDrawing, CashReconciliation, CashAccountType } from '../types';
 import { withBusinessScope } from '../lib/businessScope';
 import { db } from '../data/db';
@@ -20,6 +21,7 @@ interface TreasuryState {
   recordTransaction: (transaction: TreasuryTransaction, orgId: string, stationId: string) => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const useTreasuryStore = create<TreasuryState>((set, get) => ({
   cashAccounts: [],
   treasuryTransactions: [],
@@ -218,7 +220,7 @@ export const useTreasuryStore = create<TreasuryState>((set, get) => ({
     
     const currentAccounts = db.getCashAccounts(stationId);
     const currentTxns = db.getTreasuryTransactions(stationId);
-    let updatedAccounts = [...currentAccounts];
+    const updatedAccounts = [...currentAccounts];
     let dirty = false;
 
     if (finalTxn.sourceAccountId && finalTxn.status === 'completed') {

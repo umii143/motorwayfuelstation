@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, Package, AlertTriangle, Calendar, Activity, BarChart2 } from 'lucide-react';
+import { TrendingUp, Package, AlertTriangle, Calendar, Activity } from 'lucide-react';
 import { ForecastResult } from '../../workers/forecast.worker';
 import { formatCurrency } from '../../lib/currency';
 import { GlobalSettings } from '../../types';

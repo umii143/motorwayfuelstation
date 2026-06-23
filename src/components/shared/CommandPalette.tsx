@@ -34,7 +34,7 @@ export const COMMAND_ACTIONS: CommandAction[] = [
     description: 'Create new customer / khata account',
     icon: 'person_add',
     category: 'create',
-    action: () => {},
+    action: () => { /* empty */ },
   },
 
   // NAVIGATION actions
@@ -44,7 +44,7 @@ export const COMMAND_ACTIONS: CommandAction[] = [
     description: 'Main overview',
     icon: 'dashboard',
     category: 'navigation',
-    action: () => {},
+    action: () => { /* empty */ },
   },
   {
     id: 'go_reports',
@@ -52,7 +52,7 @@ export const COMMAND_ACTIONS: CommandAction[] = [
     description: 'All reports & analytics',
     icon: 'analytics',
     category: 'navigation',
-    action: () => {},
+    action: () => { /* empty */ },
   },
 
   // REPORT actions
@@ -62,7 +62,7 @@ export const COMMAND_ACTIONS: CommandAction[] = [
     description: 'Revenue, profit, stock for today',
     icon: 'today',
     category: 'report',
-    action: () => {},
+    action: () => { /* empty */ },
   },
 
   // AI actions
@@ -73,6 +73,6 @@ export const COMMAND_ACTIONS: CommandAction[] = [
     icon: 'smart_toy',
     shortcut: 'Ctrl+/',
     category: 'ai',
-    action: () => {},
+    action: () => { /* empty */ },
   },
 ];

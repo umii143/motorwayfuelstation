@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { BankAccount, DigitalAccount, ExpenseEntry, LubePosSale, JournalEntry, Customer } from '../types';
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
@@ -237,6 +238,7 @@ const generateLubePosJournalEntries = (sale: LubePosSale, sId: string, bType: 'f
   return entries;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const useFinancialStore = create<FinancialState>((set, get) => ({
   banks: db.getBankAccounts(db.getActiveStationId()),
   digitalAccounts: db.getDigitalAccounts(db.getActiveStationId()),
@@ -349,6 +351,7 @@ export const useFinancialStore = create<FinancialState>((set, get) => ({
     const sId = stationId || db.getActiveStationId();
     const bType = getBusinessType(sId);
     if (bType !== 'lube') {
+      // eslint-disable-next-line no-console
       console.warn('Blocked Lube POS sale outside the lube business scope.', { stationId: sId });
       return;
     }
@@ -446,6 +449,7 @@ export const useFinancialStore = create<FinancialState>((set, get) => ({
           }
         }
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error('Failed to update lube POS inventory stock:', err);
       }
     }

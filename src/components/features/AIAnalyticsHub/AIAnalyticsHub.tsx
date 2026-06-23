@@ -1,15 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Sparkles, Send, BrainCircuit, BarChart3, LineChart, 
-  TrendingUp, AlertTriangle, Zap, Download, RefreshCw, 
-  ChevronRight, Database, Shield
+  Sparkles, Send, BrainCircuit, Zap, Database, Shield
 } from 'lucide-react';
 import { GlobalSettings } from '../../../types';
 import { fetchWithAuth } from '../../../lib/api';
 
 interface AIAnalyticsHubProps {
   settings: GlobalSettings;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dataContext: any; // We'll pass the whole station state to Gemini for context
 }
 
@@ -18,7 +17,7 @@ export default function AIAnalyticsHub({ settings, dataContext }: AIAnalyticsHub
     if (!text) return null;
     const lines = text.split('\n');
     return lines.map((line, idx) => {
-      let formattedLine = line
+      const formattedLine = line
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>');
       
@@ -27,6 +26,7 @@ export default function AIAnalyticsHub({ settings, dataContext }: AIAnalyticsHub
       if (line.startsWith('# ')) return <h1 key={idx} className="text-lg font-bold mt-3 mb-2" dangerouslySetInnerHTML={{__html: formattedLine.substring(2)}} />;
       
       if (line.trim().startsWith('* ') || line.trim().startsWith('- ')) {
+        // eslint-disable-next-line no-useless-escape
         return <li key={idx} className="ml-4 list-disc marker:text-indigo-500" dangerouslySetInnerHTML={{__html: formattedLine.replace(/^[\*\-]\s/, '')}} />;
       }
       
@@ -90,7 +90,9 @@ export default function AIAnalyticsHub({ settings, dataContext }: AIAnalyticsHub
       const data = await response.json();
       setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
+      // eslint-disable-next-line no-console
       console.error(error);
       setMessages(prev => [...prev, { 
         role: 'assistant', 

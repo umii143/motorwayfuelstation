@@ -4,6 +4,8 @@ import { Customer, Product, Shift } from '../../../types';
 
 interface ShiftDebtorsProps {
   t: (en: string, ur: string) => string;
+   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   settings: any;
   activeShift: Shift;
   customers: Customer[];

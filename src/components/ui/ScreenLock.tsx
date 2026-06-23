@@ -30,12 +30,17 @@ export default function ScreenLock({
   // Shake animation state
   const [shake, setShake] = useState(false);
 
+   
+  const [now, setNow] = useState(() => Date.now());
+
   useEffect(() => {
     // Check if lockout has expired
     let interval: NodeJS.Timeout;
     if (lockoutUntil) {
       interval = setInterval(() => {
-        if (Date.now() > lockoutUntil) {
+        const current = Date.now();
+        setNow(current);
+        if (current > lockoutUntil) {
           setLockoutUntil(null);
           setFailedAttempts(0); // Reset after timeout
           setErrorText('');
@@ -83,6 +88,7 @@ export default function ScreenLock({
       if (newAttempts >= 10) {
         onEmergencyLogout();
       } else if (newAttempts >= 5) {
+        // eslint-disable-next-line react-hooks/purity
         setLockoutUntil(Date.now() + 5 * 60 * 1000); // Lock for 5 mins
         setErrorText('Too many failed attempts. Locked for 5 minutes.');
       } else {
@@ -103,13 +109,14 @@ export default function ScreenLock({
         setErrorText('Biometric authentication failed.');
       }
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.error(e);
     }
   };
 
   const getLockoutRemaining = () => {
     if (!lockoutUntil) return '';
-    const diff = Math.ceil((lockoutUntil - Date.now()) / 1000);
+    const diff = Math.max(0, Math.ceil((lockoutUntil - now) / 1000));
     const m = Math.floor(diff / 60);
     const s = diff % 60;
     return `${m}:${s.toString().padStart(2, '0')}`;

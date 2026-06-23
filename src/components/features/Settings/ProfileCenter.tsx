@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Shield, Key, Mail, Phone, Calendar, BadgeCheck, Save, Edit3, Globe, Laptop, Lock, CheckCircle2, Zap, Fuel } from 'lucide-react';
+import { User, Shield, Key, Mail, Phone, Calendar, Save, Edit3, Globe, Laptop, Lock, CheckCircle2, Zap, Fuel } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useStation } from '../../../contexts/StationContext';
 import { GlobalSettings } from '../../../types';

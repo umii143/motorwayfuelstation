@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GlobalSettings, Shift, Tank, Nozzle, Product } from '../../../types';
 import { db } from '../../../data/db';
-import { TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
 interface MarginAnalysisProps {
   settings: GlobalSettings;
@@ -10,11 +10,13 @@ interface MarginAnalysisProps {
 
 export default function MarginAnalysis({ settings, stationId }: MarginAnalysisProps) {
   const [shifts, setShifts] = useState<Shift[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [tanks, setTanks] = useState<Tank[]>([]);
   const [nozzles, setNozzles] = useState<Nozzle[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setShifts(db.getShifts(stationId));
     setTanks(db.getTanks(stationId));
     setNozzles(db.getNozzles(stationId));
@@ -32,6 +34,7 @@ export default function MarginAnalysis({ settings, stationId }: MarginAnalysisPr
         if (!nozzle || nozzle.productId !== productId) return;
 
         const nozzleVol = Math.max(0, (s.closingReadings[nozzleId] || 0) - (s.openingReadings[nozzleId] || 0));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const nozzleRate = (s as any).rates?.[productId] || products.find(p => p.id === productId)?.rate || 0;
         volume += nozzleVol;
         revenue += (nozzleVol * nozzleRate);

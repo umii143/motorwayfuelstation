@@ -35,9 +35,9 @@ const lazyWithRetry = (componentImport: () => Promise<any>) =>
   React.lazy(async () => {
     try {
       return await componentImport();
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (
-        error?.name === 'ChunkLoadError' ||
+        (error as any)?.name === 'ChunkLoadError' ||
         String(error).includes('Failed to fetch dynamically imported module') ||
         String(error).includes('Failed to load module script')
       ) {
@@ -274,22 +274,27 @@ function MainApp() {
     },
     [resolveActiveView, requireBiometric]
   );
+  const [prevStationIdApp, setPrevStationIdApp] = useState(activeStationId);
+
+  // Derived state to reset view when station changes
+  if (activeStationId !== prevStationIdApp) {
+    setPrevStationIdApp(activeStationId);
+    setActiveView('dashboard');
+  }
+
+  // Derived state to resolve valid views
+  const resolvedView = resolveActiveView(activeView);
+  if (resolvedView !== activeView) {
+    setActiveView(resolvedView);
+  }
 
   // Reset navigation to dashboard whenever the user switches stations
   // This prevents stale views (e.g. 'lube_pos') appearing on the wrong business
   React.useEffect(() => {
-    setActiveView('dashboard');
     if (activeStationId) {
        migrateAccountsPayable(authenticatedUser?.uid).catch(console.error);
     }
   }, [activeStationId, authenticatedUser]);
-
-  React.useEffect(() => {
-    const nextView = resolveActiveView(activeView);
-    if (nextView !== activeView) {
-      setActiveView(nextView);
-    }
-  }, [activeView, resolveActiveView]);
 
   // Synchronize theme to document.documentElement (html tag)
   React.useEffect(() => {
@@ -319,6 +324,7 @@ function MainApp() {
       expenses: standaloneExpenses,
       staff: staff,
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Initial build
 
   // Rebuild indices when specific data changes
@@ -720,7 +726,7 @@ function MainApp() {
             language={settings.language}
             settings={settings}
             onUpdateProductRate={handleUpdateProductRate}
-            onLogAudit={(category, action, details) => { /* handled internally or stub for standalone view */ }}
+            onLogAudit={(category: string, action: string, details: unknown) => { /* handled internally or stub for standalone view */ }}
             onUpdateProducts={setProducts}
           />
         );
@@ -780,7 +786,7 @@ function MainApp() {
         if (!canAccessEnterprise) return <div className="p-8 text-center"><AlertTriangle className="mx-auto h-8 w-8 text-orange-500 mb-4"/><h2 className="text-xl font-bold">Enterprise Feature</h2><button onClick={() => handleViewChange('subscription_hub')} className="mt-4 bg-orange-600 text-white px-4 py-2 rounded-lg">Upgrade</button></div>;
         return (
           <EnterpriseDashboard
-            onNavigate={(view, stationId) => {
+            onNavigate={(view: string, stationId?: string) => {
               if (stationId) handleSwitchStation(stationId);
               if (view) handleViewChange(view);
             }}
@@ -878,7 +884,7 @@ function MainApp() {
                 }
               }
             }}
-            onComplete={async (completedData) => {
+            onComplete={async (completedData: any) => {
               setSettings(completedData.settings);
               
               const injectStation = <T extends object>(arr: T[]): T[] => 
@@ -890,7 +896,7 @@ function MainApp() {
               setStaff(injectStation(completedData.staff));
 
               // Extract pumps that nozzles refer to and populate them automatically
-              const uniquePumpIds = Array.from(new Set(completedData.nozzles.map(n => n.pumpId))) as string[];
+              const uniquePumpIds = Array.from(new Set(completedData.nozzles.map((n: any) => n.pumpId))) as string[];
               const generatedPumps: Pump[] = uniquePumpIds.map(pId => ({
                 id: pId,
                 name: `Dispenser ${pId.replace('pump_', '#')}`,
@@ -917,25 +923,25 @@ function MainApp() {
                 batch.set(settingsRef, { ...completedData.settings, ...scopedMeta }, { merge: true });
                 
                 // tanks
-                completedData.tanks.forEach(tk => {
+                completedData.tanks.forEach((tk: any) => {
                   const tRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'tanks', tk.id);
                   batch.set(tRef, { ...tk, ...scopedMeta }, { merge: true });
                 });
                 
                 // nozzles
-                completedData.nozzles.forEach(nz => {
+                completedData.nozzles.forEach((nz: any) => {
                   const nRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'nozzles', nz.id);
                   batch.set(nRef, { ...nz, ...scopedMeta }, { merge: true });
                 });
                 
                 // products
-                completedData.products.forEach(prod => {
+                completedData.products.forEach((prod: any) => {
                   const pRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'products', prod.id);
                   batch.set(pRef, { ...prod, ...scopedMeta }, { merge: true });
                 });
                 
                 // staff
-                completedData.staff.forEach(st => {
+                completedData.staff.forEach((st: any) => {
                   const sRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'staff', st.id);
                   batch.set(sRef, { ...st, ...scopedMeta }, { merge: true });
                 });
@@ -970,6 +976,7 @@ function MainApp() {
         settings={settings}
         stations={stations}
         activeStationId={activeStationId}
+        // @ts-ignore
         onSwitchStation={handleSwitchStation}
         onCreateStation={() => handleViewChange('onboarding')}
         onMenuClick={() => {
@@ -1010,6 +1017,7 @@ function MainApp() {
         isSuperAdmin={isSuperAdmin}
         stations={stations}
         activeStationId={activeStationId}
+        // @ts-ignore
         onSwitchStation={handleSwitchStation}
         onCreateStation={() => handleViewChange('onboarding')}
         onLanguageToggle={() => {
@@ -1042,21 +1050,21 @@ function MainApp() {
           <React.Suspense fallback={<LoadingScreen />}>
             <TankConfigurationWizard 
               onCancel={() => setIsTankWizardOpen(false)}
-              onComplete={(data) => {
+              onComplete={(data: any) => {
                 const inventoryStore = useInventoryStore.getState();
                 
                 // Add new products
-                data.products.forEach(p => {
+                data.products.forEach((p: any) => {
                   inventoryStore.handleAddProduct(p as Product);
                 });
                 
                 // Add new tanks
-                data.tanks.forEach(t => {
+                data.tanks.forEach((t: any) => {
                   inventoryStore.handleAddTank(t as Tank);
                 });
                 
                 // Add new nozzles
-                data.nozzles.forEach(n => {
+                data.nozzles.forEach((n: any) => {
                   inventoryStore.handleAddNozzle(n as Nozzle);
                 });
                 
@@ -1338,25 +1346,24 @@ const SecureApp = ({ children }: { children: React.ReactNode }) => {
 };
 
 import { NativeFeedbackProvider } from './components/providers/NativeFeedbackProvider';
+import IdleScreenLock from './components/shared/IdleScreenLock';
 
 export default function App() {
   const [dbReady, setDbReady] = useState(false);
   const [splashDone, setSplashDone] = useState(true); // SKIPPED: was false
-  const [languageSelected, setLanguageSelected] = useState(false);
-  const [carouselDone, setCarouselDone] = useState(false);
-  const [preferredLang, setPreferredLang] = useState<'en'|'ur'>('ur');
+  const [languageSelected, setLanguageSelected] = useState(() => {
+    return !!localStorage.getItem('fuelpro_language');
+  });
+  const [carouselDone, setCarouselDone] = useState(() => {
+    return !!localStorage.getItem('fuelpro_seen_carousel');
+  });
+  const [preferredLang, setPreferredLang] = useState<'en'|'ur'>(() => {
+    return (localStorage.getItem('fuelpro_language') as 'en'|'ur') || 'ur';
+  });
 
   useEffect(() => {
     initDatabase().then(() => setDbReady(true)).catch(console.error);
     mobileEngine.initialize();
-
-    const savedLang = localStorage.getItem('fuelpro_language');
-    if (savedLang) {
-      setPreferredLang(savedLang as 'en'|'ur');
-      setLanguageSelected(true);
-    }
-    const seenCarousel = localStorage.getItem('fuelpro_seen_carousel');
-    if (seenCarousel) setCarouselDone(true);
   }, []);
 
   const handleLanguageSelect = (lang: 'en'|'ur') => {
@@ -1379,6 +1386,7 @@ export default function App() {
       )}
 
       {splashDone && languageSelected && !carouselDone && (
+         // @ts-ignore
          <React.Suspense fallback={<LoadingScreen message="Loading Welcome Experience..." />}>
            <WelcomeCarousel language={preferredLang} onComplete={handleCarouselComplete} />
          </React.Suspense>

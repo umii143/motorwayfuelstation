@@ -566,7 +566,7 @@ export default function AdvancedFuelStock() {
                     ))}
                   </Pie>
                   <Tooltip 
-                    formatter={(value: number) => [`${value.toLocaleString()} Ltr`, 'Stock']}
+                    formatter={(value: any) => [`${Number(value).toLocaleString()} Ltr`, 'Stock']}
                     contentStyle={{ backgroundColor: '#0B1120', borderColor: '#1f2937', borderRadius: '8px', color: '#fff' }}
                     itemStyle={{ color: '#fff' }}
                   />

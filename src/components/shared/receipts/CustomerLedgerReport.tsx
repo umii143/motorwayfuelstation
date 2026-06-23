@@ -59,7 +59,7 @@ export const CustomerLedgerReportDocument: React.FC<CustomerLedgerReportProps> =
                 const isDebit = entry.type === 'Credit Sale' || entry.type === 'Opening Balance';
                 const isCredit = entry.type === 'Credit Recovery';
                 return (
-                  <View key={entry.id || index} style={[pdfStyles.tableRow, !isEven && pdfStyles.tableRowAlternate]}>
+                  <View key={entry.id || index} style={[pdfStyles.tableRow, !isEven ? pdfStyles.tableRowAlternate : {}]}>
                     <Text style={pdfStyles.tableCell}>{entry.date}</Text>
                     <Text style={pdfStyles.tableCell}>{entry.notes || entry.type}</Text>
                     <Text style={[pdfStyles.tableCell, pdfStyles.tableCellRight]}>

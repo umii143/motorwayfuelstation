@@ -3,19 +3,10 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Landmark,
   PlusCircle,
-  HelpCircle,
-  TrendingUp,
-  TrendingDown,
-  Trash2,
   Clock,
   Briefcase,
-  Users,
   Search,
-  ArrowUpRight,
-  ArrowDownRight,
-  Save,
-  CheckCircle,
-  Notebook
+  ArrowUpRight
 } from 'lucide-react';
 import { BankAccount, Shift, GlobalSettings, LubePosSale } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
@@ -125,6 +116,7 @@ export default function BankCashPanel({
     });
 
     return list.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shifts, banks, timeFilter, lubePosSales, settings]);
 
 

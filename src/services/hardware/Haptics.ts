@@ -22,6 +22,7 @@ export class NativeHaptics {
       await Haptics.selectionChanged();
       await Haptics.selectionEnd();
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.warn('Haptics failed', e);
     }
   }
@@ -36,6 +37,7 @@ export class NativeHaptics {
     try {
       await Haptics.impact({ style });
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.warn('Haptics failed', e);
     }
   }
@@ -52,6 +54,7 @@ export class NativeHaptics {
     try {
       await Haptics.notification({ type });
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.warn('Haptics failed', e);
     }
   }
@@ -65,6 +68,7 @@ export class NativeHaptics {
     try {
       await Haptics.vibrate({ duration });
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.warn('Haptics failed', e);
     }
   }

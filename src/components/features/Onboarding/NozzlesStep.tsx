@@ -31,7 +31,7 @@ export function NozzlesStep({ nozzles, pumps, tanks, products, onUpdate, onConti
     if (!pumpName || !name || !tankId || !startReading) return;
 
     let targetPump = pumps.find(p => p.name.toLowerCase() === pumpName.trim().toLowerCase());
-    let newPumps = [...pumps];
+    const newPumps = [...pumps];
     
     if (!targetPump) {
       targetPump = {

@@ -538,15 +538,15 @@ export const LUBE_REPORT_TEMPLATES: LubeReportTemplate[] = [
       standaloneExpenses.forEach(exp => {
         rows.push({
           id: `L9-EXP-${exp.id}`,
-          date: exp.date,
+          date: exp.date || '',
           time: '—',
-          ref: exp.category.toUpperCase(),
+          ref: (exp.category || '').toUpperCase(),
           category: 'EXPENSE',
-          description: exp.description || exp.category,
+          description: exp.description || exp.category || '',
           quantity: '—',
           unitPrice: '—',
           amount: -exp.amount,
-          paymentMode: exp.paidFrom,
+          paymentMode: exp.paidFrom || '',
           status: '-EXPENSE',
           balance: '—',
         });

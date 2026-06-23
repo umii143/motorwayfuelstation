@@ -15,6 +15,7 @@ interface StaffState {
 
   handleAddStaff: (newStaff: Staff, orgId?: string, stationId?: string) => Promise<void>;
   handleUpdateStaff: (updatedMember: Staff, orgId?: string, stationId?: string) => Promise<void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleAddStaffFinance: (newEntry: StaffFinanceEntry, orgId?: string, stationId?: string, settings?: any, handleAddStandaloneExpenseStore?: (exp: ExpenseEntry) => void, handleUpdateBanksStore?: (banks: BankAccount[]) => void, banks?: BankAccount[]) => Promise<void>;
   handleAddShiftSalaryPayment: (staffId: string, amount: number, note: string, paidFrom: 'cash' | 'bank', date: string, expenseId: string, orgId?: string, stationId?: string) => Promise<void>;
   handleDeleteShiftSalaryPayment: (expenseId: string, orgId?: string, stationId?: string) => Promise<void>;

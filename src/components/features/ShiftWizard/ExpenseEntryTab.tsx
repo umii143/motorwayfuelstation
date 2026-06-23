@@ -13,9 +13,13 @@ interface ExpenseEntryTabProps {
   activeShift: Shift;
   activeStationId: string;
   staff: Staff[];
+   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   EXPENSE_CATEGORIES: any[];
   showToast: (msg: string, type: 'success'|'error') => void;
+   
   onUpdateShift: (shift: Shift) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   processExpense: (shiftId: string, stationId: string, branchId: string, payload: any, date: string) => Promise<any>;
   processReversal: (id: string, reason: string, shiftId: string, stationId: string, originalStationId: string, date: string) => Promise<void>;
   onAddShiftSalaryPayment?: (staffId: string, amount: number, note: string, paidFrom: "cash" | "bank", date: string, expenseId: string) => void;
@@ -95,8 +99,10 @@ export default function ExpenseEntryTab({
         category: expCategory, amount, description: finalDesc,
         paidFrom: expPaidFrom as "shift_cash" | "main_safe" | "owner_cash" | "bank",
         staffId: expCategory === "salary" ? expStaffId : undefined,
+       
       },
       activeShift.date
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-console
     ).catch((err: any) => console.warn('[EOC] Expense pipeline:', err.message));
 
     setExpAmount("");
@@ -113,9 +119,11 @@ export default function ExpenseEntryTab({
       t("This expense will be reversed with an audit entry.", "یہ اخراجات ریورسل انٹری کے ساتھ پلٹائے جائیں گے۔"),
       "success"
     );
+     
     const updated = { ...activeShift, expenseEntries: activeShift.expenseEntries.filter((e) => e.id !== id) };
     onUpdateShift(updated);
     processReversal(id, t("User reversed expense entry", "صارف نے اخراجات اندراج پلٹایا"), activeShift.id, activeStationId, activeStationId, activeShift.date)
+      // eslint-disable-next-line no-console
       .catch((err: Error) => console.warn('[EOC] Expense reversal:', err.message));
   };
 

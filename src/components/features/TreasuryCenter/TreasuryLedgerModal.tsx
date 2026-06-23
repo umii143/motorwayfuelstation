@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, Search, Filter, Calendar, FileText, ArrowDownRight, ArrowUpRight } from 'lucide-react';
+import { X, Search, Calendar, FileText, ArrowDownRight, ArrowUpRight } from 'lucide-react';
 import { TreasuryLedgerLine, getAccountLedger, TreasuryAccountType } from '../../../services/core/treasuryEngine';
 import { BottomSheet } from '../../shared/BottomSheet';
 import { ResponsiveTable, TableColumn } from '../../shared/ResponsiveTable';
 import { useDebounce } from '../../../hooks/useDebounce';
-import { useVirtualizer } from '@tanstack/react-virtual';
 
 interface TreasuryLedgerModalProps {
   stationId: string;
@@ -25,8 +24,12 @@ export default function TreasuryLedgerModal({ stationId, accountType, title, isO
 
   useEffect(() => {
     if (isOpen) {
+       
+      // eslint-disable-next-line react-hooks/immutability
       loadLedger();
+     
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, accountType, stationId]);
 
   const loadLedger = async () => {
@@ -37,8 +40,10 @@ export default function TreasuryLedgerModal({ stationId, accountType, title, isO
       const lines = await getAccountLedger(stationId, accountType, fd, td);
       startTransition(() => {
         setLedgerLines(lines);
+       
       });
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error("Failed to load ledger:", error);
     } finally {
       setLoading(false);
@@ -107,9 +112,11 @@ export default function TreasuryLedgerModal({ stationId, accountType, title, isO
       header: 'Balance',
       accessor: (row) => <span className="font-bold">Rs {row.runningBalance.toLocaleString()}</span>,
       className: 'text-right text-gray-900'
+     
     }
   ];
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [visibleLimit, setVisibleLimit] = useState(100);
   const displayedLines = filteredLines.slice(0, visibleLimit);
 

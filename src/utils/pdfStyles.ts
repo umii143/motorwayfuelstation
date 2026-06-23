@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { StyleSheet, Font } from '@react-pdf/renderer';
 
 // Register fonts if needed (e.g. for Urdu or specific English fonts)

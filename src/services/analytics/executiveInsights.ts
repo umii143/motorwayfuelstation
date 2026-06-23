@@ -16,6 +16,7 @@ export interface HealthScoreResult {
   }[];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const generateHealthScore = (kpis: KPIResult, suppliers: any[] = []): HealthScoreResult => {
   // Factors calculation out of 100
   

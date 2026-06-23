@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { NativeHaptics } from '../../services/hardware/Haptics';
-import { NativeSounds } from '../../utils/SoundManager';
 
 interface NativeFeedbackProviderProps {
   children: React.ReactNode;
