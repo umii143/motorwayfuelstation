@@ -70,8 +70,7 @@ export default React.memo(function FuelDashboard({
    
   const { forecast, isComputing } = useForecastEngine(shifts, tanks, products);
   
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const activeShift = (shifts as any[]).find(s => s.status === 'Open' || s.status === 'active');
+  const activeShift = (shifts as unknown[]).find(s => s.status === 'Open' || s.status === 'active');
 
   // --- 1. CORE DATA CALCULATIONS ---
   const stats = useMemo(() => {
@@ -86,11 +85,9 @@ export default React.memo(function FuelDashboard({
     
      
     // Revenue and Liters from Today's Shifts
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    todayShifts.forEach((shift: any) => {
+    todayShifts.forEach((shift: unknown) => {
       todayRevenue += shift.totalSales || 0;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      shift.nozzleReadings?.forEach((nr: any) => {
+      shift.nozzleReadings?.forEach((nr: unknown) => {
         const product = products.find(p => p.id === nr.productId);
         const saleVolume = nr.closingReading > 0 ? Math.max(0, nr.closingReading - nr.openingReading) : 0;
         todayLiters += saleVolume;
@@ -118,8 +115,7 @@ export default React.memo(function FuelDashboard({
     let totalTankCapacity = 0;
     let totalCurrentStock = 0;
     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (tanks as any[]).forEach(t => {
+    (tanks as unknown[]).forEach(t => {
       totalTankCapacity += t.capacity;
       totalCurrentStock += t.currentStock;
       const pct = t.capacity > 0 ? (t.currentStock / t.capacity) * 100 : 0;
@@ -132,10 +128,8 @@ export default React.memo(function FuelDashboard({
     const tankHealthPct = totalTankCapacity > 0 ? (totalCurrentStock / totalTankCapacity) * 100 : 100;
 
     // Nozzles
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const onlineNozzles = (nozzles as any[]).filter(n => n.status === 'Active' || !n.status).length;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const maintenanceNozzles = (nozzles as any[]).filter(n => n.status === 'Maintenance').length;
+    const onlineNozzles = (nozzles as unknown[]).filter(n => n.status === 'Active' || !n.status).length;
+    const maintenanceNozzles = (nozzles as unknown[]).filter(n => n.status === 'Maintenance').length;
     const offlineNozzles = nozzles.length - onlineNozzles - maintenanceNozzles;
      
     const nozzleHealthPct = nozzles.length > 0 ? (onlineNozzles / nozzles.length) * 100 : 100;
@@ -149,8 +143,7 @@ export default React.memo(function FuelDashboard({
     let todayVariance = 0;
      
      
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    todayShifts.forEach((s: any) => todayVariance += (s.difference || 0));
+    todayShifts.forEach((s: unknown) => todayVariance += (s.difference || 0));
      
     const varianceScore = Math.max(0, 100 - Math.abs(todayVariance / 1000));
   
@@ -160,23 +153,17 @@ export default React.memo(function FuelDashboard({
 
      
     // Shift Operations
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const shiftOperator = (activeShift as any)?.cashierName || 'Not Assigned';
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const openingCash = (activeShift as any)?.openingCash || 0;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const currentCash = ((activeShift as any)?.totalSales || 0) + openingCash;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const expectedCash = (activeShift as any)?.totalSales || 0;
      
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const variance = (activeShift as any)?.difference || 0;
     
     let shiftDuration = '0h 0m';
     if (activeShift) {
        
        
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const start = new Date(`${(activeShift as any).date} ${(activeShift as any).time || '00:00'}`);
       const now = new Date();
       const diffMs = Math.max(0, now.getTime() - start.getTime());
@@ -186,17 +173,14 @@ export default React.memo(function FuelDashboard({
     }
 
     // Fuel Intelligence
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const fuelIntel: Record<string, any> = { /* empty */ };
+    const fuelIntel: Record<string, unknown> = { /* empty */ };
     products.forEach(p => {
       fuelIntel[p.id] = { name: p.name, liters: 0, revenue: 0, profit: 0, color: p.name.toLowerCase().includes('diesel') ? '#10B981' : p.name.toLowerCase().includes('octane') ? '#8B5CF6' : p.name.toLowerCase().includes('cng') ? '#06B6D4' : '#F97316' };
      
     });
     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    todayShifts.forEach((shift: any) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      shift.nozzleReadings?.forEach((nr: any) => {
+    todayShifts.forEach((shift: unknown) => {
+      shift.nozzleReadings?.forEach((nr: unknown) => {
         if (fuelIntel[nr.productId]) {
            
           const vol = nr.closingReading > 0 ? Math.max(0, nr.closingReading - nr.openingReading) : 0;
@@ -214,8 +198,7 @@ export default React.memo(function FuelDashboard({
   
 
      
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const sortedFuelIntel = Object.values(fuelIntel).sort((a: any,b: any) => b.revenue - a.revenue);
+    const sortedFuelIntel = Object.values(fuelIntel).sort((a: unknown,b: unknown) => b.revenue - a.revenue);
   
 
     // Alerts
@@ -224,7 +207,6 @@ export default React.memo(function FuelDashboard({
     if (lowStockCount > 0) alerts.push({ type: 'warning', msg: `🟠 ${lowStockCount} Tanks are below 15% stock.` });
     if (Math.abs(variance) > 500) alerts.push({ type: 'danger', msg: `🔴 Shift Variance exceeds threshold (${formatCurrency(variance, settings)}).` });
      
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (topSuppliers.length > 0 && (topSuppliers[0] as any).balance > 50000) alerts.push({ type: 'warning', msg: `🟠 Supplier ${topSuppliers[0].name} payment due.` });
      
     if (maintenanceNozzles > 0) alerts.push({ type: 'danger', msg: `🔴 ${maintenanceNozzles} Nozzles require maintenance.` });
@@ -232,29 +214,22 @@ export default React.memo(function FuelDashboard({
     // Activity Feed
     const feed = [
       ...shifts.slice(0, 5).map(s => ({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         id: (s as any).id, type: 'shift', title: `Shift ${(s as any).status}`, desc: (s as any).cashierName || 'System', amount: formatCurrency((s as any).totalSales || 0, settings),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         time: (s as any).time || '12:00 PM', timestamp: new Date(`${(s as any).date} ${(s as any).time || '12:00 PM'}`).getTime(), icon: Power, color: (s as any).status === 'Open' ? 'text-emerald-500' : 'text-slate-400', bg: 'bg-white/5'
       })),
       ...stockTxns.slice(0, 5).map(tx => ({
          
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         id: (tx as any).id, type: 'stock', title: (tx as any).type === 'receipt' ? 'Tank Refilled' : 'Inventory Adj', desc: products.find(p => p.id === (tx as any).itemId)?.name || 'Product', amount: `${(tx as any).quantity}L`,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         time: '10:00 AM', timestamp: new Date(`${(tx as any).date} 10:00 AM`).getTime(), icon: Droplets, color: 'text-blue-500', bg: 'bg-white/5'
       }))
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ].sort((a: any,b: any) => (b.timestamp || '') - (a.timestamp || '')).slice(0, 8);
+    ].sort((a: unknown,b: unknown) => (b.timestamp || '') - (a.timestamp || '')).slice(0, 8);
 
     // Chart Data (Last 7 Days)
     const chartData = Array.from({length: 7}, (_, i) => {
       const d = new Date(); d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split('T')[0];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const dayShifts = shifts.filter(s => (s as any).date === dateStr);
       let dayRev = 0;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       dayShifts.forEach(s => dayRev += ((s as any).totalSales || 0));
       return { date: d.toLocaleDateString('en-US', { weekday: 'short' }), revenue: dayRev };
     }).reverse();
@@ -266,8 +241,7 @@ export default React.memo(function FuelDashboard({
       const formattedHour = hour % 12 === 0 ? 12 : hour % 12;
       let revenue = 0;
       
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      todayShifts.forEach((shift: any) => {
+      todayShifts.forEach((shift: unknown) => {
         const startHour = shift.time ? parseInt(shift.time.split(':')[0]) : 8;
         let endHour = shift.endTime ? parseInt(shift.endTime.split(':')[0]) : new Date().getHours();
         if (endHour <= startHour) endHour = startHour + 1; // At least 1 hour duration assumption
@@ -508,7 +482,7 @@ export default React.memo(function FuelDashboard({
                    </h2>
                    <div className="space-y-4">
                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                     {stats.fuelIntel.length > 0 ? stats.fuelIntel.map((f: any, idx: number) => (
+                     {stats.fuelIntel.length > 0 ? stats.fuelIntel.map((f: unknown, idx: number) => (
                        <div key={idx} className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] hover:bg-white/[0.05] transition-colors">
                          <div>
                            <div className="text-sm font-black text-white flex items-center gap-2">
@@ -567,7 +541,6 @@ export default React.memo(function FuelDashboard({
                 </div>
                 <div className="space-y-4">
                   {tanks.length > 0 ? tanks.map((tank) => {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const t = tank as any;
                     const pct = t.capacity > 0 ? (t.currentStock / t.capacity) * 100 : 0;
                     const daysRemaining = Math.max(1, Math.round(t.currentStock / 5000));
@@ -636,7 +609,7 @@ export default React.memo(function FuelDashboard({
                 {nozzles.length > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    {(nozzles as any[]).map(n => {
+                    {(nozzles as unknown[]).map(n => {
                       const isActive = n.status === 'Active' || !n.status;
                       const isMaint = n.status === 'Maintenance';
                       return (
@@ -779,7 +752,7 @@ export default React.memo(function FuelDashboard({
                 </h2>
                 <div className="space-y-3">
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  {stats.alerts.length > 0 ? stats.alerts.map((alert: any, idx: number) => (
+                  {stats.alerts.length > 0 ? stats.alerts.map((alert: unknown, idx: number) => (
                     <div key={idx} className={`p-3 rounded-2xl border ${alert.type === 'danger' ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-orange-500/10 border-orange-500/20 text-orange-400'} text-xs font-bold leading-relaxed shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]`}>
                       {alert.msg}
                     </div>
@@ -801,7 +774,7 @@ export default React.memo(function FuelDashboard({
                 </h2>
                 <div className="space-y-4">
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  {stats.feed.length > 0 ? stats.feed.map((item: any, idx: number) => (
+                  {stats.feed.length > 0 ? stats.feed.map((item: unknown, idx: number) => (
                     <div key={idx} className="flex gap-3 relative">
                       {idx !== stats.feed.length - 1 && (
                         <div className="absolute top-8 left-4 bottom-0 w-px bg-white/10 -translate-x-1/2"></div>

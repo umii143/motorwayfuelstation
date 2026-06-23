@@ -7,6 +7,7 @@ import { firestoreDb } from '../data/firestore';
 import { JournalEntry, SupplierPayment, StockTransaction, Supplier } from '../types';
 import { useShiftStore } from '../stores/useShiftStore';
 import { getBusinessTypeForStation } from '../lib/businessScope';
+import { logger } from '../lib/logger';
 
 export const migrateAccountsPayable = async (orgId?: string) => {
   const sId = db.getActiveStationId();
@@ -18,8 +19,7 @@ export const migrateAccountsPayable = async (orgId?: string) => {
     return;
   }
 
-  // eslint-disable-next-line no-console
-  console.log('--- STARTING ACCOUNTS PAYABLE RETROACTIVE MIGRATION ---');
+  logger.info('--- STARTING ACCOUNTS PAYABLE RETROACTIVE MIGRATION ---');
 
   const bType = getBusinessTypeForStation(sId);
 
@@ -33,16 +33,14 @@ export const migrateAccountsPayable = async (orgId?: string) => {
   const shifts = shiftStore.shifts;
   
   if (!suppliers || suppliers.length === 0) {
-     // eslint-disable-next-line no-console
-     console.log('No suppliers found. Skipping migration.');
+     logger.info('No suppliers found. Skipping migration.');
      localStorage.setItem(migrationKey, 'true');
      return;
   }
 
   // Find all historical purchases
   const purchases = stockTxns.filter(t => t.type === 'receipt' && t.supplierId);
-  // eslint-disable-next-line no-console
-  console.log(`Found ${purchases.length} historical stock purchases.`);
+  logger.info(`Found ${purchases.length} historical stock purchases.`);
 
   // Find all historical payments inside shifts
   const shiftPayments: SupplierPayment[] = [];
@@ -51,8 +49,7 @@ export const migrateAccountsPayable = async (orgId?: string) => {
         shiftPayments.push(...shift.supplierPayments);
      }
   });
-  // eslint-disable-next-line no-console
-  console.log(`Found ${shiftPayments.length} historical supplier payments from shifts.`);
+  logger.info(`Found ${shiftPayments.length} historical supplier payments from shifts.`);
 
   const newJournalEntries: JournalEntry[] = [];
   const updatedSuppliers: Supplier[] = [];
@@ -127,8 +124,7 @@ export const migrateAccountsPayable = async (orgId?: string) => {
         ...supplier,
         balance: calculatedBalance
      });
-     // eslint-disable-next-line no-console
-     console.log(`Supplier [${supplier.name}] balance recalculated: Rs. ${calculatedBalance}`);
+     logger.info(`Supplier [${supplier.name}] balance recalculated: Rs. ${calculatedBalance}`);
   }
 
   // Save all to stores
@@ -146,6 +142,5 @@ export const migrateAccountsPayable = async (orgId?: string) => {
   });
 
   localStorage.setItem(migrationKey, 'true');
-  // eslint-disable-next-line no-console
-  console.log('--- ACCOUNTS PAYABLE MIGRATION COMPLETED SUCCESSFULLY ---');
+  logger.info('--- ACCOUNTS PAYABLE MIGRATION COMPLETED SUCCESSFULLY ---');
 };

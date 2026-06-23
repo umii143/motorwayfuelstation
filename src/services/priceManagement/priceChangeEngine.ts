@@ -8,12 +8,10 @@ export const priceChangeEngine = {
     tanks: Tank[],
     newPrice: number,
     userId: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    reason: any = 'Manual Correction',
+    reason: unknown = 'Manual Correction',
     orgId?: string,
     stationId?: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    attachments: any[] = []
+    attachments: unknown[] = []
   ) => {
     // 1. Calculate Impact first to get oldPrice cleanly
     // Wait, the original code called createSnapshot first, then calculateImpact.

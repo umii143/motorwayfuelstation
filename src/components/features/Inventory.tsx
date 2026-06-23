@@ -43,6 +43,7 @@ import SupplierPayablesPanel from './SupplierCommandCenter/SupplierPayablesPanel
 import SupplierClaimsPanel from './SupplierCommandCenter/SupplierClaimsPanel';
 import AdvancedFuelStock from './FuelStock/AdvancedFuelStock';
 import { isLubeBusinessStation } from '../../lib/businessScope';
+import { logger } from '../../lib/logger';
 
 interface InventoryProps {
   settings: GlobalSettings;
@@ -137,7 +138,6 @@ export default function Inventory({
     setProdPurchasePrice(String(prod.purchasePrice || prod.rate || ''));
     setProdRate(String(prod.rate));
      
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setProdUnit(prod.unit); setProdType(prod.type as any); setProdMinStock(String(prod.minStock));
     setProdOpeningStock(String(prod.currentStock));
     setShowAddProductModal(true);
@@ -431,8 +431,7 @@ export default function Inventory({
       const data = await response.json();
       setAiInsightsResult(data.reply);
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
+      logger.error(error);
        
       setAiInsightsResult(t("⚠️ Could not generate AI stock analysis.", "⚠️ اسٹاک کا اے آئی تجزیہ تیار نہیں ہو سکا۔"));
     } finally {
@@ -830,7 +829,6 @@ export default function Inventory({
                 ].filter(f => f.show).map(f => (
                   <button
                     key={f.id}
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     onClick={() => setFilterType(f.id as any)}
                     className={`fp-date-tab ${
                       filterType === f.id

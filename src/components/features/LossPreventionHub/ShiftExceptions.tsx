@@ -278,7 +278,6 @@ export default function ShiftExceptions({ settings, stationId }: ShiftExceptions
                     {['open', 'investigating', 'resolved'].map((s) => (
                       <button
                         key={s}
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         onClick={() => setStatus(s as any)}
                         className={`flex-1 py-2 text-sm font-bold rounded-lg border transition ${
                           status === s 

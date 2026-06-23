@@ -3,6 +3,7 @@ import { X, Flashlight, ScanLine, Smartphone } from 'lucide-react';
 import { NativeBarcodeScanner } from '../../services/hardware/BarcodeScanner';
 import { BarcodeFormat } from '@capacitor-mlkit/barcode-scanning';
 import { Capacitor } from '@capacitor/core';
+import { logger } from '../../lib/logger';
 
 interface NativeScannerOverlayProps {
   isOpen: boolean;
@@ -30,8 +31,7 @@ export const NativeScannerOverlay: React.FC<NativeScannerOverlayProps> = ({
           onClose(); // Automatically close after successful scan
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error("Scanner failed to start", error);
+        logger.error("Scanner failed to start", error);
         alert("Failed to start scanner. Please ensure camera permissions are granted.");
         onClose();
       }

@@ -31,8 +31,7 @@ export default function SupplierLiabilityDrillDownModal({
 
   const stats = useMemo(() => {
      
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let timeline: any[] = [];
+    let timeline: unknown[] = [];
     let thisMonthPayments = 0;
     let thisMonthPurchases = 0;
 

@@ -3,6 +3,7 @@ import { Sparkles, MessageCircle, Send, Loader2 } from 'lucide-react';
 import { fetchWithAuth } from '../../lib/api';
 import { GlobalSettings, Shift, Customer, Product, BankAccount } from '../../types';
 import { t as translate } from '../../lib/translations';
+import { logger } from '../../lib/logger';
 
 interface DashboardAIAssistantProps {
   settings: GlobalSettings;
@@ -53,8 +54,7 @@ export function DashboardAIAssistant({ settings, shifts, customers, products, ba
       setResponse(data.reply);
     } catch (error) {
        
-      // eslint-disable-next-line no-console
-      console.error(error);
+      logger.error(error);
       setResponse(t('Sorry, I encountered an error connecting to the AI brain.', 'معذرت، AI برین سے منسلک ہونے میں خرابی پیش آ گئی۔'));
     } finally {
       setIsLoading(false);

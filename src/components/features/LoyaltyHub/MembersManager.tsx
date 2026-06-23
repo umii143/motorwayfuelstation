@@ -244,7 +244,6 @@ export default function MembersManager({ settings, stationId }: MembersManagerPr
                     {['bronze', 'silver', 'gold', 'platinum'].map((t) => (
                       <button
                         key={t}
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         onClick={() => setTier(t as any)}
                         className={`flex-1 py-2 text-[11px] font-bold rounded-lg border transition uppercase tracking-wider ${
                           tier === t 
@@ -265,7 +264,6 @@ export default function MembersManager({ settings, stationId }: MembersManagerPr
                     {['active', 'suspended'].map((s) => (
                       <button
                         key={s}
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         onClick={() => setStatus(s as any)}
                         className={`flex-1 py-2 text-[11px] font-bold rounded-lg border transition uppercase tracking-wider ${
                           status === s 

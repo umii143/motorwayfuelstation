@@ -277,7 +277,6 @@ export default function ServiceSchedules({ settings, stationId }: ServiceSchedul
                     {['scheduled', 'in_progress', 'completed', 'cancelled'].map((s) => (
                       <button
                         key={s}
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         onClick={() => setStatus(s as any)}
                         className={`flex-1 py-2 text-[11px] font-bold rounded-lg border transition ${
                           status === s 

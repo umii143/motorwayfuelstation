@@ -27,8 +27,7 @@ interface ShiftDetailsDrawerProps {
   digitalAccounts: DigitalAccount[];
   nozzles: Nozzle[];
    
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  settings: any;
+  settings: unknown;
 }
 
 export function ShiftDetailsDrawer({
@@ -361,8 +360,7 @@ export function ShiftDetailsDrawer({
  
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function FinancialCard({ title, amount, icon, bg }: any) {
+function FinancialCard({ title, amount, icon, bg }: unknown) {
   return (
     <div className="p-4 bg-white dark:bg-[#111827] rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
       <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${bg}`}>
@@ -377,8 +375,7 @@ function FinancialCard({ title, amount, icon, bg }: any) {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function ProgressBar({ label, value, color, amount }: any) {
+function ProgressBar({ label, value, color, amount }: unknown) {
   return (
     <div className="flex items-center gap-4 text-sm">
       <div className="w-24 shrink-0 text-slate-600 dark:text-slate-300 text-xs">{label}</div>
@@ -392,8 +389,7 @@ function ProgressBar({ label, value, color, amount }: any) {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function PaymentRow({ icon, label, amount, percent }: any) {
+function PaymentRow({ icon, label, amount, percent }: unknown) {
   return (
     <div className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-slate-800/50 last:border-0">
       <div className="flex items-center gap-3">
@@ -411,8 +407,7 @@ function PaymentRow({ icon, label, amount, percent }: any) {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function ActionButton({ icon, label, color, border }: any) {
+function ActionButton({ icon, label, color, border }: unknown) {
   return (
     <button className={`flex items-center justify-center gap-2 p-3 rounded-xl border bg-white dark:bg-[#111827] hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${border} ${color}`}>
       {icon}

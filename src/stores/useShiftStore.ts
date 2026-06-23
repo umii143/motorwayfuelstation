@@ -17,13 +17,13 @@ import { dbFS } from '../lib/firebase';
 import { fetchWithAuth } from '../lib/api';
 import { getBusinessTypeForStation, isolateShiftRecords, withBusinessScope } from '../lib/businessScope';
 import { dispatchShiftToOperationalCore } from '../services/core/shadowMode';
+import { logger } from '../lib/logger';
 
 interface ShiftState {
   shifts: Shift[];
   setShifts: (shifts: Shift[]) => void;
   handleAddShift: (newShift: Shift, orgId?: string, stationId?: string) => Promise<void>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleUpdateShift: (updatedShift: Shift, orgId?: string, stationId?: string, checkPerm?: any) => Promise<void>;
+  handleUpdateShift: (updatedShift: Shift, orgId?: string, stationId?: string, checkPerm?: unknown) => Promise<void>;
   handleDeleteDebitEntry: (shiftId: string, entryId: string, orgId?: string, stationId?: string) => Promise<void>;
   handleDeleteRecoveryEntry: (shiftId: string, entryId: string, orgId?: string, stationId?: string) => Promise<void>;
   handleDeleteSupplierPayment: (shiftId: string, entryId: string, orgId?: string, stationId?: string) => Promise<void>;
@@ -196,8 +196,7 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
         const updatedShift = { ...shift, pendingPriceRevisions, activeMidShiftAlert: true };
 
         if (orgId) {
-          // eslint-disable-next-line no-console
-          firestoreDb.saveDocument(orgId, sId, bType, 'shifts', shift.id, updatedShift).catch(console.error);
+          firestoreDb.saveDocument(orgId, sId, bType, 'shifts', shift.id, updatedShift).catch(logger.error);
         }
 
         return updatedShift;
@@ -285,8 +284,7 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
         };
         
         if (orgId) {
-          // eslint-disable-next-line no-console
-          firestoreDb.saveDocument(orgId, sId, bType, 'shifts', shift.id, updatedShift).catch(console.error);
+          firestoreDb.saveDocument(orgId, sId, bType, 'shifts', shift.id, updatedShift).catch(logger.error);
         }
 
         return updatedShift;
@@ -653,8 +651,7 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
 
       // Phase 2: Shadow Mode Validation (Unified Enterprise Architecture)
       // We dispatch the shift to the new Operational Core without blocking the UI
-      // eslint-disable-next-line no-console
-      dispatchShiftToOperationalCore(updatedShift, sId, 'default', orgId).catch(console.error);
+      dispatchShiftToOperationalCore(updatedShift, sId, 'default', orgId).catch(logger.error);
 
       // WhatsApp alerts
       if (settings.whatsappSettings?.enabled && settings.whatsappSettings?.alerts?.shiftClose) {

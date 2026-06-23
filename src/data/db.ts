@@ -23,8 +23,7 @@ export async function initDatabase() {
         }
       });
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.warn('localforage.iterate failed', e);
+      logger.warn('localforage.iterate failed', e);
     }
 
     // Comprehensive Fallback: Sync from localStorage for any missing keys
@@ -52,21 +51,18 @@ export async function initDatabase() {
 
     dbInitialized = true;
   } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error('Error initializing IndexedDB:', err);
+    logger.error('Error initializing IndexedDB:', err);
   }
 }
 
 function flushToIndexedDB(key: string, value: string | null) {
   if (value === null) {
-    // eslint-disable-next-line no-console
-    localforage.removeItem(key).catch(console.error);
+    localforage.removeItem(key).catch(logger.error);
      
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     try { if (typeof localStorage !== 'undefined') localStorage.removeItem(key); } catch (e) { /* ignore */ }
   } else {
-    // eslint-disable-next-line no-console
-    localforage.setItem(key, value).catch(console.error);
+    localforage.setItem(key, value).catch(logger.error);
      
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     try { if (typeof localStorage !== 'undefined') localStorage.setItem(key, value); } catch (e) { /* ignore */ }
@@ -125,6 +121,7 @@ import {
   MeterResetEvent
 } from '../types';
 import {
+import { logger } from '../lib/logger';
   DEFAULT_FUEL_STATION_ID,
   LUBE_STATION_ID,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -246,62 +243,44 @@ const SEED_LUBE_SETTINGS: GlobalSettings = {
   setupVersion: 1
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SEED_LUBE_STAFF: any = [];
+const SEED_LUBE_STAFF: unknown = [];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SEED_LUBE_PRODUCTS: any = [];
+const SEED_LUBE_PRODUCTS: unknown = [];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SEED_LUBE_CUSTOMERS: any = [];
+const SEED_LUBE_CUSTOMERS: unknown = [];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SEED_LUBE_SUPPLIERS: any = [];
+const SEED_LUBE_SUPPLIERS: unknown = [];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SEED_LUBE_BANKS: any = [];
+const SEED_LUBE_BANKS: unknown = [];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SEED_LUBE_DIGITAL_ACCOUNTS: any = [];
+const SEED_LUBE_DIGITAL_ACCOUNTS: unknown = [];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SEED_LUBE_PUMPS: any = [];
+const SEED_LUBE_PUMPS: unknown = [];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SEED_LUBE_NOZZLES: any = [];
+const SEED_LUBE_NOZZLES: unknown = [];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SEED_LUBE_TANKS: any = [];
+const SEED_LUBE_TANKS: unknown = [];
 
 // ==========================================
 // SEED DATA FOR BUSINESS 1: FUEL STATION FALLBACKS
 // ==========================================
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SEED_FUEL_STAFF: any = [];
+const SEED_FUEL_STAFF: unknown = [];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SEED_FUEL_PRODUCTS: any = [];
+const SEED_FUEL_PRODUCTS: unknown = [];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SEED_FUEL_PUMPS: any = [];
+const SEED_FUEL_PUMPS: unknown = [];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SEED_FUEL_NOZZLES: any = [];
+const SEED_FUEL_NOZZLES: unknown = [];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SEED_FUEL_TANKS: any = [];
+const SEED_FUEL_TANKS: unknown = [];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SEED_FUEL_CUSTOMERS: any = [];
+const SEED_FUEL_CUSTOMERS: unknown = [];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SEED_FUEL_SUPPLIERS: any = [];
+const SEED_FUEL_SUPPLIERS: unknown = [];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SEED_FUEL_BANKS: any = [];
+const SEED_FUEL_BANKS: unknown = [];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SEED_FUEL_DIGITAL_ACCOUNTS: any = [];
+const SEED_FUEL_DIGITAL_ACCOUNTS: unknown = [];
 
 // ==========================================
 // SEED DATA FOR DEALER MARGINS
@@ -414,8 +393,7 @@ function getStorageItem<T>(key: string, seed: T): T {
     }
     return JSON.parse(item) as T;
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error(`Error reading ${key} from storage:`, error);
+    logger.error(`Error reading ${key} from storage:`, error);
     return seed;
   }
 }
@@ -425,8 +403,7 @@ function setStorageItem<T>(key: string, data: T): void {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     ((memoryCache[key] = JSON.stringify(data)), flushToIndexedDB(key, JSON.stringify(data)));
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error(`Error writing ${key} to storage:`, error);
+    logger.error(`Error writing ${key} to storage:`, error);
   }
 }
 

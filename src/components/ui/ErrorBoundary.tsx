@@ -1,6 +1,7 @@
 
 import React, { ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { logger } from '../../lib/logger';
 
 interface Props {
   children: ReactNode;
@@ -22,8 +23,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // In production, you'd send this to an error tracking service (e.g., Sentry)
-    // eslint-disable-next-line no-console
-    console.error('[ErrorBoundary] Caught an error:', error, errorInfo);
+    logger.error('[ErrorBoundary] Caught an error:', error, errorInfo);
   }
 
   handleReset = () => {

@@ -4,8 +4,7 @@ import { useInventoryStore } from '../../../../stores/useInventoryStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useSupplierStore } from '../../../../stores/useSupplierStore';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function BIProductSupplierAnalysis({ metrics }: any) {
+export function BIProductSupplierAnalysis({ metrics }: unknown) {
   const { productSales, supplierPerformance } = metrics;
   const { products } = useInventoryStore(useShallow(state => ({ products: state.products })));
   const { suppliers } = useSupplierStore(useShallow(state => ({ suppliers: state.suppliers })));
@@ -28,7 +27,6 @@ export function BIProductSupplierAnalysis({ metrics }: any) {
             {Object.keys(productSales).length === 0 ? (
               <div className="col-span-3 text-center py-8 text-slate-400 text-sm">No sales data for the selected period.</div>
             ) : (
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               Object.entries(productSales).map(([productId, data]: [string, any]) => {
                 const prod = products.find(p => p.id === productId);
                 const margin = data.revenue - data.cogs;
@@ -93,9 +91,7 @@ export function BIProductSupplierAnalysis({ metrics }: any) {
                 </tr>
               ) : (
                 Object.entries(supplierPerformance)
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  .sort((a: any, b: any) => b[1].liters - a[1].liters)
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  .sort((a: unknown, b: unknown) => b[1].liters - a[1].liters)
                   .map(([supplierId, data]: [string, any]) => {
                     const supp = suppliers.find(s => s.id === supplierId);
                     return (

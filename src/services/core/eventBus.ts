@@ -1,4 +1,5 @@
 /**
+import { logger } from '../../lib/logger';
  * FuelPro EOC — Event Bus
  * Lightweight pub/sub system for decoupled module communication.
  * Every operational event is broadcast. Modules subscribe independently.
@@ -55,8 +56,7 @@ type EventHandler<T = unknown> = (event: EOCEvent<T>) => void | Promise<void>;
 // ─── Event Bus Implementation ─────────────────────────────────────────────────
 
 class EOCEventBus {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private handlers: Map<EOCEventName, Set<EventHandler<any>>> = new Map();
+  private handlers: Map<EOCEventName, Set<EventHandler<unknown>>> = new Map();
   private eventLog: EOCEvent[] = [];
   private readonly MAX_LOG_SIZE = 500;
 
@@ -65,15 +65,13 @@ class EOCEventBus {
     if (!this.handlers.has(eventName)) {
       this.handlers.set(eventName, new Set());
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.handlers.get(eventName)!.add(handler as EventHandler<any>);
+    this.handlers.get(eventName)!.add(handler as EventHandler<unknown>);
     return () => this.off(eventName, handler);
   }
 
   /** Unsubscribe from an event. */
   off<T = unknown>(eventName: EOCEventName, handler: EventHandler<T>): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.handlers.get(eventName)?.delete(handler as EventHandler<any>);
+    this.handlers.get(eventName)?.delete(handler as EventHandler<unknown>);
   }
 
   /** Subscribe to an event — fires only once. */
@@ -117,8 +115,7 @@ class EOCEventBus {
         try {
           handler(event);
         } catch (err) {
-          // eslint-disable-next-line no-console
-          console.error(`[EOCEventBus] Handler error for ${eventName}:`, err);
+          logger.error(`[EOCEventBus] Handler error for ${eventName}:`, err);
         }
       });
     }

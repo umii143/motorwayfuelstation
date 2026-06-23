@@ -1,4 +1,5 @@
 // src/services/communication/whatsappProvider.ts
+import { logger } from '../../lib/logger';
 
 export interface WhatsAppPayload {
   to: string;
@@ -38,8 +39,7 @@ export class WhatsAppProvider {
       window.open(link, '_blank');
       return true;
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('WhatsApp Provider Error:', err);
+      logger.error('WhatsApp Provider Error:', err);
       return false;
     }
   }

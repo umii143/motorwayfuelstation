@@ -8,10 +8,8 @@ export const priceApprovalEngine = {
     tanks: Tank[],
     newPrice: number,
     userId: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    reason: any = 'Manual Correction',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    attachments: any[] = []
+    reason: unknown = 'Manual Correction',
+    attachments: unknown[] = []
   ): { snapshot: InventorySnapshot; rateHistoryEntry: RateHistoryEntry } => {
     const oldPrice = product.rate || 0;
 

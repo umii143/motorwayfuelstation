@@ -98,7 +98,7 @@ export const SecurityScreen: React.FC = () => {
                    
                   }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-                } catch (err: any) {
+                } catch (err: unknown) {
                   NativeHaptics.error();
                   setShowPin(true);
                 }

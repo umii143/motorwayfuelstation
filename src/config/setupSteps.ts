@@ -9,7 +9,7 @@ export interface SetupStep {
   icon: string;             // Material Symbol name
   stepNumber: number;
   dependsOn: string[];      // which step IDs must be complete first
-  completionCheck: (store: any) => boolean;
+  completionCheck: (store: unknown) => boolean;
 }
 
 export const getSetupSteps = (isLube: boolean): SetupStep[] => {
@@ -63,7 +63,7 @@ export const getSetupSteps = (isLube: boolean): SetupStep[] => {
       stepNumber: 4,
       dependsOn: ['products', 'nozzles'], // need products and nozzles
       completionCheck: (store) => {
-          return store.products && store.products.some((p: any) => p.rate > 0);
+          return store.products && store.products.some((p: unknown) => p.rate > 0);
       },
     },
     {

@@ -67,14 +67,14 @@ import { motion } from 'framer-motion';
 import { haptic } from '../../utils/haptics';
 import { BottomSheet } from '../shared/BottomSheet';
 import { isLubeBusinessStation } from '../../lib/businessScope';
+import { logger } from '../../lib/logger';
 
 interface NavigationProps {
   activeView: string;
   onViewChange: (view: string) => void;
   settings: GlobalSettings;
   onSettingsUpdate: (settings: GlobalSettings) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  user?: any;
+  user?: unknown;
   onLogout?: () => void;
   stations?: Station[];
   activeStationId?: string;
@@ -244,7 +244,6 @@ const Navigation = React.memo(function Navigation({
   ];
 
   const handleSelectTheme = (themeId: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onSettingsUpdate({ ...settings, theme: themeId as any });
     setIsThemeOpen(false);
   };
@@ -305,8 +304,7 @@ const Navigation = React.memo(function Navigation({
       const data = await response.json();
       setAiSearchResult(data.reply);
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
+      logger.error(error);
       setAiSearchResult("⚠️ Failed to reach AI services or data context too large.");
     } finally {
       setIsAiSearching(false);

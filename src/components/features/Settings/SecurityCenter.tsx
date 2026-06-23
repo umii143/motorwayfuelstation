@@ -122,8 +122,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
       setForgotMethod(null);
        
       showToast(t('Identity verified. Please set a new PIN.', 'شناخت کی تصدیق ہو گئی۔ نیا پن درج کریں۔'), 'success');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
+    } catch (err: unknown) {
       showToast(err.message || t('Verification failed', 'تصدیق ناکام'), 'error');
     } finally {
       setIsVerifying(false);

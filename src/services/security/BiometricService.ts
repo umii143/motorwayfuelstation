@@ -1,5 +1,6 @@
 import { BiometricAuth, CheckBiometryResult } from '@aparajita/capacitor-biometric-auth';
 import { Capacitor } from '@capacitor/core';
+import { logger } from '../../lib/logger';
 
 export class BiometricService {
   /**
@@ -11,8 +12,7 @@ export class BiometricService {
       const result: CheckBiometryResult = await BiometricAuth.checkBiometry();
       return result.isAvailable;
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.warn("Biometry check failed:", error);
+      logger.warn("Biometry check failed:", error);
       return false;
     }
   }
@@ -23,8 +23,7 @@ export class BiometricService {
   static async authenticate(reason: string = 'Please authenticate to continue'): Promise<boolean> {
     if (!Capacitor.isNativePlatform()) {
       // Force PIN fallback on web instead of dummy true
-      // eslint-disable-next-line no-console
-      console.warn("Biometrics requested on non-native platform. Falling back to PIN.");
+      logger.warn("Biometrics requested on non-native platform. Falling back to PIN.");
       return false;
     }
 
@@ -35,11 +34,9 @@ export class BiometricService {
         allowDeviceCredential: false, // Strict fingerprint/face requirement
       });
       return true;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
       // User canceled or failed
-      // eslint-disable-next-line no-console
-      console.error("Biometric auth failed:", error);
+      logger.error("Biometric auth failed:", error);
       return false;
     }
   }

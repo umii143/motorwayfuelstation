@@ -4,6 +4,7 @@
  */
 
 import { auth } from './firebase';
+import { logger } from '../lib/logger';
 
 /**
  * Custom fetch wrapper that automatically appends active authorization tokens.
@@ -28,8 +29,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = { /* emp
         const token = await fbUser.getIdToken();
         headers.set('Authorization', `Bearer ${token}`);
       } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error('[API] Error retrieving Firebase ID token:', err);
+        logger.error('[API] Error retrieving Firebase ID token:', err);
       }
     }
   }

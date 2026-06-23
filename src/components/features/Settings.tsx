@@ -61,10 +61,10 @@ interface SettingsProps {
   onUpdateNozzle: (updatedNozzle: Nozzle) => void;
   onDeleteNozzle: (id: string) => void;
   rateHistory: RateHistoryEntry[];
-  banks?: any;
-  onUpdateBanks?: any;
-  onUpdateProducts?: any;
-  onUpdatePumps?: any;
+  banks?: unknown;
+  onUpdateBanks?: unknown;
+  onUpdateProducts?: unknown;
+  onUpdatePumps?: unknown;
   initialTab?: string;
   onNavigate?: (viewId: string) => void;
 }

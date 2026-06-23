@@ -4,8 +4,7 @@ import { pdfStyles } from '../../../utils/pdfStyles';
 import { PdfHeader, PdfFooter, PdfSignatures } from '../../../utils/pdfGenerator';
 
 interface StockInReceiptProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  purchase: any;
+  purchase: unknown;
   generatedBy?: string;
 }
 

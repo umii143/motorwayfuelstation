@@ -73,8 +73,7 @@ export const generateKPIs = (
   standaloneExpenses: ExpenseEntry[] = [],
   lubePosSales: LubePosSale[] = [],
   branchId: string = 'main',
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  nozzles: any[] = [],
+  nozzles: unknown[] = [],
   rateHistory: RateHistoryEntry[] = [],
   dateRange?: { from: string; to: string }
 ): KPIResult => {

@@ -3,6 +3,7 @@ import { MessageSquare, Send, CheckCircle, Users } from 'lucide-react';
 import { CommunicationManager } from '../../../services/communication/communicationManager';
 import { useStation } from '../../../contexts/StationContext';
 import { AutomationEngine } from '../../../services/automationEngine';
+import { logger } from '../../../lib/logger';
 
 export const CommunicationDashboard: React.FC = () => {
   const { customers, shifts, products } = useStation();
@@ -30,8 +31,7 @@ export const CommunicationDashboard: React.FC = () => {
         setStatus('Failed to open WhatsApp');
       }
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error(err);
+      logger.error(err);
       setStatus('Error generating summary');
     } finally {
       setIsSending(false);
@@ -51,8 +51,7 @@ export const CommunicationDashboard: React.FC = () => {
       const count = await CommunicationManager.sendBulk('whatsapp', payloads);
       setStatus(`Sent ${count} reminders via WhatsApp`);
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error(err);
+      logger.error(err);
       setStatus('Failed to send bulk reminders');
     } finally {
       setIsSending(false);

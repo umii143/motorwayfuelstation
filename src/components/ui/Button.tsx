@@ -57,7 +57,6 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         whileTap={{ scale: disabled || isLoading ? 1 : 0.98 }}
         className={classes}
         disabled={disabled || isLoading}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         {...(props as any)}
       >
         {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}

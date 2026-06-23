@@ -1,4 +1,5 @@
 // Track what users search to improve the app
+import { logger } from '../lib/logger';
 
 interface SearchEvent {
   query: string;
@@ -17,8 +18,7 @@ export function trackSearch(query: string, resultsCount: number) {
     stored.push({ query, resultsCount, timestamp: new Date().toISOString() });
     localStorage.setItem('search_analytics', JSON.stringify(stored.slice(-100)));
   } catch (e) {
-    // eslint-disable-next-line no-console
-    console.warn('Could not save search analytics', e);
+    logger.warn('Could not save search analytics', e);
   }
 }
 

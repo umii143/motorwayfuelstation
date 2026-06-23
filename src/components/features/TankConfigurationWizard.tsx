@@ -82,7 +82,6 @@ export default function TankConfigurationWizard({ onComplete, onCancel, currentL
       type: p.type,
        
       rate: p.rate,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       unit: p.unit as any,
       currentStock: 0,
       minStock: 0
@@ -103,7 +102,7 @@ export default function TankConfigurationWizard({ onComplete, onCancel, currentL
       };
     });
 
-    const compiledNozzles: Partial<Nozzle>[] = nozzles.map((n: any, idx: any) => {
+    const compiledNozzles: Partial<Nozzle>[] = nozzles.map((n: unknown, idx: unknown) => {
       const matchedTank = compiledTanks.find(t => t.name === n.tankName);
       return {
         id: `nzl_wiz_${Date.now()}_${idx}`,
@@ -225,7 +224,6 @@ export default function TankConfigurationWizard({ onComplete, onCancel, currentL
                     { }
                     <select 
                       value={newProduct.type}
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       onChange={e => setNewProduct({...newProduct, type: e.target.value as any})}
                       className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] focus:border-[var(--primary-accent)] outline-none"
                     >
@@ -342,7 +340,7 @@ export default function TankConfigurationWizard({ onComplete, onCancel, currentL
 
                 {nozzles.length > 0 && (
                   <div className="space-y-2 mb-4">
-                    {nozzles.map((n: any, idx: any) => (
+                    {nozzles.map((n: unknown, idx: unknown) => (
                       <div key={idx} className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 border border-slate-200 dark:border-slate-700/50">
                         <div>
                           <p className="text-sm font-bold text-[var(--text-main)]">{n.name}</p>

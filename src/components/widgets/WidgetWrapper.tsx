@@ -2,19 +2,18 @@ import React, { Suspense } from 'react';
 import { Settings, X, GripHorizontal } from 'lucide-react';
 import { useWidgetEngine } from '../../stores/useWidgetEngine';
 import { WidgetInstance, WidgetManifest } from '../../types/widget.types';
+import { logger } from '../../lib/logger';
 
 // Simple Error Boundary
 class ErrorBoundary extends React.Component<{ fallback: React.ReactNode, children: React.ReactNode }, { hasError: boolean }> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(props: any) {
+  constructor(props: unknown) {
     super(props);
     this.state = { hasError: false };
   }
   static getDerivedStateFromError() { return { hasError: true }; }
    
    
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  componentDidCatch(error: any, errorInfo: any) { console.error("Widget Error:", error, errorInfo); }
+  componentDidCatch(error: unknown, errorInfo: unknown) { logger.error("Widget Error:", error, errorInfo); }
   render() {
     if (this.state.hasError) return this.props.fallback;
     return this.props.children;

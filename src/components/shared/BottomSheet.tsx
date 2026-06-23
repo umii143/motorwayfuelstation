@@ -69,7 +69,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
     }
   };
 
-  const variants: any = {
+  const variants: unknown = {
     hidden: { y: '100%' },
     visible: { 
       y: 0, 

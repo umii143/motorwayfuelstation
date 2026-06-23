@@ -3,10 +3,10 @@ import { FileText, Printer, Share2 } from 'lucide-react';
 import { generatePdfBlob } from '../../utils/pdfGenerator';
 import { saveAs } from 'file-saver';
 import { useStation } from '../../contexts/StationContext';
+import { logger } from '../../lib/logger';
 
 export interface DocumentActionToolbarProps {
    
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pdfDocument?: React.ReactElement<any, any>;
   pdfFileName?: string;
   onPrint?: () => void;
@@ -37,8 +37,7 @@ export function DocumentActionToolbar({
       saveAs(blob, pdfFileName);
       showToast('PDF downloaded successfully!', 'success');
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error(e);
+      logger.error(e);
       showToast('Failed to generate PDF.', 'error');
     } finally {
       setIsExporting(false);

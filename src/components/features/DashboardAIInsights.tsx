@@ -14,8 +14,7 @@ export function DashboardAIInsights({ settings, shifts }: Props) {
   
    
   const insights = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const alerts: any[] = [];
+    const alerts: unknown[] = [];
     
     // Evaluate the last 5 shifts
     const recentShifts = [...shifts].sort((a, b) => b.id.localeCompare(a.id)).slice(0, 5);

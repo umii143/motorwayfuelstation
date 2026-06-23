@@ -20,8 +20,7 @@ export interface SearchResult {
   badgeText?: string;             // e.g. "LOW STOCK", "OVERDUE"
   badgeColor?: 'red' | 'orange' | 'green' | 'blue';
   viewId: string;                 // Navigation target
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  contextData?: Record<string, any>; // Pre-fill data when navigating
+  contextData?: Record<string, unknown>; // Pre-fill data when navigating
   score?: number;                 // Fuse.js match score (lower = better)
   matchedKeys?: string[];         // Which fields matched
   highlightRanges?: HighlightRange[]; // For text highlighting
@@ -42,18 +41,12 @@ export interface RecentSearch {
 }
 
 export interface SearchIndex {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  customers: any[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  suppliers: any[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  shifts: any[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  batches: any[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  expenses: any[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  staff: any[];
+  customers: unknown[];
+  suppliers: unknown[];
+  shifts: unknown[];
+  batches: unknown[];
+  expenses: unknown[];
+  staff: unknown[];
 }
 
 export interface CommandAction {

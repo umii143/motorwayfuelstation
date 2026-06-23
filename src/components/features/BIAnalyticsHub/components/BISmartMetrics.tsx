@@ -4,8 +4,7 @@ import { useInventoryStore } from '../../../../stores/useInventoryStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useCustomerStore } from '../../../../stores/useCustomerStore';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function BISmartMetrics({ metrics }: any) {
+export function BISmartMetrics({ metrics }: unknown) {
   const { smartMetrics } = metrics;
   const { products = [] } = useInventoryStore(useShallow(state => ({ products: state.products })));
   const customers = useCustomerStore(useShallow(state => state.customers || []));

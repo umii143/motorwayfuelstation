@@ -5,8 +5,7 @@ import { GlobalSettings } from '../../../types';
 
 interface CashFlowChartProps {
    
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[];
+  data: unknown[];
   settings: GlobalSettings;
 }
 
@@ -29,7 +28,7 @@ export default function LubeCashFlowChart({ data, settings }: CashFlowChartProps
         <Tooltip 
           contentStyle={{ borderRadius: '16px', border: 'none', backgroundColor: 'var(--tooltip-bg, rgba(3, 7, 18, 0.9))', backdropFilter: 'blur(20px)', color: 'var(--tooltip-color, #fff)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}
           itemStyle={{ fontWeight: 'bold' }}
-          formatter={(value: any) => formatCurrency(value, settings)}
+          formatter={(value: unknown) => formatCurrency(value, settings)}
         />
         <Area type="monotone" dataKey="sales" stroke="#f97316" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" />
         <Area type="monotone" dataKey="profit" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorProfit)" />

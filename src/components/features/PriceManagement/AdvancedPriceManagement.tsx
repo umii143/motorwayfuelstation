@@ -131,7 +131,7 @@ export default function AdvancedPriceManagement({
   const historyData = useMemo(() => {
     const dates = Array.from(new Set(rateHistory.map(r => r.effectiveDate || r.date).filter(Boolean).slice(0, 10))).reverse() as string[];
     return dates.map(date => {
-      const point: any = { date };
+      const point: unknown = { date };
       fuelProducts.forEach(p => {
         // find the price at this date or the last known price before this date
         const historyUpToDate = rateHistory.filter(r => (r.effectiveDate || r.date || '') <= date && r.productId === p.id);

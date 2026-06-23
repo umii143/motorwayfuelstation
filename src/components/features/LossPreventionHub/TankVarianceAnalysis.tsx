@@ -47,7 +47,6 @@ export default function TankVarianceAnalysis({ settings, stationId }: TankVarian
        
       setEditingId(incident.id);
       setDate(incident.date.split('T')[0]);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setType(incident.type as any);
       setSeverity(incident.severity);
       setSourceId(incident.sourceId);
@@ -301,7 +300,6 @@ export default function TankVarianceAnalysis({ settings, stationId }: TankVarian
                     {['open', 'investigating', 'resolved'].map((s) => (
                       <button
                         key={s}
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         onClick={() => setStatus(s as any)}
                         className={`flex-1 py-2 text-sm font-bold rounded-lg border transition ${
                           status === s 

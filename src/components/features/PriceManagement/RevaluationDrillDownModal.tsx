@@ -369,7 +369,7 @@ export default function RevaluationDrillDownModal({
                           <Cell key={`cell-${index}`} fill={entry.type === 'Gain' ? '#10b981' : '#f43f5e'} />
                         ))}
                       </Pie>
-                      <RechartsTooltip formatter={(val: any) => formatCurrency(val, settings)} />
+                      <RechartsTooltip formatter={(val: unknown) => formatCurrency(val, settings)} />
                       <Legend />
                     </RechartsPieChart>
                   </ResponsiveContainer>
@@ -381,7 +381,7 @@ export default function RevaluationDrillDownModal({
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                       <XAxis dataKey="month" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
                       <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(val) => `${val / 1000}k`} />
-                      <RechartsTooltip formatter={(val: any) => formatCurrency(val, settings)} />
+                      <RechartsTooltip formatter={(val: unknown) => formatCurrency(val, settings)} />
                       <Line type="monotone" dataKey="net" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }} />
                     </LineChart>
                   </ResponsiveContainer>

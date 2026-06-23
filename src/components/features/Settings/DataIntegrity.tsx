@@ -22,8 +22,7 @@ export default function DataIntegrity({ settings, activeStationId, onNavigate }:
   const [openDrift, setOpenDrift] = useState(0);
   const [criticalDrift, setCriticalDrift] = useState(0);
    
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<unknown>(null);
 
    
   useEffect(() => {

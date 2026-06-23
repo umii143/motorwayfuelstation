@@ -1,4 +1,5 @@
 import pkg from 'whatsapp-web.js';
+import { logger } from '../lib/logger';
 const { Client, LocalAuth } = pkg;
 
 export const waClient = new Client({
@@ -14,22 +15,19 @@ let qrCodeData = '';
 let isInitializing = false;
 
 waClient.on('qr', (qr) => {
-    // eslint-disable-next-line no-console
-    console.log('WhatsApp Client QR RECEIVED');
+    logger.info('WhatsApp Client QR RECEIVED');
     qrCodeData = qr; 
 });
 
 waClient.on('ready', () => {
-    // eslint-disable-next-line no-console
-    console.log('WhatsApp Client is ready!');
+    logger.info('WhatsApp Client is ready!');
     isReady = true;
     qrCodeData = ''; 
     isInitializing = false;
 });
 
 waClient.on('disconnected', (reason) => {
-    // eslint-disable-next-line no-console
-    console.log('WhatsApp Client disconnected', reason);
+    logger.info('WhatsApp Client disconnected', reason);
     isReady = false;
     isInitializing = false;
 });
@@ -37,11 +35,9 @@ waClient.on('disconnected', (reason) => {
 export const initWhatsApp = () => {
     if (isReady || isInitializing) return;
     isInitializing = true;
-    // eslint-disable-next-line no-console
-    console.log("Initializing WhatsApp Web client...");
+    logger.info("Initializing WhatsApp Web client...");
     waClient.initialize().catch(err => {
-        // eslint-disable-next-line no-console
-        console.error("Failed to init WhatsApp client:", err);
+        logger.error("Failed to init WhatsApp client:", err);
         isInitializing = false;
     });
 };

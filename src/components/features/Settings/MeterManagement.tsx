@@ -4,6 +4,7 @@ import { useStation } from '../../../contexts/StationContext';
 import { db } from '../../../data/db';
 import { GlobalSettings, MeterResetEvent, AuditTrailEntry } from '../../../types';
 import { useAuth } from '../../../contexts/AuthContext';
+import { logger } from '../../../lib/logger';
 
 export default function MeterManagement({ settings, activeStationId }: { settings: GlobalSettings, activeStationId: string }) {
    
@@ -144,8 +145,7 @@ export default function MeterManagement({ settings, activeStationId }: { setting
       setTimeout(() => window.location.reload(), 1500);
       
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error(err);
+      logger.error(err);
       showToast(t('Failed to reset meter.', 'میٹر ری سیٹ کرنے میں ناکامی۔'), 'error');
     }
   };

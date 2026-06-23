@@ -9,12 +9,9 @@ import { pdf } from '@react-pdf/renderer';
 
 interface WhatsAppShareModalProps {
   hook: ReturnType<typeof useWhatsAppShare>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  customers?: any[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  suppliers?: any[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  staff?: any[];
+  customers?: unknown[];
+  suppliers?: unknown[];
+  staff?: unknown[];
 }
 
 export const WhatsAppShareModal: React.FC<WhatsAppShareModalProps> = ({

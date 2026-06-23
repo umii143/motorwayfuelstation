@@ -58,6 +58,7 @@ import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { db } from '../../data/db';
 import { fetchWithAuth } from '../../lib/api';
 import { useInventoryStore } from '../../stores/useInventoryStore';
+import { logger } from '../../lib/logger';
 
 const getFuelCategory = (productId: string, products: Product[]): 'petrol' | 'diesel' | 'cng' | null => {
   const p = products.find((prod) => prod.id === productId);
@@ -219,7 +220,7 @@ export default function Reports({
       const data = await response.json();
       setAiAnalysisResult(data.reply);
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       setAiAnalysisResult(t("⚠️ Could not generate AI analysis.", "⚠️ AI تجزیہ تیار نہیں ہو سکا۔"));
     } finally {
       setIsGeneratingAiAnalysis(false);
@@ -766,7 +767,7 @@ export default function Reports({
                       <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
                       <XAxis dataKey="date" stroke="#94A3B8" />
                       <YAxis stroke="#94A3B8" />
-                      <Tooltip formatter={(val: any) => `Value: ${formatCurrency(Number(val), settings)}`} />
+                      <Tooltip formatter={(val: unknown) => `Value: ${formatCurrency(Number(val), settings)}`} />
                       <Area type="monotone" dataKey="amount" stroke="#0EA5E9" strokeWidth={2.5} fillOpacity={1} fill="url(#rowGrad)" name={t('Transaction Amount (PKR)', 'رقم کا بہاؤ')} />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -848,7 +849,7 @@ export default function Reports({
                             <ArrowUpDown className="h-3 w-3 text-slate-400" />
                           </div>
                         ),
-                        accessor: (row: any) => {
+                        accessor: (row: unknown) => {
                           const cellValue = row[h.key];
                           if (h.key === 'amount') {
                             const numericAmount = Number(cellValue || 0);
@@ -962,7 +963,7 @@ export default function Reports({
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
                       <XAxis dataKey="date" stroke="#94A3B8" />
                       <YAxis stroke="#94A3B8" />
-                      <Tooltip formatter={(value: any) => formatCurrency(Number(value), settings)} />
+                      <Tooltip formatter={(value: unknown) => formatCurrency(Number(value), settings)} />
                       <Legend />
                       <Area type="monotone" dataKey="Sales" stroke="#FF6B00" strokeWidth={2} fillOpacity={1} fill="url(#colorSales)" name={t('Gross Sales', 'فروخت رقم')} />
                       <Area type="monotone" dataKey="Profit" stroke="#10B981" strokeWidth={2} fillOpacity={1} fill="url(#colorProfit)" name={t('Margin Profit', 'تخمینہ منافع')} />

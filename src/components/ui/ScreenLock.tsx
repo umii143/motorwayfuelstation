@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Fingerprint, Delete, ShieldAlert } from 'lucide-react';
 import { useNativeAuth } from '../../contexts/NativeAuthContext';
+import { logger } from '../../lib/logger';
 
 interface ScreenLockProps {
   stationName: string;
@@ -109,8 +110,7 @@ export default function ScreenLock({
         setErrorText('Biometric authentication failed.');
       }
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error(e);
+      logger.error(e);
     }
   };
 

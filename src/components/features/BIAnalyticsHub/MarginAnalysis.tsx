@@ -34,7 +34,6 @@ export default function MarginAnalysis({ settings, stationId }: MarginAnalysisPr
         if (!nozzle || nozzle.productId !== productId) return;
 
         const nozzleVol = Math.max(0, (s.closingReadings[nozzleId] || 0) - (s.openingReadings[nozzleId] || 0));
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const nozzleRate = (s as any).rates?.[productId] || products.find(p => p.id === productId)?.rate || 0;
         volume += nozzleVol;
         revenue += (nozzleVol * nozzleRate);

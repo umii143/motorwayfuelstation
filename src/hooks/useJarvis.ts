@@ -1,10 +1,11 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { fetchWithAuth } from '../lib/api';
 import { jarvisFunctionDeclarations, executeJarvisFunction } from '../lib/AIFunctionRegistry';
+import { logger } from '../lib/logger';
 
 interface Message {
   role: 'user' | 'model' | 'function';
-  parts: { text?: string; functionCall?: any; functionResponse?: any }[];
+  parts: { text?: string; functionCall?: unknown; functionResponse?: unknown }[];
 }
 
 export function useJarvis() {
@@ -20,11 +21,11 @@ export function useJarvis() {
     }
   ]);
   
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<unknown>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
   const callModeRef = useRef<boolean>(false);
   const transcriptRef = useRef<string>('');
-  const processAudioInputRef = useRef<any>(null);
+  const processAudioInputRef = useRef<unknown>(null);
   const hasUnlockedSpeechRef = useRef<boolean>(false);
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export function useJarvis() {
         recognitionRef.current.interimResults = true;
         recognitionRef.current.lang = 'ur-PK'; // Urdu by default, supports mixed English
 
-        recognitionRef.current.onresult = (event: any) => {
+        recognitionRef.current.onresult = (event: unknown) => {
           let currentTranscript = '';
           for (let i = event.resultIndex; i < event.results.length; i++) {
             currentTranscript += event.results[i][0].transcript;
@@ -90,7 +91,7 @@ export function useJarvis() {
               recognitionRef.current?.start();
               setIsListening(true);
             } catch (e) {
-              console.error("Auto-restart failed", e);
+              logger.error("Auto-restart failed", e);
             }
           }
         }, 500);
@@ -140,7 +141,7 @@ export function useJarvis() {
       const data = await res.json();
 
       if (data.error) {
-        console.error('Backend returned error:', data.error);
+        logger.error('Backend returned error:', data.error);
         setChatHistory(prev => [...prev, { role: 'model', parts: [{ text: `System Error: ${data.error}` }] }]);
         speak("Sir, there is a server error: " + (data.error.includes("configured") ? "API key is missing" : data.error));
         return;
@@ -187,7 +188,7 @@ export function useJarvis() {
       }
 
     } catch (err) {
-      console.error('Jarvis Error:', err);
+      logger.error('Jarvis Error:', err);
       speak("Sorry Sir, I encountered a network error connecting to the backend gateway.");
     } finally {
       setIsProcessing(false);
@@ -216,7 +217,7 @@ export function useJarvis() {
       try {
         recognitionRef.current.start();
       } catch (e) {
-        console.error("Microphone already started", e);
+        logger.error("Microphone already started", e);
       }
     }
   }, []);

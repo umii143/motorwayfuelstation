@@ -10,8 +10,7 @@ export interface BIFilter {
 interface BIDateFilterProps {
   filter: BIFilter;
   setFilter: (filter: BIFilter) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  products: any[];
+  products: unknown[];
 }
 
 export function BIDateFilter({ filter, setFilter, products }: BIDateFilterProps) {

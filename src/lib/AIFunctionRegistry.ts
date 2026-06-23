@@ -186,8 +186,7 @@ export const jarvisFunctionDeclarations = [
 
  
  
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const executeJarvisFunction = async (functionName: string, args: any, _dbStores?: any) => {
+export const executeJarvisFunction = async (functionName: string, args: unknown, _dbStores?: unknown) => {
   switch (functionName) {
     case "getTodaySales": {
       // Calculate today's sales from active/closed shifts today
@@ -215,7 +214,6 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
       let totalBank = 0;
       state.cashAccounts?.forEach(acc => {
          
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((acc.type as any) === 'cash' || (acc.type as any) === 'drawer') totalCash += acc.balance;
         else totalBank += acc.balance;
       });
@@ -252,7 +250,6 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
         description,
         amount: Number(amount),
         date: new Date().toISOString(),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         paidFrom: 'cash' as any
       };
 
@@ -279,7 +276,6 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
         id: `rec_${Date.now()}`,
         customerId: `cust_unresolved_${customerName}`, // In real app, look up useCustomerStore.getState().customers
         amount: Number(amount),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         mode: 'cash' as any,
         date: new Date().toISOString(),
         reference: `Voice Entry: ${customerName}`
@@ -391,7 +387,6 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
       const { amount, toBankName } = args;
       const treasury = useTreasuryStore.getState();
        
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cashAcc = treasury.cashAccounts.find(a => (a.type as any) === 'cash' || (a.type as any) === 'drawer');
       const bankAcc = treasury.cashAccounts.find(a => a.type === 'bank' && a.name.toLowerCase().includes(toBankName.toLowerCase()));
       
@@ -411,7 +406,6 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
         id: `att_${Date.now()}`,
         staffId: staffMember.id,
         date: new Date().toISOString().split('T')[0],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         status: status as any
       };
       
@@ -430,7 +424,6 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
         date: new Date().toISOString().split('T')[0],
         items: [{ productId: product.id, productName: product.name, quantity: Number(quantity), unitPrice: (product.sellingPrice || 0), total: (product.sellingPrice || 0) * Number(quantity), unit: 'Liter', lineTotal: (product.sellingPrice || 0) * Number(quantity) }],
         total: (product.sellingPrice || 0) * Number(quantity),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         paymentMode: 'cash' as any,
         invoiceNo: `INV-${Date.now()}`,
         time: new Date().toISOString(),
@@ -458,7 +451,6 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
         salary: Number(salary) || 0,
         advances: 0,
         active: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         status: "active" as any,
         pin: "1234",
         phone: phone || "",
@@ -504,7 +496,6 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
         name: name || "New Account",
         accountNo: accountNo || "",
         balance: Number(initialBalance) || 0,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         type: name?.toLowerCase()?.includes("cash") || name?.toLowerCase()?.includes("drawer") ? 'cash' : 'bank' as any
       };
       await useFinancialStore.getState().handleAddBank(newBank, "", "");
@@ -526,7 +517,6 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
         date: new Date().toISOString().split('T')[0],
         startTime: new Date().toISOString(),
         endTime: "",
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         status: 'active' as any,
         readings: [],
         expenses: [],
@@ -543,7 +533,6 @@ export const executeJarvisFunction = async (functionName: string, args: any, _db
         shortage: 0
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await shiftStore.handleAddShift(newShift as any, "", "");
       return { status: "Success", message: `Started ${shiftType} shift for manager ${managerName}.` };
     }

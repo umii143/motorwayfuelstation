@@ -4,6 +4,7 @@ import { BankAccount, DigitalAccount, ExpenseEntry, LubePosSale, JournalEntry, C
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
 import { getBusinessTypeForStation, isolateLubePosSales, isolateTenantRecords, withBusinessScope } from '../lib/businessScope';
+import { logger } from '../lib/logger';
 
 interface FinancialState {
   banks: BankAccount[];
@@ -351,8 +352,7 @@ export const useFinancialStore = create<FinancialState>((set, get) => ({
     const sId = stationId || db.getActiveStationId();
     const bType = getBusinessType(sId);
     if (bType !== 'lube') {
-      // eslint-disable-next-line no-console
-      console.warn('Blocked Lube POS sale outside the lube business scope.', { stationId: sId });
+      logger.warn('Blocked Lube POS sale outside the lube business scope.', { stationId: sId });
       return;
     }
     sale = withBusinessScope(sale, sId, orgId);
@@ -449,8 +449,7 @@ export const useFinancialStore = create<FinancialState>((set, get) => ({
           }
         }
       } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error('Failed to update lube POS inventory stock:', err);
+        logger.error('Failed to update lube POS inventory stock:', err);
       }
     }
 

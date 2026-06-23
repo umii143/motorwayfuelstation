@@ -29,9 +29,9 @@ import { SyncEngine } from './services/core/SyncEngine';
 import OfflineIndicator from './components/ui/OfflineIndicator';
 
 // Start the enterprise offline-first sync engine immediately
-SyncEngine.start().catch(console.error);
+SyncEngine.start().catch(logger.error);
 // Utility to auto-reload on ChunkLoadError during new deployments
-const lazyWithRetry = (componentImport: () => Promise<any>) =>
+const lazyWithRetry = (componentImport: () => Promise<unknown>) =>
   React.lazy(async () => {
     try {
       return await componentImport();
@@ -41,7 +41,7 @@ const lazyWithRetry = (componentImport: () => Promise<any>) =>
         String(error).includes('Failed to fetch dynamically imported module') ||
         String(error).includes('Failed to load module script')
       ) {
-        console.warn('ChunkLoadError detected, reloading page to fetch new version...');
+        logger.warn('ChunkLoadError detected, reloading page to fetch new version...');
         window.location.reload();
       }
       throw error;
@@ -194,19 +194,19 @@ function MainApp() {
     setPumps,
     setNozzles,
     setCustomers,
-    setSuppliers,
-    setShifts,
+    _setSuppliers,
+    _setShifts,
     setBanks,
-    setDigitalAccounts,
-    setStockTxns,
+    _setDigitalAccounts,
+    _setStockTxns,
     setTanks,
-    setRateHistory,
-    setStaffFinance,
-    setAttendance,
-    setStandaloneExpenses,
-    handleAddStation,
-    handleEditStation,
-    handleDeleteStation,
+    _setRateHistory,
+    _setStaffFinance,
+    _setAttendance,
+    _setStandaloneExpenses,
+    _handleAddStation,
+    _handleEditStation,
+    _handleDeleteStation,
     handleSwitchStation,
     handleUpdateSettings,
     handleAddStaff,
@@ -246,10 +246,10 @@ function MainApp() {
     handleDeleteSupplierPayment,
     toast,
     confirmDialog,
-    showToast,
-    showConfirm,
-    showAlert,
-    closeConfirm
+    _showToast,
+    _showConfirm,
+    _showAlert,
+    _closeConfirm
   } = useStation();
 
   const { requireBiometric } = useNativeAuth();
@@ -292,7 +292,7 @@ function MainApp() {
   // This prevents stale views (e.g. 'lube_pos') appearing on the wrong business
   React.useEffect(() => {
     if (activeStationId) {
-       migrateAccountsPayable(authenticatedUser?.uid).catch(console.error);
+       migrateAccountsPayable(authenticatedUser?.uid).catch(logger.error);
     }
   }, [activeStationId, authenticatedUser]);
 
@@ -711,7 +711,7 @@ function MainApp() {
 
       case 'license_manager':
         if (!isSuperAdmin) {
-          console.warn('Unauthorized access attempt to license_manager');
+          logger.warn('Unauthorized access attempt to license_manager');
           setTimeout(() => setActiveView('dashboard'), 0);
           return null;
         }
@@ -726,7 +726,7 @@ function MainApp() {
             language={settings.language}
             settings={settings}
             onUpdateProductRate={handleUpdateProductRate}
-            onLogAudit={(category: string, action: string, details: unknown) => { /* handled internally or stub for standalone view */ }}
+            onLogAudit={(_category: string, _action: string, _details: unknown) => { /* handled internally or stub for standalone view */ }}
             onUpdateProducts={setProducts}
           />
         );
@@ -880,11 +880,11 @@ function MainApp() {
                   const settingsRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'settings', 'global');
                   await setDoc(settingsRef, newSettings, { merge: true });
                 } catch (err) {
-                  console.error("Failed to skip setup", err);
+                  logger.error("Failed to skip setup", err);
                 }
               }
             }}
-            onComplete={async (completedData: any) => {
+            onComplete={async (completedData: unknown) => {
               setSettings(completedData.settings);
               
               const injectStation = <T extends object>(arr: T[]): T[] => 
@@ -896,7 +896,7 @@ function MainApp() {
               setStaff(injectStation(completedData.staff));
 
               // Extract pumps that nozzles refer to and populate them automatically
-              const uniquePumpIds = Array.from(new Set(completedData.nozzles.map((n: any) => n.pumpId))) as string[];
+              const uniquePumpIds = Array.from(new Set(completedData.nozzles.map((n: unknown) => n.pumpId))) as string[];
               const generatedPumps: Pump[] = uniquePumpIds.map(pId => ({
                 id: pId,
                 name: `Dispenser ${pId.replace('pump_', '#')}`,
@@ -923,25 +923,25 @@ function MainApp() {
                 batch.set(settingsRef, { ...completedData.settings, ...scopedMeta }, { merge: true });
                 
                 // tanks
-                completedData.tanks.forEach((tk: any) => {
+                completedData.tanks.forEach((tk: unknown) => {
                   const tRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'tanks', tk.id);
                   batch.set(tRef, { ...tk, ...scopedMeta }, { merge: true });
                 });
                 
                 // nozzles
-                completedData.nozzles.forEach((nz: any) => {
+                completedData.nozzles.forEach((nz: unknown) => {
                   const nRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'nozzles', nz.id);
                   batch.set(nRef, { ...nz, ...scopedMeta }, { merge: true });
                 });
                 
                 // products
-                completedData.products.forEach((prod: any) => {
+                completedData.products.forEach((prod: unknown) => {
                   const pRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'products', prod.id);
                   batch.set(pRef, { ...prod, ...scopedMeta }, { merge: true });
                 });
                 
                 // staff
-                completedData.staff.forEach((st: any) => {
+                completedData.staff.forEach((st: unknown) => {
                   const sRef = doc(dbFS, 'organizations', orgId, 'stations', activeStationId, 'staff', st.id);
                   batch.set(sRef, { ...st, ...scopedMeta }, { merge: true });
                 });
@@ -959,7 +959,7 @@ function MainApp() {
                   return;
                 }
               } catch (err) {
-                console.error("Failed to commit onboarding setup", err);
+                logger.error("Failed to commit onboarding setup", err);
                 throw err;
               }
             }
@@ -976,7 +976,7 @@ function MainApp() {
         settings={settings}
         stations={stations}
         activeStationId={activeStationId}
-        // @ts-ignore
+        // @ts-expect-error
         onSwitchStation={handleSwitchStation}
         onCreateStation={() => handleViewChange('onboarding')}
         onMenuClick={() => {
@@ -1017,7 +1017,7 @@ function MainApp() {
         isSuperAdmin={isSuperAdmin}
         stations={stations}
         activeStationId={activeStationId}
-        // @ts-ignore
+        // @ts-expect-error
         onSwitchStation={handleSwitchStation}
         onCreateStation={() => handleViewChange('onboarding')}
         onLanguageToggle={() => {
@@ -1039,7 +1039,7 @@ function MainApp() {
         <GlobalSearchModal
           isOpen={searchOpen}
           onClose={() => setSearchOpen(false)}
-          onNavigate={(viewId, context) => {
+          onNavigate={(viewId, _context) => {
             setSearchOpen(false);
             handleViewChange(viewId);
           }}
@@ -1050,25 +1050,25 @@ function MainApp() {
           <React.Suspense fallback={<LoadingScreen />}>
             <TankConfigurationWizard 
               onCancel={() => setIsTankWizardOpen(false)}
-              onComplete={(data: any) => {
+              onComplete={(data: unknown) => {
                 const inventoryStore = useInventoryStore.getState();
                 
                 // Add new products
-                data.products.forEach((p: any) => {
+                data.products.forEach((p: unknown) => {
                   inventoryStore.handleAddProduct(p as Product);
                 });
                 
                 // Add new tanks
-                data.tanks.forEach((t: any) => {
+                data.tanks.forEach((t: unknown) => {
                   inventoryStore.handleAddTank(t as Tank);
                 });
                 
                 // Add new nozzles
-                data.nozzles.forEach((n: any) => {
+                data.nozzles.forEach((n: unknown) => {
                   inventoryStore.handleAddNozzle(n as Nozzle);
                 });
                 
-                useStationStore.getState().showToast('Configuration successfully added', 'success');
+                useStationStore.getState()._showToast('Configuration successfully added', 'success');
                 setIsTankWizardOpen(false);
               }}
               currentLanguage={settings.language || 'en'}
@@ -1346,7 +1346,7 @@ const SecureApp = ({ children }: { children: React.ReactNode }) => {
 };
 
 import { NativeFeedbackProvider } from './components/providers/NativeFeedbackProvider';
-import IdleScreenLock from './components/shared/IdleScreenLock';
+import { logger } from './lib/logger';
 
 export default function App() {
   const [dbReady, setDbReady] = useState(false);
@@ -1362,7 +1362,7 @@ export default function App() {
   });
 
   useEffect(() => {
-    initDatabase().then(() => setDbReady(true)).catch(console.error);
+    initDatabase().then(() => setDbReady(true)).catch(logger.error);
     mobileEngine.initialize();
   }, []);
 
@@ -1386,7 +1386,7 @@ export default function App() {
       )}
 
       {splashDone && languageSelected && !carouselDone && (
-         // @ts-ignore
+         // @ts-expect-error
          <React.Suspense fallback={<LoadingScreen message="Loading Welcome Experience..." />}>
            <WelcomeCarousel language={preferredLang} onComplete={handleCarouselComplete} />
          </React.Suspense>

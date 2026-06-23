@@ -61,7 +61,7 @@ export function DashboardLiquidAssetsGraph({ cashOnHand, banks, dueRecovery }: P
               cursor={{ fill: '#f8fafc' }}
               contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
               itemStyle={{ fontWeight: 'bold' }}
-              formatter={(value: any) => [`PKR ${value.toLocaleString()}`, 'Balance']}
+              formatter={(value: unknown) => [`PKR ${value.toLocaleString()}`, 'Balance']}
             />
             <Bar dataKey="value" radius={[6, 6, 0, 0]} animationDuration={1500}>
               {chartData.map((entry, index) => (

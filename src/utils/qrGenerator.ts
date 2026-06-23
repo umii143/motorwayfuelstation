@@ -1,4 +1,5 @@
 import QRCode from 'qrcode';
+import { logger } from '../lib/logger';
 
 export interface QRData {
   documentId?: string;
@@ -25,8 +26,7 @@ export const generateQRCode = async (payload: string): Promise<string> => {
       }
     });
   } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error('Failed to generate QR code', err);
+    logger.error('Failed to generate QR code', err);
     return '';
   }
 };

@@ -17,8 +17,7 @@ interface WidgetEngineStore {
   updateWidgetLayouts: (newLayouts: { i: string; x: number; y: number; w: number; h: number }[]) => void;
   removeWidget: (instanceId: string) => void;
   addWidget: (manifestId: string, x: number, y: number) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  updateWidgetSettings: (instanceId: string, settings: Record<string, any>) => void;
+  updateWidgetSettings: (instanceId: string, settings: Record<string, unknown>) => void;
 }
 
 export const useWidgetEngine = create<WidgetEngineStore>((set, get) => ({

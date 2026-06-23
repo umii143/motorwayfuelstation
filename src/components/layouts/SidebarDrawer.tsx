@@ -251,7 +251,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
                         {expanded && (
                           <div className="mt-1 ml-4 space-y-1 border-l border-slate-200 dark:border-white/10 pl-2">
                             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                            {item.children.map((child: any) => {
+                            {item.children.map((child: unknown) => {
                               if (isLubeBusiness && !child.showInLube) return null;
                               if (child.ownerOnly && !isSuperAdmin) return null;
                               const childActive = activeView === child.id;

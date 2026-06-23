@@ -22,6 +22,7 @@ import {
   writeBatch
 } from 'firebase/firestore';
 import {
+import { logger } from '../lib/logger';
   auth,
   dbFS,
   signInWithGoogle as googleSignIn,
@@ -78,25 +79,19 @@ export interface AuthContextType {
   checkingAuth: boolean;
   pendingVerification: boolean;
   hasPermission: (permission: string) => boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  loginWithEmail: (email: string, password: string) => Promise<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  loginWithGoogle: () => Promise<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  signUpUser: (email: string, password: string) => Promise<any>;
+  loginWithEmail: (email: string, password: string) => Promise<unknown>;
+  loginWithGoogle: () => Promise<unknown>;
+  signUpUser: (email: string, password: string) => Promise<unknown>;
   resendVerificationEmail: () => Promise<void>;
   checkEmailVerified: () => Promise<boolean>;
   logout: () => Promise<void>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  verifyTOTPChallenge: (code: string, tempToken: string) => Promise<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  registerVerify2FA: (code: string, tempToken: string) => Promise<any>;
+  verifyTOTPChallenge: (code: string, tempToken: string) => Promise<unknown>;
+  registerVerify2FA: (code: string, tempToken: string) => Promise<unknown>;
   sendPasswordReset: (email: string) => Promise<void>;
   confirmPasswordReset: (token: string, newPass: string) => Promise<void>;
   reauthenticateWithPassword: (password: string) => Promise<boolean>;
   requestOTP: (email: string) => Promise<void>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  verifyOTP: (email: string, otp: string) => Promise<any>;
+  verifyOTP: (email: string, otp: string) => Promise<unknown>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -276,8 +271,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             superAdminStatus = true;
           }
         } catch (e) {
-          // eslint-disable-next-line no-console
-          console.warn("Could not fetch superAdmin status", e);
+          logger.warn("Could not fetch superAdmin status", e);
         }
 
         setUser(profile);
@@ -295,8 +289,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 expiryDate: permanentExpiry.toISOString(),
               });
               orgProfile = { ...orgProfile, subscriptionStatus: 'active', subscriptionTier: 'enterprise', expiryDate: permanentExpiry.toISOString() };
-            // eslint-disable-next-line no-console
-            } catch (e) { console.warn('[Auth] Could not heal super admin org:', e); }
+            } catch (e) { logger.warn('[Auth] Could not heal super admin org:', e); }
           }
         }
         // ──────────────────────────────────────────────────────────────────
@@ -313,18 +306,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             if (!isNaN(expiry.getTime()) && expiry < now) {
               // Period has ended \u2014 immediately expire in Firebase
                
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               if (orgProfile.subscriptionStatus !== ('expired' as any) && orgProfile.subscriptionStatus !== ('canceled' as any)) {
                 try {
                   await updateDoc(doc(dbFS, 'organizations', orgProfile.orgId), {
                     subscriptionStatus: 'expired'
                   });
                   // Reflect locally too
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   orgProfile = { ...orgProfile, subscriptionStatus: 'expired' as any };
                 } catch (e) {
-                  // eslint-disable-next-line no-console
-                  console.warn('[Auth] Could not auto-expire org:', e);
+                  logger.warn('[Auth] Could not auto-expire org:', e);
                 }
               }
             }
@@ -336,11 +326,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setIsSuperAdmin(superAdminStatus);
         // eslint-disable-next-line react-hooks/immutability
         await syncSessionState(fbUser, profile.orgId);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (error: any) {
+      } catch (error: unknown) {
         if (!active) return;
-        // eslint-disable-next-line no-console
-        console.error('[Auth] Failed to load user profile:', error?.message);
+        logger.error('[Auth] Failed to load user profile:', error?.message);
         // Sign out cleanly on profile load failure
         setUser(null);
         setOrganization(null);
@@ -388,8 +376,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const sessionRef = doc(dbFS, 'sessions', sessionId);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let existingData: any = null;
+    let existingData: unknown = null;
     try {
       const snap = await withFirestoreRetry(() => getDoc(sessionRef));
       if (snap.exists()) existingData = snap.data();
@@ -535,10 +522,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (!response.ok) {
         throw new Error(data.error || "Failed to send OTP");
       }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      // eslint-disable-next-line no-console
-      console.error("requestOTP error:", err);
+    } catch (err: unknown) {
+      logger.error("requestOTP error:", err);
       throw new Error(err.message || "Failed to send OTP");
     }
   };
@@ -565,10 +550,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return { user: profile, token };
       }
       throw new Error("No token returned");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      // eslint-disable-next-line no-console
-      console.error("verifyOTP error:", err);
+    } catch (err: unknown) {
+      logger.error("verifyOTP error:", err);
       throw new Error(err.message || "Invalid OTP");
     }
   };
@@ -586,8 +569,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       await signOut(auth);
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Logout error:', err);
+      logger.error('Logout error:', err);
     } finally {
       localStorage.removeItem('fuelpro_auth_token');
       localStorage.removeItem('fuelpro_google_access_token');
@@ -622,10 +604,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const credential = EmailAuthProvider.credential(fbUser.email, password);
       await reauthenticateWithCredential(fbUser, credential);
       return true;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      // eslint-disable-next-line no-console
-      console.error("Reauthentication failed:", err);
+    } catch (err: unknown) {
+      logger.error("Reauthentication failed:", err);
       throw new Error('Incorrect password');
     }
   };

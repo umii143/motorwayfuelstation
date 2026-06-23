@@ -15,8 +15,7 @@ export default function SyncCenter({ settings }: { settings: GlobalSettings }) {
     queue: [] as MutationQueueItem[]
    
   });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [driftLogs, setDriftLogs] = useState<any[]>([]);
+  const [driftLogs, setDriftLogs] = useState<unknown[]>([]);
 
    
   useEffect(() => {
@@ -28,8 +27,7 @@ export default function SyncCenter({ settings }: { settings: GlobalSettings }) {
   }, []);
 
   const loadDriftLogs = async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const logs = await localforage.getItem<any[]>('fuelpro_integrity_drift_logs') || [];
+    const logs = await localforage.getItem<unknown[]>('fuelpro_integrity_drift_logs') || [];
     setDriftLogs(logs);
   };
 

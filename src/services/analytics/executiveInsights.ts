@@ -16,8 +16,7 @@ export interface HealthScoreResult {
   }[];
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const generateHealthScore = (kpis: KPIResult, suppliers: any[] = []): HealthScoreResult => {
+export const generateHealthScore = (kpis: KPIResult, suppliers: unknown[] = []): HealthScoreResult => {
   // Factors calculation out of 100
   
   // 1. Sales Trend (Weight: 20%)

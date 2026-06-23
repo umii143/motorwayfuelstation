@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
-export function BIInvestmentChart({ shifts = [], batches = [], expenses = [], filter }: any) {
+export function BIInvestmentChart({ shifts = [], batches = [], expenses = [], filter }: unknown) {
   
   const chartData = useMemo(() => {
     // Basic daily aggregation
@@ -17,10 +17,8 @@ export function BIInvestmentChart({ shifts = [], batches = [], expenses = [], fi
     // In a real app we'd map every single day. Here we just take existing dates
     const allDates = new Set<string>();
     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    batches.forEach((b: any) => allDates.add(b.date));
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    shifts.forEach((s: any) => allDates.add(s.date));
+    batches.forEach((b: unknown) => allDates.add(b.date));
+    shifts.forEach((s: unknown) => allDates.add(s.date));
     
     const sortedDates = Array.from(allDates).sort();
     
@@ -32,20 +30,16 @@ export function BIInvestmentChart({ shifts = [], batches = [], expenses = [], fi
       let dailyInvested = 0;
       let dailyRevenue = 0;
       
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      batches.filter((b:any) => b.date === date).forEach((b:any) => {
+      batches.filter((b: unknown) => b.date === date).forEach((b: unknown) => {
         dailyInvested += (b.quantityReceived || 0) * (b.purchasePrice || 0) + (b.carriageExpense || 0);
       });
       
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expenses.filter((e:any) => e.date === date).forEach((e:any) => {
+      expenses.filter((e: unknown) => e.date === date).forEach((e: unknown) => {
         dailyInvested += e.amount || 0;
       });
       
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      shifts.filter((s:any) => s.date === date).forEach((s:any) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (s.nozzleData || []).forEach((n:any) => {
+      shifts.filter((s: unknown) => s.date === date).forEach((s: unknown) => {
+        (s.nozzleData || []).forEach((n: unknown) => {
           const liters = n.closingReading - n.openingReading - (n.testLiters || 0);
           dailyRevenue += liters * n.rate;
         });
@@ -64,7 +58,7 @@ export function BIInvestmentChart({ shifts = [], batches = [], expenses = [], fi
     });
   }, [shifts, batches, expenses]);
 
-  const formatCurrency = (val: any) => {
+  const formatCurrency = (val: unknown) => {
     if (val >= 10000000) return `Rs. ${(val / 10000000).toFixed(2)} Cr`;
     if (val >= 100000) return `Rs. ${(val / 100000).toFixed(2)} L`;
     return `Rs. ${val.toLocaleString()}`;
@@ -94,7 +88,7 @@ export function BIInvestmentChart({ shifts = [], batches = [], expenses = [], fi
             <XAxis dataKey="date" tick={{fontSize: 10, fill: '#64748b'}} tickLine={false} axisLine={false} />
             <YAxis tickFormatter={formatCurrency} tick={{fontSize: 10, fill: '#64748b'}} tickLine={false} axisLine={false} />
             <Tooltip 
-              formatter={(value: any) => new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', minimumFractionDigits: 0 }).format(value)}
+              formatter={(value: unknown) => new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', minimumFractionDigits: 0 }).format(value)}
               contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}
             />
             <Area type="monotone" dataKey="Revenue" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />

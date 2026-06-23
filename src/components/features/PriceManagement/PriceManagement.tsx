@@ -12,8 +12,7 @@ interface PriceManagementProps {
   language: string;
   settings: GlobalSettings;
    
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onUpdateProductRate: (productId: string, newRate: number, reason?: string, changedBy?: string, dateStr?: string, orgId?: string, stationId?: string, checkPerm?: any, attachments?: any[]) => void;
+  onUpdateProductRate: (productId: string, newRate: number, reason?: string, changedBy?: string, dateStr?: string, orgId?: string, stationId?: string, checkPerm?: unknown, attachments?: unknown[]) => void;
   onLogAudit: (category: string, action: string, details: string) => void;
   onUpdateProducts?: (products: Product[]) => void;
 }

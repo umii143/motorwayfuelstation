@@ -82,7 +82,6 @@ export async function reverseTransaction(
   // Create the reversal: swap DR → CR and CR → DR
   const reversalPair = await createDoubleEntry(
     {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       account: originalCr.description.split(' | ')[1] as any,  // Swap: original CR becomes DR
       partyId: originalCr.partyId,
       partyType: originalCr.partyType,
@@ -91,7 +90,6 @@ export async function reverseTransaction(
       type: 'debit',
     },
     {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       account: originalDr.description.split(' | ')[1] as any,  // Swap: original DR becomes CR
       partyId: originalDr.partyId,
       partyType: originalDr.partyType,

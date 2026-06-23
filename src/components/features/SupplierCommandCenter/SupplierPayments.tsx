@@ -6,6 +6,7 @@ import { useTreasuryStore } from '../../../stores/useTreasuryStore';
 import { useSupplierStore } from '../../../stores/useSupplierStore';
 import { useStation } from '../../../contexts/StationContext';
 import { t as translate } from '../../../lib/translations';
+import { logger } from '../../../lib/logger';
 
 interface SupplierPaymentsProps {
   suppliers: Supplier[];
@@ -104,7 +105,6 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
         id: `trx_sup_${Date.now()}`,
         date: new Date(date).toISOString(),
         sourceAccountId: accountId,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         sourceAccountType: paymentMode === 'cash' ? 'shift_cash' : paymentMode as any, // fallback type
         destinationAccountId: selectedSupplier.id,
         destinationAccountType: 'digital', // representation
@@ -119,10 +119,8 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
 
       showToast(t('Payment recorded successfully.', 'ادائیگی کامیابی سے درج ہو گئی۔'), 'success');
       onClose();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      // eslint-disable-next-line no-console
-      console.error(err);
+    } catch (err: unknown) {
+      logger.error(err);
       showToast('Failed to record payment.', 'error');
     }
   };
@@ -168,7 +166,6 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
             <select
               value={paymentMode}
               onChange={(e) => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 setPaymentMode(e.target.value as any);
                 setAccountId('');
               }}

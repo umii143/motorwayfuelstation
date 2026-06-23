@@ -188,17 +188,13 @@ export const EnterpriseDashboard: React.FC<EnterpriseDashboardProps> = ({ onNavi
   const [fuelData, setFuelData] = useState<{
      
      
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    shifts: any[]; products: any[]; customers: any[]; tanks: any[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expenses: any[]; nozzles: any[]; rateHistory: any[];
+    shifts: unknown[]; products: unknown[]; customers: unknown[]; tanks: unknown[];
+    expenses: unknown[]; nozzles: unknown[]; rateHistory: unknown[];
   }>({ shifts: [], products: [], customers: [], tanks: [], expenses: [], nozzles: [], rateHistory: [] });
 
   const [lubeData, setLubeData] = useState<{
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    products: any[]; customers: any[]; lubePosSales: any[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expenses: any[];
+    products: unknown[]; customers: unknown[]; lubePosSales: unknown[];
+    expenses: unknown[];
   }>({ products: [], customers: [], lubePosSales: [], expenses: [] });
 
   const suppliers = useSupplierStore(state => state.suppliers);
@@ -293,16 +289,13 @@ export const EnterpriseDashboard: React.FC<EnterpriseDashboardProps> = ({ onNavi
         .filter(s => s.date === dateStr)
         .reduce((sum, sh) => {
           let r = 0;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          sh.segments?.forEach((seg: any) => { r += seg.revenue; });
+          sh.segments?.forEach((seg: unknown) => { r += seg.revenue; });
           if (!sh.segments || sh.segments.length === 0) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            fuelData.nozzles.forEach((nz: any) => {
+            fuelData.nozzles.forEach((nz: unknown) => {
               const open = sh.openingReadings?.[nz.id] || 0;
               const close = sh.closingReadings?.[nz.id] || 0;
               const diff = Math.max(0, close - open);
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const prod = fuelData.products.find((p: any) => p.id === nz.productId);
+              const prod = fuelData.products.find((p: unknown) => p.id === nz.productId);
               r += diff * (prod?.rate || 0);
             });
           }
@@ -333,23 +326,17 @@ export const EnterpriseDashboard: React.FC<EnterpriseDashboardProps> = ({ onNavi
   
 
     // Low stock in fuel products
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fuelData.products.filter((p: any) => p.currentStock <= p.minStock && p.currentStock > 0)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .forEach((p: any) => list.push({ id: `fuel_low_${p.id}`, type: 'warn', message: `Low fuel stock: ${p.name} (${p.currentStock}L)` }));
+    fuelData.products.filter((p: unknown) => p.currentStock <= p.minStock && p.currentStock > 0)
+      .forEach((p: unknown) => list.push({ id: `fuel_low_${p.id}`, type: 'warn', message: `Low fuel stock: ${p.name} (${p.currentStock}L)` }));
 
     // High udhar customers
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fuelData.customers.filter((c: any) => c.balance > (c.creditLimit || 50000))
+    fuelData.customers.filter((c: unknown) => c.balance > (c.creditLimit || 50000))
       .slice(0, 2)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .forEach((c: any) => list.push({ id: `credit_${c.id}`, type: 'danger', message: `Credit limit exceeded: ${c.name} (PKR ${c.balance?.toLocaleString()})` }));
+      .forEach((c: unknown) => list.push({ id: `credit_${c.id}`, type: 'danger', message: `Credit limit exceeded: ${c.name} (PKR ${c.balance?.toLocaleString()})` }));
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    lubeData.customers.filter((c: any) => c.balance > (c.creditLimit || 50000))
+    lubeData.customers.filter((c: unknown) => c.balance > (c.creditLimit || 50000))
       .slice(0, 2)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .forEach((c: any) => list.push({ id: `lube_credit_${c.id}`, type: 'danger', message: `[Lube] Credit limit exceeded: ${c.name}` }));
+      .forEach((c: unknown) => list.push({ id: `lube_credit_${c.id}`, type: 'danger', message: `[Lube] Credit limit exceeded: ${c.name}` }));
 
     if (list.length === 0) list.push({ id: 'all_ok', type: 'ok', message: 'All systems healthy — no alerts!' });
 
@@ -499,7 +486,7 @@ export const EnterpriseDashboard: React.FC<EnterpriseDashboardProps> = ({ onNavi
                       tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}K` : String(v)} />
                     <Tooltip
                       contentStyle={{ backgroundColor: '#1e293b', color: '#f8fafc', borderRadius: '12px', border: 'none', fontSize: '12px', fontWeight: 'bold' }}
-                      formatter={(val: any, name: any) => [`PKR ${val.toLocaleString()}`, name === 'fuel' ? 'Fuel Station' : 'Lube Business']}
+                      formatter={(val: unknown, name: unknown) => [`PKR ${val.toLocaleString()}`, name === 'fuel' ? 'Fuel Station' : 'Lube Business']}
                     />
                     <Area type="monotone" dataKey="fuel" stroke="#F97316" strokeWidth={2.5} fill="url(#fuelGrad)" name="fuel" />
                     <Area type="monotone" dataKey="lube" stroke="#3B82F6" strokeWidth={2.5} fill="url(#lubeGrad)" name="lube" />
@@ -542,7 +529,7 @@ export const EnterpriseDashboard: React.FC<EnterpriseDashboardProps> = ({ onNavi
                         ))}
                       </Pie>
                       <Tooltip
-                        formatter={(val: any) => [`PKR ${val.toLocaleString()}`, '']}
+                        formatter={(val: unknown) => [`PKR ${val.toLocaleString()}`, '']}
                         contentStyle={{ backgroundColor: '#1e293b', color: '#f8fafc', borderRadius: '10px', border: 'none', fontSize: '12px' }}
                       />
                     </PieChart>

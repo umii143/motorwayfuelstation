@@ -102,7 +102,6 @@ export default function FleetHub({ settings }: FleetHubProps) {
             <button
               key={tab.id}
                
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick={() => setActiveTab(tab.id as any)}
               className={`fp-date-tab flex items-center gap-1.5 ${isActive ? 'fp-date-tab--active' : ''}`}
             >

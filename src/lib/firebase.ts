@@ -70,10 +70,8 @@ export async function signInWithGoogle(): Promise<{ user: User, token: string }>
       const token = credential?.accessToken || "";
       return { user: result.user, token };
     }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    // eslint-disable-next-line no-console
-    console.error("[Google Auth] Error during sign in:", error);
+  } catch (error: unknown) {
+    logger.error("[Google Auth] Error during sign in:", error);
     throw error;
   }
 }
@@ -87,16 +85,14 @@ export async function withFirestoreRetry<T>(
   maxRetries = 3,
   delayMs = 800
 ): Promise<T> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let lastError: any;
+  let lastError: unknown;
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       if (attempt > 0) {
         await new Promise(resolve => setTimeout(resolve, delayMs * attempt));
       }
       return await operation();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
+    } catch (err: unknown) {
       lastError = err;
       const isRetryable =
         err?.message?.includes('client is offline') ||
@@ -107,8 +103,7 @@ export async function withFirestoreRetry<T>(
       if (!isRetryable || attempt === maxRetries - 1) {
         throw err;
       }
-      // eslint-disable-next-line no-console
-      console.warn(`[Firestore] Offline retry ${attempt + 1}/${maxRetries}…`);
+      logger.warn(`[Firestore] Offline retry ${attempt + 1}/${maxRetries}…`);
     }
   }
   throw lastError;
@@ -133,6 +128,7 @@ export const sendEmailOTP = httpsCallable<{ email: string }, { success: boolean 
 export const verifyEmailOTP = httpsCallable<{ email: string, otp: string }, { success: boolean, token: string }>(functions, 'verifyEmailOTP');
 
 import { getStorage } from 'firebase/storage';
+import { logger } from '../lib/logger';
 const storage = getStorage(app);
 
 export { auth, app, dbFS, functions, storage };

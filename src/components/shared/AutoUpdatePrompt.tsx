@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Download, CheckCircle2 } from 'lucide-react';
 import { checkForUpdates, downloadAndInstallUpdate, ReleaseInfo } from '../../services/updater/GitHubUpdater';
 import { haptic } from '../../utils/haptics';
+import { logger } from '../../lib/logger';
 
 export function AutoUpdatePrompt() {
   const [updateInfo, setUpdateInfo] = useState<ReleaseInfo | null>(null);
@@ -17,8 +18,7 @@ export function AutoUpdatePrompt() {
         setUpdateInfo(info);
         setIsVisible(true);
         // Haptic feedback for importance
-        // eslint-disable-next-line no-console
-        try { await haptic.heavy(); } catch (e) { console.error(e); }
+        try { await haptic.heavy(); } catch (e) { logger.error(e); }
       }
     }, 3000); // Wait 3 seconds to avoid blocking initial render
 

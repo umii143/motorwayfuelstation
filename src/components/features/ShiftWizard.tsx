@@ -64,6 +64,7 @@ import AIDocumentScanner from "../ui/AIDocumentScanner";
 import { deductFIFO, FIFOResult } from "../../services/fifoEngine";
 import { useInventoryStore } from "../../stores/useInventoryStore";
 import {
+import { logger } from '../../lib/logger';
   processCreditSale, processRecovery, processExpense,
   processBankDeposit, processDigitalPayment, processSupplierPayment, processReversal, processShiftClose as eocShiftClose,
 } from "../../services/core/operationalCore";
@@ -194,8 +195,7 @@ export default function ShiftWizard({
   const [isOpeningScannerOpen, setIsOpeningScannerOpen] = useState(false);
   const [isClosingScannerOpen, setIsClosingScannerOpen] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleOpeningAutoFill = (data: any) => {
+  const handleOpeningAutoFill = (data: unknown) => {
     const newOpenings = { ...openingReadings };
     for (const noz of nozzles) {
       const match = data[noz.name] || data[`Nozzle ${noz.name}`] || data[noz.name.replace(/ /g, '')];
@@ -211,8 +211,7 @@ export default function ShiftWizard({
     }, 1500);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleClosingAutoFill = (data: any) => {
+  const handleClosingAutoFill = (data: unknown) => {
     const newClosings = { ...closingReadings };
     for (const noz of nozzles) {
       const match = data[noz.name] || data[`Nozzle ${noz.name}`] || data[noz.name.replace(/ /g, '')];
@@ -848,8 +847,7 @@ export default function ShiftWizard({
         note: debNote,
       },
       activeShift.date
-    // eslint-disable-next-line no-console
-    ).catch((err: Error) => console.warn('[EOC] Credit sale pipeline:', err.message));
+    ).catch((err: Error) => logger.warn('[EOC] Credit sale pipeline:', err.message));
 
     // Reset inputs
     setDebQty("");
@@ -876,8 +874,7 @@ export default function ShiftWizard({
         processReversal(
           id, t("User reversed credit sale entry", "صارف نے کریڈٹ سیل اندراج پلٹایا"),
           activeShift.id, activeStationId, activeStationId, activeShift.date
-        // eslint-disable-next-line no-console
-        ).catch((err: Error) => console.warn('[EOC] Reversal pipeline:', err.message));
+        ).catch((err: Error) => logger.warn('[EOC] Reversal pipeline:', err.message));
       }
     );
   };
@@ -920,8 +917,7 @@ export default function ShiftWizard({
         amount, mode: recMode, reference: recRef,
       },
       activeShift.date
-    // eslint-disable-next-line no-console
-    ).catch((err: Error) => console.warn('[EOC] Recovery pipeline:', err.message));
+    ).catch((err: Error) => logger.warn('[EOC] Recovery pipeline:', err.message));
 
     // Reset inputs
      
@@ -938,8 +934,7 @@ export default function ShiftWizard({
         const updated = { ...activeShift, recoveryEntries: activeShift.recoveryEntries.filter((r) => r.id !== id) };
         onUpdateShift(updated);
         processReversal(id, t("User reversed recovery entry", "صارف نے ریکوری اندراج پلٹایا"), activeShift.id, activeStationId, activeStationId, activeShift.date)
-          // eslint-disable-next-line no-console
-          .catch((err: Error) => console.warn('[EOC] Recovery reversal:', err.message));
+          .catch((err: Error) => logger.warn('[EOC] Recovery reversal:', err.message));
       }
     );
   };
@@ -983,8 +978,7 @@ export default function ShiftWizard({
       activeShift.id, activeStationId, activeStationId,
       { bankAccountId: bankAcctId, bankName: bankAccount?.name ?? bankAcctId, amount, reference: bankRef },
       activeShift.date
-    // eslint-disable-next-line no-console
-    ).catch((err: Error) => console.warn('[EOC] Bank deposit pipeline:', err.message));
+    ).catch((err: Error) => logger.warn('[EOC] Bank deposit pipeline:', err.message));
 
     // Reset inputs
     setBankAmount("");
@@ -1031,8 +1025,7 @@ export default function ShiftWizard({
       activeShift.id, activeStationId, activeStationId,
       { method: methodKey === 'jazzcash' ? 'jazzcash' : methodKey === 'pos' ? 'pos' : 'easypaisa', amount, transactionId: digRefId, accountHolder: digAccountHolder },
       activeShift.date
-    // eslint-disable-next-line no-console
-    ).catch((err: Error) => console.warn('[EOC] Digital payment pipeline:', err.message));
+    ).catch((err: Error) => logger.warn('[EOC] Digital payment pipeline:', err.message));
 
     // Reset inputs
     setDigAmount("");
@@ -1159,8 +1152,7 @@ export default function ShiftWizard({
         );
       }
      
-    // eslint-disable-next-line no-console
-    }).catch((err: Error) => console.warn('[EOC] Supplier payment pipeline:', err.message));
+    }).catch((err: Error) => logger.warn('[EOC] Supplier payment pipeline:', err.message));
 
     // Reset inputs
     setSupAmount("");
@@ -1177,8 +1169,7 @@ export default function ShiftWizard({
         const updated = { ...activeShift, supplierPayments: activeShift.supplierPayments.filter((s) => s.id !== id) };
         onUpdateShift(updated);
         processReversal(id, t("User reversed supplier payment", "صارف نے سپلائر ادائیگی پلٹائی"), activeShift.id, activeStationId, activeStationId, activeShift.date)
-          // eslint-disable-next-line no-console
-          .catch((err: Error) => console.warn('[EOC] Supplier reversal:', err.message));
+          .catch((err: Error) => logger.warn('[EOC] Supplier reversal:', err.message));
       }
     );
   };
@@ -1235,8 +1226,7 @@ export default function ShiftWizard({
         setActiveTab("debit");
       }
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error(err);
+      logger.error(err);
       showToast("Error saving snapshot", "error");
     }
   };
@@ -1522,10 +1512,8 @@ export default function ShiftWizard({
         );
         return;
       }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (fifoErr: any) {
-      // eslint-disable-next-line no-console
-      console.warn('[FIFO] Deduction error (non-blocking):', fifoErr.message);
+    } catch (fifoErr: unknown) {
+      logger.warn('[FIFO] Deduction error (non-blocking):', fifoErr.message);
       // Non-blocking — log but proceed (owner decision)
     } finally {
        
@@ -1554,13 +1542,11 @@ export default function ShiftWizard({
         .then(({ reconciliationReport, riskScore }) => {
           const scoreLabel = reconciliationReport.integrityScore >= 90 ? '🟢' :
             reconciliationReport.integrityScore >= 70 ? '🟡' : '🔴';
-          // eslint-disable-next-line no-console
           console.info(
             `[EOC] Shift closed. Integrity: ${scoreLabel} ${reconciliationReport.integrityScore}/100. Risk: ${riskScore.overallRisk.toUpperCase()}`
           );
         })
-        // eslint-disable-next-line no-console
-        .catch((err: Error) => console.warn('[EOC] Shift close pipeline:', err.message));
+        .catch((err: Error) => logger.warn('[EOC] Shift close pipeline:', err.message));
 
       onNavigateToView("dashboard");
       const totalFifoMargin = fifoResultsArr.reduce((s, r) => s + r.result.totalMargin, 0);
@@ -1571,10 +1557,8 @@ export default function ShiftWizard({
         ),
         "success"
       );
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      // eslint-disable-next-line no-console
-      console.error("Error during shift close:", err);
+    } catch (err: unknown) {
+      logger.error("Error during shift close:", err);
       showToast(
         err.message || t("Failed to close shift. Please check tank stocks and try again.", "شفٹ بند کرنے میں خرابی۔ براہ کرم ٹینک کا اسٹاک چیک کریں۔"),
         "error"
@@ -1631,8 +1615,7 @@ export default function ShiftWizard({
       const data = await response.json();
       setAiSummary(data.reply);
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
+      logger.error(error);
       setAiSummary("⚠️ Could not generate AI summary at this time.");
     } finally {
       setIsGeneratingAiSummary(false);
@@ -2226,7 +2209,6 @@ export default function ShiftWizard({
               ].map((tab) => (
                 <button
                   key={tab.id}
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`flex-shrink-0 px-2.5 py-1.5 text-[11px] font-sans font-bold rounded-md transition-all cursor-pointer whitespace-nowrap ${
                     activeTab === tab.id
@@ -2366,7 +2348,6 @@ export default function ShiftWizard({
                           <button
                             key={m}
                             type="button"
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             onClick={() => setRecMode(m as any)}
                             className={`py-1.5 rounded-md border font-sans text-[10px] font-bold transition-all cursor-pointer ${
                               recMode === m
@@ -3019,7 +3000,6 @@ export default function ShiftWizard({
                           <button
                             key={m}
                             type="button"
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             onClick={() => setSupMode(m as any)}
                             className={`flex-1 py-1.5 rounded-md border font-sans text-[10px] font-bold transition-all cursor-pointer ${
                               supMode === m

@@ -4,6 +4,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useStation } from '../../../contexts/StationContext';
 import { db } from '../../../data/db';
 import { GlobalSettings } from '../../../types';
+import { logger } from '../../../lib/logger';
 
 export default function FactoryReset({ settings, activeStationId }: { settings: GlobalSettings, activeStationId: string }) {
   const { user } = useAuth();
@@ -99,8 +100,7 @@ export default function FactoryReset({ settings, activeStationId }: { settings: 
           await firestoreDb.wipeStationData(user.orgId, activeStationId);
           showToast(t('Cloud Data Wiped Successfully.', 'کلاؤڈ ڈیٹا کامیابی سے حذف ہو گیا۔'), 'success');
         } catch (backendErr) {
-          // eslint-disable-next-line no-console
-          console.error("Firestore wipe failed:", backendErr);
+          logger.error("Firestore wipe failed:", backendErr);
           showToast(t('Cloud wipe failed, proceeding with local wipe...', 'کلاؤڈ ڈیٹا حذف کرنے میں ناکامی، لوکل صفائی جاری ہے...'), 'error');
         }
       }
@@ -115,8 +115,7 @@ export default function FactoryReset({ settings, activeStationId }: { settings: 
       }, 2000);
 
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error(err);
+      logger.error(err);
       showToast(t('Failed to perform reset.', 'ری سیٹ کرنے میں ناکامی۔'), 'error');
       setIsWiping(false);
       setStep(1);

@@ -5,6 +5,7 @@ import { useFinancialStore } from '../../../stores/useFinancialStore';
 import { useAuthStore } from '../../../stores/useAuthStore';
 import { useShallow } from 'zustand/react/shallow';
 import { UserMinus, AlertCircle, CheckCircle } from 'lucide-react';
+import { logger } from '../../../lib/logger';
 
 export default function OwnerDrawingsForm() {
    
@@ -105,7 +106,6 @@ export default function OwnerDrawingsForm() {
            
           amount: val,
           sourceAccountId: sourceId,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           sourceAccountType: srcAcc.type as any,
           description,
           withdrawnBy: user?.name || 'Owner',
@@ -119,16 +119,13 @@ export default function OwnerDrawingsForm() {
           date: new Date().toISOString(),
            
           sourceAccountId: sourceId,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           sourceAccountType: srcAcc.type as any,
           amount: val,
            
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           type: 'withdrawal' as any,
           description: `Owner Drawing: ${description}`,
           performedBy: user?.name || 'Owner',
           referenceId: drawingId,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           status: 'completed' as any,
           createdAt: Date.now(),
           updatedAt: Date.now(),
@@ -140,9 +137,7 @@ export default function OwnerDrawingsForm() {
         const currentDrawings = db.getOwnerDrawings(stationId || '');
         const currentTxns = db.getTreasuryTransactions(stationId || '');
         
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const newDrawings = [...currentDrawings, drawing as any];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const newTxns = [...currentTxns, txn as any];
         
         db.saveOwnerDrawings(stationId || '', newDrawings);
@@ -159,10 +154,8 @@ export default function OwnerDrawingsForm() {
       setStatus({ type: 'success', message: 'Owner drawing recorded successfully.' });
       setAmount('');
       setDescription('');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      // eslint-disable-next-line no-console
-      console.error(err);
+    } catch (err: unknown) {
+      logger.error(err);
       setStatus({ type: 'error', message: err.message || 'An error occurred while recording the drawing.' });
     }
   };

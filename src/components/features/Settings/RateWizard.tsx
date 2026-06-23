@@ -24,10 +24,8 @@ interface RateWizardProps {
     stationId?: string,
      
      
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    checkPerm?: any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    attachments?: any[]
+    checkPerm?: unknown,
+    attachments?: unknown[]
   ) => void;
   onLogAudit: (category: string, action: string, details: string) => void;
   onUpdateProducts?: (products: Product[]) => void;
@@ -58,8 +56,7 @@ export default function RateWizard({
   
   const activeShifts = useShiftStore(state => state.shifts).filter(s => s.status === 'active');
    
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [rateUpdateQueue, setRateUpdateQueue] = useState<{productId: string, newRate: number, reason: string, author: string, dateStr?: string, attachments?: any[]}[]>([]);
+  const [rateUpdateQueue, setRateUpdateQueue] = useState<{productId: string, newRate: number, reason: string, author: string, dateStr?: string, attachments?: unknown[]}[]>([]);
   const [modalProduct, setModalProduct] = useState<Product | null>(null);
   const [simulatingProduct, setSimulatingProduct] = useState<{ product: Product, newRate: number, dateStr?: string } | null>(null);
 
@@ -131,8 +128,7 @@ export default function RateWizard({
     setSimulatingProduct({ product: prod, newRate: rateVal, dateStr: targetDate || new Date().toISOString() });
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleSimulatorConfirm = (reason: string, attachments: any[]) => {
+  const handleSimulatorConfirm = (reason: string, attachments: unknown[]) => {
     if (!simulatingProduct) return;
     setRateUpdateQueue(prev => [...prev, { 
       productId: simulatingProduct.product.id, 

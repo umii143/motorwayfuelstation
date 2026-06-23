@@ -5,6 +5,7 @@ import { useFinancialStore } from '../../../stores/useFinancialStore';
 import { useAuthStore } from '../../../stores/useAuthStore';
 import { useShallow } from 'zustand/react/shallow';
 import { ArrowRightLeft, AlertCircle, CheckCircle } from 'lucide-react';
+import { logger } from '../../../lib/logger';
 
 export default function FundTransferForm() {
   const { cashAccounts, recordTransaction, handleUpdateCashAccount } = useTreasuryStore(useShallow(state => ({
@@ -113,11 +114,9 @@ export default function FundTransferForm() {
         date: new Date().toISOString(),
         sourceAccountId: sourceId,
          
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         sourceAccountType: srcAcc.type as any,
          
         destinationAccountId: destId,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         destinationAccountType: destAcc.type as any,
         amount: val,
         type: 'transfer',
@@ -131,10 +130,8 @@ export default function FundTransferForm() {
       setAmount('');
        
       setDescription('');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      // eslint-disable-next-line no-console
-      console.error(err);
+    } catch (err: unknown) {
+      logger.error(err);
       setStatus({ type: 'error', message: err.message || 'An error occurred during transfer.' });
     }
   };

@@ -17,10 +17,10 @@ import {
 } from '../lib/businessScope';
 // Lazy import SyncEngine to avoid circular dependency issues at boot
 import { SyncEngine } from '../services/core/SyncEngine';
+import { logger } from '../lib/logger';
 
  
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const removeUndefined = (obj: any): any => {
+const removeUndefined = (obj: unknown): unknown => {
   if (Array.isArray(obj)) return obj.map(removeUndefined);
   if (obj === null || typeof obj !== 'object') return obj;
   return Object.fromEntries(
@@ -65,8 +65,7 @@ export const firestoreDb = {
     businessType: 'fuel_station' | 'cng' | 'lube',
     collectionName: string, 
     docId: string, 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: any
+    data: unknown
   ) => {
     const enforcedBusinessType = getBusinessTypeForStation(stationId);
     const docRef = getDocumentRef(orgId, stationId, collectionName, docId);
@@ -94,8 +93,7 @@ export const firestoreDb = {
     businessType: 'fuel_station' | 'cng' | 'lube',
     collectionName: string, 
     docId: string, 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: any
+    data: unknown
   ) => {
     try {
       if (!SyncEngine.getQueueStatus().isOnline) {
@@ -104,10 +102,8 @@ export const firestoreDb = {
       await firestoreDb._rawSaveDocument(orgId, stationId, businessType, collectionName, docId, data);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.log(`[Offline Sync] Queueing save for ${collectionName}/${docId}`);
+      logger.info(`[Offline Sync] Queueing save for ${collectionName}/${docId}`);
       await SyncEngine.enqueue({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         entityType: collectionName as any,
         operation: 'update',
         payload: data,
@@ -137,10 +133,8 @@ export const firestoreDb = {
       await firestoreDb._rawDeleteDocument(orgId, stationId, collectionName, docId);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.log(`[Offline Sync] Queueing delete for ${collectionName}/${docId}`);
+      logger.info(`[Offline Sync] Queueing delete for ${collectionName}/${docId}`);
       await SyncEngine.enqueue({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         entityType: collectionName as any,
         operation: 'delete',
         payload: null,
@@ -148,7 +142,6 @@ export const firestoreDb = {
         priority: 'high',
         orgId,
         stationId,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         businessType: getBusinessTypeForStation(stationId) as any,
         collectionName,
         docId
@@ -164,13 +157,10 @@ export const firestoreDb = {
       const snapshot = await getDocs(q);
       return snapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() }))
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .filter((item) => isRecordInBusinessScope(item as any, stationId, orgId))
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((item) => withBusinessScope(item as any, stationId, orgId)) as unknown as T[];
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error(`Error fetching collection ${collectionName}:`, err);
+      logger.error(`Error fetching collection ${collectionName}:`, err);
       return [];
     }
   },
@@ -186,14 +176,11 @@ export const firestoreDb = {
     return onSnapshot(colRef, (snapshot) => {
       const items = snapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() }))
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .filter((item) => isRecordInBusinessScope(item as any, stationId, orgId))
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((item) => withBusinessScope(item as any, stationId, orgId)) as unknown as T[];
       callback(items);
     }, (error) => {
-      // eslint-disable-next-line no-console
-      console.error(`Real-time subscription error in ${collectionName}:`, error);
+      logger.error(`Real-time subscription error in ${collectionName}:`, error);
     });
   },
 
@@ -203,8 +190,7 @@ export const firestoreDb = {
     stationId: string, 
     businessType: 'fuel_station' | 'cng' | 'lube',
     collectionName: string, 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    items: any[]
+    items: unknown[]
   ) => {
     try {
       const enforcedBusinessType = getBusinessTypeForStation(stationId);
@@ -232,8 +218,7 @@ export const firestoreDb = {
       };
       await setDoc(doc(dbFS, 'auditLogs', auditLog.id), auditLog);
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error(`Error executing batch save in ${collectionName}:`, err);
+      logger.error(`Error executing batch save in ${collectionName}:`, err);
       // Not queueing batch migrations for now, as they are typically run when strictly online
       throw err;
     }
@@ -285,11 +270,9 @@ export const firestoreDb = {
 
         await Promise.all(batches);
       }
-      // eslint-disable-next-line no-console
-      console.log(`[Factory Reset] Successfully wiped all collections for station: ${stationId}`);
+      logger.info(`[Factory Reset] Successfully wiped all collections for station: ${stationId}`);
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('[Factory Reset] Error wiping Firestore data:', err);
+      logger.error('[Factory Reset] Error wiping Firestore data:', err);
       throw err;
     }
   }

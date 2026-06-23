@@ -1,4 +1,5 @@
 // Web Worker for Deterministic Forecasting
+import { logger } from '../lib/logger';
 // Phase 3B: Advanced Seasonality & Event Engine
 
 export interface ForecastInput {
@@ -20,8 +21,7 @@ export interface ForecastInput {
     productId: string;
     currentStock: number;
   }[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  settings?: any;
+  settings?: unknown;
 }
 
 export interface TankForecast {
@@ -404,8 +404,7 @@ self.onmessage = (e: MessageEvent<ForecastInput>) => {
 
     self.postMessage(result);
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Forecast Worker Error:', error);
+    logger.error('Forecast Worker Error:', error);
      
     self.postMessage({ error: 'Forecast computation failed' } as unknown as ForecastResult);
   }

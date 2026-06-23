@@ -2,6 +2,7 @@ import { AuditTrailEntry } from '../types';
 import { useAuthStore } from '../stores/useAuthStore';
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
+import { logger } from '../lib/logger';
 
 export class AuditLogger {
   static async logAction(
@@ -43,8 +44,7 @@ export class AuditLogger {
     if (activeStationId) {
       // We don't have a specific db.saveAuditLogs right now, so we'll just console log or add to a store if available
       // In a real implementation we would save this to IndexedDB
-      // eslint-disable-next-line no-console
-      console.log('📝 [Audit Log]', entry);
+      logger.info('📝 [Audit Log]', entry);
     }
 
     // Save to Firebase if orgId is provided
@@ -52,8 +52,7 @@ export class AuditLogger {
       try {
         await firestoreDb.saveDocument(orgId, stationId, 'fuel_station', 'auditLogs', entry.id, entry);
       } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error('Failed to sync audit log to cloud:', err);
+        logger.error('Failed to sync audit log to cloud:', err);
       }
     }
   }

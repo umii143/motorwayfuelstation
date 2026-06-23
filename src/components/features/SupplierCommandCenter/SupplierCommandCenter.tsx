@@ -78,10 +78,9 @@ export default function SupplierCommandCenter({
   const batches = useInventoryStore(s => s.stockBatches);
    
    
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supplierClaims: any[] = []; // Default empty if not present in your store
+  const supplierClaims: unknown[] = []; // Default empty if not present in your store
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-  const payments: any[] = []; // Default empty
+  const payments: unknown[] = []; // Default empty
 
   const tabs = [
     { id: 'directory', icon: Truck, label: 'Supplier Directory', urdu: 'سپلائر ڈائریکٹری' },
@@ -134,7 +133,6 @@ export default function SupplierCommandCenter({
              
             <button
               key={tab.id}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-sans text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
                 isActive 

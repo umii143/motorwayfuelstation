@@ -4,6 +4,7 @@ import { AlertTriangle, ArrowRight, CheckCircle, RefreshCw, UploadCloud } from '
 import { useAuth } from '../../contexts/AuthContext';
 import { firestoreDb } from '../../data/firestore';
 import { db } from '../../data/db';
+import { logger } from '../../lib/logger';
 
 interface MigrationSummary {
   staffCount: number;
@@ -186,8 +187,7 @@ export default function LocalStorageMigrationWizard() {
       }, 2000);
      
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error(err);
+      logger.error(err);
       setMigrationState('error');
     }
   };

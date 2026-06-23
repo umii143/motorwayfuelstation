@@ -249,7 +249,6 @@ export default function SupplierPayablesPanel({
           <button
             key={f.id}
              
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onClick={() => setFilterTier(f.id as any)}
             className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
               filterTier === f.id

@@ -14,6 +14,7 @@ import { useInventoryStore } from '../../stores/useInventoryStore';
 import { useFinancialStore } from '../../stores/useFinancialStore';
 import { db } from '../../data/db';
 import {
+import { logger } from '../../lib/logger';
   calculateStockInMetrics,
   validateStockIn,
   validateDipReadings,
@@ -184,8 +185,7 @@ export default function StockInForm({
   const [savedBatch, setSavedBatch] = useState<StockBatch | null>(null);
   const [showClaimPrompt, setShowClaimPrompt] = useState(false);
    
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [pendingClaimData, setPendingClaimData] = useState<any>(null);
+  const [pendingClaimData, setPendingClaimData] = useState<unknown>(null);
   const [saving, setSaving] = useState(false);
   const [validationMessages, setValidationMessages] = useState<ValidationResult[]>([]);
 
@@ -426,7 +426,6 @@ export default function StockInForm({
         totalSealsExpected: sealEval?.expectedCount,
          
         totalSealsReceived: sealsReceived ? Number(sealsReceived) : undefined,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         sealStatus: finalSealStatus as any,
         sealNotes: sealNotes || undefined,
 
@@ -561,8 +560,7 @@ export default function StockInForm({
   
 
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Error saving Stock IN:', err);
+      logger.error('Error saving Stock IN:', err);
       alert('Failed to save. Please try again.');
     } finally {
       setSaving(false);

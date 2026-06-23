@@ -1,0 +1,213 @@
+# D:\newfuelstation5\fuelpro\src\App.tsx
+- 40: (error as any)?.name === 'ChunkLoadError' ||
+- 995: setSettings({ ...settings, theme: themes[nextIndex] as any });
+- 997: onSetTheme={(theme) => setSettings({ ...settings, theme: theme as any })}
+- 1033: setSettings({ ...settings, theme: themes[nextIndex] as any });
+# D:\newfuelstation5\fuelpro\src\components\features\AuditCenter.tsx
+- 296: onChange={(e) => setDateRange(e.target.value as any)}
+# D:\newfuelstation5\fuelpro\src\components\features\BIAnalyticsHub\ExecutiveDashboard.tsx
+- 53: const rate = (s as any).rates?.[product.id] || product.rate || 0;
+- 99: const rate = (s as any).rates?.[product.id] || product.rate || 0;
+# D:\newfuelstation5\fuelpro\src\components\features\BIAnalyticsHub\MarginAnalysis.tsx
+- 37: const nozzleRate = (s as any).rates?.[productId] || products.find(p => p.id === productId)?.rate || 0;
+# D:\newfuelstation5\fuelpro\src\components\features\BIAnalyticsHub\components\BIAIInsights.tsx
+- 51: Object.entries(productSales).forEach(([pid, data]: [string, any]) => {
+- 88: Object.entries(supplierPerformance).forEach(([sid, data]: [string, any]) => {
+# D:\newfuelstation5\fuelpro\src\components\features\BIAnalyticsHub\components\BIProductSupplierAnalysis.tsx
+- 30: Object.entries(productSales).map(([productId, data]: [string, any]) => {
+- 95: .map(([supplierId, data]: [string, any]) => {
+# D:\newfuelstation5\fuelpro\src\components\features\CustomerIntelligenceCenter\CustomerDirectory.tsx
+- 860: onClick={() => setFilterType(f.id as any)}
+# D:\newfuelstation5\fuelpro\src\components\features\CustomerIntelligenceCenter\CustomerIntelligenceCenter.tsx
+- 62: onClick={() => setActiveTab(tab.id as any)}
+# D:\newfuelstation5\fuelpro\src\components\features\ERPHub\ERPHub.tsx
+- 53: onClick={() => setActiveTab(tab.id as any)}
+# D:\newfuelstation5\fuelpro\src\components\features\ExecutiveDashboard\KPIDrillDownModal.tsx
+- 442: onClick={() => setActiveTab(t.id as any)}
+# D:\newfuelstation5\fuelpro\src\components\features\FleetHub\FleetHub.tsx
+- 105: onClick={() => setActiveTab(tab.id as any)}
+# D:\newfuelstation5\fuelpro\src\components\features\FuelDashboard.tsx
+- 156: const shiftOperator = (activeShift as any)?.cashierName || 'Not Assigned';
+- 157: const openingCash = (activeShift as any)?.openingCash || 0;
+- 158: const currentCash = ((activeShift as any)?.totalSales || 0) + openingCash;
+- 159: const expectedCash = (activeShift as any)?.totalSales || 0;
+- 161: const variance = (activeShift as any)?.difference || 0;
+- 167: const start = new Date(`${(activeShift as any).date} ${(activeShift as any).time || '00:00'}`);
+- 167: const start = new Date(`${(activeShift as any).date} ${(activeShift as any).time || '00:00'}`);
+- 210: if (topSuppliers.length > 0 && (topSuppliers[0] as any).balance > 50000) alerts.push({ type: 'warning', msg: `🟠 Supplier ${topSuppliers[0].name} payment due.` });
+- 217: id: (s as any).id, type: 'shift', title: `Shift ${(s as any).status}`, desc: (s as any).cashierName || 'System', amount: formatCurrency((s as any).totalSales || 0, settings),
+- 217: id: (s as any).id, type: 'shift', title: `Shift ${(s as any).status}`, desc: (s as any).cashierName || 'System', amount: formatCurrency((s as any).totalSales || 0, settings),
+- 217: id: (s as any).id, type: 'shift', title: `Shift ${(s as any).status}`, desc: (s as any).cashierName || 'System', amount: formatCurrency((s as any).totalSales || 0, settings),
+- 217: id: (s as any).id, type: 'shift', title: `Shift ${(s as any).status}`, desc: (s as any).cashierName || 'System', amount: formatCurrency((s as any).totalSales || 0, settings),
+- 218: time: (s as any).time || '12:00 PM', timestamp: new Date(`${(s as any).date} ${(s as any).time || '12:00 PM'}`).getTime(), icon: Power, color: (s as any).status === 'Open' ? 'text-emerald-500' : 'text-slate-400', bg: 'bg-white/5'
+- 218: time: (s as any).time || '12:00 PM', timestamp: new Date(`${(s as any).date} ${(s as any).time || '12:00 PM'}`).getTime(), icon: Power, color: (s as any).status === 'Open' ? 'text-emerald-500' : 'text-slate-400', bg: 'bg-white/5'
+- 218: time: (s as any).time || '12:00 PM', timestamp: new Date(`${(s as any).date} ${(s as any).time || '12:00 PM'}`).getTime(), icon: Power, color: (s as any).status === 'Open' ? 'text-emerald-500' : 'text-slate-400', bg: 'bg-white/5'
+- 218: time: (s as any).time || '12:00 PM', timestamp: new Date(`${(s as any).date} ${(s as any).time || '12:00 PM'}`).getTime(), icon: Power, color: (s as any).status === 'Open' ? 'text-emerald-500' : 'text-slate-400', bg: 'bg-white/5'
+- 222: id: (tx as any).id, type: 'stock', title: (tx as any).type === 'receipt' ? 'Tank Refilled' : 'Inventory Adj', desc: products.find(p => p.id === (tx as any).itemId)?.name || 'Product', amount: `${(tx as any).quantity}L`,
+- 222: id: (tx as any).id, type: 'stock', title: (tx as any).type === 'receipt' ? 'Tank Refilled' : 'Inventory Adj', desc: products.find(p => p.id === (tx as any).itemId)?.name || 'Product', amount: `${(tx as any).quantity}L`,
+- 222: id: (tx as any).id, type: 'stock', title: (tx as any).type === 'receipt' ? 'Tank Refilled' : 'Inventory Adj', desc: products.find(p => p.id === (tx as any).itemId)?.name || 'Product', amount: `${(tx as any).quantity}L`,
+- 222: id: (tx as any).id, type: 'stock', title: (tx as any).type === 'receipt' ? 'Tank Refilled' : 'Inventory Adj', desc: products.find(p => p.id === (tx as any).itemId)?.name || 'Product', amount: `${(tx as any).quantity}L`,
+- 223: time: '10:00 AM', timestamp: new Date(`${(tx as any).date} 10:00 AM`).getTime(), icon: Droplets, color: 'text-blue-500', bg: 'bg-white/5'
+- 231: const dayShifts = shifts.filter(s => (s as any).date === dateStr);
+- 233: dayShifts.forEach(s => dayRev += ((s as any).totalSales || 0));
+- 544: const t = tank as any;
+# D:\newfuelstation5\fuelpro\src\components\features\FuelStock\AdvancedFuelStock.tsx
+- 161: paymentMode: (formData.paymentMethod === 'Bank Transfer' ? 'bank' : formData.paymentMethod === 'Cash' ? 'cash' : 'credit') as any,
+# D:\newfuelstation5\fuelpro\src\components\features\Inventory.tsx
+- 141: setProdUnit(prod.unit); setProdType(prod.type as any); setProdMinStock(String(prod.minStock));
+- 832: onClick={() => setFilterType(f.id as any)}
+# D:\newfuelstation5\fuelpro\src\components\features\Ledger.tsx
+- 526: onClick={() => setPartyTypeFilter(f.id as any)}
+# D:\newfuelstation5\fuelpro\src\components\features\LogisticsHub\LogisticsHub.tsx
+- 55: onClick={() => setActiveTab(tab.id as any)}
+# D:\newfuelstation5\fuelpro\src\components\features\LossPreventionHub\LossPreventionHub.tsx
+- 53: onClick={() => setActiveTab(tab.id as any)}
+# D:\newfuelstation5\fuelpro\src\components\features\LossPreventionHub\ShiftExceptions.tsx
+- 281: onClick={() => setStatus(s as any)}
+# D:\newfuelstation5\fuelpro\src\components\features\LossPreventionHub\TankVarianceAnalysis.tsx
+- 50: setType(incident.type as any);
+- 303: onClick={() => setStatus(s as any)}
+# D:\newfuelstation5\fuelpro\src\components\features\LoyaltyHub\LoyaltyHub.tsx
+- 53: onClick={() => setActiveTab(tab.id as any)}
+# D:\newfuelstation5\fuelpro\src\components\features\LoyaltyHub\MembersManager.tsx
+- 247: onClick={() => setTier(t as any)}
+- 267: onClick={() => setStatus(s as any)}
+# D:\newfuelstation5\fuelpro\src\components\features\LubeReports.tsx
+- 298: const aVal = (a as any)[sortField];
+- 299: const bVal = (b as any)[sortField];
+- 325: let v: unknown = (r as any)[h.key as string] ?? '';
+# D:\newfuelstation5\fuelpro\src\components\features\MaintenanceHub\AssetRegister.tsx
+- 279: onClick={() => setStatus(s as any)}
+# D:\newfuelstation5\fuelpro\src\components\features\MaintenanceHub\MaintenanceHub.tsx
+- 53: onClick={() => setActiveTab(tab.id as any)}
+# D:\newfuelstation5\fuelpro\src\components\features\MaintenanceHub\ServiceSchedules.tsx
+- 280: onClick={() => setStatus(s as any)}
+# D:\newfuelstation5\fuelpro\src\components\features\Reports.tsx
+- 447: const aVal = (a as any)[sortField];
+- 448: const bVal = (b as any)[sortField];
+- 483: let v = (r as any)[h.key] || '';
+- 555: onClick={() => setActiveReportTab(tb.id as any)}
+# D:\newfuelstation5\fuelpro\src\components\features\SecurityHub.tsx
+- 123: onClick={() => setActiveTab(tab.id as any)}
+# D:\newfuelstation5\fuelpro\src\components\features\Settings.tsx
+- 208: if ((item as any)?.biometric) {
+- 361: ? ((item as any).isDanger
+- 364: : ((item as any).isDanger
+- 370: isActive ? 'text-white' : ((item as any).isDanger ? 'text-red-500' : 'text-slate-400')
+- 373: {(item as any).biometric && !isActive && (
+- 437: ? ((item as any).isDanger
+- 440: : ((item as any).isDanger
+- 446: isActive ? ((item as any).isDanger ? 'text-red-500' : 'text-orange-600') : 'text-slate-400 group-hover:text-slate-600'
+- 449: {(item as any).biometric && (
+# D:\newfuelstation5\fuelpro\src\components\features\Settings\NotificationsConfig.tsx
+- 59: const saved = (settings as any).notifications ?? { /* empty */ };
+# D:\newfuelstation5\fuelpro\src\components\features\Settings\TreasurySettings.tsx
+- 23: openingCashFloat:   (settings as any).treasury?.openingCashFloat   ?? 5000,
+- 26: safeDropLimit:      (settings as any).treasury?.safeDropLimit       ?? 50000,
+- 28: pettyCashBudget:    (settings as any).treasury?.pettyCashBudget     ?? 3000,
+- 29: enableSafeDropAlert:(settings as any).treasury?.enableSafeDropAlert ?? true,
+- 30: endOfDayAutoReconcile: (settings as any).treasury?.endOfDayAutoReconcile ?? false,
+- 32: cashCountReminderMin: (settings as any).treasury?.cashCountReminderMin ?? 240,
+- 39: ...(settings as any).treasury,
+# D:\newfuelstation5\fuelpro\src\components\features\Settings\UnifiedAccountManager.tsx
+- 43: const [prodForm, setProdForm] = useState({ name: '', urduName: '', type: 'fuel' as any, rate: 250, unit: 'Litre', currentStock: 0, minStock: 500 });
+- 600: onChange={(e) => setProdForm({ ...prodForm, type: e.target.value as any })}
+# D:\newfuelstation5\fuelpro\src\components\features\SubscriptionHub.tsx
+- 302: onClick={() => setSelectedPlan(p.id as any)}
+- 349: <div key={g.id} onClick={() => setSelectedGateway(g.id as any)} className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between ${
+# D:\newfuelstation5\fuelpro\src\components\features\SupplierCommandCenter\SupplierCommandCenter.tsx
+- 136: onClick={() => setActiveTab(tab.id as any)}
+# D:\newfuelstation5\fuelpro\src\components\features\SupplierCommandCenter\SupplierDirectory.tsx
+- 81: const avgCreditDays = suppliers.length > 0 ? Math.round(suppliers.reduce((sum, s) => sum + ((s as any).paymentTermsDays || 0), 0) / suppliers.length) : 0;
+# D:\newfuelstation5\fuelpro\src\components\features\SupplierCommandCenter\SupplierPayablesPanel.tsx
+- 252: onClick={() => setFilterTier(f.id as any)}
+# D:\newfuelstation5\fuelpro\src\components\features\SupplierCommandCenter\SupplierPayments.tsx
+- 108: sourceAccountType: paymentMode === 'cash' ? 'shift_cash' : paymentMode as any, // fallback type
+- 169: setPaymentMode(e.target.value as any);
+# D:\newfuelstation5\fuelpro\src\components\features\TankConfigurationWizard.tsx
+- 85: unit: p.unit as any,
+- 227: onChange={e => setNewProduct({...newProduct, type: e.target.value as any})}
+# D:\newfuelstation5\fuelpro\src\components\features\TreasuryCenter\FundTransferForm.tsx
+- 117: sourceAccountType: srcAcc.type as any,
+- 120: destinationAccountType: destAcc.type as any,
+# D:\newfuelstation5\fuelpro\src\components\features\TreasuryCenter\OwnerDrawingsForm.tsx
+- 109: sourceAccountType: srcAcc.type as any,
+- 122: sourceAccountType: srcAcc.type as any,
+- 125: type: 'withdrawal' as any,
+- 129: status: 'completed' as any,
+- 140: const newDrawings = [...currentDrawings, drawing as any];
+- 141: const newTxns = [...currentTxns, txn as any];
+# D:\newfuelstation5\fuelpro\src\components\layouts\Navigation.tsx
+- 247: onSettingsUpdate({ ...settings, theme: themeId as any });
+# D:\newfuelstation5\fuelpro\src\components\shared\DocumentActionToolbar.tsx
+- 10: pdfDocument?: React.ReactElement<any, any>;
+- 10: pdfDocument?: React.ReactElement<any, any>;
+# D:\newfuelstation5\fuelpro\src\components\ui\Button.tsx
+- 60: {...(props as any)}
+# D:\newfuelstation5\fuelpro\src\components\widgets\WidgetStudioDrawer.tsx
+- 69: onClick={() => setActiveTab(tab as any)}
+# D:\newfuelstation5\fuelpro\src\components\widgets\instances\ActivityFeedWidget.tsx
+- 19: color: s.status === ('active' as any) || s.status === ('closed' as any) ? 'text-emerald-500' : 'text-slate-400',
+- 19: color: s.status === ('active' as any) || s.status === ('closed' as any) ? 'text-emerald-500' : 'text-slate-400',
+- 46: const shift = s as any;
+# D:\newfuelstation5\fuelpro\src\data\firestore.ts
+- 107: entityType: collectionName as any,
+- 138: entityType: collectionName as any,
+- 145: businessType: getBusinessTypeForStation(stationId) as any,
+- 160: .filter((item) => isRecordInBusinessScope(item as any, stationId, orgId))
+- 161: .map((item) => withBusinessScope(item as any, stationId, orgId)) as unknown as T[];
+- 179: .filter((item) => isRecordInBusinessScope(item as any, stationId, orgId))
+- 180: .map((item) => withBusinessScope(item as any, stationId, orgId)) as unknown as T[];
+# D:\newfuelstation5\fuelpro\src\hooks\useDashboardMetricsCache.ts
+- 66: const onlineNozzles = nozzles.filter(n => (n as any).status === 'Active' || !(n as any).status).length;
+- 66: const onlineNozzles = nozzles.filter(n => (n as any).status === 'Active' || !(n as any).status).length;
+- 67: const maintenanceNozzles = nozzles.filter(n => (n as any).status === 'Maintenance').length;
+- 75: varianceByProduct[pId] += ((seg as any).variance || 0);
+- 150: const dailyProfits = params.shifts.slice(-30).map(s => ((s as any).totalSales || 0) * 0.05); // Rough profit mock
+# D:\newfuelstation5\fuelpro\src\hooks\useJarvis.ts
+- 33: const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+- 33: const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+# D:\newfuelstation5\fuelpro\src\hooks\useTankMetrics.ts
+- 44: const tankTxns = stockTxns.filter(tx => tx.tankId === t.id && (tx as any).type === 'sale');
+# D:\newfuelstation5\fuelpro\src\hooks\useTreasuryMetrics.ts
+- 17: if ((b as any).type?.toLowerCase() === 'cash') {
+# D:\newfuelstation5\fuelpro\src\hooks\useWhatsAppShare.ts
+- 13: pdfDocument?: React.ReactElement<any, any>;
+- 13: pdfDocument?: React.ReactElement<any, any>;
+- 29: pdfDocument?: React.ReactElement<any, any>
+- 29: pdfDocument?: React.ReactElement<any, any>
+# D:\newfuelstation5\fuelpro\src\lib\AIFunctionRegistry.ts
+- 217: if ((acc.type as any) === 'cash' || (acc.type as any) === 'drawer') totalCash += acc.balance;
+- 217: if ((acc.type as any) === 'cash' || (acc.type as any) === 'drawer') totalCash += acc.balance;
+- 253: paidFrom: 'cash' as any
+- 279: mode: 'cash' as any,
+- 390: const cashAcc = treasury.cashAccounts.find(a => (a.type as any) === 'cash' || (a.type as any) === 'drawer');
+- 390: const cashAcc = treasury.cashAccounts.find(a => (a.type as any) === 'cash' || (a.type as any) === 'drawer');
+- 409: status: status as any
+- 427: paymentMode: 'cash' as any,
+- 454: status: "active" as any,
+- 499: type: name?.toLowerCase()?.includes("cash") || name?.toLowerCase()?.includes("drawer") ? 'cash' : 'bank' as any
+- 520: status: 'active' as any,
+- 536: await shiftStore.handleAddShift(newShift as any, "", "");
+# D:\newfuelstation5\fuelpro\src\services\core\operationalCore.ts
+- 135: const txn: EOCTransaction = { id: txnId, type: 'credit_sale', status: 'posted', shiftId, stationId, branchId, amount: payload.amount, payload: payload as any, journalDrId: pair.debitEntry.id, journalCrId: pair.creditEntry.id, createdBy: user.name, createdAt: now, postedAt: now, description: meta.description };
+- 170: const txn: EOCTransaction = { id: txnId, type: 'recovery', status: 'posted', shiftId, stationId, branchId, amount: payload.amount, payload: payload as any, journalDrId: pair.debitEntry.id, journalCrId: pair.creditEntry.id, createdBy: user.name, createdAt: now, postedAt: now, description: meta.description };
+- 190: const pendingTxn: EOCTransaction = { id: txnId, type: 'expense', status: 'pending_approval', shiftId, stationId, branchId, amount: payload.amount, payload: payload as any, approvalRequestId: approvalDecision.request?.id, createdBy: user.name, createdAt: now, description: `Expense — ${payload.description}` };
+- 207: await recordCashOut(stationId, payload.paidFrom as any, payload.amount, txnId, 'expense', `Expense: ${payload.description}`, user.name, shiftId);
+- 210: const txn: EOCTransaction = { id: txnId, type: 'expense', status: 'posted', shiftId, stationId, branchId, amount: payload.amount, payload: payload as any, journalDrId: pair.debitEntry.id, journalCrId: pair.creditEntry.id, createdBy: user.name, createdAt: now, postedAt: now, description: meta.description };
+- 240: const txn: EOCTransaction = { id: txnId, type: 'bank_deposit', status: 'posted', shiftId, stationId, branchId, amount: payload.amount, payload: payload as any, journalDrId: pair.debitEntry.id, journalCrId: pair.creditEntry.id, createdBy: user.name, createdAt: now, postedAt: now, description: meta.description };
+- 268: await recordCashIn(stationId, walletType as any, payload.amount, txnId, 'digital', `${payload.method} — ${payload.transactionId}`, user.name, shiftId);
+- 271: const txn: EOCTransaction = { id: txnId, type: 'digital_payment', status: 'posted', shiftId, stationId, branchId, amount: payload.amount, payload: payload as any, journalDrId: pair.debitEntry.id, journalCrId: pair.creditEntry.id, createdBy: user.name, createdAt: now, postedAt: now, description: meta.description };
+- 291: const pendingTxn: EOCTransaction = { id: txnId, type: 'supplier_payment', status: 'pending_approval', shiftId, stationId, branchId, amount: payload.amount, payload: payload as any, approvalRequestId: approvalDecision.request?.id, createdBy: user.name, createdAt: now, description: `Supplier Payment — ${payload.supplierName}` };
+- 313: const txn: EOCTransaction = { id: txnId, type: 'supplier_payment', status: 'posted', shiftId, stationId, branchId, amount: payload.amount, payload: payload as any, journalDrId: pair.debitEntry.id, journalCrId: pair.creditEntry.id, createdBy: user.name, createdAt: now, postedAt: now, description: meta.description };
+- 332: const pendingTxn: EOCTransaction = { id: txnId, type: 'discount', status: 'pending_approval', shiftId, stationId, branchId, amount: payload.amount, payload: payload as any, approvalRequestId: approvalDecision.request?.id, createdBy: user.name, createdAt: now, description: `Discount — ${payload.customerName}` };
+- 347: const txn: EOCTransaction = { id: txnId, type: 'discount', status: 'posted', shiftId, stationId, branchId, amount: payload.amount, payload: payload as any, journalDrId: pair.debitEntry.id, journalCrId: pair.creditEntry.id, createdBy: user.name, createdAt: now, postedAt: now, description: meta.description };
+- 439: return { reconciliationReport: recon as any, riskScore };
+# D:\newfuelstation5\fuelpro\src\services\core\reversalEngine.ts
+- 85: account: originalCr.description.split(' | ')[1] as any,  // Swap: original CR becomes DR
+- 93: account: originalDr.description.split(' | ')[1] as any,  // Swap: original DR becomes CR
+# D:\newfuelstation5\fuelpro\src\services\core\shadowMode.ts
+- 225: const eocBal = await getTreasuryBalance(stationId, b.id as any);
+# D:\newfuelstation5\fuelpro\src\services\searchService.ts
+- 130: const formatted = formatResult(result.item, type as any, result);
+- 154: .map(r => formatResult(r.item, module as any, r))

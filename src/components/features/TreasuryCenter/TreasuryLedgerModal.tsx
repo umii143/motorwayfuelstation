@@ -4,6 +4,7 @@ import { TreasuryLedgerLine, getAccountLedger, TreasuryAccountType } from '../..
 import { BottomSheet } from '../../shared/BottomSheet';
 import { ResponsiveTable, TableColumn } from '../../shared/ResponsiveTable';
 import { useDebounce } from '../../../hooks/useDebounce';
+import { logger } from '../../../lib/logger';
 
 interface TreasuryLedgerModalProps {
   stationId: string;
@@ -43,8 +44,7 @@ export default function TreasuryLedgerModal({ stationId, accountType, title, isO
        
       });
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to load ledger:", error);
+      logger.error("Failed to load ledger:", error);
     } finally {
       setLoading(false);
     }

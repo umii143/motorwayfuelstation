@@ -46,8 +46,7 @@ const AuditCenter: React.FC = () => {
     }
   }, [dateRange]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const verifyHash = async (reset: any) => {
+  const verifyHash = async (reset: unknown) => {
     try {
       const rawString = `${reset.timestamp}-${reset.nozzleId}-${reset.oldReading}-${reset.newReading}`;
       const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(rawString));
@@ -294,7 +293,6 @@ const AuditCenter: React.FC = () => {
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <select
                   value={dateRange}
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onChange={(e) => setDateRange(e.target.value as any)}
                   className="px-3 py-2 border rounded-xl bg-slate-50 focus:ring-2 focus:ring-red-500 outline-none text-sm text-slate-700"
                 >

@@ -264,8 +264,7 @@ export default function StaffPanel({
       setLoanInstallment('');
       setSelectedStaffId(null);
       showToast(t('Transaction successfully recorded!', 'مالی لاگ محفوظ ہو گیا!'), 'success');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
+    } catch (err: unknown) {
       showToast(err.message || 'Error occurred', 'error');
     }
   };
@@ -1338,8 +1337,7 @@ export default function StaffPanel({
                     <label className="block text-slate-505 font-bold mb-1">{t('Select Audit Aspect:', 'ٹرانزیکشن کی قسم:')}</label>
                     <select
                       value={financeType}
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      onChange={(e: any) => setFinanceType(e.target.value)}
+                      onChange={(e: unknown) => setFinanceType(e.target.value)}
                       className="premium-input border bg-white px-3 outline-hidden focus:border-orange-500"
                     >
                       <option value="advance">{t('Lent Short-term Advance', '💵 نیا ایڈوانس پے کریں')}</option>
@@ -1405,8 +1403,7 @@ export default function StaffPanel({
                       <label className="block text-slate-505 font-bold mb-1">{t('Payment Mechanism Cash/Bank:', 'ادائیگی کا ذریعہ:')}</label>
                       <select
                         value={financeMode}
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        onChange={(e: any) => setFinanceMode(e.target.value)}
+                        onChange={(e: unknown) => setFinanceMode(e.target.value)}
                         className="premium-input border bg-white px-3 outline-hidden focus:border-orange-500"
                       >
                         <option value="cash">{t('Station Daily Cash Box Outflow', 'روزانہ کیش فلو دراز')}</option>
@@ -1511,8 +1508,7 @@ export default function StaffPanel({
                     <label className="block text-slate-505 font-bold mb-1">{t('Assigned Duty Role:', 'ڈیوٹی کا عہدہ:')}</label>
                     <select
                       value={addRole}
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      onChange={(e: any) => setAddRole(e.target.value)}
+                      onChange={(e: unknown) => setAddRole(e.target.value)}
                       className="premium-input border bg-white px-3 outline-hidden focus:border-orange-500 font-sans text-slate-800"
                     >
                       <option value="salesman">{t('Nozzle Salesman / Operator', 'سیلزمین / نوزل آپریٹر')}</option>

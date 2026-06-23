@@ -5,11 +5,11 @@ import {
 } from 'lucide-react';
 import { GlobalSettings } from '../../../types';
 import { fetchWithAuth } from '../../../lib/api';
+import { logger } from '../../../lib/logger';
 
 interface AIAnalyticsHubProps {
   settings: GlobalSettings;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dataContext: any; // We'll pass the whole station state to Gemini for context
+  dataContext: unknown; // We'll pass the whole station state to Gemini for context
 }
 
 export default function AIAnalyticsHub({ settings, dataContext }: AIAnalyticsHubProps) {
@@ -90,10 +90,8 @@ export default function AIAnalyticsHub({ settings, dataContext }: AIAnalyticsHub
       const data = await response.json();
       setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      // eslint-disable-next-line no-console
-      console.error(error);
+    } catch (error: unknown) {
+      logger.error(error);
       setMessages(prev => [...prev, { 
         role: 'assistant', 
         content: `⚠️ **Connection Error:** ${error.message}\n\nPlease check your internet connection or ensure your GEMINI_API_KEY is properly configured.` 

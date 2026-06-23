@@ -386,7 +386,7 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
                     {/* Added Nozzles List */}
                     {nozzles.length > 0 && (
                       <div className="space-y-2 mb-4">
-                        {nozzles.map((n: any, idx: any) => {
+                        {nozzles.map((n: unknown, idx: unknown) => {
                           const tankName = tanks[parseInt(n.tankId)]?.name || 'Unknown';
                           return (
                             <div key={idx} className="flex items-center justify-between bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">

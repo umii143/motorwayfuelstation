@@ -11,8 +11,7 @@ interface ExcelExportOptions {
   fileName: string;
   sheetName?: string;
   columns: ExportColumn[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[];
+  data: unknown[];
   title?: string;
 }
 
@@ -23,8 +22,7 @@ export const exportToExcel = ({ fileName, sheetName = 'Sheet1', columns, data, t
   
   // Format data
   const formattedData = data.map(item => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const row: any = { /* empty */ };
+    const row: unknown = { /* empty */ };
     columns.forEach(col => {
       row[col.header] = item[col.key];
     });

@@ -9,6 +9,7 @@ import {
 } from '../../../services/core/treasuryEngine';
 import TreasuryLedgerModal from './TreasuryLedgerModal';
 import { DataConfidenceBadge } from '../../ui/DataConfidenceBadge';
+import { logger } from '../../../lib/logger';
 
 export default function TreasuryDashboard() {
   const stationId = useAuthStore((s) => s.stationId);
@@ -37,8 +38,7 @@ export default function TreasuryDashboard() {
        
       setPosition(pos);
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to load treasury position', e);
+      logger.error('Failed to load treasury position', e);
     }
   };
 

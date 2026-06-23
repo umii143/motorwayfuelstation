@@ -25,12 +25,12 @@ import { t as translate } from '../../lib/translations';
 import { useAuth } from '../../contexts/AuthContext';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { dbFS } from '../../lib/firebase';
+import { logger } from '../../lib/logger';
 
 interface SecurityHubProps {
   settings: GlobalSettings;
    
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  user?: any;
+  user?: unknown;
   onLogout: () => void;
 }
   
@@ -44,8 +44,7 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
   const { session, organization, logout } = useAuth();
   
    
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [auditLogs, setAuditLogs] = useState<unknown[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
   const [nowMs] = useState(() => Date.now());
 
@@ -74,8 +73,7 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
       const logs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setAuditLogs(logs);
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Error fetching audit logs:", error);
+      logger.error("Error fetching audit logs:", error);
     } finally {
       setLoadingLogs(false);
     }
@@ -122,7 +120,6 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
           return (
             <button
               key={tab.id}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-sans text-sm font-bold transition-all whitespace-nowrap ${
                 isActive 

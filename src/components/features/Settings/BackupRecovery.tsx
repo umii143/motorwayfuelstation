@@ -3,6 +3,7 @@ import { DownloadCloud, UploadCloud, ShieldAlert, FileJson, Clock, Calendar, Dat
 import { useStation } from '../../../contexts/StationContext';
 import { db } from '../../../data/db';
 import { GlobalSettings } from '../../../types';
+import { logger } from '../../../lib/logger';
 
 export default function BackupRecovery({ settings, activeStationId }: { settings: GlobalSettings, activeStationId: string }) {
   const { showToast, showAlert } = useStation();
@@ -19,8 +20,7 @@ export default function BackupRecovery({ settings, activeStationId }: { settings
     setIsExporting(true);
     try {
        
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const backupData: any = {
+      const backupData: unknown = {
         version: "3.0",
         createdAt: new Date().toISOString(),
         stationId: activeStationId,
@@ -31,8 +31,7 @@ export default function BackupRecovery({ settings, activeStationId }: { settings
       // Helper to fetch data safely
        
       const fetchData = () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const data: any = { /* empty */ };
+        const data: unknown = { /* empty */ };
         
         if (type === 'quick' || type === 'full') {
           data.settings = db.getSettings(activeStationId);
@@ -88,8 +87,7 @@ export default function BackupRecovery({ settings, activeStationId }: { settings
        
       showToast(t(`Backup (${type}) created successfully!`, `بیک اپ (${type}) کامیابی سے بن گیا!`), 'success');
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Backup failed:', err);
+      logger.error('Backup failed:', err);
       showToast(t('Failed to generate backup.', 'بیک اپ بنانے میں ناکامی۔'), 'error');
     } finally {
       setIsExporting(false);
@@ -172,8 +170,7 @@ export default function BackupRecovery({ settings, activeStationId }: { settings
               window.location.reload();
             }, 2000);
           } catch (err) {
-            // eslint-disable-next-line no-console
-            console.error('Restore failed:', err);
+            logger.error('Restore failed:', err);
             showToast(t('Failed to parse backup file.', 'بیک اپ فائل پڑھنے میں ناکامی۔'), 'error');
             setIsRestoring(false);
           }

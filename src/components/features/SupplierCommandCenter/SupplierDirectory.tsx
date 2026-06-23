@@ -78,7 +78,6 @@ export default function SupplierDirectory({
     // We do a simplified overdue estimation if we don't have deep invoice ageing
     return sum + (s.balance > (s.creditLimit! * 0.8) ? (s.balance * 0.2) : 0);
   }, 0);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const avgCreditDays = suppliers.length > 0 ? Math.round(suppliers.reduce((sum, s) => sum + ((s as any).paymentTermsDays || 0), 0) / suppliers.length) : 0;
 
   const filteredSuppliers = useMemo(() => {

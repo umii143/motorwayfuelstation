@@ -1,13 +1,13 @@
 import localforage from 'localforage';
 import { Network } from '@capacitor/network';
 import { firestoreDb } from '../../data/firestore';
+import { logger } from '../../lib/logger';
 
 export interface MutationQueueItem {
     id: string;
     entityType: 'shift' | 'customer' | 'supplier' | 'expense' | 'inventory' | 'treasury' | 'settings' | 'journal' | 'other';
     operation: 'create' | 'update' | 'delete' | 'reverse';
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    payload: any;
+    payload: unknown;
     referenceId?: string;
     createdAt: number;
     retryCount: number;
@@ -51,8 +51,7 @@ class SyncEngineClass {
         try {
             storedQueue = await localforage.getItem<MutationQueueItem[]>(QUEUE_KEY);
         } catch (e) {
-            // eslint-disable-next-line no-console
-            console.warn('SyncEngine localforage load failed:', e);
+            logger.warn('SyncEngine localforage load failed:', e);
         }
         
         if (!storedQueue && typeof localStorage !== 'undefined') {
@@ -80,8 +79,7 @@ class SyncEngineClass {
         this.isOnline = status.connected;
 
         Network.addListener('networkStatusChange', status => {
-            // eslint-disable-next-line no-console
-            console.log('Network status changed', status);
+            logger.info('Network status changed', status);
             this.isOnline = status.connected;
             this.notifyListeners();
             if (status.connected) {
@@ -187,11 +185,9 @@ class SyncEngineClass {
                 // Success! Remove from queue
                 this.queue = this.queue.filter(q => q.id !== item.id);
                 await this.persistQueue();
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } catch (error: any) {
+            } catch (error: unknown) {
                 // Failed
-                // eslint-disable-next-line no-console
-                console.error(`Sync Engine failed to process item ${item.id}:`, error);
+                logger.error(`Sync Engine failed to process item ${item.id}:`, error);
                 
                 const qIndex = this.queue.findIndex(q => q.id === item.id);
                 if (qIndex > -1) {
@@ -218,8 +214,7 @@ class SyncEngineClass {
         const MAX_QUEUE_SIZE = 5000;
         
         if (this.queue.length > MAX_QUEUE_SIZE) {
-            // eslint-disable-next-line no-console
-            console.warn(`Sync queue exceeded ${MAX_QUEUE_SIZE} items. Truncating oldest items to conserve memory.`);
+            logger.warn(`Sync queue exceeded ${MAX_QUEUE_SIZE} items. Truncating oldest items to conserve memory.`);
             
             // Sort by newest first (descending createdAt)
             this.queue.sort((a, b) => b.createdAt - a.createdAt);
@@ -275,8 +270,7 @@ class SyncEngineClass {
         };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    subscribe(listener: (state: any) => void) {
+    subscribe(listener: (state: unknown) => void) {
         this.listeners.push(listener);
         listener(this.getQueueStatus());
         return () => {

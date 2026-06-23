@@ -6,12 +6,10 @@ import { fileStorageService } from '../services/fileStorage.service';
 export interface WhatsAppShareState {
   isOpen: boolean;
   documentType: WhatsAppTemplateType;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  documentData: any;
+  documentData: unknown;
   pdfBlob?: Blob;
   pdfFileName?: string;
    
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pdfDocument?: React.ReactElement<any, any>;
 }
 
@@ -24,12 +22,10 @@ export const useWhatsAppShare = () => {
 
   const openShareModal = (
     documentType: WhatsAppTemplateType, 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    documentData: any, 
+    documentData: unknown, 
     pdfBlob?: Blob, 
     pdfFileName?: string,
      
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     pdfDocument?: React.ReactElement<any, any>
   ) => {
     setShareState({

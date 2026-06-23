@@ -7,6 +7,7 @@ import { forecastImpactEngine, ForecastImpactResult } from '../../../services/pr
 import { storage } from '../../../services/storage/localProvider';
 import { useInventoryStore } from '../../../stores/useInventoryStore';
 import { useShiftStore } from '../../../stores/useShiftStore';
+import { logger } from '../../../lib/logger';
 
 interface PriceImpactSimulatorModalProps {
   isOpen: boolean;
@@ -110,8 +111,7 @@ export default function PriceImpactSimulatorModal({
       setAttachments(prev => [...prev, attachment]);
      
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Upload failed", error);
+      logger.error("Upload failed", error);
     } finally {
       setIsUploading(false);
     }

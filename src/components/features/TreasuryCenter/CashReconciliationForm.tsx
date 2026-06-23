@@ -4,6 +4,7 @@ import { useTreasuryStore } from '../../../stores/useTreasuryStore';
 import { useAuthStore } from '../../../stores/useAuthStore';
 import { useShallow } from 'zustand/react/shallow';
 import { Scale, AlertCircle, CheckCircle, Calculator } from 'lucide-react';
+import { logger } from '../../../lib/logger';
 
 export default function CashReconciliationForm() {
   const { cashAccounts, recordReconciliation } = useTreasuryStore(useShallow(state => ({
@@ -59,9 +60,8 @@ export default function CashReconciliationForm() {
      
      
      
-    } catch (err: any) {
-      // eslint-disable-next-line no-console
-      console.error(err);
+    } catch (err: unknown) {
+      logger.error(err);
       setStatus({ type: 'error', message: err.message || 'Error recording reconciliation.' });
     }
   };

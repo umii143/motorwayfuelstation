@@ -50,7 +50,6 @@ export default function ExecutiveDashboard({ settings, stationId }: ExecutiveDas
       if (!product) return;
       
       const vol = Math.max(0, (s.closingReadings[nozzleId] || 0) - (s.openingReadings[nozzleId] || 0));
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const rate = (s as any).rates?.[product.id] || product.rate || 0;
       const cost = product.purchasePrice || product.rate * 0.95 || 0;
       
@@ -97,7 +96,6 @@ export default function ExecutiveDashboard({ settings, stationId }: ExecutiveDas
             const product = products.find(p => p.id === nozzle.productId);
             if (!product) return;
             const vol = Math.max(0, (s.closingReadings[nozzleId] || 0) - (s.openingReadings[nozzleId] || 0));
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const rate = (s as any).rates?.[product.id] || product.rate || 0;
             shiftRevenue += (vol * rate);
           });

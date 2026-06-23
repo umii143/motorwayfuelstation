@@ -44,8 +44,7 @@ export default function TreasuryDrillDownModal({
     let digitalCollections = 0;
 
      
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const timeline: any[] = [];
+    const timeline: unknown[] = [];
 
     // Map Treasury Transactions
     treasuryTransactions.forEach(txn => {

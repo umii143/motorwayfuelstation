@@ -78,8 +78,7 @@ export function useBIAggregator(filter: BIFilter) {
 
     filteredShifts.forEach(shift => {
       totalRevenue += shift.expectedCash || 0;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      totalTestLiters += Object.values(shift.testLiters || { /* empty */ }).reduce((acc: number, val: any) => acc + Number(val), 0);
+      totalTestLiters += Object.values(shift.testLiters || { /* empty */ }).reduce((acc: number, val: unknown) => acc + Number(val), 0);
       
       // Breakdown payments
       paymentBreakdown.cash += shift.submittedCash || 0;

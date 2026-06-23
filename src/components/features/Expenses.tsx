@@ -158,9 +158,9 @@ export default function Expenses({
     expenseCategories.forEach(cat => { map[cat.id] = 0; });
 
     allExpenses.forEach(e => {
-      // @ts-ignore
+      // @ts-expect-error
       if (map[e.category] !== undefined) {
-        // @ts-ignore
+        // @ts-expect-error
         map[e.category] += e.amount;
       } else {
         map['other'] = (map['other'] || 0) + e.amount;
@@ -220,8 +220,7 @@ export default function Expenses({
     showToast(t('Direct station expense registered successfully!', 'اسٹیشن کا براہ راست خرچہ رجسٹر ہو گیا!'), 'success');
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleExpenseAutoFill = (data: any) => {
+  const handleExpenseAutoFill = (data: unknown) => {
     if (data.Amount) {
       const amtMatch = String(data.Amount).replace(/[^0-9.]/g, '');
       if (amtMatch) setFormAmount(amtMatch);

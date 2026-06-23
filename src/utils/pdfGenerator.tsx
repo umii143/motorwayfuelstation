@@ -90,8 +90,7 @@ const styles = StyleSheet.create({
 
 interface PdfDocumentProps {
   title: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[];
+  data: unknown[];
   columns: { key: string; label: string }[];
   isThermal?: boolean; // If true, optimize for 80mm thermal
 }
@@ -152,8 +151,7 @@ export const generatePdfBlob = async (props: PdfDocumentProps): Promise<Blob> =>
 };
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const PdfHeader = ({ title, documentNo, date, generatedBy }: any) => (
+export const PdfHeader = ({ title, documentNo, date, generatedBy }: unknown) => (
   <View style={styles.header}>
     <Text style={styles.title}>MOTORWAY PETROLEUM</Text>
     <Text style={styles.subtitle}>Mardan, KPK | Ph: +92 300 0000000</Text>
@@ -171,8 +169,7 @@ export const PdfFooter = () => (
   </View>
 );
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const PdfSignatures = ({ leftLabel = 'Prepared By', rightLabel = 'Authorized Signature' }: any) => (
+export const PdfSignatures = ({ leftLabel = 'Prepared By', rightLabel = 'Authorized Signature' }: unknown) => (
   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 50, paddingHorizontal: 20 }}>
     <View style={{ alignItems: 'center' }}>
       <View style={{ width: 100, borderBottomWidth: 1, borderBottomColor: '#000', marginBottom: 5 }} />

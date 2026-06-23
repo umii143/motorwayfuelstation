@@ -7,8 +7,7 @@ import { COMMAND_ACTIONS } from './CommandPalette';
 interface GlobalSearchModalProps {
   isOpen: boolean;
   onClose: () => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onNavigate: (viewId: string, contextData?: any) => void;
+  onNavigate: (viewId: string, contextData?: unknown) => void;
 }
 
 export function GlobalSearchModal({

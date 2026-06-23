@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { Shift, GlobalSettings, Staff, ExpenseEntry } from '../../../types';
+import { logger } from '../../../lib/logger';
 
 interface ExpenseEntryTabProps {
   t: (en: string, ur: string) => string;
@@ -14,13 +15,11 @@ interface ExpenseEntryTabProps {
   activeStationId: string;
   staff: Staff[];
    
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  EXPENSE_CATEGORIES: any[];
+  EXPENSE_CATEGORIES: unknown[];
   showToast: (msg: string, type: 'success'|'error') => void;
    
   onUpdateShift: (shift: Shift) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  processExpense: (shiftId: string, stationId: string, branchId: string, payload: any, date: string) => Promise<any>;
+  processExpense: (shiftId: string, stationId: string, branchId: string, payload: unknown, date: string) => Promise<unknown>;
   processReversal: (id: string, reason: string, shiftId: string, stationId: string, originalStationId: string, date: string) => Promise<void>;
   onAddShiftSalaryPayment?: (staffId: string, amount: number, note: string, paidFrom: "cash" | "bank", date: string, expenseId: string) => void;
   onDeleteShiftSalaryPayment?: (expenseId: string) => void;
@@ -103,7 +102,7 @@ export default function ExpenseEntryTab({
       },
       activeShift.date
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-console
-    ).catch((err: any) => console.warn('[EOC] Expense pipeline:', err.message));
+    ).catch((err: unknown) => logger.warn('[EOC] Expense pipeline:', err.message));
 
     setExpAmount("");
     setExpDesc("");
@@ -123,8 +122,7 @@ export default function ExpenseEntryTab({
     const updated = { ...activeShift, expenseEntries: activeShift.expenseEntries.filter((e) => e.id !== id) };
     onUpdateShift(updated);
     processReversal(id, t("User reversed expense entry", "صارف نے اخراجات اندراج پلٹایا"), activeShift.id, activeStationId, activeStationId, activeShift.date)
-      // eslint-disable-next-line no-console
-      .catch((err: Error) => console.warn('[EOC] Expense reversal:', err.message));
+      .catch((err: Error) => logger.warn('[EOC] Expense reversal:', err.message));
   };
 
   return (

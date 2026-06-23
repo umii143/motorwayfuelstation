@@ -5,8 +5,7 @@ import { useShiftStore } from '../../../../stores/useShiftStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useFinancialStore } from '../../../../stores/useFinancialStore';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function BIDetailedAnalyticsTable({ filter }: any) {
+export function BIDetailedAnalyticsTable({ filter }: unknown) {
   const { stockBatches: batches = [] } = useInventoryStore(useShallow(state => ({ stockBatches: state.stockBatches })));
   const { shifts = [] } = useShiftStore(useShallow(state => ({ shifts: state.shifts })));
   const { standaloneExpenses = [] } = useFinancialStore(useShallow(state => ({ standaloneExpenses: state.standaloneExpenses })));

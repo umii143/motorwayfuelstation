@@ -185,7 +185,7 @@ export default function ExecutiveRevaluationIntelligence({
               <Tooltip 
                 cursor={{ fill: '#f8fafc' }}
                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                formatter={(value: any) => [formatCurrency(value, settings), 'Impact']}
+                formatter={(value: unknown) => [formatCurrency(value, settings), 'Impact']}
               />
               <Bar dataKey="impact" radius={[6, 6, 6, 6]}>
                 {stats.chartData.map((entry, index) => (

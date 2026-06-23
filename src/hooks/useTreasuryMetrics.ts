@@ -14,7 +14,6 @@ export function useTreasuryMetrics() {
     let bankBalance = 0;
 
     banks.forEach(b => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((b as any).type?.toLowerCase() === 'cash') {
         cashBalance += b.balance;
       } else {

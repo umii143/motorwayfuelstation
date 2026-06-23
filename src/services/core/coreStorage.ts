@@ -1,12 +1,12 @@
 import localforage from 'localforage';
+import { logger } from '../../lib/logger';
 
 export async function safeGetItem(key: string): Promise<string | null> {
   try {
     const val = await localforage.getItem<string>(key);
     if (val !== null) return val;
   } catch (e) {
-    // eslint-disable-next-line no-console
-    console.warn(`[coreStorage] localforage.getItem failed for ${key}`, e);
+    logger.warn(`[coreStorage] localforage.getItem failed for ${key}`, e);
   }
   
   try {
@@ -24,8 +24,7 @@ export async function safeSetItem(key: string, value: string): Promise<void> {
   try {
     await localforage.setItem(key, value);
   } catch (e) {
-    // eslint-disable-next-line no-console
-    console.warn(`[coreStorage] localforage.setItem failed for ${key}`, e);
+    logger.warn(`[coreStorage] localforage.setItem failed for ${key}`, e);
   }
   
   try {

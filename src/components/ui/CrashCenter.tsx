@@ -5,6 +5,7 @@
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertOctagon, RefreshCw, TerminalSquare, ShieldAlert } from 'lucide-react';
+import { logger } from '../../lib/logger';
 
 interface Props {
   children: ReactNode;
@@ -34,8 +35,7 @@ export class CrashCenter extends Component<Props, State> {
       error,
       errorInfo
     });
-    // eslint-disable-next-line no-console
-    console.error("CrashCenter caught an error:", error, errorInfo);
+    logger.error("CrashCenter caught an error:", error, errorInfo);
   }
 
   private handleReset = () => {

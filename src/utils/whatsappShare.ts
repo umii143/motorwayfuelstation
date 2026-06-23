@@ -1,4 +1,5 @@
 /**
+import { logger } from '../lib/logger';
  * Normalizes Pakistan phone numbers to the format 923XXXXXXXXX
  * Validates length and prefixes.
  */
@@ -85,8 +86,7 @@ export const nativeWebShare = async (title: string, text: string, url?: string, 
       await navigator.share(shareData);
       return true;
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error sharing natively:', error);
+      logger.error('Error sharing natively:', error);
       return false;
     }
   }

@@ -4,12 +4,12 @@ import { useStation } from '../../contexts/StationContext';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { generatePdfBlob } from '../../utils/pdfGenerator';
+import { logger } from '../../lib/logger';
 
 interface ExportToolbarProps {
   isOpen: boolean;
   onClose: () => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[];
+  data: unknown[];
   columns: { key: string; label: string; urduLabel?: string }[];
   title: string;
   filenamePrefix: string;
@@ -25,8 +25,7 @@ export function ExportToolbar({ isOpen, onClose, data, columns, title, filenameP
     
     try {
       const exportData = data.map(item => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const row: any = { /* empty */ };
+        const row: unknown = { /* empty */ };
         columns.forEach(col => {
           row[isUrdu && col.urduLabel ? col.urduLabel : col.label] = item[col.key] ?? '';
         });
@@ -43,8 +42,7 @@ export function ExportToolbar({ isOpen, onClose, data, columns, title, filenameP
       saveAs(blob, `${filenamePrefix}_${new Date().toISOString().split('T')[0]}.xlsx`);
       showToast('Excel file generated successfully!', 'success');
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error(e);
+      logger.error(e);
       showToast('Failed to export Excel file.', 'error');
     } finally {
       
@@ -75,8 +73,7 @@ export function ExportToolbar({ isOpen, onClose, data, columns, title, filenameP
       window.open(`https://wa.me/?text=${encodedText}`, '_blank');
       onClose();
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error(e);
+      logger.error(e);
     }
   };
 
@@ -99,8 +96,7 @@ export function ExportToolbar({ isOpen, onClose, data, columns, title, filenameP
       saveAs(blob, `${filenamePrefix}_${new Date().toISOString().split('T')[0]}.pdf`);
       showToast('PDF generated successfully!', 'success');
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error(e);
+      logger.error(e);
       showToast('Failed to generate PDF.', 'error');
     } finally {
       

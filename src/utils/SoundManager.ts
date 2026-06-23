@@ -1,15 +1,14 @@
 export class NativeSounds {
+import { logger } from '../lib/logger';
   private static audioCtx: AudioContext | null = null;
 
   private static init() {
     if (typeof window !== 'undefined' && !this.audioCtx) {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
         this.audioCtx = new AudioContext();
       } catch (e) {
-        // eslint-disable-next-line no-console
-        console.warn("Web Audio API not supported", e);
+        logger.warn("Web Audio API not supported", e);
       }
     }
   }
@@ -39,8 +38,7 @@ export class NativeSounds {
       oscillator.start();
       oscillator.stop(this.audioCtx.currentTime + duration);
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.warn("Failed to play tone", e);
+      logger.warn("Failed to play tone", e);
     }
   }
 

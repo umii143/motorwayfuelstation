@@ -368,8 +368,7 @@ export default function Ledger({
    
   }, [selectedParty, activePartyDetails, journalEntries]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ledgerColumns: TableColumn<any>[] = [
+  const ledgerColumns: TableColumn<unknown>[] = [
     {
       header: t('Date', 'تاریخ'),
       accessor: (log) => (
@@ -524,7 +523,6 @@ export default function Ledger({
               ].map(f => (
                 <button
                   key={f.id}
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onClick={() => setPartyTypeFilter(f.id as any)}
                   className={`fp-date-tab ${
                     partyTypeFilter === f.id

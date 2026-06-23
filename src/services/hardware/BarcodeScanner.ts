@@ -1,4 +1,5 @@
 import { Capacitor } from '@capacitor/core';
+import { logger } from '../../lib/logger';
 import { 
   BarcodeScanner as MLKitScanner, 
   BarcodeFormat
@@ -15,7 +16,7 @@ export class NativeBarcodeScanner {
       const { camera } = await MLKitScanner.requestPermissions();
       return camera === 'granted' || camera === 'limited';
     } catch (error) {
-      console.error("Camera permission error:", error);
+      logger.error("Camera permission error:", error);
       return false;
     }
   }
@@ -27,7 +28,7 @@ export class NativeBarcodeScanner {
    */
   static async startScan(formats: BarcodeFormat[] = [BarcodeFormat.QrCode, BarcodeFormat.Ean13]): Promise<string | null> {
     if (!Capacitor.isNativePlatform()) {
-      console.warn("Native scanner not available on Web.");
+      logger.warn("Native scanner not available on Web.");
       // Fallback or mock behavior could be implemented here
       return prompt("SIMULATED SCAN: Enter barcode value:");
     }
@@ -46,7 +47,7 @@ export class NativeBarcodeScanner {
 
       return result.barcodes.length > 0 ? (result.barcodes[0].rawValue || null) : null;
     } catch (error: unknown) {
-      console.error("Scanning failed:", error);
+      logger.error("Scanning failed:", error);
       throw error;
     } finally {
       // document.querySelector('body')?.classList.remove('barcode-scanner-active');
@@ -66,7 +67,7 @@ export class NativeBarcodeScanner {
         await MLKitScanner.enableTorch();
       }
     } catch (error) {
-      console.error("Torch error:", error);
+      logger.error("Torch error:", error);
     }
   }
 
@@ -78,7 +79,7 @@ export class NativeBarcodeScanner {
     try {
       await MLKitScanner.stopScan();
     } catch (error) {
-      console.error("Stop scan error:", error);
+      logger.error("Stop scan error:", error);
     }
   }
 }

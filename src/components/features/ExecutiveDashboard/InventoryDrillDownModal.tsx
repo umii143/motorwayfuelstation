@@ -38,7 +38,7 @@ export default function InventoryDrillDownModal({
 
   // 1. Process Rate History for Revaluation Intelligence
   const processedRateHistory = useMemo(() => {
-    // @ts-ignore
+    // @ts-expect-error
     let filtered = [...rateHistory].sort((a, b) => (b.timestamp || '') - (a.timestamp || ''));
     
     if (excludeManual) {
@@ -378,9 +378,9 @@ export default function InventoryDrillDownModal({
                           return (
                             <tr key={txn.id} className="hover:bg-slate-50/50 transition-colors">
                               <td className="p-3">
-                                {/* @ts-ignore */}
+                                {/* @ts-expect-error */}
                                 <div className="font-bold text-slate-700 text-xs">{new Date(txn.timestamp).toLocaleDateString()}</div>
-                                {/* @ts-ignore */}
+                                {/* @ts-expect-error */}
                                 <div className="text-[10px] font-medium text-slate-400">{new Date(txn.timestamp).toLocaleTimeString()}</div>
                               </td>
                               <td className="p-3">

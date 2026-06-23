@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Lightbulb, AlertTriangle, ArrowRight, X } from 'lucide-react';
 import { useStation } from '../../contexts/StationContext';
 import { PoweredByUmarAli } from './PoweredByUmarAli';
+import { logger } from '../../lib/logger';
 
 
 interface SmartSuggestionsProps {
@@ -118,8 +119,7 @@ export const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ onClose }) =
                         if (suggestion.actionPath) {
                           // In a real app with React Router, we'd navigate
                           // navigate(suggestion.actionPath);
-                          // eslint-disable-next-line no-console
-                          console.log('Navigate to', suggestion.actionPath);
+                          logger.info('Navigate to', suggestion.actionPath);
                         }
                       }}
                     >

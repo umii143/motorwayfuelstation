@@ -32,6 +32,7 @@ import { t as translate } from '../../../lib/translations';
 import { fetchWithAuth } from '../../../lib/api';
 import CustomerCreditDrillDownModal from '../ExecutiveDashboard/CustomerCreditDrillDownModal';
 import { isLubeBusinessStation } from '../../../lib/businessScope';
+import { logger } from '../../../lib/logger';
 
 interface CustomersProps {
   settings: GlobalSettings;
@@ -385,8 +386,7 @@ export default function CustomerDirectory({
       const data = await response.json();
       setAiInsightsResult(data.reply);
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
+      logger.error(error);
       setAiInsightsResult(t("⚠️ Could not generate AI insights.", "⚠️ AI تجزیہ تیار نہیں ہو سکا۔"));
     } finally {
       setIsGeneratingAiInsights(false);
@@ -857,7 +857,6 @@ export default function CustomerDirectory({
               ].map(f => (
                 <button
                   key={f.id}
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onClick={() => setFilterType(f.id as any)}
                   className={`rounded-md px-2.5 py-1 text-[11px] font-sans font-bold cursor-pointer transition-colors ${
                     filterType === f.id

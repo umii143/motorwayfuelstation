@@ -26,8 +26,7 @@ export default function CustomerCreditDrillDownModal({
   const stats = useMemo(() => {
     // 1. Compile Ledger Timeline from Shifts
      
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let timeline: any[] = [];
+    let timeline: unknown[] = [];
     let thisMonthRecoveries = 0;
     let thisMonthNewCredit = 0;
 

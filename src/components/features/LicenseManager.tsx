@@ -3,6 +3,7 @@ import { collection, query, orderBy, onSnapshot, doc, getDoc, updateDoc, deleteD
 import { ShieldCheck, CheckCircle2, XCircle, Search, Clock, ExternalLink, Users, Calendar, CreditCard, ChevronRight, Play, Square, Edit2, History, Trash2 } from 'lucide-react';
 import { dbFS } from '../../lib/firebase';
 import { GlobalSettings } from '../../types';
+import { logger } from '../../lib/logger';
 
 // Local Firebase FirebaseOrg type — matches the actual Firestore document structure
 interface FirebaseOrg {
@@ -29,8 +30,7 @@ type ModalType = 'approve' | 'reject' | 'toggle' | 'addDays' | 'setExpiry' | 'ch
 export default function LicenseManager({ settings }: LicenseManagerProps) {
    
   const [activeTab, setActiveTab] = useState<'requests' | 'clients'>('requests');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [requests, setRequests] = useState<any[]>([]);
+  const [requests, setRequests] = useState<unknown[]>([]);
   const [organizations, setOrganizations] = useState<FirebaseOrg[]>([]);
   const [usersMap, setUsersMap] = useState<Record<string, { email: string; phone?: string }>>({ /* empty */ });
   const [superAdminUid, setSuperAdminUid] = useState<string>('');
@@ -44,8 +44,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
      
     type: ModalType;
     targetOrg?: FirebaseOrg | null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    targetReq?: any | null;
+    targetReq?: unknown | null;
     title: string;
     description: string;
     inputPlaceholder?: string;
@@ -118,8 +117,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
             subscriptionStatus: 'active',
             subscriptionTier: 'enterprise',
             expiryDate: permanentExpiry.toISOString(),
-          // eslint-disable-next-line no-console
-          }).catch(e => console.error('[AutoExpiry] Could not protect owner org:', e));
+          }).catch(e => logger.error('[AutoExpiry] Could not protect owner org:', e));
         }
         return; // Never expire owner
       }
@@ -140,8 +138,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
       if (expiryDate < now) {
         updateDoc(doc(dbFS, 'organizations', org.orgId), {
           subscriptionStatus: 'expired'
-        // eslint-disable-next-line no-console
-        }).catch(e => console.error('[AutoExpiry] Failed to expire org:', org.orgId, e));
+        }).catch(e => logger.error('[AutoExpiry] Failed to expire org:', org.orgId, e));
       }
     });
   }, [organizations, superAdminUid]);
@@ -163,8 +160,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
   // ---------------------------------------------------------------------------
   // Action Triggers
   // ---------------------------------------------------------------------------
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleApprove = (req: any) => {
+  const handleApprove = (req: unknown) => {
     setModalConfig({
       isOpen: true,
       type: 'approve',
@@ -178,8 +174,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
     setInputValue('');
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleReject = (req: any) => {
+  const handleReject = (req: unknown) => {
     setModalConfig({
       isOpen: true,
       type: 'reject',
@@ -356,8 +351,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
         setSelectedOrg(null);
       }
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error(e);
+      logger.error(e);
       // Optional: Add a toast notification system here in the future
     }
   };

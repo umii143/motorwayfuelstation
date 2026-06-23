@@ -12,8 +12,7 @@ import { TreasuryWidget } from './instances/TreasuryWidget';
 import { SalesOverviewWidget } from './instances/SalesOverviewWidget';
 import { ActivityFeedWidget } from './instances/ActivityFeedWidget';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function ResponsiveGridLayout(props: any) {
+function ResponsiveGridLayout(props: unknown) {
   const ref = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(1200);
 
@@ -54,8 +53,7 @@ export function DashboardCanvas() {
     }));
   }, [activeLayout, manifests, isEditMode]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const onLayoutChange = (newLayout: any[]) => {
+  const onLayoutChange = (newLayout: unknown[]) => {
     // Only update if in edit mode to prevent accidental saves during initial render
     if (isEditMode) {
       updateWidgetLayouts(newLayout);

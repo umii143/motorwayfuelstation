@@ -41,7 +41,6 @@ export function useTankMetrics(): TankMetricsResult {
 
       const product = products.find(p => p.id === t.productId);
       
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const tankTxns = stockTxns.filter(tx => tx.tankId === t.id && (tx as any).type === 'sale');
       const recentTxns = tankTxns.slice(0, 10);
       let avgDailyConsumption = 0;

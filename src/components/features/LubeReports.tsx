@@ -70,6 +70,7 @@ import { LUBE_REPORT_TEMPLATES, LubeReportRow, LubeReportTemplate } from '../../
 import { fetchWithAuth } from '../../lib/api';
 import EmptyState from '../ui/EmptyState';
 import { ResponsiveTable } from '../shared/ResponsiveTable';
+import { logger } from '../../lib/logger';
 
 // ==========================================
 // PROPS
@@ -165,8 +166,7 @@ export default function LubeReports({
       const data = await response.json();
       setAiAnalysisResult(data.reply);
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
+      logger.error(error);
       setAiAnalysisResult(t("⚠️ Could not generate AI analysis.", "⚠️ AI تجزیہ تیار نہیں ہو سکا۔"));
     } finally {
       setIsGeneratingAiAnalysis(false);
@@ -295,9 +295,7 @@ export default function LubeReports({
   const sortedRows = useMemo(() => {
     if (!sortField) return filteredRows;
     return [...filteredRows].sort((a, b) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const aVal = (a as any)[sortField];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const bVal = (b as any)[sortField];
        
       if (typeof aVal === 'number' && typeof bVal === 'number') {
@@ -324,8 +322,7 @@ export default function LubeReports({
     const headers = activeTemplate.headers.map(h => h.label).join(',');
     const csvLines = sortedRows.map(r =>
       activeTemplate.headers.map(h => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let v: any = (r as any)[h.key as string] ?? '';
+        let v: unknown = (r as any)[h.key as string] ?? '';
         if (typeof v === 'string') v = `"${v.replace(/"/g, '""')}"`;
         return v;
       }).join(',')
@@ -506,7 +503,7 @@ export default function LubeReports({
                     <XAxis dataKey="date" stroke="var(--text-muted)" />
                     <YAxis stroke="var(--text-muted)" />
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    <Tooltip formatter={(v: any) => formatCurrency(Number(v), settings)} />
+                    <Tooltip formatter={(v: unknown) => formatCurrency(Number(v), settings)} />
                     <Legend />
                     <Area type="monotone" dataKey="Revenue" stroke="#7C3AED" strokeWidth={2} fillOpacity={1} fill="url(#lubeRevGrad)" name={t('Net Revenue', 'خالص آمدنی')} />
                   </AreaChart>
@@ -536,7 +533,7 @@ export default function LubeReports({
                         ))}
                       </Pie>
                       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                      <Tooltip formatter={(v: any) => formatCurrency(Number(v), settings)} />
+                      <Tooltip formatter={(v: unknown) => formatCurrency(Number(v), settings)} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -560,7 +557,7 @@ export default function LubeReports({
                       <XAxis dataKey="name" stroke="var(--text-muted)" />
                       <YAxis stroke="var(--text-muted)" />
                       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                      <Tooltip formatter={(v: any) => formatCurrency(Number(v), settings)} />
+                      <Tooltip formatter={(v: unknown) => formatCurrency(Number(v), settings)} />
                       <Bar dataKey="value" radius={[4, 4, 0, 0]} name={t('Revenue', 'آمدنی')}>
                         {paymentModeData.map((_, i) => (
                           <Cell key={`cell-${i}`} fill={LUBE_COLORS[i % LUBE_COLORS.length]} />
@@ -750,8 +747,7 @@ export default function LubeReports({
                     className: h.isNumeric ? 'text-right' : '',
                     isPrimaryMobile: i === 0,
                     isSecondaryMobile: i === 1 || h.key === 'amount',
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    accessor: (row: any) => {
+                    accessor: (row: unknown) => {
                       const cellValue = row[h.key as string];
                       if (h.key === 'amount') {
                         const numVal = Number(cellValue || 0);
@@ -967,7 +963,7 @@ export default function LubeReports({
                     <XAxis dataKey="month" stroke="var(--text-muted)" />
                     <YAxis stroke="var(--text-muted)" />
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    <Tooltip formatter={(v: any) => formatCurrency(Number(v), settings)} />
+                    <Tooltip formatter={(v: unknown) => formatCurrency(Number(v), settings)} />
                     <Legend />
                     <Bar dataKey="Revenue"  fill="#7C3AED" radius={[3, 3, 0, 0]} name={t('Revenue', 'آمدنی')} />
                     <Bar dataKey="Expenses" fill="#EF4444" radius={[3, 3, 0, 0]} name={t('Expenses', 'اخراجات')} />

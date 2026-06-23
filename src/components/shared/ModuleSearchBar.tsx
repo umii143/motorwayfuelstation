@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Filter, ArrowUpDown, Download, Mic, MicOff } from 'lucide-react';
 import { useStation } from '../../contexts/StationContext';
+import { logger } from '../../lib/logger';
 
 // Define types for Web Speech API
 declare global {
   interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    SpeechRecognition: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    webkitSpeechRecognition: any;
+    SpeechRecognition: unknown;
+    webkitSpeechRecognition: unknown;
   }
 }
 
@@ -34,8 +33,7 @@ export function ModuleSearchBar({
   const { settings, showAlert } = useStation();
   const [query, setQuery] = useState('');
   const [isListening, setIsListening] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<unknown>(null);
   const isUrdu = settings.language === 'ur';
 
   useEffect(() => {
@@ -48,18 +46,15 @@ export function ModuleSearchBar({
       // Set language based on app settings
       recognition.lang = isUrdu ? 'ur-PK' : 'en-US';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event: unknown) => {
         const transcript = event.results[0][0].transcript;
         setQuery(transcript);
         onSearch(transcript);
         setIsListening(false);
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      recognition.onerror = (event: any) => {
-        // eslint-disable-next-line no-console
-        console.error('Speech recognition error', event.error);
+      recognition.onerror = (event: unknown) => {
+        logger.error('Speech recognition error', event.error);
         setIsListening(false);
         showAlert('error', isUrdu ? 'آواز کی شناخت میں مسئلہ ہوا' : 'Voice recognition failed');
       };
@@ -91,8 +86,7 @@ export function ModuleSearchBar({
         recognitionRef.current.start();
         setIsListening(true);
       } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error(e);
+        logger.error(e);
       }
     }
   };

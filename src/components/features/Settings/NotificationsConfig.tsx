@@ -56,7 +56,6 @@ export default function NotificationsConfig({
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
   
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const saved = (settings as any).notifications ?? { /* empty */ };
 
   const [notif, setNotif] = useState({
@@ -71,8 +70,7 @@ export default function NotificationsConfig({
    
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const set = (key: keyof typeof notif, val: any) =>
+  const set = (key: keyof typeof notif, val: unknown) =>
     setNotif(prev => ({ ...prev, [key]: val }));
 
   const handleSave = () => {

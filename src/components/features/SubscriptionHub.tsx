@@ -21,6 +21,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { doc, setDoc, updateDoc } from 'firebase/firestore';
 import { dbFS } from '../../lib/firebase';
 import { haptic } from '../../utils/haptics';
+import { logger } from '../../lib/logger';
 
 interface SubscriptionHubProps {
   settings: GlobalSettings;
@@ -191,10 +192,8 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
       window.location.reload();
         
       
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      // eslint-disable-next-line no-console
-      console.error('Upload Error:', err);
+    } catch (err: unknown) {
+      logger.error('Upload Error:', err);
       alert(`Upload Failed: ${err.message || err.code || 'Unknown error'}\n\nPlease make sure your ImgBB API key is correct and you have internet connection.`);
     } finally {
       setIsProcessing(false);
@@ -300,7 +299,6 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
                         ? 'border-orange-500 ring-4 ring-orange-500/10 dark:bg-orange-500/10 bg-orange-50' 
                         : 'border-slate-200 dark:border-slate-800 dark:bg-[#161c2d] hover:border-orange-300 dark:hover:border-orange-500/50'
                     } ${p.popular ? 'md:-mt-4 md:mb-4 shadow-xl' : ''}`}
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     onClick={() => setSelectedPlan(p.id as any)}
                   >
                     {p.popular && (
@@ -348,7 +346,6 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                     {gateways.map(g => (
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       <div key={g.id} onClick={() => setSelectedGateway(g.id as any)} className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between ${
                         selectedGateway === g.id 
                           ? 'border-orange-500 bg-orange-50 dark:bg-orange-500/10' 

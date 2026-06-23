@@ -1,6 +1,7 @@
 import { App } from '@capacitor/app';
 import { Device } from '@capacitor/device';
 import { Browser } from '@capacitor/browser';
+import { logger } from '../../lib/logger';
 
 // REPOSITORY TO CHECK FOR UPDATES
 const GITHUB_REPO = 'umii143/motorwayfuelstation';
@@ -32,8 +33,7 @@ export async function checkForUpdates(): Promise<ReleaseInfo | null> {
     const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`);
     
     if (!response.ok) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to fetch GitHub releases');
+      logger.error('Failed to fetch GitHub releases');
       return null;
     }
 
@@ -41,8 +41,7 @@ export async function checkForUpdates(): Promise<ReleaseInfo | null> {
     const latestVersion = release.tag_name.replace('v', '');
     
     // 3. Find the APK asset in the release
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const apkAsset = release.assets?.find((asset: any) => asset.name.endsWith('.apk'));
+    const apkAsset = release.assets?.find((asset: unknown) => asset.name.endsWith('.apk'));
     
     if (!apkAsset) {
       return null; // No APK uploaded in the latest release
@@ -59,8 +58,7 @@ export async function checkForUpdates(): Promise<ReleaseInfo | null> {
     };
 
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Error checking for updates:', error);
+    logger.error('Error checking for updates:', error);
     return null;
   }
 }

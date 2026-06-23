@@ -359,8 +359,7 @@ export interface Shift extends TenantDocument {
   cashierName?: string;
   totalSales?: number;
   time?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  pumpReadings?: any;
+  pumpReadings?: unknown;
 }
 
 export interface ReceiptLine {

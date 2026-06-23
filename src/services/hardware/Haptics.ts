@@ -1,6 +1,7 @@
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { Capacitor } from '@capacitor/core';
 import { NativeSounds } from '../../utils/SoundManager';
+import { logger } from '../../lib/logger';
 
 export class NativeHaptics {
   /**
@@ -22,8 +23,7 @@ export class NativeHaptics {
       await Haptics.selectionChanged();
       await Haptics.selectionEnd();
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.warn('Haptics failed', e);
+      logger.warn('Haptics failed', e);
     }
   }
 
@@ -37,8 +37,7 @@ export class NativeHaptics {
     try {
       await Haptics.impact({ style });
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.warn('Haptics failed', e);
+      logger.warn('Haptics failed', e);
     }
   }
 
@@ -54,8 +53,7 @@ export class NativeHaptics {
     try {
       await Haptics.notification({ type });
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.warn('Haptics failed', e);
+      logger.warn('Haptics failed', e);
     }
   }
 
@@ -68,8 +66,7 @@ export class NativeHaptics {
     try {
       await Haptics.vibrate({ duration });
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.warn('Haptics failed', e);
+      logger.warn('Haptics failed', e);
     }
   }
 

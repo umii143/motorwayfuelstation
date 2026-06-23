@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { BiometricAuth } from '@aparajita/capacitor-biometric-auth';
 import { App as CapacitorApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
+import { logger } from '../lib/logger';
 
 interface NativeAuthContextType {
   isLocked: boolean;
@@ -47,8 +48,7 @@ export const NativeAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     try {
       const info = await BiometricAuth.checkBiometry();
       if (!info.isAvailable) {
-        // eslint-disable-next-line no-console
-        console.warn("Biometrics not available on device");
+        logger.warn("Biometrics not available on device");
         return false; // Real device without biometry fails security check
       }
 
@@ -59,8 +59,7 @@ export const NativeAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       // The promise resolves if authenticated, rejects if failed or canceled.
       return true;
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Biometric error:", error);
+      logger.error("Biometric error:", error);
       // FAILED AUTHENTICATION
       return false; 
     }

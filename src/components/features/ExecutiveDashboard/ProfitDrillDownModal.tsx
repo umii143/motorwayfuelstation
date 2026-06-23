@@ -250,7 +250,7 @@ export default function ProfitDrillDownModal({
                           ))}
                         </Pie>
                         <Tooltip 
-                          formatter={(value: any) => formatCurrency(value, settings)}
+                          formatter={(value: unknown) => formatCurrency(value, settings)}
                           contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                         />
                         <Legend />

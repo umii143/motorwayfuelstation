@@ -17,6 +17,7 @@ import {
 import { getAllCustomerBalances, getAllSupplierBalances } from './ledgerEngine';
 import { getTreasuryBalance } from './treasuryEngine';
 import { useStationStore } from '../../stores/useStationStore';
+import { logger } from '../../lib/logger';
 import {
   addDriftLog,
   classifyDriftSeverity,
@@ -41,8 +42,7 @@ export async function dispatchShiftToOperationalCore(
     const banks = useFinancialStore.getState().banks;
     const nozzles = useInventoryStore.getState().nozzles;
 
-    // eslint-disable-next-line no-console
-    console.log(`[Shadow Mode] Shift #${shift.id} Validation Phase Completed.`);
+    logger.info(`[Shadow Mode] Shift #${shift.id} Validation Phase Completed.`);
 
     const date = shift.date;
 
@@ -151,8 +151,7 @@ export async function dispatchShiftToOperationalCore(
     await compareLegacyVsOperationalCore(stationId, shift.id);
 
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error(`[Shadow Mode] Operational Core Pipeline Failed for Shift #${shift.id}:`, error);
+    logger.error(`[Shadow Mode] Operational Core Pipeline Failed for Shift #${shift.id}:`, error);
   }
 }
 
@@ -251,14 +250,13 @@ export async function compareLegacyVsOperationalCore(stationId: string, shiftId:
       const msg = criticalFound
         ? `🚨 CRITICAL Integrity Alert: Financial drift detected! Open Integrity Center immediately.`
         : `⚠️ Integrity Warning: Minor drift detected. Review in Integrity Center.`;
-      console.warn('[INTEGRITY ALERT]', msg);
+      logger.warn('[INTEGRITY ALERT]', msg);
       showToast(msg, 'error');
     } else {
-      console.log('[INTEGRITY CHECK] ✅ Passed. Legacy perfectly matches Operational Core.');
+      logger.info('[INTEGRITY CHECK] ✅ Passed. Legacy perfectly matches Operational Core.');
     }
 
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error(`[Shadow Mode] Critical Error in shift #${shiftId}:`, error);
+    logger.error(`[Shadow Mode] Critical Error in shift #${shiftId}:`, error);
   }
 }

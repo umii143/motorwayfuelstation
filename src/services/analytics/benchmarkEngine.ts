@@ -17,10 +17,8 @@ export interface BenchmarkResult {
 
 export const generateBenchmarks = (
   shifts: Shift[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  products: any[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  nozzles: any[],
+  products: unknown[],
+  nozzles: unknown[],
   branchId: string = 'main'
 ): BenchmarkResult => {
   const branchShifts = shifts.filter(s => !s.orgId || s.orgId === branchId);
