@@ -13,8 +13,8 @@ import { Product, Supplier, Tank, StockBatch, StockTransaction, Staff, ExpenseEn
 import { useInventoryStore } from '../../stores/useInventoryStore';
 import { useFinancialStore } from '../../stores/useFinancialStore';
 import { db } from '../../data/db';
-import {
 import { logger } from '../../lib/logger';
+import {
   calculateStockInMetrics,
   validateStockIn,
   validateDipReadings,

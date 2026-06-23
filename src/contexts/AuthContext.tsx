@@ -21,8 +21,8 @@ import {
   onSnapshot,
   writeBatch
 } from 'firebase/firestore';
-import {
 import { logger } from '../lib/logger';
+import {
   auth,
   dbFS,
   signInWithGoogle as googleSignIn,

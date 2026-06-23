@@ -1,5 +1,5 @@
-export class NativeSounds {
 import { logger } from '../lib/logger';
+export class NativeSounds {
   private static audioCtx: AudioContext | null = null;
 
   private static init() {

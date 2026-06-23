@@ -120,8 +120,8 @@ import {
   CashReconciliation,
   MeterResetEvent
 } from '../types';
-import {
 import { logger } from '../lib/logger';
+import {
   DEFAULT_FUEL_STATION_ID,
   LUBE_STATION_ID,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
