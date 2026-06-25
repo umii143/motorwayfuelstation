@@ -30,7 +30,7 @@ import { logger } from '../../lib/logger';
 interface SecurityHubProps {
   settings: GlobalSettings;
    
-  user?: unknown;
+  user?: any;
   onLogout: () => void;
 }
   
@@ -44,7 +44,7 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
   const { session, organization, logout } = useAuth();
   
    
-  const [auditLogs, setAuditLogs] = useState<unknown[]>([]);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
   const [nowMs] = useState(() => Date.now());
 

@@ -368,7 +368,7 @@ export default function Ledger({
    
   }, [selectedParty, activePartyDetails, journalEntries]);
 
-  const ledgerColumns: TableColumn<unknown>[] = [
+  const ledgerColumns: TableColumn<any>[] = [
     {
       header: t('Date', 'تاریخ'),
       accessor: (log) => (

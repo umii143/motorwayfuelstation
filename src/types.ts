@@ -359,7 +359,7 @@ export interface Shift extends TenantDocument {
   cashierName?: string;
   totalSales?: number;
   time?: string;
-  pumpReadings?: unknown;
+  pumpReadings?: any;
 }
 
 export interface ReceiptLine {

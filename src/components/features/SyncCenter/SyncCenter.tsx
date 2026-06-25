@@ -15,7 +15,7 @@ export default function SyncCenter({ settings }: { settings: GlobalSettings }) {
     queue: [] as MutationQueueItem[]
    
   });
-  const [driftLogs, setDriftLogs] = useState<unknown[]>([]);
+  const [driftLogs, setDriftLogs] = useState<any[]>([]);
 
    
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function SyncCenter({ settings }: { settings: GlobalSettings }) {
   }, []);
 
   const loadDriftLogs = async () => {
-    const logs = await localforage.getItem<unknown[]>('fuelpro_integrity_drift_logs') || [];
+    const logs = await localforage.getItem<any[]>('fuelpro_integrity_drift_logs') || [];
     setDriftLogs(logs);
   };
 

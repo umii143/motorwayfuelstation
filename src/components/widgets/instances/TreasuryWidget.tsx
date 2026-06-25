@@ -1,11 +1,11 @@
 import React, { Suspense } from 'react';
 import { Wallet } from 'lucide-react';
 import { useTreasuryMetrics } from '../../../hooks/useTreasuryMetrics';
-import { useStation } from '../../../contexts/StationContext';
+import { useStationStore } from '../../../stores/useStationStore';
 import { formatCurrency } from '../../../lib/currency';
 
 function TreasuryContent() {
-  const { settings } = useStation();
+  const settings = useStationStore((state) => state.settings);
   const metrics = useTreasuryMetrics();
 
   return (

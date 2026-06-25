@@ -23,7 +23,7 @@ export interface WidgetManifest {
   premium?: boolean;
   layoutVersion: number;
   workerDependencies?: string[];
-  defaultSettings?: Record<string, unknown>;
+  defaultSettings?: Record<string, any>;
   previewImage?: string; // Optional URL for the Marketplace
   minWidth?: number;     // For react-grid-layout grid units
   minHeight?: number;    // For react-grid-layout grid units
@@ -36,7 +36,7 @@ export interface WidgetInstance {
   y: number;
   w: number;
   h: number;
-  settings: Record<string, unknown>;
+  settings: Record<string, any>;
 }
 
 export interface DashboardLayoutSnapshot {

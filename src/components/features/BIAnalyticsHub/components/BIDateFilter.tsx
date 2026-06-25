@@ -10,7 +10,7 @@ export interface BIFilter {
 interface BIDateFilterProps {
   filter: BIFilter;
   setFilter: (filter: BIFilter) => void;
-  products: unknown[];
+  products: any[];
 }
 
 export function BIDateFilter({ filter, setFilter, products }: BIDateFilterProps) {

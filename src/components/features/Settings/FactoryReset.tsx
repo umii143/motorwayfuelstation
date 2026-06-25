@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, ShieldAlert, Key, Database, Trash2, ShieldX, Play } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { useStation } from '../../../contexts/StationContext';
+import { useStationStore } from '../../../stores/useStationStore';
 import { db } from '../../../data/db';
 import { GlobalSettings } from '../../../types';
 import { logger } from '../../../lib/logger';
 
 export default function FactoryReset({ settings, activeStationId }: { settings: GlobalSettings, activeStationId: string }) {
   const { user } = useAuth();
-  const { showToast } = useStation();
+  const showToast = useStationStore((state) => state.showToast);
 
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
@@ -115,7 +115,7 @@ export default function FactoryReset({ settings, activeStationId }: { settings: 
       }, 2000);
 
     } catch (err) {
-      logger.error(err);
+      logger.error(String(err));
       showToast(t('Failed to perform reset.', 'ری سیٹ کرنے میں ناکامی۔'), 'error');
       setIsWiping(false);
       setStep(1);

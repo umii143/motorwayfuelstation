@@ -1,7 +1,7 @@
 import React from 'react';
 import { CreditCard, PieChart } from 'lucide-react';
 
-export function BIPaymentCostBreakdown({ metrics }: unknown) {
+export function BIPaymentCostBreakdown({ metrics }: any) {
   const { paymentBreakdown, costs } = metrics;
 
   const formatCurrency = (val: number) => 

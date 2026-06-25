@@ -5,7 +5,7 @@ import { useShiftStore } from '../../../../stores/useShiftStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useFinancialStore } from '../../../../stores/useFinancialStore';
 
-export function BIDetailedAnalyticsTable({ filter }: unknown) {
+export function BIDetailedAnalyticsTable({ filter }: any) {
   const { stockBatches: batches = [] } = useInventoryStore(useShallow(state => ({ stockBatches: state.stockBatches })));
   const { shifts = [] } = useShiftStore(useShallow(state => ({ shifts: state.shifts })));
   const { standaloneExpenses = [] } = useFinancialStore(useShallow(state => ({ standaloneExpenses: state.standaloneExpenses })));
@@ -17,7 +17,7 @@ export function BIDetailedAnalyticsTable({ filter }: unknown) {
   const monthlyData: Record<string, { revenue: number, invested: number, expenses: number }> = { /* empty */ };
 
   const getMonthKey = (date: string) => {
-    return date ? date.substring(0, 7) : 'Unknown';
+    return date ? date.substring(0, 7) : 'any';
   };
 
   shifts.forEach(s => {
@@ -91,7 +91,7 @@ export function BIDetailedAnalyticsTable({ filter }: unknown) {
                 // Format Month name
                 let monthName = month;
                 let yearStr = '';
-                if (month !== 'Unknown') {
+                if (month !== 'any') {
                   const [year, m] = month.split('-');
                   if (year && m) {
                     const parsedYear = parseInt(year);

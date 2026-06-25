@@ -9,7 +9,7 @@ import { logger } from '../../../lib/logger';
 
 interface AIAnalyticsHubProps {
   settings: GlobalSettings;
-  dataContext: unknown; // We'll pass the whole station state to Gemini for context
+  dataContext: any; // We'll pass the whole station state to Gemini for context
 }
 
 export default function AIAnalyticsHub({ settings, dataContext }: AIAnalyticsHubProps) {
@@ -90,8 +90,8 @@ export default function AIAnalyticsHub({ settings, dataContext }: AIAnalyticsHub
       const data = await response.json();
       setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
 
-    } catch (error: unknown) {
-      logger.error(error);
+    } catch (error: any) {
+      logger.error(String(error));
       setMessages(prev => [...prev, { 
         role: 'assistant', 
         content: `⚠️ **Connection Error:** ${error.message}\n\nPlease check your internet connection or ensure your GEMINI_API_KEY is properly configured.` 

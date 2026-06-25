@@ -9,9 +9,9 @@ import { pdf } from '@react-pdf/renderer';
 
 interface WhatsAppShareModalProps {
   hook: ReturnType<typeof useWhatsAppShare>;
-  customers?: unknown[];
-  suppliers?: unknown[];
-  staff?: unknown[];
+  customers?: any[];
+  suppliers?: any[];
+  staff?: any[];
 }
 
 export const WhatsAppShareModal: React.FC<WhatsAppShareModalProps> = ({

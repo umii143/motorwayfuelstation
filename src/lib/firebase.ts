@@ -70,7 +70,7 @@ export async function signInWithGoogle(): Promise<{ user: User, token: string }>
       const token = credential?.accessToken || "";
       return { user: result.user, token };
     }
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error("[Google Auth] Error during sign in:", error);
     throw error;
   }
@@ -85,14 +85,14 @@ export async function withFirestoreRetry<T>(
   maxRetries = 3,
   delayMs = 800
 ): Promise<T> {
-  let lastError: unknown;
+  let lastError: any;
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       if (attempt > 0) {
         await new Promise(resolve => setTimeout(resolve, delayMs * attempt));
       }
       return await operation();
-    } catch (err: unknown) {
+    } catch (err: any) {
       lastError = err;
       const isRetryable =
         err?.message?.includes('client is offline') ||

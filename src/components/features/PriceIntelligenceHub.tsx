@@ -16,14 +16,14 @@ export default function PriceIntelligenceHub({ settings }: PriceIntelligenceHubP
   // Extract all mid-shift price segments across all shifts to generate compliance metrics
   const priceRevisionEvents = useMemo(() => {
      
-    const events: unknown[] = [];
+    const events: any[] = [];
     shifts.forEach(shift => {
       if (shift.segments && shift.segments.length > 0) {
         // Group segments by nozzle to find the first price segment (since a price change causes segment splitting)
         // Wait, multiple nozzles are split per product, but they share the same effectiveAt.
          
         // We can group by effectiveAt & shiftId
-        const groups: Record<string, unknown> = { /* empty */ };
+        const groups: Record<string, any> = { /* empty */ };
         shift.segments.forEach(seg => {
           if (!seg.effectiveAt || !seg.capturedAt) return; // Only count new ShiftPriceSegment types
           const key = `${shift.id}_${seg.productId}_${seg.effectiveAt}`;

@@ -5,7 +5,7 @@ import { logger } from '../lib/logger';
 
 interface Message {
   role: 'user' | 'model' | 'function';
-  parts: { text?: string; functionCall?: unknown; functionResponse?: unknown }[];
+  parts: { text?: string; functionCall?: any; functionResponse?: any }[];
 }
 
 export function useJarvis() {
@@ -21,11 +21,11 @@ export function useJarvis() {
     }
   ]);
   
-  const recognitionRef = useRef<unknown>(null);
+  const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
   const callModeRef = useRef<boolean>(false);
   const transcriptRef = useRef<string>('');
-  const processAudioInputRef = useRef<unknown>(null);
+  const processAudioInputRef = useRef<any>(null);
   const hasUnlockedSpeechRef = useRef<boolean>(false);
 
   useEffect(() => {
@@ -37,7 +37,7 @@ export function useJarvis() {
         recognitionRef.current.interimResults = true;
         recognitionRef.current.lang = 'ur-PK'; // Urdu by default, supports mixed English
 
-        recognitionRef.current.onresult = (event: unknown) => {
+        recognitionRef.current.onresult = (event: any) => {
           let currentTranscript = '';
           for (let i = event.resultIndex; i < event.results.length; i++) {
             currentTranscript += event.results[i][0].transcript;

@@ -16,7 +16,7 @@ interface ShiftSidebarProps {
   digitalAccounts: DigitalAccount[];
   nozzles: Nozzle[];
    
-  settings: unknown;
+  settings: any;
 }
 
 export function ShiftSidebar({
@@ -45,7 +45,7 @@ export function ShiftSidebar({
 
   const getStaffName = (id: string) => {
     const s = staff.find(st => st.id === id);
-    return s ? (isUrdu ? s.urduName : s.name) : 'Unknown';
+    return s ? (isUrdu ? s.urduName : s.name) : 'any';
   };
 
   // Aggregates
@@ -240,11 +240,11 @@ export function ShiftSidebar({
           columns={[
              
              
-            { key: 'customer', label: 'Customer', render: (item: unknown) => customers.find(c => c.id === item.customerId)?.name || 'Unknown' },
+            { key: 'customer', label: 'Customer', render: (item: any) => customers.find(c => c.id === item.customerId)?.name || 'any' },
              
-            { key: 'product', label: 'Product', render: (item: unknown) => products.find(p => p.id === item.productId)?.name || 'Unknown' },
-            { key: 'qty', label: 'Qty', render: (item: unknown) => item.quantity },
-            { key: 'amount', label: 'Amount', render: (item: unknown) => formatCurrency(item.amount) }
+            { key: 'product', label: 'Product', render: (item: any) => products.find(p => p.id === item.productId)?.name || 'any' },
+            { key: 'qty', label: 'Qty', render: (item: any) => item.quantity },
+            { key: 'amount', label: 'Amount', render: (item: any) => formatCurrency(item.amount) }
           ]}
         />
       )}
@@ -258,9 +258,9 @@ export function ShiftSidebar({
           onClose={() => setActiveModal(null)}
           items={shift.expenseEntries || []}
           columns={[
-            { key: 'category', label: 'Category', render: (item: unknown) => item.category },
-            { key: 'amount', label: 'Amount', render: (item: unknown) => formatCurrency(item.amount) },
-            { key: 'desc', label: 'Description', render: (item: unknown) => item.description || '-' }
+            { key: 'category', label: 'Category', render: (item: any) => item.category },
+            { key: 'amount', label: 'Amount', render: (item: any) => formatCurrency(item.amount) },
+            { key: 'desc', label: 'Description', render: (item: any) => item.description || '-' }
           ]}
         />
        
@@ -274,10 +274,10 @@ export function ShiftSidebar({
           onClose={() => setActiveModal(null)}
           items={shift.bankCashEntries || []}
           columns={[
-            { key: 'bank', label: 'Bank', render: (item: unknown) => banks.find(b => b.id === item.bankAccountId)?.name || 'Unknown' },
-            { key: 'amount', label: 'Amount', render: (item: unknown) => formatCurrency(item.amount) },
+            { key: 'bank', label: 'Bank', render: (item: any) => banks.find(b => b.id === item.bankAccountId)?.name || 'any' },
+            { key: 'amount', label: 'Amount', render: (item: any) => formatCurrency(item.amount) },
              
-            { key: 'ref', label: 'Reference', render: (item: unknown) => item.reference || '-' }
+            { key: 'ref', label: 'Reference', render: (item: any) => item.reference || '-' }
            
           ]}
          
@@ -290,9 +290,9 @@ export function ShiftSidebar({
           onClose={() => setActiveModal(null)}
           items={shift.recoveryEntries || []}
           columns={[
-            { key: 'customer', label: 'Customer', render: (item: unknown) => customers.find(c => c.id === item.customerId)?.name || 'Unknown' },
-            { key: 'mode', label: 'Mode', render: (item: unknown) => item.mode },
-            { key: 'amount', label: 'Amount', render: (item: unknown) => formatCurrency(item.amount) }
+            { key: 'customer', label: 'Customer', render: (item: any) => customers.find(c => c.id === item.customerId)?.name || 'any' },
+            { key: 'mode', label: 'Mode', render: (item: any) => item.mode },
+            { key: 'amount', label: 'Amount', render: (item: any) => formatCurrency(item.amount) }
           ]}
         />
       )}
@@ -337,7 +337,7 @@ function DrillDownItem({ icon, label, onClick }: { icon: React.ReactNode, label:
 }
 
  
-function TransactionModal({ title, onClose, items, columns }: unknown) {
+function TransactionModal({ title, onClose, items, columns }: any) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="w-full max-w-2xl bg-white dark:bg-[#111827] rounded-2xl shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200 overflow-hidden border border-slate-200 dark:border-slate-800">
@@ -354,7 +354,7 @@ function TransactionModal({ title, onClose, items, columns }: unknown) {
             <thead>
               <tr className="bg-slate-100 dark:bg-slate-800/50 text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {columns.map((col: unknown, idx: number) => (
+                {columns.map((col: any, idx: number) => (
                   <th key={idx} className="px-5 py-3">{col.label}</th>
                 ))}
               </tr>
@@ -365,11 +365,11 @@ function TransactionModal({ title, onClose, items, columns }: unknown) {
                   <td colSpan={columns.length} className="px-5 py-8 text-center text-slate-500 dark:text-slate-400">No records found.</td>
                 </tr>
               ) : (
-                items.map((item: unknown, idx: number) => (
+                items.map((item: any, idx: number) => (
                    
                   <tr key={item.id || idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/20">
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    {columns.map((col: unknown, colIdx: number) => (
+                    {columns.map((col: any, colIdx: number) => (
                       <td key={colIdx} className="px-5 py-3 text-sm text-slate-700 dark:text-slate-300">
                         {col.render(item)}
                       </td>
@@ -386,7 +386,7 @@ function TransactionModal({ title, onClose, items, columns }: unknown) {
 }
 
  
-function TimelineModal({ shift, events, onClose }: unknown) {
+function TimelineModal({ shift, events, onClose }: any) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="w-full max-w-3xl bg-white dark:bg-[#111827] rounded-2xl shadow-2xl flex flex-col h-[85vh] animate-in zoom-in-95 duration-200 overflow-hidden border border-slate-200 dark:border-slate-800">
@@ -406,7 +406,7 @@ function TimelineModal({ shift, events, onClose }: unknown) {
           <div className="absolute left-10 top-0 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-800"></div>
           <div className="space-y-6">
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {events.map((evt: unknown, idx: number) => {
+            {events.map((evt: any, idx: number) => {
               const Icon = evt.type === 'expense' ? Receipt : evt.type === 'credit' ? CreditCard : evt.type === 'recovery' ? Wallet : evt.type === 'bank' ? Building2 : Activity;
               const color = evt.type === 'expense' ? 'text-red-500 bg-red-100 dark:bg-red-500/20' : evt.type === 'credit' ? 'text-purple-500 bg-purple-100 dark:bg-purple-500/20' : evt.type === 'recovery' ? 'text-emerald-500 bg-emerald-100 dark:bg-emerald-500/20' : 'text-blue-500 bg-blue-100 dark:bg-blue-500/20';
 

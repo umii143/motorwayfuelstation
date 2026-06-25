@@ -4,7 +4,7 @@ import { useInventoryStore } from '../../../../stores/useInventoryStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useSupplierStore } from '../../../../stores/useSupplierStore';
 
-export function BIProductSupplierAnalysis({ metrics }: unknown) {
+export function BIProductSupplierAnalysis({ metrics }: any) {
   const { productSales, supplierPerformance } = metrics;
   const { products } = useInventoryStore(useShallow(state => ({ products: state.products })));
   const { suppliers } = useSupplierStore(useShallow(state => ({ suppliers: state.suppliers })));
@@ -91,12 +91,12 @@ export function BIProductSupplierAnalysis({ metrics }: unknown) {
                 </tr>
               ) : (
                 Object.entries(supplierPerformance)
-                  .sort((a: unknown, b: unknown) => b[1].liters - a[1].liters)
+                  .sort((a: any, b: any) => b[1].liters - a[1].liters)
                   .map(([supplierId, data]: [string, any]) => {
                     const supp = suppliers.find(s => s.id === supplierId);
                     return (
                       <tr key={supplierId} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-5">{supp?.name || 'Unknown Supplier'}</td>
+                        <td className="px-5">{supp?.name || 'any Supplier'}</td>
                         <td className="px-5 text-slate-600 text-right">{data.batches}</td>
                         <td className="px-5 text-slate-600 text-right">{data.liters.toLocaleString()} L</td>
                         <td className="px-5 text-slate-700 text-right">{formatCurrency(data.spent)}</td>

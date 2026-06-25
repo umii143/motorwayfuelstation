@@ -1,5 +1,6 @@
-/**
 import { logger } from '../lib/logger';
+
+/**
  * Normalizes Pakistan phone numbers to the format 923XXXXXXXXX
  * Validates length and prefixes.
  */

@@ -116,7 +116,7 @@ export default function LogisticsDashboard({ settings, stationId }: LogisticsDas
               return (
                 <div key={del.id} className="p-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
                   <div>
-                    <div className="font-bold text-slate-800 dark:text-slate-200 text-xs">PO: {schedule?.poNumber || 'Unknown'}</div>
+                    <div className="font-bold text-slate-800 dark:text-slate-200 text-xs">PO: {schedule?.poNumber || 'any'}</div>
                     <div className="text-[10px] text-slate-500 mt-0.5">Date: {new Date(del.actualDeliveryDate).toLocaleDateString()}</div>
                   </div>
                   <div className="text-right">

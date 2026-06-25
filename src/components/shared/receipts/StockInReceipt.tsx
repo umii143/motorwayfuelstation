@@ -4,7 +4,7 @@ import { pdfStyles } from '../../../utils/pdfStyles';
 import { PdfHeader, PdfFooter, PdfSignatures } from '../../../utils/pdfGenerator';
 
 interface StockInReceiptProps {
-  purchase: unknown;
+  purchase: any;
   generatedBy?: string;
 }
 
@@ -23,7 +23,7 @@ export const StockInReceiptDocument: React.FC<StockInReceiptProps> = ({ purchase
           <Text style={pdfStyles.sectionTitle}>Supplier Details</Text>
           <View style={pdfStyles.metaDataContainer}>
             <View style={pdfStyles.metaDataColumn}>
-              <Text>Supplier: {purchase.supplierId || 'Unknown'}</Text>
+              <Text>Supplier: {purchase.supplierId || 'any'}</Text>
               <Text>Invoice/Ref: {purchase.referenceNumber}</Text>
             </View>
           </View>

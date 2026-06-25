@@ -12,7 +12,7 @@ interface PriceManagementProps {
   language: string;
   settings: GlobalSettings;
    
-  onUpdateProductRate: (productId: string, newRate: number, reason?: string, changedBy?: string, dateStr?: string, orgId?: string, stationId?: string, checkPerm?: unknown, attachments?: unknown[]) => void;
+  onUpdateProductRate: (productId: string, newRate: number, reason?: string, changedBy?: string, dateStr?: string, orgId?: string, stationId?: string, checkPerm?: any, attachments?: any[]) => void;
   onLogAudit: (category: string, action: string, details: string) => void;
   onUpdateProducts?: (products: Product[]) => void;
 }

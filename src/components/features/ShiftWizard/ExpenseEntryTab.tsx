@@ -15,11 +15,11 @@ interface ExpenseEntryTabProps {
   activeStationId: string;
   staff: Staff[];
    
-  EXPENSE_CATEGORIES: unknown[];
+  EXPENSE_CATEGORIES: any[];
   showToast: (msg: string, type: 'success'|'error') => void;
    
   onUpdateShift: (shift: Shift) => void;
-  processExpense: (shiftId: string, stationId: string, branchId: string, payload: unknown, date: string) => Promise<unknown>;
+  processExpense: (shiftId: string, stationId: string, branchId: string, payload: any, date: string) => Promise<any>;
   processReversal: (id: string, reason: string, shiftId: string, stationId: string, originalStationId: string, date: string) => Promise<void>;
   onAddShiftSalaryPayment?: (staffId: string, amount: number, note: string, paidFrom: "cash" | "bank", date: string, expenseId: string) => void;
   onDeleteShiftSalaryPayment?: (expenseId: string) => void;
@@ -102,7 +102,7 @@ export default function ExpenseEntryTab({
       },
       activeShift.date
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-console
-    ).catch((err: unknown) => logger.warn('[EOC] Expense pipeline:', err.message));
+    ).catch((err: any) => logger.warn('[EOC] Expense pipeline:', err.message));
 
     setExpAmount("");
     setExpDesc("");

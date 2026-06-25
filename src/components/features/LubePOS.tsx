@@ -35,7 +35,7 @@ import {
 import { formatCurrency } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
 import EmptyState from '../ui/EmptyState';
-import { useStation } from '../../contexts/StationContext';
+import { useStationStore } from '../../stores/useStationStore';
 
 interface LubePOSProps {
   settings: GlobalSettings;
@@ -67,7 +67,9 @@ export default function LubePOS({
 }: LubePOSProps) {
    
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { showToast, showAlert, showConfirm } = useStation();
+  const showToast = useStationStore((state) => state.showToast);
+  const showAlert = useStationStore((state) => state.showAlert);
+  const showConfirm = useStationStore((state) => state.showConfirm);
   const t = (en: string, ur: string) => translate(en, ur, settings);
   const isUrdu = settings.language === 'ur';
 

@@ -17,8 +17,8 @@ export interface BenchmarkResult {
 
 export const generateBenchmarks = (
   shifts: Shift[],
-  products: unknown[],
-  nozzles: unknown[],
+  products: any[],
+  nozzles: any[],
   branchId: string = 'main'
 ): BenchmarkResult => {
   const branchShifts = shifts.filter(s => !s.orgId || s.orgId === branchId);

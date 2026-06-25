@@ -1,5 +1,9 @@
 import React, { useMemo } from 'react';
-import { useStation } from '../../../contexts/StationContext';
+import { useShiftStore } from '../../../stores/useShiftStore';
+import { useInventoryStore } from '../../../stores/useInventoryStore';
+import { useCustomerStore } from '../../../stores/useCustomerStore';
+import { useFinancialStore } from '../../../stores/useFinancialStore';
+import { useStationStore } from '../../../stores/useStationStore';
 import { generateKPIs } from '../../../services/analytics/kpiEngine';
 import { forecastFuelDemand } from '../../../services/analytics/demandForecastEngine';
 import { generateBenchmarks } from '../../../services/analytics/benchmarkEngine';
@@ -9,7 +13,14 @@ import RoleGuard from '../../ui/RoleGuard';
 import { isLubeBusinessStation } from '../../../lib/businessScope';
 
 export const BIDashboard: React.FC = () => {
-  const { shifts, products, customers, tanks, standaloneExpenses, lubePosSales, nozzles, activeStationId } = useStation();
+  const shifts = useShiftStore((state) => state.shifts);
+  const products = useInventoryStore((state) => state.products);
+  const customers = useCustomerStore((state) => state.customers);
+  const tanks = useInventoryStore((state) => state.tanks);
+  const standaloneExpenses = useFinancialStore((state) => state.standaloneExpenses);
+  const lubePosSales = useFinancialStore((state) => state.lubePosSales);
+  const nozzles = useInventoryStore((state) => state.nozzles);
+  const activeStationId = useStationStore((state) => state.activeStationId);
 
   const kpis = useMemo(() => generateKPIs(shifts, products, customers, tanks, standaloneExpenses, lubePosSales, activeStationId, nozzles), [shifts, products, customers, tanks, standaloneExpenses, lubePosSales, activeStationId, nozzles]);
   const forecasts = useMemo(() => forecastFuelDemand(shifts, tanks, nozzles, activeStationId), [shifts, tanks, nozzles, activeStationId]);
@@ -163,7 +174,7 @@ export const BIDashboard: React.FC = () => {
 };
 
 // Mini component for KPI cards
-const KPICard = React.memo(({ title, value, icon: Icon, benchmark, subValue }: unknown) => {
+const KPICard = React.memo(({ title, value, icon: Icon, benchmark, subValue }: any) => {
   return (
     <div className="premium-card p-5 border">
       <div className="flex items-center justify-between mb-4">

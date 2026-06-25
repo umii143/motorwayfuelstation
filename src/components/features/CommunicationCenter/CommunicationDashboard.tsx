@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import { MessageSquare, Send, CheckCircle, Users } from 'lucide-react';
 import { CommunicationManager } from '../../../services/communication/communicationManager';
-import { useStation } from '../../../contexts/StationContext';
+import { useCustomerStore } from '../../../stores/useCustomerStore';
+import { useShiftStore } from '../../../stores/useShiftStore';
+import { useInventoryStore } from '../../../stores/useInventoryStore';
 import { AutomationEngine } from '../../../services/automationEngine';
 import { logger } from '../../../lib/logger';
 
 export const CommunicationDashboard: React.FC = () => {
-  const { customers, shifts, products } = useStation();
+  const customers = useCustomerStore((state) => state.customers);
+  const shifts = useShiftStore((state) => state.shifts);
+  const products = useInventoryStore((state) => state.products);
   const [isSending, setIsSending] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
@@ -31,7 +35,7 @@ export const CommunicationDashboard: React.FC = () => {
         setStatus('Failed to open WhatsApp');
       }
     } catch (err) {
-      logger.error(err);
+      logger.error(String(err));
       setStatus('Error generating summary');
     } finally {
       setIsSending(false);
@@ -51,7 +55,7 @@ export const CommunicationDashboard: React.FC = () => {
       const count = await CommunicationManager.sendBulk('whatsapp', payloads);
       setStatus(`Sent ${count} reminders via WhatsApp`);
     } catch (err) {
-      logger.error(err);
+      logger.error(String(err));
       setStatus('Failed to send bulk reminders');
     } finally {
       setIsSending(false);

@@ -1,5 +1,6 @@
-export interface FileStorageProvider {
 import { logger } from '../lib/logger';
+
+export interface FileStorageProvider {
   uploadFile: (file: Blob, fileName: string) => Promise<string>;
   deleteFile: (fileName: string) => Promise<boolean>;
   getPublicUrl: (fileName: string) => Promise<string>;

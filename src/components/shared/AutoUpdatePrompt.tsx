@@ -18,7 +18,7 @@ export function AutoUpdatePrompt() {
         setUpdateInfo(info);
         setIsVisible(true);
         // Haptic feedback for importance
-        try { await haptic.heavy(); } catch (e) { logger.error(e); }
+        try { await haptic.heavy(); } catch (e) { logger.error(String(e)); }
       }
     }, 3000); // Wait 3 seconds to avoid blocking initial render
 

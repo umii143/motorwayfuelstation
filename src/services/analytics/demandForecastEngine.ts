@@ -17,7 +17,7 @@ export interface TankForecast {
 export const forecastFuelDemand = (
   shifts: Shift[] = [],
   tanks: Tank[] = [],
-  nozzles: unknown[] = [], // we use any to avoid importing Nozzle if not needed, but we can import Nozzle from '../../types'
+  nozzles: any[] = [], // we use any to avoid importing Nozzle if not needed, but we can import Nozzle from '../../types'
   branchId: string = 'main'
 ): TankForecast[] => {
   if (!shifts) shifts = [];

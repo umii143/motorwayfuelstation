@@ -98,7 +98,7 @@ export class AIAssistantService {
     this.initializeClients();
   }
 
-  private getSystemPrompt(contextData?: unknown, mode: AIAssistantMode = 'chat'): string {
+  private getSystemPrompt(contextData?: any, mode: AIAssistantMode = 'chat'): string {
     const dataContext = contextData
       ? `\n\n=== SYSTEM DATA CONTEXT ===\n${JSON.stringify(contextData)}\n===========================\n`
       : '';
@@ -155,7 +155,7 @@ export class AIAssistantService {
 
   public async askQuestion(
     question: string,
-    contextData?: unknown,
+    contextData?: any,
     mode: AIAssistantMode = 'chat'
   ): Promise<AIResponse> {
     const systemPrompt = this.getSystemPrompt(contextData, mode);
@@ -248,7 +248,7 @@ export class AIAssistantService {
 
 
 
-  public async generateBusinessInsights(contextData: unknown): Promise<AIBusinessInsight[]> {
+  public async generateBusinessInsights(contextData: any): Promise<AIBusinessInsight[]> {
     const prompt = `
     Analyze the following Business Intelligence (BI) data for a fuel station.
     Generate exactly 3 actionable recommendations to improve profitability or reduce risk.

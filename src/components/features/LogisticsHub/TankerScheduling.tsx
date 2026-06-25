@@ -126,12 +126,12 @@ export default function TankerScheduling({ settings, stationId }: TankerScheduli
 
   const getSupplierName = (id: string) => {
     const s = suppliers.find(sup => sup.id === id);
-    return s ? s.name : 'Unknown OMC';
+    return s ? s.name : 'any OMC';
   };
 
   const getProductName = (id: string) => {
     const p = products.find(prod => prod.id === id);
-    return p ? p.name : 'Unknown Product';
+    return p ? p.name : 'any Product';
   };
 
   const filteredSchedules = schedules.filter(s => 

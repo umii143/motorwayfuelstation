@@ -154,8 +154,8 @@ export default function OwnerDrawingsForm() {
       setStatus({ type: 'success', message: 'Owner drawing recorded successfully.' });
       setAmount('');
       setDescription('');
-    } catch (err: unknown) {
-      logger.error(err);
+    } catch (err: any) {
+      logger.error(String(err));
       setStatus({ type: 'error', message: err.message || 'An error occurred while recording the drawing.' });
     }
   };

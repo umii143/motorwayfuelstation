@@ -4,11 +4,11 @@ import { useWidgetEngine } from '../../stores/useWidgetEngine';
 import { CORE_WIDGETS, DEFAULT_OWNER_LAYOUT } from './registry';
 import { DashboardCanvas } from './DashboardCanvas';
 import { WidgetStudioDrawer } from './WidgetStudioDrawer';
-import { useStation } from '../../contexts/StationContext';
+import { useShiftStore } from '../../stores/useShiftStore';
 
 export function DashboardShell({ onStartShiftQuick, onNavigate }: { onStartShiftQuick?: () => void, onNavigate?: (path: string) => void }) {
   const { registerWidget, setActiveLayout, activeLayout, isEditMode, setEditMode } = useWidgetEngine();
-  const { shifts } = useStation();
+  const shifts = useShiftStore((state) => state.shifts);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const activeShift = shifts.find(s => s.status === 'active');
 

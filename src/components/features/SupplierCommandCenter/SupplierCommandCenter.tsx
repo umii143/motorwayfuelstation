@@ -78,9 +78,9 @@ export default function SupplierCommandCenter({
   const batches = useInventoryStore(s => s.stockBatches);
    
    
-  const supplierClaims: unknown[] = []; // Default empty if not present in your store
+  const supplierClaims: any[] = []; // Default empty if not present in your store
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-  const payments: unknown[] = []; // Default empty
+  const payments: any[] = []; // Default empty
 
   const tabs = [
     { id: 'directory', icon: Truck, label: 'Supplier Directory', urdu: 'سپلائر ڈائریکٹری' },

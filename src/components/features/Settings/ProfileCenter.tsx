@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { User, Shield, Key, Mail, Phone, Calendar, Save, Edit3, Globe, Laptop, Lock, CheckCircle2, Zap, Fuel } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { useStation } from '../../../contexts/StationContext';
+import { useStationStore } from '../../../stores/useStationStore';
 import { GlobalSettings } from '../../../types';
 
 export default function ProfileCenter({ settings }: { settings: GlobalSettings }) {
   const { user, session } = useAuth();
-  const { showToast } = useStation();
+  const showToast = useStationStore((state) => state.showToast);
 
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => (isUrdu ? ur : en);

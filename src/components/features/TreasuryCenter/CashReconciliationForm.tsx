@@ -60,8 +60,8 @@ export default function CashReconciliationForm() {
      
      
      
-    } catch (err: unknown) {
-      logger.error(err);
+    } catch (err: any) {
+      logger.error(String(err));
       setStatus({ type: 'error', message: err.message || 'Error recording reconciliation.' });
     }
   };

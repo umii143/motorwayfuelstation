@@ -7,7 +7,7 @@ export interface MutationQueueItem {
     id: string;
     entityType: 'shift' | 'customer' | 'supplier' | 'expense' | 'inventory' | 'treasury' | 'settings' | 'journal' | 'other';
     operation: 'create' | 'update' | 'delete' | 'reverse';
-    payload: unknown;
+    payload: any;
     referenceId?: string;
     createdAt: number;
     retryCount: number;
@@ -185,7 +185,7 @@ class SyncEngineClass {
                 // Success! Remove from queue
                 this.queue = this.queue.filter(q => q.id !== item.id);
                 await this.persistQueue();
-            } catch (error: unknown) {
+            } catch (error: any) {
                 // Failed
                 logger.error(`Sync Engine failed to process item ${item.id}:`, error);
                 
@@ -193,7 +193,7 @@ class SyncEngineClass {
                 if (qIndex > -1) {
                     this.queue[qIndex].retryCount += 1;
                     this.queue[qIndex].status = 'failed';
-                    this.queue[qIndex].error = error.message || 'Unknown error';
+                    this.queue[qIndex].error = error.message || 'any error';
 
                     // Retry strategy limit: e.g., 60 attempts (~1 hr of polling)
                     if (this.queue[qIndex].retryCount >= 60) {
@@ -270,7 +270,7 @@ class SyncEngineClass {
         };
     }
 
-    subscribe(listener: (state: unknown) => void) {
+    subscribe(listener: (state: any) => void) {
         this.listeners.push(listener);
         listener(this.getQueueStatus());
         return () => {

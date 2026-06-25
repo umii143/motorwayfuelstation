@@ -61,7 +61,12 @@ import { t as translate } from '../../lib/translations';
 import HelpGuideModal from '../ui/HelpGuideModal';
 import AIDocumentScanner from '../ui/AIDocumentScanner';
 import { NotificationCenter } from '../shared/NotificationCenter';
-import { useStation } from '../../contexts/StationContext';
+import { useInventoryStore } from '../../stores/useInventoryStore';
+import { useCustomerStore } from '../../stores/useCustomerStore';
+import { useStaffStore } from '../../stores/useStaffStore';
+import { useShiftStore } from '../../stores/useShiftStore';
+import { useFinancialStore } from '../../stores/useFinancialStore';
+import { useSupplierStore } from '../../stores/useSupplierStore';
 import { fetchWithAuth } from '../../lib/api';
 import { motion } from 'framer-motion';
 import { haptic } from '../../utils/haptics';
@@ -74,7 +79,7 @@ interface NavigationProps {
   onViewChange: (view: string) => void;
   settings: GlobalSettings;
   onSettingsUpdate: (settings: GlobalSettings) => void;
-  user?: unknown;
+  user?: any;
   onLogout?: () => void;
   stations?: Station[];
   activeStationId?: string;
@@ -199,7 +204,14 @@ const Navigation = React.memo(function Navigation({
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   // NEW CONTEXT & STATES
-  const { products, customers, staff, shifts, banks, standaloneExpenses, stockTxns, suppliers } = useStation();
+  const products = useInventoryStore((state) => state.products);
+  const customers = useCustomerStore((state) => state.customers);
+  const staff = useStaffStore((state) => state.staff);
+  const shifts = useShiftStore((state) => state.shifts);
+  const banks = useFinancialStore((state) => state.banks);
+  const standaloneExpenses = useFinancialStore((state) => state.standaloneExpenses);
+  const stockTxns = useInventoryStore((state) => state.stockTxns);
+  const suppliers = useSupplierStore((state) => state.suppliers);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [isSetupOpen, setIsSetupOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -304,7 +316,7 @@ const Navigation = React.memo(function Navigation({
       const data = await response.json();
       setAiSearchResult(data.reply);
     } catch (error) {
-      logger.error(error);
+      logger.error(String(error));
       setAiSearchResult("⚠️ Failed to reach AI services or data context too large.");
     } finally {
       setIsAiSearching(false);

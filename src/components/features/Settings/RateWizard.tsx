@@ -24,8 +24,8 @@ interface RateWizardProps {
     stationId?: string,
      
      
-    checkPerm?: unknown,
-    attachments?: unknown[]
+    checkPerm?: any,
+    attachments?: any[]
   ) => void;
   onLogAudit: (category: string, action: string, details: string) => void;
   onUpdateProducts?: (products: Product[]) => void;
@@ -56,7 +56,7 @@ export default function RateWizard({
   
   const activeShifts = useShiftStore(state => state.shifts).filter(s => s.status === 'active');
    
-  const [rateUpdateQueue, setRateUpdateQueue] = useState<{productId: string, newRate: number, reason: string, author: string, dateStr?: string, attachments?: unknown[]}[]>([]);
+  const [rateUpdateQueue, setRateUpdateQueue] = useState<{productId: string, newRate: number, reason: string, author: string, dateStr?: string, attachments?: any[]}[]>([]);
   const [modalProduct, setModalProduct] = useState<Product | null>(null);
   const [simulatingProduct, setSimulatingProduct] = useState<{ product: Product, newRate: number, dateStr?: string } | null>(null);
 
@@ -128,7 +128,7 @@ export default function RateWizard({
     setSimulatingProduct({ product: prod, newRate: rateVal, dateStr: targetDate || new Date().toISOString() });
   };
 
-  const handleSimulatorConfirm = (reason: string, attachments: unknown[]) => {
+  const handleSimulatorConfirm = (reason: string, attachments: any[]) => {
     if (!simulatingProduct) return;
     setRateUpdateQueue(prev => [...prev, { 
       productId: simulatingProduct.product.id, 

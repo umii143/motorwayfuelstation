@@ -6,7 +6,7 @@ import {
 import { Supplier, Shift, Product, GlobalSettings, BankAccount, StockBatch } from '../../../types';
 import { formatCurrency } from '../../../lib/currency';
 import { t as translate } from '../../../lib/translations';
-import { useStation } from '../../../contexts/StationContext';
+import { useStationStore } from '../../../stores/useStationStore';
 import { AddSupplierModal } from './AddSupplierModal';
 
 interface SuppliersProps {
@@ -42,7 +42,8 @@ export default function SupplierDirectory({
  
 }: SuppliersProps) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { showToast, showConfirm } = useStation();
+  const showToast = useStationStore((state) => state.showToast);
+  const showConfirm = useStationStore((state) => state.showConfirm);
   const t = (en: string, ur: string) => translate(en, ur, settings);
   
 

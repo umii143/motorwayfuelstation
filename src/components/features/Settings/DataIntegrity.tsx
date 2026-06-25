@@ -22,7 +22,7 @@ export default function DataIntegrity({ settings, activeStationId, onNavigate }:
   const [openDrift, setOpenDrift] = useState(0);
   const [criticalDrift, setCriticalDrift] = useState(0);
    
-  const [stats, setStats] = useState<unknown>(null);
+  const [stats, setStats] = useState<any>(null);
 
    
   useEffect(() => {

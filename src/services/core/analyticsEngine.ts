@@ -226,7 +226,7 @@ export function getTopVarianceShifts(
     .map(s => ({
       shiftId: s.id,
       date: s.date,
-      operatorName: s.staffId ?? 'Unknown',
+      operatorName: s.staffId ?? 'any',
       cashVariance: Math.abs((s.submittedCash ?? 0) - (s.expectedCash ?? 0)),
       variancePct: s.expectedCash ? (Math.abs((s.submittedCash ?? 0) - (s.expectedCash ?? 0)) / s.expectedCash) * 100 : 0,
       integrityScore: 100, // Will be filled from integrityEngine if available

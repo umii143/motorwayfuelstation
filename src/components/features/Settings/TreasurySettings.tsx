@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Landmark, DollarSign, ShieldAlert, Banknote, Save, ChevronRight, TrendingDown, Clock } from 'lucide-react';
-import { useStation } from '../../../contexts/StationContext';
+import { useStationStore } from '../../../stores/useStationStore';
 import { GlobalSettings } from '../../../types';
 
 interface TreasurySettingsProps {
@@ -12,7 +12,7 @@ interface TreasurySettingsProps {
  
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function TreasurySettings({ settings, onUpdateSettings, activeStationId }: TreasurySettingsProps) {
-  const { showToast } = useStation();
+  const showToast = useStationStore((state) => state.showToast);
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
 

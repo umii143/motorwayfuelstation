@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
 
 interface PdfDocumentProps {
   title: string;
-  data: unknown[];
+  data: any[];
   columns: { key: string; label: string }[];
   isThermal?: boolean; // If true, optimize for 80mm thermal
 }
@@ -151,7 +151,7 @@ export const generatePdfBlob = async (props: PdfDocumentProps): Promise<Blob> =>
 };
 
 
-export const PdfHeader = ({ title, documentNo, date, generatedBy }: unknown) => (
+export const PdfHeader = ({ title, documentNo, date, generatedBy }: any) => (
   <View style={styles.header}>
     <Text style={styles.title}>MOTORWAY PETROLEUM</Text>
     <Text style={styles.subtitle}>Mardan, KPK | Ph: +92 300 0000000</Text>
@@ -169,7 +169,7 @@ export const PdfFooter = () => (
   </View>
 );
 
-export const PdfSignatures = ({ leftLabel = 'Prepared By', rightLabel = 'Authorized Signature' }: unknown) => (
+export const PdfSignatures = ({ leftLabel = 'Prepared By', rightLabel = 'Authorized Signature' }: any) => (
   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 50, paddingHorizontal: 20 }}>
     <View style={{ alignItems: 'center' }}>
       <View style={{ width: 100, borderBottomWidth: 1, borderBottomColor: '#000', marginBottom: 5 }} />

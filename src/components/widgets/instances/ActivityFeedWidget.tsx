@@ -1,10 +1,15 @@
 import React, { useMemo } from 'react';
 import { Activity, Power, Droplets } from 'lucide-react';
-import { useStation } from '../../../contexts/StationContext';
+import { useShiftStore } from '../../../stores/useShiftStore';
+import { useInventoryStore } from '../../../stores/useInventoryStore';
+import { useStationStore } from '../../../stores/useStationStore';
 import { formatCurrency } from '../../../lib/currency';
 
 export function ActivityFeedWidget() {
-  const { shifts, stockTxns, products, settings } = useStation();
+  const shifts = useShiftStore((state) => state.shifts);
+  const stockTxns = useInventoryStore((state) => state.stockTxns);
+  const products = useInventoryStore((state) => state.products);
+  const settings = useStationStore((state) => state.settings);
 
   const feed = useMemo(() => {
     return [

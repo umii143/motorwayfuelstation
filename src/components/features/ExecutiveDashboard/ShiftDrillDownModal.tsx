@@ -10,7 +10,8 @@ import {
   Database,
   Search
 } from 'lucide-react';
-import { useStation } from '../../../contexts/StationContext';
+import { useShiftStore } from '../../../stores/useShiftStore';
+import { useStaffStore } from '../../../stores/useStaffStore';
 import { formatCurrency } from '../../../lib/currency';
 import { GlobalSettings } from '../../../types';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -26,7 +27,8 @@ export default function ShiftDrillDownModal({
   onClose,
   settings
 }: ShiftDrillDownModalProps) {
-  const { shifts, staff } = useStation();
+  const shifts = useShiftStore((state) => state.shifts);
+  const staff = useStaffStore((state) => state.staff);
 
   const [activeTab, setActiveTab] = useState<'overview' | 'ledger'>('overview');
   const [searchQuery, setSearchQuery] = useState('');
@@ -65,7 +67,7 @@ export default function ShiftDrillDownModal({
       if (shift.status === 'closed') closedShifts++;
       if (shift.status === 'active') activeShifts++;
 
-      const staffName = staff.find(st => st.id === shift.staffId)?.name || 'Unknown Staff';
+      const staffName = staff.find(st => st.id === shift.staffId)?.name || 'any Staff';
       if (!staffPerformance[staffName]) {
         staffPerformance[staffName] = { totalCash: 0, shortage: 0, overage: 0, shifts: 0 };
       }
@@ -370,7 +372,7 @@ export default function ShiftDrillDownModal({
                         </tr>
                       ) : (
                         processedShifts.map((txn) => {
-                          const staffName = staff.find(st => st.id === txn.staffId)?.name || 'Unknown';
+                          const staffName = staff.find(st => st.id === txn.staffId)?.name || 'any';
                           return (
                             <tr key={txn.id} className="hover:bg-slate-50/50 transition-colors">
                               <td className="p-3">

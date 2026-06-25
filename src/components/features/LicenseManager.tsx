@@ -30,7 +30,7 @@ type ModalType = 'approve' | 'reject' | 'toggle' | 'addDays' | 'setExpiry' | 'ch
 export default function LicenseManager({ settings }: LicenseManagerProps) {
    
   const [activeTab, setActiveTab] = useState<'requests' | 'clients'>('requests');
-  const [requests, setRequests] = useState<unknown[]>([]);
+  const [requests, setRequests] = useState<any[]>([]);
   const [organizations, setOrganizations] = useState<FirebaseOrg[]>([]);
   const [usersMap, setUsersMap] = useState<Record<string, { email: string; phone?: string }>>({ /* empty */ });
   const [superAdminUid, setSuperAdminUid] = useState<string>('');
@@ -44,7 +44,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
      
     type: ModalType;
     targetOrg?: FirebaseOrg | null;
-    targetReq?: unknown | null;
+    targetReq?: any | null;
     title: string;
     description: string;
     inputPlaceholder?: string;
@@ -160,7 +160,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
   // ---------------------------------------------------------------------------
   // Action Triggers
   // ---------------------------------------------------------------------------
-  const handleApprove = (req: unknown) => {
+  const handleApprove = (req: any) => {
     setModalConfig({
       isOpen: true,
       type: 'approve',
@@ -174,7 +174,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
     setInputValue('');
   };
 
-  const handleReject = (req: unknown) => {
+  const handleReject = (req: any) => {
     setModalConfig({
       isOpen: true,
       type: 'reject',
@@ -281,7 +281,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
           enterprise:   365,
         };
         const planKey = (targetReq.plan || '').toLowerCase();
-        const daysToAdd = PLAN_DAYS[planKey] ?? 30; // default 30 if unknown
+        const daysToAdd = PLAN_DAYS[planKey] ?? 30; // default 30 if any
 
         // Expiry = today's date at midnight + exact plan days
         const expiryDate = new Date();
@@ -351,7 +351,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
         setSelectedOrg(null);
       }
     } catch (e) {
-      logger.error(e);
+      logger.error(String(e));
       // Optional: Add a toast notification system here in the future
     }
   };
@@ -382,7 +382,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
 
   const getTenure = (org: FirebaseOrg) => {
     const start = new Date(org.createdAt);
-    if (isNaN(start.getTime())) return 'Unknown';
+    if (isNaN(start.getTime())) return 'any';
     const diffDays = Math.ceil((new Date().getTime() - start.getTime()) / (1000 * 3600 * 24));
     if (diffDays < 30) return `${diffDays} days`;
     if (diffDays < 365) return `${Math.floor(diffDays / 30)} months`;
@@ -625,6 +625,7 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
                   <thead className="sticky top-0 bg-white z-10">
                     <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold text-xs uppercase tracking-wider">
                       <th className="p-4">Client</th>
+                      <th className="p-4">Dates</th>
                       <th className="p-4">Plan</th>
                       <th className="p-4">Status</th>
                       <th className="p-4">Access</th>
@@ -632,9 +633,9 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-sm">
                     {loading ? (
-                      <tr><td colSpan={4} className="p-8 text-center text-slate-500">Loading clients from Firebase...</td></tr>
+                      <tr><td colSpan={5} className="p-8 text-center text-slate-500">Loading clients from Firebase...</td></tr>
                     ) : filteredOrganizations.length === 0 ? (
-                      <tr><td colSpan={4} className="p-8 text-center">
+                      <tr><td colSpan={5} className="p-8 text-center">
                         <div className="text-slate-400 text-4xl mb-3">🔍</div>
                         <p className="text-slate-500 font-medium">No {planFilter !== 'all' ? planFilter : ''} clients found.</p>
                         {planFilter !== 'all' && <button onClick={() => setPlanFilter('all')} className="mt-2 text-indigo-600 text-sm font-bold hover:underline">Show all clients</button>}
@@ -681,6 +682,14 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
                               <div className="text-xs text-slate-500 mt-0.5">📞 {usersMap[org.ownerId].phone}</div>
                             )}
                             <div className="text-[10px] text-slate-300 font-mono mt-0.5 truncate max-w-[200px]">{org.orgId}</div>
+                          </td>
+                          <td className="p-4">
+                            <div className="text-xs text-slate-500">
+                              <span className="font-semibold text-slate-700">Reg:</span> {org.createdAt ? new Date(org.createdAt).toLocaleDateString() : 'N/A'}
+                            </div>
+                            <div className="text-xs text-slate-500 mt-1">
+                              <span className="font-semibold text-slate-700">Exp:</span> {org.expiryDate || org.trialEndDate ? new Date(org.expiryDate || org.trialEndDate).toLocaleDateString() : 'N/A'}
+                            </div>
                           </td>
                           <td className="p-4">
                             <span className={`inline-block px-2.5 py-1 rounded-lg text-xs font-bold ${badge.classes}`}>{badge.label}</span>

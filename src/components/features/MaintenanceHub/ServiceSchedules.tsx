@@ -128,7 +128,7 @@ export default function ServiceSchedules({ settings, stationId }: ServiceSchedul
 
   const getAssetDetails = (id: string) => {
     const a = assets.find(asset => asset.id === id);
-    return a ? `${a.name} (${a.type})` : 'Unknown Asset';
+    return a ? `${a.name} (${a.type})` : 'any Asset';
   };
 
   const filteredRecords = records.filter(r => 

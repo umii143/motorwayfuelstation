@@ -124,7 +124,7 @@ export default function TankVarianceAnalysis({ settings, stationId }: TankVarian
 
   const getTankName = (id: string) => {
     const t = tanks.find(tank => tank.id === id);
-    return t ? t.name : 'Unknown Tank';
+    return t ? t.name : 'any Tank';
   };
 
   const filteredIncidents = incidents.filter(i => 

@@ -46,25 +46,25 @@ interface InventoryState {
 
   handleAddMeterReset: (reset: MeterResetEvent, orgId?: string, stationId?: string) => Promise<void>;
 
-  handleUpdateDealerMargin: (setting: DealerMarginSetting, orgId?: string, stationId?: string, checkPerm?: unknown) => Promise<void>;
+  handleUpdateDealerMargin: (setting: DealerMarginSetting, orgId?: string, stationId?: string, checkPerm?: Function) => Promise<void>;
   handleAddSupplierClaim: (claim: SupplierClaim, orgId?: string, stationId?: string) => Promise<void>;
   handleUpdateSupplierClaim: (claim: SupplierClaim, orgId?: string, stationId?: string) => Promise<void>;
 
-  handleUpdateProductStock: (productId: string, newStock: number, orgId?: string, stationId?: string, checkPerm?: unknown) => Promise<void>;
+  handleUpdateProductStock: (productId: string, newStock: number, orgId?: string, stationId?: string, checkPerm?: Function) => Promise<void>;
    
-  handleUpdateProductRate: (productId: string, newRate: number, reason?: string, changedBy?: string, dateStr?: string, orgId?: string, stationId?: string, checkPerm?: unknown, attachments?: unknown[]) => Promise<void>;
-  handleDeleteRateHistory: (id: string, orgId?: string, stationId?: string, checkPerm?: unknown) => Promise<void>;
+  handleUpdateProductRate: (productId: string, newRate: number, reason?: string, changedBy?: string, dateStr?: string, orgId?: string, stationId?: string, checkPerm?: Function, attachments?: unknown[]) => Promise<void>;
+  handleDeleteRateHistory: (id: string, orgId?: string, stationId?: string, checkPerm?: Function) => Promise<void>;
   handleUpdateProduct: (updatedProduct: Product, orgId?: string, stationId?: string) => Promise<void>;
   handleDeleteProduct: (productId: string, orgId?: string, stationId?: string) => Promise<void>;
   handleAddProduct: (newProduct: Product, orgId?: string, stationId?: string) => Promise<void>;
-  handleAddTank: (newTank: Tank, orgId?: string, stationId?: string, checkPerm?: unknown) => Promise<void>;
-  handleUpdateTank: (updatedTank: Tank, orgId?: string, stationId?: string, checkPerm?: unknown) => Promise<void>;
-  handleDeleteTank: (id: string, orgId?: string, stationId?: string, checkPerm?: unknown) => Promise<void>;
+  handleAddTank: (newTank: Tank, orgId?: string, stationId?: string, checkPerm?: Function) => Promise<void>;
+  handleUpdateTank: (updatedTank: Tank, orgId?: string, stationId?: string, checkPerm?: Function) => Promise<void>;
+  handleDeleteTank: (id: string, orgId?: string, stationId?: string, checkPerm?: Function) => Promise<void>;
   handleAddNozzle: (newNozzle: Nozzle, orgId?: string, stationId?: string) => Promise<void>;
   handleUpdateNozzle: (updatedNozzle: Nozzle, orgId?: string, stationId?: string) => Promise<void>;
   handleDeleteNozzle: (id: string, orgId?: string, stationId?: string) => Promise<void>;
-  handleAddStockReceipt: (txn: StockTransaction, orgId?: string, stationId?: string, checkPerm?: unknown) => Promise<void>;
-  handleAddStockBatch: (batch: StockBatch, orgId?: string, stationId?: string, checkPerm?: unknown) => Promise<void>;
+  handleAddStockReceipt: (txn: StockTransaction, orgId?: string, stationId?: string, checkPerm?: Function) => Promise<void>;
+  handleAddStockBatch: (batch: StockBatch, orgId?: string, stationId?: string, checkPerm?: Function) => Promise<void>;
 }
 
 const getBusinessType = (stationId: string): 'fuel_station' | 'cng' | 'lube' => {
@@ -817,3 +817,37 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     }
   }
 }));
+
+// Self-healing: if any nozzle has empty productId, try to assign it to the first fuel product
+const performSelfHealing = () => {
+  const state = useInventoryStore.getState();
+  const fuelProducts = state.products.filter(p => p.type === 'fuel');
+  if (fuelProducts.length > 0) {
+    let changed = false;
+    const updatedNozzles = state.nozzles.map(n => {
+      if (!n.productId || n.productId === '') {
+        changed = true;
+        return { ...n, productId: fuelProducts[0].id };
+      }
+      return n;
+    });
+    const updatedTanks = state.tanks.map(t => {
+      if (!t.productId || t.productId === '') {
+        changed = true;
+        return { ...t, productId: fuelProducts[0].id };
+      }
+      return t;
+    });
+    
+    if (changed) {
+      useInventoryStore.setState({ nozzles: updatedNozzles, tanks: updatedTanks });
+      const sId = db.getActiveStationId();
+      if (sId) {
+        db.saveNozzles(sId, updatedNozzles);
+        db.saveTanks(sId, updatedTanks);
+      }
+    }
+  }
+};
+
+setTimeout(performSelfHealing, 2000);

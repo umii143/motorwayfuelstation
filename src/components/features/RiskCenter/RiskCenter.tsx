@@ -1,5 +1,9 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { useStation } from '../../../contexts/StationContext';
+import { useShiftStore } from '../../../stores/useShiftStore';
+import { useInventoryStore } from '../../../stores/useInventoryStore';
+import { useCustomerStore } from '../../../stores/useCustomerStore';
+import { useStationStore } from '../../../stores/useStationStore';
+import { useStaffStore } from '../../../stores/useStaffStore';
 import { forecastFuelDemand } from '../../../services/analytics/demandForecastEngine';
 import { AlertTriangle, AlertOctagon, TrendingDown, BrainCircuit, Sparkles, Activity, CheckCircle2, Truck, MessageSquareWarning, Search } from 'lucide-react';
 import RoleGuard from '../../ui/RoleGuard';
@@ -8,7 +12,13 @@ import { aiAssistantService } from '../../../services/aiAssistantService';
 export const RiskCenter: React.FC = () => {
    
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { shifts, products, customers, tanks, nozzles, activeStationId, staff } = useStation();
+  const shifts = useShiftStore((state) => state.shifts);
+  const products = useInventoryStore((state) => state.products);
+  const customers = useCustomerStore((state) => state.customers);
+  const tanks = useInventoryStore((state) => state.tanks);
+  const nozzles = useInventoryStore((state) => state.nozzles);
+  const activeStationId = useStationStore((state) => state.activeStationId);
+  const staff = useStaffStore((state) => state.staff);
 
   const forecasts = useMemo(() => forecastFuelDemand(shifts, tanks, nozzles, activeStationId), [shifts, tanks, nozzles, activeStationId]);
 

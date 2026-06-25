@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Edit, Trash2, Database, Wallet } from 'lucide-react';
 import { Product, BankAccount, Pump } from '../../../types';
 import { t as translate } from '../../../lib/translations';
-import { useStation } from '../../../contexts/StationContext';
+import { useStationStore } from '../../../stores/useStationStore';
 
 interface UnifiedAccountManagerProps {
   products: Product[];
@@ -29,7 +29,8 @@ export default function UnifiedAccountManager({
   onUpdatePumps,
   onLogAudit
 }: UnifiedAccountManagerProps) {
-  const { showConfirm, showToast } = useStation();
+  const showConfirm = useStationStore((state) => state.showConfirm);
+  const showToast = useStationStore((state) => state.showToast);
   const t = (en: string, ur: string) => translate(en, ur, language);
 
   // Active sub-tab state inside this module

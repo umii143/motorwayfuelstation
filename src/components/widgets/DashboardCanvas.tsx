@@ -12,7 +12,7 @@ import { TreasuryWidget } from './instances/TreasuryWidget';
 import { SalesOverviewWidget } from './instances/SalesOverviewWidget';
 import { ActivityFeedWidget } from './instances/ActivityFeedWidget';
 
-function ResponsiveGridLayout(props: unknown) {
+function ResponsiveGridLayout(props: any) {
   const ref = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(1200);
 
@@ -53,7 +53,7 @@ export function DashboardCanvas() {
     }));
   }, [activeLayout, manifests, isEditMode]);
 
-  const onLayoutChange = (newLayout: unknown[]) => {
+  const onLayoutChange = (newLayout: any[]) => {
     // Only update if in edit mode to prevent accidental saves during initial render
     if (isEditMode) {
       updateWidgetLayouts(newLayout);

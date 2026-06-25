@@ -59,7 +59,7 @@ export default function SingleProductDrillDownModal({
     let lastSupplierName = 'N/A';
     if (lastReceipt?.supplierId) {
       const sup = suppliers.find(s => s.id === lastReceipt.supplierId);
-      lastSupplierName = sup ? sup.name : 'Unknown';
+      lastSupplierName = sup ? sup.name : 'any';
     } else if (lastReceipt?.by) {
       lastSupplierName = lastReceipt.by;
     }

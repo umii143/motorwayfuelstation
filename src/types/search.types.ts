@@ -20,7 +20,7 @@ export interface SearchResult {
   badgeText?: string;             // e.g. "LOW STOCK", "OVERDUE"
   badgeColor?: 'red' | 'orange' | 'green' | 'blue';
   viewId: string;                 // Navigation target
-  contextData?: Record<string, unknown>; // Pre-fill data when navigating
+  contextData?: Record<string, any>; // Pre-fill data when navigating
   score?: number;                 // Fuse.js match score (lower = better)
   matchedKeys?: string[];         // Which fields matched
   highlightRanges?: HighlightRange[]; // For text highlighting
@@ -41,12 +41,12 @@ export interface RecentSearch {
 }
 
 export interface SearchIndex {
-  customers: unknown[];
-  suppliers: unknown[];
-  shifts: unknown[];
-  batches: unknown[];
-  expenses: unknown[];
-  staff: unknown[];
+  customers: any[];
+  suppliers: any[];
+  shifts: any[];
+  batches: any[];
+  expenses: any[];
+  staff: any[];
 }
 
 export interface CommandAction {

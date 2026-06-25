@@ -61,7 +61,7 @@ export interface EOCTransaction {
   stationId: string;
   branchId: string;
   amount: number;
-  payload: Record<string, unknown>;
+  payload: Record<string, any>;
   journalDrId?: string;
   journalCrId?: string;
   approvalRequestId?: string;

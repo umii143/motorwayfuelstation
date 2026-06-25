@@ -71,7 +71,7 @@ export class CrashCenter extends Component<Props, State> {
                       {this.props.fallbackMessage || 'A component encountered an unexpected error.'}
                     </h3>
                     <p className="text-xs text-rose-700 mt-1 font-mono">
-                      {this.state.error?.message || 'Unknown error occurred'}
+                      {this.state.error?.message || 'any error occurred'}
                     </p>
                   </div>
                 </div>

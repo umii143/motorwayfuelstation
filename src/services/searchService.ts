@@ -79,7 +79,7 @@ const FUSE_CONFIGS = {
 // ─── SEARCH INDEX BUILDER ────────────────────────────────────
 // Call this once on app load, and on data changes
 
-let fuseInstances: Record<string, Fuse<unknown>> = { /* empty */ };
+let fuseInstances: Record<string, Fuse<any>> = { /* empty */ };
 
 export function buildSearchIndex(data: SearchIndex) {
   fuseInstances = {
@@ -95,11 +95,11 @@ export function buildSearchIndex(data: SearchIndex) {
 // Rebuild index for a single module (on data change)
 export function rebuildModuleIndex(
   module: keyof SearchIndex,
-  data: unknown[]
+  data: any[]
 ) {
   fuseInstances[module] = new Fuse(
     data,
-    FUSE_CONFIGS[module] as IFuseOptions<unknown>
+    FUSE_CONFIGS[module] as IFuseOptions<any>
   );
 }
 
@@ -159,9 +159,9 @@ export function searchModule(
 // Transform raw data + Fuse result into SearchResult format
 
 function formatResult(
-  item: unknown,
+  item: any,
   type: string,
-  fuseResult: FuseResult<unknown>
+  fuseResult: FuseResult<any>
 ): SearchResult | null {
   const score = fuseResult.score ?? 0.5;
 

@@ -1,11 +1,13 @@
 import React, { useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp } from 'lucide-react';
-import { useStation } from '../../../contexts/StationContext';
+import { useShiftStore } from '../../../stores/useShiftStore';
+import { useStationStore } from '../../../stores/useStationStore';
 import { formatCurrency } from '../../../lib/currency';
 
 export function SalesOverviewWidget() {
-  const { shifts, settings } = useStation();
+  const shifts = useShiftStore((state) => state.shifts);
+  const settings = useStationStore((state) => state.settings);
 
   const chartData = useMemo(() => {
     const data = Array.from({length: 7}, (_, i) => {
@@ -46,7 +48,7 @@ export function SalesOverviewWidget() {
             <Tooltip 
               contentStyle={{ backgroundColor: '#0F172A', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px' }}
               itemStyle={{ color: '#fff', fontSize: '12px', fontWeight: 'bold' }}
-              formatter={(value: unknown) => [formatCurrency(value, settings), 'Revenue']}
+              formatter={(value: any) => [formatCurrency(value, settings), 'Revenue']}
             />
             <Area type="monotone" dataKey="revenue" stroke="#F97316" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
           </AreaChart>

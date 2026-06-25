@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
-import { useStation } from '../contexts/StationContext';
+import { useShiftStore } from '../stores/useShiftStore';
+import { useInventoryStore } from '../stores/useInventoryStore';
+import { Shift } from '../types';
 
 export interface FinancialMetricsResult {
   todayRevenue: number;
@@ -9,7 +11,9 @@ export interface FinancialMetricsResult {
 }
 
 export function useFinancialMetrics(): FinancialMetricsResult {
-  const { shifts, stockTxns, products } = useStation();
+  const shifts = useShiftStore((state) => state.shifts);
+  const stockTxns = useInventoryStore((state) => state.stockTxns);
+  const products = useInventoryStore((state) => state.products);
 
   return useMemo<FinancialMetricsResult>(() => {
     // Basic Financial Metrics from Today's shifts
@@ -30,8 +34,8 @@ export function useFinancialMetrics(): FinancialMetricsResult {
         todayRevenue += shift.totalSales || 0;
         
         // Calculate Liter volume and Profit from nozzle readings
-        (shift as Shift & { pumpReadings?: { nozzleReadings?: { currentReading: number, previousReading: number, productId: string }[] }[] }).pumpReadings?.forEach((reading) => {
-          reading.nozzleReadings?.forEach((nr) => {
+        (shift as Shift & { pumpReadings?: { nozzleReadings?: { currentReading: number, previousReading: number, productId: string }[] }[] }).pumpReadings?.forEach((reading: any) => {
+          reading.nozzleReadings?.forEach((nr: any) => {
             const vol = nr.currentReading - nr.previousReading;
             if (vol > 0) {
               todayLiters += vol;

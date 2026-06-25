@@ -4,7 +4,7 @@ import { ResponsiveTable } from '../../shared/ResponsiveTable';
 import { t as translate } from '../../../lib/translations';
 import { db } from '../../../data/db';
 import { AuditTrailEntry } from '../../../types';
-import { useStation } from '../../../contexts/StationContext';
+import { useStationStore } from '../../../stores/useStationStore';
 
 interface SystemAuditTrailProps {
   language: string;
@@ -12,7 +12,8 @@ interface SystemAuditTrailProps {
 }
 
 export default function SystemAuditTrail({ language, stationId }: SystemAuditTrailProps) {
-  const { showConfirm, showToast } = useStation();
+  const showConfirm = useStationStore((state) => state.showConfirm);
+  const showToast = useStationStore((state) => state.showToast);
   const t = (en: string, ur: string) => translate(en, ur, language);
 
   const [logs, setLogs] = useState<AuditTrailEntry[]>([]);

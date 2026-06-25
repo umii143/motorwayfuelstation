@@ -13,7 +13,7 @@ import {
   ArrowRightLeft,
   Search
 } from 'lucide-react';
-import { useStation } from '../../../contexts/StationContext';
+import { useInventoryStore } from '../../../stores/useInventoryStore';
 import { formatCurrency } from '../../../lib/currency';
 import { GlobalSettings } from '../../../types';
 
@@ -30,7 +30,9 @@ export default function InventoryDrillDownModal({
 }: InventoryDrillDownModalProps) {
    
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { rateHistory, products, tanks } = useStation();
+  const rateHistory = useInventoryStore((state) => state.rateHistory);
+  const products = useInventoryStore((state) => state.products);
+  const tanks = useInventoryStore((state) => state.tanks);
 
   const [activeTab, setActiveTab] = useState<'overview' | 'revaluation_ledger'>('overview');
   const [excludeManual, setExcludeManual] = useState(false);
@@ -69,7 +71,7 @@ export default function InventoryDrillDownModal({
       if (impact > 0) totalGain += impact;
       else if (impact < 0) totalLoss += Math.abs(impact);
 
-      const prodName = products.find(p => p.id === entry.productId)?.name || 'Unknown Product';
+      const prodName = products.find(p => p.id === entry.productId)?.name || 'any Product';
       productImpacts[prodName] = (productImpacts[prodName] || 0) + impact;
 
       userImpacts[entry.changedBy] = (userImpacts[entry.changedBy] || 0) + 1;
@@ -384,7 +386,7 @@ export default function InventoryDrillDownModal({
                                 <div className="text-[10px] font-medium text-slate-400">{new Date(txn.timestamp).toLocaleTimeString()}</div>
                               </td>
                               <td className="p-3">
-                                <div className="font-bold text-slate-800 text-xs">{prod?.name || 'Unknown'}</div>
+                                <div className="font-bold text-slate-800 text-xs">{prod?.name || 'any'}</div>
                               </td>
                               <td className="p-3">
                                 <div className="flex items-center justify-center gap-2">

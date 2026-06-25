@@ -166,7 +166,7 @@ export default function LubeReports({
       const data = await response.json();
       setAiAnalysisResult(data.reply);
     } catch (error) {
-      logger.error(error);
+      logger.error(String(error));
       setAiAnalysisResult(t("⚠️ Could not generate AI analysis.", "⚠️ AI تجزیہ تیار نہیں ہو سکا۔"));
     } finally {
       setIsGeneratingAiAnalysis(false);
@@ -322,7 +322,7 @@ export default function LubeReports({
     const headers = activeTemplate.headers.map(h => h.label).join(',');
     const csvLines = sortedRows.map(r =>
       activeTemplate.headers.map(h => {
-        let v: unknown = (r as any)[h.key as string] ?? '';
+        let v: any = (r as any)[h.key as string] ?? '';
         if (typeof v === 'string') v = `"${v.replace(/"/g, '""')}"`;
         return v;
       }).join(',')
@@ -503,7 +503,7 @@ export default function LubeReports({
                     <XAxis dataKey="date" stroke="var(--text-muted)" />
                     <YAxis stroke="var(--text-muted)" />
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    <Tooltip formatter={(v: unknown) => formatCurrency(Number(v), settings)} />
+                    <Tooltip formatter={(v: any) => formatCurrency(Number(v), settings)} />
                     <Legend />
                     <Area type="monotone" dataKey="Revenue" stroke="#7C3AED" strokeWidth={2} fillOpacity={1} fill="url(#lubeRevGrad)" name={t('Net Revenue', 'خالص آمدنی')} />
                   </AreaChart>
@@ -533,7 +533,7 @@ export default function LubeReports({
                         ))}
                       </Pie>
                       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                      <Tooltip formatter={(v: unknown) => formatCurrency(Number(v), settings)} />
+                      <Tooltip formatter={(v: any) => formatCurrency(Number(v), settings)} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -557,7 +557,7 @@ export default function LubeReports({
                       <XAxis dataKey="name" stroke="var(--text-muted)" />
                       <YAxis stroke="var(--text-muted)" />
                       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                      <Tooltip formatter={(v: unknown) => formatCurrency(Number(v), settings)} />
+                      <Tooltip formatter={(v: any) => formatCurrency(Number(v), settings)} />
                       <Bar dataKey="value" radius={[4, 4, 0, 0]} name={t('Revenue', 'آمدنی')}>
                         {paymentModeData.map((_, i) => (
                           <Cell key={`cell-${i}`} fill={LUBE_COLORS[i % LUBE_COLORS.length]} />
@@ -747,7 +747,7 @@ export default function LubeReports({
                     className: h.isNumeric ? 'text-right' : '',
                     isPrimaryMobile: i === 0,
                     isSecondaryMobile: i === 1 || h.key === 'amount',
-                    accessor: (row: unknown) => {
+                    accessor: (row: any) => {
                       const cellValue = row[h.key as string];
                       if (h.key === 'amount') {
                         const numVal = Number(cellValue || 0);
@@ -963,7 +963,7 @@ export default function LubeReports({
                     <XAxis dataKey="month" stroke="var(--text-muted)" />
                     <YAxis stroke="var(--text-muted)" />
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    <Tooltip formatter={(v: unknown) => formatCurrency(Number(v), settings)} />
+                    <Tooltip formatter={(v: any) => formatCurrency(Number(v), settings)} />
                     <Legend />
                     <Bar dataKey="Revenue"  fill="#7C3AED" radius={[3, 3, 0, 0]} name={t('Revenue', 'آمدنی')} />
                     <Bar dataKey="Expenses" fill="#EF4444" radius={[3, 3, 0, 0]} name={t('Expenses', 'اخراجات')} />

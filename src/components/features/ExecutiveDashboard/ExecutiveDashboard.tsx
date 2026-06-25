@@ -1,5 +1,9 @@
 import React, { useMemo } from 'react';
-import { useStation } from '../../../contexts/StationContext';
+import { useShiftStore } from '../../../stores/useShiftStore';
+import { useInventoryStore } from '../../../stores/useInventoryStore';
+import { useCustomerStore } from '../../../stores/useCustomerStore';
+import { useFinancialStore } from '../../../stores/useFinancialStore';
+import { useStationStore } from '../../../stores/useStationStore';
 import { generateKPIs } from '../../../services/analytics/kpiEngine';
 import { generateHealthScore } from '../../../services/analytics/executiveInsights';
 import { Briefcase, ChevronRight, PieChart, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -14,18 +18,16 @@ import { useSupplierStore } from '../../../stores/useSupplierStore';
 import { Calendar } from 'lucide-react';
 
 export const ExecutiveDashboard: React.FC = () => {
-  const { 
-    shifts, 
-    products, 
-    customers, 
-    tanks, 
-    standaloneExpenses, 
-    lubePosSales,
-    nozzles,
-    rateHistory,
-    activeStationId,
-    settings
-  } = useStation();
+  const shifts = useShiftStore((state) => state.shifts);
+  const products = useInventoryStore((state) => state.products);
+  const customers = useCustomerStore((state) => state.customers);
+  const tanks = useInventoryStore((state) => state.tanks);
+  const standaloneExpenses = useFinancialStore((state) => state.standaloneExpenses);
+  const lubePosSales = useFinancialStore((state) => state.lubePosSales);
+  const nozzles = useInventoryStore((state) => state.nozzles);
+  const rateHistory = useInventoryStore((state) => state.rateHistory);
+  const activeStationId = useStationStore((state) => state.activeStationId);
+  const settings = useStationStore((state) => state.settings);
 
   const suppliers = useSupplierStore(state => state.suppliers);
 

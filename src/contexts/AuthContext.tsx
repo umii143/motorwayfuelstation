@@ -79,19 +79,19 @@ export interface AuthContextType {
   checkingAuth: boolean;
   pendingVerification: boolean;
   hasPermission: (permission: string) => boolean;
-  loginWithEmail: (email: string, password: string) => Promise<unknown>;
-  loginWithGoogle: () => Promise<unknown>;
-  signUpUser: (email: string, password: string) => Promise<unknown>;
+  loginWithEmail: (email: string, password: string) => Promise<any>;
+  loginWithGoogle: () => Promise<any>;
+  signUpUser: (email: string, password: string) => Promise<any>;
   resendVerificationEmail: () => Promise<void>;
   checkEmailVerified: () => Promise<boolean>;
   logout: () => Promise<void>;
-  verifyTOTPChallenge: (code: string, tempToken: string) => Promise<unknown>;
-  registerVerify2FA: (code: string, tempToken: string) => Promise<unknown>;
+  verifyTOTPChallenge: (code: string, tempToken: string) => Promise<any>;
+  registerVerify2FA: (code: string, tempToken: string) => Promise<any>;
   sendPasswordReset: (email: string) => Promise<void>;
   confirmPasswordReset: (token: string, newPass: string) => Promise<void>;
   reauthenticateWithPassword: (password: string) => Promise<boolean>;
   requestOTP: (email: string) => Promise<void>;
-  verifyOTP: (email: string, otp: string) => Promise<unknown>;
+  verifyOTP: (email: string, otp: string) => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -326,7 +326,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setIsSuperAdmin(superAdminStatus);
         // eslint-disable-next-line react-hooks/immutability
         await syncSessionState(fbUser, profile.orgId);
-      } catch (error: unknown) {
+      } catch (error: any) {
         if (!active) return;
         logger.error('[Auth] Failed to load user profile:', error?.message);
         // Sign out cleanly on profile load failure
@@ -376,7 +376,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const sessionRef = doc(dbFS, 'sessions', sessionId);
 
-    let existingData: unknown = null;
+    let existingData: any = null;
     try {
       const snap = await withFirestoreRetry(() => getDoc(sessionRef));
       if (snap.exists()) existingData = snap.data();
@@ -415,7 +415,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (ua.includes('Chrome')) return 'Chrome';
     if (ua.includes('Safari') && !ua.includes('Chrome')) return 'Safari';
     if (ua.includes('Edge')) return 'Edge';
-    return 'Unknown Browser';
+    return 'any Browser';
   };
 
   const hasPermission = (permission: string): boolean => {
@@ -522,7 +522,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (!response.ok) {
         throw new Error(data.error || "Failed to send OTP");
       }
-    } catch (err: unknown) {
+    } catch (err: any) {
       logger.error("requestOTP error:", err);
       throw new Error(err.message || "Failed to send OTP");
     }
@@ -550,7 +550,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return { user: profile, token };
       }
       throw new Error("No token returned");
-    } catch (err: unknown) {
+    } catch (err: any) {
       logger.error("verifyOTP error:", err);
       throw new Error(err.message || "Invalid OTP");
     }
@@ -604,7 +604,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const credential = EmailAuthProvider.credential(fbUser.email, password);
       await reauthenticateWithCredential(fbUser, credential);
       return true;
-    } catch (err: unknown) {
+    } catch (err: any) {
       logger.error("Reauthentication failed:", err);
       throw new Error('Incorrect password');
     }

@@ -21,7 +21,7 @@ export interface ForecastInput {
     productId: string;
     currentStock: number;
   }[];
-  settings?: unknown;
+  settings?: any;
 }
 
 export interface TankForecast {
@@ -406,6 +406,6 @@ self.onmessage = (e: MessageEvent<ForecastInput>) => {
   } catch (error) {
     logger.error('Forecast Worker Error:', error);
      
-    self.postMessage({ error: 'Forecast computation failed' } as unknown as ForecastResult);
+    self.postMessage({ error: 'Forecast computation failed' } as any as ForecastResult);
   }
 };

@@ -28,7 +28,7 @@ import { DataConfidenceBadge } from '../../ui/DataConfidenceBadge';
 import { useInventoryStore } from '../../../stores/useInventoryStore';
 import { useSupplierStore } from '../../../stores/useSupplierStore';
 import { useFinancialStore } from '../../../stores/useFinancialStore';
-import { useStation } from '../../../contexts/StationContext';
+import { useStationStore } from '../../../stores/useStationStore';
 
 const COLORS = {
   Petrol: '#3b82f6', // Blue
@@ -40,7 +40,8 @@ const COLORS = {
 };
 
 export default function AdvancedFuelStock() {
-  const { settings, showToast } = useStation();
+  const settings = useStationStore((state) => state.settings);
+  const showToast = useStationStore((state) => state.showToast);
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => isUrdu ? ur : en;
 
@@ -200,7 +201,7 @@ export default function AdvancedFuelStock() {
     const pct = Math.round((t.currentStock / t.capacity) * 100) || 0;
     return {
       ...t,
-      productName: prod?.name || 'Unknown',
+      productName: prod?.name || 'any',
       colorName,
       colorHex: COLORS[colorName as keyof typeof COLORS] || COLORS.Default,
       pct
@@ -566,7 +567,7 @@ export default function AdvancedFuelStock() {
                     ))}
                   </Pie>
                   <Tooltip 
-                    formatter={(value: unknown) => [`${Number(value).toLocaleString()} Ltr`, 'Stock']}
+                    formatter={(value: any) => [`${Number(value).toLocaleString()} Ltr`, 'Stock']}
                     contentStyle={{ backgroundColor: '#0B1120', borderColor: '#1f2937', borderRadius: '8px', color: '#fff' }}
                     itemStyle={{ color: '#fff' }}
                   />
@@ -662,7 +663,7 @@ export default function AdvancedFuelStock() {
                       <Truck className="w-4 h-4" />
                     </div>
                     <div>
-                      <h4 className="text-slate-200 font-semibold text-sm truncate max-w-[120px]" title={sup?.name}>{sup?.name || 'Unknown Supplier'}</h4>
+                      <h4 className="text-slate-200 font-semibold text-sm truncate max-w-[120px]" title={sup?.name}>{sup?.name || 'any Supplier'}</h4>
                       <p className="text-slate-500 text-[10px] mt-0.5 truncate max-w-[120px]">{imp.by}</p>
                     </div>
                   </div>

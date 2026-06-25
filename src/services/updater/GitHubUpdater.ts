@@ -41,7 +41,7 @@ export async function checkForUpdates(): Promise<ReleaseInfo | null> {
     const latestVersion = release.tag_name.replace('v', '');
     
     // 3. Find the APK asset in the release
-    const apkAsset = release.assets?.find((asset: unknown) => asset.name.endsWith('.apk'));
+    const apkAsset = release.assets?.find((asset: any) => asset.name.endsWith('.apk'));
     
     if (!apkAsset) {
       return null; // No APK uploaded in the latest release

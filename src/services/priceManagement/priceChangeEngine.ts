@@ -8,10 +8,10 @@ export const priceChangeEngine = {
     tanks: Tank[],
     newPrice: number,
     userId: string,
-    reason: unknown = 'Manual Correction',
+    reason: any = 'Manual Correction',
     orgId?: string,
     stationId?: string,
-    attachments: unknown[] = []
+    attachments: any[] = []
   ) => {
     // 1. Calculate Impact first to get oldPrice cleanly
     // Wait, the original code called createSnapshot first, then calculateImpact.

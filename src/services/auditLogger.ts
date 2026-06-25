@@ -20,7 +20,7 @@ export class AuditLogger {
     // Fallbacks if user is not available
     const userName = user?.name || 'System';
     const userRole = user?.role || 'System';
-    const branch = stationId || user?.branchId || db.getActiveStationId() || 'Unknown Branch';
+    const branch = stationId || user?.branchId || db.getActiveStationId() || 'any Branch';
     
     const entryId = `audit_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
     

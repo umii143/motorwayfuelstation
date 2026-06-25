@@ -1,5 +1,4 @@
 /**
-import { logger } from '../lib/logger';
  * Centralized Logger Abstraction
  * Replaces direct logger.info/warn/error usage.
  * Allows for future integration with monitoring tools (e.g., Sentry, Datadog)
@@ -9,16 +8,18 @@ import { logger } from '../lib/logger';
 type LogLevel = 'info' | 'warn' | 'error' | 'debug';
 
 class Logger {
-  private log(level: LogLevel, message: string, ...args: unknown[]) {
+  private log(level: LogLevel, message: string, ...args: any[]) {
     // Determine if we should log based on environment.
     // In production, we might want to suppress 'debug' and 'info'.
-    const isProduction = import.meta.env?.PROD || false;
+    const isProduction = typeof process !== 'undefined'
+      ? process.env.NODE_ENV === 'production'
+      : typeof import.meta !== 'undefined' && (import.meta as any).env?.PROD === true;
 
     if (isProduction && (level === 'debug' || level === 'info')) {
       return;
     }
 
-    const consoleMethod = console[level] || logger.info;
+    const consoleMethod = console[level] || console.info;
     
     if (args.length > 0) {
       consoleMethod(`[${level.toUpperCase()}] ${message}`, ...args);
@@ -26,25 +27,47 @@ class Logger {
       consoleMethod(`[${level.toUpperCase()}] ${message}`);
     }
 
-    // Future: Add telemetry/error reporting dispatch here
+    // Telemetry/error reporting dispatch
     if (level === 'error' && isProduction) {
-      // e.g., Sentry.captureException(args[0] || message);
+      this.dispatchTelemetry(message, args);
     }
   }
 
-  info(message: string, ...args: unknown[]) {
+  private dispatchTelemetry(message: string, args: any[]) {
+    // Stub for Sentry / Datadog
+    // In a real environment, you would do:
+    // Sentry.captureException(new Error(message), { extra: { args } });
+    
+    // Fallback to a custom backend endpoint if no SDK is loaded
+    try {
+      fetch('/api/telemetry/error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          error: message,
+          context: args,
+          timestamp: new Date().toISOString(),
+          url: typeof window !== 'undefined' ? window.location.href : 'server',
+        })
+      }).catch(() => { /* Silent fail for telemetry */ });
+    } catch (e) {
+      // Ignore
+    }
+  }
+
+  info(message: string, ...args: any[]) {
     this.log('info', message, ...args);
   }
 
-  warn(message: string, ...args: unknown[]) {
+  warn(message: string, ...args: any[]) {
     this.log('warn', message, ...args);
   }
 
-  error(message: string, ...args: unknown[]) {
+  error(message: string, ...args: any[]) {
     this.log('error', message, ...args);
   }
 
-  debug(message: string, ...args: unknown[]) {
+  debug(message: string, ...args: any[]) {
     this.log('debug', message, ...args);
   }
 }

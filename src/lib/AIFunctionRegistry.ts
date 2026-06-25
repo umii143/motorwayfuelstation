@@ -186,7 +186,7 @@ export const jarvisFunctionDeclarations = [
 
  
  
-export const executeJarvisFunction = async (functionName: string, args: unknown, _dbStores?: unknown) => {
+export const executeJarvisFunction = async (functionName: string, args: any, _dbStores?: any) => {
   switch (functionName) {
     case "getTodaySales": {
       // Calculate today's sales from active/closed shifts today
@@ -508,7 +508,7 @@ export const executeJarvisFunction = async (functionName: string, args: unknown,
       const staffStore = useStaffStore.getState();
       
       const manager = staffStore.staff.find(s => s.name.toLowerCase().includes(managerName?.toLowerCase() || ""));
-      const managerId = manager ? manager.id : "unknown";
+      const managerId = manager ? manager.id : "any";
 
       const newShift = {
         id: `sh_${Date.now()}`,

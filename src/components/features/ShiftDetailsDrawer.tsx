@@ -27,7 +27,7 @@ interface ShiftDetailsDrawerProps {
   digitalAccounts: DigitalAccount[];
   nozzles: Nozzle[];
    
-  settings: unknown;
+  settings: any;
 }
 
 export function ShiftDetailsDrawer({
@@ -51,7 +51,7 @@ export function ShiftDetailsDrawer({
 
   const getStaffName = (id: string) => {
     const s = staff.find(st => st.id === id);
-    return s ? (isUrdu ? s.urduName : s.name) : 'Unknown';
+    return s ? (isUrdu ? s.urduName : s.name) : 'any';
   };
 
   const getStaffRole = (id: string) => {
@@ -360,7 +360,7 @@ export function ShiftDetailsDrawer({
  
 }
 
-function FinancialCard({ title, amount, icon, bg }: unknown) {
+function FinancialCard({ title, amount, icon, bg }: any) {
   return (
     <div className="p-4 bg-white dark:bg-[#111827] rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
       <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${bg}`}>
@@ -375,7 +375,7 @@ function FinancialCard({ title, amount, icon, bg }: unknown) {
   );
 }
 
-function ProgressBar({ label, value, color, amount }: unknown) {
+function ProgressBar({ label, value, color, amount }: any) {
   return (
     <div className="flex items-center gap-4 text-sm">
       <div className="w-24 shrink-0 text-slate-600 dark:text-slate-300 text-xs">{label}</div>
@@ -389,7 +389,7 @@ function ProgressBar({ label, value, color, amount }: unknown) {
   );
 }
 
-function PaymentRow({ icon, label, amount, percent }: unknown) {
+function PaymentRow({ icon, label, amount, percent }: any) {
   return (
     <div className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-slate-800/50 last:border-0">
       <div className="flex items-center gap-3">
@@ -407,7 +407,7 @@ function PaymentRow({ icon, label, amount, percent }: unknown) {
   );
 }
 
-function ActionButton({ icon, label, color, border }: unknown) {
+function ActionButton({ icon, label, color, border }: any) {
   return (
     <button className={`flex items-center justify-center gap-2 p-3 rounded-xl border bg-white dark:bg-[#111827] hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${border} ${color}`}>
       {icon}

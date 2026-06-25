@@ -23,7 +23,7 @@ interface ShiftState {
   shifts: Shift[];
   setShifts: (shifts: Shift[]) => void;
   handleAddShift: (newShift: Shift, orgId?: string, stationId?: string) => Promise<void>;
-  handleUpdateShift: (updatedShift: Shift, orgId?: string, stationId?: string, checkPerm?: unknown) => Promise<void>;
+  handleUpdateShift: (updatedShift: Shift, orgId?: string, stationId?: string, checkPerm?: Function) => Promise<void>;
   handleDeleteDebitEntry: (shiftId: string, entryId: string, orgId?: string, stationId?: string) => Promise<void>;
   handleDeleteRecoveryEntry: (shiftId: string, entryId: string, orgId?: string, stationId?: string) => Promise<void>;
   handleDeleteSupplierPayment: (shiftId: string, entryId: string, orgId?: string, stationId?: string) => Promise<void>;

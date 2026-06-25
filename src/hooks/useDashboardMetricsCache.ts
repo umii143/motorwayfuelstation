@@ -92,7 +92,7 @@ export function useFuelDashboardMetricsCache(params: FuelMetricsParams) {
     if (Math.abs(maxVariance) > 50) alerts.push({ msg: `High variance detected in ${worstProduct}: ${maxVariance.toFixed(1)}L. Check dip readings.`, type: 'danger' });
     if (totalPayables > totalCash) alerts.push({ msg: `Critical: Total payables exceed current cash position.`, type: 'danger' });
 
-    const feed: unknown[] = [];
+    const feed: any[] = [];
     // Feed population is handled normally
     // ...
 

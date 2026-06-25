@@ -243,44 +243,44 @@ const SEED_LUBE_SETTINGS: GlobalSettings = {
   setupVersion: 1
 };
 
-const SEED_LUBE_STAFF: unknown = [];
+const SEED_LUBE_STAFF: any = [];
 
-const SEED_LUBE_PRODUCTS: unknown = [];
+const SEED_LUBE_PRODUCTS: any = [];
 
-const SEED_LUBE_CUSTOMERS: unknown = [];
+const SEED_LUBE_CUSTOMERS: any = [];
 
-const SEED_LUBE_SUPPLIERS: unknown = [];
+const SEED_LUBE_SUPPLIERS: any = [];
 
-const SEED_LUBE_BANKS: unknown = [];
+const SEED_LUBE_BANKS: any = [];
 
-const SEED_LUBE_DIGITAL_ACCOUNTS: unknown = [];
+const SEED_LUBE_DIGITAL_ACCOUNTS: any = [];
 
-const SEED_LUBE_PUMPS: unknown = [];
+const SEED_LUBE_PUMPS: any = [];
 
-const SEED_LUBE_NOZZLES: unknown = [];
+const SEED_LUBE_NOZZLES: any = [];
 
-const SEED_LUBE_TANKS: unknown = [];
+const SEED_LUBE_TANKS: any = [];
 
 // ==========================================
 // SEED DATA FOR BUSINESS 1: FUEL STATION FALLBACKS
 // ==========================================
-const SEED_FUEL_STAFF: unknown = [];
+const SEED_FUEL_STAFF: any = [];
 
-const SEED_FUEL_PRODUCTS: unknown = [];
+const SEED_FUEL_PRODUCTS: any = [];
 
-const SEED_FUEL_PUMPS: unknown = [];
+const SEED_FUEL_PUMPS: any = [];
 
-const SEED_FUEL_NOZZLES: unknown = [];
+const SEED_FUEL_NOZZLES: any = [];
 
-const SEED_FUEL_TANKS: unknown = [];
+const SEED_FUEL_TANKS: any = [];
 
-const SEED_FUEL_CUSTOMERS: unknown = [];
+const SEED_FUEL_CUSTOMERS: any = [];
 
-const SEED_FUEL_SUPPLIERS: unknown = [];
+const SEED_FUEL_SUPPLIERS: any = [];
 
-const SEED_FUEL_BANKS: unknown = [];
+const SEED_FUEL_BANKS: any = [];
 
-const SEED_FUEL_DIGITAL_ACCOUNTS: unknown = [];
+const SEED_FUEL_DIGITAL_ACCOUNTS: any = [];
 
 // ==========================================
 // SEED DATA FOR DEALER MARGINS
@@ -415,15 +415,15 @@ function scopeStorageRecords<T extends TenantDocument>(
   kind: ScopedListKind = 'default'
 ): T[] {
   if (kind === 'products') {
-    return isolateProductRecords(records as unknown as Product[], stationId) as unknown as T[];
+    return isolateProductRecords(records as any as Product[], stationId) as any as T[];
   }
 
   if (kind === 'shifts') {
-    return isolateShiftRecords(records as unknown as Shift[], stationId) as unknown as T[];
+    return isolateShiftRecords(records as any as Shift[], stationId) as any as T[];
   }
 
   if (kind === 'lubePosSales') {
-    return isolateLubePosSales(records as unknown as LubePosSale[], stationId) as unknown as T[];
+    return isolateLubePosSales(records as any as LubePosSale[], stationId) as any as T[];
   }
 
   return isolateTenantRecords(records, stationId);

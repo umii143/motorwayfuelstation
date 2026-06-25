@@ -153,7 +153,7 @@ export default function LoyaltyDashboard({ settings, stationId }: LoyaltyDashboa
               return (
                 <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition">
                   <div>
-                    <div className="font-bold text-slate-900 text-sm">{member?.name || 'Unknown Member'}</div>
+                    <div className="font-bold text-slate-900 text-sm">{member?.name || 'any Member'}</div>
                     <div className="text-xs text-slate-500 mt-0.5 line-clamp-1">{tx.description}</div>
                   </div>
                   <div className="text-right">

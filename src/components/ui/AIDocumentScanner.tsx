@@ -9,7 +9,7 @@ interface AIDocumentScannerProps {
   isOpen: boolean;
   onClose: () => void;
   settings: GlobalSettings;
-  onDataExtracted?: (data: unknown) => void;
+  onDataExtracted?: (data: any) => void;
   extractionPrompt?: string;
 }
 
@@ -82,8 +82,8 @@ export default function AIDocumentScanner({ isOpen, onClose, settings, onDataExt
         }
       };
       reader.readAsDataURL(selectedFile);
-    } catch (err: unknown) {
-      logger.error(err);
+    } catch (err: any) {
+      logger.error(String(err));
       setError(t('Failed to extract data. Please try again.', 'ڈیٹا نکالنے میں ناکامی۔ براہ کرم دوبارہ کوشش کریں۔'));
     } finally {
       setIsScanning(false);

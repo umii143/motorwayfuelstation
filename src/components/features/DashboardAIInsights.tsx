@@ -14,7 +14,7 @@ export function DashboardAIInsights({ settings, shifts }: Props) {
   
    
   const insights = useMemo(() => {
-    const alerts: unknown[] = [];
+    const alerts: any[] = [];
     
     // Evaluate the last 5 shifts
     const recentShifts = [...shifts].sort((a, b) => b.id.localeCompare(a.id)).slice(0, 5);

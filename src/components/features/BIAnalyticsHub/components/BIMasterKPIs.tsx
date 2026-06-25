@@ -9,8 +9,8 @@ import {
 } from 'lucide-react';
 
 interface BIMasterKPIsProps {
-  metrics: unknown; // Type it with the biAggregator output later
-  settings: unknown;
+  metrics: any; // Type it with the biAggregator output later
+  settings: any;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

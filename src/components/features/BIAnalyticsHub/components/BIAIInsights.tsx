@@ -6,7 +6,7 @@ import { useSupplierStore } from '../../../../stores/useSupplierStore';
 import { useShallow } from 'zustand/react/shallow';
 import { fetchWithAuth } from '../../../../lib/api';
 
-export function BIAIInsights({ metrics }: unknown) {
+export function BIAIInsights({ metrics }: any) {
   const customers = useCustomerStore(useShallow(state => state.customers || []));
   const products = useInventoryStore(useShallow(state => state.products || []));
   const suppliers = useSupplierStore(useShallow(state => state.suppliers || []));
@@ -74,7 +74,7 @@ export function BIAIInsights({ metrics }: unknown) {
       let totalLiters = 0;
       let totalSpent = 0;
       
-      Object.values(supplierPerformance).forEach((data: unknown) => {
+      Object.values(supplierPerformance).forEach((data: any) => {
         totalLiters += data.liters;
         totalSpent += data.spent;
       });

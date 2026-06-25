@@ -1,10 +1,10 @@
 /**
-import { logger } from '../../lib/logger';
  * FuelPro EOC — Event Bus
  * Lightweight pub/sub system for decoupled module communication.
  * Every operational event is broadcast. Modules subscribe independently.
  * Powered by Umar Ali ⚡
  */
+import { logger } from '../../lib/logger';
 
 // ─── Event Catalog ────────────────────────────────────────────────────────────
 
@@ -41,7 +41,7 @@ export const EOC_EVENTS = {
 
 export type EOCEventName = typeof EOC_EVENTS[keyof typeof EOC_EVENTS];
 
-export interface EOCEvent<T = unknown> {
+export interface EOCEvent<T = any> {
   eventName: EOCEventName;
   payload: T;
   stationId: string;
@@ -51,31 +51,31 @@ export interface EOCEvent<T = unknown> {
   triggeredBy: string;
 }
 
-type EventHandler<T = unknown> = (event: EOCEvent<T>) => void | Promise<void>;
+type EventHandler<T = any> = (event: EOCEvent<T>) => void | Promise<void>;
 
 // ─── Event Bus Implementation ─────────────────────────────────────────────────
 
 class EOCEventBus {
-  private handlers: Map<EOCEventName, Set<EventHandler<unknown>>> = new Map();
+  private handlers: Map<EOCEventName, Set<EventHandler<any>>> = new Map();
   private eventLog: EOCEvent[] = [];
   private readonly MAX_LOG_SIZE = 500;
 
   /** Subscribe to an event. Returns an unsubscribe function. */
-  on<T = unknown>(eventName: EOCEventName, handler: EventHandler<T>): () => void {
+  on<T = any>(eventName: EOCEventName, handler: EventHandler<T>): () => void {
     if (!this.handlers.has(eventName)) {
       this.handlers.set(eventName, new Set());
     }
-    this.handlers.get(eventName)!.add(handler as EventHandler<unknown>);
+    this.handlers.get(eventName)!.add(handler as EventHandler<any>);
     return () => this.off(eventName, handler);
   }
 
   /** Unsubscribe from an event. */
-  off<T = unknown>(eventName: EOCEventName, handler: EventHandler<T>): void {
-    this.handlers.get(eventName)?.delete(handler as EventHandler<unknown>);
+  off<T = any>(eventName: EOCEventName, handler: EventHandler<T>): void {
+    this.handlers.get(eventName)?.delete(handler as EventHandler<any>);
   }
 
   /** Subscribe to an event — fires only once. */
-  once<T = unknown>(eventName: EOCEventName, handler: EventHandler<T>): void {
+  once<T = any>(eventName: EOCEventName, handler: EventHandler<T>): void {
     const wrappedHandler: EventHandler<T> = (event) => {
       handler(event);
       this.off(eventName, wrappedHandler);
@@ -84,7 +84,7 @@ class EOCEventBus {
   }
 
   /** Emit an event to all registered handlers. */
-  emit<T = unknown>(
+  emit<T = any>(
     eventName: EOCEventName,
     payload: T,
     stationId: string,

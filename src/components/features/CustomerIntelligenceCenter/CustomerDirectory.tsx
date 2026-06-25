@@ -6,7 +6,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { ResponsiveTable } from '../../shared/ResponsiveTable';
 import { motion, AnimatePresence } from 'motion/react';
-import { useStation } from '../../../contexts/StationContext';
+import { useStationStore } from '../../../stores/useStationStore';
 import {
   UserPlus,
   ArrowUpRight,
@@ -138,7 +138,9 @@ export default function CustomerDirectory({
   onDeleteDebitEntry,
   onDeleteRecoveryEntry
 }: CustomersProps) {
-  const { showToast, showConfirm, showAlert } = useStation();
+  const showToast = useStationStore((state) => state.showToast);
+  const showConfirm = useStationStore((state) => state.showConfirm);
+  const showAlert = useStationStore((state) => state.showAlert);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const t = (en: string, ur: string) => translate(en, ur, settings);
   // Single source of truth: use activeStationId, not product-type heuristic
@@ -386,7 +388,7 @@ export default function CustomerDirectory({
       const data = await response.json();
       setAiInsightsResult(data.reply);
     } catch (error) {
-      logger.error(error);
+      logger.error(String(error));
       setAiInsightsResult(t("⚠️ Could not generate AI insights.", "⚠️ AI تجزیہ تیار نہیں ہو سکا۔"));
     } finally {
       setIsGeneratingAiInsights(false);

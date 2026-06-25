@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Filter, ArrowUpDown, Download, Mic, MicOff } from 'lucide-react';
-import { useStation } from '../../contexts/StationContext';
+import { useStationStore } from '../../stores/useStationStore';
 import { logger } from '../../lib/logger';
 
 // Define types for Web Speech API
 declare global {
   interface Window {
-    SpeechRecognition: unknown;
-    webkitSpeechRecognition: unknown;
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
   }
 }
 
@@ -30,10 +30,11 @@ export function ModuleSearchBar({
   moduleName,
   className = ''
 }: ModuleSearchBarProps) {
-  const { settings, showAlert } = useStation();
+  const settings = useStationStore((state) => state.settings);
+  const showAlert = useStationStore((state) => state.showAlert);
   const [query, setQuery] = useState('');
   const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<unknown>(null);
+  const recognitionRef = useRef<any>(null);
   const isUrdu = settings.language === 'ur';
 
   useEffect(() => {
@@ -46,14 +47,14 @@ export function ModuleSearchBar({
       // Set language based on app settings
       recognition.lang = isUrdu ? 'ur-PK' : 'en-US';
 
-      recognition.onresult = (event: unknown) => {
+      recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
         setQuery(transcript);
         onSearch(transcript);
         setIsListening(false);
       };
 
-      recognition.onerror = (event: unknown) => {
+      recognition.onerror = (event: any) => {
         logger.error('Speech recognition error', event.error);
         setIsListening(false);
         showAlert('error', isUrdu ? 'آواز کی شناخت میں مسئلہ ہوا' : 'Voice recognition failed');
@@ -86,7 +87,7 @@ export function ModuleSearchBar({
         recognitionRef.current.start();
         setIsListening(true);
       } catch (e) {
-        logger.error(e);
+        logger.error(String(e));
       }
     }
   };

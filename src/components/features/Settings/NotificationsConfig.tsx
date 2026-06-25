@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Bell, Save, MessageSquare, Mail, AlertTriangle, TrendingDown, Zap, Phone } from 'lucide-react';
-import { useStation } from '../../../contexts/StationContext';
+import { useStationStore } from '../../../stores/useStationStore';
 import { GlobalSettings } from '../../../types';
 
 interface NotificationToggleProps {
@@ -51,7 +51,7 @@ export default function NotificationsConfig({
   onUpdateSettings: (s: GlobalSettings) => void;
   activeStationId: string;
 }) {
-  const { showToast } = useStation();
+  const showToast = useStationStore((state) => state.showToast);
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
   
@@ -70,7 +70,7 @@ export default function NotificationsConfig({
    
   });
 
-  const set = (key: keyof typeof notif, val: unknown) =>
+  const set = (key: keyof typeof notif, val: any) =>
     setNotif(prev => ({ ...prev, [key]: val }));
 
   const handleSave = () => {

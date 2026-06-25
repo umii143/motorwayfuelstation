@@ -28,7 +28,7 @@ export const ShiftReceiptDocument: React.FC<ShiftReceiptProps> = ({ shift, gener
           <Text style={pdfStyles.sectionTitle}>Shift Details</Text>
           <View style={pdfStyles.metaDataContainer}>
             <View style={pdfStyles.metaDataColumn}>
-              <Text>Operator ID: {shift.staffId || 'Unknown'}</Text>
+              <Text>Operator ID: {shift.staffId || 'any'}</Text>
               <Text>Shift Period: {shift.type}</Text>
             </View>
           </View>

@@ -23,7 +23,7 @@ import AIDocumentScanner from '../ui/AIDocumentScanner';
 import { ExpenseEntry, GlobalSettings, Shift } from '../../types';
 import { formatCurrency } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
-import { useStation } from '../../contexts/StationContext';
+import { useStationStore } from '../../stores/useStationStore';
 import { isLubeBusinessStation } from '../../lib/businessScope';
 
 interface ExpensesProps {
@@ -43,7 +43,8 @@ export default function Expenses({
   standaloneExpenses,
   onAddStandaloneExpense
 }: ExpensesProps) {
-  const { showToast, handleUpdateSettings } = useStation();
+  const showToast = useStationStore((state) => state.showToast);
+  const handleUpdateSettings = useStationStore((state) => state.handleUpdateSettings);
   const t = (en: string, ur: string) => translate(en, ur, settings);
   const isUrdu = settings.language === 'ur';
 
@@ -220,7 +221,7 @@ export default function Expenses({
     showToast(t('Direct station expense registered successfully!', 'اسٹیشن کا براہ راست خرچہ رجسٹر ہو گیا!'), 'success');
   };
 
-  const handleExpenseAutoFill = (data: unknown) => {
+  const handleExpenseAutoFill = (data: any) => {
     if (data.Amount) {
       const amtMatch = String(data.Amount).replace(/[^0-9.]/g, '');
       if (amtMatch) setFormAmount(amtMatch);

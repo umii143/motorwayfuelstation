@@ -118,7 +118,7 @@ export default function SupplierDetailsFullPage({ supplier, settings, shifts, ba
 
   // 4. Construct Unified Transaction Ledger
   const transactions = useMemo(() => {
-    const combined: unknown[] = [];
+    const combined: any[] = [];
     
     supplierBatches.forEach(b => {
       const amt = b.invoiceTotalAmount || (b.qtyReceived * (b.invoiceCostPerLiter || 0));

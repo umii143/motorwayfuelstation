@@ -70,7 +70,7 @@ export default React.memo(function FuelDashboard({
    
   const { forecast, isComputing } = useForecastEngine(shifts, tanks, products);
   
-  const activeShift = (shifts as unknown[]).find(s => s.status === 'Open' || s.status === 'active');
+  const activeShift = shifts.find(s => s.status === 'active');
 
   // --- 1. CORE DATA CALCULATIONS ---
   const stats = useMemo(() => {
@@ -79,15 +79,18 @@ export default React.memo(function FuelDashboard({
     let todayRevenue = 0;
     let todayLiters = 0;
     let todayProfit = 0;
-    let totalTxns = todayShifts.length * 45; // Simulated for visualization if zero, but user requested NO Math.random. Actually, we should count actual transactions if we had them. We'll use shift count.
-     
-    if (totalTxns === 0 && todayShifts.length > 0) totalTxns = todayShifts.length;
-    
+    // Count actual transactions: each nozzle reading in today's shifts = 1 transaction
+    let totalTxns = 0;
+    todayShifts.forEach((shift: any) => {
+      totalTxns += (shift.nozzleReadings?.length || 0) + (shift.salesEntries?.length || 0);
+    });
+    if (totalTxns === 0) totalTxns = todayShifts.length; // fallback: at least 1 per shift
+
      
     // Revenue and Liters from Today's Shifts
-    todayShifts.forEach((shift: unknown) => {
+    todayShifts.forEach((shift: any) => {
       todayRevenue += shift.totalSales || 0;
-      shift.nozzleReadings?.forEach((nr: unknown) => {
+      shift.nozzleReadings?.forEach((nr: any) => {
         const product = products.find(p => p.id === nr.productId);
         const saleVolume = nr.closingReading > 0 ? Math.max(0, nr.closingReading - nr.openingReading) : 0;
         todayLiters += saleVolume;
@@ -115,7 +118,7 @@ export default React.memo(function FuelDashboard({
     let totalTankCapacity = 0;
     let totalCurrentStock = 0;
     
-    (tanks as unknown[]).forEach(t => {
+    tanks.forEach(t => {
       totalTankCapacity += t.capacity;
       totalCurrentStock += t.currentStock;
       const pct = t.capacity > 0 ? (t.currentStock / t.capacity) * 100 : 0;
@@ -128,8 +131,8 @@ export default React.memo(function FuelDashboard({
     const tankHealthPct = totalTankCapacity > 0 ? (totalCurrentStock / totalTankCapacity) * 100 : 100;
 
     // Nozzles
-    const onlineNozzles = (nozzles as unknown[]).filter(n => n.status === 'Active' || !n.status).length;
-    const maintenanceNozzles = (nozzles as unknown[]).filter(n => n.status === 'Maintenance').length;
+    const onlineNozzles = (nozzles as any[]).filter(n => n.status === 'Active' || !n.status).length;
+    const maintenanceNozzles = (nozzles as any[]).filter(n => n.status === 'Maintenance').length;
     const offlineNozzles = nozzles.length - onlineNozzles - maintenanceNozzles;
      
     const nozzleHealthPct = nozzles.length > 0 ? (onlineNozzles / nozzles.length) * 100 : 100;
@@ -143,7 +146,7 @@ export default React.memo(function FuelDashboard({
     let todayVariance = 0;
      
      
-    todayShifts.forEach((s: unknown) => todayVariance += (s.difference || 0));
+    todayShifts.forEach((s: any) => todayVariance += (s.difference || 0));
      
     const varianceScore = Math.max(0, 100 - Math.abs(todayVariance / 1000));
   
@@ -173,14 +176,14 @@ export default React.memo(function FuelDashboard({
     }
 
     // Fuel Intelligence
-    const fuelIntel: Record<string, unknown> = { /* empty */ };
+    const fuelIntel: Record<string, any> = { /* empty */ };
     products.forEach(p => {
       fuelIntel[p.id] = { name: p.name, liters: 0, revenue: 0, profit: 0, color: p.name.toLowerCase().includes('diesel') ? '#10B981' : p.name.toLowerCase().includes('octane') ? '#8B5CF6' : p.name.toLowerCase().includes('cng') ? '#06B6D4' : '#F97316' };
      
     });
     
-    todayShifts.forEach((shift: unknown) => {
-      shift.nozzleReadings?.forEach((nr: unknown) => {
+    todayShifts.forEach((shift: any) => {
+      shift.nozzleReadings?.forEach((nr: any) => {
         if (fuelIntel[nr.productId]) {
            
           const vol = nr.closingReading > 0 ? Math.max(0, nr.closingReading - nr.openingReading) : 0;
@@ -198,7 +201,7 @@ export default React.memo(function FuelDashboard({
   
 
      
-    const sortedFuelIntel = Object.values(fuelIntel).sort((a: unknown,b: unknown) => b.revenue - a.revenue);
+    const sortedFuelIntel = Object.values(fuelIntel).sort((a: any,b: any) => b.revenue - a.revenue);
   
 
     // Alerts
@@ -222,7 +225,7 @@ export default React.memo(function FuelDashboard({
         id: (tx as any).id, type: 'stock', title: (tx as any).type === 'receipt' ? 'Tank Refilled' : 'Inventory Adj', desc: products.find(p => p.id === (tx as any).itemId)?.name || 'Product', amount: `${(tx as any).quantity}L`,
         time: '10:00 AM', timestamp: new Date(`${(tx as any).date} 10:00 AM`).getTime(), icon: Droplets, color: 'text-blue-500', bg: 'bg-white/5'
       }))
-    ].sort((a: unknown,b: unknown) => (b.timestamp || '') - (a.timestamp || '')).slice(0, 8);
+    ].sort((a: any,b: any) => (b.timestamp || '') - (a.timestamp || '')).slice(0, 8);
 
     // Chart Data (Last 7 Days)
     const chartData = Array.from({length: 7}, (_, i) => {
@@ -241,7 +244,7 @@ export default React.memo(function FuelDashboard({
       const formattedHour = hour % 12 === 0 ? 12 : hour % 12;
       let revenue = 0;
       
-      todayShifts.forEach((shift: unknown) => {
+      todayShifts.forEach((shift: any) => {
         const startHour = shift.time ? parseInt(shift.time.split(':')[0]) : 8;
         let endHour = shift.endTime ? parseInt(shift.endTime.split(':')[0]) : new Date().getHours();
         if (endHour <= startHour) endHour = startHour + 1; // At least 1 hour duration assumption
@@ -482,7 +485,7 @@ export default React.memo(function FuelDashboard({
                    </h2>
                    <div className="space-y-4">
                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                     {stats.fuelIntel.length > 0 ? stats.fuelIntel.map((f: unknown, idx: number) => (
+                     {stats.fuelIntel.length > 0 ? stats.fuelIntel.map((f: any, idx: number) => (
                        <div key={idx} className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] hover:bg-white/[0.05] transition-colors">
                          <div>
                            <div className="text-sm font-black text-white flex items-center gap-2">
@@ -609,7 +612,7 @@ export default React.memo(function FuelDashboard({
                 {nozzles.length > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    {(nozzles as unknown[]).map(n => {
+                    {(nozzles as any[]).map(n => {
                       const isActive = n.status === 'Active' || !n.status;
                       const isMaint = n.status === 'Maintenance';
                       return (
@@ -752,7 +755,7 @@ export default React.memo(function FuelDashboard({
                 </h2>
                 <div className="space-y-3">
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  {stats.alerts.length > 0 ? stats.alerts.map((alert: unknown, idx: number) => (
+                  {stats.alerts.length > 0 ? stats.alerts.map((alert: any, idx: number) => (
                     <div key={idx} className={`p-3 rounded-2xl border ${alert.type === 'danger' ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-orange-500/10 border-orange-500/20 text-orange-400'} text-xs font-bold leading-relaxed shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]`}>
                       {alert.msg}
                     </div>
@@ -774,7 +777,7 @@ export default React.memo(function FuelDashboard({
                 </h2>
                 <div className="space-y-4">
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  {stats.feed.length > 0 ? stats.feed.map((item: unknown, idx: number) => (
+                  {stats.feed.length > 0 ? stats.feed.map((item: any, idx: number) => (
                     <div key={idx} className="flex gap-3 relative">
                       {idx !== stats.feed.length - 1 && (
                         <div className="absolute top-8 left-4 bottom-0 w-px bg-white/10 -translate-x-1/2"></div>

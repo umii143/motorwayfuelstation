@@ -43,7 +43,7 @@ export function InvestigationModal({
   }
 
   const s = staff.find(st => st.id === shift.staffId);
-  const staffName = s ? s.name : 'Unknown';
+  const staffName = s ? s.name : 'any';
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-md animate-in fade-in duration-300">

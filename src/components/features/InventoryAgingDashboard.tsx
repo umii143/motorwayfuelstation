@@ -235,13 +235,13 @@ export default function InventoryAgingDashboard({
             const tier = getTierForDays(maxDays);
             const TierIcon = tier.icon;
             return (
-              <div key={product?.id || 'unknown'} className="flex items-center gap-2">
+              <div key={product?.id || 'any'} className="flex items-center gap-2">
                 <div className={`size-6 rounded flex items-center justify-center shrink-0 ${tier.badgeBg}`}>
                   <TierIcon className={`size-3 ${tier.color}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-center mb-0.5">
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{product?.name || 'Unknown'}</span>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{product?.name || 'any'}</span>
                     <span className={`text-[9px] font-black px-1.5 py-0.5 rounded ${tier.badgeBg} ${tier.badgeText}`}>
                       Max {maxDays}d — {tier.label}
                     </span>

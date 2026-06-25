@@ -1,8 +1,13 @@
 import { useMemo } from 'react';
-import { useStation } from '../contexts/StationContext';
+import { useFinancialStore } from '../stores/useFinancialStore';
+import { useCustomerStore } from '../stores/useCustomerStore';
+import { useSupplierStore } from '../stores/useSupplierStore';
 
 export function useTreasuryMetrics() {
-  const { banks, customers, suppliers, digitalAccounts } = useStation();
+  const banks = useFinancialStore((state) => state.banks);
+  const customers = useCustomerStore((state) => state.customers);
+  const suppliers = useSupplierStore((state) => state.suppliers);
+  const digitalAccounts = useFinancialStore((state) => state.digitalAccounts);
 
   return useMemo(() => {
     // Only subscribe to relevant context fields

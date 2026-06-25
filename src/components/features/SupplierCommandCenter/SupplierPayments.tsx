@@ -4,7 +4,7 @@ import { Supplier, BankAccount, GlobalSettings } from '../../../types';
 import { useFinancialStore } from '../../../stores/useFinancialStore';
 import { useTreasuryStore } from '../../../stores/useTreasuryStore';
 import { useSupplierStore } from '../../../stores/useSupplierStore';
-import { useStation } from '../../../contexts/StationContext';
+import { useStationStore } from '../../../stores/useStationStore';
 import { t as translate } from '../../../lib/translations';
 import { logger } from '../../../lib/logger';
 
@@ -16,7 +16,7 @@ interface SupplierPaymentsProps {
 }
 
 export default function SupplierPayments({ suppliers, banks, settings, onClose }: SupplierPaymentsProps) {
-  const { showToast } = useStation();
+  const showToast = useStationStore((state) => state.showToast);
   const t = (en: string, ur: string) => translate(en, ur, settings);
 
   const [selectedSupplierId, setSelectedSupplierId] = useState(suppliers[0]?.id || '');
@@ -119,8 +119,8 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
 
       showToast(t('Payment recorded successfully.', 'ادائیگی کامیابی سے درج ہو گئی۔'), 'success');
       onClose();
-    } catch (err: unknown) {
-      logger.error(err);
+    } catch (err: any) {
+      logger.error(String(err));
       showToast('Failed to record payment.', 'error');
     }
   };

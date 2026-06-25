@@ -47,7 +47,7 @@ export interface ShiftEvent {
   partyName?: string;
   partyType?: string;
   txnId?: string;
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, any>;
 }
 
 export interface SecurityEvent {
@@ -57,7 +57,7 @@ export interface SecurityEvent {
   severity: 'low' | 'medium' | 'high' | 'critical';
   performedBy: string;
   stationId: string;
-  details: Record<string, unknown>;
+  details: Record<string, any>;
   ipAddress: string;
   userAgent: string;
 }
@@ -85,7 +85,7 @@ export async function logShiftEvent(
     partyName?: string;
     partyType?: string;
     txnId?: string;
-    metadata?: Record<string, unknown>;
+    metadata?: Record<string, any>;
     performedBy?: string;
   }
 ): Promise<ShiftEvent> {
@@ -124,7 +124,7 @@ export async function logSecurityEvent(
   stationId: string,
   action: string,
   severity: SecurityEvent['severity'],
-  details: Record<string, unknown>,
+  details: Record<string, any>,
   performedBy?: string
 ): Promise<SecurityEvent> {
   const authState = useAuthStore.getState();

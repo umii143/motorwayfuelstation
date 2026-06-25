@@ -2,7 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Zap } from 'lucide-react';
 
-export default function LoadingScreen() {
+interface LoadingScreenProps {
+  message?: string;
+}
+
+export default function LoadingScreen({ message = 'Loading System...' }: LoadingScreenProps) {
   const [progress, setProgress] = useState(0);
 
   // High-speed artificial progress to make the app feel lightning fast
@@ -66,7 +70,7 @@ export default function LoadingScreen() {
         {/* High-Speed 0 to 10 Progress Line */}
         <div className="w-full mt-4">
           <div className="flex justify-between items-center mb-3">
-             <span className="text-orange-500/80 text-[10px] font-black tracking-widest uppercase shadow-orange-500 drop-shadow-md">Initializing Core Systems</span>
+             <span className="text-orange-500/80 text-[10px] font-black tracking-widest uppercase shadow-orange-500 drop-shadow-md">{message}</span>
              <span className="text-orange-400 text-xs font-black font-mono">{(progress * 10)}%</span>
           </div>
           

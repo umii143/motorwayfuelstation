@@ -12,7 +12,7 @@ import { NativeHaptics } from '../../services/hardware/Haptics';
 
 interface AuthInterfaceProps {
   settings: GlobalSettings;
-  onLoginSuccess: (user: unknown, token: string) => void;
+  onLoginSuccess: (user: any, token: string) => void;
 }
 
 export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfaceProps) {
@@ -60,7 +60,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
     try {
       await loginWithEmail(email, password);
       NativeHaptics.success();
-    } catch (err: unknown) {
+    } catch (err: any) {
       setErrorMsg(err.message || "Failed to sign in.");
       NativeHaptics.error();
     } finally {
@@ -76,7 +76,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
       const data = await loginWithGoogle();
       onLoginSuccess(data.user, data.token || "");
       NativeHaptics.success();
-    } catch (err: unknown) {
+    } catch (err: any) {
       setErrorMsg(err.message || "Google sign-in failed.");
       NativeHaptics.error();
     } finally {

@@ -64,6 +64,7 @@
     "react-grid-layout": "^2.2.3",
     "react-hot-toast": "^2.6.0",
     "react-is": "^19.2.7",
+    "react-router-dom": "^7.18.0",
     "react-to-print": "^3.3.0",
     "react-window": "^1.8.11",
     "recharts": "^3.8.1",

@@ -12,7 +12,7 @@ import { ResponsiveTable } from '../shared/ResponsiveTable';
 import { DigitalAccount, Shift, GlobalSettings, LubePosSale } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
-import { useStation } from '../../contexts/StationContext';
+import { useStationStore } from '../../stores/useStationStore';
 import TreasuryDrillDownModal from './ExecutiveDashboard/TreasuryDrillDownModal';
 
 interface DigitalCashPanelProps {
@@ -32,7 +32,7 @@ export default function DigitalCashPanel({
   shifts,
   lubePosSales
 }: DigitalCashPanelProps) {
-  const { showToast } = useStation();
+  const showToast = useStationStore((state) => state.showToast);
   const t = (en: string, ur: string) => translate(en, ur, settings);
 
   const [searchQuery, setSearchQuery] = useState('');

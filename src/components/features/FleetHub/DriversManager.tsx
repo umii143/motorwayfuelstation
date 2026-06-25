@@ -105,13 +105,13 @@ export default function DriversManager({ settings, stationId }: DriversManagerPr
 
   const getAccountName = (id: string) => {
     const acc = accounts.find(a => a.id === id);
-    return acc ? acc.companyName : 'Unknown Account';
+    return acc ? acc.companyName : 'any Account';
   };
 
   const getVehicleReg = (id?: string) => {
     if (!id) return null;
     const v = vehicles.find(v => v.id === id);
-    return v ? v.registrationNumber : 'Unknown Vehicle';
+    return v ? v.registrationNumber : 'any Vehicle';
   };
 
   const filteredDrivers = drivers.filter(d => 

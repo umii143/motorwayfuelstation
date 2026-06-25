@@ -6,14 +6,14 @@ import { logger } from '../../lib/logger';
 
 // Simple Error Boundary
 class ErrorBoundary extends React.Component<{ fallback: React.ReactNode, children: React.ReactNode }, { hasError: boolean }> {
-  constructor(props: unknown) {
+  constructor(props: any) {
     super(props);
     this.state = { hasError: false };
   }
   static getDerivedStateFromError() { return { hasError: true }; }
    
    
-  componentDidCatch(error: unknown, errorInfo: unknown) { logger.error("Widget Error:", error, errorInfo); }
+  componentDidCatch(error: any, errorInfo: any) { logger.error("Widget Error:", error, errorInfo); }
   render() {
     if (this.state.hasError) return this.props.fallback;
     return this.props.children;

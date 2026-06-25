@@ -187,7 +187,7 @@ export default function LocalStorageMigrationWizard() {
       }, 2000);
      
     } catch (err) {
-      logger.error(err);
+      logger.error(String(err));
       setMigrationState('error');
     }
   };

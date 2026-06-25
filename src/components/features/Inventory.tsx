@@ -7,7 +7,7 @@ import React, { useState, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { ResponsiveTable } from '../shared/ResponsiveTable';
 import { motion, AnimatePresence } from 'motion/react';
-import { useStation } from '../../contexts/StationContext';
+import { useStationStore } from '../../stores/useStationStore';
 import {
   Package,
   ArrowUpRight,
@@ -74,7 +74,8 @@ export default function Inventory({
   tanks = [],
   rateHistory = []
 }: InventoryProps) {
-  const { showConfirm, showToast } = useStation();
+  const showConfirm = useStationStore((state) => state.showConfirm);
+  const showToast = useStationStore((state) => state.showToast);
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
 
@@ -431,7 +432,7 @@ export default function Inventory({
       const data = await response.json();
       setAiInsightsResult(data.reply);
     } catch (error) {
-      logger.error(error);
+      logger.error(String(error));
        
       setAiInsightsResult(t("⚠️ Could not generate AI stock analysis.", "⚠️ اسٹاک کا اے آئی تجزیہ تیار نہیں ہو سکا۔"));
     } finally {

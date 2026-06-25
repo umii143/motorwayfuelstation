@@ -185,7 +185,7 @@ export default function StockInForm({
   const [savedBatch, setSavedBatch] = useState<StockBatch | null>(null);
   const [showClaimPrompt, setShowClaimPrompt] = useState(false);
    
-  const [pendingClaimData, setPendingClaimData] = useState<unknown>(null);
+  const [pendingClaimData, setPendingClaimData] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [validationMessages, setValidationMessages] = useState<ValidationResult[]>([]);
 

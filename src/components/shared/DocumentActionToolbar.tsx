@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FileText, Printer, Share2 } from 'lucide-react';
 import { generatePdfBlob } from '../../utils/pdfGenerator';
 import { saveAs } from 'file-saver';
-import { useStation } from '../../contexts/StationContext';
+import { useStationStore } from '../../stores/useStationStore';
 import { logger } from '../../lib/logger';
 
 export interface DocumentActionToolbarProps {
@@ -20,7 +20,7 @@ export function DocumentActionToolbar({
   onWhatsAppShare
 }: DocumentActionToolbarProps) {
   const [isExporting, setIsExporting] = useState(false);
-  const { showToast } = useStation();
+  const showToast = useStationStore((state) => state.showToast);
 
   const handleDownloadPdf = async () => {
     if (!pdfDocument) return;
@@ -37,7 +37,7 @@ export function DocumentActionToolbar({
       saveAs(blob, pdfFileName);
       showToast('PDF downloaded successfully!', 'success');
     } catch (e) {
-      logger.error(e);
+      logger.error(String(e));
       showToast('Failed to generate PDF.', 'error');
     } finally {
       setIsExporting(false);

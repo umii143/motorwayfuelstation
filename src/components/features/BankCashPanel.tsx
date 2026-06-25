@@ -11,7 +11,7 @@ import {
 import { BankAccount, Shift, GlobalSettings, LubePosSale } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
-import { useStation } from '../../contexts/StationContext';
+import { useStationStore } from '../../stores/useStationStore';
 import TreasuryDrillDownModal from './ExecutiveDashboard/TreasuryDrillDownModal';
 
 interface BankCashPanelProps {
@@ -32,7 +32,7 @@ export default function BankCashPanel({
   lubePosSales
 }: BankCashPanelProps) {
   const t = (en: string, ur: string) => translate(en, ur, settings);
-  const { showToast } = useStation();
+  const showToast = useStationStore((state) => state.showToast);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddBank, setShowAddBank] = useState(false);
@@ -80,7 +80,7 @@ export default function BankCashPanel({
     shifts.forEach((s) => {
       if (!isWithinTimeFilter(s.date)) return;
       s.bankCashEntries?.forEach((bc, idx) => {
-        const bkName = banks.find((b) => b.id === bc.bankAccountId)?.name || t('Unknown Bank', 'نامعلوم بینک');
+        const bkName = banks.find((b) => b.id === bc.bankAccountId)?.name || t('any Bank', 'نامعلوم بینک');
         list.push({
           id: bc.id || `bc-${s.id}-${idx}`,
           shiftId: `SH-${s.id}`,
@@ -101,7 +101,7 @@ export default function BankCashPanel({
 
       const bankName =
         banks.find((bank) => bank.id === sale.bankAccountId)?.name ||
-        t('Unknown Bank', 'نامعلوم بینک');
+        t('any Bank', 'نامعلوم بینک');
 
       list.push({
         id: `lps_bank_${sale.id}`,

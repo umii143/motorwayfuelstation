@@ -1,6 +1,6 @@
 import React from 'react';
 import { Download, FileText, Printer, FileSpreadsheet, Share2 } from 'lucide-react';
-import { useStation } from '../../contexts/StationContext';
+import { useStationStore } from '../../stores/useStationStore';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { generatePdfBlob } from '../../utils/pdfGenerator';
@@ -9,14 +9,15 @@ import { logger } from '../../lib/logger';
 interface ExportToolbarProps {
   isOpen: boolean;
   onClose: () => void;
-  data: unknown[];
+  data: any[];
   columns: { key: string; label: string; urduLabel?: string }[];
   title: string;
   filenamePrefix: string;
 }
 
 export function ExportToolbar({ isOpen, onClose, data, columns, title, filenamePrefix }: ExportToolbarProps) {
-  const { settings, showToast } = useStation();
+  const settings = useStationStore((state) => state.settings);
+  const showToast = useStationStore((state) => state.showToast);
   const isUrdu = settings.language === 'ur';
 
   
@@ -25,7 +26,7 @@ export function ExportToolbar({ isOpen, onClose, data, columns, title, filenameP
     
     try {
       const exportData = data.map(item => {
-        const row: unknown = { /* empty */ };
+        const row: any = { /* empty */ };
         columns.forEach(col => {
           row[isUrdu && col.urduLabel ? col.urduLabel : col.label] = item[col.key] ?? '';
         });
@@ -42,7 +43,7 @@ export function ExportToolbar({ isOpen, onClose, data, columns, title, filenameP
       saveAs(blob, `${filenamePrefix}_${new Date().toISOString().split('T')[0]}.xlsx`);
       showToast('Excel file generated successfully!', 'success');
     } catch (e) {
-      logger.error(e);
+      logger.error(String(e));
       showToast('Failed to export Excel file.', 'error');
     } finally {
       
@@ -73,7 +74,7 @@ export function ExportToolbar({ isOpen, onClose, data, columns, title, filenameP
       window.open(`https://wa.me/?text=${encodedText}`, '_blank');
       onClose();
     } catch (e) {
-      logger.error(e);
+      logger.error(String(e));
     }
   };
 
@@ -96,7 +97,7 @@ export function ExportToolbar({ isOpen, onClose, data, columns, title, filenameP
       saveAs(blob, `${filenamePrefix}_${new Date().toISOString().split('T')[0]}.pdf`);
       showToast('PDF generated successfully!', 'success');
     } catch (e) {
-      logger.error(e);
+      logger.error(String(e));
       showToast('Failed to generate PDF.', 'error');
     } finally {
       

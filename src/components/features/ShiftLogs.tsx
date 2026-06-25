@@ -110,7 +110,7 @@ export default function ShiftLogs({
 
   const getStaffName = (id: string) => {
     const s = staff.find((st) => st.id === id);
-    return s ? (isUrdu ? s.urduName : s.name) : 'Unknown';
+    return s ? (isUrdu ? s.urduName : s.name) : 'any';
   };
 
   // CALCULATE GLOBAL AGGREGATES FOR TOP KPIs BASED ON FILTERED SHIFTS
@@ -457,11 +457,11 @@ export default function ShiftLogs({
           columns={[
              
              
-            { key: 'shift', label: 'Shift ID', render: (item: unknown) => `#${item.shiftId.slice(-5)}` },
-            { key: 'date', label: 'Date', render: (item: unknown) => item.date },
-            { key: 'category', label: 'Category', render: (item: unknown) => item.category },
-            { key: 'amount', label: 'Amount', render: (item: unknown) => formatCurrency(item.amount) },
-            { key: 'desc', label: 'Description', render: (item: unknown) => item.description || '-' }
+            { key: 'shift', label: 'Shift ID', render: (item: any) => `#${item.shiftId.slice(-5)}` },
+            { key: 'date', label: 'Date', render: (item: any) => item.date },
+            { key: 'category', label: 'Category', render: (item: any) => item.category },
+            { key: 'amount', label: 'Amount', render: (item: any) => formatCurrency(item.amount) },
+            { key: 'desc', label: 'Description', render: (item: any) => item.description || '-' }
           ]}
         />
        
@@ -477,14 +477,14 @@ export default function ShiftLogs({
           onClose={() => setActiveGlobalModal(null)}
           items={filteredShifts.flatMap(s => (s.debitEntries || []).map(e => ({ ...e, shiftId: s.id, date: s.date })))}
           columns={[
-            { key: 'shift', label: 'Shift ID', render: (item: unknown) => `#${item.shiftId.slice(-5)}` },
-            { key: 'date', label: 'Date', render: (item: unknown) => item.date },
-            { key: 'customer', label: 'Customer', render: (item: unknown) => customers.find(c => c.id === item.customerId)?.name || 'Unknown' },
+            { key: 'shift', label: 'Shift ID', render: (item: any) => `#${item.shiftId.slice(-5)}` },
+            { key: 'date', label: 'Date', render: (item: any) => item.date },
+            { key: 'customer', label: 'Customer', render: (item: any) => customers.find(c => c.id === item.customerId)?.name || 'any' },
              
-            { key: 'product', label: 'Product', render: (item: unknown) => products.find(p => p.id === item.productId)?.name || 'Unknown' },
+            { key: 'product', label: 'Product', render: (item: any) => products.find(p => p.id === item.productId)?.name || 'any' },
              
              
-            { key: 'amount', label: 'Amount', render: (item: unknown) => formatCurrency(item.amount) }
+            { key: 'amount', label: 'Amount', render: (item: any) => formatCurrency(item.amount) }
            
           ]}
          
@@ -497,16 +497,16 @@ export default function ShiftLogs({
           onClose={() => setActiveGlobalModal(null)}
           items={filteredShifts.flatMap(s => (s.bankCashEntries || []).map(e => ({ ...e, shiftId: s.id, date: s.date })))}
           columns={[
-            { key: 'shift', label: 'Shift ID', render: (item: unknown) => `#${item.shiftId.slice(-5)}` },
+            { key: 'shift', label: 'Shift ID', render: (item: any) => `#${item.shiftId.slice(-5)}` },
              
              
-            { key: 'date', label: 'Date', render: (item: unknown) => item.date },
+            { key: 'date', label: 'Date', render: (item: any) => item.date },
              
              
-            { key: 'bank', label: 'Bank', render: (item: unknown) => banks.find(b => b.id === item.bankAccountId)?.name || 'Unknown' },
+            { key: 'bank', label: 'Bank', render: (item: any) => banks.find(b => b.id === item.bankAccountId)?.name || 'any' },
              
-            { key: 'amount', label: 'Amount', render: (item: unknown) => formatCurrency(item.amount) },
-            { key: 'ref', label: 'Reference', render: (item: unknown) => item.reference || '-' }
+            { key: 'amount', label: 'Amount', render: (item: any) => formatCurrency(item.amount) },
+            { key: 'ref', label: 'Reference', render: (item: any) => item.reference || '-' }
           ]}
         />
       )}
@@ -518,11 +518,11 @@ export default function ShiftLogs({
           items={filteredShifts.flatMap(s => (s.recoveryEntries || []).map(e => ({ ...e, shiftId: s.id, date: s.date })))}
            
           columns={[
-            { key: 'shift', label: 'Shift ID', render: (item: unknown) => `#${item.shiftId.slice(-5)}` },
-            { key: 'date', label: 'Date', render: (item: unknown) => item.date },
-            { key: 'customer', label: 'Customer', render: (item: unknown) => customers.find(c => c.id === item.customerId)?.name || 'Unknown' },
-            { key: 'amount', label: 'Amount', render: (item: unknown) => formatCurrency(item.amount) },
-            { key: 'mode', label: 'Mode', render: (item: unknown) => item.mode }
+            { key: 'shift', label: 'Shift ID', render: (item: any) => `#${item.shiftId.slice(-5)}` },
+            { key: 'date', label: 'Date', render: (item: any) => item.date },
+            { key: 'customer', label: 'Customer', render: (item: any) => customers.find(c => c.id === item.customerId)?.name || 'any' },
+            { key: 'amount', label: 'Amount', render: (item: any) => formatCurrency(item.amount) },
+            { key: 'mode', label: 'Mode', render: (item: any) => item.mode }
           ]}
         />
       )}
@@ -536,7 +536,7 @@ export default function ShiftLogs({
 // HELPER COMPONENTS
 // ----------------------------------------------------------------------
 
-function KpiCard({ icon, iconBg, border, title, value, onClick }: unknown) {
+function KpiCard({ icon, iconBg, border, title, value, onClick }: any) {
   return (
     <div onClick={onClick} className={`bg-white dark:bg-[#111827] rounded-xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer group`}>
       <div className="flex items-center gap-3 mb-4">
@@ -556,7 +556,7 @@ function KpiCard({ icon, iconBg, border, title, value, onClick }: unknown) {
   );
 }
 
-function GlobalTransactionModal({ title, onClose, items, columns }: unknown) {
+function GlobalTransactionModal({ title, onClose, items, columns }: any) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="w-full max-w-4xl bg-white dark:bg-[#111827] rounded-2xl shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200 overflow-hidden border border-slate-200 dark:border-slate-800">
@@ -577,7 +577,7 @@ function GlobalTransactionModal({ title, onClose, items, columns }: unknown) {
             <thead>
               <tr className="bg-slate-100 dark:bg-slate-800/50 text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {columns.map((col: unknown, idx: number) => (
+                {columns.map((col: any, idx: number) => (
                   <th key={idx} className="px-5 py-3 whitespace-nowrap">{col.label}</th>
                 ))}
               </tr>
@@ -593,10 +593,10 @@ function GlobalTransactionModal({ title, onClose, items, columns }: unknown) {
                   </td>
                 </tr>
               ) : (
-                items.map((item: unknown, idx: number) => (
+                items.map((item: any, idx: number) => (
                   <tr key={item.id || idx} className="hover:bg-slate-50 dark:bg-slate-900/50 dark:hover:bg-slate-800/80 transition-colors">
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    {columns.map((col: unknown, colIdx: number) => (
+                    {columns.map((col: any, colIdx: number) => (
                       <td key={colIdx} className="px-5 py-3 text-sm text-slate-700 dark:text-slate-300 whitespace-nowrap">
                         {col.render(item)}
                       </td>

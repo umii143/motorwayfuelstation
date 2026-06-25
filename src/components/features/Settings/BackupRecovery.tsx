@@ -1,12 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { DownloadCloud, UploadCloud, ShieldAlert, FileJson, Clock, Calendar, Database, CheckCircle2 } from 'lucide-react';
-import { useStation } from '../../../contexts/StationContext';
+import { useStationStore } from '../../../stores/useStationStore';
 import { db } from '../../../data/db';
 import { GlobalSettings } from '../../../types';
 import { logger } from '../../../lib/logger';
 
 export default function BackupRecovery({ settings, activeStationId }: { settings: GlobalSettings, activeStationId: string }) {
-  const { showToast, showAlert } = useStation();
+  const showToast = useStationStore((state) => state.showToast);
+  const showAlert = useStationStore((state) => state.showAlert);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isUrdu = settings.language === 'ur';
@@ -20,7 +21,7 @@ export default function BackupRecovery({ settings, activeStationId }: { settings
     setIsExporting(true);
     try {
        
-      const backupData: unknown = {
+      const backupData: any = {
         version: "3.0",
         createdAt: new Date().toISOString(),
         stationId: activeStationId,
@@ -31,7 +32,7 @@ export default function BackupRecovery({ settings, activeStationId }: { settings
       // Helper to fetch data safely
        
       const fetchData = () => {
-        const data: unknown = { /* empty */ };
+        const data: any = { /* empty */ };
         
         if (type === 'quick' || type === 'full') {
           data.settings = db.getSettings(activeStationId);

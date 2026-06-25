@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { useStation } from '../contexts/StationContext';
+import { useShiftStore } from '../stores/useShiftStore';
+import { useInventoryStore } from '../stores/useInventoryStore';
 import { Shift } from '../types';
 
 type ExtendedShift = Shift & {
@@ -10,7 +11,8 @@ type ExtendedShift = Shift & {
 };
 
 export function useShiftMetrics() {
-  const { shifts, nozzles } = useStation();
+  const shifts = useShiftStore((state) => state.shifts);
+  const nozzles = useInventoryStore((state) => state.nozzles);
 
   return useMemo(() => {
     const activeShifts = shifts.filter(s => s.status === 'active');
@@ -26,8 +28,8 @@ export function useShiftMetrics() {
 
     const activeNozzles = new Set<string>();
     activeShifts.forEach(shift => {
-      (shift as ExtendedShift).pumpReadings?.forEach((pr) => {
-        pr.nozzleReadings?.forEach((nr) => {
+      (shift as ExtendedShift).pumpReadings?.forEach((pr: any) => {
+        pr.nozzleReadings?.forEach((nr: any) => {
           activeNozzles.add(nr.nozzleId);
         });
       });

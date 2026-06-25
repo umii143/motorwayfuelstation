@@ -46,7 +46,7 @@ export class NativeBarcodeScanner {
       });
 
       return result.barcodes.length > 0 ? (result.barcodes[0].rawValue || null) : null;
-    } catch (error: unknown) {
+    } catch (error: any) {
       logger.error("Scanning failed:", error);
       throw error;
     } finally {

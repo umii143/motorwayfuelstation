@@ -1,11 +1,11 @@
 import React from 'react';
 import { Power } from 'lucide-react';
 import { useShiftMetrics } from '../../../hooks/useShiftMetrics';
-import { useStation } from '../../../contexts/StationContext';
+import { useStationStore } from '../../../stores/useStationStore';
 import { formatCurrency } from '../../../lib/currency';
 
 export function ActiveShiftWidget() {
-  const { settings } = useStation();
+  const settings = useStationStore((state) => state.settings);
   const { activeShift, shiftOperator, expectedCash, openingCash, variance, shiftDuration } = useShiftMetrics();
 
   if (!activeShift) {

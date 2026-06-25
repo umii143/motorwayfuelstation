@@ -3,7 +3,7 @@ import { ResponsiveContainer, LineChart, Line } from 'recharts';
 
 interface SparklineProps {
    
-  data: unknown[];
+  data: any[];
   dataKey: string;
   color: string;
   duration?: number;

@@ -4,7 +4,7 @@ import { useInventoryStore } from '../../../../stores/useInventoryStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useCustomerStore } from '../../../../stores/useCustomerStore';
 
-export function BISmartMetrics({ metrics }: unknown) {
+export function BISmartMetrics({ metrics }: any) {
   const { smartMetrics } = metrics;
   const { products = [] } = useInventoryStore(useShallow(state => ({ products: state.products })));
   const customers = useCustomerStore(useShallow(state => state.customers || []));

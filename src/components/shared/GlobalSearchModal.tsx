@@ -7,7 +7,7 @@ import { COMMAND_ACTIONS } from './CommandPalette';
 interface GlobalSearchModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onNavigate: (viewId: string, contextData?: unknown) => void;
+  onNavigate: (viewId: string, contextData?: any) => void;
 }
 
 export function GlobalSearchModal({

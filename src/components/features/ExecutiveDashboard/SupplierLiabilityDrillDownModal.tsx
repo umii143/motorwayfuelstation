@@ -3,7 +3,7 @@ import { X, ShieldCheck, Zap, Download, FileText, Truck, TrendingUp, AlertTriang
 import { Supplier, GlobalSettings } from '../../../types';
 import { formatCurrency } from '../../../lib/currency';
 import { useFinancialStore } from '../../../stores/useFinancialStore';
-import { useStation } from '../../../contexts/StationContext';
+import { useShiftStore } from '../../../stores/useShiftStore';
 import { useInventoryStore } from '../../../stores/useInventoryStore';
 
 interface SupplierLiabilityDrillDownModalProps {
@@ -26,12 +26,12 @@ export default function SupplierLiabilityDrillDownModal({
 
   // We need journal entries to calculate the true ledger for suppliers
   const journalEntries = useFinancialStore(state => state.journalEntries);
-  const { shifts } = useStation();
+  const shifts = useShiftStore((state) => state.shifts);
   const stockTxns = useInventoryStore(state => state.stockTxns);
 
   const stats = useMemo(() => {
      
-    let timeline: unknown[] = [];
+    let timeline: any[] = [];
     let thisMonthPayments = 0;
     let thisMonthPurchases = 0;
 

@@ -90,7 +90,7 @@ export default function PointsTransactions({ settings, stationId }: PointsTransa
 
   const getMemberDetails = (id: string) => {
     const m = members.find(mem => mem.id === id);
-    return m ? `${m.name} (${m.phone})` : 'Unknown Member';
+    return m ? `${m.name} (${m.phone})` : 'any Member';
   };
 
   const filteredTxs = transactions.filter(t => 

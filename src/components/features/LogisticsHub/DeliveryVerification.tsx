@@ -134,17 +134,17 @@ export default function DeliveryVerification({ settings, stationId }: DeliveryVe
 
   const getScheduleRef = (id: string) => {
     const s = schedules.find(sch => sch.id === id);
-    return s ? `PO: ${s.poNumber}` : 'Unknown Schedule';
+    return s ? `PO: ${s.poNumber}` : 'any Schedule';
   };
 
   const getTankName = (id: string) => {
     const t = tanks.find(tank => tank.id === id);
-    return t ? t.name : 'Unknown Tank';
+    return t ? t.name : 'any Tank';
   };
 
   const getStaffName = (id: string) => {
     const s = staff.find(st => st.id === id);
-    return s ? s.name : 'Unknown Staff';
+    return s ? s.name : 'any Staff';
   };
 
   const filteredDeliveries = deliveries.filter(d => 

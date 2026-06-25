@@ -73,7 +73,7 @@ export const generateKPIs = (
   standaloneExpenses: ExpenseEntry[] = [],
   lubePosSales: LubePosSale[] = [],
   branchId: string = 'main',
-  nozzles: unknown[] = [],
+  nozzles: any[] = [],
   rateHistory: RateHistoryEntry[] = [],
   dateRange?: { from: string; to: string }
 ): KPIResult => {
@@ -101,7 +101,7 @@ export const generateKPIs = (
   };
 
   const getProductCategory = (p?: Product) => p?.category === 'lubricant' ? 'Lubricants' : 'Fuel';
-  const getProductName = (p?: Product) => p?.name || 'Unknown Product';
+  const getProductName = (p?: Product) => p?.name || 'any Product';
   const getExpenseCategory = (exp: ExpenseEntry) => exp.categoryName || exp.categoryId || exp.category || 'Uncategorized';
 
   // Filter 
@@ -193,7 +193,7 @@ export const generateKPIs = (
       breakdowns.expensesByBranch[bId] = (breakdowns.expensesByBranch[bId] || 0) + exp.amount;
 
       if (cat.toLowerCase() === 'salary') {
-        let empName = 'Unknown';
+        let empName = 'any';
         if (exp.description) {
           // E.g. "Salary Payment for Ali (May 2026)"
           const match = exp.description.match(/for\s+([^()]+)/i);

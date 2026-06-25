@@ -33,7 +33,7 @@ export default function BillingAndReports({ settings, stationId }: BillingAndRep
 
   const getAccountName = (id: string) => {
     const acc = accounts.find(a => a.id === id);
-    return acc ? acc.companyName : 'Unknown Account';
+    return acc ? acc.companyName : 'any Account';
   };
 
   const filteredTxns = transactions.filter(t => {

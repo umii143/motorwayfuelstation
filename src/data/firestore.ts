@@ -20,7 +20,7 @@ import { SyncEngine } from '../services/core/SyncEngine';
 import { logger } from '../lib/logger';
 
  
-const removeUndefined = (obj: unknown): unknown => {
+const removeUndefined = (obj: any): any => {
   if (Array.isArray(obj)) return obj.map(removeUndefined);
   if (obj === null || typeof obj !== 'object') return obj;
   return Object.fromEntries(
@@ -65,7 +65,7 @@ export const firestoreDb = {
     businessType: 'fuel_station' | 'cng' | 'lube',
     collectionName: string, 
     docId: string, 
-    data: unknown
+    data: any
   ) => {
     const enforcedBusinessType = getBusinessTypeForStation(stationId);
     const docRef = getDocumentRef(orgId, stationId, collectionName, docId);
@@ -93,7 +93,7 @@ export const firestoreDb = {
     businessType: 'fuel_station' | 'cng' | 'lube',
     collectionName: string, 
     docId: string, 
-    data: unknown
+    data: any
   ) => {
     try {
       if (!SyncEngine.getQueueStatus().isOnline) {
@@ -158,7 +158,7 @@ export const firestoreDb = {
       return snapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() }))
         .filter((item) => isRecordInBusinessScope(item as any, stationId, orgId))
-        .map((item) => withBusinessScope(item as any, stationId, orgId)) as unknown as T[];
+        .map((item) => withBusinessScope(item as any, stationId, orgId)) as any as T[];
     } catch (err) {
       logger.error(`Error fetching collection ${collectionName}:`, err);
       return [];
@@ -177,7 +177,7 @@ export const firestoreDb = {
       const items = snapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() }))
         .filter((item) => isRecordInBusinessScope(item as any, stationId, orgId))
-        .map((item) => withBusinessScope(item as any, stationId, orgId)) as unknown as T[];
+        .map((item) => withBusinessScope(item as any, stationId, orgId)) as any as T[];
       callback(items);
     }, (error) => {
       logger.error(`Real-time subscription error in ${collectionName}:`, error);
@@ -190,7 +190,7 @@ export const firestoreDb = {
     stationId: string, 
     businessType: 'fuel_station' | 'cng' | 'lube',
     collectionName: string, 
-    items: unknown[]
+    items: any[]
   ) => {
     try {
       const enforcedBusinessType = getBusinessTypeForStation(stationId);

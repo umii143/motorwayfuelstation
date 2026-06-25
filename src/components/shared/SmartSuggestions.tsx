@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
 import { Lightbulb, AlertTriangle, ArrowRight, X } from 'lucide-react';
-import { useStation } from '../../contexts/StationContext';
+import { useInventoryStore } from '../../stores/useInventoryStore';
+import { useCustomerStore } from '../../stores/useCustomerStore';
+import { useShiftStore } from '../../stores/useShiftStore';
 import { PoweredByUmarAli } from './PoweredByUmarAli';
 import { logger } from '../../lib/logger';
 
@@ -10,7 +12,9 @@ interface SmartSuggestionsProps {
 }
 
 export const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ onClose }) => {
-  const { tanks, customers, shifts } = useStation();
+  const tanks = useInventoryStore((state) => state.tanks);
+  const customers = useCustomerStore((state) => state.customers);
+  const shifts = useShiftStore((state) => state.shifts);
   const [isVisible, setIsVisible] = React.useState(true);
 
   const suggestions = useMemo(() => {

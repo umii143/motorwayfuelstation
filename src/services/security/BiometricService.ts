@@ -34,7 +34,7 @@ export class BiometricService {
         allowDeviceCredential: false, // Strict fingerprint/face requirement
       });
       return true;
-    } catch (error: unknown) {
+    } catch (error: any) {
       // User canceled or failed
       logger.error("Biometric auth failed:", error);
       return false;

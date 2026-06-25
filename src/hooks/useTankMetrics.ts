@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useStation } from '../contexts/StationContext';
+import { useInventoryStore } from '../stores/useInventoryStore';
 import { Tank } from '../types';
 
 export interface EnrichedTank extends Tank {
@@ -21,7 +21,9 @@ export interface TankMetricsResult {
 }
 
 export function useTankMetrics(): TankMetricsResult {
-  const { tanks, products, stockTxns } = useStation();
+  const tanks = useInventoryStore((state) => state.tanks);
+  const products = useInventoryStore((state) => state.products);
+  const stockTxns = useInventoryStore((state) => state.stockTxns);
 
   return useMemo<TankMetricsResult>(() => {
     let lowStockCount = 0;
@@ -58,7 +60,7 @@ export function useTankMetrics(): TankMetricsResult {
 
       enrichedTanks.push({
         ...t,
-        productName: product?.name || 'Unknown',
+        productName: product?.name || 'any',
         productColor: product?.name.toLowerCase().includes('diesel') ? '#10B981' : product?.name.toLowerCase().includes('octane') ? '#8B5CF6' : '#F97316',
         fillPercentage: pct,
         daysRemaining,

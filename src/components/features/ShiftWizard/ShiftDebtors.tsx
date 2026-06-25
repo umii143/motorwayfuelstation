@@ -5,7 +5,7 @@ import { Customer, Product, Shift } from '../../../types';
 interface ShiftDebtorsProps {
   t: (en: string, ur: string) => string;
    
-  settings: unknown;
+  settings: any;
   activeShift: Shift;
   customers: Customer[];
   effectiveCustomers: (Customer & { effectiveBalance: number })[];

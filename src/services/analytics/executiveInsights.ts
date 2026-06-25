@@ -16,7 +16,7 @@ export interface HealthScoreResult {
   }[];
 }
 
-export const generateHealthScore = (kpis: KPIResult, suppliers: unknown[] = []): HealthScoreResult => {
+export const generateHealthScore = (kpis: KPIResult, suppliers: any[] = []): HealthScoreResult => {
   // Factors calculation out of 100
   
   // 1. Sales Trend (Weight: 20%)

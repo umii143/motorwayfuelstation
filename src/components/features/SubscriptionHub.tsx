@@ -192,9 +192,9 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
       window.location.reload();
         
       
-    } catch (err: unknown) {
+    } catch (err: any) {
       logger.error('Upload Error:', err);
-      alert(`Upload Failed: ${err.message || err.code || 'Unknown error'}\n\nPlease make sure your ImgBB API key is correct and you have internet connection.`);
+      alert(`Upload Failed: ${err.message || err.code || 'any error'}\n\nPlease make sure your ImgBB API key is correct and you have internet connection.`);
     } finally {
       setIsProcessing(false);
     }

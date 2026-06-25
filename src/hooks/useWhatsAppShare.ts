@@ -6,7 +6,7 @@ import { fileStorageService } from '../services/fileStorage.service';
 export interface WhatsAppShareState {
   isOpen: boolean;
   documentType: WhatsAppTemplateType;
-  documentData: unknown;
+  documentData: any;
   pdfBlob?: Blob;
   pdfFileName?: string;
    
@@ -22,7 +22,7 @@ export const useWhatsAppShare = () => {
 
   const openShareModal = (
     documentType: WhatsAppTemplateType, 
-    documentData: unknown, 
+    documentData: any, 
     pdfBlob?: Blob, 
     pdfFileName?: string,
      

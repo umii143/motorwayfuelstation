@@ -54,7 +54,7 @@ export function DashboardAIAssistant({ settings, shifts, customers, products, ba
       setResponse(data.reply);
     } catch (error) {
        
-      logger.error(error);
+      logger.error(String(error));
       setResponse(t('Sorry, I encountered an error connecting to the AI brain.', 'معذرت، AI برین سے منسلک ہونے میں خرابی پیش آ گئی۔'));
     } finally {
       setIsLoading(false);

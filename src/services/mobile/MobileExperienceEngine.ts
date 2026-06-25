@@ -10,7 +10,7 @@ class MobileExperienceEngine {
   private fpsHistory: number[] = [];
   private lastFrameTime: number = 0;
   private frameCount: number = 0;
-  private monitoringInterval: unknown = null;
+  private monitoringInterval: any = null;
   private logInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor() {

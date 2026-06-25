@@ -147,7 +147,7 @@ export default function NozzleWizard({
                     <option value="" disabled>{t("Select tank", "ٹینک منتخب کریں", language)}</option>
                     {tanks.map((tank) => (
                       <option key={tank.id} value={tank.id}>
-                        {tank.name} ({getTankDetails(tank.id)?.product?.name || 'Unknown'})
+                        {tank.name} ({getTankDetails(tank.id)?.product?.name || 'any'})
                       </option>
                     ))}
                   </select>

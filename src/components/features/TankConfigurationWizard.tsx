@@ -14,11 +14,13 @@ interface TankConfigurationWizardProps {
   onCancel: () => void;
   currentLanguage?: string;
   settings?: GlobalSettings;
+  existingProducts?: Product[];
+  existingTanks?: Tank[];
 }
 
  
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export default function TankConfigurationWizard({ onComplete, onCancel, currentLanguage = 'en' }: TankConfigurationWizardProps) {
+export default function TankConfigurationWizard({ onComplete, onCancel, currentLanguage = 'en', existingProducts = [], existingTanks = [] }: TankConfigurationWizardProps) {
   const [step, setStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -102,15 +104,17 @@ export default function TankConfigurationWizard({ onComplete, onCancel, currentL
       };
     });
 
-    const compiledNozzles: Partial<Nozzle>[] = nozzles.map((n: unknown, idx: unknown) => {
-      const matchedTank = compiledTanks.find(t => t.name === n.tankName);
+    const compiledNozzles: Partial<Nozzle>[] = nozzles.map((n: any, idx: any) => {
+      const allTanks = [...existingTanks, ...compiledTanks];
+      const matchedTank = allTanks.find(t => t.name === n.tankName);
       return {
         id: `nzl_wiz_${Date.now()}_${idx}`,
         pumpId: `pump_${n.pumpId}`,
         name: n.name,
         tankId: matchedTank ? matchedTank.id : '',
         productId: matchedTank ? matchedTank.productId : '',
-        currentReading: n.openingReading
+        currentReading: n.openingReading,
+        startReading: n.openingReading
       };
     });
 
@@ -221,7 +225,6 @@ export default function TankConfigurationWizard({ onComplete, onCancel, currentL
                       onChange={e => setNewProduct({...newProduct, name: e.target.value})}
                       className="col-span-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] focus:border-[var(--primary-accent)] focus:ring-1 focus:ring-[var(--primary-accent)] outline-none transition-all"
                     />
-                    { }
                     <select 
                       value={newProduct.type}
                       onChange={e => setNewProduct({...newProduct, type: e.target.value as any})}
@@ -338,22 +341,6 @@ export default function TankConfigurationWizard({ onComplete, onCancel, currentL
                   <p className="text-[var(--text-muted)] text-sm">Add dispensing nozzles and link them to tanks.</p>
                 </div>
 
-                {nozzles.length > 0 && (
-                  <div className="space-y-2 mb-4">
-                    {nozzles.map((n: unknown, idx: unknown) => (
-                      <div key={idx} className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 border border-slate-200 dark:border-slate-700/50">
-                        <div>
-                          <p className="text-sm font-bold text-[var(--text-main)]">{n.name}</p>
-                          <p className="text-xs font-semibold text-slate-500">Pump {n.pumpId} • Links to: <span className="text-emerald-500">{n.tankName || 'None'}</span></p>
-                        </div>
-                        <button onClick={() => setNozzles(nozzles.filter((_, i) => i !== idx))} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
                 <div className="bg-slate-50 dark:bg-[var(--bg-app)] border border-slate-200 dark:border-[var(--border-main)] rounded-2xl p-4 space-y-4">
                   <div className="grid grid-cols-2 gap-3">
                     <input 
@@ -368,7 +355,7 @@ export default function TankConfigurationWizard({ onComplete, onCancel, currentL
                       className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] focus:border-orange-500 outline-none"
                     >
                       <option value="" disabled>Link to Tank (Optional)</option>
-                      {tanks.map((t, i) => (
+                      {[...existingTanks, ...tanks].map((t, i) => (
                         <option key={i} value={t.name}>{t.name}</option>
                       ))}
                     </select>
@@ -390,11 +377,28 @@ export default function TankConfigurationWizard({ onComplete, onCancel, currentL
                   <button 
                     onClick={handleAddNozzle}
                     disabled={!newNozzle.name.trim()}
-                    className="w-full py-3 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 disabled:opacity-50 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-[var(--bg-app)] border border-[var(--border-main)] hover:bg-[var(--bg-hover)] disabled:opacity-50 text-[var(--text-main)] text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
                   >
                     <Plus className="w-4 h-4" /> Add Nozzle
                   </button>
                 </div>
+
+                {nozzles.length > 0 && (
+                  <div className="space-y-2 mt-4">
+                    <p className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Added Nozzles</p>
+                    {nozzles.map((n: any, idx: any) => (
+                      <div key={idx} className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 border border-slate-200 dark:border-slate-700/50">
+                        <div>
+                          <p className="text-sm font-bold text-[var(--text-main)]">{n.name}</p>
+                          <p className="text-xs font-semibold text-slate-500">Pump {n.pumpId} &bull; Links to: <span className="text-emerald-500">{n.tankName || 'None'}</span></p>
+                        </div>
+                        <button onClick={() => setNozzles(nozzles.filter((_, i) => i !== idx))} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </motion.div>
             )}
 

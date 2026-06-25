@@ -121,7 +121,7 @@ export async function deductFIFO(
       businessType: 'fuel_station',
       createdAt2: Date.now(),
       updatedAt: Date.now(),
-    } as unknown as FIFODeduction;
+    } as any as FIFODeduction;
 
     newFIFORecords.push(deductionRecord);
 

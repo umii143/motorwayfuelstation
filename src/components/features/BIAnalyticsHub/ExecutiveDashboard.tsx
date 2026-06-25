@@ -66,7 +66,7 @@ export default function ExecutiveDashboard({ settings, stationId }: ExecutiveDas
   const totalReceivables = fleetAccounts.reduce((sum, a) => sum + (a.balance > 0 ? a.balance : 0), 0);
   const totalPayables = suppliers.reduce((sum, a) => sum + (a.balance > 0 ? a.balance : 0), 0);
 
-  // Inventory Value (Using current volume from latest shifts or just relying on latest shift closing dips. Since we don't have currentVolume tracked continuously outside shifts easily, we'll approximate based on tanks array or just 0 if unknown)
+  // Inventory Value (Using current volume from latest shifts or just relying on latest shift closing dips. Since we don't have currentVolume tracked continuously outside shifts easily, we'll approximate based on tanks array or just 0 if any)
   // For authenticity: we fetch the latest shift to get the closing dips
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const latestShift = shifts.length > 0 ? [...shifts].sort((a, b) => b.createdAt! - a.createdAt!)[0] : null;

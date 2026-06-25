@@ -5,7 +5,7 @@ import {
   Plus, Trash2, Users, User, Hash, Store, Droplets, ArrowRight 
 } from 'lucide-react';
 import { GlobalSettings, Tank, Nozzle, Product, Staff } from '../../types';
-import { useStation } from '../../contexts/StationContext';
+import { useStationStore } from '../../stores/useStationStore';
 
 interface OnboardingWizardProps {
   onComplete: (data: {
@@ -20,7 +20,7 @@ interface OnboardingWizardProps {
 }
 
 export default function OnboardingWizard({ onComplete, onCancel, currentLanguage }: OnboardingWizardProps) {
-  const { settings } = useStation();
+  const settings = useStationStore((state) => state.settings);
    
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const isUrdu = currentLanguage === 'ur';
@@ -386,8 +386,8 @@ export default function OnboardingWizard({ onComplete, onCancel, currentLanguage
                     {/* Added Nozzles List */}
                     {nozzles.length > 0 && (
                       <div className="space-y-2 mb-4">
-                        {nozzles.map((n: unknown, idx: unknown) => {
-                          const tankName = tanks[parseInt(n.tankId)]?.name || 'Unknown';
+                        {nozzles.map((n: any, idx: any) => {
+                          const tankName = tanks[parseInt(n.tankId)]?.name || 'any';
                           return (
                             <div key={idx} className="flex items-center justify-between bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
                               <div>

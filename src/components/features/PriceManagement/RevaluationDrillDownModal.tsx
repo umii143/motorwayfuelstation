@@ -52,8 +52,8 @@ export default function RevaluationDrillDownModal({
   const [changedByFilter, setChangedByFilter] = useState('all');
 
   // Generate dynamic options from data
-  const uniqueProducts = Array.from(new Set(rateHistory.map(r => r.productName || 'Unknown')));
-  const uniqueReasons = Array.from(new Set(rateHistory.map(r => r.reason || 'Unknown')));
+  const uniqueProducts = Array.from(new Set(rateHistory.map(r => r.productName || 'any')));
+  const uniqueReasons = Array.from(new Set(rateHistory.map(r => r.reason || 'any')));
   const uniqueUsers = Array.from(new Set(rateHistory.map(r => r.changedBy || 'System')));
 
   // Filter Data
@@ -67,7 +67,7 @@ export default function RevaluationDrillDownModal({
       data = data.filter(r => (r.effectiveDate || r.date || '') <= dateTo);
     }
     if (productFilter !== 'all') {
-      data = data.filter(r => (r.productName || 'Unknown') === productFilter);
+      data = data.filter(r => (r.productName || 'any') === productFilter);
     }
     if (impactFilter !== 'all') {
       data = data.filter(r => {
@@ -76,7 +76,7 @@ export default function RevaluationDrillDownModal({
       });
     }
     if (reasonFilter !== 'all') {
-      data = data.filter(r => (r.reason || 'Unknown') === reasonFilter);
+      data = data.filter(r => (r.reason || 'any') === reasonFilter);
     }
     if (changedByFilter !== 'all') {
       data = data.filter(r => (r.changedBy || 'System') === changedByFilter);
@@ -105,8 +105,8 @@ export default function RevaluationDrillDownModal({
 
     filteredData.forEach(r => {
       const impact = r.inventoryImpact ?? r.impactAmount ?? 0;
-      const product = r.productName || 'Unknown';
-      const date = r.effectiveDate || r.date || 'Unknown';
+      const product = r.productName || 'any';
+      const date = r.effectiveDate || r.date || 'any';
       const month = date.substring(0, 7);
       
       productRevisions[product] = (productRevisions[product] || 0) + 1;
@@ -369,7 +369,7 @@ export default function RevaluationDrillDownModal({
                           <Cell key={`cell-${index}`} fill={entry.type === 'Gain' ? '#10b981' : '#f43f5e'} />
                         ))}
                       </Pie>
-                      <RechartsTooltip formatter={(val: unknown) => formatCurrency(val, settings)} />
+                      <RechartsTooltip formatter={(val: any) => formatCurrency(val, settings)} />
                       <Legend />
                     </RechartsPieChart>
                   </ResponsiveContainer>
@@ -381,7 +381,7 @@ export default function RevaluationDrillDownModal({
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                       <XAxis dataKey="month" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
                       <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(val) => `${val / 1000}k`} />
-                      <RechartsTooltip formatter={(val: unknown) => formatCurrency(val, settings)} />
+                      <RechartsTooltip formatter={(val: any) => formatCurrency(val, settings)} />
                       <Line type="monotone" dataKey="net" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }} />
                     </LineChart>
                   </ResponsiveContainer>

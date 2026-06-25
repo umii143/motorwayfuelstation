@@ -110,7 +110,7 @@ export default function ScreenLock({
         setErrorText('Biometric authentication failed.');
       }
     } catch (e) {
-      logger.error(e);
+      logger.error(String(e));
     }
   };
 

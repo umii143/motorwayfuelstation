@@ -23,7 +23,9 @@ import EmptyState from '../ui/EmptyState';
 import { ModuleSearchBar } from '../shared/ModuleSearchBar';
 import { Staff, GlobalSettings, StaffFinanceEntry, AttendanceRecord, Shift } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
-import { useStation } from '../../contexts/StationContext';
+import { useStationStore } from '../../stores/useStationStore';
+import { useStaffStore } from '../../stores/useStaffStore';
+import { useFinancialStore } from '../../stores/useFinancialStore';
 import { SalaryEngine } from '../../services/salaryEngine';
 import RoleGuard from '../ui/RoleGuard';
 
@@ -58,7 +60,18 @@ export default function StaffPanel({
   shifts
 }: StaffProps) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { showToast, showAlert, showConfirm, salaryTransactions, staffLoans, salaryAdvances, handleAddSalaryTransaction, handleAddStaffLoan, handleAddSalaryAdvance, handleAddStandaloneExpense, handleUpdateBanks, banks } = useStation();
+  const showToast = useStationStore((state) => state.showToast);
+  const showAlert = useStationStore((state) => state.showAlert);
+  const showConfirm = useStationStore((state) => state.showConfirm);
+  const salaryTransactions = useStaffStore((state) => state.salaryTransactions);
+  const staffLoans = useStaffStore((state) => state.staffLoans);
+  const salaryAdvances = useStaffStore((state) => state.salaryAdvances);
+  const handleAddSalaryTransaction = useStaffStore((state) => state.handleAddSalaryTransaction);
+  const handleAddStaffLoan = useStaffStore((state) => state.handleAddStaffLoan);
+  const handleAddSalaryAdvance = useStaffStore((state) => state.handleAddSalaryAdvance);
+  const handleAddStandaloneExpense = useFinancialStore((state) => state.handleAddStandaloneExpense);
+  const handleUpdateBanks = useFinancialStore((state) => state.handleUpdateBanks);
+  const banks = useFinancialStore((state) => state.banks);
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
 
@@ -264,7 +277,7 @@ export default function StaffPanel({
       setLoanInstallment('');
       setSelectedStaffId(null);
       showToast(t('Transaction successfully recorded!', 'مالی لاگ محفوظ ہو گیا!'), 'success');
-    } catch (err: unknown) {
+    } catch (err: any) {
       showToast(err.message || 'Error occurred', 'error');
     }
   };
@@ -1337,7 +1350,7 @@ export default function StaffPanel({
                     <label className="block text-slate-505 font-bold mb-1">{t('Select Audit Aspect:', 'ٹرانزیکشن کی قسم:')}</label>
                     <select
                       value={financeType}
-                      onChange={(e: unknown) => setFinanceType(e.target.value)}
+                      onChange={(e: any) => setFinanceType(e.target.value)}
                       className="premium-input border bg-white px-3 outline-hidden focus:border-orange-500"
                     >
                       <option value="advance">{t('Lent Short-term Advance', '💵 نیا ایڈوانس پے کریں')}</option>
@@ -1403,7 +1416,7 @@ export default function StaffPanel({
                       <label className="block text-slate-505 font-bold mb-1">{t('Payment Mechanism Cash/Bank:', 'ادائیگی کا ذریعہ:')}</label>
                       <select
                         value={financeMode}
-                        onChange={(e: unknown) => setFinanceMode(e.target.value)}
+                        onChange={(e: any) => setFinanceMode(e.target.value)}
                         className="premium-input border bg-white px-3 outline-hidden focus:border-orange-500"
                       >
                         <option value="cash">{t('Station Daily Cash Box Outflow', 'روزانہ کیش فلو دراز')}</option>
@@ -1508,7 +1521,7 @@ export default function StaffPanel({
                     <label className="block text-slate-505 font-bold mb-1">{t('Assigned Duty Role:', 'ڈیوٹی کا عہدہ:')}</label>
                     <select
                       value={addRole}
-                      onChange={(e: unknown) => setAddRole(e.target.value)}
+                      onChange={(e: any) => setAddRole(e.target.value)}
                       className="premium-input border bg-white px-3 outline-hidden focus:border-orange-500 font-sans text-slate-800"
                     >
                       <option value="salesman">{t('Nozzle Salesman / Operator', 'سیلزمین / نوزل آپریٹر')}</option>

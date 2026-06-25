@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Shield, Key, Clock, Fingerprint, Lock, ShieldAlert, Save, Eye, EyeOff, X, Mail } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { useStation } from '../../../contexts/StationContext';
+import { useStationStore } from '../../../stores/useStationStore';
 import { GlobalSettings } from '../../../types';
 
 interface SecurityCenterProps {
@@ -13,7 +13,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
    
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user, reauthenticateWithPassword } = useAuth();
-  const { showToast } = useStation();
+  const showToast = useStationStore((state) => state.showToast);
 
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
@@ -122,7 +122,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
       setForgotMethod(null);
        
       showToast(t('Identity verified. Please set a new PIN.', 'شناخت کی تصدیق ہو گئی۔ نیا پن درج کریں۔'), 'success');
-    } catch (err: unknown) {
+    } catch (err: any) {
       showToast(err.message || t('Verification failed', 'تصدیق ناکام'), 'error');
     } finally {
       setIsVerifying(false);

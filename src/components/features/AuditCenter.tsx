@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { useStation } from '../../contexts/StationContext';
+import { useInventoryStore } from '../../stores/useInventoryStore';
+import { useStationStore } from '../../stores/useStationStore';
+import { useStaffStore } from '../../stores/useStaffStore';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Search, ShieldAlert, Activity, CheckCircle, XCircle } from 'lucide-react';
 import { ResponsiveTable } from '../shared/ResponsiveTable';
@@ -10,7 +12,9 @@ import { useDebounce } from '../../hooks/useDebounce';
 
 const AuditCenter: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { meterResets, settings, staff } = useStation();
+  const meterResets = useInventoryStore((state) => state.meterResets);
+  const settings = useStationStore((state) => state.settings);
+  const staff = useStaffStore((state) => state.staff);
   const [activeTab, setActiveTab] = useState('Data Integrity');
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -46,7 +50,7 @@ const AuditCenter: React.FC = () => {
     }
   }, [dateRange]);
 
-  const verifyHash = async (reset: unknown) => {
+  const verifyHash = async (reset: any) => {
     try {
       const rawString = `${reset.timestamp}-${reset.nozzleId}-${reset.oldReading}-${reset.newReading}`;
       const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(rawString));
@@ -321,14 +325,9 @@ const AuditCenter: React.FC = () => {
             {activeTab === 'System Events' && renderAuditTrails()}
             {activeTab === 'Shift Reopens' && renderAuditTrails('Shift')}
             {activeTab === 'Tank Calibrations' && renderAuditTrails('Tank')}
-          
-          {['Deleted Transactions', 'User Login Activity', 'Cash Corrections'].includes(activeTab) && (
-            <div className="py-12 text-center text-gray-500 flex flex-col items-center">
-              <Activity className="w-12 h-12 mb-4 text-gray-300" />
-              <p>Audit trail for {activeTab} will appear here.</p>
-              <p className="text-sm mt-2">Enterprise Audit Tracking is actively monitoring this module.</p>
-            </div>
-          )}
+            {activeTab === 'Deleted Transactions' && renderAuditTrails('Delete')}
+            {activeTab === 'User Login Activity' && renderAuditTrails('Login')}
+            {activeTab === 'Cash Corrections' && renderAuditTrails('Cash')}
         </CardContent>
       </Card>
       )}

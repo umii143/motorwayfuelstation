@@ -1,6 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { Gauge, AlertTriangle, Key, Save, Calculator, ShieldAlert, ArrowRight, History, Search, Calendar, FileText } from 'lucide-react';
-import { useStation } from '../../../contexts/StationContext';
+import { useStationStore } from '../../../stores/useStationStore';
+import { useInventoryStore } from '../../../stores/useInventoryStore';
+import { useShiftStore } from '../../../stores/useShiftStore';
+import { useStaffStore } from '../../../stores/useStaffStore';
 import { db } from '../../../data/db';
 import { GlobalSettings, MeterResetEvent, AuditTrailEntry } from '../../../types';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -9,7 +12,14 @@ import { logger } from '../../../lib/logger';
 export default function MeterManagement({ settings, activeStationId }: { settings: GlobalSettings, activeStationId: string }) {
    
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { showToast, showAlert, nozzles, products, shifts, staff, handleAddMeterReset, meterResets } = useStation();
+  const showToast = useStationStore((state) => state.showToast);
+  const showAlert = useStationStore((state) => state.showAlert);
+  const nozzles = useInventoryStore((state) => state.nozzles);
+  const products = useInventoryStore((state) => state.products);
+  const shifts = useShiftStore((state) => state.shifts);
+  const staff = useStaffStore((state) => state.staff);
+  const handleAddMeterReset = useInventoryStore((state) => state.handleAddMeterReset);
+  const meterResets = useInventoryStore((state) => state.meterResets);
   const { user } = useAuth();
   
   const isUrdu = settings.language === 'ur';
@@ -145,7 +155,7 @@ export default function MeterManagement({ settings, activeStationId }: { setting
       setTimeout(() => window.location.reload(), 1500);
       
     } catch (err) {
-      logger.error(err);
+      logger.error(String(err));
       showToast(t('Failed to reset meter.', 'میٹر ری سیٹ کرنے میں ناکامی۔'), 'error');
     }
   };

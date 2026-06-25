@@ -44,7 +44,7 @@ export default function TreasuryDrillDownModal({
     let digitalCollections = 0;
 
      
-    const timeline: unknown[] = [];
+    const timeline: any[] = [];
 
     // Map Treasury Transactions
     treasuryTransactions.forEach(txn => {

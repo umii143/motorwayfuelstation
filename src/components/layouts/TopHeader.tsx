@@ -5,8 +5,10 @@ import { GlobalSettings, Station } from '../../types';
 interface TopHeaderProps {
   onMenuClick: () => void;
   onLanguageToggle?: () => void;
-  
+  onSwitchStation?: (stationId: string) => void;
+  onCreateStation?: () => void;
   onSetTheme?: (theme: string) => void;
+  onThemeToggle?: () => void;
   onSettingsClick?: () => void;
   onTankWizardTrigger?: () => void;
   onJarvisTrigger?: () => void;

@@ -59,10 +59,10 @@ import { ShiftDebtors } from "./ShiftWizard/ShiftDebtors";
 import { ShiftNozzleReadings } from "./ShiftWizard/ShiftNozzleReadings";
 import { db } from "../../data/db";
 import { fetchWithAuth } from "../../lib/api";
-import { useStation } from "../../contexts/StationContext";
+import { useStationStore } from '../../stores/useStationStore';
+import { useInventoryStore } from '../../stores/useInventoryStore';
 import AIDocumentScanner from "../ui/AIDocumentScanner";
 import { deductFIFO, FIFOResult } from "../../services/fifoEngine";
-import { useInventoryStore } from "../../stores/useInventoryStore";
 import { logger } from '../../lib/logger';
 import {
   processCreditSale, processRecovery, processExpense,
@@ -162,7 +162,10 @@ export default function ShiftWizard({
   onNavigate,
 }: ShiftWizardProps) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { showToast, showConfirm, showAlert, tanks } = useStation();
+  const showToast = useStationStore((state) => state.showToast);
+  const showConfirm = useStationStore((state) => state.showConfirm);
+  const showAlert = useStationStore((state) => state.showAlert);
+  const tanks = useInventoryStore((state) => state.tanks);
   const { requireBiometric } = useNativeAuth();
   const isUrdu = settings.language === "ur";
   const t = (en: string, ur: string) => (isUrdu ? ur : en);
@@ -195,7 +198,7 @@ export default function ShiftWizard({
   const [isOpeningScannerOpen, setIsOpeningScannerOpen] = useState(false);
   const [isClosingScannerOpen, setIsClosingScannerOpen] = useState(false);
 
-  const handleOpeningAutoFill = (data: unknown) => {
+  const handleOpeningAutoFill = (data: any) => {
     const newOpenings = { ...openingReadings };
     for (const noz of nozzles) {
       const match = data[noz.name] || data[`Nozzle ${noz.name}`] || data[noz.name.replace(/ /g, '')];
@@ -211,7 +214,7 @@ export default function ShiftWizard({
     }, 1500);
   };
 
-  const handleClosingAutoFill = (data: unknown) => {
+  const handleClosingAutoFill = (data: any) => {
     const newClosings = { ...closingReadings };
     for (const noz of nozzles) {
       const match = data[noz.name] || data[`Nozzle ${noz.name}`] || data[noz.name.replace(/ /g, '')];
@@ -1226,7 +1229,7 @@ export default function ShiftWizard({
         setActiveTab("debit");
       }
     } catch (err) {
-      logger.error(err);
+      logger.error(String(err));
       showToast("Error saving snapshot", "error");
     }
   };
@@ -1512,7 +1515,7 @@ export default function ShiftWizard({
         );
         return;
       }
-    } catch (fifoErr: unknown) {
+    } catch (fifoErr: any) {
       logger.warn('[FIFO] Deduction error (non-blocking):', fifoErr.message);
       // Non-blocking — log but proceed (owner decision)
     } finally {
@@ -1557,7 +1560,7 @@ export default function ShiftWizard({
         ),
         "success"
       );
-    } catch (err: unknown) {
+    } catch (err: any) {
       logger.error("Error during shift close:", err);
       showToast(
         err.message || t("Failed to close shift. Please check tank stocks and try again.", "شفٹ بند کرنے میں خرابی۔ براہ کرم ٹینک کا اسٹاک چیک کریں۔"),
@@ -1593,7 +1596,7 @@ export default function ShiftWizard({
         shiftType: activeShift.type,
         date: activeShift.date,
         time: activeShift.startTime,
-        operator: staff.find((s) => s.id === activeShift.staffId)?.name || 'Unknown',
+        operator: staff.find((s) => s.id === activeShift.staffId)?.name || 'any',
         totals: expectedTotals,
         shortage: activeShift.shortage,
         overage: activeShift.overage,
@@ -1615,7 +1618,7 @@ export default function ShiftWizard({
       const data = await response.json();
       setAiSummary(data.reply);
     } catch (error) {
-      logger.error(error);
+      logger.error(String(error));
       setAiSummary("⚠️ Could not generate AI summary at this time.");
     } finally {
       setIsGeneratingAiSummary(false);
@@ -1920,7 +1923,7 @@ export default function ShiftWizard({
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6 mb-6">
                 <div>
                   <p className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5"><User className="w-3.5 h-3.5 text-orange-400" /> Operator</p>
-                  <p className="font-bold text-white text-sm truncate">{selectedStaffId ? (staff.find(s=>s.id===selectedStaffId)?.name || 'Unknown') : 'Not selected'}</p>
+                  <p className="font-bold text-white text-sm truncate">{selectedStaffId ? (staff.find(s=>s.id===selectedStaffId)?.name || 'any') : 'Not selected'}</p>
                   <p className="text-xs text-slate-400 mt-0.5 truncate">{selectedStaffId ? staff.find(s=>s.id===selectedStaffId)?.role : '-'}</p>
                 </div>
                 <div>
@@ -1984,7 +1987,7 @@ export default function ShiftWizard({
 
                   return recentShifts.map((sh, idx) => {
                     const operator = staff.find(s => s.id === sh.staffId);
-                    const opName = operator?.name || 'Unknown Operator';
+                    const opName = operator?.name || 'any Operator';
                     const initials = opName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
                     const isNight = sh.type === 'night';
                     const shiftSales = sh.submittedCash || 0;
@@ -3813,3 +3816,4 @@ export default function ShiftWizard({
     </div>
   );
 }
+

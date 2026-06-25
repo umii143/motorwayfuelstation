@@ -7,7 +7,7 @@ import {
   Bell, Link as LinkIcon, DownloadCloud, Wrench, Activity, Search,
   ChevronDown, X, Fingerprint
 } from 'lucide-react';
-import { GlobalSettings, Product, Nozzle, Pump, Tank, RateHistoryEntry, AuditTrailEntry } from '../../types';
+import { GlobalSettings, Product, Nozzle, Pump, Tank, RateHistoryEntry, AuditTrailEntry, BankAccount } from '../../types';
 import { db } from '../../data/db';
 import { useStation } from '../../contexts/StationContext';
 import { useNativeAuth } from '../../contexts/NativeAuthContext';
@@ -38,6 +38,8 @@ import { SetupBanner } from './ConfigurationHub/SetupBanner';
 import { SetupNavigationFooter } from './ConfigurationHub/SetupNavigationFooter';
 import { isLubeBusinessStation } from '../../lib/businessScope';
 
+const TankConfigurationWizard = React.lazy(() => import('./TankConfigurationWizard'));
+
 export type SettingsView =
   | 'profile' | 'station' | 'security' | 'treasury'
   | 'shift' | 'meter' | 'price' | 'backup' | 'integrity'
@@ -61,10 +63,10 @@ interface SettingsProps {
   onUpdateNozzle: (updatedNozzle: Nozzle) => void;
   onDeleteNozzle: (id: string) => void;
   rateHistory: RateHistoryEntry[];
-  banks?: unknown;
-  onUpdateBanks?: unknown;
-  onUpdateProducts?: unknown;
-  onUpdatePumps?: unknown;
+  banks: BankAccount[];
+  onUpdateBanks: (banks: BankAccount[]) => void;
+  onUpdateProducts: (products: Product[]) => void;
+  onUpdatePumps: (pumps: Pump[]) => void;
   initialTab?: string;
   onNavigate?: (viewId: string) => void;
 }
@@ -104,7 +106,7 @@ export default function SettingsPanel({
   const [sidebarSearch, setSidebarSearch] = useState('');
   // Track which accordion sections are open on mobile
   const [mobileOpenSections, setMobileOpenSections] = useState<Set<string>>(new Set(['enterprise']));
-
+  const [isGuidedWizardOpen, setIsGuidedWizardOpen] = useState(false);
   if (initialTab !== prevInitialTab) {
     setPrevInitialTab(initialTab);
     if (initialTab) {
@@ -233,7 +235,20 @@ export default function SettingsPanel({
       case 'margins':
         return <DealerMarginWizard language={settings.language} onLogAudit={handleLogAudit} stationId={activeStationId} />;
       case 'tanks':
-        return <TankWizard tanks={tanks} products={products} language={settings.language} onAddTank={onAddTank} onUpdateTank={onUpdateTank} onDeleteTank={onDeleteTank} onLogAudit={handleLogAudit} />;
+        return (
+          <div className="space-y-6">
+            <div className="bg-slate-800/40 border border-slate-700/50 p-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-1">Guided Hardware Setup</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Configure your Tanks, Pumps, and Nozzles in one simple flow.</p>
+              </div>
+              <button onClick={() => setIsGuidedWizardOpen(true)} className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/20 active:scale-95 transition-all">
+                Launch Wizard
+              </button>
+            </div>
+            <TankWizard tanks={tanks} products={products} language={settings.language} onAddTank={onAddTank} onUpdateTank={onUpdateTank} onDeleteTank={onDeleteTank} onLogAudit={handleLogAudit} />
+          </div>
+        );
       case 'nozzles':
         return <NozzleWizard nozzles={nozzles} pumps={pumps} tanks={tanks} products={products} language={settings.language} onAddNozzle={onAddNozzle} onUpdateNozzle={onUpdateNozzle} onDeleteNozzle={onDeleteNozzle} onLogAudit={handleLogAudit} onUpdateProducts={onUpdateProducts} onAddTank={onAddTank} onUpdatePumps={onUpdatePumps} />;
       case 'accounts':
@@ -498,6 +513,34 @@ export default function SettingsPanel({
           onNavigate={onNavigate}
         />
       )}
+
+      <AnimatePresence>
+        {isGuidedWizardOpen && (
+          <React.Suspense fallback={null}>
+            <TankConfigurationWizard
+              currentLanguage={settings.language}
+              existingProducts={products}
+              existingTanks={tanks}
+              onComplete={(data) => {
+                if (data.products && data.products.length > 0) {
+                  const newProducts = data.products.filter(p => !products.find(ep => ep.id === p.id));
+                  if (newProducts.length > 0 && onUpdateProducts) {
+                    onUpdateProducts([...products, ...newProducts as Product[]]);
+                  }
+                }
+                if (data.tanks && data.tanks.length > 0 && onAddTank) {
+                  data.tanks.forEach(t => onAddTank(t as Tank));
+                }
+                if (data.nozzles && data.nozzles.length > 0 && onAddNozzle) {
+                  data.nozzles.forEach(n => onAddNozzle(n as Nozzle));
+                }
+                setIsGuidedWizardOpen(false);
+              }}
+              onCancel={() => setIsGuidedWizardOpen(false)}
+            />
+          </React.Suspense>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
