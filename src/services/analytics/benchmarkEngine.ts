@@ -49,17 +49,25 @@ export const generateBenchmarks = (
     const shiftDate = new Date(shift.date);
     
     let revenue = 0;
-    nozzles.forEach(nz => {
-      const open = shift.openingReadings?.[nz.id] || 0;
-      const close = shift.closingReadings?.[nz.id] || 0;
-      let diff = Math.max(0, close - open);
-      const testLiters = shift.testLiters?.[nz.productId] || 0;
-      diff = Math.max(0, diff - testLiters);
-      
-      const prod = products.find(p => p.id === nz.productId);
-      const rate = prod?.rate || prod?.sellingPrice || 0;
-      revenue += diff * rate;
-    });
+    if (shift.segments && shift.segments.length > 0) {
+      shift.segments.forEach(seg => {
+        revenue += seg.revenue || 0;
+      });
+    } else if (shift.status === 'active' || !shift.closingReadings || Object.keys(shift.closingReadings).length === 0) {
+      revenue = shift.totalSales || 0;
+    } else {
+      nozzles.forEach(nz => {
+        const open = shift.openingReadings?.[nz.id] || 0;
+        const close = shift.closingReadings?.[nz.id] || 0;
+        let diff = Math.max(0, close - open);
+        const testLiters = shift.testLiters?.[nz.productId] || 0;
+        diff = Math.max(0, diff - testLiters);
+        
+        const prod = products.find(p => p.id === nz.productId);
+        const rate = prod?.rate || prod?.sellingPrice || 0;
+        revenue += diff * rate;
+      });
+    }
 
     const profit = revenue * 0.045; // Estimated 4.5% margin
     

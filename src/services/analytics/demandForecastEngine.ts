@@ -47,13 +47,21 @@ export const forecastFuelDemand = (
       const daysDiff = (now.getTime() - shiftDate.getTime()) / (1000 * 3600 * 24);
       
       let litersSold = 0;
-      tankNozzleIds.forEach(nid => {
-        const open = shift.openingReadings?.[nid] || 0;
-        const close = shift.closingReadings?.[nid] || 0;
-        if (close > open) {
-          litersSold += (close - open);
-        }
-      });
+      if (shift.segments && shift.segments.length > 0) {
+        shift.segments.forEach(seg => {
+          if (tankNozzleIds.includes(seg.nozzleId)) {
+            litersSold += (seg.litersSold || 0);
+          }
+        });
+      } else {
+        tankNozzleIds.forEach(nid => {
+          const open = shift.openingReadings?.[nid] || 0;
+          const close = shift.closingReadings?.[nid] || 0;
+          if (close > open) {
+            litersSold += (close - open);
+          }
+        });
+      }
       
       // We don't have per-tank testing liters, so we subtract testing liters by product proportionally or just assume 0 for simplicity.
       // For basic forecasting, ignoring testing liters or subtracting all testing liters for this product:

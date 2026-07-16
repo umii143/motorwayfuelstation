@@ -253,7 +253,7 @@ export const generateKPIs = (
     let shiftLiters = 0;
 
     // Fuel Sales
-    if (shift.segments) {
+    if (shift.segments && shift.segments.length > 0) {
       shift.segments.forEach(seg => {
         shiftRev += seg.revenue;
         shiftLiters += seg.litersSold;
@@ -278,17 +278,57 @@ export const generateKPIs = (
 
         productSalesMap[seg.productId] = (productSalesMap[seg.productId] || 0) + seg.litersSold;
       });
-       // Fallback for legacy shifts
-       let legacyRev = 0;
-       nozzles.forEach(nz => {
-         const open = shift.openingReadings?.[nz.id] || 0;
-         const close = shift.closingReadings?.[nz.id] || 0;
-         const diff = Math.max(0, close - open);
-         const prod = products.find(p => p.id === nz.productId);
-         const rate = prod?.rate || prod?.sellingPrice || 0;
-         legacyRev += diff * rate;
-       });
-       shiftRev += legacyRev;
+    } else if (shift.status === 'active' || !shift.closingReadings || Object.keys(shift.closingReadings).length === 0) {
+      // Fallback for active or empty shifts: use shift.totalSales (real-time running total)
+      shiftRev = shift.totalSales || 0;
+      shiftCogs = shiftRev * 0.955; // 4.5% average margin estimation
+      shiftLiters = shiftRev / 285; // rough liter estimate at average price 285 PKR
+
+      if (isDateInPeriod(d)) {
+        const profit = shiftRev - shiftCogs;
+        addTrend(d, shiftRev, profit, 0);
+        
+        // Allocate to Fuel category by default
+        breakdowns.revenueByCategory['Fuel'] = (breakdowns.revenueByCategory['Fuel'] || 0) + shiftRev;
+        breakdowns.grossProfitByCategory['Fuel'] = (breakdowns.grossProfitByCategory['Fuel'] || 0) + profit;
+      }
+    } else {
+      // Fallback for legacy shifts (no segments but closed with nozzle readings)
+      nozzles.forEach(nz => {
+        const open = shift.openingReadings?.[nz.id] || 0;
+        const close = shift.closingReadings?.[nz.id] || 0;
+        let diff = Math.max(0, close - open);
+        
+        // Deduct test liters if any for this product
+        const testLiters = shift.testLiters?.[nz.productId] || 0;
+        diff = Math.max(0, diff - testLiters);
+        
+        shiftLiters += diff;
+        
+        const prod = products.find(p => p.id === nz.productId);
+        const rate = prod?.rate || prod?.sellingPrice || 0;
+        const revenue = diff * rate;
+        shiftRev += revenue;
+        
+        const pp = prod?.purchasePrice || (prod?.rate ? prod.rate * 0.9 : 0);
+        const cogs = diff * pp;
+        shiftCogs += cogs;
+
+        if (isDateInPeriod(d)) {
+          const pName = getProductName(prod);
+          const pCat = getProductCategory(prod);
+          const profit = revenue - cogs;
+
+          addTrend(d, revenue, profit, 0);
+
+          breakdowns.revenueByProduct[pName] = (breakdowns.revenueByProduct[pName] || 0) + revenue;
+          breakdowns.revenueByCategory[pCat] = (breakdowns.revenueByCategory[pCat] || 0) + revenue;
+          breakdowns.grossProfitByProduct[pName] = (breakdowns.grossProfitByProduct[pName] || 0) + profit;
+          breakdowns.grossProfitByCategory[pCat] = (breakdowns.grossProfitByCategory[pCat] || 0) + profit;
+        }
+
+        productSalesMap[nz.productId] = (productSalesMap[nz.productId] || 0) + diff;
+      });
     }
 
 
