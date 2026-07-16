@@ -130,7 +130,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
       )}
       
       {/* Drawer - Always visible on lg screens, toggled on mobile */}
-      <div className={`fixed inset-y-0 left-0 w-[240px] bg-white dark:bg-[#151521] border-r border-slate-200 dark:border-white/5 z-[110] shadow-2xl lg:shadow-none flex flex-col overflow-hidden transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+      <div className={`fixed inset-y-0 left-0 w-[280px] bg-white dark:bg-[#151521] border-r border-slate-200 dark:border-white/5 z-[110] shadow-2xl lg:shadow-none flex flex-col overflow-hidden transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         
         {/* Header */}
         <div className="flex items-center justify-between px-5 h-16 border-b border-slate-100 dark:border-white/5 shrink-0">

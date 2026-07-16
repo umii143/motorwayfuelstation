@@ -24,9 +24,9 @@ import { DEFAULT_FUEL_STATION_ID, LUBE_STATION_ID } from '../../../lib/businessS
 import { PoweredByUmarAli } from '../../shared/PoweredByUmarAli';
 import { DataConfidenceBadge } from '../../ui/DataConfidenceBadge';
 
-// ──────────────────────────────────────────────
+// —————————————————————————————————————————————
 // Helpers
-// ──────────────────────────────────────────────
+// —————————————————————————————————————————————
 function pct(value: number, total: number): string {
   if (!total) return '0%';
   return `${((value / total) * 100).toFixed(1)}%`;
@@ -38,7 +38,6 @@ function changeIcon(change: number) {
   return null;
 }
 
- 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function changeClass(change: number): string {
   if (change > 0) return 'text-emerald-500';
@@ -46,17 +45,13 @@ function changeClass(change: number): string {
   return 'text-slate-400';
 }
 
- 
 function KPICard({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   label, value, sub, icon: Icon, iconBg, iconColor, change
 }: {
   label: string; value: string; sub?: string;
   icon: React.ElementType; iconBg: string; iconColor: string;
   change?: number;
 }) {
-  // Use a softer background color based on iconColor class
-  // e.g., 'text-emerald-500' -> 'bg-emerald-500/15 ring-emerald-500/20'
   const bgColorMap: Record<string, string> = {
     'text-emerald-500': 'bg-emerald-500/15 ring-emerald-500/20 text-emerald-500',
     'text-orange-500': 'bg-orange-500/15 ring-orange-500/20 text-orange-500',
@@ -67,7 +62,7 @@ function KPICard({
     'text-teal-500': 'bg-teal-500/15 ring-teal-500/20 text-teal-500',
     'text-indigo-500': 'bg-indigo-500/15 ring-indigo-500/20 text-indigo-500',
   };
-  const badgeClasses = bgColorMap[iconColor] || 'bg-slate-50 dark:bg-white/50/15 ring-slate-500/20 text-slate-500';
+  const badgeClasses = bgColorMap[iconColor] || 'bg-slate-50 dark:bg-white/5 shadow-inner ring-slate-500/20 text-slate-500';
 
   return (
     <div className="bg-white dark:bg-[#1A1A24] rounded-[24px] p-5 shadow-sm border border-slate-200 dark:border-white/5 relative overflow-hidden group">
@@ -90,20 +85,17 @@ function KPICard({
   );
 }
 
- 
 // Business Card (Fuel / Lube)
- 
 function BusinessCard({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   name, color, icon: Icon, todayRevenue, totalRevenue, profit, creditOutstanding,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  staffCount, activeShift, onNavigate, businessId
+  activeShift, onNavigate, businessId, t
 }: {
   name: string; color: string; icon: React.ElementType;
   todayRevenue: number; totalRevenue: number; profit: number;
   creditOutstanding: number; staffCount: number; activeShift: boolean;
   onNavigate: (view: string, stationId: string) => void;
   businessId: string;
+  t: (en: string, ur: string) => string;
 }) {
   const isFuel = businessId === DEFAULT_FUEL_STATION_ID;
   return (
@@ -117,41 +109,41 @@ function BusinessCard({
       </div>
       <div className="relative z-10">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#151521]/20 backdrop-blur flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
             <Icon className="w-5 h-5 text-white" />
           </div>
           <div>
             <h3 className="text-base font-black text-white">{name}</h3>
             <div className={`flex items-center gap-1.5 mt-0.5`}>
-              <div className={`w-1.5 h-1.5 rounded-full ${activeShift ? 'bg-emerald-300 animate-pulse' : 'bg-white dark:bg-[#151521]/30'}`} />
+              <div className={`w-1.5 h-1.5 rounded-full ${activeShift ? 'bg-emerald-300 animate-pulse' : 'bg-white/30'}`} />
               <span className="text-[10px] font-bold text-white/70">
-                {activeShift ? 'Shift Active' : 'No Active Shift'}
+                {activeShift ? t('Shift Active', 'شفٹ فعال ہے') : t('No Active Shift', 'کوئی فعال شفٹ نہیں')}
               </span>
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3 mb-5">
-          <div className="bg-white dark:bg-[#151521]/10 backdrop-blur rounded-xl p-3">
-            <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider mb-1">Today's Sales</p>
+          <div className="bg-white/10 backdrop-blur rounded-xl p-3">
+            <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider mb-1">{t("Today's Sales", 'آج کی فروخت')}</p>
             <p className="text-lg font-black text-white">
               {todayRevenue > 0 ? `PKR ${(todayRevenue / 1000).toFixed(0)}K` : '—'}
             </p>
           </div>
-          <div className="bg-white dark:bg-[#151521]/10 backdrop-blur rounded-xl p-3">
-            <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider mb-1">Total Revenue</p>
+          <div className="bg-white/10 backdrop-blur rounded-xl p-3">
+            <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider mb-1">{t('Total Revenue', 'کل آمدنی')}</p>
             <p className="text-lg font-black text-white">
               {totalRevenue > 0 ? `PKR ${(totalRevenue / 1000).toFixed(0)}K` : '—'}
             </p>
           </div>
-          <div className="bg-white dark:bg-[#151521]/10 backdrop-blur rounded-xl p-3">
-            <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider mb-1">Gross Profit</p>
+          <div className="bg-white/10 backdrop-blur rounded-xl p-3">
+            <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider mb-1">{t('Gross Profit', 'مجموعی منافع')}</p>
             <p className="text-lg font-black text-white">
               {profit > 0 ? `PKR ${(profit / 1000).toFixed(0)}K` : '—'}
             </p>
           </div>
-          <div className="bg-white dark:bg-[#151521]/10 backdrop-blur rounded-xl p-3">
-            <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider mb-1">Udhar Due</p>
+          <div className="bg-white/10 backdrop-blur rounded-xl p-3">
+            <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider mb-1">{t('Udhar Due', 'بقایا ادھار')}</p>
             <p className={`text-lg font-black ${creditOutstanding > 0 ? 'text-yellow-300' : 'text-white'}`}>
               {creditOutstanding > 0 ? `PKR ${(creditOutstanding / 1000).toFixed(0)}K` : '—'}
             </p>
@@ -160,35 +152,31 @@ function BusinessCard({
 
         <button
           onClick={() => onNavigate('dashboard', businessId)}
-          className="w-full flex items-center justify-center gap-2 bg-white dark:bg-[#151521]/15 hover:bg-white dark:bg-[#151521]/25 backdrop-blur text-white text-sm font-bold py-2.5 rounded-xl transition-all"
+          className="w-full flex items-center justify-center gap-2 bg-white/15 hover:bg-white/25 backdrop-blur text-white text-sm font-bold py-2.5 rounded-xl transition-all"
         >
-          Open Dashboard <ArrowRight className="w-4 h-4" />
+          {t('Open Dashboard', 'ڈیش بورڈ کھولیں')} <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     </div>
   );
 }
 
-// ──────────────────────────────────────────────
+// —————————————————————————————————————————————
 // Main Component
-// ──────────────────────────────────────────────
+// —————————————————————————————————————————————
 interface EnterpriseDashboardProps {
-   
   onNavigate?: (view: string, stationId?: string) => void;
 }
 
 export const EnterpriseDashboard: React.FC<EnterpriseDashboardProps> = ({ onNavigate }) => {
-   
-   
-   
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const settings = useStationStore((state) => state.settings);
   const activeStationId = useStationStore((state) => state.activeStationId);
 
-  // ─── Load BOTH businesses' data directly from the DB ───
+  const isUrdu = settings.language === 'ur';
+  const t = (en: string, ur: string) => (isUrdu ? ur : en);
+
+  // ——— Load BOTH businesses' data directly from the DB ———
   const [fuelData, setFuelData] = useState<{
-     
-     
     shifts: any[]; products: any[]; customers: any[]; tanks: any[];
     expenses: any[]; nozzles: any[]; rateHistory: any[];
   }>({ shifts: [], products: [], customers: [], tanks: [], expenses: [], nozzles: [], rateHistory: [] });
@@ -210,7 +198,6 @@ export const EnterpriseDashboard: React.FC<EnterpriseDashboardProps> = ({ onNavi
     const fuelNozzles = db.getNozzles(DEFAULT_FUEL_STATION_ID);
     const fuelRateHistory = db.getRateHistory(DEFAULT_FUEL_STATION_ID);
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFuelData({
       shifts: fuelShifts,
       products: fuelProducts,
@@ -233,70 +220,83 @@ export const EnterpriseDashboard: React.FC<EnterpriseDashboardProps> = ({ onNavi
       lubePosSales: lubeSales,
       expenses: lubeExpenses
     });
-  }, []);
+  }, [activeStationId]);
 
-  // ─── KPIs ───
-  const fuelKPIs = useMemo(() => generateKPIs(
-    fuelData.shifts, fuelData.products, fuelData.customers,
-    fuelData.tanks, fuelData.expenses, [],
-    DEFAULT_FUEL_STATION_ID, fuelData.nozzles, fuelData.rateHistory
-  ), [fuelData]);
+  // Compute Fuel KPIs
+  const fuelKPIs = useMemo(() => {
+    return generateKPIs(
+      fuelData.shifts, fuelData.products, fuelData.customers, fuelData.tanks,
+      fuelData.expenses, [], DEFAULT_FUEL_STATION_ID, fuelData.nozzles, fuelData.rateHistory
+    );
+  }, [fuelData]);
 
-  const lubeKPIs = useMemo(() => generateKPIs(
-    [], lubeData.products, lubeData.customers,
-    [], lubeData.expenses, lubeData.lubePosSales,
-    LUBE_STATION_ID, [], []
-  ), [lubeData]);
+  // Compute Lube KPIs
+  const lubeKPIs = useMemo(() => {
+    return generateKPIs(
+      [], lubeData.products, lubeData.customers, [],
+      lubeData.expenses, lubeData.lubePosSales, LUBE_STATION_ID, [], []
+    );
+  }, [lubeData]);
 
-  // ─── Combined KPIs ───
-  const combined = useMemo(() => ({
-    todayRevenue: fuelKPIs.revenue.today + lubeKPIs.revenue.today,
-    totalRevenue: fuelKPIs.revenue.ytd + lubeKPIs.revenue.ytd,
-    totalProfit: fuelKPIs.profit.gross + lubeKPIs.profit.gross,
-    totalExpenses: fuelKPIs.expenses.total + lubeKPIs.expenses.total,
-    totalCreditOut: fuelKPIs.credit.outstanding + lubeKPIs.credit.outstanding,
-    totalPayables: suppliers.reduce((s, sup) => s + (sup.balance > 0 ? sup.balance : 0), 0),
-    inventoryValue: fuelKPIs.inventory.value + lubeKPIs.inventory.value,
-    cashPosition: fuelKPIs.cash.position + lubeKPIs.cash.position,
-    totalStaff: [...fuelData.products].length + [...lubeData.products].length, // proxy count
-  }), [fuelKPIs, lubeKPIs, suppliers, fuelData, lubeData]);
+  // Combined metrics
+  const combined = useMemo(() => {
+    const todayRevenue = fuelKPIs.revenue.today + lubeKPIs.revenue.today;
+    const totalRevenue = fuelKPIs.revenue.ytd + lubeKPIs.revenue.ytd;
+    const totalProfit = fuelKPIs.profit.gross + lubeKPIs.profit.gross;
+    const totalCreditOut = fuelKPIs.credit.outstanding + lubeKPIs.credit.outstanding;
+    const totalPayables = suppliers.reduce((sum, s) => sum + (s.balance > 0 ? s.balance : 0), 0);
+    const inventoryValue = fuelKPIs.inventory.value + lubeKPIs.inventory.value;
+    const totalExpenses = fuelKPIs.expenses.total + lubeKPIs.expenses.total;
+    const cashPosition = fuelKPIs.cash.position + lubeKPIs.cash.position;
 
-  // ─── Revenue Split (Pie) ───
+    return {
+      todayRevenue,
+      totalRevenue,
+      totalProfit,
+      totalCreditOut,
+      totalPayables,
+      inventoryValue,
+      totalExpenses,
+      cashPosition
+    };
+  }, [fuelKPIs, lubeKPIs, suppliers]);
+
+  // Pie chart split
   const revenueSplit = useMemo(() => {
-    const total = combined.totalRevenue;
-    if (!total) return [];
+    if (combined.totalRevenue === 0) return [];
     return [
-      { name: 'Fuel Station', value: fuelKPIs.revenue.ytd, color: '#F97316' },
-      { name: 'Lube Business', value: lubeKPIs.revenue.ytd, color: '#3B82F6' }
+      { name: t('Fuel Station', 'فیول اسٹیشن'), value: fuelKPIs.revenue.ytd, color: '#F97316' },
+      { name: t('Lube Business', 'لیوب بزنس'), value: lubeKPIs.revenue.ytd, color: '#3B82F6' }
     ];
   }, [fuelKPIs, lubeKPIs, combined.totalRevenue]);
 
-  // ─── Last 7 Days Revenue Trend (Both Businesses) ───
+  // Trend data for last 7 days (both businesses combined)
   const trendData = useMemo(() => {
-    const days = Array.from({ length: 7 }, (_, i) => {
-      const d = new Date();
-      d.setDate(d.getDate() - (6 - i));
-      return d.toISOString().split('T')[0];
-    });
-  
+    const list = [];
+    const now = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(now.getDate() - i);
+      list.push(d);
+    }
 
-    return days.map(dateStr => {
-       
-      const displayDate = new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    return list.map(dateObj => {
+      const dateStr = dateObj.toISOString().split('T')[0];
+      const displayDate = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 
       // Fuel revenue for this day
       const fuelRev = fuelData.shifts
-         
         .filter(s => s.date === dateStr)
-        .reduce((sum, sh) => {
-          let r = 0;
-          sh.segments?.forEach((seg: any) => { r += seg.revenue; });
-          if (!sh.segments || sh.segments.length === 0) {
-            fuelData.nozzles.forEach((nz: any) => {
-              const open = sh.openingReadings?.[nz.id] || 0;
-              const close = sh.closingReadings?.[nz.id] || 0;
+        .reduce((sum, s) => {
+          let r = s.totalSales || 0;
+          if (!r && s.closingReadings) {
+            // fallback
+            Object.keys(s.closingReadings).forEach(nzId => {
+              const close = s.closingReadings[nzId] || 0;
+              const open = s.openingReadings[nzId] || 0;
               const diff = Math.max(0, close - open);
-              const prod = fuelData.products.find((p: any) => p.id === nz.productId);
+              const nz = fuelData.nozzles.find((n: any) => n.id === nzId);
+              const prod = fuelData.products.find((p: any) => p.id === nz?.productId);
               r += diff * (prod?.rate || 0);
             });
           }
@@ -309,42 +309,46 @@ export const EnterpriseDashboard: React.FC<EnterpriseDashboardProps> = ({ onNavi
         .reduce((sum, s) => sum + s.total, 0);
 
       return { date: displayDate, fuel: fuelRev, lube: lubeRev, total: fuelRev + lubeRev };
-     
     });
-   
   }, [fuelData, lubeData]);
 
-  // ─── Alerts ───
-   
+  // ——— Alerts ———
   const alerts = useMemo(() => {
     const list: Array<{ id: string; type: 'warn' | 'danger' | 'ok'; message: string }> = [];
-  
 
     // Fuel: active shift check
-     
     const activeFuelShift = fuelData.shifts.find(s => s.status === 'active');
-    if (!activeFuelShift) list.push({ id: 'no_fuel_shift', type: 'warn', message: 'No active shift at Fuel Station' });
-  
+    if (!activeFuelShift) {
+      list.push({ id: 'no_fuel_shift', type: 'warn', message: t('No active shift at Fuel Station', 'فیول اسٹیشن پر کوئی فعال شفٹ نہیں ہے') });
+    }
 
     // Low stock in fuel products
     fuelData.products.filter((p: any) => p.currentStock <= p.minStock && p.currentStock > 0)
-      .forEach((p: any) => list.push({ id: `fuel_low_${p.id}`, type: 'warn', message: `Low fuel stock: ${p.name} (${p.currentStock}L)` }));
+      .forEach((p: any) => {
+        list.push({ id: `fuel_low_${p.id}`, type: 'warn', message: `${t('Low fuel stock:', 'کم فیول اسٹاک:')} ${p.name} (${p.currentStock}L)` });
+      });
 
     // High udhar customers
     fuelData.customers.filter((c: any) => c.balance > (c.creditLimit || 50000))
       .slice(0, 2)
-      .forEach((c: any) => list.push({ id: `credit_${c.id}`, type: 'danger', message: `Credit limit exceeded: ${c.name} (PKR ${c.balance?.toLocaleString()})` }));
+      .forEach((c: any) => {
+        list.push({ id: `credit_${c.id}`, type: 'danger', message: `${t('Credit limit exceeded:', 'ادھار کی حد سے تجاوز:')} ${c.name} (PKR ${c.balance?.toLocaleString()})` });
+      });
 
     lubeData.customers.filter((c: any) => c.balance > (c.creditLimit || 50000))
       .slice(0, 2)
-      .forEach((c: any) => list.push({ id: `lube_credit_${c.id}`, type: 'danger', message: `[Lube] Credit limit exceeded: ${c.name}` }));
+      .forEach((c: any) => {
+        list.push({ id: `lube_credit_${c.id}`, type: 'danger', message: `${t('[Lube] Credit limit exceeded:', '[لیوب] ادھار کی حد سے تجاوز:')} ${c.name}` });
+      });
 
-    if (list.length === 0) list.push({ id: 'all_ok', type: 'ok', message: 'All systems healthy — no alerts!' });
+    if (list.length === 0) {
+      list.push({ id: 'all_ok', type: 'ok', message: t('All systems healthy — no alerts!', 'تمام سسٹمز بالکل ٹھیک ہیں — کوئی الرٹ نہیں!') });
+    }
 
     return list;
   }, [fuelData, lubeData]);
 
-  // ─── Fuel active shift ───
+  // Fuel active shift
   const activeFuelShift = useMemo(() => fuelData.shifts.find(s => s.status === 'active'), [fuelData.shifts]);
 
   const fmt = (n: number) => n >= 1000000
@@ -357,10 +361,10 @@ export const EnterpriseDashboard: React.FC<EnterpriseDashboardProps> = ({ onNavi
   };
 
   return (
-    <RoleGuard allowedRoles={['Owner', 'Manager']} fallbackMessage="Enterprise Dashboard is restricted to Owner / Manager only.">
+    <RoleGuard allowedRoles={['Owner', 'Manager']} fallbackMessage={t('Enterprise Dashboard is restricted to Owner / Manager only.', 'انٹرپرائز ڈیش بورڈ تک رسائی صرف مالکان اور مینیجرز کے لیے مخصوص ہے۔')}>
       <div className="w-full flex flex-col pb-12 gap-6">
 
-        {/* ── HEADER ── */}
+        {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-1">
@@ -368,71 +372,71 @@ export const EnterpriseDashboard: React.FC<EnterpriseDashboardProps> = ({ onNavi
                 <Building2 className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-black text-slate-800 dark:text-white">Enterprise Overview</h1>
-                <p className="text-xs font-semibold text-slate-400 mt-0.5">Consolidated view — FuelPro + LubeManager Pro</p>
+                <h1 className="text-2xl font-black text-slate-800 dark:text-white">{t('Enterprise Overview', 'انٹرپرائز جائزہ')}</h1>
+                <p className="text-xs font-semibold text-slate-400 mt-0.5">{t('Consolidated view — FuelPro + LubeManager Pro', 'مشترکہ جائزہ — فیول پرو + لیوب مینیجر پرو')}</p>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 bg-violet-500/10 text-violet-600 dark:text-violet-400 px-3 py-2 rounded-xl border border-violet-500/20 text-xs font-bold">
               <ShieldCheck className="w-3.5 h-3.5" />
-              Owner View — Restricted Access
+              {t('Owner View — Restricted Access', 'مالک کا ویو — محدود رسائی')}
             </div>
             <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-semibold">
               <Clock className="w-3.5 h-3.5" />
-              {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+              {new Date().toLocaleDateString(isUrdu ? 'ur-PK' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
             </div>
           </div>
         </div>
 
-        {/* ── COMBINED KPI CARDS ── */}
+        {/* COMBINED KPI CARDS */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <KPICard
-            label="Today's Revenue" value={fmt(combined.todayRevenue)}
-            sub="Both businesses"
+            label={t("Today's Revenue", 'آج کی آمدنی')} value={fmt(combined.todayRevenue)}
+            sub={t('Both businesses', 'دونوں کاروبار')}
             icon={DollarSign} iconBg="bg-emerald-500/10" iconColor="text-emerald-500"
           />
           <KPICard
-            label="Total Revenue (YTD)" value={fmt(combined.totalRevenue)}
-            sub="Lifetime accumulated"
+            label={t('Total Revenue (YTD)', 'کل آمدنی (سالانہ)')} value={fmt(combined.totalRevenue)}
+            sub={t('Lifetime accumulated', 'کل جمع شدہ')}
             icon={TrendingUp} iconBg="bg-orange-500/10" iconColor="text-orange-500"
           />
           <KPICard
-            label="Gross Profit" value={fmt(combined.totalProfit)}
-            sub="Revenue minus COGS"
+            label={t('Gross Profit', 'مجموعی منافع')} value={fmt(combined.totalProfit)}
+            sub={t('Revenue minus COGS', 'آمدنی منہا لاگت')}
             icon={BarChart3} iconBg="bg-blue-500/10" iconColor="text-blue-500"
           />
           <KPICard
-            label="Udhar Outstanding" value={fmt(combined.totalCreditOut)}
-            sub={`Payables: ${fmt(combined.totalPayables)}`}
+            label={t('Udhar Outstanding', 'بقایا ادھار')} value={fmt(combined.totalCreditOut)}
+            sub={`${t('Payables', 'واجبات')}: ${fmt(combined.totalPayables)}`}
             icon={CreditCard} iconBg="bg-red-500/10" iconColor="text-red-500"
           />
           <KPICard
-            label="Inventory Value" value={fmt(combined.inventoryValue)}
-            sub="Book value at cost"
+            label={t('Inventory Value', 'اسٹاک کی مالیت')} value={fmt(combined.inventoryValue)}
+            sub={t('Book value at cost', 'لاگت پر بک ویلیو')}
             icon={Package} iconBg="bg-purple-500/10" iconColor="text-purple-500"
           />
           <KPICard
-            label="Total Expenses" value={fmt(combined.totalExpenses)}
-            sub="Operational expenses"
+            label={t('Total Expenses', 'کل اخراجات')} value={fmt(combined.totalExpenses)}
+            sub={t('Operational expenses', 'آپریشنل اخراجات')}
             icon={Receipt} iconBg="bg-amber-500/10" iconColor="text-amber-500"
           />
           <KPICard
-            label="Cash Position" value={fmt(combined.cashPosition)}
-            sub="Cash received minus costs"
+            label={t('Cash Position', 'نقدی کی صورتحال')} value={fmt(combined.cashPosition)}
+            sub={t('Cash received minus costs', 'وصول شدہ نقدی منہا لاگت')}
             icon={Coins} iconBg="bg-teal-500/10" iconColor="text-teal-500"
           />
           <KPICard
-            label="Supplier Payables" value={fmt(combined.totalPayables)}
-            sub="Outstanding to suppliers"
+            label={t('Supplier Payables', 'سپلائر واجبات')} value={fmt(combined.totalPayables)}
+            sub={t('Outstanding to suppliers', 'سپلائرز کے بقایا جات')}
             icon={Fuel} iconBg="bg-indigo-500/10" iconColor="text-indigo-500"
           />
         </div>
 
-        {/* ── TWO BUSINESS CARDS ── */}
+        {/* TWO BUSINESS CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <BusinessCard
-            name="Motorway Petroleum — Fuel Station"
+            name={t('Motorway Petroleum — Fuel Station', 'موٹروے پٹرولیم — فیول اسٹیشن')}
             color="orange"
             icon={Fuel}
             todayRevenue={fuelKPIs.revenue.today}
@@ -443,9 +447,10 @@ export const EnterpriseDashboard: React.FC<EnterpriseDashboardProps> = ({ onNavi
             activeShift={!!activeFuelShift}
             businessId={DEFAULT_FUEL_STATION_ID}
             onNavigate={(view, sid) => handleNav(view, sid)}
+            t={t}
           />
           <BusinessCard
-            name="Motorway Oil Bakhshali — Lube Shop"
+            name={t('Motorway Oil Bakhshali — Lube Shop', 'موٹروے آئل بخشالی — لیوب شاپ')}
             color="blue"
             icon={Wrench}
             todayRevenue={lubeKPIs.revenue.today}
@@ -456,17 +461,18 @@ export const EnterpriseDashboard: React.FC<EnterpriseDashboardProps> = ({ onNavi
             activeShift={false}
             businessId={LUBE_STATION_ID}
             onNavigate={(view, sid) => handleNav(view, sid)}
+            t={t}
           />
         </div>
 
-        {/* ── CHARTS ROW ── */}
+        {/* CHARTS ROW */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
           {/* Revenue Trend (7 days) */}
           <div className="lg:col-span-2 bg-white dark:bg-[#1A1A24] rounded-[24px] p-6 shadow-sm border border-slate-200 dark:border-white/5">
             <h3 className="text-base font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
               <Activity className="w-4 h-4 text-violet-500" />
-              7-Day Revenue Trend — Both Businesses
+              {t('7-Day Revenue Trend — Both Businesses', '7 روز آمدنی کا رجحان — دونوں کاروبار')}
             </h3>
             <div className="h-[220px]">
               {trendData.some(d => d.total > 0) ? (
@@ -487,7 +493,7 @@ export const EnterpriseDashboard: React.FC<EnterpriseDashboardProps> = ({ onNavi
                       tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}K` : String(v)} />
                     <Tooltip
                       contentStyle={{ backgroundColor: '#1e293b', color: '#f8fafc', borderRadius: '12px', border: 'none', fontSize: '12px', fontWeight: 'bold' }}
-                      formatter={(val: any, name: any) => [`PKR ${val.toLocaleString()}`, name === 'fuel' ? 'Fuel Station' : 'Lube Business']}
+                      formatter={(val: any, name: any) => [`PKR ${val.toLocaleString()}`, name === 'fuel' ? t('Fuel Station', 'فیول اسٹیشن') : t('Lube Business', 'لیوب بزنس')]}
                     />
                     <Area type="monotone" dataKey="fuel" stroke="#F97316" strokeWidth={2.5} fill="url(#fuelGrad)" name="fuel" />
                     <Area type="monotone" dataKey="lube" stroke="#3B82F6" strokeWidth={2.5} fill="url(#lubeGrad)" name="lube" />
@@ -496,19 +502,19 @@ export const EnterpriseDashboard: React.FC<EnterpriseDashboardProps> = ({ onNavi
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-slate-400">
                   <BarChart3 className="w-8 h-8 mb-2 opacity-20" />
-                  <p className="text-sm font-semibold">No revenue data in last 7 days</p>
-                  <p className="text-xs mt-1 opacity-70">Close a shift or make a sale to see trends</p>
+                  <p className="text-sm font-semibold">{t('No revenue data in last 7 days', 'گزشتہ 7 دنوں میں آمدنی کا کوئی ڈیٹا نہیں ہے')}</p>
+                  <p className="text-xs mt-1 opacity-70">{t('Close a shift or make a sale to see trends', 'رجحان دیکھنے کے لیے شفٹ بند کریں یا فروخت درج کریں')}</p>
                 </div>
               )}
             </div>
             <div className="flex gap-4 mt-4">
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-1.5 rounded-full bg-orange-500" />
-                <span className="text-xs font-semibold text-slate-500">Fuel Station</span>
+                <span className="text-xs font-semibold text-slate-500">{t('Fuel Station', 'فیول اسٹیشن')}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-1.5 rounded-full bg-blue-500" />
-                <span className="text-xs font-semibold text-slate-500">Lube Business</span>
+                <span className="text-xs font-semibold text-slate-500">{t('Lube Business', 'لیوب بزنس')}</span>
               </div>
             </div>
           </div>
@@ -517,7 +523,7 @@ export const EnterpriseDashboard: React.FC<EnterpriseDashboardProps> = ({ onNavi
           <div className="bg-white dark:bg-[#1A1A24] rounded-[24px] p-6 shadow-sm border border-slate-200 dark:border-white/5 flex flex-col">
             <h3 className="text-base font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-violet-500" />
-              Revenue Contribution
+              {t('Revenue Contribution', 'آمدنی کا حصہ')}
             </h3>
             {revenueSplit.length > 0 && combined.totalRevenue > 0 ? (
               <>
@@ -553,24 +559,24 @@ export const EnterpriseDashboard: React.FC<EnterpriseDashboardProps> = ({ onNavi
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
                 <Activity className="w-8 h-8 mb-2 opacity-20" />
-                <p className="text-sm font-semibold">No revenue recorded yet</p>
+                <p className="text-sm font-semibold">{t('No revenue recorded yet', 'ابھی تک کوئی آمدنی ریکارڈ نہیں ہوئی')}</p>
               </div>
             )}
           </div>
 
         </div>
 
-        {/* ── BOTTOM ROW ── */}
+        {/* BOTTOM ROW */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
           {/* System Alerts */}
           <div className="bg-white dark:bg-[#1A1A24] rounded-[24px] p-6 shadow-sm border border-slate-200 dark:border-white/5">
             <h3 className="text-base font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-500" />
-              Enterprise Alerts
+              {t('Enterprise Alerts', 'انٹرپرائز الرٹس')}
               {alerts.filter(a => a.type !== 'ok').length > 0 && (
                 <span className="ml-auto bg-red-500/10 text-red-500 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                  {alerts.filter(a => a.type !== 'ok').length} Issues
+                  {alerts.filter(a => a.type !== 'ok').length} {t('Issues', 'مسائل')}
                 </span>
               )}
             </h3>
@@ -583,12 +589,13 @@ export const EnterpriseDashboard: React.FC<EnterpriseDashboardProps> = ({ onNavi
                     ? 'bg-red-500/5 border-red-500/20'
                     : 'bg-amber-500/5 border-amber-500/20'
                 }`}>
-                  {alert.type === 'ok'
-                    ? <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                    : alert.type === 'danger'
-                    ? <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                    : <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                  }
+                  {alert.type === 'ok' ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                  ) : alert.type === 'danger' ? (
+                    <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                  )}
                   <p className={`text-xs font-semibold ${
                     alert.type === 'ok' ? 'text-emerald-700 dark:text-emerald-400'
                     : alert.type === 'danger' ? 'text-red-700 dark:text-red-400'
@@ -603,16 +610,16 @@ export const EnterpriseDashboard: React.FC<EnterpriseDashboardProps> = ({ onNavi
           <div className="bg-white dark:bg-[#1A1A24] rounded-[24px] p-6 shadow-sm border border-slate-200 dark:border-white/5">
             <h3 className="text-base font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-violet-500" />
-              Owner Quick Access
+              {t('Owner Quick Access', 'مالک کی فوری رسائی')}
             </h3>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { label: 'Fuel Reports', view: 'reports', stationId: DEFAULT_FUEL_STATION_ID, icon: BarChart3, color: 'text-orange-500 bg-orange-500/10' },
-                { label: 'Lube POS Sales', view: 'reports', stationId: LUBE_STATION_ID, icon: Receipt, color: 'text-blue-500 bg-blue-500/10' },
-                { label: 'Executive KPIs', view: 'executive_dashboard', stationId: undefined, icon: TrendingUp, color: 'text-violet-500 bg-violet-500/10' },
-                { label: 'Risk Center', view: 'risk_center', stationId: undefined, icon: ShieldCheck, color: 'text-red-500 bg-red-500/10' },
-                { label: 'Fuel Customers', view: 'customers', stationId: DEFAULT_FUEL_STATION_ID, icon: Users, color: 'text-emerald-500 bg-emerald-500/10' },
-                { label: 'Audit Center', view: 'audit_center', stationId: undefined, icon: ShieldCheck, color: 'text-indigo-500 bg-indigo-500/10' },
+                { label: t('Fuel Reports', 'فیول رپورٹس'), view: 'reports', stationId: DEFAULT_FUEL_STATION_ID, icon: BarChart3, color: 'text-orange-500 bg-orange-500/10' },
+                { label: t('Lube POS Sales', 'لیوب سیلز رپورٹس'), view: 'reports', stationId: LUBE_STATION_ID, icon: Receipt, color: 'text-blue-500 bg-blue-500/10' },
+                { label: t('Executive KPIs', 'ایگزیکٹو اشارے'), view: 'executive_dashboard', stationId: undefined, icon: TrendingUp, color: 'text-violet-500 bg-violet-500/10' },
+                { label: t('Risk Center', 'رسک سینٹر'), view: 'risk_center', stationId: undefined, icon: ShieldCheck, color: 'text-red-500 bg-red-500/10' },
+                { label: t('Fuel Customers', 'فیول کسٹمرز'), view: 'customers', stationId: DEFAULT_FUEL_STATION_ID, icon: Users, color: 'text-emerald-500 bg-emerald-500/10' },
+                { label: t('Audit Center', 'آڈٹ سینٹر'), view: 'audit_center', stationId: undefined, icon: ShieldCheck, color: 'text-indigo-500 bg-indigo-500/10' },
               ].map(item => (
                 <button
                   key={`${item.view}_${item.stationId}`}
