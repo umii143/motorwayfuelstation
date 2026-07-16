@@ -98,6 +98,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
     // SYSTEM / SETUP
     { id: 'audit_center', section: 'system', icon: ShieldAlert, label: 'Audit Center', urdu: 'آڈٹ سینٹر', showInLube: true },
     { id: 'settings', section: 'system', icon: Settings, label: 'Settings & Setup', urdu: 'سیٹنگز اور سیٹ اپ', showInLube: true },
+    { id: 'about_me', section: 'system', icon: Sparkles, label: 'About Me', urdu: 'میرے بارے میں', showInLube: true },
     { id: 'security_hub', section: 'system', icon: Shield, label: 'Security & Roles', urdu: 'سیکیورٹی ہب', showInLube: true },
     { id: 'subscription_hub', section: 'system', icon: CreditCard, label: 'Subscription & Billing', urdu: 'بلنگ اور پلان', showInLube: true },
     ...(isSuperAdmin ? [{ id: 'license_manager', section: 'system', icon: ShieldCheck, label: 'License Manager', urdu: 'لائسنس مینیجر', showInLube: true }] : []),
@@ -139,7 +140,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
           <button 
             onClick={onClose}
             aria-label="Close Navigation"
-            className="p-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-white/5 rounded-full transition-colors lg:hidden"
+            className="p-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-white dark:bg-[#151521]/5 rounded-full transition-colors lg:hidden"
           >
             <X className="w-5 h-5" />
           </button>
@@ -149,7 +150,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
         <div className="px-4 py-3 border-b border-slate-100 dark:border-white/5 shrink-0 relative z-50 bg-white dark:bg-[#151521]">
           <button 
             onClick={() => setIsStationMenuOpen(!isStationMenuOpen)}
-            className="flex w-full items-center justify-between gap-3 p-2 rounded-xl transition-colors hover:bg-slate-50 dark:hover:bg-white/5 border border-slate-200 dark:border-white/10"
+            className="flex w-full items-center justify-between gap-3 p-2 rounded-xl transition-colors hover:bg-slate-50 dark:hover:bg-white dark:bg-[#151521]/5 border border-slate-200 dark:border-white/10"
           >
             <div className="flex items-center gap-3 overflow-hidden">
               <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${activeStation?.businessType === 'lube' ? 'from-blue-400 to-[#0055FF]' : 'from-orange-400 to-[#FF7A00]'} flex items-center justify-center shadow-lg shrink-0`}>
@@ -181,7 +182,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
                     setIsStationMenuOpen(false);
                     if (window.innerWidth < 1024) onClose();
                   }}
-                  className={`flex items-center gap-3 p-2 rounded-lg transition-colors text-left ${station.id === activeStationId ? (station.businessType === 'lube' ? 'bg-blue-50 dark:bg-blue-500/10' : 'bg-orange-50 dark:bg-orange-500/10') : 'hover:bg-slate-50 dark:hover:bg-white/5'}`}
+                  className={`flex items-center gap-3 p-2 rounded-lg transition-colors text-left ${station.id === activeStationId ? (station.businessType === 'lube' ? 'bg-blue-50 dark:bg-blue-500/10' : 'bg-orange-50 dark:bg-orange-500/10') : 'hover:bg-slate-50 dark:hover:bg-white dark:bg-[#151521]/5'}`}
                 >
                   {station.businessType === 'lube' ? (
                     <Droplets className={`w-4 h-4 shrink-0 ${station.id === activeStationId ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
@@ -238,7 +239,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
                           className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 font-sans text-base font-semibold transition-all cursor-pointer ${
                             isChildActive
                               ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 border-l-4 border-orange-600'
-                              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white border-l-4 border-transparent'
+                              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white dark:bg-[#151521]/5 hover:text-slate-900 dark:hover:text-white border-l-4 border-transparent'
                           }`}
                         >
                           <div className="flex items-center gap-3">
@@ -264,7 +265,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
                                   className={`flex w-full items-center gap-3 rounded-lg px-3 py-3 font-sans text-sm font-semibold transition-all cursor-pointer ${
                                     childActive
                                       ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 font-bold'
-                                      : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
+                                      : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white dark:bg-[#151521]/5 hover:text-slate-900 dark:hover:text-white'
                                   }`}
                                 >
                                   <ChildIcon className={`h-4 w-4 shrink-0 ${childActive ? 'text-orange-600' : 'text-slate-400'}`} />
@@ -287,7 +288,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
                       className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 font-sans text-base font-semibold transition-all cursor-pointer ${
                         isActive
                           ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 border-l-4 border-orange-600'
-                          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white border-l-4 border-transparent'
+                          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white dark:bg-[#151521]/5 hover:text-slate-900 dark:hover:text-white border-l-4 border-transparent'
                       }`}
                     >
                       <Icon className={`h-5 w-5 shrink-0 ${isActive ? 'text-orange-600' : 'text-slate-400'}`} />

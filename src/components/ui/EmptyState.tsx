@@ -17,15 +17,15 @@ export default function EmptyState({
   onAction
 }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center text-center p-8 md:p-16 border border-dashed border-slate-200 rounded-2xl bg-white space-y-4 max-w-md mx-auto my-6 animate-fade-in shadow-xs">
+    <div className="flex flex-col items-center justify-center text-center p-8 md:p-16 border border-dashed border-slate-200 dark:border-white/10 rounded-2xl bg-white dark:bg-[#151521] space-y-4 max-w-md mx-auto my-6 animate-fade-in shadow-xs">
       {/* Icon Frame - High Definition, minimalist outline */}
-      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-50/50 text-slate-400 ring-4 ring-slate-50 shadow-inner">
+      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-50 dark:bg-white/5/50 text-slate-400 ring-4 ring-slate-50 shadow-inner">
         <Icon className="h-10 w-10" strokeWidth={2} />
       </div>
 
       {/* Narrative block */}
       <div className="space-y-1">
-        <h3 className="font-sans text-sm font-bold text-slate-800 tracking-tight leading-snug">
+        <h3 className="font-sans text-sm font-bold text-slate-800 dark:text-slate-200 tracking-tight leading-snug">
           {title}
         </h3>
         <p className="font-sans text-xs text-slate-500 max-w-xs leading-normal">

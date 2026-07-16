@@ -69,7 +69,7 @@ export default function PriceIntelligenceHub({ settings }: PriceIntelligenceHubP
     <div className="space-y-6">
       <div className="flex flex-row items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-800 font-sans tracking-tight flex items-center gap-2">
+          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200 font-sans tracking-tight flex items-center gap-2">
             <Zap className="h-6 w-6 text-yellow-500" />
             {t("Price Intelligence Ledger", "پرائس انٹیلیجنس لیجر")}
           </h2>
@@ -78,7 +78,7 @@ export default function PriceIntelligenceHub({ settings }: PriceIntelligenceHubP
           </p>
         </div>
         
-        <div className="premium-card px-5 py-3 border border-slate-200 flex items-center ga w-full sm:w-auto">
+        <div className="premium-card px-5 py-3 border border-slate-200 dark:border-white/10 flex items-center ga w-full sm:w-auto">
           <div>
             <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">{t("Compliance Score", "کمپلائنس اسکور")}</p>
             <div className="flex items-center gap-2 mt-1">
@@ -110,7 +110,7 @@ export default function PriceIntelligenceHub({ settings }: PriceIntelligenceHubP
             </thead>
             <tbody className="font-mono">
               {priceRevisionEvents.map((ev, i) => (
-                <tr key={i} className="hover:bg-slate-50">
+                <tr key={i} className="hover:bg-slate-50 dark:bg-white/5">
                   <td>
                     <span className="font-sans font-medium text-indigo-600">#{ev.shiftId.slice(-6)}</span>
                     <br/>

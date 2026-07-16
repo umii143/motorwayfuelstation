@@ -193,7 +193,7 @@ export default function AIAssistant({
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white shrink-0">
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/20">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white dark:bg-[#151521]/20">
                   <Sparkles className="h-4 w-4" />
                 </div>
                 <div>
@@ -206,7 +206,7 @@ export default function AIAssistant({
               <button
                 onClick={() => setIsOpen(false)}
                 aria-label="Close AI Assistant"
-                className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 hover:bg-white/25 transition-colors cursor-pointer"
+                className="flex h-7 w-7 items-center justify-center rounded-lg bg-white dark:bg-[#151521]/15 hover:bg-white dark:bg-[#151521]/25 transition-colors cursor-pointer"
               >
                 <ChevronDown className="h-4 w-4" />
               </button>
@@ -231,7 +231,7 @@ export default function AIAssistant({
                     msg.role === 'user'
                       ? 'bg-orange-500 text-white rounded-tr-sm'
                       : msg.isReceiptFormat
-                        ? 'bg-white border border-slate-200 text-slate-800 rounded-tl-sm shadow-sm font-mono text-[10px] sm:text-xs leading-relaxed whitespace-pre overflow-x-auto'
+                        ? 'bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-200 rounded-tl-sm shadow-sm font-mono text-[10px] sm:text-xs leading-relaxed whitespace-pre overflow-x-auto'
                         : 'bg-[var(--bg-hover)] text-[var(--text-main)] rounded-tl-sm'
                   }`}>
                     {msg.isLoading ? (

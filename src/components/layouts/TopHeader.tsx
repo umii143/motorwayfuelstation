@@ -65,7 +65,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         <button 
           onClick={onMenuClick}
           aria-label="Open Navigation Menu"
-          className="p-2 -ml-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors"
+          className="p-2 -ml-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white dark:bg-[#151521]/5 rounded-full transition-colors"
         >
           <Menu className="w-5 h-5" />
         </button>
@@ -91,75 +91,76 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
       {/* Middle: Actions */}
       <div className="flex items-center gap-2 md:gap-5">
         
-        {/* Language Switcher */}
-        <button 
-          onClick={onLanguageToggle}
-          aria-label="Toggle Language"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors border border-transparent dark:border-white/5"
-        >
-          <Globe className="w-4 h-4" />
-          <span className="text-xs font-bold hidden sm:inline">{settings.language === 'ur' ? 'UR' : 'EN'}</span>
-        </button>
-
-        {/* Theme Dropdown */}
-        <div className="relative" ref={themeDropdownRef}>
+        {/* Pro-Level Actions Group */}
+        <div className="flex items-center gap-0.5 sm:gap-1 p-1 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 shadow-inner dark:shadow-none transition-colors">
+          {/* Language Switcher */}
           <button 
-            onClick={() => setIsThemeOpen(!isThemeOpen)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors border border-transparent dark:border-white/5"
-            title="Select Theme"
-            aria-label="Select Theme"
+            onClick={onLanguageToggle}
+            aria-label="Toggle Language"
+            className="flex items-center justify-center w-8 h-8 rounded-full text-slate-500 hover:text-slate-800 hover:bg-white dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/10 transition-all shadow-sm dark:shadow-none"
           >
-            <currentThemeObj.icon className="w-4 h-4" />
-            <span className="text-xs font-bold hidden sm:inline">{currentThemeObj.label}</span>
-            <ChevronDown className={`w-3 h-3 transition-transform ${isThemeOpen ? 'rotate-180' : ''}`} />
+            <Globe className="w-4 h-4" />
           </button>
-          
-          {isThemeOpen && (
-            <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-[#1A1A24] rounded-xl shadow-xl border border-slate-200 dark:border-white/10 py-2 z-50 animate-in fade-in slide-in-from-top-2">
-              <div className="px-3 pb-2 mb-2 border-b border-slate-100 dark:border-white/10">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Theme</p>
+
+          {/* Theme Dropdown */}
+          <div className="relative" ref={themeDropdownRef}>
+            <button 
+              onClick={() => setIsThemeOpen(!isThemeOpen)}
+              className="flex items-center justify-center w-12 h-8 gap-1 rounded-full text-slate-500 hover:text-slate-800 hover:bg-white dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/10 transition-all shadow-sm dark:shadow-none"
+              title="Select Theme"
+              aria-label="Select Theme"
+            >
+              <currentThemeObj.icon className="w-4 h-4" />
+              <ChevronDown className={`w-3 h-3 transition-transform ${isThemeOpen ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {isThemeOpen && (
+              <div className="absolute top-full right-0 mt-3 w-48 bg-white dark:bg-[#1A1A24] rounded-xl shadow-2xl border border-slate-200 dark:border-white/10 py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                <div className="px-3 pb-2 mb-2 border-b border-slate-100 dark:border-white/10">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Theme</p>
+                </div>
+                {availableThemes.map(theme => (
+                  <button
+                    key={theme.id}
+                    onClick={() => {
+                      onSetTheme?.(theme.id);
+                      setIsThemeOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors ${
+                      settings.theme === theme.id 
+                        ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold' 
+                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white dark:bg-[#151521]/5'
+                    }`}
+                  >
+                    <theme.icon className="w-4 h-4" />
+                    {theme.label}
+                  </button>
+                ))}
               </div>
-              {availableThemes.map(theme => (
-                <button
-                  key={theme.id}
-                  onClick={() => {
-                    onSetTheme?.(theme.id);
-                    setIsThemeOpen(false);
-                  }}
-                  className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors ${
-                    settings.theme === theme.id 
-                      ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold' 
-                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5'
-                  }`}
-                >
-                  <theme.icon className="w-4 h-4" />
-                  {theme.label}
-                </button>
-              ))}
-            </div>
+            )}
+          </div>
+
+          {/* Settings */}
+          <button 
+            onClick={onSettingsClick}
+            aria-label="Open Settings"
+            className="flex items-center justify-center w-8 h-8 rounded-full text-slate-500 hover:text-slate-800 hover:bg-white dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/10 transition-all shadow-sm dark:shadow-none"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
+
+          {/* Tank Wizard */}
+          {!isLube && (
+            <button 
+              onClick={onTankWizardTrigger}
+              title="Tank Configuration Wizard"
+              aria-label="Tank Configuration Wizard"
+              className="flex items-center justify-center w-8 h-8 rounded-full text-slate-500 hover:text-slate-800 hover:bg-white dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/10 transition-all shadow-sm dark:shadow-none"
+            >
+              <Cylinder className="w-4 h-4" />
+            </button>
           )}
         </div>
-
-        {/* Settings (Tanks/Config) */}
-        <button 
-          onClick={onSettingsClick}
-          aria-label="Open Settings"
-          className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors"
-        >
-          <Settings className="w-5 h-5" />
-        </button>
-
-        {/* Tank Wizard */}
-        {!isLube && (
-          <button 
-            onClick={onTankWizardTrigger}
-            title="Tank Configuration Wizard"
-            aria-label="Tank Configuration Wizard"
-            className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors"
-          >
-            <Cylinder className="w-5 h-5" />
-          </button>
-        )}
 
         {/* Search */}
         <div className="hidden sm:flex items-center relative group">
@@ -186,7 +187,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         </div>
 
         {/* Notifications */}
-        <button aria-label="View Notifications" className="relative p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors">
+        <button aria-label="View Notifications" className="relative p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white dark:bg-[#151521]/5 rounded-full transition-colors">
           <Bell className="w-5 h-5" />
           <span className="absolute top-1 right-1.5 w-4 h-4 bg-orange-500 text-white text-[9px] font-bold flex items-center justify-center rounded-full border-2 border-white dark:border-[#151521]">5</span>
         </button>
@@ -204,7 +205,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             }
           }}
           aria-label="User Profile and Sign Out"
-          className="flex items-center gap-2.5 hover:bg-slate-50 dark:hover:bg-white/5 p-1 rounded-full md:rounded-xl md:pr-3 transition-colors">
+          className="flex items-center gap-2.5 hover:bg-slate-50 dark:hover:bg-white dark:bg-[#151521]/5 p-1 rounded-full md:rounded-xl md:pr-3 transition-colors">
           <div className="relative">
             <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#1A1A24] border border-slate-200 dark:border-white/10 flex items-center justify-center text-xs font-bold text-slate-800 dark:text-slate-100">
               UA

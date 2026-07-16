@@ -44,7 +44,7 @@ export function WidgetWrapper({ instance, manifest, children }: WidgetWrapperPro
             <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">{manifest.name}</span>
           </div>
           <div className="flex items-center gap-1">
-            <button className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors">
+            <button className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white dark:bg-[#151521]/10 transition-colors">
               <Settings className="w-3.5 h-3.5" />
             </button>
             <button 

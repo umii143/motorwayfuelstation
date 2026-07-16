@@ -670,7 +670,7 @@ export interface GlobalSettings extends TenantDocument {
   address: string;
   ntn: string;
   ownerContact: string;
-  theme: 'light' | 'dark' | 'blue' | 'emerald' | 'orange' | 'white';
+  theme: 'light' | 'dark' | 'sunset' | 'blue' | 'emerald' | 'orange' | 'white';
   language: 'en' | 'ur' | 'ar' | 'es' | 'zh';
   currency?: string;
   setupCompleted?: boolean;
@@ -1170,4 +1170,15 @@ export interface OwnerDrawing extends TenantDocument {
   sourceAccountType: CashAccountType;
   description: string;
   withdrawnBy: string; // Usually the owner's ID
+}
+
+export interface GlobalPricingConfig {
+  saleActive: boolean;
+  saleEndDate: string; // ISO date string
+  offers: {
+    [planId: string]: {
+      originalPrice: number;
+      salePrice: number;
+    };
+  };
 }

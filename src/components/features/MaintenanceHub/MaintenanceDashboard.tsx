@@ -67,7 +67,7 @@ export default function MaintenanceDashboard({ settings, stationId }: Maintenanc
                 <CalendarCheck className="h-4 w-4" />
               </div>
             </div>
-            <div className="text-2xl font-black font-mono text-slate-900">{activeSchedules.length}</div>
+            <div className="text-2xl font-black font-mono text-slate-900 dark:text-white">{activeSchedules.length}</div>
             <div className="text-xs text-slate-500 mt-2 font-medium">Pending or in progress</div>
           </div>
         </div>
@@ -95,7 +95,7 @@ export default function MaintenanceDashboard({ settings, stationId }: Maintenanc
                 <ServerCog className="h-4 w-4" />
               </div>
             </div>
-            <div className="text-2xl font-black font-mono text-slate-900">{assets.length}</div>
+            <div className="text-2xl font-black font-mono text-slate-900 dark:text-white">{assets.length}</div>
             <div className="text-xs text-slate-500 mt-2 font-medium">Registered hardware</div>
           </div>
         </div>
@@ -104,8 +104,8 @@ export default function MaintenanceDashboard({ settings, stationId }: Maintenanc
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Warranty Alerts */}
         <div className="premium-card border overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-            <h3 className="font-bold text-sm text-slate-800 flex items-center gap-2">
+          <div className="px-5 py-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-white/5/50">
+            <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-500" />
               Warranty Expiring Soon (30 Days)
             </h3>
@@ -115,9 +115,9 @@ export default function MaintenanceDashboard({ settings, stationId }: Maintenanc
           </div>
           <div className="divide-y divide-slate-100">
             {expiringAssets.map(asset => (
-              <div key={asset.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition">
+              <div key={asset.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:bg-white/5 transition">
                 <div>
-                  <div className="font-bold text-slate-900 text-sm">{asset.name}</div>
+                  <div className="font-bold text-slate-900 dark:text-white text-sm">{asset.name}</div>
                   <div className="text-xs text-slate-500 mt-0.5 uppercase">{asset.type}</div>
                 </div>
                 <div className="text-right">
@@ -138,8 +138,8 @@ export default function MaintenanceDashboard({ settings, stationId }: Maintenanc
 
         {/* Upcoming Services */}
         <div className="premium-card border overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-            <h3 className="font-bold text-sm text-slate-800 flex items-center gap-2">
+          <div className="px-5 py-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-white/5/50">
+            <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <CalendarCheck className="h-4 w-4 text-blue-500" />
               Upcoming Scheduled Services
             </h3>
@@ -148,9 +148,9 @@ export default function MaintenanceDashboard({ settings, stationId }: Maintenanc
             {activeSchedules.slice(0, 5).map(record => {
               const asset = assets.find(a => a.id === record.assetId);
               return (
-                <div key={record.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition">
+                <div key={record.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:bg-white/5 transition">
                   <div>
-                    <div className="font-bold text-slate-900 text-sm">{asset?.name || 'any Asset'}</div>
+                    <div className="font-bold text-slate-900 dark:text-white text-sm">{asset?.name || 'any Asset'}</div>
                     <div className="text-xs text-slate-500 mt-0.5 line-clamp-1">{record.description}</div>
                   </div>
                   <div className="text-right">

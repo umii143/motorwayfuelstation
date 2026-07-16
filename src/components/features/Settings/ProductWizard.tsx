@@ -85,14 +85,14 @@ export default function ProductWizard({ isLube, products, language, onUpdateProd
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
       
-      <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="text-center border-b border-slate-100 p-6 bg-slate-50">
+      <div className="bg-white dark:bg-[#151521] rounded-3xl shadow-sm border border-slate-200 dark:border-white/10 overflow-hidden">
+        <div className="text-center border-b border-slate-100 dark:border-white/5 p-6 bg-slate-50 dark:bg-white/5">
           <div className="flex justify-center mb-4">
             <div className="size-12 rounded-2xl bg-orange-100 flex items-center justify-center">
               <Fuel className="size-6 text-orange-600" />
             </div>
           </div>
-          <h2 className="text-2xl font-black text-slate-800">
+          <h2 className="text-2xl font-black text-slate-800 dark:text-slate-200">
             {isLube ? t('Lube Products', 'لیوب پراڈکٹس', language) : t('Fuel Products', 'فیول پراڈکٹس', language)}
           </h2>
           <p className="text-slate-500 font-medium mt-2">
@@ -118,7 +118,7 @@ export default function ProductWizard({ isLube, products, language, onUpdateProd
                   className={`h-16 border-2 rounded-2xl flex items-center justify-between px-4 transition-all duration-200 cursor-pointer
                     ${isPresetAdded(preset.name) 
                       ? 'border-emerald-500 bg-emerald-50 opacity-60 cursor-not-allowed' 
-                      : 'border-slate-200 hover:border-orange-500 hover:shadow-md bg-white'
+                      : 'border-slate-200 dark:border-white/10 hover:border-orange-500 hover:shadow-md bg-white dark:bg-[#151521]'
                     }`}
                 >
                   <span className="flex items-center gap-3 font-bold text-slate-700">
@@ -140,7 +140,7 @@ export default function ProductWizard({ isLube, products, language, onUpdateProd
             </p>
             <div className="flex gap-2">
               <input
-                className="flex-1 h-14 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition-colors font-medium text-slate-700"
+                className="flex-1 h-14 px-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white dark:bg-[#151521] transition-colors font-medium text-slate-700"
                 placeholder={t("e.g., Premium Diesel", "مثلاً پریمیئم ڈیزل", language)}
                 value={customName}
                 onChange={(e) => setCustomName(e.target.value)}
@@ -158,7 +158,7 @@ export default function ProductWizard({ isLube, products, language, onUpdateProd
 
           {/* Added Products List */}
           {products.length > 0 && (
-            <div className="space-y-4 pt-4 border-t border-slate-100">
+            <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-white/5">
               <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">
                 {t('Configured Products', 'ترتیب دی گئی پراڈکٹس', language)}
               </p>
@@ -172,7 +172,7 @@ export default function ProductWizard({ isLube, products, language, onUpdateProd
                       <div className="size-8 rounded-full bg-emerald-100 flex items-center justify-center">
                         <Check className="size-4 text-emerald-600" />
                       </div>
-                      <span className="font-bold text-slate-800 text-lg">{product.name}</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200 text-lg">{product.name}</span>
                     </div>
                     <button
                       onClick={() => removeProduct(product.id)}

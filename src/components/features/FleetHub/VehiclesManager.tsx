@@ -178,11 +178,11 @@ export default function VehiclesManager({ settings, stationId }: VehiclesManager
               header: 'Vehicle Details',
               accessor: (vehicle) => (
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-slate-100 rounded-lg text-slate-600 shrink-0">
+                  <div className="p-2 bg-slate-100 dark:bg-white/10 rounded-lg text-slate-600 shrink-0">
                     <CarFront className="h-5 w-5" />
                   </div>
                   <div className="truncate">
-                    <div className="font-bold text-slate-900 font-mono text-base truncate">{vehicle.registrationNumber}</div>
+                    <div className="font-bold text-slate-900 dark:text-white font-mono text-base truncate">{vehicle.registrationNumber}</div>
                     <div className="text-xs text-slate-500 truncate">{vehicle.make} {vehicle.model} • {vehicle.category}</div>
                   </div>
                 </div>
@@ -223,7 +223,7 @@ export default function VehiclesManager({ settings, stationId }: VehiclesManager
                       <span className="font-bold text-slate-700">{vehicle.currentMonthConsumption} L</span>
                       <span className="text-slate-500">/ {vehicle.monthlyFuelLimit} L</span>
                     </div>
-                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden shrink-0">
+                    <div className="h-1.5 w-full bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden shrink-0">
                       <div 
                         className={`h-full rounded-full ${consumptionPct > 90 ? 'bg-rose-500' : consumptionPct > 75 ? 'bg-amber-500' : 'bg-emerald-500'}`}
                         style={{ width: `${Math.min(100, consumptionPct)}%` }}
@@ -263,9 +263,9 @@ export default function VehiclesManager({ settings, stationId }: VehiclesManager
       {/* Form Modal */}
       {isModalOpen && (
         <div className="premium-modal-overlay">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h2 className="text-lg font-black font-sans text-slate-800">
+          <div className="bg-white dark:bg-[#151521] rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5 flex justify-between items-center bg-slate-50 dark:bg-white/5/50">
+              <h2 className="text-lg font-black font-sans text-slate-800 dark:text-slate-200">
                 {editingId ? 'Edit Vehicle Details' : 'Register New Vehicle'}
               </h2>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-rose-500 transition">
@@ -277,7 +277,7 @@ export default function VehiclesManager({ settings, stationId }: VehiclesManager
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Corporate Account *</label>
-                  <select value={accountId} onChange={e => setAccountId(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+                  <select value={accountId} onChange={e => setAccountId(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-[#151521]">
                     {accounts.map(acc => (
                       <option key={acc.id} value={acc.id}>{acc.companyName}</option>
                     ))}
@@ -285,13 +285,13 @@ export default function VehiclesManager({ settings, stationId }: VehiclesManager
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Registration Number *</label>
-                  <input type="text" value={registrationNumber} onChange={e => setRegistrationNumber(e.target.value.toUpperCase())} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono uppercase" placeholder="ABC-1234" />
+                  <input type="text" value={registrationNumber} onChange={e => setRegistrationNumber(e.target.value.toUpperCase())} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono uppercase" placeholder="ABC-1234" />
                 { }
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Vehicle Category</label>
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  <select value={category} onChange={e => setCategory(e.target.value as any)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+                  <select value={category} onChange={e => setCategory(e.target.value as any)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-[#151521]">
                     <option value="car">Car (Sedan/Hatchback)</option>
                     <option value="van">Van / Hi-Roof</option>
                     <option value="bus">Bus / Coach</option>
@@ -301,18 +301,18 @@ export default function VehiclesManager({ settings, stationId }: VehiclesManager
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Make *</label>
-                  <input type="text" value={make} onChange={e => setMake(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="e.g. Toyota, Hino" />
+                  <input type="text" value={make} onChange={e => setMake(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="e.g. Toyota, Hino" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Model *</label>
-                  <input type="text" value={model} onChange={e => setModel(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="e.g. Corolla, 300 Series" />
+                  <input type="text" value={model} onChange={e => setModel(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="e.g. Corolla, 300 Series" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">RFID Tag Number (Optional)</label>
                   <div className="relative flex gap-2">
                     <div className="relative flex-1">
                       <Tag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-400" />
-                      <input type="text" value={rfidTag} onChange={e => setRfidTag(e.target.value.toUpperCase())} className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono bg-indigo-50/30" placeholder="Scan or enter Tag ID" />
+                      <input type="text" value={rfidTag} onChange={e => setRfidTag(e.target.value.toUpperCase())} className="w-full pl-9 pr-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono bg-indigo-50/30" placeholder="Scan or enter Tag ID" />
                     </div>
                     <button 
                       onClick={async () => {
@@ -329,12 +329,12 @@ export default function VehiclesManager({ settings, stationId }: VehiclesManager
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Monthly Fuel Limit (Liters) *</label>
                   { }
-                  <input type="number" value={monthlyFuelLimit} onChange={e => setMonthlyFuelLimit(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="1000" />
+                  <input type="number" value={monthlyFuelLimit} onChange={e => setMonthlyFuelLimit(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="1000" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Status</label>
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  <select value={status} onChange={e => setStatus(e.target.value as any)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+                  <select value={status} onChange={e => setStatus(e.target.value as any)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-[#151521]">
                     <option value="active">Active (Allowed to fuel)</option>
                     <option value="inactive">Inactive / Parked</option>
                     <option value="maintenance">Under Maintenance</option>
@@ -343,8 +343,8 @@ export default function VehiclesManager({ settings, stationId }: VehiclesManager
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
-              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition">Cancel</button>
+            <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 flex justify-end gap-2">
+              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 dark:text-white transition">Cancel</button>
               <button onClick={handleSave} className="bg-orange-600 text-white px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded-lg text-sm font-bold hover:bg-orange-700 transition shadow-md shadow-orange-500/20">
                 Save Vehicle
               </button>

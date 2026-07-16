@@ -68,7 +68,7 @@ export function InvestigationModal({
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 bg-slate-800 dark:bg-white text-white dark:text-slate-900 rounded-lg text-sm font-bold hover:bg-slate-700 dark:hover:bg-slate-100 transition-colors shadow-sm">
+            <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 bg-slate-800 dark:bg-white text-white dark:text-slate-900 rounded-lg text-sm font-bold hover:bg-slate-700 dark:hover:bg-slate-100 dark:bg-white/10 transition-colors shadow-sm">
               <Download className="w-4 h-4" /> Export Forensic PDF
             </button>
             <button onClick={onClose} className="p-3 text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors">

@@ -66,7 +66,7 @@ export const CommunicationDashboard: React.FC = () => {
     <div className="p-6 space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
             <MessageSquare className="w-6 h-6 text-violet-600" />
             Communication Center
           </h1>
@@ -84,11 +84,11 @@ export const CommunicationDashboard: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         
         {/* EOD Summary Card */}
-        <div className="premium-card border border-slate-200 hover:shadow-md transition-shadow">
+        <div className="premium-card border border-slate-200 dark:border-white/10 hover:shadow-md transition-shadow">
           <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center mb-4">
             <Send className="w-6 h-6 text-indigo-600" />
           </div>
-          <h2 className="text-lg font-semibold text-slate-800 mb-2">Executive EOD Summary</h2>
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">Executive EOD Summary</h2>
           <p className="text-sm text-slate-500 mb-6">
             Generate and send today's net cash, expenses, and sales summary to the owner's WhatsApp automatically.
           </p>
@@ -102,17 +102,17 @@ export const CommunicationDashboard: React.FC = () => {
         </div>
 
         {/* Bulk Reminders Card */}
-        <div className="premium-card border border-slate-200 hover:shadow-md transition-shadow">
+        <div className="premium-card border border-slate-200 dark:border-white/10 hover:shadow-md transition-shadow">
           <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center mb-4">
             <Users className="w-6 h-6 text-orange-600" />
           </div>
-          <h2 className="text-lg font-semibold text-slate-800 mb-2">Bulk Credit Reminders</h2>
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">Bulk Credit Reminders</h2>
           <p className="text-sm text-slate-500 mb-6">
             Send customized WhatsApp payment reminders to all active credit accounts with pending balances.
           </p>
-          <div className="flex items-center justify-between mb-4 px-4 py-2 bg-slate-50 rounded-lg border border-slate-100">
+          <div className="flex items-center justify-between mb-4 px-4 py-2 bg-slate-50 dark:bg-white/5 rounded-lg border border-slate-100 dark:border-white/5">
             <span className="text-sm text-slate-600 font-medium">Pending Customers:</span>
-            <span className="text-lg font-bold text-slate-800">{pendingCustomers.length}</span>
+            <span className="text-lg font-bold text-slate-800 dark:text-slate-200">{pendingCustomers.length}</span>
           </div>
           <button 
             onClick={handleBulkReminders}

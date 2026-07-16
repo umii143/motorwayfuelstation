@@ -101,7 +101,7 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
             <Shield className="h-7 w-7" />
           </div>
           <div>
-            <h1 className="font-sans text-2xl font-bold text-slate-900 tracking-tight">
+            <h1 className="font-sans text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
               {t('Security & Roles Hub', 'سیکیورٹی اور کردار کا مرکز')}
             </h1>
             <p className="font-sans text-sm text-slate-500 mt-1">
@@ -124,7 +124,7 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-sans text-sm font-bold transition-all whitespace-nowrap ${
                 isActive 
                   ? 'bg-slate-900 text-white shadow-md' 
-                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+                  : 'bg-white dark:bg-[#151521] text-slate-600 hover:bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10'
               }`}
             >
               <Icon className="h-4 w-4" />
@@ -145,17 +145,17 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* MFA Setup Card */}
             <div className="premium-card p-6 border space-y-4">
-              <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-3 border-b border-slate-100 dark:border-white/5 pb-4">
                 <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
                   <Smartphone className="h-6 w-6" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900">{t('Two-Factor Authentication (2FA)', 'دوہری تصدیق (2FA)')}</h3>
+                  <h3 className="font-bold text-slate-900 dark:text-white">{t('Two-Factor Authentication (2FA)', 'دوہری تصدیق (2FA)')}</h3>
                   <p className="text-xs text-slate-500">{t('Add an extra layer of security', 'سیکیورٹی کی اضافی تہہ شامل کریں')}</p>
                 </div>
               </div>
               
-              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+              <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5">
                 <div className="flex items-center gap-3">
                   {user?.totpEnabled ? (
                     <CheckCircle2 className="h-5 w-5 text-emerald-500" />
@@ -163,7 +163,7 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
                     <AlertTriangle className="h-5 w-5 text-amber-500" />
                   )}
                   <div>
-                    <p className="font-bold text-sm text-slate-900">
+                    <p className="font-bold text-sm text-slate-900 dark:text-white">
                       {user?.totpEnabled 
                         ? t('Authenticator App is Active', 'آتھنٹیکیٹر ایپ فعال ہے') 
                         : t('MFA is not configured', 'ایم ایف اے ترتیب نہیں دیا گیا')}
@@ -185,18 +185,18 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
 
             {/* Profile Security Status */}
             <div className="premium-card p-6 border space-y-4">
-              <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-3 border-b border-slate-100 dark:border-white/5 pb-4">
                 <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
                   <Lock className="h-6 w-6" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900">{t('Account Security', 'اکاؤنٹ سیکیورٹی')}</h3>
+                  <h3 className="font-bold text-slate-900 dark:text-white">{t('Account Security', 'اکاؤنٹ سیکیورٹی')}</h3>
                   <p className="text-xs text-slate-500">{t('Your current security posture', 'آپ کی موجودہ سیکیورٹی کی حالت')}</p>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100">
+                <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-white/5">
                   <div className="flex items-center gap-2">
                     <Key className="h-4 w-4 text-slate-400" />
                     <span className="text-sm font-medium text-slate-700">{t('Password', 'پاس ورڈ')}</span>
@@ -206,18 +206,18 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100">
+                <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-white/5">
                   <div className="flex items-center gap-2">
                     <Shield className="h-4 w-4 text-slate-400" />
                     <span className="text-sm font-medium text-slate-700">{t('Role & Permissions', 'کردار اور اجازت نامے')}</span>
                   </div>
-                  <span className="text-xs font-bold px-2 py-1 bg-slate-100 text-slate-700 rounded-md uppercase">
+                  <span className="text-xs font-bold px-2 py-1 bg-slate-100 dark:bg-white/10 text-slate-700 rounded-md uppercase">
                     {user?.role || 'Admin'}
                   </span>
                 </div>
                 
                 {organization && (
-                  <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100">
+                  <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-white/5">
                     <div className="flex items-center gap-2">
                       <Globe className="h-4 w-4 text-slate-400" />
                       <span className="text-sm font-medium text-slate-700">{t('Organization ID', 'تنظیم کا آئی ڈی')}</span>
@@ -234,9 +234,9 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
 
         {activeTab === 'sessions' && (
           <div className="premium-card border overflow-hidden">
-            <div className="p-6 border-b border-slate-200 flex flex-row items-center justify-between gap-4">
+            <div className="p-6 border-b border-slate-200 dark:border-white/10 flex flex-row items-center justify-between gap-4">
               <div>
-                <h3 className="text-lg font-bold text-slate-900">{t('Active Device Sessions', 'فعال ڈیوائس سیشنز')}</h3>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t('Active Device Sessions', 'فعال ڈیوائس سیشنز')}</h3>
                 <p className="text-sm text-slate-500">
                   {t('Review and revoke unrecognized devices that have access to your account.', 'ان آلات کا جائزہ لیں اور منسوخ کریں جنہیں آپ کے اکاؤنٹ تک رسائی حاصل ہے۔')}
                 </p>
@@ -252,13 +252,13 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
 
             <div className="p-0">
               {session ? (
-                <div className="flex items-start gap-4 p-6 border-b border-slate-100 bg-slate-50/50">
+                <div className="flex items-start gap-4 p-6 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5/50">
                   <div className="p-3 bg-emerald-100 text-emerald-600 rounded-xl shrink-0">
                     <MonitorSmartphone className="h-6 w-6" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <h4 className="font-bold text-slate-900">{session.browser || 'Current Browser'}</h4>
+                      <h4 className="font-bold text-slate-900 dark:text-white">{session.browser || 'Current Browser'}</h4>
                       <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full uppercase tracking-wider">
                         {t('This Device', 'یہ آلہ')}
                       { }
@@ -289,16 +289,16 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
 
         {activeTab === 'audit' && (
           <div className="premium-card border overflow-hidden">
-            <div className="p-6 border-b border-slate-200 flex items-center justify-between">
+            <div className="p-6 border-b border-slate-200 dark:border-white/10 flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-bold text-slate-900">{t('Security Audit Logs', 'سیکیورٹی آڈٹ لاگز')}</h3>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t('Security Audit Logs', 'سیکیورٹی آڈٹ لاگز')}</h3>
                 <p className="text-sm text-slate-500">
                   {t('Chronological record of security events and actions.', 'سیکیورٹی کے واقعات اور کارروائیوں کا ریکارڈ۔')}
                 </p>
               </div>
               <button 
                 onClick={loadAuditLogs}
-                className="p-2 text-slate-400 hover:bg-slate-100 rounded-lg transition-colors"
+                className="p-2 text-slate-400 hover:bg-slate-100 dark:bg-white/10 rounded-lg transition-colors"
                 title={t('Refresh', 'تازہ کریں')}
               >
                 <RefreshCw className={`h-5 w-5 ${loadingLogs ? 'animate-spin text-blue-500' : ''}`} />
@@ -313,13 +313,13 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
               ) : auditLogs.length > 0 ? (
                 <div className="divide-y divide-slate-100">
                   {auditLogs.map((log) => (
-                    <div key={log.id} className="p-4 hover:bg-slate-50 transition-colors flex items-start gap-4">
-                      <div className="mt-1 p-2 bg-slate-100 text-slate-500 rounded-lg shrink-0">
+                    <div key={log.id} className="p-4 hover:bg-slate-50 dark:bg-white/5 transition-colors flex items-start gap-4">
+                      <div className="mt-1 p-2 bg-slate-100 dark:bg-white/10 text-slate-500 rounded-lg shrink-0">
                         <Fingerprint className="h-4 w-4" />
                       </div>
                       <div className="flex-1">
                         <div className="flex justify-between items-start">
-                          <h4 className="font-bold text-sm text-slate-900">{log.action}</h4>
+                          <h4 className="font-bold text-sm text-slate-900 dark:text-white">{log.action}</h4>
                           <span className="text-xs text-slate-400 font-mono">
                             {new Date(log.timestamp).toLocaleString()}
                           </span>

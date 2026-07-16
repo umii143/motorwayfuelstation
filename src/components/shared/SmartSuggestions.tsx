@@ -74,7 +74,7 @@ export const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ onClose }) =
 
   return (
     <div className="fixed bottom-6 right-6 z-40 w-80 max-w-[calc(100vw-3rem)]">
-      <div className="bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden">
+      <div className="bg-white dark:bg-[#151521] rounded-xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden">
         <div className="bg-indigo-600 px-4 py-3 flex items-center justify-between">
           <h3 className="text-white font-bold text-sm flex items-center gap-2">
             <Lightbulb className="w-4 h-4 text-yellow-300" />
@@ -82,7 +82,7 @@ export const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ onClose }) =
           </h3>
           <button 
             onClick={() => { if (onClose) onClose(); else setIsVisible(false); }} 
-            className="text-indigo-200 hover:text-white transition-colors p-1 rounded-full hover:bg-white/20"
+            className="text-indigo-200 hover:text-white transition-colors p-1 rounded-full hover:bg-white dark:bg-[#151521]/20"
           >
             <X className="w-4 h-4" />
           </button>
@@ -135,7 +135,7 @@ export const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ onClose }) =
             </div>
           ))}
         </div>
-        <div className="bg-slate-50 px-4 py-3 border-t border-slate-100 flex justify-center">
+        <div className="bg-slate-50 dark:bg-white/5 px-4 py-3 border-t border-slate-100 dark:border-white/5 flex justify-center">
           <PoweredByUmarAli variant="compact" />
         </div>
       </div>

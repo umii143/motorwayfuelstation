@@ -108,7 +108,7 @@ export const SecurityScreen: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-orange-400 via-orange-600 to-orange-400 opacity-100 group-hover:scale-105 transition-transform duration-700" />
               <div className="absolute inset-[1px] bg-gradient-to-b from-orange-500 to-[#d04500] rounded-[15px]" />
               <div className="relative py-4 px-6 flex items-center justify-center gap-4 shadow-[0_0_40px_rgba(255,100,0,0.5)]">
-                <div className="p-1 rounded-full bg-white/20 backdrop-blur-sm">
+                <div className="p-1 rounded-full bg-white dark:bg-[#151521]/20 backdrop-blur-sm">
                   <Fingerprint className="w-7 h-7 text-white" />
                 </div>
                 <span className="text-white font-bold text-lg tracking-wide drop-shadow-md">Tap to Unlock</span>

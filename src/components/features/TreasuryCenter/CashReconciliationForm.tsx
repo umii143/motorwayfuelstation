@@ -130,7 +130,7 @@ export default function CashReconciliationForm() {
               </div>
 
               <div className={`p-4 rounded-lg border ${
-                physicalCash === '' ? 'bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700' :
+                physicalCash === '' ? 'bg-gray-50 dark:bg-gray-800/40 border-gray-200 dark:bg-gray-800 dark:border-gray-700' :
                 variance === 0 ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-900/50' :
                 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-900/50'
               }`}>

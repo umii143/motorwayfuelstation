@@ -82,7 +82,7 @@ export const Modal: React.FC<ModalProps> = ({
                   {!hideCloseButton && (
                     <button
                       onClick={onClose}
-                      className="p-2 -mr-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-300 dark:hover:bg-white/5 rounded-full transition-colors"
+                      className="p-2 -mr-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-300 dark:hover:bg-white dark:bg-[#151521]/5 rounded-full transition-colors"
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -96,7 +96,7 @@ export const Modal: React.FC<ModalProps> = ({
 
                 {/* Footer */}
                 {footer && (
-                  <div className="p-5 sm:p-6 border-t border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-black/20 shrink-0 rounded-b-3xl">
+                  <div className="p-5 sm:p-6 border-t border-slate-100 dark:border-slate-800/60 bg-slate-50 dark:bg-white/5/50 dark:bg-black/20 shrink-0 rounded-b-3xl">
                     {footer}
                   </div>
                 )}

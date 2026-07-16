@@ -230,7 +230,7 @@ export default function IdleScreenLock() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="w-full max-w-sm bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 md:p-8 shadow-2xl flex flex-col items-center"
+            className="w-full max-w-sm bg-white dark:bg-[#151521]/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 md:p-8 shadow-2xl flex flex-col items-center"
           >
             <div className="flex items-center justify-center h-12 w-12 rounded-full bg-slate-800/50 border border-slate-600/50 mb-4">
               <Lock className="h-5 w-5 text-indigo-300" />
@@ -281,7 +281,7 @@ export default function IdleScreenLock() {
                         ? 'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 hover:text-rose-300 border border-rose-500/20' 
                         : key === '<'
                           ? 'bg-slate-700/40 text-slate-300 hover:bg-slate-600/60 border border-slate-600/30'
-                          : 'bg-white/5 text-white hover:bg-white/15 border border-white/10 hover:border-white/20 active:scale-95'
+                          : 'bg-white dark:bg-[#151521]/5 text-white hover:bg-white dark:bg-[#151521]/15 border border-white/10 hover:border-white/20 active:scale-95'
                   }`}
                 >
                   {key}

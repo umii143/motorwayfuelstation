@@ -128,7 +128,7 @@ export default function PriceImpactSimulatorModal({
 
   return createPortal(
     <div className="fixed inset-0 z-[105] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
+      <div className="bg-white dark:bg-[#151521] rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
         
         <div className="bg-slate-800 p-6 flex justify-between items-center text-white sticky top-0 z-10">
           <div>
@@ -153,11 +153,11 @@ export default function PriceImpactSimulatorModal({
               {t('Immediate Inventory Revaluation', 'فوری انوینٹری ریویلیویشن', language)}
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3">
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-xl border border-slate-200 dark:border-white/10">
                 <p className="text-xs text-slate-500 font-bold mb-1">Current Stock</p>
-                <p className="text-lg font-black text-slate-800">{totalStock.toLocaleString()} L</p>
+                <p className="text-lg font-black text-slate-800 dark:text-slate-200">{totalStock.toLocaleString()} L</p>
               </div>
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-xl border border-slate-200 dark:border-white/10">
                 <p className="text-xs text-slate-500 font-bold mb-1">Price Diff</p>
                 <p className={`text-lg font-black ${rateDiff >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                   {rateDiff > 0 ? '+' : ''}{rateDiff.toFixed(2)}
@@ -183,7 +183,7 @@ export default function PriceImpactSimulatorModal({
                 {t('Projected 30-Day Margin Impact', 'متوقع 30 دن کا مارجن امپیکٹ', language)}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-sm">
+                <div className="p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] shadow-sm">
                   <p className="text-xs text-slate-500 font-bold mb-2">Conservative (30d Avg)</p>
                   <p className={`text-lg font-black ${forecast.conservative >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                     {forecast.conservative > 0 ? '+' : ''}{forecast.conservative.toLocaleString()}
@@ -195,7 +195,7 @@ export default function PriceImpactSimulatorModal({
                     {forecast.expected > 0 ? '+' : ''}{forecast.expected.toLocaleString()}
                   </p>
                 </div>
-                <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-sm">
+                <div className="p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] shadow-sm">
                   <p className="text-xs text-slate-500 font-bold mb-2">Aggressive (7d Avg)</p>
                   <p className={`text-lg font-black ${forecast.aggressive >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                     {forecast.aggressive > 0 ? '+' : ''}{forecast.aggressive.toLocaleString()}
@@ -205,7 +205,7 @@ export default function PriceImpactSimulatorModal({
             </section>
           )}
 
-          <hr className="border-slate-100" />
+          <hr className="border-slate-100 dark:border-white/5" />
 
           {/* COMPLIANCE & ARCHIVE */}
           <section className="space-y-6">
@@ -221,7 +221,7 @@ export default function PriceImpactSimulatorModal({
               <select 
                 value={reason} 
                 onChange={(e) => setReason(e.target.value as RateChangeReason)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-medium text-slate-700"
+                className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-medium text-slate-700"
               >
                 <option value="" disabled>Select a valid reason...</option>
                 {REASON_CODES.map(rc => (
@@ -235,7 +235,7 @@ export default function PriceImpactSimulatorModal({
               <label className="block text-sm font-bold text-slate-700 mb-2">
                 {t('Government Notification / Circular', 'سرکاری نوٹیفکیشن / سرکلر', language)}
               </label>
-              <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 bg-slate-50 flex flex-col items-center justify-center text-center">
+              <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 bg-slate-50 dark:bg-white/5 flex flex-col items-center justify-center text-center">
                 <input 
                   type="file" 
                   id="circular-upload" 
@@ -246,7 +246,7 @@ export default function PriceImpactSimulatorModal({
                 />
                 <label 
                   htmlFor="circular-upload" 
-                  className={`cursor-pointer flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 shadow-sm rounded-lg font-bold text-sm ${isUploading ? 'opacity-50' : 'hover:bg-slate-100'}`}
+                  className={`cursor-pointer flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 shadow-sm rounded-lg font-bold text-sm ${isUploading ? 'opacity-50' : 'hover:bg-slate-100 dark:bg-white/10'}`}
                 >
                   <Upload className="size-4 text-slate-500" />
                   {isUploading ? 'Uploading...' : 'Attach PDF or Image'}
@@ -257,7 +257,7 @@ export default function PriceImpactSimulatorModal({
               {attachments.length > 0 && (
                 <div className="mt-4 space-y-2">
                   {attachments.map(att => (
-                    <div key={att.id} className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg">
+                    <div key={att.id} className="flex items-center justify-between p-3 bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 rounded-lg">
                       <div className="flex items-center gap-3">
                         <FileIcon className="size-5 text-indigo-500" />
                         <div>
@@ -277,7 +277,7 @@ export default function PriceImpactSimulatorModal({
 
         </div>
 
-        <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 sticky bottom-0">
+        <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 flex justify-end gap-3 sticky bottom-0">
           <button
             onClick={onCancel}
             className="px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px].5 rounded-xl font-medium text-slate-600 hover:bg-slate-200 transition-colors"

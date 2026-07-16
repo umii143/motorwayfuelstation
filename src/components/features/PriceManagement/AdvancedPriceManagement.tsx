@@ -166,54 +166,54 @@ export default function AdvancedPriceManagement({
       </div>
 
       {/* TOP KPI CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {/* Current Avg Price */}
-        <div className="bg-[#0f1a2e] border border-blue-900/30 rounded-xl p-4 flex flex-col justify-between shadow-xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-20">
-             <Activity className="w-16 h-16 text-blue-400" />
+        <div className="bg-[#0f1a2e] border border-blue-900/30 rounded-xl p-3 md:p-4 flex flex-col justify-between shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-3 md:p-4 opacity-20">
+             <Activity className="w-12 h-12 md:w-16 md:h-16 text-blue-400" />
           </div>
-          <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-2 relative z-10">Current Avg Price</span>
-          <div className="flex items-end gap-2 relative z-10">
-            <span className="text-2xl font-bold text-white">Rs. {avgPrice.toFixed(2)}</span>
-            <span className="text-sm text-slate-400 mb-1">/Ltr</span>
+          <span className="text-[10px] md:text-xs font-semibold text-blue-400 uppercase tracking-wider mb-1 md:mb-2 relative z-10 truncate">Avg Price</span>
+          <div className="flex items-end gap-1 md:gap-2 relative z-10">
+            <span className="text-base md:text-2xl font-bold text-white truncate">Rs. {avgPrice.toFixed(2)}</span>
+            <span className="text-[9px] md:text-sm text-slate-400 mb-0.5 md:mb-1">/Ltr</span>
           </div>
-          <span className="text-xs text-slate-500 mt-1 relative z-10">All Products Average</span>
+          <span className="text-[9px] md:text-xs text-slate-500 mt-1 relative z-10 truncate">All Products</span>
         </div>
 
         {/* Price Updated */}
-        <div className="bg-[#0b1b17] border border-emerald-900/30 rounded-xl p-4 flex flex-col justify-between shadow-xl relative overflow-hidden">
-          <div className="absolute top-4 right-4 bg-emerald-500/20 p-2 rounded-full">
-             <CheckCircle className="w-6 h-6 text-emerald-400" />
+        <div className="bg-[#0b1b17] border border-emerald-900/30 rounded-xl p-3 md:p-4 flex flex-col justify-between shadow-xl relative overflow-hidden">
+          <div className="absolute top-2 right-2 md:top-4 md:right-4 bg-emerald-500/20 p-1.5 md:p-2 rounded-full">
+             <CheckCircle className="w-4 h-4 md:w-6 md:h-6 text-emerald-400" />
           </div>
-          <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2 relative z-10">Price Updated</span>
-          <div className="flex items-end gap-2 relative z-10">
-            <span className="text-xl font-bold text-white">{lastUpdate ? (lastUpdate.effectiveDate || lastUpdate.date || '').split(' ')[0] : 'N/A'}</span>
+          <span className="text-[10px] md:text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-1 md:mb-2 relative z-10 truncate">Updated</span>
+          <div className="flex items-end gap-1 md:gap-2 relative z-10">
+            <span className="text-base md:text-xl font-bold text-white truncate">{lastUpdate ? (lastUpdate.effectiveDate || lastUpdate.date || '').split(' ')[0] : 'N/A'}</span>
           </div>
-          <span className="text-xs text-slate-500 mt-1 relative z-10">Last Update Time</span>
+          <span className="text-[9px] md:text-xs text-slate-500 mt-1 relative z-10 truncate">Last Update</span>
         </div>
 
         {/* Total Price Changes */}
-        <div className="bg-[#1a1124] border border-purple-900/30 rounded-xl p-4 flex flex-col justify-between shadow-xl relative overflow-hidden">
-          <div className="absolute top-4 right-4 bg-purple-500/20 p-2 rounded-lg">
-             <Activity className="w-6 h-6 text-purple-400" />
+        <div className="bg-[#1a1124] border border-purple-900/30 rounded-xl p-3 md:p-4 flex flex-col justify-between shadow-xl relative overflow-hidden">
+          <div className="absolute top-2 right-2 md:top-4 md:right-4 bg-purple-500/20 p-1.5 md:p-2 rounded-lg">
+             <Activity className="w-4 h-4 md:w-6 md:h-6 text-purple-400" />
           </div>
-          <span className="text-xs font-semibold text-purple-400 uppercase tracking-wider mb-2 relative z-10">Total Price Changes</span>
-          <div className="flex items-end gap-2 relative z-10">
-            <span className="text-2xl font-bold text-white">{changesThisMonth}</span>
+          <span className="text-[10px] md:text-xs font-semibold text-purple-400 uppercase tracking-wider mb-1 md:mb-2 relative z-10 truncate">Changes</span>
+          <div className="flex items-end gap-1 md:gap-2 relative z-10">
+            <span className="text-base md:text-2xl font-bold text-white">{changesThisMonth}</span>
           </div>
-          <span className="text-xs text-slate-500 mt-1 relative z-10">This Month</span>
+          <span className="text-[9px] md:text-xs text-slate-500 mt-1 relative z-10 truncate">This Month</span>
         </div>
 
         {/* Impact on Margin */}
-        <div className="bg-[#1b140f] border border-orange-900/30 rounded-xl p-4 flex flex-col justify-between shadow-xl relative overflow-hidden">
-           <div className="absolute top-4 right-4 bg-orange-500/20 p-2 rounded-lg">
-             <TrendingUp className="w-6 h-6 text-orange-400" />
+        <div className="bg-[#1b140f] border border-orange-900/30 rounded-xl p-3 md:p-4 flex flex-col justify-between shadow-xl relative overflow-hidden">
+           <div className="absolute top-2 right-2 md:top-4 md:right-4 bg-orange-500/20 p-1.5 md:p-2 rounded-lg">
+             <TrendingUp className="w-4 h-4 md:w-6 md:h-6 text-orange-400" />
           </div>
-          <span className="text-xs font-semibold text-orange-400 uppercase tracking-wider mb-2 relative z-10">Impact on Margin</span>
-          <div className="flex items-end gap-2 relative z-10">
-            <span className="text-2xl font-bold text-white">{marginImpact}</span>
+          <span className="text-[10px] md:text-xs font-semibold text-orange-400 uppercase tracking-wider mb-1 md:mb-2 relative z-10 truncate">Margin Impact</span>
+          <div className="flex items-end gap-1 md:gap-2 relative z-10">
+            <span className="text-base md:text-2xl font-bold text-white truncate">{marginImpact}</span>
           </div>
-          <span className="text-xs text-slate-500 mt-1 relative z-10">vs Last Update</span>
+          <span className="text-[9px] md:text-xs text-slate-500 mt-1 relative z-10 truncate">vs Last Update</span>
         </div>
       </div>
 

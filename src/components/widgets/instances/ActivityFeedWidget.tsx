@@ -33,7 +33,7 @@ export function ActivityFeedWidget() {
         timestamp: new Date(`${tx.date} 10:00 AM`).getTime(), 
         icon: Droplets, 
         color: 'text-blue-500', 
-        bg: 'bg-white/5'
+        bg: 'bg-white dark:bg-[#151521]/5'
       }))
     ].sort((a,b) => b.timestamp - a.timestamp).slice(0, 8);
   }, [shifts, stockTxns, products, settings]);
@@ -51,7 +51,7 @@ export function ActivityFeedWidget() {
           const shift = s as any;
           return (
             <div key={shift.id} className="relative flex gap-4 pb-4">
-              <div className="absolute left-2.5 top-8 bottom-0 w-px bg-white/5"></div>
+              <div className="absolute left-2.5 top-8 bottom-0 w-px bg-white dark:bg-[#151521]/5"></div>
               <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 border border-white/10 ${shift.status === 'active' ? 'bg-orange-500/20 text-orange-400' : 'bg-[#0f172a] text-slate-400'}`}>
                 <Power className="w-3 h-3" />
               </div>

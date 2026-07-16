@@ -41,15 +41,15 @@ export function RatesStep({ products, onUpdate, onContinue, language }: Props) {
 
   return (
     <div className="flex items-center justify-center min-h-[80vh] p-4 animate-in fade-in slide-in-from-right-4 duration-500">
-      <div className="max-w-2xl w-full bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden flex flex-col h-[85vh] max-h-[800px]">
+      <div className="max-w-2xl w-full bg-white dark:bg-[#151521] rounded-3xl shadow-xl border border-slate-100 dark:border-white/5 overflow-hidden flex flex-col h-[85vh] max-h-[800px]">
         
-        <div className="text-center border-b border-slate-100 p-6 md:p-8 shrink-0 bg-slate-50/50">
+        <div className="text-center border-b border-slate-100 dark:border-white/5 p-6 md:p-8 shrink-0 bg-slate-50 dark:bg-white/5/50">
           <div className="flex justify-center mb-4">
             <div className="size-12 rounded-2xl bg-emerald-100 flex items-center justify-center">
               <DollarSign className="size-6 text-emerald-600" />
             </div>
           </div>
-          <h2 className="text-2xl font-black text-slate-800">
+          <h2 className="text-2xl font-black text-slate-800 dark:text-slate-200">
             {t('Set Fuel Rates', 'فیول ریٹس مقرر کریں', language)}
           </h2>
           <p className="text-slate-500 font-medium mt-2">
@@ -63,15 +63,15 @@ export function RatesStep({ products, onUpdate, onContinue, language }: Props) {
             {products.map((product, index) => (
               <div 
                 key={product.id}
-                className="p-5 border border-slate-200 rounded-2xl bg-white shadow-sm flex flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-bottom-4"
+                className="p-5 border border-slate-200 dark:border-white/10 rounded-2xl bg-white dark:bg-[#151521] shadow-sm flex flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-bottom-4"
                 style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'both' }}
               >
                 <div className="flex items-center gap-4">
-                  <div className="size-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
+                  <div className="size-10 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center shrink-0">
                     <span className="font-black text-slate-700 text-xl">{product.name.charAt(0)}</span>
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg text-slate-800">{product.name}</h3>
+                    <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">{product.name}</h3>
                     <p className="text-sm text-slate-500 font-medium">{t('per Liter', 'فی لیٹر', language)}</p>
                   </div>
                 </div>
@@ -83,7 +83,7 @@ export function RatesStep({ products, onUpdate, onContinue, language }: Props) {
                     type="number"
                     value={rates[product.id] || ""}
                     onChange={(e) => updateRate(product.id, e.target.value)}
-                    className="w-full h-14 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:border-emerald-500 transition-colors font-bold text-lg text-slate-800 text-right"
+                    className="w-full h-14 pl-12 pr-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white dark:bg-[#151521] focus:border-emerald-500 transition-colors font-bold text-lg text-slate-800 dark:text-slate-200 text-right"
                     placeholder="0.00"
                   />
                 </div>
@@ -93,7 +93,7 @@ export function RatesStep({ products, onUpdate, onContinue, language }: Props) {
 
         </div>
 
-        <div className="p-6 border-t border-slate-100 bg-white shrink-0">
+        <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-white dark:bg-[#151521] shrink-0">
           <button
             onClick={handleContinue}
             disabled={!isComplete}

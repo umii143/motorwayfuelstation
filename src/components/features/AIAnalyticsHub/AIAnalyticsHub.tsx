@@ -119,7 +119,7 @@ export default function AIAnalyticsHub({ settings, dataContext }: AIAnalyticsHub
         
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2.5 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20">
+            <div className="p-2.5 rounded-xl bg-white dark:bg-[#151521]/10 backdrop-blur-sm border border-white/20">
               <Sparkles className="h-6 w-6 text-indigo-300" />
             </div>
             <span className="font-mono text-[10px] font-black text-indigo-300 uppercase tracking-widest px-2.5 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10">

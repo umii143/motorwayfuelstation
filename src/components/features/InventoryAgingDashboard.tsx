@@ -186,7 +186,7 @@ export default function InventoryAgingDashboard({
             { label: t('Expected Margin', 'متوقع منافع'), value: `Rs.${(exposure.expectedMargin / 1000).toFixed(0)}K`, sub: 'Revenue − Landed Cost', color: 'text-yellow-300' },
             { label: t('Inventory At Risk', 'خطرے میں اسٹاک'), value: `Rs.${(exposure.inventoryAtRisk / 1000).toFixed(0)}K`, sub: `${exposure.atRiskCount} batches 60+ days`, color: exposure.inventoryAtRisk > 0 ? 'text-red-300' : 'text-emerald-300' },
           ].map((s, i) => (
-            <div key={i} className="bg-white/10 rounded-lg p-2 backdrop-blur-xs">
+            <div key={i} className="bg-white dark:bg-[#151521]/10 rounded-lg p-2 backdrop-blur-xs">
               <p className="text-slate-400 text-[9px] font-semibold uppercase tracking-wide">{s.label}</p>
               <p className={`text-base font-black ${s.color} mt-0.5`}>{s.value}</p>
               <p className="text-slate-500 text-[9px] mt-0.5 leading-tight">{s.sub}</p>
@@ -354,7 +354,7 @@ export default function InventoryAgingDashboard({
                             item.highlight === 'emerald' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' :
                             item.highlight === 'red' ? 'bg-red-500/10 border-red-500/20 text-red-600' :
                             item.highlight === 'orange' ? 'bg-orange-500/10 border-orange-500/20 text-orange-600' :
-                            'bg-slate-50/50 dark:bg-slate-800/50 border-theme-main text-slate-600 dark:text-slate-400'
+                            'bg-slate-50 dark:bg-white/5/50 dark:bg-slate-800/50 border-theme-main text-slate-600 dark:text-slate-400'
                           }`}>
                             <p className="text-slate-400 mb-0.5">{item.label}</p>
                             <p className="font-bold">{item.value}</p>

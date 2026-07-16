@@ -76,7 +76,7 @@ export default function MidShiftRateModal({
 
   return createPortal(
     <div className="fixed inset-0 z-[105] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="bg-white dark:bg-[#151521] rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         
         <div className="bg-amber-50 border-b border-amber-100 p-6 flex items-start gap-4">
           <div className="size-12 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
@@ -104,7 +104,7 @@ export default function MidShiftRateModal({
           )}
 
           <div className="space-y-4">
-            <h4 className="font-semibold text-slate-800">
+            <h4 className="font-semibold text-slate-800 dark:text-slate-200">
               {t('Current Nozzle Readings', 'موجودہ نوزل ریڈنگز', language)}
             </h4>
             
@@ -122,7 +122,7 @@ export default function MidShiftRateModal({
                         type="number"
                         value={readings[nz.id] || ''}
                         onChange={(e) => setReadings({ ...readings, [nz.id]: e.target.value })}
-                        className="w-full pl-4 pr-12 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        className="w-full pl-4 pr-12 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                         placeholder="0.00"
                       />
                       <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">
@@ -136,7 +136,7 @@ export default function MidShiftRateModal({
           </div>
         </div>
 
-        <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+        <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 flex justify-end gap-3">
           <button
             onClick={onCancel}
             className="px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px].5 rounded-xl font-medium text-slate-600 hover:bg-slate-200 transition-colors"

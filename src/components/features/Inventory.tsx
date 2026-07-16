@@ -633,7 +633,7 @@ export default function Inventory({
           </div>
           <div>
             <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block group-hover:text-orange-500 transition-colors">{t('Total Fuel In Storage Tanks', 'ٹینکس میں موجود کل فیول والیم')}</span>
-            <strong className="font-mono text-base font-bold text-slate-800 tracking-tight mt-1 block">
+            <strong className="font-mono text-base font-bold text-slate-800 dark:text-slate-200 tracking-tight mt-1 block">
               {totalFuelVolume.toLocaleString()} Litres
             </strong>
           </div>
@@ -653,12 +653,12 @@ export default function Inventory({
              </div>
              <div>
                <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block group-hover:text-sky-600 transition-colors">{t('Lubricants / Accessories', 'کل انجن آئل اسٹاک')}</span>
-               <strong className="font-mono text-base font-bold text-slate-800 tracking-tight mt-1 block">
+               <strong className="font-mono text-base font-bold text-slate-800 dark:text-slate-200 tracking-tight mt-1 block">
                  {lubeMetrics.totalQty.toLocaleString()} Units
                </strong>
              </div>
           </div>
-          <div className="grid grid-cols-2 gap-2 mt-2 border-t pt-2 border-slate-100">
+          <div className="grid grid-cols-2 gap-2 mt-2 border-t pt-2 border-slate-100 dark:border-white/5">
              <div>
                <span className="text-[9px] font-bold text-slate-400 uppercase">Stock Value</span>
                <div className="text-xs font-mono font-bold text-slate-700">Rs. {lubeMetrics.totalValue.toLocaleString()}</div>
@@ -673,12 +673,12 @@ export default function Inventory({
 
         {/* Low warning stock items */}
         <div className={`rounded-xl border p-4 shadow-xs flex items-center gap-3 transition-colors ${lowStockCount > 0 ? 'border-red-250 bg-red-50/20' : 'border-theme-main bg-theme-card'}`}>
-          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${lowStockCount > 0 ? 'bg-red-100 text-red-655' : 'bg-slate-100 text-slate-400'}`}>
+          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${lowStockCount > 0 ? 'bg-red-100 text-red-655' : 'bg-slate-100 dark:bg-white/10 text-slate-400'}`}>
             <AlertTriangle className="h-5 w-5" />
           </div>
           <div>
             <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block">{t('Low Stock Alarms', 'انتباہی اسٹاک الرٹ')}</span>
-            <strong className={`font-mono text-base font-bold tracking-tight mt-1 block ${lowStockCount > 0 ? 'text-red-650' : 'text-slate-800'}`}>
+            <strong className={`font-mono text-base font-bold tracking-tight mt-1 block ${lowStockCount > 0 ? 'text-red-650' : 'text-slate-800 dark:text-slate-200'}`}>
               {lowStockCount} {t('Products Low', 'آئٹم انتہائی کم')}
             </strong>
           </div>
@@ -917,7 +917,7 @@ export default function Inventory({
                         </div>
                       </div>
 
-                      <div className="flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50 p-1.5 rounded text-[9px] font-bold text-slate-500 mb-2">
+                      <div className="flex justify-between items-center bg-slate-50 dark:bg-white/5/50 dark:bg-slate-800/50 p-1.5 rounded text-[9px] font-bold text-slate-500 mb-2">
                         <span>Min: <strong className="text-slate-700 dark:text-slate-300">{prod.minStock.toLocaleString()}</strong></span>
                         <span className="uppercase">Unit: {prod.unit}</span>
                       </div>
@@ -1118,7 +1118,7 @@ export default function Inventory({
                         />
                         <div className="absolute inset-0 flex flex-col justify-between items-center py-1 text-[8px] font-mono font-bold text-slate-700 dark:text-slate-200 z-10 text-center leading-tight">
                           <span>{tnk.capacity.toLocaleString()}L</span>
-                          <span className="bg-white/80 dark:bg-black/60 px-1 py-0.5 rounded text-[9px] font-mono font-extrabold">{fillPct}%</span>
+                          <span className="bg-white dark:bg-[#151521]/80 dark:bg-black/60 px-1 py-0.5 rounded text-[9px] font-mono font-extrabold">{fillPct}%</span>
                           <span className="truncate w-full px-1">{tnk.physicalLabel || tnk.name}</span>
                         </div>
                       </div>
@@ -1255,7 +1255,7 @@ export default function Inventory({
                   header: t('Product Grade', 'پراڈکٹ'),
                   accessor: (log) => {
                     const prod = products.find(p => p.id === log.productId);
-                    return <span className="font-bold text-slate-800">{prod ? t(prod.name, prod.urduName) : log.productId.toUpperCase()}</span>;
+                    return <span className="font-bold text-slate-800 dark:text-slate-200">{prod ? t(prod.name, prod.urduName) : log.productId.toUpperCase()}</span>;
                   },
                   isPrimaryMobile: true
                 },
@@ -1265,7 +1265,7 @@ export default function Inventory({
                 },
                 {
                   header: t('New Tariff Revised', 'نیا نافذ ریٹ'),
-                  accessor: (log) => <span className="font-mono font-bold text-slate-800">Rs. {(log.newRate || 0).toFixed(2)}</span>
+                  accessor: (log) => <span className="font-mono font-bold text-slate-800 dark:text-slate-200">Rs. {(log.newRate || 0).toFixed(2)}</span>
                 },
                 {
                   header: t('Revision Diff', 'ریٹ میں تبدیلی'),
@@ -1273,7 +1273,7 @@ export default function Inventory({
                 },
                 {
                   header: t('Stock Volume at Revision', 'موجودہ والیم'),
-                  accessor: (log) => <span className="font-mono font-bold text-slate-800">{(log.stockAtTime || 0).toLocaleString()} Ltr</span>
+                  accessor: (log) => <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{(log.stockAtTime || 0).toLocaleString()} Ltr</span>
                 },
                 {
                   header: t('Audit P&L Impact', 'ویلیویشن منافع/نقصان'),
@@ -1398,8 +1398,8 @@ export default function Inventory({
               transition={{ type: "spring", damping: 25, stiffness: 350 }}
               className="w-full max-w-sm rounded-xl border border-theme-main bg-theme-card p-6 shadow-xl"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-                <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-2">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3 mb-4">
+                <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Wrench className="h-5 w-5 text-amber-610" />
                   <span>{isLube
                     ? t('Physical Stock Count', 'جسمانی اسٹاک گنتی')
@@ -1409,7 +1409,7 @@ export default function Inventory({
                 <button onClick={() => setShowReconcileModal(false)} className="text-slate-400 hover:text-slate-650 cursor-pointer font-bold text-xl">&times;</button>
               </div>
 
-              <p className="font-sans text-[11px] text-slate-400 leading-normal pb-3 border-b border-slate-100 mb-4">
+              <p className="font-sans text-[11px] text-slate-400 leading-normal pb-3 border-b border-slate-100 dark:border-white/5 mb-4">
                 {t(
                   'Note: Use this when the physical fuel dip stick calculation differs from the electronic system balance due to evaporation index adjustments.',
                   'تنبیہ: گیس چوری، پٹرول اڑنے یا فزیکل ڈپ سٹک ناپ کے دوران واٹس ایپ پر ظاہر کردہ اسٹاک فالتو یا کم ہونے کی صورت میں موازنہ انٹری درج کریں۔'
@@ -1482,8 +1482,8 @@ export default function Inventory({
               transition={{ type: 'spring', damping: 25, stiffness: 350 }}
               className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-theme-main bg-theme-card p-4 sm:p-6 shadow-2xl mx-4 my-auto"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-5">
-                <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-2">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3 mb-5">
+                <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Package className="h-5 w-5 text-emerald-600" />
                   <span>{editingProduct
                     ? t('Edit Product', 'پروڈکٹ ترمیم')

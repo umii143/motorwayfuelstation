@@ -57,13 +57,13 @@ export const ExecutiveDashboard: React.FC = () => {
               <Briefcase className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">Executive Dashboard</h1>
+              <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Executive Dashboard</h1>
               <p className="text-sm font-semibold text-slate-500">Real-time Enterprise Intelligence Platform</p>
             </div>
           </div>
           <div className="flex flex-col items-end">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Data Integrity Score</span>
-            <div className="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full mb-3">
+            <div className="flex items-center gap-2 bg-slate-100 dark:bg-white/10 px-3 py-1.5 rounded-full mb-3">
               {kpis.dataQuality.score >= 90 ? <CheckCircle className="h-4 w-4 text-emerald-500" /> : <AlertTriangle className="h-4 w-4 text-amber-500" />}
               <span className={`text-sm font-bold ${kpis.dataQuality.score >= 90 ? 'text-emerald-700' : 'text-amber-700'}`}>
                 {kpis.dataQuality.score}/100
@@ -73,7 +73,7 @@ export const ExecutiveDashboard: React.FC = () => {
         </div>
 
         {/* Global Date Filters */}
-        <div className="premium-card p-4 border border-slate-200 flex flex-wrap items-center ga mb-6">
+        <div className="premium-card p-4 border border-slate-200 dark:border-white/10 flex flex-wrap items-center ga mb-6">
           <div className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-indigo-500" />
             <span className="text-sm font-bold text-slate-700">Analysis Period:</span>
@@ -82,19 +82,19 @@ export const ExecutiveDashboard: React.FC = () => {
             type="date" 
             value={dateRange.from}
             onChange={e => setDateRange(prev => ({...prev, from: e.target.value}))}
-            className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-3 py-1.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
           <span className="text-slate-400 font-medium">to</span>
           <input 
             type="date" 
             value={dateRange.to}
             onChange={e => setDateRange(prev => ({...prev, to: e.target.value}))}
-            className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-3 py-1.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
           {(dateRange.from || dateRange.to) && (
             <button 
               onClick={() => setDateRange({from: '', to: ''})}
-              className="ml-auto px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+              className="ml-auto px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 rounded-lg transition-colors"
             >
               Clear Filters
             </button>
@@ -113,7 +113,7 @@ export const ExecutiveDashboard: React.FC = () => {
                 <span className="text-6xl md:text-8xl font-black tracking-tighter">{health.score}</span>
                 <span className="text-2xl font-bold text-slate-400">/ 100</span>
               </div>
-              <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 backdrop-blur-md">
+              <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white dark:bg-[#151521]/10 px-4 py-1.5 backdrop-blur-md">
                 <div className={`h-2.5 w-2.5 rounded-full ${
                   health.label === 'Excellent' || health.label === 'Good' ? 'bg-emerald-400' :
                   health.label === 'Fair' ? 'bg-amber-400' : 'bg-red-400'
@@ -122,7 +122,7 @@ export const ExecutiveDashboard: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex-1 w-full bg-white/5 p-6 rounded-2xl backdrop-blur-sm border border-white/10">
+            <div className="flex-1 w-full bg-white dark:bg-[#151521]/5 p-6 rounded-2xl backdrop-blur-sm border border-white/10">
               <h3 className="text-sm font-bold text-slate-300 mb-4">Health Factors</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
                 {health.factors.map(f => (
@@ -216,9 +216,9 @@ export const ExecutiveDashboard: React.FC = () => {
             <div className="space-y-4">
               <div>
                 <p className="text-xs text-slate-500 font-semibold mb-1">{dateRange.from || dateRange.to ? 'Selected Period' : 'Lifetime'} Revenue</p>
-                <p className="text-2xl font-black text-slate-900">Rs {kpis.revenue.ytd.toLocaleString(undefined, {maximumFractionDigits:0})}</p>
+                <p className="text-2xl font-black text-slate-900 dark:text-white">Rs {kpis.revenue.ytd.toLocaleString(undefined, {maximumFractionDigits:0})}</p>
               </div>
-              <div className="flex justify-between border-t border-slate-100 pt-3">
+              <div className="flex justify-between border-t border-slate-100 dark:border-white/5 pt-3">
                 <div>
                   <p className="text-[10px] text-slate-400 font-bold uppercase">MTD</p>
                   <p className="text-sm font-bold text-slate-700">{kpis.revenue.mtd.toLocaleString(undefined, {maximumFractionDigits:0})}</p>
@@ -245,7 +245,7 @@ export const ExecutiveDashboard: React.FC = () => {
                 <p className="text-xs text-slate-500 font-semibold mb-1">{dateRange.from || dateRange.to ? 'Selected Period' : 'Lifetime'} Net Profit</p>
                 <p className="text-2xl font-black text-emerald-600">Rs {kpis.profit.net.toLocaleString(undefined, {maximumFractionDigits:0})}</p>
               </div>
-              <div className="flex justify-between border-t border-slate-100 pt-3">
+              <div className="flex justify-between border-t border-slate-100 dark:border-white/5 pt-3">
                 <div>
                   <p className="text-[10px] text-slate-400 font-bold uppercase">Gross Margin</p>
                   <p className="text-sm font-bold text-slate-700">{kpis.profit.marginPercent.toFixed(1)}%</p>
@@ -274,7 +274,7 @@ export const ExecutiveDashboard: React.FC = () => {
                   {kpis.profit.inventoryRevaluation >= 0 ? '+' : ''}Rs {kpis.profit.inventoryRevaluation.toLocaleString(undefined, {maximumFractionDigits:0})}
                 </p>
               </div>
-              <div className="flex justify-between border-t border-slate-100 pt-3">
+              <div className="flex justify-between border-t border-slate-100 dark:border-white/5 pt-3">
                 <div>
                   <p className="text-[10px] text-slate-400 font-bold uppercase">Profit Source</p>
                   <p className="text-sm font-bold text-slate-700">Stock Holding</p>
@@ -297,7 +297,7 @@ export const ExecutiveDashboard: React.FC = () => {
                 <p className="text-xs text-slate-500 font-semibold mb-1">Total Expenses ({dateRange.from || dateRange.to ? 'Selected' : 'Lifetime'})</p>
                 <p className="text-2xl font-black text-amber-600">Rs {kpis.expenses.total.toLocaleString(undefined, {maximumFractionDigits:0})}</p>
               </div>
-              <div className="flex justify-between border-t border-slate-100 pt-3">
+              <div className="flex justify-between border-t border-slate-100 dark:border-white/5 pt-3">
                 <div>
                   <p className="text-[10px] text-slate-400 font-bold uppercase">Expense Per Liter</p>
                   <p className="text-sm font-bold text-slate-700">{kpis.expenses.perLiter.toFixed(2)} Rs/L</p>
@@ -326,7 +326,7 @@ export const ExecutiveDashboard: React.FC = () => {
               </div>
               <div 
                 onClick={() => setIsCreditDrillDownOpen(true)}
-                className="flex justify-between border-t border-slate-100 pt-3 mt-3 cursor-pointer hover:bg-blue-50/50 p-2 -mx-2 rounded-lg transition-colors group"
+                className="flex justify-between border-t border-slate-100 dark:border-white/5 pt-3 mt-3 cursor-pointer hover:bg-blue-50/50 p-2 -mx-2 rounded-lg transition-colors group"
                 title="Open Credit Intelligence Center"
               >
                 <div>
@@ -341,7 +341,7 @@ export const ExecutiveDashboard: React.FC = () => {
 
               <div 
                 onClick={() => setIsSupplierDrillDownOpen(true)}
-                className="flex justify-between border-t border-slate-100 pt-3 mt-3 cursor-pointer hover:bg-amber-50/50 p-2 -mx-2 rounded-lg transition-colors group"
+                className="flex justify-between border-t border-slate-100 dark:border-white/5 pt-3 mt-3 cursor-pointer hover:bg-amber-50/50 p-2 -mx-2 rounded-lg transition-colors group"
                 title="Open Supplier Intelligence Center"
               >
                 <div>
@@ -366,10 +366,10 @@ export const ExecutiveDashboard: React.FC = () => {
           <div className="premium-card p-6 border flex items-center justify-between">
             <div>
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Inventory Value</h3>
-              <p className="text-3xl font-black text-slate-900">Rs {kpis.inventory.value.toLocaleString(undefined, {maximumFractionDigits:0})}</p>
+              <p className="text-3xl font-black text-slate-900 dark:text-white">Rs {kpis.inventory.value.toLocaleString(undefined, {maximumFractionDigits:0})}</p>
               <div className="flex gap-4 mt-2">
                 <p className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">Potential: {kpis.inventory.potentialRevenue.toLocaleString(undefined, {maximumFractionDigits:0})}</p>
-                <p className="text-xs font-bold text-slate-500 bg-slate-50 px-2 py-1 rounded">Coverage: {kpis.inventory.stockCoverageDays} Days</p>
+                <p className="text-xs font-bold text-slate-500 bg-slate-50 dark:bg-white/5 px-2 py-1 rounded">Coverage: {kpis.inventory.stockCoverageDays} Days</p>
               </div>
             </div>
             <div className="h-16 w-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center">

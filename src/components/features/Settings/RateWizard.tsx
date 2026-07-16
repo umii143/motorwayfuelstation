@@ -312,14 +312,14 @@ export default function RateWizard({
                   const displayNew = rh.newPrice ?? (rh.newRate || 0) ?? 0;
 
                   return (
-                    <tr key={rh.id} className="hover:bg-slate-50/50 transition-colors">
+                    <tr key={rh.id} className="hover:bg-slate-50 dark:bg-white/5/50 transition-colors">
                       <td className="text-slate-600">{displayDate}</td>
                       <td>
                         {prod ? prod.name : rh.productId}
                       </td>
                       <td>
                         {displayOld === 0 ? (
-                          <span className="px-2 py-1 bg-slate-100 text-slate-500 text-xs font-bold rounded-md">
+                          <span className="px-2 py-1 bg-slate-100 dark:bg-white/10 text-slate-500 text-xs font-bold rounded-md">
                             {t('Initial Setup', 'ابتدائی سیٹ اپ', language)}
                           </span>
                         ) : (

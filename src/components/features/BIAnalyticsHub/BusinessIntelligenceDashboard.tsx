@@ -38,7 +38,7 @@ export default function BusinessIntelligenceDashboard() {
   return (
     <div className="pb-20">
       <div className="mb-6">
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight">Owner's Financial Command Center</h1>
+        <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Owner's Financial Command Center</h1>
         <p className="text-slate-500 font-medium mt-1">Real-time business intelligence, capital tracking, and profitability analytics.</p>
       </div>
 
@@ -56,7 +56,7 @@ export default function BusinessIntelligenceDashboard() {
           <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-4">
             <TrendingUp className="w-8 h-8" />
           </div>
-          <h3 className="font-sans text-lg font-bold text-slate-900 mb-2">Profitability Trend</h3>
+          <h3 className="font-sans text-lg font-bold text-slate-900 dark:text-white mb-2">Profitability Trend</h3>
           <p className="text-sm text-slate-500">More charts coming in the next sprint.</p>
         </div>
       </div>

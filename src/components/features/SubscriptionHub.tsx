@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   CreditCard, 
@@ -13,12 +13,13 @@ import {
   UploadCloud,
   FileImage,
   RefreshCw,
-  MessageCircle
+  MessageCircle,
+  Tag
 } from 'lucide-react';
-import { GlobalSettings } from '../../types';
+import { GlobalSettings, GlobalPricingConfig } from '../../types';
 import { t as translate } from '../../lib/translations';
 import { useAuth } from '../../contexts/AuthContext';
-import { doc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { dbFS } from '../../lib/firebase';
 import { haptic } from '../../utils/haptics';
 import { logger } from '../../lib/logger';
@@ -42,80 +43,124 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
   const t = (en: string, ur: string) => translate(en, ur, settings);
 
   const isPending = organization?.subscriptionStatus === 'pending_verification';
+  
+  const [pricingConfig, setPricingConfig] = useState<GlobalPricingConfig | null>(null);
 
-  const plans = [
-    {
-      id: 'starter',
-      name: t('Starter', 'اسٹارٹر'),
-      price: 'Rs. 2,000',
-      originalPrice: 'Rs. 5,000',
-      amount: 2000,
-      period: t('/month', '/مہینہ'),
-      icon: Zap,
-      features: [
-        t('Single Station', 'سنگل اسٹیشن'),
-        t('Basic Dashboard', 'بنیادی ڈیش بورڈ'),
-        t('Shift Wizard', 'شفٹ وزرڈ'),
-        t('Stock IN & Customers', 'اسٹاک اور کسٹمرز')
-      ],
-      color: 'bg-slate-50 border-slate-200',
-      iconColor: 'text-slate-600',
-      btnColor: 'bg-slate-800 hover:bg-slate-900'
-    },
-    {
-      id: 'professional',
-      name: t('Professional', 'پروفیشنل'),
-      price: 'Rs. 3,000',
-      amount: 3000,
-      period: t('/month', '/مہینہ'),
-      icon: Crown,
-      popular: true,
-      features: [
-        t('Everything in Starter', 'اسٹارٹر کی تمام خصوصیات'),
-        t('Treasury Center & Analytics', 'ٹریژری سینٹر اور اینالٹکس'),
-        t('Mobile APK & OTP Login', 'موبائل ایپ اور لاگ ان'),
-        t('WhatsApp Integration', 'واٹس ایپ کا انضمام')
-      ],
-      color: 'bg-orange-50 border-orange-200 shadow-lg scale-105 z-10',
-      iconColor: 'text-orange-600',
-      btnColor: 'bg-orange-600 hover:bg-orange-700'
-    },
-    {
-      id: 'quarterly',
-      name: t('3 Months', '3 ماہ کا پلان'),
-      price: 'Rs. 10,000',
-      originalPrice: 'Rs. 18,000',
-      amount: 10000,
-      period: t('/3 months', '/3 مہینے'),
-      icon: Clock,
-      features: [
-        t('All Pro Features', 'پروفیشنل کی تمام خصوصیات'),
-        t('Save Rs. 8,000', '8,000 روپے کی بچت'),
-        t('Priority Support', 'ترجیحی سپورٹ'),
-        t('Free Data Backup', 'مفت ڈیٹا بیک اپ')
-      ],
-      color: 'bg-emerald-50 border-emerald-200',
-      iconColor: 'text-emerald-600',
-      btnColor: 'bg-emerald-600 hover:bg-emerald-700'
-    },
-    {
-      id: 'yearly',
-      name: t('1 Year', '1 سال کا پلان'),
-      price: 'Rs. 30,000',
-      amount: 30000,
-      period: t('/year', '/سال'),
-      icon: Building2,
-      features: [
-        t('All Pro Features', 'پروفیشنل کی تمام خصوصیات'),
-        t('Best Value', 'بہترین قیمت'),
-        t('Custom Branding', 'کسٹم برانڈنگ'),
-        t('Dedicated Account Manager', 'مخصوص اکاؤنٹ مینیجر')
-      ],
-      color: 'bg-blue-50 border-blue-200',
-      iconColor: 'text-blue-600',
-      btnColor: 'bg-blue-600 hover:bg-blue-700'
-    }
-  ];
+  useEffect(() => {
+    const unsub = onSnapshot(doc(dbFS, 'systemSettings', 'pricingConfig'), (snap) => {
+      if (snap.exists()) {
+        setPricingConfig(snap.data() as GlobalPricingConfig);
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  const isSaleActive = useMemo(() => {
+    if (!pricingConfig?.saleActive) return false;
+    const end = new Date(pricingConfig.saleEndDate);
+    if (isNaN(end.getTime())) return false;
+    return end.getTime() > Date.now();
+  }, [pricingConfig]);
+
+  const saleDaysRemaining = useMemo(() => {
+    if (!isSaleActive || !pricingConfig) return 0;
+    const end = new Date(pricingConfig.saleEndDate);
+    return Math.max(0, Math.ceil((end.getTime() - Date.now()) / (1000 * 3600 * 24)));
+  }, [isSaleActive, pricingConfig]);
+
+  const plans = useMemo(() => {
+    const defaultPlans = [
+      {
+        id: 'starter',
+        name: t('Starter', 'اسٹارٹر'),
+        price: 'Rs. 2,000',
+        originalPrice: 'Rs. 5,000',
+        amount: 2000,
+        period: t('/month', '/مہینہ'),
+        icon: Zap,
+        features: [
+          t('Single Station', 'سنگل اسٹیشن'),
+          t('Basic Dashboard', 'بنیادی ڈیش بورڈ'),
+          t('Shift Wizard', 'شفٹ وزرڈ'),
+          t('Stock IN & Customers', 'اسٹاک اور کسٹمرز')
+        ],
+        color: 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10',
+        iconColor: 'text-slate-600',
+        btnColor: 'bg-slate-800 hover:bg-slate-900'
+      },
+      {
+        id: 'professional',
+        name: t('Professional', 'پروفیشنل'),
+        price: 'Rs. 3,000',
+        amount: 3000,
+        period: t('/month', '/مہینہ'),
+        icon: Crown,
+        popular: true,
+        features: [
+          t('Everything in Starter', 'اسٹارٹر کی تمام خصوصیات'),
+          t('Treasury Center & Analytics', 'ٹریژری سینٹر اور اینالٹکس'),
+          t('Mobile APK & OTP Login', 'موبائل ایپ اور لاگ ان'),
+          t('WhatsApp Integration', 'واٹس ایپ کا انضمام')
+        ],
+        color: 'bg-orange-50 border-orange-200 shadow-lg scale-105 z-10',
+        iconColor: 'text-orange-600',
+        btnColor: 'bg-orange-600 hover:bg-orange-700'
+      },
+      {
+        id: 'quarterly',
+        name: t('3 Months', '3 ماہ کا پلان'),
+        price: 'Rs. 10,000',
+        originalPrice: 'Rs. 18,000',
+        amount: 10000,
+        period: t('/3 months', '/3 مہینے'),
+        icon: Clock,
+        features: [
+          t('All Pro Features', 'پروفیشنل کی تمام خصوصیات'),
+          t('Save Rs. 8,000', '8,000 روپے کی بچت'),
+          t('Priority Support', 'ترجیحی سپورٹ'),
+          t('Free Data Backup', 'مفت ڈیٹا بیک اپ')
+        ],
+        color: 'bg-emerald-50 border-emerald-200',
+        iconColor: 'text-emerald-600',
+        btnColor: 'bg-emerald-600 hover:bg-emerald-700'
+      },
+      {
+        id: 'yearly',
+        name: t('1 Year', '1 سال کا پلان'),
+        price: 'Rs. 30,000',
+        amount: 30000,
+        period: t('/year', '/سال'),
+        icon: Building2,
+        features: [
+          t('All Pro Features', 'پروفیشنل کی تمام خصوصیات'),
+          t('Best Value', 'بہترین قیمت'),
+          t('Custom Branding', 'کسٹم برانڈنگ'),
+          t('Dedicated Account Manager', 'مخصوص اکاؤنٹ مینیجر')
+        ],
+        color: 'bg-blue-50 border-blue-200',
+        iconColor: 'text-blue-600',
+        btnColor: 'bg-blue-600 hover:bg-blue-700'
+      }
+    ];
+
+    if (!pricingConfig || !pricingConfig.offers) return defaultPlans;
+
+    return defaultPlans.map(plan => {
+      const offer = pricingConfig.offers[plan.id];
+      if (!offer) return plan;
+
+      const activeAmount = isSaleActive ? offer.salePrice : offer.originalPrice;
+      const displayPrice = `Rs. ${activeAmount.toLocaleString()}`;
+      const originalDisplayPrice = isSaleActive ? `Rs. ${offer.originalPrice.toLocaleString()}` : undefined;
+
+      return {
+        ...plan,
+        amount: activeAmount,
+        price: displayPrice,
+        originalPrice: originalDisplayPrice || plan.originalPrice, // Keep default original if no sale
+      };
+    });
+  }, [pricingConfig, isSaleActive, t]);
 
   const gateways = [
     { id: 'jazzcash', name: 'NayaPay', desc: '0316 8432329 (Umar Ali)' },
@@ -223,7 +268,7 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
             <CreditCard className="h-7 w-7" />
           </div>
           <div>
-            <h1 className="font-sans text-2xl font-bold text-slate-900 tracking-tight">
+            <h1 className="font-sans text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
               {t('Subscription & Billing', 'سبسکرپشن اور بلنگ')}
             </h1>
             <p className="font-sans text-sm text-slate-500 mt-1">
@@ -277,7 +322,7 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
       {(!isPending) && (
         <div className="bg-white dark:bg-[#111622] rounded-[24px] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
           {/* Progress Steps */}
-          <div className="flex border-b border-slate-100">
+          <div className="flex border-b border-slate-100 dark:border-white/5">
             {[1, 2, 3].map(num => (
               <div key={num} className={`flex-1 py-4 text-center text-sm font-bold border-b-2 transition-colors ${step === num ? 'border-orange-500 text-orange-600 bg-orange-50/50' : step > num ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-slate-400'}`}>
                 {num === 1 ? t('Choose Plan', 'پلان منتخب کریں') : num === 2 ? t('Payment Method', 'ادائیگی کا طریقہ') : t('Upload Receipt', 'رسید اپ لوڈ کریں')}
@@ -289,6 +334,20 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
             <AnimatePresence mode="wait">
               {step === 1 && (
                 <motion.div key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
+                  {isSaleActive && (
+                    <div className="mb-6 bg-gradient-to-r from-orange-500 to-rose-500 rounded-2xl p-4 text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-white dark:bg-[#151521]/20 p-2 rounded-full"><Tag className="w-6 h-6" /></div>
+                        <div>
+                          <h3 className="font-bold text-lg">Special Promotional Offer!</h3>
+                          <p className="text-white/90 text-sm">Upgrade now and save big on our premium plans.</p>
+                        </div>
+                      </div>
+                      <div className="bg-white dark:bg-[#151521]/10 px-4 py-2 rounded-xl backdrop-blur-md border border-white/20 font-mono font-bold">
+                        Ends in {saleDaysRemaining} days
+                      </div>
+                    </div>
+                  )}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-4 items-center">
                     {plans.map(p => (
                   <div 
@@ -306,7 +365,7 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
                         {t('Most Popular', 'سب سے مقبول')}
                       </div>
                     )}
-                    <div className={`p-3 rounded-xl inline-flex ${p.id === 'professional' ? 'bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'} mb-4`}>
+                    <div className={`p-3 rounded-xl inline-flex ${p.id === 'professional' ? 'bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400' : 'bg-slate-100 dark:bg-white/10 text-slate-600 dark:bg-slate-800 dark:text-slate-400'} mb-4`}>
                       <p.icon className="h-6 w-6" />
                     </div>
                     <h4 className="text-xl font-bold dark:text-white">{p.name}</h4>
@@ -405,7 +464,7 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
                     )}
                   </div>
 
-                  <div className="flex justify-between mt-8 pt-6 border-t border-slate-100">
+                  <div className="flex justify-between mt-8 pt-6 border-t border-slate-100 dark:border-white/5">
                     <button onClick={() => setStep(2)} className="px-6 py-3 font-bold text-slate-500 hover:text-slate-700" disabled={isProcessing}>{t('Back', 'پیچھے')}</button>
                     <button onClick={handleSubmitReceipt} disabled={!receiptFile || isProcessing} className={`bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-500/30 ${(!receiptFile || isProcessing) ? 'opacity-50 cursor-not-allowed' : ''}`}>
                       {isProcessing ? <RefreshCw className="h-5 w-5 animate-spin" /> : <><MessageCircle className="h-5 w-5" /> {t('Submit & WhatsApp', 'جمع کرائیں')}</>}

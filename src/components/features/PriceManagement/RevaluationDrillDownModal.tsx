@@ -202,7 +202,7 @@ export default function RevaluationDrillDownModal({
 
   return (
     <div className="premium-modal-overlay">
-      <div className="bg-slate-50 w-full max-w-7xl h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-700/50">
+      <div className="bg-slate-50 dark:bg-white/5 w-full max-w-7xl h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-700/50">
         
         {/* Header */}
         <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between shrink-0">
@@ -240,7 +240,7 @@ export default function RevaluationDrillDownModal({
               <p className="text-2xl font-black text-rose-600">-{formatCurrency(stats.totalLoss, settings)}</p>
             </div>
             <div className="bg-slate-900 rounded-xl p-4 shadow-sm relative overflow-hidden">
-              <div className="absolute -right-4 -top-4 size-16 bg-white/5 rounded-full blur-xl pointer-events-none"></div>
+              <div className="absolute -right-4 -top-4 size-16 bg-white dark:bg-[#151521]/5 rounded-full blur-xl pointer-events-none"></div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Net Impact</p>
               <p className={`text-2xl font-black ${stats.netImpact >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                 {stats.netImpact >= 0 ? '+' : ''}{formatCurrency(stats.netImpact, settings)}
@@ -248,7 +248,7 @@ export default function RevaluationDrillDownModal({
             </div>
             <div className="premium-card p-4 border">
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Events Count</p>
-              <p className="text-2xl font-black text-slate-800">{stats.eventsCount}</p>
+              <p className="text-2xl font-black text-slate-800 dark:text-slate-200">{stats.eventsCount}</p>
             </div>
             <div className="premium-card p-4 border">
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Avg Impact / Event</p>
@@ -262,28 +262,28 @@ export default function RevaluationDrillDownModal({
             <div className="space-y-6">
               
               {/* Advanced Filters */}
-              <div className="premium-card border border-slate-200">
-                <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+              <div className="premium-card border border-slate-200 dark:border-white/10">
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
                   <Filter className="h-4 w-4 text-blue-600" /> Advanced Filters
                 </h3>
                 <div className="space-y-4">
                   <div>
                     <label className="text-xs font-bold text-slate-500 mb-1 block">Date Range</label>
                     <div className="flex gap-2">
-                      <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="premium-input text-xs p-2 bg-slate-50" />
-                      <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="premium-input text-xs p-2 bg-slate-50" />
+                      <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="premium-input text-xs p-2 bg-slate-50 dark:bg-white/5" />
+                      <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="premium-input text-xs p-2 bg-slate-50 dark:bg-white/5" />
                     </div>
                   </div>
                   <div>
                     <label className="text-xs font-bold text-slate-500 mb-1 block">Product</label>
-                    <select value={productFilter} onChange={e => setProductFilter(e.target.value)} className="premium-input text-xs p-2 bg-slate-50 font-semibold">
+                    <select value={productFilter} onChange={e => setProductFilter(e.target.value)} className="premium-input text-xs p-2 bg-slate-50 dark:bg-white/5 font-semibold">
                       <option value="all">All Products</option>
                       {uniqueProducts.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="text-xs font-bold text-slate-500 mb-1 block">Impact Type</label>
-                    <select value={impactFilter} onChange={e => setImpactFilter(e.target.value as ImpactFilter)} className="premium-input text-xs p-2 bg-slate-50 font-semibold">
+                    <select value={impactFilter} onChange={e => setImpactFilter(e.target.value as ImpactFilter)} className="premium-input text-xs p-2 bg-slate-50 dark:bg-white/5 font-semibold">
                       <option value="all">All Impacts</option>
                       <option value="gain">Gain Only</option>
                       <option value="loss">Loss Only</option>
@@ -291,14 +291,14 @@ export default function RevaluationDrillDownModal({
                   </div>
                   <div>
                     <label className="text-xs font-bold text-slate-500 mb-1 block">Reason</label>
-                    <select value={reasonFilter} onChange={e => setReasonFilter(e.target.value)} className="premium-input text-xs p-2 bg-slate-50 font-semibold">
+                    <select value={reasonFilter} onChange={e => setReasonFilter(e.target.value)} className="premium-input text-xs p-2 bg-slate-50 dark:bg-white/5 font-semibold">
                       <option value="all">All Reasons</option>
                       {uniqueReasons.map(r => <option key={r} value={r}>{r}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="text-xs font-bold text-slate-500 mb-1 block">Changed By</label>
-                    <select value={changedByFilter} onChange={e => setChangedByFilter(e.target.value)} className="premium-input text-xs p-2 bg-slate-50 font-semibold">
+                    <select value={changedByFilter} onChange={e => setChangedByFilter(e.target.value)} className="premium-input text-xs p-2 bg-slate-50 dark:bg-white/5 font-semibold">
                       <option value="all">All Users</option>
                       {uniqueUsers.map(u => <option key={u} value={u}>{u}</option>)}
                     </select>
@@ -327,8 +327,8 @@ export default function RevaluationDrillDownModal({
               </div>
 
               {/* Executive Mini Analytics */}
-              <div className="premium-card border border-slate-200 space-y-4">
-                <h3 className="text-sm font-bold text-slate-800 mb-2 flex items-center gap-2">
+              <div className="premium-card border border-slate-200 dark:border-white/10 space-y-4">
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-2">
                   <BarChart3 className="h-4 w-4 text-emerald-600" /> Key Extremes
                 </h3>
                 <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
@@ -390,15 +390,15 @@ export default function RevaluationDrillDownModal({
 
               {/* Enterprise Ledger Grid */}
               <div className="premium-card border overflow-hidden flex flex-col h-[600px]">
-                <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 shrink-0">
-                  <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <div className="px-5 py-4 border-b border-slate-200 dark:border-white/10 flex items-center justify-between bg-slate-50 dark:bg-white/5 shrink-0">
+                  <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                     <Layers className="h-4 w-4 text-slate-500" /> Enterprise Revaluation Ledger
                   </h3>
                   <div className="flex items-center gap-2">
-                    <button className="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-50 flex items-center gap-2">
+                    <button className="px-3 py-1.5 bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-50 dark:bg-white/5 flex items-center gap-2">
                       <Download className="h-3 w-3" /> Export PDF
                     </button>
-                    <button className="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-50 flex items-center gap-2">
+                    <button className="px-3 py-1.5 bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-50 dark:bg-white/5 flex items-center gap-2">
                       <FileText className="h-3 w-3" /> Export Excel
                     </button>
                   </div>
@@ -426,9 +426,9 @@ export default function RevaluationDrillDownModal({
                         const stock = entry.stockAtTimeOfChange ?? entry.stockAtTime ?? entry.stockAtChange ?? 0;
 
                         return (
-                          <tr key={entry.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors group">
+                          <tr key={entry.id} className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:bg-white/5 transition-colors group">
                             <td className="p-3 align-top">
-                              <p className="font-bold text-slate-800">{entry.effectiveDate || entry.date}</p>
+                              <p className="font-bold text-slate-800 dark:text-slate-200">{entry.effectiveDate || entry.date}</p>
                               <p className="text-[10px] text-slate-500">{entry.effectiveTime || '12:00'}</p>
                               <div className="mt-1 flex items-center gap-1">
                                 <User className="h-3 w-3 text-slate-400" />
@@ -436,14 +436,14 @@ export default function RevaluationDrillDownModal({
                               </div>
                             </td>
                             <td className="p-3 align-top">
-                              <p className="font-bold text-slate-800">{entry.productName}</p>
-                              <span className="inline-block mt-1 px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[9px] font-bold uppercase tracking-wider">Fuel</span>
+                              <p className="font-bold text-slate-800 dark:text-slate-200">{entry.productName}</p>
+                              <span className="inline-block mt-1 px-2 py-0.5 bg-slate-100 dark:bg-white/10 text-slate-600 rounded text-[9px] font-bold uppercase tracking-wider">Fuel</span>
                             </td>
                             <td className="p-3 align-top">
                               <div className="flex items-center gap-2">
                                 <span className="text-slate-500 line-through">{oldRate.toFixed(2)}</span>
                                 <span className="text-slate-400">→</span>
-                                <span className="font-bold text-slate-900">{newRate.toFixed(2)}</span>
+                                <span className="font-bold text-slate-900 dark:text-white">{newRate.toFixed(2)}</span>
                               </div>
                               <p className={`text-[10px] font-bold mt-1 flex items-center gap-0.5 ${diff > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                                 {diff > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
@@ -451,7 +451,7 @@ export default function RevaluationDrillDownModal({
                               </p>
                             </td>
                             <td className="p-3 align-top">
-                              <p className="font-bold text-slate-800">{stock.toLocaleString()} L</p>
+                              <p className="font-bold text-slate-800 dark:text-slate-200">{stock.toLocaleString()} L</p>
                               <p className="text-[10px] text-slate-500 mt-1">Value B/A: N/A</p> {/* Future Integration */}
                             </td>
                             <td className="p-3 align-top text-right">
@@ -470,7 +470,7 @@ export default function RevaluationDrillDownModal({
                             </td>
                             <td className="p-3 align-top text-center">
                               <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors" title="View Snapshot">
+                                <button className="p-1.5 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors" title="View Snapshot">
                                   <Eye className="h-3.5 w-3.5" />
                                 </button>
                                 <button className="p-1.5 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg transition-colors" title="WhatsApp Summary">

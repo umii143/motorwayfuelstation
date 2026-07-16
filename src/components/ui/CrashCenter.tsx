@@ -52,8 +52,8 @@ export class CrashCenter extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-[400px] h-full w-full flex items-center justify-center bg-slate-50 p-6 rounded-2xl border border-rose-100 shadow-sm animate-in fade-in duration-300">
-          <div className="max-w-xl w-full bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+        <div className="min-h-[400px] h-full w-full flex items-center justify-center bg-slate-50 dark:bg-white/5 p-6 rounded-2xl border border-rose-100 shadow-sm animate-in fade-in duration-300">
+          <div className="max-w-xl w-full bg-white dark:bg-[#151521] rounded-xl shadow-lg border border-slate-200 dark:border-white/10 overflow-hidden">
             <div className="bg-rose-600 px-6 py-4 flex items-center gap-3 text-white">
               <ShieldAlert className="w-8 h-8" />
               <div>
@@ -89,10 +89,10 @@ export class CrashCenter extends Component<Props, State> {
                 </div>
               )}
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
                 <button
                   onClick={this.handleReset}
-                  className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                  className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 dark:text-white hover:bg-slate-100 dark:bg-white/10 rounded-lg transition-colors cursor-pointer"
                 >
                   Dismiss & Reset
                 </button>

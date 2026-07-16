@@ -102,7 +102,7 @@ export function ShiftSidebar({
       case 'Medium': return 'text-amber-500 bg-amber-500/10 border-amber-500/20';
       case 'High': return 'text-orange-500 bg-orange-500/10 border-orange-500/20';
       case 'Critical': return 'text-red-500 bg-red-500/10 border-red-500/20';
-      default: return 'text-slate-500 bg-slate-500/10 border-slate-500/20';
+      default: return 'text-slate-500 bg-slate-50 dark:bg-white/50/10 border-slate-500/20';
     }
   };
 
@@ -110,7 +110,7 @@ export function ShiftSidebar({
     <div className="w-80 lg:w-96 bg-white dark:bg-[#111827] border-l border-slate-200 dark:border-slate-800 flex flex-col h-[calc(100vh-64px)] overflow-y-auto shrink-0 shadow-xl lg:shadow-none animate-in slide-in-from-right duration-300 z-40 fixed lg:sticky top-16 right-0">
       
       {/* HEADER */}
-      <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between sticky top-0 bg-white/90 dark:bg-[#111827]/90 backdrop-blur-sm z-10">
+      <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between sticky top-0 bg-white dark:bg-[#151521]/90 dark:bg-[#111827]/90 backdrop-blur-sm z-10">
         <div>
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">Shift Summary</h2>
         </div>
@@ -189,7 +189,7 @@ export function ShiftSidebar({
         <div className="mb-4">
           <button 
             onClick={() => setActiveModal('investigate')}
-            className={`w-full py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm transition-all hover:scale-[1.02] active:scale-95 ${shiftHealth.overallSHI < 85 ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/20' : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100'}`}
+            className={`w-full py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm transition-all hover:scale-[1.02] active:scale-95 ${shiftHealth.overallSHI < 85 ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/20' : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 dark:bg-white/10'}`}
           >
             <Search className="w-5 h-5" />
             Open Deep Investigation

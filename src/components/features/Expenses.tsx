@@ -313,11 +313,11 @@ export default function Expenses({
 
       {/* HEADER ROW WITH INTEGRATED DYNAMIC TIME FILTER */}
       {/* HEADER ROW WITH INTEGRATED DYNAMIC TIME FILTER */}
-      <div className="flex flex-col gap-4 border-b border-slate-200 pb-4">
+      <div className="flex flex-col gap-4 border-b border-slate-200 dark:border-white/10 pb-4">
         <div className="flex flex-row items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
             <span className="font-mono text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-0.5">OPERATIONS</span>
-            <h2 className="font-sans text-xl sm:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+            <h2 className="font-sans text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
               <Coins className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600 shrink-0" />
               <span className="truncate">{t('Operational Expenses', 'اخراجات اور کاروباری بلنگ')}</span>
             </h2>
@@ -329,7 +329,7 @@ export default function Expenses({
 
         {/* TIME FILTER & TRIGGER ROW */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0 w-full">
-          <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200 shadow-sm shrink-0">
+          <div className="flex bg-slate-100 dark:bg-white/10 rounded-lg p-1 border border-slate-200 dark:border-white/10 shadow-sm shrink-0">
             {(['all', 'weekly', 'monthly', 'yearly'] as const).map((filter) => (
               <button
                 key={filter}
@@ -337,7 +337,7 @@ export default function Expenses({
                 className={`px-3 py-1.5 font-sans text-[11px] font-bold uppercase tracking-wider rounded-md transition-all cursor-pointer ${
                   timeFilter === filter
                     ? 'bg-orange-600 text-white shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:bg-white/5'
                 }`}
               >
                 {filter === 'all' && t('All-Time', 'کل وقت')}
@@ -350,7 +350,7 @@ export default function Expenses({
 
           <button
             onClick={() => setShowManageCategories(true)}
-            className="shrink-0 flex items-center justify-center gap-1.5 rounded-lg bg-slate-100 border border-slate-200 px-3 py-2 sm:px-4 sm:py-2.5 font-sans text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-200 transition-all cursor-pointer"
+            className="shrink-0 flex items-center justify-center gap-1.5 rounded-lg bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 px-3 py-2 sm:px-4 sm:py-2.5 font-sans text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-200 transition-all cursor-pointer"
           >
             <Settings2 className="h-4 w-4" />
             <span>{t('Categories', 'کیٹیگریز')}</span>
@@ -439,14 +439,14 @@ export default function Expenses({
         <div className="lg:col-span-2 space-y-4">
           
           {/* SEARCH & FILTER CONTROLS CARD */}
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3.5">
+          <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-xs space-y-3.5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
               <div>
                 <select
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="w-full rounded-md border border-slate-200 bg-slate-50 py-1.5 px-2.5 font-sans text-xs focus:border-red-550 focus:outline-hidden"
+                  className="w-full rounded-md border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 py-1.5 px-2.5 font-sans text-xs focus:border-red-550 focus:outline-hidden"
                 >
                   <option value="all">{t('All Categories', 'تمام کیٹیگریز')}</option>
                   {expenseCategories.map(c => (
@@ -459,7 +459,7 @@ export default function Expenses({
                 <select
                   value={paymentModeFilter}
                   onChange={(e) => setPaymentModeFilter(e.target.value)}
-                  className="w-full rounded-md border border-slate-200 bg-slate-50 py-1.5 px-2.5 font-sans text-xs focus:border-red-550 focus:outline-hidden"
+                  className="w-full rounded-md border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 py-1.5 px-2.5 font-sans text-xs focus:border-red-550 focus:outline-hidden"
                 >
                   <option value="all">{t('All Outflows', 'بک بقایا ادائیگی ذریعہ')}</option>
                   <option value="cash">{t('Paid from Cash Drawer', 'صرف کیش رقم')}</option>
@@ -471,7 +471,7 @@ export default function Expenses({
           </div>
 
           {/* TABLE LOG LISTING */}
-          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-xs">
+          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] shadow-xs">
             <table className="premium-table">
               <thead>
                 <tr className="border-slate-150 text-slate-650">
@@ -485,7 +485,7 @@ export default function Expenses({
               <tbody className="text-slate-700">
                 {filteredExpenses.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-6 bg-slate-50/10">
+                    <td colSpan={5} className="py-6 bg-slate-50 dark:bg-white/5/10">
                       <EmptyState
                         icon={Notebook}
                         title={t('No expenses found for this period.', 'کوئی اخراجات درج نہیں ہیں۔')}
@@ -528,8 +528,8 @@ export default function Expenses({
         </div>
 
         {/* RIGHT ANALYTICS BOARD PANEL: BURDEN CATEGORIES */}
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-4">
-          <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-2.5">
+        <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-xs space-y-4">
+          <h3 className="font-sans text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-2.5">
             <Notebook className="h-4.5 w-4.5 text-slate-400" />
             <span>{t('Categorized burden summaries', 'تفصیلی کیٹیگری موازنہ کلاسیفیکیشن')}</span>
           </h3>
@@ -542,7 +542,7 @@ export default function Expenses({
                   <span className="font-mono text-slate-500">{agg.percentage}% ({formatCurrency(agg.amount, settings)})</span>
                 </div>
 
-                <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
                   <div
                     className="h-full rounded-full bg-red-500 transition-all duration-300"
                     style={{ width: `${agg.percentage}%` }}
@@ -569,10 +569,10 @@ export default function Expenses({
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: 15, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 350 }}
-              className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-xl"
+              className="w-full max-w-sm rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-6 shadow-xl"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-                <h3 className="font-sans text-sm font-bold text-slate-900 flex items-center gap-2">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3 mb-4">
+                <h3 className="font-sans text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Coins className="h-5 w-5 text-red-550" />
                   <span>{t('Register Standalone Expenditure', 'اسٹیشن کا نیا روز مرہ خرچہ درج کریں')}</span>
                 </h3>
@@ -594,7 +594,7 @@ export default function Expenses({
                   <select
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value)}
-                    className="premium-input border bg-white px-2.5 font-sans text-sm focus:border-red-500 focus:outline-hidden"
+                    className="premium-input border bg-white dark:bg-[#151521] px-2.5 font-sans text-sm focus:border-red-500 focus:outline-hidden"
                   >
                     {expenseCategories.filter(c => c.id !== 'salary').map(c => (
                       <option key={c.id} value={c.id}>{isUrdu ? c.urdu : c.label}</option>
@@ -610,7 +610,7 @@ export default function Expenses({
                     value={formAmount}
                     onChange={(e) => setFormAmount(e.target.value)}
                     placeholder="e.g. 1500"
-                    className="premium-input border bg-white px-3 .5 font-mono text-sm focus:border-red-500 focus:outline-hidden"
+                    className="premium-input border bg-white dark:bg-[#151521] px-3 .5 font-mono text-sm focus:border-red-500 focus:outline-hidden"
                   />
                 </div>
 
@@ -621,7 +621,7 @@ export default function Expenses({
                       type="button"
                       onClick={() => setFormPaidFrom('cash')}
                       className={`py-2 rounded-lg border font-sans text-xs font-bold cursor-pointer transition-all ${
-                        formPaidFrom === 'cash' ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-xs' : 'border-slate-200 text-slate-500'
+                        formPaidFrom === 'cash' ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-xs' : 'border-slate-200 dark:border-white/10 text-slate-500'
                       }`}
                     >
                       💵 {t('Cash counter drawer', 'کیش کیبن')}
@@ -630,7 +630,7 @@ export default function Expenses({
                       type="button"
                       onClick={() => setFormPaidFrom('bank')}
                       className={`py-2 rounded-lg border font-sans text-xs font-bold cursor-pointer transition-all ${
-                        formPaidFrom === 'bank' ? 'border-sky-500 bg-sky-50 text-sky-700 shadow-xs' : 'border-slate-200 text-slate-500'
+                        formPaidFrom === 'bank' ? 'border-sky-500 bg-sky-50 text-sky-700 shadow-xs' : 'border-slate-200 dark:border-white/10 text-slate-500'
                       }`}
                     >
                       🏦 {t('Bank online transfer', 'بینک اکاؤنٹ')}
@@ -646,7 +646,7 @@ export default function Expenses({
                     value={formDescription}
                     onChange={(e) => setFormDescription(e.target.value)}
                     placeholder="e.g. Weekly tea and biscuits for shift workers"
-                    className="premium-input border bg-white px-3 font-sans text-xs focus:border-red-500 focus:outline-hidden"
+                    className="premium-input border bg-white dark:bg-[#151521] px-3 font-sans text-xs focus:border-red-500 focus:outline-hidden"
                   />
                 </div>
 
@@ -673,10 +673,10 @@ export default function Expenses({
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: 15, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 350 }}
-              className="w-full max-w-xl rounded-xl border border-slate-200 bg-white p-6 shadow-xl"
+              className="w-full max-w-xl rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-6 shadow-xl"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-                <h3 className="font-sans text-sm font-bold text-slate-900 flex items-center gap-2">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3 mb-4">
+                <h3 className="font-sans text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Settings2 className="h-5 w-5 text-indigo-550" />
                   <span>{t('Manage Expense Categories', 'اخراجات کی کیٹیگریز ترتیب دیں')}</span>
                 </h3>
@@ -687,14 +687,14 @@ export default function Expenses({
               <div className="mb-6 space-y-2 max-h-[30vh] overflow-y-auto pr-1">
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('Custom Categories:', 'آپ کی بنائی گئی کیٹیگریز:')}</label>
                 {(!settings.customExpenseCategories || settings.customExpenseCategories.length === 0) ? (
-                  <div className="text-center p-4 bg-slate-50 rounded-lg text-slate-400 text-xs font-bold">
+                  <div className="text-center p-4 bg-slate-50 dark:bg-white/5 rounded-lg text-slate-400 text-xs font-bold">
                     {t('No custom categories yet.', 'ابھی تک کوئی کسٹم کیٹیگری نہیں ہے۔')}
                   </div>
                 ) : (
                   settings.customExpenseCategories.map(cat => (
-                    <div key={cat.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div key={cat.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-white/5 rounded-lg border border-slate-200 dark:border-white/10">
                       <div>
-                        <div className="font-bold text-sm text-slate-800">{cat.label}</div>
+                        <div className="font-bold text-sm text-slate-800 dark:text-slate-200">{cat.label}</div>
                         <div className="text-xs text-slate-500">{cat.urdu}</div>
                       </div>
                       <button 
@@ -709,7 +709,7 @@ export default function Expenses({
               </div>
 
               {/* Add New Category Form */}
-              <form onSubmit={handleAddCustomCategory} className="space-y-4 pt-4 border-t border-slate-100">
+              <form onSubmit={handleAddCustomCategory} className="space-y-4 pt-4 border-t border-slate-100 dark:border-white/5">
                 <label className="block text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">{t('Create New Category:', 'نئی کیٹیگری بنائیں:')}</label>
                 <div>
                   <input
@@ -718,7 +718,7 @@ export default function Expenses({
                     value={newCatLabel}
                     onChange={(e) => setNewCatLabel(e.target.value)}
                     placeholder={t("Category Name (English)", "انگلش نام")}
-                    className="premium-input border bg-white px-3 font-sans text-sm focus:border-indigo-500 focus:outline-hidden mb-3"
+                    className="premium-input border bg-white dark:bg-[#151521] px-3 font-sans text-sm focus:border-indigo-500 focus:outline-hidden mb-3"
                   />
                   <input
                     type="text"
@@ -727,7 +727,7 @@ export default function Expenses({
                     onChange={(e) => setNewCatUrdu(e.target.value)}
                     dir="rtl"
                     placeholder={t("Category Name (Urdu)", "اردو نام")}
-                    className="premium-input border bg-white px-3 font-sans text-sm focus:border-indigo-500 focus:outline-hidden mb-3"
+                    className="premium-input border bg-white dark:bg-[#151521] px-3 font-sans text-sm focus:border-indigo-500 focus:outline-hidden mb-3"
                   />
                 </div>
                 <button

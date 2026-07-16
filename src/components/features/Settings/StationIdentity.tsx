@@ -32,8 +32,8 @@ export default function StationIdentity({ settings, onUpdateSettings, activeStat
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+      <div className="border-b border-slate-200 dark:border-white/10 pb-4">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
           <Building className="h-6 w-6 text-indigo-600" />
           {t('Station Identity', 'اسٹیشن کی شناخت')}
         </h2>
@@ -42,13 +42,13 @@ export default function StationIdentity({ settings, onUpdateSettings, activeStat
         </p>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-[#151521] rounded-xl border border-slate-200 dark:border-white/10 shadow-xs overflow-hidden">
         <div className="p-6">
           <div className="flex flex-col md:flex-row gap-8">
             {/* Logo/Branding Section */}
             <div className="w-full md:w-1/3 space-y-4">
-              <label className="text-sm font-bold text-slate-800">{t('Station Logo', 'اسٹیشن کا لوگو')}</label>
-              <div className="aspect-square w-full max-w-full max-w-[200px] bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-slate-400 hover:bg-slate-100 hover:border-indigo-300 transition-all cursor-pointer relative overflow-hidden group">
+              <label className="text-sm font-bold text-slate-800 dark:text-slate-200">{t('Station Logo', 'اسٹیشن کا لوگو')}</label>
+              <div className="aspect-square w-full max-w-full max-w-[200px] bg-slate-50 dark:bg-white/5 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-2xl flex flex-col items-center justify-center text-slate-400 hover:bg-slate-100 dark:bg-white/10 hover:border-indigo-300 transition-all cursor-pointer relative overflow-hidden group">
                 {settings.logoUrl ? (
                   <img src={settings.logoUrl} alt="Logo" className="w-full h-full object-cover" />
                 ) : (
@@ -79,7 +79,7 @@ export default function StationIdentity({ settings, onUpdateSettings, activeStat
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    className="w-full pl-10 pr-3 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-sm font-bold text-slate-800 dark:text-slate-200 focus:bg-white dark:bg-[#151521] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                   />
                 </div>
               </div>
@@ -92,7 +92,7 @@ export default function StationIdentity({ settings, onUpdateSettings, activeStat
                   value={formData.tagline}
                   onChange={handleChange}
                   placeholder="e.g. Quality Fuel, Premium Service"
-                  className="w-full px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px].5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px].5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-sm text-slate-800 dark:text-slate-200 focus:bg-white dark:bg-[#151521] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
 
@@ -107,7 +107,7 @@ export default function StationIdentity({ settings, onUpdateSettings, activeStat
                     name="address"
                     value={formData.address}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 min-h-[60px]"
+                    className="w-full pl-10 pr-3 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-sm text-slate-800 dark:text-slate-200 focus:bg-white dark:bg-[#151521] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 min-h-[60px]"
                   />
                 </div>
               </div>
@@ -124,7 +124,7 @@ export default function StationIdentity({ settings, onUpdateSettings, activeStat
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-mono text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                      className="w-full pl-10 pr-3 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-sm font-mono text-slate-800 dark:text-slate-200 focus:bg-white dark:bg-[#151521] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                     />
                   </div>
                 </div>
@@ -140,7 +140,7 @@ export default function StationIdentity({ settings, onUpdateSettings, activeStat
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                      className="w-full pl-10 pr-3 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-sm text-slate-800 dark:text-slate-200 focus:bg-white dark:bg-[#151521] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                     />
                   </div>
                 </div>
@@ -153,7 +153,7 @@ export default function StationIdentity({ settings, onUpdateSettings, activeStat
                   name="ntn"
                   value={formData.ntn}
                   onChange={handleChange}
-                  className="w-full px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px].5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-mono text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 uppercase"
+                  className="w-full px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px].5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-sm font-mono text-slate-800 dark:text-slate-200 focus:bg-white dark:bg-[#151521] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 uppercase"
                 />
               </div>
 

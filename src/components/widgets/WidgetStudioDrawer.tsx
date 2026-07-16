@@ -36,7 +36,7 @@ export function WidgetStudioDrawer({ isOpen, onClose }: WidgetStudioDrawerProps)
       <div className={`fixed top-0 right-0 h-full w-[400px] max-w-full ${liquidGlass} z-[101] flex flex-col`}>
         
         {/* Header */}
-        <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
+        <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white dark:bg-[#151521]/[0.02]">
           <div>
             <h2 className="text-xl font-black text-white flex items-center gap-2">
               <LayoutTemplate className="w-5 h-5 text-indigo-400" />
@@ -44,13 +44,13 @@ export function WidgetStudioDrawer({ isOpen, onClose }: WidgetStudioDrawerProps)
             </h2>
             <div className="text-xs font-medium text-slate-400 mt-1">Customize your operating system</div>
           </div>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-white rounded-full hover:bg-white/10 transition-colors">
+          <button onClick={onClose} className="p-2 text-slate-400 hover:text-white rounded-full hover:bg-white dark:bg-[#151521]/10 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Search & Tabs */}
-        <div className="px-6 pt-4 border-b border-white/10 bg-white/[0.02]">
+        <div className="px-6 pt-4 border-b border-white/10 bg-white dark:bg-[#151521]/[0.02]">
           <div className="relative mb-4">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input 
@@ -88,7 +88,7 @@ export function WidgetStudioDrawer({ isOpen, onClose }: WidgetStudioDrawerProps)
             </div>
           ) : (
             filteredWidgets.map((manifest) => (
-              <div key={manifest.id} className="p-4 rounded-[16px] bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.05] transition-colors group">
+              <div key={manifest.id} className="p-4 rounded-[16px] bg-white dark:bg-[#151521]/[0.03] border border-white/[0.05] hover:bg-white dark:bg-[#151521]/[0.05] transition-colors group">
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <h3 className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors">{manifest.name}</h3>

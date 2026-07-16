@@ -194,7 +194,7 @@ export function BIAIInsights({ metrics }: any) {
       </div>
 
       {aiReport && (
-        <div className="mb-6 p-5 bg-white/10 border border-indigo-500/30 rounded-xl">
+        <div className="mb-6 p-5 bg-white dark:bg-[#151521]/10 border border-indigo-500/30 rounded-xl">
           <div className="flex items-center gap-2 mb-2 text-indigo-300 font-bold text-xs uppercase tracking-wider">
             <BrainCircuit className="w-4 h-4" /> Gemini Executive Summary
           </div>
@@ -206,7 +206,7 @@ export function BIAIInsights({ metrics }: any) {
       
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {insights.map((insight, index) => (
-          <div key={index} className="bg-white/10 rounded-xl p-4 border border-white/10 hover:bg-white/20 transition-colors cursor-default">
+          <div key={index} className="bg-white dark:bg-[#151521]/10 rounded-xl p-4 border border-white/10 hover:bg-white dark:bg-[#151521]/20 transition-colors cursor-default">
             <div className="flex items-start gap-3">
               {insight.icon}
               <div>

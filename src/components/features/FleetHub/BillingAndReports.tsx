@@ -59,7 +59,7 @@ export default function BillingAndReports({ settings, stationId }: BillingAndRep
         </div>
         <div className="premium-card p-4 border flex flex-col justify-center">
           <span className="text-xs font-bold text-slate-500 uppercase">Net Difference</span>
-          <span className={`text-2xl font-black font-mono mt-1 ${totalConsumption - totalPayments > 0 ? 'text-rose-600' : 'text-slate-900'}`}>
+          <span className={`text-2xl font-black font-mono mt-1 ${totalConsumption - totalPayments > 0 ? 'text-rose-600' : 'text-slate-900 dark:text-white'}`}>
             {settings.currency} {(totalConsumption - totalPayments).toLocaleString()}
           </span>
         </div>

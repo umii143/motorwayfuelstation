@@ -422,7 +422,7 @@ const Navigation = React.memo(function Navigation({
   return (
     <>
       {/* GLOBAL HEADER BAR */}
-      <header className="fixed top-0 left-0 right-0 z-40 flex h-14 sm:h-[65px] items-center justify-between border-b border-slate-200 bg-white/95 px-3 sm:px-4 lg:px-6 backdrop-blur-md shadow-xs transition-colors dark:bg-slate-900/95 dark:border-slate-800">
+      <header className="fixed top-0 left-0 right-0 z-40 flex h-14 sm:h-[65px] items-center justify-between border-b border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521]/95 px-3 sm:px-4 lg:px-6 backdrop-blur-md shadow-xs transition-colors dark:bg-slate-900/95 dark:border-slate-800">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -443,11 +443,11 @@ const Navigation = React.memo(function Navigation({
             <div className="relative min-w-0">
               <button
                 onClick={() => setStationDropdownOpen(!stationDropdownOpen)}
-                className="group flex items-center gap-1 sm:gap-2 rounded-lg px-1 sm:px-2.5 py-1 text-left transition-all hover:bg-slate-50 cursor-pointer focus:outline-hidden min-w-0"
+                className="group flex items-center gap-1 sm:gap-2 rounded-lg px-1 sm:px-2.5 py-1 text-left transition-all hover:bg-slate-50 dark:bg-white/5 cursor-pointer focus:outline-hidden min-w-0"
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-1 sm:gap-1.5">
-                    <h1 className="font-sans text-sm md:text-base lg:text-lg font-bold tracking-tight text-slate-900 leading-none group-hover:text-orange-600 transition-colors max-w-[80px] xs:max-w-[120px] sm:max-w-[160px] md:max-w-[280px] truncate">
+                    <h1 className="font-sans text-sm md:text-base lg:text-lg font-bold tracking-tight text-slate-900 dark:text-white leading-none group-hover:text-orange-600 transition-colors max-w-[80px] xs:max-w-[120px] sm:max-w-[160px] md:max-w-[280px] truncate">
                       {t(stations.find(s => s.id === activeStationId)?.name || settings.stationName, stations.find(s => s.id === activeStationId)?.urduName || settings.stationUrduName)}
                     </h1>
                     <ChevronDown className="h-4 w-4 text-slate-400 group-hover:text-orange-600 transition-colors shrink-0" />
@@ -463,8 +463,8 @@ const Navigation = React.memo(function Navigation({
 
               {/* DROPDOWN CARD */}
               {stationDropdownOpen && (
-                <div className="absolute left-0 mt-2 w-72 md:w-80 rounded-xl border border-slate-200 bg-white p-2 shadow-2xl ring-1 ring-slate-900/5 focus:outline-hidden z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
-                  <div className="px-3 py-1.5 mb-1.5 border-b border-slate-100">
+                <div className="absolute left-0 mt-2 w-72 md:w-80 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-2 shadow-2xl ring-1 ring-slate-900/5 focus:outline-hidden z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="px-3 py-1.5 mb-1.5 border-b border-slate-100 dark:border-white/5">
                     <span className="font-sans text-xs font-bold text-slate-500 tracking-wider uppercase">
                       {t('Switch ERP Station', 'دوسرے اسٹیشن پر جائیں')}
                     </span>
@@ -480,7 +480,7 @@ const Navigation = React.memo(function Navigation({
                           className={`group flex items-center justify-between rounded-lg p-2.5 text-left cursor-pointer transition-colors ${
                             isActive
                               ? 'bg-orange-50/80 border border-orange-200'
-                              : 'hover:bg-slate-50 border border-transparent'
+                              : 'hover:bg-slate-50 dark:bg-white/5 border border-transparent'
                           }`}
                         >
                           <div className="flex items-start gap-2.5 max-w-[80%]">
@@ -490,7 +490,7 @@ const Navigation = React.memo(function Navigation({
                               <Fuel className={`h-4 w-4 mt-0.5 shrink-0 ${isActive ? 'text-orange-600' : 'text-slate-400'}`} />
                             )}
                             <div className="truncate">
-                              <p className={`font-sans text-sm font-semibold truncate ${isActive ? 'text-orange-950' : 'text-slate-900'}`}>
+                              <p className={`font-sans text-sm font-semibold truncate ${isActive ? 'text-orange-950' : 'text-slate-900 dark:text-white'}`}>
                                 {t(st.name, st.urduName)}
                               </p>
                               {st.address && (
@@ -509,7 +509,7 @@ const Navigation = React.memo(function Navigation({
                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                               onClick={(e) => openEditModal(st, e)}
-                              className="p-1 text-slate-400 hover:text-orange-600 hover:bg-slate-100 rounded-md transition-colors"
+                              className="p-1 text-slate-400 hover:text-orange-600 hover:bg-slate-100 dark:bg-white/10 rounded-md transition-colors"
                               title={t('Edit Station Info', 'ترمیم کریں')}
                             >
                               <Edit className="h-3.5 w-3.5" />
@@ -517,7 +517,7 @@ const Navigation = React.memo(function Navigation({
                             {st.id !== 'st_default' && (
                               <button
                                 onClick={(e) => handlePerformDelete(st.id, e)}
-                                className="p-1 text-slate-400 hover:text-red-650 hover:bg-slate-100 rounded-md transition-colors text-red-500"
+                                className="p-1 text-slate-400 hover:text-red-650 hover:bg-slate-100 dark:bg-white/10 rounded-md transition-colors text-red-500"
                                 title={t('Delete Station Data', 'حذف کریں')}
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
@@ -529,7 +529,7 @@ const Navigation = React.memo(function Navigation({
                     })}
                   </div>
 
-                  <div className="mt-2 pt-2 border-t border-slate-100">
+                  <div className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5">
                     <button
                       onClick={openAddModal}
                       className={`flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-center font-sans text-xs font-bold text-white transition-colors shadow-xs ${
@@ -545,14 +545,14 @@ const Navigation = React.memo(function Navigation({
             </div>
 
             {/* SEGMENTED SLIDER FOR THE TWO INDEPENDENT PRIMARY BUSINESSES */}
-            <div className="hidden sm:flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80 shrink-0 select-none ml-2">
+            <div className="hidden sm:flex items-center bg-slate-100 dark:bg-white/10 p-1 rounded-xl border border-slate-200 dark:border-white/10/80 shrink-0 select-none ml-2">
               <button
                 type="button"
                 onClick={() => handlePerformSwitch('st_default')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   activeStationId === 'st_default'
                     ? 'bg-orange-600 text-white shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900 font-semibold'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-white font-semibold'
                 }`}
               >
                 <Fuel className="h-3.5 w-3.5" />
@@ -564,7 +564,7 @@ const Navigation = React.memo(function Navigation({
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   isLubeBusinessStation(activeStationId)
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900 font-semibold'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-white font-semibold'
                 }`}
               >
                 <Wrench className="h-3.5 w-3.5" />
@@ -588,7 +588,7 @@ const Navigation = React.memo(function Navigation({
           
           <button
             onClick={toggleLanguage}
-            className="flex items-center gap-1 sm:gap-1.5 rounded-lg border border-slate-200 bg-white px-1.5 sm:px-3 py-1.5 font-sans text-[10px] sm:text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 transition-colors shrink-0"
+            className="flex items-center gap-1 sm:gap-1.5 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] px-1.5 sm:px-3 py-1.5 font-sans text-[10px] sm:text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 dark:bg-white/5 transition-colors shrink-0"
           >
             <Languages className="h-4 w-4 text-orange-600" />
             <span className="hidden sm:inline">
@@ -609,15 +609,15 @@ const Navigation = React.memo(function Navigation({
           <div className="relative z-[60]">
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/50 px-2 sm:px-3 py-1.5 sm:p-2 text-slate-500 hover:bg-white hover:text-orange-600 hover:border-orange-200 transition-all cursor-pointer shadow-xs w-8 sm:w-48 xl:w-64 justify-center sm:justify-start"
+              className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5/50 px-2 sm:px-3 py-1.5 sm:p-2 text-slate-500 hover:bg-white dark:bg-[#151521] hover:text-orange-600 hover:border-orange-200 transition-all cursor-pointer shadow-xs w-8 sm:w-48 xl:w-64 justify-center sm:justify-start"
             >
               <Search className="h-4 w-4 shrink-0" />
               <span className="hidden sm:inline text-xs font-semibold">{t("Search global...", "تلاش کریں...")}</span>
-              <kbd className="ml-auto hidden rounded border border-slate-200 bg-white px-1.5 font-mono text-[10px] font-bold text-slate-400 sm:inline-block">Ctrl K</kbd>
+              <kbd className="ml-auto hidden rounded border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] px-1.5 font-mono text-[10px] font-bold text-slate-400 sm:inline-block">Ctrl K</kbd>
             </button>
 
             {isSearchOpen && (
-              <div className="absolute top-full right-0 mt-2 w-80 lg:w-96 rounded-2xl bg-white p-3 shadow-2xl border border-slate-100 z-50 animate-in fade-in slide-in-from-top-2">
+              <div className="absolute top-full right-0 mt-2 w-80 lg:w-96 rounded-2xl bg-white dark:bg-[#151521] p-3 shadow-2xl border border-slate-100 dark:border-white/5 z-50 animate-in fade-in slide-in-from-top-2">
                 <div className="relative mb-3">
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                   <input
@@ -627,7 +627,7 @@ const Navigation = React.memo(function Navigation({
                     value={globalSearch}
                     onChange={(e) => setGlobalSearch(e.target.value)}
                     placeholder={t("Type to search...", "تلاش کے لیے ٹائپ کریں...")}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-[88px] text-sm font-semibold text-slate-800 focus:border-orange-500 focus:bg-white focus:outline-hidden"
+                    className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 py-2 pl-9 pr-[88px] text-sm font-semibold text-slate-800 dark:text-slate-200 focus:border-orange-500 focus:bg-white dark:bg-[#151521] focus:outline-hidden"
                   />
                   {globalSearch.trim().length > 2 && (
                     <button 
@@ -696,14 +696,14 @@ const Navigation = React.memo(function Navigation({
           <div className="relative hidden md:block z-[60] shrink-0">
             <button
               onClick={() => setIsSetupOpen(!isSetupOpen)}
-              className="rounded-lg border border-slate-200 bg-white p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors cursor-pointer shadow-xs flex items-center justify-center"
+              className="rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 dark:bg-white/5 hover:text-orange-600 transition-colors cursor-pointer shadow-xs flex items-center justify-center"
               title={t('Setup Wizards', 'سیٹ اپ وزرڈز')}
             >
               <Sliders className="h-4 w-4" />
             </button>
 
             {isSetupOpen && (
-              <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white p-2 shadow-2xl border border-slate-100 z-50 animate-in fade-in slide-in-from-top-2">
+              <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white dark:bg-[#151521] p-2 shadow-2xl border border-slate-100 dark:border-white/5 z-50 animate-in fade-in slide-in-from-top-2">
                 <div className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   {t('Quick Setup', 'سیٹ اپ')}
                 </div>
@@ -742,7 +742,7 @@ const Navigation = React.memo(function Navigation({
                 </button>
                 <button
                   onClick={() => { onViewChange('setup_profile'); setIsSetupOpen(false); setMobileMenuOpen(false); }}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer border-t border-slate-100 mt-1 pt-2"
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors cursor-pointer border-t border-slate-100 dark:border-white/5 mt-1 pt-2"
                 >
                   <Settings className="h-4 w-4" />
                   <span>{t('Station Profile', 'اسٹیشن پروفائل')}</span>
@@ -754,7 +754,7 @@ const Navigation = React.memo(function Navigation({
           <div className="relative hidden md:block z-[60] shrink-0">
             <button
               onClick={() => setIsThemeOpen(!isThemeOpen)}
-              className="rounded-lg border border-slate-200 bg-white p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors cursor-pointer shadow-xs flex items-center justify-center"
+              className="rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 dark:bg-white/5 hover:text-orange-600 transition-colors cursor-pointer shadow-xs flex items-center justify-center"
               title={t('Switch Theme', 'تھیم تبدیل کریں')}
             >
               {settings.theme === 'light' ? <Sun className="h-4 w-4" /> : 
@@ -763,7 +763,7 @@ const Navigation = React.memo(function Navigation({
             </button>
 
             {isThemeOpen && (
-              <div className="absolute right-0 top-full mt-2 w-48 rounded-2xl bg-white p-2 shadow-2xl border border-slate-100 z-50 animate-in fade-in slide-in-from-top-2">
+              <div className="absolute right-0 top-full mt-2 w-48 rounded-2xl bg-white dark:bg-[#151521] p-2 shadow-2xl border border-slate-100 dark:border-white/5 z-50 animate-in fade-in slide-in-from-top-2">
                 <div className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   {t('Select Theme', 'تھیم منتخب کریں')}
                 </div>
@@ -772,7 +772,7 @@ const Navigation = React.memo(function Navigation({
                     key={theme.id}
                     onClick={() => handleSelectTheme(theme.id)}
                     className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition-colors cursor-pointer ${
-                      settings.theme === theme.id ? 'bg-orange-50 text-orange-600' : 'text-slate-700 hover:bg-slate-50'
+                      settings.theme === theme.id ? 'bg-orange-50 text-orange-600' : 'text-slate-700 hover:bg-slate-50 dark:bg-white/5'
                     }`}
                   >
                     <theme.icon className="h-4 w-4" />
@@ -789,19 +789,19 @@ const Navigation = React.memo(function Navigation({
 
           <button
             onClick={() => setIsHelpOpen(true)}
-            className="hidden md:flex items-center justify-center rounded-lg border border-slate-200 bg-white p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 hover:text-orange-600 transition-colors cursor-pointer shadow-xs shrink-0"
+            className="hidden md:flex items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-1.5 sm:p-2 text-slate-500 hover:bg-slate-50 dark:bg-white/5 hover:text-orange-600 transition-colors cursor-pointer shadow-xs shrink-0"
             title={t('Help Guide', 'یوزر گائیڈ')}
           >
             <HelpCircle className="h-4 w-4" />
           </button>
           
           {user ? (
-            <div className="flex items-center gap-2 border-l border-slate-200 pl-3">
+            <div className="flex items-center gap-2 border-l border-slate-200 dark:border-white/10 pl-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 text-orange-600 font-mono font-bold text-xs font-medium">
                 {user.role?.substring(0, 2).toUpperCase()}
               </div>
               <div className="hidden sm:flex flex-col text-left">
-                <span className="font-sans text-xs font-bold text-slate-800 leading-none truncate max-w-full max-w-[120px]" title={user.email}>
+                <span className="font-sans text-xs font-bold text-slate-800 dark:text-slate-200 leading-none truncate max-w-full max-w-[120px]" title={user.email}>
                   {user.email.split('@')[0]}
                 </span>
                 <span className="font-mono text-[9px] text-orange-600 font-bold leading-none mt-1">
@@ -812,17 +812,17 @@ const Navigation = React.memo(function Navigation({
                 <button
                   onClick={onLogout}
                   title={t("Log Out", "لاگ آؤٹ")}
-                  className="hidden md:block ml-2 p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                  className="hidden md:block ml-2 p-1.5 rounded-lg hover:bg-slate-100 dark:bg-white/10 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
                 >
                   <LogOut className="h-4 w-4" />
                 </button>
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-2 border-l border-slate-200 pl-3">
+            <div className="flex items-center gap-2 border-l border-slate-200 dark:border-white/10 pl-3">
               <UserCircle className="h-8 w-8 text-slate-400" />
               <div className="hidden sm:flex flex-col text-left">
-                <span className="font-sans text-xs font-bold text-slate-800 leading-none">
+                <span className="font-sans text-xs font-bold text-slate-800 dark:text-slate-200 leading-none">
                   {t('Owner / Admin', 'مالک / ایڈمن')}
                 </span>
                 <span className="font-mono text-[10px] text-slate-400 leading-none mt-0.5">
@@ -845,21 +845,21 @@ const Navigation = React.memo(function Navigation({
           {/* TOGGLE BUTTON */}
           <button 
             onClick={() => onToggleSidebar && onToggleSidebar(!isSidebarCollapsed)}
-            className="absolute -right-3 top-6 bg-white border border-slate-200 text-slate-400 hover:text-orange-600 rounded-full p-1 z-50 shadow-sm cursor-pointer"
+            className="absolute -right-3 top-6 bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 text-slate-400 hover:text-orange-600 rounded-full p-1 z-50 shadow-sm cursor-pointer"
           >
             <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${isSidebarCollapsed ? '-rotate-90' : 'rotate-90'}`} />
           </button>
           
           {/* PRIMARY SEGMENTED SWITCH IN SIDEBAR */}
           <div className="px-3 mb-4 shrink-0 select-none">
-            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <div className="flex items-center bg-slate-100 dark:bg-white/10 p-1 rounded-xl border border-slate-200 dark:border-white/10">
               <button
                 type="button"
                 onClick={() => handlePerformSwitch('st_default')}
                 className={`flex-1 flex items-center justify-center gap-1 rounded-lg py-1.5 px-1 text-center font-sans text-[11px] font-bold transition-all cursor-pointer ${
                   activeStationId === 'st_default'
                     ? 'bg-orange-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-white'
                 }`}
                 title={isSidebarCollapsed ? t('Fuel Station', 'فیول') : undefined}
               >
@@ -872,7 +872,7 @@ const Navigation = React.memo(function Navigation({
                 className={`flex-1 flex items-center justify-center gap-1 rounded-lg py-1.5 px-1 text-center font-sans text-[11px] font-bold transition-all cursor-pointer ${
                   isLubeBusinessStation(activeStationId)
                     ? 'bg-blue-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-white'
                 }`}
                 title={isSidebarCollapsed ? t('Lube Biz', 'لیوب') : undefined}
               >
@@ -921,7 +921,7 @@ const Navigation = React.memo(function Navigation({
                                 ? isLube
                                   ? 'bg-blue-50/50 text-blue-600 font-bold border-l-[3px] border-blue-600 shadow-sm'
                                   : 'bg-orange-50/50 text-orange-600 font-bold border-l-[3px] border-orange-600 shadow-sm'
-                                : 'text-slate-500 hover:bg-slate-50/50 hover:text-slate-800 border-l-[3px] border-transparent'
+                                : 'text-slate-500 hover:bg-slate-50 dark:bg-white/5/50 hover:text-slate-800 dark:text-slate-200 border-l-[3px] border-transparent'
                             }`}
                             title={isSidebarCollapsed ? t(item.label, item.urdu) : undefined}
                           >
@@ -948,7 +948,7 @@ const Navigation = React.memo(function Navigation({
                                         ? isLube
                                           ? 'bg-blue-50 text-blue-700 shadow-xs border-l-2 border-blue-600'
                                           : 'bg-orange-50 text-orange-700 shadow-xs border-l-2 border-orange-600'
-                                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800 border-l-2 border-transparent'
+                                        : 'text-slate-500 hover:bg-slate-50 dark:bg-white/5 hover:text-slate-800 dark:text-slate-200 border-l-2 border-transparent'
                                     }`}
                                     title={isSidebarCollapsed ? t(child.label, child.urdu) : undefined}
                                   >
@@ -975,7 +975,7 @@ const Navigation = React.memo(function Navigation({
                             ? isLube
                               ? 'bg-blue-50/50 text-blue-600 font-bold border-l-[3px] border-blue-600 shadow-sm'
                               : 'bg-orange-50/50 text-orange-600 font-bold border-l-[3px] border-orange-600 shadow-sm'
-                            : 'text-slate-500 hover:bg-slate-50/50 hover:text-slate-800 border-l-[3px] border-transparent'
+                            : 'text-slate-500 hover:bg-slate-50 dark:bg-white/5/50 hover:text-slate-800 dark:text-slate-200 border-l-[3px] border-transparent'
                         }`}
                         title={isSidebarCollapsed ? t(item.label, item.urdu) : undefined}
                       >
@@ -995,7 +995,7 @@ const Navigation = React.memo(function Navigation({
               className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 font-sans text-sm font-bold transition-colors cursor-pointer ${
                 activeView === 'configuration' || activeView === 'settings'
                   ? 'bg-indigo-50 text-indigo-700'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  : 'text-slate-600 hover:bg-slate-100 dark:bg-white/10 hover:text-slate-900 dark:text-white'
               }`}
             >
               <Settings className={`h-5 w-5 ${activeView === 'configuration' || activeView === 'settings' ? 'text-indigo-600' : 'text-slate-400'}`} />
@@ -1009,14 +1009,14 @@ const Navigation = React.memo(function Navigation({
       <BottomSheet isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} title={t("Menu", "مینو")}>
         {/* MOBILE SEGMENTED SWITCH */}
         <div className="mb-4 shrink-0 select-none">
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <div className="flex items-center bg-slate-100 dark:bg-white/10 p-1 rounded-xl border border-slate-200 dark:border-white/10">
             <button
               type="button"
               onClick={() => handlePerformSwitch('st_default')}
               className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 px-1 text-center font-sans text-xs font-bold transition-all cursor-pointer ${
                 !isLubeBusinessStation(activeStationId)
                   ? 'bg-orange-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-white'
               }`}
             >
               <Fuel className="h-3.5 w-3.5 shrink-0" />
@@ -1028,7 +1028,7 @@ const Navigation = React.memo(function Navigation({
               className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 px-1 text-center font-sans text-xs font-bold transition-all cursor-pointer ${
                 isLubeBusinessStation(activeStationId)
                   ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-white'
               }`}
             >
               <Wrench className="h-3.5 w-3.5 shrink-0" />
@@ -1067,7 +1067,7 @@ const Navigation = React.memo(function Navigation({
                               ? isLube
                                 ? 'bg-blue-50 text-blue-600 font-bold border-l-4 border-blue-600'
                                 : 'bg-orange-50 text-orange-600 font-bold border-l-4 border-orange-600'
-                              : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent'
+                              : 'text-slate-600 hover:bg-slate-50 dark:bg-white/5 hover:text-slate-900 dark:text-white border-l-4 border-transparent'
                           }`}
                         >
                           <div className="flex items-center gap-3">
@@ -1094,7 +1094,7 @@ const Navigation = React.memo(function Navigation({
                                       ? isLube
                                         ? 'bg-blue-50 text-blue-700 font-bold'
                                         : 'bg-orange-50 text-orange-700 font-bold'
-                                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                                      : 'text-slate-500 hover:bg-slate-50 dark:bg-white/5 hover:text-slate-900 dark:text-white'
                                   }`}
                                 >
                                   <ChildIcon className={`h-4 w-4 ${isChildItemActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
@@ -1121,7 +1121,7 @@ const Navigation = React.memo(function Navigation({
                           ? isLube
                             ? 'bg-blue-50 text-blue-600 font-bold border-l-4 border-blue-600'
                             : 'bg-orange-50 text-orange-600 font-bold border-l-4 border-orange-600'
-                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent'
+                          : 'text-slate-600 hover:bg-slate-50 dark:bg-white/5 hover:text-slate-900 dark:text-white border-l-4 border-transparent'
                       }`}
                     >
                       <Icon className={`h-5 w-5 ${isActive ? (isLube ? 'text-blue-600' : 'text-orange-600') : 'text-slate-400'}`} />
@@ -1133,12 +1133,12 @@ const Navigation = React.memo(function Navigation({
             );
           })}
         </nav>
-        <div className="pt-3 mt-3 border-t border-slate-100 space-y-2">
+        <div className="pt-3 mt-3 border-t border-slate-100 dark:border-white/5 space-y-2">
           {/* Quick Tools for Mobile */}
           <div className="grid grid-cols-2 gap-2 mb-4">
             <button
               onClick={() => { setIsSearchOpen(true); setMobileMenuOpen(false); }}
-              className="flex items-center justify-center gap-2 rounded-lg bg-slate-50 border border-slate-100 p-2 text-xs font-bold text-slate-600 cursor-pointer"
+              className="flex items-center justify-center gap-2 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 p-2 text-xs font-bold text-slate-600 cursor-pointer"
             >
               <Search className="h-4 w-4" />
               <span>{t("Search", "تلاش")}</span>
@@ -1152,7 +1152,7 @@ const Navigation = React.memo(function Navigation({
             </button>
             <button
               onClick={toggleLanguage}
-              className="flex items-center justify-center gap-2 rounded-lg bg-slate-50 border border-slate-100 p-2 text-xs font-bold text-slate-600 cursor-pointer"
+              className="flex items-center justify-center gap-2 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 p-2 text-xs font-bold text-slate-600 cursor-pointer"
             >
               <Languages className="h-4 w-4" />
               <span>{settings.language.toUpperCase()}</span>
@@ -1162,7 +1162,7 @@ const Navigation = React.memo(function Navigation({
                 const nextTheme = settings.theme === 'light' ? 'dark' : settings.theme === 'dark' ? 'blue' : 'light';
                 handleSelectTheme(nextTheme);
               }}
-              className="flex items-center justify-center gap-2 rounded-lg bg-slate-50 border border-slate-100 p-2 text-xs font-bold text-slate-600 cursor-pointer"
+              className="flex items-center justify-center gap-2 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 p-2 text-xs font-bold text-slate-600 cursor-pointer"
             >
               {settings.theme === 'light' ? <Sun className="h-4 w-4" /> : settings.theme === 'dark' ? <Moon className="h-4 w-4" /> : <LayoutDashboard className="h-4 w-4" />}
               <span>{t("Theme", "تھیم")}</span>
@@ -1177,7 +1177,7 @@ const Navigation = React.memo(function Navigation({
             className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-bold cursor-pointer ${
               activeView === 'configuration' || activeView === 'settings'
                 ? 'bg-indigo-50 text-indigo-700'
-                : 'text-slate-600 hover:bg-slate-100'
+                : 'text-slate-600 hover:bg-slate-100 dark:bg-white/10'
             }`}
           >
             <Settings className={`h-5 w-5 ${activeView === 'configuration' || activeView === 'settings' ? 'text-indigo-600' : 'text-slate-400'}`} />
@@ -1252,7 +1252,7 @@ const Navigation = React.memo(function Navigation({
               placeholder="e.g. Star Petroleum GT Road"
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
-              className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+              className="premium-input border px-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
             />
           </div>
 
@@ -1266,7 +1266,7 @@ const Navigation = React.memo(function Navigation({
               value={formUrduName}
               onChange={(e) => setFormUrduName(e.target.value)}
               dir="rtl"
-              className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+              className="premium-input border px-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
             />
           </div>
 
@@ -1279,7 +1279,7 @@ const Navigation = React.memo(function Navigation({
               placeholder="e.g. Plot 104, Main GT Road, Lahore"
               value={formAddress}
               onChange={(e) => setFormAddress(e.target.value)}
-              className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+              className="premium-input border px-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
             />
           </div>
 
@@ -1293,7 +1293,7 @@ const Navigation = React.memo(function Navigation({
                 placeholder="e.g. NTN-4839210-9"
                 value={formNtn}
                 onChange={(e) => setFormNtn(e.target.value)}
-                className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+                className="premium-input border px-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
               />
             </div>
 
@@ -1306,16 +1306,16 @@ const Navigation = React.memo(function Navigation({
                 placeholder="e.g. 0300-1234567"
                 value={formContact}
                 onChange={(e) => setFormContact(e.target.value)}
-                className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+                className="premium-input border px-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
               />
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
+          <div className="pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-end gap-2">
             <button
               type="button"
               onClick={handleCloseAddModal}
-              className="rounded-lg px-4 py-2 font-sans text-xs font-bold text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer"
+              className="rounded-lg px-4 py-2 font-sans text-xs font-bold text-slate-500 hover:bg-slate-50 dark:bg-white/5 transition-colors cursor-pointer"
             >
               {t('Cancel', 'منسوخ کریں')}
             </button>
@@ -1348,7 +1348,7 @@ const Navigation = React.memo(function Navigation({
                 placeholder="e.g. Star Petroleum GT Road"
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
-                className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+                className="premium-input border px-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
               />
             </div>
 
@@ -1362,7 +1362,7 @@ const Navigation = React.memo(function Navigation({
                 value={formUrduName}
                 onChange={(e) => setFormUrduName(e.target.value)}
                 dir="rtl"
-                className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+                className="premium-input border px-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
               />
             </div>
 
@@ -1375,7 +1375,7 @@ const Navigation = React.memo(function Navigation({
                 placeholder="e.g. Plot 104, Main GT Road, Lahore"
                 value={formAddress}
                 onChange={(e) => setFormAddress(e.target.value)}
-                className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+                className="premium-input border px-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
               />
             </div>
 
@@ -1389,7 +1389,7 @@ const Navigation = React.memo(function Navigation({
                   placeholder="e.g. NTN-4839210-9"
                   value={formNtn}
                   onChange={(e) => setFormNtn(e.target.value)}
-                  className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+                  className="premium-input border px-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
                 />
               </div>
 
@@ -1402,16 +1402,16 @@ const Navigation = React.memo(function Navigation({
                   placeholder="e.g. 0300-1234567"
                   value={formContact}
                   onChange={(e) => setFormContact(e.target.value)}
-                  className="premium-input border px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
+                  className="premium-input border px-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-orange-500 focus:outline-hidden"
                 />
               </div>
             </div>
 
-            <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
+            <div className="pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={handleCloseEditModal}
-                className="rounded-lg px-4 py-2 font-sans text-xs font-bold text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer"
+                className="rounded-lg px-4 py-2 font-sans text-xs font-bold text-slate-500 hover:bg-slate-50 dark:bg-white/5 transition-colors cursor-pointer"
               >
                 {t('Cancel', 'منسوخ کریں')}
               </button>
@@ -1429,7 +1429,7 @@ const Navigation = React.memo(function Navigation({
       {/* AI Search Result Modal */}
       {isAiModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+          <div className="w-full max-w-2xl rounded-2xl bg-white dark:bg-[#151521] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
             <div className="bg-indigo-600 px-5 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-indigo-100" />
@@ -1437,16 +1437,16 @@ const Navigation = React.memo(function Navigation({
               </div>
               <button 
                 onClick={() => setIsAiModalOpen(false)}
-                className="rounded-lg p-1.5 hover:bg-white/20 text-white transition-colors cursor-pointer"
+                className="rounded-lg p-1.5 hover:bg-white dark:bg-[#151521]/20 text-white transition-colors cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
             
-            <div className="p-6 overflow-y-auto bg-slate-50 flex-1">
+            <div className="p-6 overflow-y-auto bg-slate-50 dark:bg-white/5 flex-1">
               <div className="mb-4">
                 <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Your Query</p>
-                <p className="text-sm font-semibold text-slate-800 bg-white p-3 rounded-lg border border-slate-200 mt-1">"{aiSearchQuery}"</p>
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 bg-white dark:bg-[#151521] p-3 rounded-lg border border-slate-200 dark:border-white/10 mt-1">"{aiSearchQuery}"</p>
               </div>
 
               <div>
@@ -1457,17 +1457,17 @@ const Navigation = React.memo(function Navigation({
                     <p className="text-sm text-indigo-600 mt-3 font-semibold">Analyzing enterprise data...</p>
                   </div>
                 ) : (
-                  <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap bg-white p-4 rounded-xl border border-indigo-100 shadow-xs">
+                  <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap bg-white dark:bg-[#151521] p-4 rounded-xl border border-indigo-100 shadow-xs">
                     {aiSearchResult}
                   </div>
                 )}
               </div>
             </div>
             
-            <div className="px-6 py-4 bg-white border-t border-slate-100 flex justify-end">
+            <div className="px-6 py-4 bg-white dark:bg-[#151521] border-t border-slate-100 dark:border-white/5 flex justify-end">
               <button 
                 onClick={() => setIsAiModalOpen(false)}
-                className="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm rounded-lg transition-colors cursor-pointer"
+                className="px-5 py-2 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 text-slate-700 font-bold text-sm rounded-lg transition-colors cursor-pointer"
               >
                 Close
               </button>

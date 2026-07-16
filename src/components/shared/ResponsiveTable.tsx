@@ -47,7 +47,7 @@ function ResponsiveTableInner<T>({
 
   if (data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 px-4 text-slate-400 bg-slate-50/50 rounded-xl border border-slate-100 border-dashed">
+      <div className="flex flex-col items-center justify-center py-12 px-4 text-slate-400 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5 border-dashed">
         <p className="font-semibold">{emptyMessage}</p>
       </div>
     );
@@ -56,9 +56,9 @@ function ResponsiveTableInner<T>({
   return (
     <div className="w-full">
       {/* DESKTOP TABLE VIEW */}
-      <div className="hidden md:block overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="hidden md:block overflow-x-auto rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] shadow-sm">
         <table className="w-full text-left text-sm whitespace-nowrap">
-          <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold">
+          <thead className="bg-slate-50 dark:bg-white/5 border-b border-slate-200 dark:border-white/10 text-slate-500 font-semibold">
             <tr>
               {renderExpandedRow && <th className="px-4 py-3 w-10"></th>}
               {columns.map((col, idx) => (
@@ -76,7 +76,7 @@ function ResponsiveTableInner<T>({
                 <React.Fragment key={key}>
                   <tr 
                     onClick={() => onRowClick?.(row)}
-                    className={`transition-colors ${onRowClick ? 'cursor-pointer hover:bg-slate-50' : ''} ${isExpanded ? 'bg-slate-50/50' : ''}`}
+                    className={`transition-colors ${onRowClick ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5' : ''} ${isExpanded ? 'bg-slate-50 dark:bg-white/5' : ''}`}
                   >
                     {renderExpandedRow && (
                       <td className="px-4 py-3">
@@ -99,7 +99,7 @@ function ResponsiveTableInner<T>({
                   
                   {isExpanded && renderExpandedRow && (
                     <tr>
-                      <td colSpan={columns.length + (renderActions ? 2 : 1)} className="p-0 border-b border-slate-100 bg-slate-50/30">
+                      <td colSpan={columns.length + (renderActions ? 2 : 1)} className="p-0 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5">
                         <AnimatePresence>
                           <motion.div
                             initial={{ height: 0, opacity: 0 }}
@@ -135,13 +135,13 @@ function ResponsiveTableInner<T>({
           return (
             <div 
               key={key} 
-              className={`bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden transition-all ${onRowClick ? 'active:scale-[0.98]' : ''}`}
+              className={`bg-white dark:bg-[#151521] rounded-xl border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden transition-all ${onRowClick ? 'active:scale-[0.98]' : ''}`}
               onClick={() => onRowClick?.(row)}
             >
               <div className="p-4 flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   {/* Primary Header */}
-                  <div className="font-bold text-slate-800 text-sm mb-0.5 truncate">
+                  <div className="font-bold text-slate-800 dark:text-slate-200 text-sm mb-0.5 truncate">
                     {primaryCol.renderMobile ? primaryCol.renderMobile(row) : renderCellContent(row, index, primaryCol)}
                   </div>
                   {/* Secondary Header */}
@@ -158,7 +158,7 @@ function ResponsiveTableInner<T>({
                   {(renderExpandedRow || otherCols.length > 0) && (
                     <button 
                       onClick={(e) => toggleRow(key, e)} 
-                      className="p-1.5 rounded-lg bg-slate-50 text-slate-500 hover:bg-slate-100"
+                      className="p-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-500 hover:bg-slate-100 dark:bg-white/10"
                     >
                       {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                     </button>
@@ -175,7 +175,7 @@ function ResponsiveTableInner<T>({
                     exit={{ height: 0, opacity: 0 }}
                     className="overflow-hidden"
                   >
-                    <div className="px-4 pb-4 pt-1 border-t border-slate-100 bg-slate-50/50">
+                    <div className="px-4 pb-4 pt-1 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5">
                       {/* Render remaining columns in a 2-col grid */}
                       {otherCols.length > 0 && (
                         <div className="grid grid-cols-2 gap-y-3 gap-x-4 mb-3 mt-3">
@@ -192,7 +192,7 @@ function ResponsiveTableInner<T>({
                       
                       {/* Render custom expanded row content */}
                       {renderExpandedRow && (
-                        <div className="mt-3 pt-3 border-t border-slate-200/60">
+                        <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/10">
                           {renderExpandedRow(row)}
                         </div>
                       )}

@@ -98,12 +98,12 @@ export const AIAssistantWidget: React.FC = () => {
             initial={{ opacity: 0, y: 50, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.95 }}
-            className="fixed bottom-24 md:bottom-6 right-4 md:right-6 z-50 w-96 max-w-[calc(100vw-2rem)] h-[600px] max-h-[calc(100vh-8rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden"
+            className="fixed bottom-24 md:bottom-6 right-4 md:right-6 z-50 w-96 max-w-[calc(100vw-2rem)] h-[600px] max-h-[calc(100vh-8rem)] bg-white dark:bg-[#151521] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 flex flex-col overflow-hidden"
           >
             {/* Header */}
             <div className="bg-indigo-600 px-5 py-4 flex items-center justify-between shadow-md z-10 relative">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/20 rounded-lg">
+                <div className="p-2 bg-white dark:bg-[#151521]/20 rounded-lg">
                   <Bot className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -116,14 +116,14 @@ export const AIAssistantWidget: React.FC = () => {
               <button 
                 onClick={() => setIsOpen(false)}
                 aria-label="Close AI Assistant"
-                className="p-1.5 text-indigo-200 hover:bg-white/20 hover:text-white rounded-md transition-colors"
+                className="p-1.5 text-indigo-200 hover:bg-white dark:bg-[#151521]/20 hover:text-white rounded-md transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Chat Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 relative">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-white/5 relative">
               {messages.map((msg) => (
                 <div 
                   key={msg.id} 
@@ -134,8 +134,8 @@ export const AIAssistantWidget: React.FC = () => {
                       msg.type === 'user' 
                         ? 'bg-indigo-600 text-white rounded-br-none shadow-sm' 
                         : msg.isReceiptFormat
-                          ? 'bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-sm font-mono text-[10px] sm:text-xs leading-relaxed whitespace-pre'
-                          : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-sm text-sm'
+                          ? 'bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-200 rounded-bl-none shadow-sm font-mono text-[10px] sm:text-xs leading-relaxed whitespace-pre'
+                          : 'bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-200 rounded-bl-none shadow-sm text-sm'
                     }`}
                   >
                     {msg.text}
@@ -145,7 +145,7 @@ export const AIAssistantWidget: React.FC = () => {
               
               {isTyping && (
                 <div className="flex items-start">
-                  <div className="premium-card border border-slate-200 text-slate-500 rounded-bl-none px-4 py-3 flex items-center ga text-sm font-medium">
+                  <div className="premium-card border border-slate-200 dark:border-white/10 text-slate-500 rounded-bl-none px-4 py-3 flex items-center ga text-sm font-medium">
                     <Loader2 className="w-4 h-4 animate-spin text-indigo-600" />
                     Generating Receipt...
                   </div>
@@ -155,15 +155,15 @@ export const AIAssistantWidget: React.FC = () => {
             </div>
 
             {/* Input Area */}
-            <div className="p-4 bg-white border-t border-slate-100">
-              <div className="flex items-center gap-2 bg-slate-100 rounded-full p-1.5 pr-2 focus-within:ring-2 focus-within:ring-indigo-500 transition-shadow">
+            <div className="p-4 bg-white dark:bg-[#151521] border-t border-slate-100 dark:border-white/5">
+              <div className="flex items-center gap-2 bg-slate-100 dark:bg-white/10 rounded-full p-1.5 pr-2 focus-within:ring-2 focus-within:ring-indigo-500 transition-shadow">
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Ask for stock updates, shifts..."
-                  className="flex-1 bg-transparent px-4 py-2 text-sm text-slate-800 outline-none placeholder:text-slate-400"
+                  className="flex-1 bg-transparent px-4 py-2 text-sm text-slate-800 dark:text-slate-200 outline-none placeholder:text-slate-400"
                   disabled={isTyping}
                 />
                 <button

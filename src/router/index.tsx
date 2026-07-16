@@ -36,6 +36,7 @@ const EnterpriseDashboard = React.lazy(() => import('../components/features/Ente
 const TreasuryCenter = React.lazy(() => import('../components/features/TreasuryCenter/TreasuryCenter'));
 const SyncCenter = React.lazy(() => import('../components/features/SyncCenter/SyncCenter'));
 const AIAssistant = React.lazy(() => import('../components/features/AIAssistant/AIAssistant'));
+const AboutMe = React.lazy(() => import('../components/features/AboutMe/AboutMe'));
 
 import { useAuth } from '../contexts/AuthContext';
 // Type alias for the context injected by AppShell
@@ -194,6 +195,7 @@ export const router = createBrowserRouter([
       { path: 'security-hub', element: <SecurityHubRoute /> },
       { path: 'subscription-hub', element: <SubscriptionHubRoute /> },
       { path: 'price-management', element: <PriceManagementRoute /> },
+      { path: 'about-me', element: <AboutMe /> },
 
       // Super Admin Only
       {

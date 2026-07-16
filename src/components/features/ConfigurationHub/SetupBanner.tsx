@@ -24,10 +24,10 @@ export function SetupBanner({ activeViewId }: { activeViewId: string }) {
   }
 
   return (
-    <div className="mb-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="mb-6 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-sm">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h3 className="font-sans text-lg font-bold text-slate-900 flex items-center gap-2">
+          <h3 className="font-sans text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Settings className="h-5 w-5 text-[var(--primary-accent)]" />
             Station Setup Progress
           </h3>
@@ -74,8 +74,8 @@ export function SetupBanner({ activeViewId }: { activeViewId: string }) {
                 transition-colors
                 ${step.status === 'completed' ? 'bg-green-50 border-green-200 text-green-700' : ''}
                 ${isActive ? 'bg-[var(--primary-accent)] text-white border-[var(--primary-accent)] shadow-md' : ''}
-                ${step.status === 'pending' && !isActive ? 'bg-slate-50 border-slate-200 text-slate-600' : ''}
-                ${step.status === 'locked' ? 'bg-slate-50 border-slate-100 text-slate-400 opacity-60' : ''}
+                ${step.status === 'pending' && !isActive ? 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600' : ''}
+                ${step.status === 'locked' ? 'bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 text-slate-400 opacity-60' : ''}
               `}>
                 {step.status === 'completed' && !isActive ? (
                   <CheckCircle2 className="h-3.5 w-3.5" />

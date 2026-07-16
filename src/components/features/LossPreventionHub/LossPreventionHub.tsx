@@ -27,12 +27,12 @@ export default function LossPreventionHub({ settings }: LossPreventionHubProps) 
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 border-b border-slate-200 pb-4">
+      <div className="flex flex-col gap-4 border-b border-slate-200 dark:border-white/10 pb-4">
         <div>
           <span className="font-mono text-[9px] font-black text-rose-600 uppercase tracking-widest block mb-0.5">
             ENTERPRISE MODULE
           </span>
-          <h2 className="font-sans text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+          <h2 className="font-sans text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             <ShieldAlert className="h-6 w-6 text-rose-600" />
             <span>Loss Prevention & Compliance</span>
           </h2>
@@ -42,7 +42,7 @@ export default function LossPreventionHub({ settings }: LossPreventionHubProps) 
         </div>
       </div>
 
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide border-b border-slate-200">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide border-b border-slate-200 dark:border-white/10">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -54,7 +54,7 @@ export default function LossPreventionHub({ settings }: LossPreventionHubProps) 
               className={`flex items-center gap-2 px-4 py-2 rounded-t-xl font-sans text-xs font-bold whitespace-nowrap transition-all border-b-2 ${
                 isActive
                   ? 'border-rose-500 text-rose-600 bg-rose-50/50'
-                  : 'border-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                  : 'border-transparent text-slate-500 hover:bg-slate-50 dark:bg-white/5 hover:text-slate-700'
               }`}
             >
               <Icon className="h-4 w-4" />

@@ -150,7 +150,7 @@ export default function TankConfigurationWizard({ onComplete, onCancel, currentL
             <h2 className="text-xl font-black text-[var(--text-main)] uppercase tracking-wider">
               Tank Configuration Wizard
             </h2>
-            <button onClick={onCancel} className="p-2 text-slate-500 hover:text-[var(--text-main)] hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors">
+            <button onClick={onCancel} className="p-2 text-slate-500 hover:text-[var(--text-main)] hover:bg-slate-100 dark:hover:bg-white dark:bg-[#151521]/5 rounded-full transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -223,12 +223,12 @@ export default function TankConfigurationWizard({ onComplete, onCancel, currentL
                       placeholder="Product Name (e.g. Super Petrol)" 
                       value={newProduct.name}
                       onChange={e => setNewProduct({...newProduct, name: e.target.value})}
-                      className="col-span-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] focus:border-[var(--primary-accent)] focus:ring-1 focus:ring-[var(--primary-accent)] outline-none transition-all"
+                      className="col-span-2 bg-[var(--bg-app)] border border-[var(--border-main)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:border-[var(--primary-accent)] focus:ring-1 focus:ring-[var(--primary-accent)] outline-none transition-all"
                     />
                     <select 
                       value={newProduct.type}
                       onChange={e => setNewProduct({...newProduct, type: e.target.value as any})}
-                      className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] focus:border-[var(--primary-accent)] outline-none"
+                      className="bg-[var(--bg-app)] border border-[var(--border-main)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:border-[var(--primary-accent)] outline-none"
                     >
                       <option value="fuel">Fuel</option>
                       <option value="lube">Lube</option>
@@ -239,13 +239,13 @@ export default function TankConfigurationWizard({ onComplete, onCancel, currentL
                       placeholder="Rate (Price)" 
                       value={newProduct.rate || ''}
                       onChange={e => setNewProduct({...newProduct, rate: parseFloat(e.target.value) || 0})}
-                      className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] focus:border-[var(--primary-accent)] outline-none"
+                      className="bg-[var(--bg-app)] border border-[var(--border-main)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:border-[var(--primary-accent)] outline-none"
                     />
                   </div>
                   <button 
                     onClick={handleAddProduct}
                     disabled={!newProduct.name.trim()}
-                    className="w-full py-3 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 disabled:opacity-50 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-[var(--bg-app)] border border-[var(--border-main)] hover:bg-[var(--bg-hover)] disabled:opacity-50 text-[var(--text-main)] text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
                   >
                     <Plus className="w-4 h-4" /> Add Product
                   </button>
@@ -289,12 +289,12 @@ export default function TankConfigurationWizard({ onComplete, onCancel, currentL
                       placeholder="Tank Name (e.g. Tank 1)" 
                       value={newTank.name}
                       onChange={e => setNewTank({...newTank, name: e.target.value})}
-                      className="col-span-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] focus:border-orange-500 outline-none"
+                      className="col-span-2 bg-[var(--bg-app)] border border-[var(--border-main)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:border-[var(--primary-accent)] outline-none"
                     />
                     <select 
                       value={newTank.productName}
                       onChange={e => setNewTank({...newTank, productName: e.target.value})}
-                      className="col-span-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] focus:border-orange-500 outline-none"
+                      className="col-span-2 bg-[var(--bg-app)] border border-[var(--border-main)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:border-[var(--primary-accent)] outline-none"
                     >
                       <option value="" disabled>Link to Product (Optional)</option>
                       {products.map((p, i) => (
@@ -306,20 +306,20 @@ export default function TankConfigurationWizard({ onComplete, onCancel, currentL
                       placeholder="Capacity (L)" 
                       value={newTank.capacity || ''}
                       onChange={e => setNewTank({...newTank, capacity: parseInt(e.target.value) || 0})}
-                      className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] focus:border-orange-500 outline-none"
+                      className="bg-[var(--bg-app)] border border-[var(--border-main)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:border-[var(--primary-accent)] outline-none"
                     />
                     <input 
                       type="number"
                       placeholder="Current Stock (L)" 
                       value={newTank.currentStock || ''}
                       onChange={e => setNewTank({...newTank, currentStock: parseInt(e.target.value) || 0})}
-                      className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] focus:border-orange-500 outline-none"
+                      className="bg-[var(--bg-app)] border border-[var(--border-main)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:border-[var(--primary-accent)] outline-none"
                     />
                   </div>
                   <button 
                     onClick={handleAddTank}
                     disabled={!newTank.name.trim()}
-                    className="w-full py-3 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 disabled:opacity-50 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-[var(--bg-app)] border border-[var(--border-main)] hover:bg-[var(--bg-hover)] disabled:opacity-50 text-[var(--text-main)] text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
                   >
                     <Plus className="w-4 h-4" /> Add Tank
                   </button>
@@ -347,12 +347,12 @@ export default function TankConfigurationWizard({ onComplete, onCancel, currentL
                       placeholder="Nozzle Name (e.g. N1)" 
                       value={newNozzle.name}
                       onChange={e => setNewNozzle({...newNozzle, name: e.target.value})}
-                      className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] focus:border-orange-500 outline-none"
+                      className="bg-[var(--bg-app)] border border-[var(--border-main)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:border-[var(--primary-accent)] outline-none"
                     />
                     <select 
                       value={newNozzle.tankName}
                       onChange={e => setNewNozzle({...newNozzle, tankName: e.target.value})}
-                      className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] focus:border-orange-500 outline-none"
+                      className="bg-[var(--bg-app)] border border-[var(--border-main)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:border-[var(--primary-accent)] outline-none"
                     >
                       <option value="" disabled>Link to Tank (Optional)</option>
                       {[...existingTanks, ...tanks].map((t, i) => (
@@ -364,14 +364,14 @@ export default function TankConfigurationWizard({ onComplete, onCancel, currentL
                       placeholder="Pump No. (e.g. 1)" 
                       value={newNozzle.pumpId || ''}
                       onChange={e => setNewNozzle({...newNozzle, pumpId: e.target.value})}
-                      className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] focus:border-orange-500 outline-none"
+                      className="bg-[var(--bg-app)] border border-[var(--border-main)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:border-[var(--primary-accent)] outline-none"
                     />
                     <input 
                       type="number"
                       placeholder="Opening Reading" 
                       value={newNozzle.openingReading || ''}
                       onChange={e => setNewNozzle({...newNozzle, openingReading: parseFloat(e.target.value) || 0})}
-                      className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] focus:border-orange-500 outline-none"
+                      className="bg-[var(--bg-app)] border border-[var(--border-main)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:border-[var(--primary-accent)] outline-none"
                     />
                   </div>
                   <button 
@@ -424,7 +424,7 @@ export default function TankConfigurationWizard({ onComplete, onCancel, currentL
                 <button
                   onClick={nextStep}
                   disabled={isGenerating}
-                  className="px-5 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-transparent border border-slate-300 dark:border-slate-700 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors flex-1 sm:flex-none"
+                  className="px-5 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-transparent border border-slate-300 dark:border-slate-700 text-slate-500 hover:bg-slate-100 dark:hover:bg-white dark:bg-[#151521]/5 transition-colors flex-1 sm:flex-none"
                 >
                   Skip Step
                 </button>
@@ -432,7 +432,7 @@ export default function TankConfigurationWizard({ onComplete, onCancel, currentL
                 <button
                   onClick={handleFinish}
                   disabled={isGenerating}
-                  className="px-5 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-transparent border border-slate-300 dark:border-slate-700 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors flex-1 sm:flex-none"
+                  className="px-5 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-transparent border border-slate-300 dark:border-slate-700 text-slate-500 hover:bg-slate-100 dark:hover:bg-white dark:bg-[#151521]/5 transition-colors flex-1 sm:flex-none"
                 >
                   Skip & Finish
                 </button>

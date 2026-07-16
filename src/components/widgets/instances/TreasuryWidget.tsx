@@ -14,15 +14,15 @@ function TreasuryContent() {
         <Wallet className="w-4 h-4 text-orange-500" /> Treasury Center
       </h2>
       <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
-        <div className="flex justify-between items-center p-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] hover:bg-white/[0.05] transition-colors">
+        <div className="flex justify-between items-center p-3 rounded-2xl bg-white dark:bg-[#151521]/[0.03] border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] hover:bg-white dark:bg-[#151521]/[0.05] transition-colors">
           <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cash in Hand</span>
           <span className="text-sm font-black text-white">{formatCurrency(metrics.cashInHand, settings)}</span>
         </div>
-        <div className="flex justify-between items-center p-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] hover:bg-white/[0.05] transition-colors">
+        <div className="flex justify-between items-center p-3 rounded-2xl bg-white dark:bg-[#151521]/[0.03] border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] hover:bg-white dark:bg-[#151521]/[0.05] transition-colors">
           <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Bank Balance</span>
           <span className="text-sm font-black text-white">{formatCurrency(metrics.bankBalance, settings)}</span>
         </div>
-        <div className="flex justify-between items-center p-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] hover:bg-white/[0.05] transition-colors">
+        <div className="flex justify-between items-center p-3 rounded-2xl bg-white dark:bg-[#151521]/[0.03] border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] hover:bg-white dark:bg-[#151521]/[0.05] transition-colors">
           <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Digital Balance</span>
           <span className="text-sm font-black text-white">{formatCurrency(metrics.digitalBalance, settings)}</span>
         </div>
@@ -46,13 +46,13 @@ function TreasuryContent() {
 export function TreasuryWidget() {
   return (
     <Suspense fallback={
-      <div className="w-full h-full p-6 flex flex-col animate-pulse bg-white/[0.02]">
-        <div className="h-4 bg-white/10 w-1/3 rounded mb-6"></div>
+      <div className="w-full h-full p-6 flex flex-col animate-pulse bg-white dark:bg-[#151521]/[0.02]">
+        <div className="h-4 bg-white dark:bg-[#151521]/10 w-1/3 rounded mb-6"></div>
         <div className="space-y-3">
-          <div className="h-10 bg-white/5 rounded-2xl"></div>
-          <div className="h-10 bg-white/5 rounded-2xl"></div>
-          <div className="h-10 bg-white/5 rounded-2xl"></div>
-          <div className="h-10 bg-white/5 rounded-2xl"></div>
+          <div className="h-10 bg-white dark:bg-[#151521]/5 rounded-2xl"></div>
+          <div className="h-10 bg-white dark:bg-[#151521]/5 rounded-2xl"></div>
+          <div className="h-10 bg-white dark:bg-[#151521]/5 rounded-2xl"></div>
+          <div className="h-10 bg-white dark:bg-[#151521]/5 rounded-2xl"></div>
         </div>
       </div>
     }>

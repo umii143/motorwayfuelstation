@@ -10,8 +10,8 @@ export default function Integrations({ settings, activeStationId }: { settings: 
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+      <div className="border-b border-slate-200 dark:border-white/10 pb-4">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
           <LinkIcon className="h-6 w-6 text-indigo-600" />
           {t('Integrations', 'انضمام')}
         </h2>
@@ -19,18 +19,18 @@ export default function Integrations({ settings, activeStationId }: { settings: 
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl border border-slate-200 p-6 flex flex-col items-center justify-center text-center opacity-70">
+        <div className="bg-white dark:bg-[#151521] rounded-xl border border-slate-200 dark:border-white/10 p-6 flex flex-col items-center justify-center text-center opacity-70">
           <Server className="h-10 w-10 text-slate-400 mb-3" />
-          <h3 className="font-bold text-slate-800">Automatic Tank Gauging (ATG)</h3>
+          <h3 className="font-bold text-slate-800 dark:text-slate-200">Automatic Tank Gauging (ATG)</h3>
           <p className="text-xs text-slate-500 mt-2 mb-4">Connect Gilbarco, Veeder-Root, or Wayne systems.</p>
-          <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold">Coming Soon</span>
+          <span className="px-3 py-1 bg-slate-100 dark:bg-white/10 text-slate-600 rounded-full text-xs font-bold">Coming Soon</span>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-6 flex flex-col items-center justify-center text-center opacity-70">
+        <div className="bg-white dark:bg-[#151521] rounded-xl border border-slate-200 dark:border-white/10 p-6 flex flex-col items-center justify-center text-center opacity-70">
           <Database className="h-10 w-10 text-slate-400 mb-3" />
-          <h3 className="font-bold text-slate-800">QuickBooks / Xero</h3>
+          <h3 className="font-bold text-slate-800 dark:text-slate-200">QuickBooks / Xero</h3>
           <p className="text-xs text-slate-500 mt-2 mb-4">Sync journal entries automatically to cloud accounting.</p>
-          <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold">Coming Soon</span>
+          <span className="px-3 py-1 bg-slate-100 dark:bg-white/10 text-slate-600 rounded-full text-xs font-bold">Coming Soon</span>
         </div>
       </div>
     </div>

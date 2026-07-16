@@ -50,10 +50,10 @@ export function BIDetailedAnalyticsTable({ filter }: any) {
 
   return (
     <div className="premium-card border overflow-hidden mb-6">
-      <div className="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+      <div className="p-5 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <TableProperties className="w-5 h-5 text-slate-600" />
-          <h3 className="font-sans text-lg font-bold text-slate-900">Month-by-Month Financial Table</h3>
+          <h3 className="font-sans text-lg font-bold text-slate-900 dark:text-white">Month-by-Month Financial Table</h3>
         </div>
       </div>
       <div className="overflow-x-auto">
@@ -104,7 +104,7 @@ export function BIDetailedAnalyticsTable({ filter }: any) {
                 }
 
                 return (
-                  <tr key={month} className="hover:bg-slate-50 transition-colors">
+                  <tr key={month} className="hover:bg-slate-50 dark:bg-white/5 transition-colors">
                     <td className="px-5">{monthName} {yearStr}</td>
                     <td className="px-5 text-emerald-700 text-right">{formatCurrency(data.revenue)}</td>
                     <td className="px-5 text-slate-700 text-right">{formatCurrency(data.invested)}</td>

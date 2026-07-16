@@ -63,8 +63,8 @@ export default function AdvancedTools({ settings, activeStationId }: { settings:
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+      <div className="border-b border-slate-200 dark:border-white/10 pb-4">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
           <Wrench className="h-6 w-6 text-indigo-600" />
           {t('Advanced System Tools', 'ایڈوانسڈ سسٹم ٹولز')}
         </h2>
@@ -80,20 +80,20 @@ export default function AdvancedTools({ settings, activeStationId }: { settings:
           const Icon = tool.icon;
 
           return (
-            <div key={tool.id} className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col transition-all hover:shadow-md">
+            <div key={tool.id} className="bg-white dark:bg-[#151521] rounded-xl border border-slate-200 dark:border-white/10 shadow-xs overflow-hidden flex flex-col transition-all hover:shadow-md">
               <div className="p-6 flex-1">
                 <div className={`w-12 h-12 rounded-xl border ${tool.color} flex items-center justify-center mb-4`}>
                   <Icon className="h-6 w-6" />
                 </div>
-                <h3 className="text-base font-bold text-slate-900 mb-2">{tool.title}</h3>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2">{tool.title}</h3>
                 <p className="text-sm text-slate-500">{tool.description}</p>
               </div>
               
-              <div className="px-6 py-4 bg-slate-50 border-t border-slate-100">
+              <div className="px-6 py-4 bg-slate-50 dark:bg-white/5 border-t border-slate-100 dark:border-white/5">
                 <button 
                   onClick={tool.action}
                   disabled={isRunning}
-                  className="w-full flex justify-center items-center gap-2 px-4 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px].5 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-bold shadow-xs hover:bg-slate-100 transition-colors disabled:opacity-70"
+                  className="w-full flex justify-center items-center gap-2 px-4 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px].5 bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 text-slate-700 rounded-lg text-sm font-bold shadow-xs hover:bg-slate-100 dark:bg-white/10 transition-colors disabled:opacity-70"
                 >
                   {isRunning ? (
                     <>

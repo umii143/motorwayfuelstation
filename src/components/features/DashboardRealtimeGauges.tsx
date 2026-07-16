@@ -33,7 +33,7 @@ export function DashboardRealtimeGauges({ settings, products = [], tanks = [], a
         
         return (
           <div key={tank.id} className="premium-card p-6 border relative overflow-hidden group">
-            <div className="absolute inset-x-0 bottom-0 bg-slate-100 h-2">
+            <div className="absolute inset-x-0 bottom-0 bg-slate-100 dark:bg-white/10 h-2">
               <div 
                 className={`h-full transition-all duration-1000 ease-in-out ${isLow ? 'bg-rose-500' : 'bg-emerald-500'}`}
                 style={{ width: `${Math.min(100, Math.max(0, fillPercentage))}%` }}
@@ -41,7 +41,7 @@ export function DashboardRealtimeGauges({ settings, products = [], tanks = [], a
             </div>
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h4 className="font-sans font-black text-slate-800 text-lg">{tank.name}</h4>
+                <h4 className="font-sans font-black text-slate-800 dark:text-slate-200 text-lg">{tank.name}</h4>
                 <p className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest">Live Level</p>
               </div>
               <div className={`p-2 rounded-xl ${isLow ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'}`}>

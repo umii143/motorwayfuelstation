@@ -122,7 +122,7 @@ export default function AssetRegister({ settings, stationId }: AssetRegisterProp
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-row justify-between items-start items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
+      <div className="flex flex-row justify-between items-start items-center gap-4 bg-white dark:bg-[#151521] p-4 rounded-xl border border-slate-200 dark:border-white/10">
         <div className="relative w-full sm:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input 
@@ -130,7 +130,7 @@ export default function AssetRegister({ settings, stationId }: AssetRegisterProp
             placeholder="Search by Asset Name or Serial..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
           />
         </div>
         <button 
@@ -161,9 +161,9 @@ export default function AssetRegister({ settings, stationId }: AssetRegisterProp
                 const expiringSoon = isWarrantyExpiringSoon(asset.warrantyExpiryDate);
 
                 return (
-                  <tr key={asset.id} className="hover:bg-slate-50/50 transition">
+                  <tr key={asset.id} className="hover:bg-slate-50 dark:bg-white/5/50 transition">
                     <td>
-                      <div className="font-bold text-slate-900">{asset.name}</div>
+                      <div className="font-bold text-slate-900 dark:text-white">{asset.name}</div>
                       <div className="text-[10px] uppercase font-bold text-slate-500">{asset.type}</div>
                     </td>
                     <td className="font-mono text-slate-600">
@@ -224,9 +224,9 @@ export default function AssetRegister({ settings, stationId }: AssetRegisterProp
       {/* Form Modal */}
       {isModalOpen && (
         <div className="premium-modal-overlay">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h2 className="text-lg font-black font-sans text-slate-800 flex items-center gap-2">
+          <div className="bg-white dark:bg-[#151521] rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5 flex justify-between items-center bg-slate-50 dark:bg-white/5/50">
+              <h2 className="text-lg font-black font-sans text-slate-800 dark:text-slate-200 flex items-center gap-2">
                 <ServerCog className="h-5 w-5 text-rose-500" />
                 {editingId ? 'Edit Asset Details' : 'Register New Asset'}
               </h2>
@@ -240,12 +240,12 @@ export default function AssetRegister({ settings, stationId }: AssetRegisterProp
                 <div className="md:col-span-2">
                   { }
                   <label className="block text-xs font-bold text-slate-700 mb-1">Asset Name *</label>
-                  <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="e.g. Dispenser Pump #1" />
+                  <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="e.g. Dispenser Pump #1" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Asset Type</label>
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  <select value={type} onChange={e => setType(e.target.value as any)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white">
+                  <select value={type} onChange={e => setType(e.target.value as any)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white dark:bg-[#151521]">
                     <option value="pump">Dispenser / Pump</option>
                     <option value="nozzle">Nozzle / Hose</option>
                     <option value="generator">Generator</option>
@@ -255,22 +255,22 @@ export default function AssetRegister({ settings, stationId }: AssetRegisterProp
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Serial Number</label>
-                  <input type="text" value={serialNumber} onChange={e => setSerialNumber(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono" placeholder="XYZ-987654321" />
+                  <input type="text" value={serialNumber} onChange={e => setSerialNumber(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono" placeholder="XYZ-987654321" />
                 </div>
 
-                <div className="border-t border-slate-100 pt-4 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="border-t border-slate-100 dark:border-white/5 pt-4 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Installation Date *</label>
-                    <input type="date" value={installationDate} onChange={e => setInstallationDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
+                    <input type="date" value={installationDate} onChange={e => setInstallationDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Warranty Expiry Date</label>
-                    <input type="date" value={warrantyExpiryDate} onChange={e => setWarrantyExpiryDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
+                    <input type="date" value={warrantyExpiryDate} onChange={e => setWarrantyExpiryDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
                   </div>
                 </div>
 
                 { }
-                <div className="md:col-span-2 border-t border-slate-100 pt-4">
+                <div className="md:col-span-2 border-t border-slate-100 dark:border-white/5 pt-4">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Operational Status</label>
                   <div className="flex gap-2">
                     {['active', 'under_maintenance', 'retired'].map((s) => (
@@ -281,8 +281,8 @@ export default function AssetRegister({ settings, stationId }: AssetRegisterProp
                           status === s 
                             ? (s === 'active' ? 'bg-emerald-100 border-emerald-500 text-emerald-800' : 
                                s === 'under_maintenance' ? 'bg-amber-100 border-amber-500 text-amber-800' : 
-                               'bg-slate-200 border-slate-500 text-slate-800')
-                            : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                               'bg-slate-200 border-slate-500 text-slate-800 dark:text-slate-200')
+                            : 'bg-white dark:bg-[#151521] border-slate-200 dark:border-white/10 text-slate-500 hover:bg-slate-50 dark:bg-white/5'
                         }`}
                       >
                         <span className="capitalize">{s.replace('_', ' ')}</span>
@@ -293,8 +293,8 @@ export default function AssetRegister({ settings, stationId }: AssetRegisterProp
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
-              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition">Cancel</button>
+            <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 flex justify-end gap-2">
+              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 dark:text-white transition">Cancel</button>
               <button onClick={handleSave} className="bg-rose-600 text-white px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded-lg text-sm font-bold hover:bg-rose-700 transition shadow-md shadow-rose-500/20">
                 Save Asset
               </button>

@@ -78,7 +78,7 @@ function PaymentModal({
               value={amount}
               onChange={e => setAmount(e.target.value)}
               placeholder="e.g. 500000"
-              className="w-full border border-theme-main rounded-xl px-4 py-2.5 text-slate-800 text-sm font-mono focus:outline-none focus:border-orange-500"
+              className="w-full border border-theme-main rounded-xl px-4 py-2.5 text-slate-800 dark:text-slate-200 text-sm font-mono focus:outline-none focus:border-orange-500"
               autoFocus
             />
           </div>
@@ -105,11 +105,11 @@ function PaymentModal({
               value={note}
               onChange={e => setNote(e.target.value)}
               placeholder="Cheque no. / Transfer ref..."
-              className="w-full border border-theme-main rounded-xl px-4 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-orange-500"
+              className="w-full border border-theme-main rounded-xl px-4 py-2.5 text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:border-orange-500"
             />
           </div>
           <div className="flex gap-3 pt-2">
-            <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-theme-main text-slate-600 text-sm font-bold hover:bg-slate-50">
+            <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-theme-main text-slate-600 text-sm font-bold hover:bg-slate-50 dark:bg-white/5">
               Cancel
             </button>
             <button
@@ -210,7 +210,7 @@ export default function SupplierPayablesPanel({
           { label: t('Largest Liability', 'سب سے بڑی ذمہ داری'), value: `Rs.${(largestLiability / 1000).toFixed(0)}K`, icon: Building2, color: 'text-indigo-700', bg: 'bg-indigo-50 border-indigo-200' },
         ].map((s, i) => (
           <div key={i} className={`rounded-2xl border p-4 ${s.bg} flex items-center gap-3`}>
-            <div className="size-10 rounded-xl bg-white/60 flex items-center justify-center shrink-0">
+            <div className="size-10 rounded-xl bg-white dark:bg-[#151521]/60 flex items-center justify-center shrink-0">
               <s.icon className={`size-5 ${s.color}`} />
             </div>
             <div>
@@ -278,16 +278,16 @@ export default function SupplierPayablesPanel({
               <div key={p.supplier.id} className={`bg-theme-card rounded-2xl border shadow-sm overflow-hidden ${p.isOverdue ? 'border-red-200' : 'border-theme-main'}`}>
                 {/* Main row */}
                 <div
-                  className="p-4 flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-colors"
+                  className="p-4 flex items-center gap-4 cursor-pointer hover:bg-slate-50 dark:bg-white/5 transition-colors"
                   onClick={() => setExpandedId(isExpanded ? null : p.supplier.id)}
                 >
-                  <div className={`size-10 rounded-xl flex items-center justify-center shrink-0 ${p.isOverdue ? 'bg-red-100' : 'bg-slate-100'}`}>
+                  <div className={`size-10 rounded-xl flex items-center justify-center shrink-0 ${p.isOverdue ? 'bg-red-100' : 'bg-slate-100 dark:bg-white/10'}`}>
                     <Building2 className={`size-5 ${p.isOverdue ? 'text-red-600' : 'text-slate-500'}`} />
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-black text-slate-800">{p.supplier.name}</span>
+                      <span className="font-black text-slate-800 dark:text-slate-200">{p.supplier.name}</span>
                       {p.isOverdue && (
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 border border-red-200">
                           🔴 Overdue {daysOverdue}d
@@ -310,7 +310,7 @@ export default function SupplierPayablesPanel({
                   </div>
 
                   <div className="text-right shrink-0">
-                    <p className="text-xl font-black text-slate-800">
+                    <p className="text-xl font-black text-slate-800 dark:text-slate-200">
                       Rs.{(p.totalOutstanding / 1000).toFixed(0)}K
                     </p>
                     <p className="text-[10px] text-slate-400">{p.concentrationPct.toFixed(1)}% of total</p>
@@ -328,7 +328,7 @@ export default function SupplierPayablesPanel({
 
                 {/* Expanded */}
                 {isExpanded && (
-                  <div className="border-t border-slate-100 bg-theme-bg p-4">
+                  <div className="border-t border-slate-100 dark:border-white/5 bg-theme-bg p-4">
                     {/* Aging breakdown */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
                       {[
@@ -362,10 +362,10 @@ export default function SupplierPayablesPanel({
                               )}
                             </div>
                             <div className="text-right">
-                              <span className="font-black text-slate-800">Rs.{((b.outstandingBalance || 0) / 1000).toFixed(0)}K</span>
+                              <span className="font-black text-slate-800 dark:text-slate-200">Rs.{((b.outstandingBalance || 0) / 1000).toFixed(0)}K</span>
                               <span className={`ml-2 px-1.5 py-0.5 rounded-full text-[9px] font-bold capitalize ${
                                 b.paymentMethod === 'credit' ? 'bg-amber-100 text-amber-700' :
-                                b.paymentMethod === 'partial' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'
+                                b.paymentMethod === 'partial' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 dark:bg-white/10 text-slate-600'
                               }`}>{b.paymentMethod}</span>
                             </div>
                           </div>

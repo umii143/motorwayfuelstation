@@ -379,7 +379,7 @@ export default function Ledger({
     {
       header: t('Description', 'تفصیل'),
       accessor: (log) => (
-        <span className="font-sans text-[11px] font-semibold text-slate-800 leading-tight block">
+        <span className="font-sans text-[11px] font-semibold text-slate-800 dark:text-slate-200 leading-tight block">
           {log.description}
         </span>
       ),
@@ -407,7 +407,7 @@ export default function Ledger({
       header: t('Balance', 'بقایا'),
       className: 'text-right',
       accessor: (log) => (
-        <span className="font-mono text-xs font-bold text-slate-900">
+        <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
           Rs. {log.balance.toLocaleString()}
         </span>
       )
@@ -435,7 +435,7 @@ export default function Ledger({
             <button
               key={filter}
               onClick={() => setTimeFilter(filter)}
-              className={`fp-date-tab ${
+              className={`fp-date-tab min-h-0 min-w-0 ${
                 timeFilter === filter
                   ? 'fp-date-tab--active !text-orange-600 !border-orange-600 bg-orange-50/50 dark:bg-orange-500/10'
                   : ''
@@ -497,10 +497,10 @@ export default function Ledger({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         
         {/* LEFT COLUMN: ACTIVE PARTIES DATABASE */}
-        <div className="space-y-4">
+        <div className="space-y-4 lg:col-span-1">
           <div className="rounded-xl border border-theme-main bg-theme-card p-4 shadow-xs space-y-3.5">
             <div className="relative">
               <Search className="absolute top-2.5 left-3 h-4 w-4 text-slate-400" />
@@ -509,7 +509,7 @@ export default function Ledger({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('Search party name...', 'کھاتہ دار کا نام تلاش کریں...')}
-                className="w-full rounded-md border border-theme-main bg-theme-bg py-1.5 pl-8 pr-3 font-sans text-xs focus:bg-white focus:outline-hidden"
+                className="w-full rounded-md border border-theme-main bg-theme-bg py-1.5 pl-8 pr-3 font-sans text-xs focus:bg-white dark:bg-[#151521] focus:outline-hidden"
               />
             </div>
 
@@ -519,12 +519,11 @@ export default function Ledger({
                 { id: 'all', label: 'All', urdu: 'تمام' },
                 { id: 'receivables', label: 'Dr (Customers)', urdu: 'صارفین' },
                 { id: 'payables', label: 'Cr (Suppliers)', urdu: 'سپلائرز' }
-               
               ].map(f => (
                 <button
                   key={f.id}
                   onClick={() => setPartyTypeFilter(f.id as any)}
-                  className={`fp-date-tab ${
+                  className={`fp-date-tab min-h-0 min-w-0 ${
                     partyTypeFilter === f.id
                       ? 'fp-date-tab--active !text-slate-800 dark:!text-slate-100 !border-slate-800 dark:!border-slate-500 bg-slate-200/50 dark:bg-slate-700/50'
                       : ''
@@ -536,11 +535,15 @@ export default function Ledger({
             </div>
           </div>
 
-          <div className="space-y-2 max-h-[460px] overflow-y-auto">
+          <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
             {unifiedParties.map(party => {
               const isCust = party.type === 'customer';
               const outstanding = party.balance;
               const isSelected = selectedParty?.id === party.id && selectedParty?.type === party.type;
+
+              const initials = party.name
+                ? party.name.trim().split(/\s+/).map(n => n[0]).join('').slice(0, 2).toUpperCase()
+                : '?';
 
               return (
                 <button
@@ -549,22 +552,27 @@ export default function Ledger({
                     setSelectedParty({ id: party.id, type: party.type });
                     setIsLedgerSheetOpen(true);
                   }}
-                  className={`relative w-full text-left kpi-card p-2 flex items-center justify-between cursor-pointer ${
+                  className={`relative w-full text-left rounded-xl border p-3 flex items-center gap-3 cursor-pointer min-h-0 min-w-0 transition-all ${
                     isSelected
-                      ? 'border-orange-500 bg-orange-50/20 dark:bg-orange-500/10'
-                      : ''
+                      ? 'border-orange-500 bg-orange-500/10 dark:bg-orange-500/15'
+                      : 'border-theme-main bg-theme-card hover:border-slate-350 dark:hover:border-white/10 hover:shadow-xs'
                   }`}
                 >
-                  <div className={`absolute top-0 bottom-0 left-0 w-0.5 rounded-l ${isCust ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
+                  <div className={`absolute top-2 bottom-2 left-0 w-1 rounded-r ${isCust ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
 
-                  <div className="pl-2 truncate flex-1">
-                    <div className="flex items-center gap-1.5 truncate">
-                      {isCust ? <Users className="h-3 w-3 text-emerald-500 shrink-0" /> : <Truck className="h-3 w-3 text-rose-500 shrink-0" />}
-                      <h4 className="font-sans text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
-                        {t(party.name, party.urduName)}
-                      </h4>
-                    </div>
+                  {/* Initials Circular Avatar */}
+                  <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 border ${
+                    isCust
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
+                      : 'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20'
+                  }`}>
+                    {initials}
+                  </div>
 
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-sans text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
+                      {t(party.name, party.urduName)}
+                    </h4>
                     <span className="font-mono text-[9px] text-slate-400 dark:text-slate-500 mt-0.5 block tracking-tight truncate">
                       📞 {party.contact}
                     </span>
@@ -604,7 +612,7 @@ export default function Ledger({
                   </div>
                 </div>
 
-                <div className="rounded-lg bg-slate-50/50 dark:bg-slate-800/50 border border-theme-main px-3 py-1.5 text-right">
+                <div className="rounded-lg bg-slate-50 dark:bg-white/5/50 dark:bg-slate-800/50 border border-theme-main px-3 py-1.5 text-right">
                   <span className="font-sans text-[8px] text-slate-400 font-bold uppercase block">
                     {selectedParty.type === 'customer' ? t('Owed to Station:', 'کسٹمر بقایا قرض:') : t('Owed by Station:', 'سپلائر بِل بقایا:')}
                   </span>
@@ -651,8 +659,8 @@ export default function Ledger({
       >
         {selectedParty && activePartyDetails && (
           <div className="space-y-6">
-            <div className="flex flex-col gap-4 items-center border-b border-slate-100 pb-4">
-              <div className="rounded-lg bg-theme-bg border border-slate-100 px-4 py-3 text-center w-full">
+            <div className="flex flex-col gap-4 items-center border-b border-slate-100 dark:border-white/5 pb-4">
+              <div className="rounded-lg bg-theme-bg border border-slate-100 dark:border-white/5 px-4 py-3 text-center w-full">
                 <span className="font-sans text-[10px] text-slate-400 font-bold uppercase block mb-1">
                   {selectedParty.type === 'customer' ? t('Owed to Station:', 'کسٹمر بقایا قرض:') : t('Owed by Station:', 'سپلائر بِل بقایا:')}
                 </span>
@@ -662,7 +670,7 @@ export default function Ledger({
 
             {/* TIMELINE LIST */}
             <div className="space-y-4">
-              <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 block">
+              <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-2 block">
                 {t('Chronological Ledger Transactions History', 'تاریخ برقی کاروباری لیجر')}
               </h4>
 

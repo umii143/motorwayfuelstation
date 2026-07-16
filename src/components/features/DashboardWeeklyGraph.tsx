@@ -27,7 +27,7 @@ export function DashboardWeeklyGraph({ data }: Props) {
     <div className="premium-card p-6 border h-[380px] flex flex-col">
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="font-bold text-slate-900 text-lg">Weekly Sales & Profit Intelligence</h3>
+          <h3 className="font-bold text-slate-900 dark:text-white text-lg">Weekly Sales & Profit Intelligence</h3>
           <p className="text-sm text-slate-500">Showing visual records matching 7 days activities</p>
         </div>
       </div>

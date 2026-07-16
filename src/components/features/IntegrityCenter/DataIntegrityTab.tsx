@@ -105,7 +105,7 @@ export default function DataIntegrityTab({ stationId, settings }: DataIntegrityT
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {checks.map(check => (
-          <div key={check.id} className="p-4 rounded-xl border border-slate-200 bg-white flex items-start gap-4">
+          <div key={check.id} className="p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] flex items-start gap-4">
             <div className={`p-2 rounded-lg ${
               check.status === 'verified' ? 'bg-emerald-50 text-emerald-500' :
               check.status === 'warning' ? 'bg-amber-50 text-amber-500' :
@@ -114,7 +114,7 @@ export default function DataIntegrityTab({ stationId, settings }: DataIntegrityT
               {check.icon}
             </div>
             <div className="flex-1">
-              <h4 className="font-bold text-slate-800">{check.name}</h4>
+              <h4 className="font-bold text-slate-800 dark:text-slate-200">{check.name}</h4>
               <p className="text-sm text-slate-500 mt-1">{check.message}</p>
             </div>
             <div>

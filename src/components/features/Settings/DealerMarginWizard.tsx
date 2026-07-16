@@ -62,7 +62,7 @@ export default function DealerMarginWizard({ language, onLogAudit, stationId }: 
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-           <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
+           <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
              <DollarSign className="h-5 w-5 text-orange-600" />
              {t('OGRA Dealer Margins', 'ڈیلر مارجن کی ترتیبات', language)}
            </h3>
@@ -87,7 +87,7 @@ export default function DealerMarginWizard({ language, onLogAudit, stationId }: 
               <select
                 value={productType}
                 onChange={(e) => setProductType(e.target.value)}
-                className="w-full rounded border border-orange-200 px-3 py-2 text-sm bg-white outline-none focus:border-orange-500"
+                className="w-full rounded border border-orange-200 px-3 py-2 text-sm bg-white dark:bg-[#151521] outline-none focus:border-orange-500"
               >
                 <option value="petrol">Petrol (PMG)</option>
                 <option value="diesel">Diesel (HSD)</option>
@@ -103,7 +103,7 @@ export default function DealerMarginWizard({ language, onLogAudit, stationId }: 
                 required
                 value={marginPerLiter}
                 onChange={(e) => setMarginPerLiter(e.target.value)}
-                className="w-full rounded border border-orange-200 px-3 py-2 text-sm bg-white outline-none focus:border-orange-500"
+                className="w-full rounded border border-orange-200 px-3 py-2 text-sm bg-white dark:bg-[#151521] outline-none focus:border-orange-500"
                 placeholder="e.g. 8.64"
               />
             </div>
@@ -114,7 +114,7 @@ export default function DealerMarginWizard({ language, onLogAudit, stationId }: 
                 required
                 value={effectiveFrom}
                 onChange={(e) => setEffectiveFrom(e.target.value)}
-                className="w-full rounded border border-orange-200 px-3 py-2 text-sm bg-white outline-none focus:border-orange-500"
+                className="w-full rounded border border-orange-200 px-3 py-2 text-sm bg-white dark:bg-[#151521] outline-none focus:border-orange-500"
               />
             </div>
             <div>
@@ -123,7 +123,7 @@ export default function DealerMarginWizard({ language, onLogAudit, stationId }: 
                 type="text"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full rounded border border-orange-200 px-3 py-2 text-sm bg-white outline-none focus:border-orange-500"
+                className="w-full rounded border border-orange-200 px-3 py-2 text-sm bg-white dark:bg-[#151521] outline-none focus:border-orange-500"
                 placeholder="e.g. OGRA Circular Aug 2024"
               />
             </div>
@@ -147,15 +147,15 @@ export default function DealerMarginWizard({ language, onLogAudit, stationId }: 
             
           return (
             <div key={prod} className="premium-card border overflow-hidden">
-               <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex justify-between items-center">
-                 <h4 className="font-bold text-slate-800 uppercase">{prod}</h4>
+               <div className="bg-slate-50 dark:bg-white/5 px-4 py-3 border-b border-slate-200 dark:border-white/10 flex justify-between items-center">
+                 <h4 className="font-bold text-slate-800 dark:text-slate-200 uppercase">{prod}</h4>
                  <span className="text-xs font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full">Current: Rs. {currentMargin.toFixed(2)}</span>
                </div>
                <div className="divide-y divide-slate-100 max-h-64 overflow-y-auto">
                  {settingsForProd.map(s => (
-                   <div key={s.id} className="p-4 flex items-center justify-between hover:bg-slate-50">
+                   <div key={s.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:bg-white/5">
                      <div>
-                       <div className="font-bold text-slate-800 text-sm">Rs. {s.marginPerLiter.toFixed(2)}</div>
+                       <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">Rs. {s.marginPerLiter.toFixed(2)}</div>
                        <div className="text-xs text-slate-500 mt-0.5">Effective: {s.effectiveFrom}</div>
                        {s.notes && <div className="text-[10px] text-slate-400 mt-1 italic">{s.notes}</div>}
                      </div>

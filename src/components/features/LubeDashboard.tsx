@@ -262,17 +262,17 @@ export default React.memo(function LubeDashboard({
   const themeWrap = "min-h-screen bg-slate-50 dark:bg-[#030712] text-slate-900 dark:text-slate-100 font-sans selection:bg-orange-500/30 overflow-x-hidden pb-32 relative transition-colors duration-500";
   
   // Layer 1: Base components (Hero, Command Centers) -> 75% Dark, 25% Contrast
-  const glassLayer1 = "backdrop-blur-[40px] bg-white/70 dark:bg-white/[0.04] border border-slate-200/60 dark:border-white/[0.08] shadow-[0_20px_80px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_20px_80px_rgba(0,0,0,0.4)] rounded-[32px] relative overflow-hidden transition-all duration-300";
+  const glassLayer1 = "backdrop-blur-[40px] bg-white dark:bg-[#151521]/70 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10/60 dark:border-white/[0.08] shadow-[0_20px_80px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_20px_80px_rgba(0,0,0,0.4)] rounded-[32px] relative overflow-hidden transition-all duration-300";
   
   // THE 10/10 LIQUID GLASS KPI CAPSULE
-  const liquidGlass = "relative overflow-hidden backdrop-blur-[30px] saturate-[150%] bg-white/65 dark:bg-transparent dark:bg-gradient-to-br dark:from-white/[0.08] dark:to-white/[0.02] border border-white/80 dark:border-white/[0.08] shadow-[0_20px_60px_rgba(15,23,42,0.08)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.15),0_20px_80px_rgba(0,0,0,0.6)] rounded-[32px] transition-all duration-500 group";
+  const liquidGlass = "relative overflow-hidden backdrop-blur-[30px] saturate-[150%] bg-white dark:bg-[#151521]/65 dark:bg-transparent dark:bg-gradient-to-br dark:from-white/[0.08] dark:to-white/[0.02] border border-white/80 dark:border-white/[0.08] shadow-[0_20px_60px_rgba(15,23,42,0.08)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.15),0_20px_80px_rgba(0,0,0,0.6)] rounded-[32px] transition-all duration-500 group";
   const liquidGlassHover = "hover:-translate-y-2 hover:shadow-[0_40px_100px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_40px_100px_rgba(0,0,0,0.8),inset_0_1px_3px_rgba(255,255,255,0.3)]";
   
   // Layer 3: Inner recessed areas
-  const glassLayer3 = "backdrop-blur-[20px] bg-slate-100/50 dark:bg-white/[0.02] border border-slate-200/50 dark:border-white/[0.04] shadow-[inset_0_2px_4px_rgb(0,0,0,0.02)] dark:shadow-[inset_0_4px_8px_rgba(0,0,0,0.6)] rounded-[24px] transition-colors duration-300";
+  const glassLayer3 = "backdrop-blur-[20px] bg-slate-100 dark:bg-white/10/50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10/50 dark:border-white/[0.04] shadow-[inset_0_2px_4px_rgb(0,0,0,0.02)] dark:shadow-[inset_0_4px_8px_rgba(0,0,0,0.6)] rounded-[24px] transition-colors duration-300";
 
   // Dock Layer
-  const dockLayer = "hidden lg:flex fixed bottom-6 left-1/2 -translate-x-1/2 backdrop-blur-[60px] bg-white/80 dark:bg-[#111827]/80 border border-slate-200/60 dark:border-white/[0.15] shadow-[0_20px_80px_rgb(0,0,0,0.15)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_40px_100px_rgba(0,0,0,0.9)] rounded-[2rem] px-3 py-3 items-center gap-1 z-[100] transition-transform duration-300 hover:scale-[1.02] transform-gpu";
+  const dockLayer = "hidden lg:flex fixed bottom-6 left-1/2 -translate-x-1/2 backdrop-blur-[60px] bg-white dark:bg-[#151521]/80 dark:bg-[#111827]/80 border border-slate-200 dark:border-white/10/60 dark:border-white/[0.15] shadow-[0_20px_80px_rgb(0,0,0,0.15)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_40px_100px_rgba(0,0,0,0.9)] rounded-[2rem] px-3 py-3 items-center gap-1 z-[100] transition-transform duration-300 hover:scale-[1.02] transform-gpu";
 
   const textSubtle = "text-slate-500 dark:text-slate-400";
   const textPrimary = "text-slate-900 dark:text-white";
@@ -327,11 +327,11 @@ export default React.memo(function LubeDashboard({
               Try Enterprise Widget Studio (V2)
             </button>
           )}
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-white/50 dark:bg-white/[0.05] hover:bg-white/80 dark:hover:bg-white/[0.1] border border-slate-200 dark:border-white/10 rounded-full text-sm font-semibold transition-colors backdrop-blur-xl shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
+          <button className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#151521]/50 dark:bg-white/[0.05] hover:bg-white dark:bg-[#151521]/80 dark:hover:bg-white dark:bg-[#151521]/[0.1] border border-slate-200 dark:border-white/10 rounded-full text-sm font-semibold transition-colors backdrop-blur-xl shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
             <span className={textPrimary}>Branch: Main</span>
             <ChevronDown className={`w-4 h-4 ${textSubtle}`} />
           </button>
-          <button className="p-2.5 bg-white/50 dark:bg-white/[0.05] hover:bg-white/80 dark:hover:bg-white/[0.1] border border-slate-200 dark:border-white/10 rounded-full transition-colors backdrop-blur-xl relative shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
+          <button className="p-2.5 bg-white dark:bg-[#151521]/50 dark:bg-white/[0.05] hover:bg-white dark:bg-[#151521]/80 dark:hover:bg-white dark:bg-[#151521]/[0.1] border border-slate-200 dark:border-white/10 rounded-full transition-colors backdrop-blur-xl relative shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
             <Bell className={`w-4 h-4 text-slate-600 dark:text-slate-300`} />
             {stats.alerts.length > 0 && (
               <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-[#030712] shadow-[0_0_10px_rgba(239,68,68,0.5)]"></span>
@@ -355,7 +355,7 @@ export default React.memo(function LubeDashboard({
           
           <div className="flex justify-between items-start relative z-10 mb-6">
             <h2 className={`text-[10px] font-black ${textSubtle} uppercase tracking-[0.2em]`}>Today's Performance</h2>
-            <div className="px-3 py-1 bg-white/50 dark:bg-white/[0.03] rounded-full border border-slate-200 dark:border-white/10 text-[10px] font-bold text-slate-600 dark:text-slate-300 shadow-sm dark:shadow-inner flex items-center gap-1.5">
+            <div className="px-3 py-1 bg-white dark:bg-[#151521]/50 dark:bg-white/[0.03] rounded-full border border-slate-200 dark:border-white/10 text-[10px] font-bold text-slate-600 dark:text-slate-300 shadow-sm dark:shadow-inner flex items-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
               Business Health: {stats.bizScore}%
             </div>
@@ -472,7 +472,7 @@ export default React.memo(function LubeDashboard({
 
           <div className="flex justify-between items-start mb-2 relative z-10">
             <div className={`text-[10px] font-black uppercase tracking-widest ${textSubtle} group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors`}>Cash Position</div>
-            <div className="p-2 bg-white/80 dark:bg-white/[0.05] border border-white/50 dark:border-white/10 rounded-[14px] text-slate-500 dark:text-white shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]"><Wallet className="w-4 h-4" /></div>
+            <div className="p-2 bg-white dark:bg-[#151521]/80 dark:bg-white/[0.05] border border-white/50 dark:border-white/10 rounded-[14px] text-slate-500 dark:text-white shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]"><Wallet className="w-4 h-4" /></div>
           </div>
           <div className="relative z-10 flex flex-col items-start gap-1">
             <div className={`text-3xl font-black drop-shadow-sm dark:drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] ${textValue}`}>
@@ -484,7 +484,7 @@ export default React.memo(function LubeDashboard({
           </div>
           
           <div className="absolute bottom-0 left-0 right-0 h-20 opacity-40 dark:opacity-50 pointer-events-none translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-             <Suspense fallback={<div className="w-full h-full animate-pulse bg-white/5"></div>}>
+             <Suspense fallback={<div className="w-full h-full animate-pulse bg-white dark:bg-[#151521]/5"></div>}>
                <LazyLubeSparklineChart data={stats.chartData} dataKey="sales" color="#10b981" />
              </Suspense>
           </div>
@@ -497,7 +497,7 @@ export default React.memo(function LubeDashboard({
 
           <div className="flex justify-between items-start mb-2 relative z-10">
             <div className={`text-[10px] font-black uppercase tracking-widest ${textSubtle} group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors`}>Receivables</div>
-            <div className="p-2 bg-white/80 dark:bg-white/[0.05] border border-white/50 dark:border-white/10 rounded-[14px] text-amber-500 dark:text-white shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]"><Briefcase className="w-4 h-4" /></div>
+            <div className="p-2 bg-white dark:bg-[#151521]/80 dark:bg-white/[0.05] border border-white/50 dark:border-white/10 rounded-[14px] text-amber-500 dark:text-white shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]"><Briefcase className="w-4 h-4" /></div>
           </div>
           <div className="relative z-10 flex flex-col items-start gap-1">
             <div className={`text-3xl font-black drop-shadow-sm dark:drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] ${textValue}`}>
@@ -516,7 +516,7 @@ export default React.memo(function LubeDashboard({
 
           <div className="flex justify-between items-start mb-2 relative z-10">
             <div className={`text-[10px] font-black uppercase tracking-widest ${textSubtle} group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors`}>Inventory Value</div>
-            <div className="p-2 bg-white/80 dark:bg-white/[0.05] border border-white/50 dark:border-white/10 rounded-[14px] text-indigo-500 dark:text-white shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]"><PackageOpen className="w-4 h-4" /></div>
+            <div className="p-2 bg-white dark:bg-[#151521]/80 dark:bg-white/[0.05] border border-white/50 dark:border-white/10 rounded-[14px] text-indigo-500 dark:text-white shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]"><PackageOpen className="w-4 h-4" /></div>
           </div>
           <div className="relative z-10 flex flex-col items-start gap-1">
             <div className={`text-3xl font-black drop-shadow-sm dark:drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] ${textValue}`}>
@@ -535,7 +535,7 @@ export default React.memo(function LubeDashboard({
 
           <div className="flex justify-between items-start mb-2 relative z-10">
             <div className={`text-[10px] font-black uppercase tracking-widest ${textSubtle} group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors`}>Profit Margin</div>
-            <div className="p-2 bg-white/80 dark:bg-white/[0.05] border border-white/50 dark:border-white/10 rounded-[14px] text-emerald-500 dark:text-white shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]"><Activity className="w-4 h-4" /></div>
+            <div className="p-2 bg-white dark:bg-[#151521]/80 dark:bg-white/[0.05] border border-white/50 dark:border-white/10 rounded-[14px] text-emerald-500 dark:text-white shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]"><Activity className="w-4 h-4" /></div>
           </div>
           <div className="relative z-10 flex flex-col items-start gap-1">
             <div className={`text-3xl font-black drop-shadow-sm dark:drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] ${textValue}`}>
@@ -546,7 +546,7 @@ export default React.memo(function LubeDashboard({
             </div>
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-20 opacity-40 dark:opacity-50 pointer-events-none translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-             <Suspense fallback={<div className="w-full h-full animate-pulse bg-white/5"></div>}>
+             <Suspense fallback={<div className="w-full h-full animate-pulse bg-white dark:bg-[#151521]/5"></div>}>
                <LazyLubeSparklineChart data={stats.chartData} dataKey="profit" color={stats.profitGrowth >= 0 ? "#10b981" : "#ef4444"} />
              </Suspense>
           </div>
@@ -557,7 +557,7 @@ export default React.memo(function LubeDashboard({
         {/* ========================================================= */}
         
         {/* Financial Command Center */}
-        <DeferredWidget delay={300} className="md:col-span-4" skeleton={<div className={`h-[300px] ${glassLayer1} animate-pulse bg-white/5`}></div>}>
+        <DeferredWidget delay={300} className="md:col-span-4" skeleton={<div className={`h-[300px] ${glassLayer1} animate-pulse bg-white dark:bg-[#151521]/5`}></div>}>
           <motion.div variants={itemVariant} className={`${glassLayer1} p-6 h-full`}>
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
           <div className="flex justify-between items-center mb-6">
@@ -600,7 +600,7 @@ export default React.memo(function LubeDashboard({
         </DeferredWidget>
 
         {/* Chart (With Smaller Empty State) */}
-        <DeferredWidget delay={600} className="md:col-span-8" skeleton={<div className={`h-[300px] ${glassLayer1} animate-pulse bg-white/5`}></div>}>
+        <DeferredWidget delay={600} className="md:col-span-8" skeleton={<div className={`h-[300px] ${glassLayer1} animate-pulse bg-white dark:bg-[#151521]/5`}></div>}>
           <motion.div variants={itemVariant} className={`${glassLayer1} p-6 h-full`}>
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
           <div className="flex justify-between items-center mb-6">
@@ -615,14 +615,14 @@ export default React.memo(function LubeDashboard({
           </div>
           <div className="w-full">
             {stats.chartData.every(d => d.sales === 0) ? (
-              <div className="w-full h-[120px] flex flex-col items-center justify-center text-sm border border-dashed rounded-[24px] font-medium shadow-inner text-slate-400 border-slate-300 bg-slate-100/50 dark:text-slate-500 dark:border-white/10 dark:bg-[#030712]/30">
+              <div className="w-full h-[120px] flex flex-col items-center justify-center text-sm border border-dashed rounded-[24px] font-medium shadow-inner text-slate-400 border-slate-300 bg-slate-100 dark:bg-white/10/50 dark:text-slate-500 dark:border-white/10 dark:bg-[#030712]/30">
                 <Activity className="w-6 h-6 mb-2 opacity-50" />
                 <span className="text-slate-600 dark:text-slate-400 font-bold">No transaction history yet</span>
                 <span className="text-xs mt-1">Create sales to unlock cash flow analytics.</span>
               </div>
             ) : (
               <div className="h-[210px] w-full">
-                 <Suspense fallback={<div className="w-full h-full flex items-center justify-center animate-pulse bg-slate-100/50 dark:bg-white/5 rounded-2xl"></div>}>
+                 <Suspense fallback={<div className="w-full h-full flex items-center justify-center animate-pulse bg-slate-100 dark:bg-white/10/50 dark:bg-white/5 rounded-2xl"></div>}>
                    <LazyLubeCashFlowChart data={stats.chartData} settings={settings} />
                  </Suspense>
               </div>
@@ -636,7 +636,7 @@ export default React.memo(function LubeDashboard({
         {/* ========================================================= */}
 
         {/* Real-Time Activity Feed */}
-        <DeferredWidget delay={900} className="md:col-span-4 flex flex-col" skeleton={<div className={`h-[300px] ${glassLayer1} animate-pulse bg-white/5`}></div>}>
+        <DeferredWidget delay={900} className="md:col-span-4 flex flex-col" skeleton={<div className={`h-[300px] ${glassLayer1} animate-pulse bg-white dark:bg-[#151521]/5`}></div>}>
           <motion.div variants={itemVariant} className={`${glassLayer1} p-6 h-full flex flex-col`}>
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
           <div className="flex justify-between items-center mb-6">
@@ -648,13 +648,13 @@ export default React.memo(function LubeDashboard({
 
           <div className="flex-1 overflow-y-auto pr-2 space-y-4 max-h-[250px] scrollbar-hide">
             {stats.feed.length === 0 ? (
-              <div className="w-full h-full min-h-[150px] flex flex-col items-center justify-center text-sm border border-dashed rounded-[24px] font-medium shadow-inner text-slate-400 border-slate-300 bg-slate-100/50 dark:text-slate-500 dark:border-white/10 dark:bg-[#030712]/30">
+              <div className="w-full h-full min-h-[150px] flex flex-col items-center justify-center text-sm border border-dashed rounded-[24px] font-medium shadow-inner text-slate-400 border-slate-300 bg-slate-100 dark:bg-white/10/50 dark:text-slate-500 dark:border-white/10 dark:bg-[#030712]/30">
                 <Clock className="w-6 h-6 mb-2 opacity-50" />
                 <span>No activity recorded today</span>
               </div>
             ) : (
               stats.feed.map((item, i) => (
-                <div key={i} className="flex gap-4 group cursor-pointer hover:bg-slate-50 dark:hover:bg-white/[0.03] p-2 -m-2 rounded-xl transition-colors">
+                <div key={i} className="flex gap-4 group cursor-pointer hover:bg-slate-50 dark:hover:bg-white dark:bg-[#151521]/[0.03] p-2 -m-2 rounded-xl transition-colors">
                   <div className="flex flex-col items-center">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center border shadow-sm dark:shadow-inner ${item.bg} ${item.color}`}>
                       <item.icon className="w-3.5 h-3.5" />
@@ -679,7 +679,7 @@ export default React.memo(function LubeDashboard({
         </DeferredWidget>
 
         {/* AI Business Assistant */}
-        <DeferredWidget delay={900} className="md:col-span-8 flex flex-col" skeleton={<div className={`h-[300px] ${glassLayer1} animate-pulse bg-white/5`}></div>}>
+        <DeferredWidget delay={900} className="md:col-span-8 flex flex-col" skeleton={<div className={`h-[300px] ${glassLayer1} animate-pulse bg-white dark:bg-[#151521]/5`}></div>}>
           <motion.div variants={itemVariant} className={`${glassLayer1} p-6 h-full flex flex-col justify-between`}>
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
           <div className="flex justify-between items-center mb-6">
@@ -690,13 +690,13 @@ export default React.memo(function LubeDashboard({
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {stats.topProductsToday.length === 0 ? (
-              <div className="col-span-2 w-full h-[150px] flex flex-col items-center justify-center text-sm border border-dashed rounded-[24px] font-medium shadow-inner text-slate-400 border-slate-300 bg-slate-100/50 dark:text-slate-500 dark:border-white/10 dark:bg-[#030712]/30">
+              <div className="col-span-2 w-full h-[150px] flex flex-col items-center justify-center text-sm border border-dashed rounded-[24px] font-medium shadow-inner text-slate-400 border-slate-300 bg-slate-100 dark:bg-white/10/50 dark:text-slate-500 dark:border-white/10 dark:bg-[#030712]/30">
                 <PackageOpen className="w-6 h-6 mb-2 opacity-50" />
                 <span className="text-slate-600 dark:text-slate-400 font-bold">No products sold today</span>
               </div>
             ) : (
               stats.topProductsToday.map((prod, idx) => (
-                <div key={idx} className={`flex items-center gap-4 group ${glassLayer3} p-3 rounded-2xl transition-colors cursor-pointer hover:bg-white/50 dark:hover:bg-white/[0.05]`}>
+                <div key={idx} className={`flex items-center gap-4 group ${glassLayer3} p-3 rounded-2xl transition-colors cursor-pointer hover:bg-white dark:bg-[#151521]/50 dark:hover:bg-white dark:bg-[#151521]/[0.05]`}>
                   <div className="text-lg font-black text-slate-400 dark:text-slate-600 w-4 text-center group-hover:text-orange-500 transition-colors">#{idx+1}</div>
                   <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#030712] border border-slate-200 dark:border-white/5 flex items-center justify-center shrink-0 shadow-sm dark:shadow-inner">
                     <PackageOpen className={`w-5 h-5 ${textSubtle}`} />
@@ -754,7 +754,7 @@ export default React.memo(function LubeDashboard({
 
           {/* Right: Version */}
           <div className="flex items-center">
-            <div className="px-4 py-2 rounded-[14px] bg-white/50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 text-xs font-black text-slate-500 dark:text-slate-400 shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
+            <div className="px-4 py-2 rounded-[14px] bg-white dark:bg-[#151521]/50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 text-xs font-black text-slate-500 dark:text-slate-400 shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
               V2.5
             </div>
           </div>
@@ -771,16 +771,16 @@ export default React.memo(function LubeDashboard({
           <Plus className="w-6 h-6 text-white drop-shadow-md" />
         </button>
         <div className="w-px h-10 bg-slate-300 dark:bg-white/10 mx-1 shadow-none dark:shadow-[1px_0_0_rgba(0,0,0,0.5)]"></div>
-        <button onClick={() => onNavigate('customers')} className="group relative flex flex-col items-center justify-center w-14 h-14 rounded-[1.25rem] bg-white/70 dark:bg-white/[0.05] border border-white/80 dark:border-white/10 shadow-[0_4px_12px_rgba(15,23,42,0.05)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] hover:bg-white dark:hover:bg-white/[0.1] hover:scale-110 hover:-translate-y-2 transition-all duration-300 mx-1" title="Customers">
+        <button onClick={() => onNavigate('customers')} className="group relative flex flex-col items-center justify-center w-14 h-14 rounded-[1.25rem] bg-white dark:bg-[#151521]/70 dark:bg-white/[0.05] border border-white/80 dark:border-white/10 shadow-[0_4px_12px_rgba(15,23,42,0.05)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] hover:bg-white dark:hover:bg-white dark:bg-[#151521]/[0.1] hover:scale-110 hover:-translate-y-2 transition-all duration-300 mx-1" title="Customers">
           <Users className="w-6 h-6 text-slate-500 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white drop-shadow-sm" />
         </button>
-        <button onClick={() => onNavigate('inventory')} className="group relative flex flex-col items-center justify-center w-14 h-14 rounded-[1.25rem] bg-white/70 dark:bg-white/[0.05] border border-white/80 dark:border-white/10 shadow-[0_4px_12px_rgba(15,23,42,0.05)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] hover:bg-white dark:hover:bg-white/[0.1] hover:scale-110 hover:-translate-y-2 transition-all duration-300 mx-1" title="Inventory">
+        <button onClick={() => onNavigate('inventory')} className="group relative flex flex-col items-center justify-center w-14 h-14 rounded-[1.25rem] bg-white dark:bg-[#151521]/70 dark:bg-white/[0.05] border border-white/80 dark:border-white/10 shadow-[0_4px_12px_rgba(15,23,42,0.05)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] hover:bg-white dark:hover:bg-white dark:bg-[#151521]/[0.1] hover:scale-110 hover:-translate-y-2 transition-all duration-300 mx-1" title="Inventory">
           <PackageOpen className="w-6 h-6 text-slate-500 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white drop-shadow-sm" />
         </button>
-        <button onClick={() => onNavigate('expenses')} className="group relative flex flex-col items-center justify-center w-14 h-14 rounded-[1.25rem] bg-white/70 dark:bg-white/[0.05] border border-white/80 dark:border-white/10 shadow-[0_4px_12px_rgba(15,23,42,0.05)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] hover:bg-white dark:hover:bg-white/[0.1] hover:scale-110 hover:-translate-y-2 transition-all duration-300 mx-1" title="Expenses">
+        <button onClick={() => onNavigate('expenses')} className="group relative flex flex-col items-center justify-center w-14 h-14 rounded-[1.25rem] bg-white dark:bg-[#151521]/70 dark:bg-white/[0.05] border border-white/80 dark:border-white/10 shadow-[0_4px_12px_rgba(15,23,42,0.05)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] hover:bg-white dark:hover:bg-white dark:bg-[#151521]/[0.1] hover:scale-110 hover:-translate-y-2 transition-all duration-300 mx-1" title="Expenses">
           <Receipt className="w-6 h-6 text-slate-500 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white drop-shadow-sm" />
         </button>
-        <button onClick={() => onNavigate('stock_purchases')} className="group relative flex flex-col items-center justify-center w-14 h-14 rounded-[1.25rem] bg-white/70 dark:bg-white/[0.05] border border-white/80 dark:border-white/10 shadow-[0_4px_12px_rgba(15,23,42,0.05)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] hover:bg-white dark:hover:bg-white/[0.1] hover:scale-110 hover:-translate-y-2 transition-all duration-300 mx-1" title="Purchases">
+        <button onClick={() => onNavigate('stock_purchases')} className="group relative flex flex-col items-center justify-center w-14 h-14 rounded-[1.25rem] bg-white dark:bg-[#151521]/70 dark:bg-white/[0.05] border border-white/80 dark:border-white/10 shadow-[0_4px_12px_rgba(15,23,42,0.05)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] hover:bg-white dark:hover:bg-white dark:bg-[#151521]/[0.1] hover:scale-110 hover:-translate-y-2 transition-all duration-300 mx-1" title="Purchases">
           <Truck className="w-6 h-6 text-slate-500 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white drop-shadow-sm" />
         </button>
       </div>

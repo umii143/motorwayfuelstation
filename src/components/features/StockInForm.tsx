@@ -64,13 +64,13 @@ const SectionHeader = ({
   <button
     type="button"
     onClick={() => toggleSection(sectionKey)}
-    className="w-full flex items-center justify-between text-left py-3 px-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors group border border-slate-200"
+    className="w-full flex items-center justify-between text-left py-3 px-4 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:bg-white/10 transition-colors group border border-slate-200 dark:border-white/10"
   >
     <div className="flex items-center gap-2.5">
       <div className="size-7 rounded-lg bg-orange-100 flex items-center justify-center">
         <Icon className="size-3.5 text-orange-600" />
       </div>
-      <span className="font-bold text-sm text-slate-800 uppercase tracking-wide">{title}</span>
+      <span className="font-bold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wide">{title}</span>
       {badge && (
         <span className={`text-xs px-2 py-0.5 rounded-full font-semibold
           ${badgeColor === 'emerald' ? 'bg-emerald-100 text-emerald-700' :
@@ -567,19 +567,19 @@ export default function StockInForm({
     }
   };
 
-  const inputCls = "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none text-sm transition-colors";
-  const selectCls = "w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800 focus:border-orange-500 focus:bg-white focus:outline-none text-sm";
+  const inputCls = "w-full rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] px-3 py-2 text-slate-800 dark:text-slate-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none text-sm transition-colors";
+  const selectCls = "w-full rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-3 py-2 text-slate-800 dark:text-slate-200 focus:border-orange-500 focus:bg-white dark:bg-[#151521] focus:outline-none text-sm";
 
   // ─── POST-SAVE RECEIPT VIEW ───────────────────────────────────────────────────
   if (savedBatch) {
     return (
       <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-0 sm:p-4 bg-slate-900/70 backdrop-blur-sm overflow-y-auto">
-        <div className="bg-white rounded-none sm:rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden sm:my-8">
+        <div className="bg-white dark:bg-[#151521] rounded-none sm:rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden sm:my-8">
           {/* Receipt Header */}
           <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 px-6 py-6 text-white">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="size-12 rounded-xl bg-white/20 flex items-center justify-center">
+                <div className="size-12 rounded-xl bg-white dark:bg-[#151521]/20 flex items-center justify-center">
                   <CheckCircle className="size-6 text-white" />
                 </div>
                 <div>
@@ -587,7 +587,7 @@ export default function StockInForm({
                   <p className="text-emerald-100 text-sm">#{savedBatch.batchNumber}</p>
                 </div>
               </div>
-              <button onClick={onClose} className="p-2 text-white/70 hover:text-white rounded-full hover:bg-white/10">
+              <button onClick={onClose} className="p-2 text-white/70 hover:text-white rounded-full hover:bg-white dark:bg-[#151521]/10">
                 <X className="size-5" />
               </button>
             </div>
@@ -595,7 +595,7 @@ export default function StockInForm({
 
           <div className="p-6 space-y-4">
             {/* Cost Summary */}
-            <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+            <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-4 border border-slate-200 dark:border-white/10">
               <h3 className="font-bold text-sm text-slate-700 uppercase tracking-wide mb-3 flex items-center gap-2">
                 <Receipt className="size-4 text-orange-600" /> WHAT YOU PAID
               </h3>
@@ -618,7 +618,7 @@ export default function StockInForm({
                     <span className="font-semibold">Rs. {savedBatch.carriageAmount?.toLocaleString()}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-sm font-bold text-slate-800 border-t border-slate-200 pt-2 mt-2">
+                <div className="flex justify-between text-sm font-bold text-slate-800 dark:text-slate-200 border-t border-slate-200 dark:border-white/10 pt-2 mt-2">
                   <span>TOTAL LANDED COST</span>
                   <span>Rs. {(savedBatch.totalLandedCost || 0).toLocaleString('en-PK', { minimumFractionDigits: 2 })}</span>
                 </div>
@@ -689,13 +689,13 @@ export default function StockInForm({
         {/* Claim Prompt Modal */}
         {showClaimPrompt && pendingClaimData && (
           <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/50">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div className="bg-white dark:bg-[#151521] rounded-2xl shadow-2xl max-w-md w-full p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="size-12 rounded-xl bg-red-100 flex items-center justify-center">
                   <AlertTriangle className="size-6 text-red-600" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800">
+                  <h3 className="font-bold text-slate-800 dark:text-slate-200">
                     {pendingClaimData.claimType === 'seal_broken' ? 'Seal Integrity Issue!' : 'Short Quantity Detected!'}
                   </h3>
                   <p className="text-sm text-slate-500">Raise a claim with {pendingClaimData.supplierName}?</p>
@@ -727,7 +727,7 @@ export default function StockInForm({
               <div className="flex gap-3">
                 <button
                   onClick={() => { setShowClaimPrompt(false); }}
-                  className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-medium hover:bg-slate-50"
+                  className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 font-medium hover:bg-slate-50 dark:bg-white/5"
                 >
                   Skip for Now
                 </button>
@@ -752,12 +752,12 @@ export default function StockInForm({
   // ─── MAIN FORM ────────────────────────────────────────────────────────────────
   return (
     <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white rounded-none sm:rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden sm:my-8 min-h-screen sm:min-h-0 flex flex-col">
+      <div className="bg-white dark:bg-[#151521] rounded-none sm:rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden sm:my-8 min-h-screen sm:min-h-0 flex flex-col">
 
         {/* ─── HEADER ─────────────────────────────────────────────────────────── */}
         <div className="bg-gradient-to-r from-orange-600 to-orange-500 px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between sticky top-0 z-10">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+            <div className="size-10 rounded-xl bg-white dark:bg-[#151521]/20 flex items-center justify-center shrink-0">
               <Truck className="size-5 text-white" />
             </div>
             <div>
@@ -767,7 +767,7 @@ export default function StockInForm({
               <p className="text-orange-100 text-xs">Enterprise Costing Engine · Batch {generateBatchNumber(currentProd?.name || 'FUEL', stockBatches.length)}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 text-white/70 hover:text-white rounded-full hover:bg-white/10 transition-colors">
+          <button onClick={onClose} className="p-2 text-white/70 hover:text-white rounded-full hover:bg-white dark:bg-[#151521]/10 transition-colors">
             <X className="size-5" />
           </button>
         </div>
@@ -779,10 +779,10 @@ export default function StockInForm({
             <div className="xl:col-span-2 space-y-4">
 
               {/* DELIVERY INFO — always visible */}
-              <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-4">
-                <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+              <div className="bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 rounded-xl p-4 space-y-4">
+                <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-white/5">
                   <Building2 className="size-4 text-orange-600" />
-                  <h3 className="font-bold text-sm text-slate-800 uppercase tracking-wide">Delivery Info</h3>
+                  <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wide">Delivery Info</h3>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -853,10 +853,10 @@ export default function StockInForm({
               </div>
 
               {/* ─── QUANTITY & DIP ─────────────────────────────────────────────── */}
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <div className="border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
                 <SectionHeader title="Quantity & Dip Readings" icon={Gauge} sectionKey="quantity"  openSections={openSections} toggleSection={toggleSection} />
                 {openSections.quantity && (
-                  <div className="p-4 space-y-4 bg-white">
+                  <div className="p-4 space-y-4 bg-white dark:bg-[#151521]">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <Field label="Qty on Invoice (L) *">
                         <div className="relative">
@@ -889,7 +889,7 @@ export default function StockInForm({
                     </div>
 
                     {/* Dip Readings */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100 dark:border-white/5">
                       <Field label="Tank Dip Before">
                         <div className="relative">
                           <input type="number" step="1" value={dipBefore}
@@ -909,7 +909,7 @@ export default function StockInForm({
                       </Field>
 
                       <Field label="Expected After">
-                        <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-mono text-slate-600">
+                        <div className="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-3 py-2 text-sm font-mono text-slate-600">
                           {dipBefore && numQtyReceived > 0
                             ? `${(Number(dipBefore) + numQtyReceived).toLocaleString()} L`
                             : '—'}
@@ -930,21 +930,21 @@ export default function StockInForm({
               </div>
 
               {/* ─── INVOICE PRICING ──────────────────────────────────────────── */}
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <div className="border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
                 <SectionHeader title="Invoice Pricing" icon={Receipt} sectionKey="pricing" badge="KEY" badgeColor="orange"  openSections={openSections} toggleSection={toggleSection} />
                 {openSections.pricing && (
-                  <div className="p-4 space-y-4 bg-white">
+                  <div className="p-4 space-y-4 bg-white dark:bg-[#151521]">
 
                     {/* Entry Mode Toggle */}
-                    <div className="flex rounded-xl overflow-hidden border border-slate-200">
+                    <div className="flex rounded-xl overflow-hidden border border-slate-200 dark:border-white/10">
                       <button type="button"
                         onClick={() => setPriceEntryMode('total')}
-                        className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${priceEntryMode === 'total' ? 'bg-orange-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>
+                        className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${priceEntryMode === 'total' ? 'bg-orange-600 text-white' : 'bg-white dark:bg-[#151521] text-slate-600 hover:bg-slate-50 dark:bg-white/5'}`}>
                         ● Enter Total Invoice Amount (Recommended)
                       </button>
                       <button type="button"
                         onClick={() => setPriceEntryMode('perLiter')}
-                        className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${priceEntryMode === 'perLiter' ? 'bg-orange-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>
+                        className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${priceEntryMode === 'perLiter' ? 'bg-orange-600 text-white' : 'bg-white dark:bg-[#151521] text-slate-600 hover:bg-slate-50 dark:bg-white/5'}`}>
                         ○ Enter Custom Purchase Price (w/ Discount)
                       </button>
                     </div>
@@ -1002,9 +1002,9 @@ export default function StockInForm({
                         <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
                           OGRA Dealer Margin 🔒
                         </label>
-                        <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm flex items-center justify-between">
+                        <div className="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-3 py-2 text-sm flex items-center justify-between">
                           <span className="text-slate-600">Fixed by OGRA</span>
-                          <span className="font-bold text-slate-800">Rs. {dealerMargin.toFixed(2)}/L</span>
+                          <span className="font-bold text-slate-800 dark:text-slate-200">Rs. {dealerMargin.toFixed(2)}/L</span>
                         </div>
                       </div>
                     </div>
@@ -1023,10 +1023,10 @@ export default function StockInForm({
               </div>
 
               {/* ─── EXTRA COSTS ──────────────────────────────────────────────── */}
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <div className="border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
                 <SectionHeader title="Extra Costs" icon={CreditCard} sectionKey="extraCosts"  openSections={openSections} toggleSection={toggleSection} />
                 {openSections.extraCosts && (
-                  <div className="p-4 space-y-4 bg-white">
+                  <div className="p-4 space-y-4 bg-white dark:bg-[#151521]">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <Field label="Separate Carriage (Rs.)" hint={supplierRule?.carriageInvoiced ? 'PSO/Shell: leave as 0 — included in invoice' : 'Attock/GO: enter the separate carriage bill amount'}>
@@ -1090,12 +1090,12 @@ export default function StockInForm({
               </div>
 
               {/* ─── SEAL VERIFICATION ────────────────────────────────────────── */}
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <div className="border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
                 <SectionHeader title="Seal Verification" icon={Shield} sectionKey="sealVerification"
                   badge={sealEval && sealEval.status !== 'ok' && sealEval.status !== 'pending' ? sealEval.status.toUpperCase() : undefined}
                   badgeColor="red"  openSections={openSections} toggleSection={toggleSection} />
                 {openSections.sealVerification && (
-                  <div className="p-4 space-y-4 bg-white">
+                  <div className="p-4 space-y-4 bg-white dark:bg-[#151521]">
                     <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-4">
                       <Field label="Seal No. From">
                         <input type="text" value={sealFrom} onChange={e => setSealFrom(e.target.value)}
@@ -1106,7 +1106,7 @@ export default function StockInForm({
                           className={inputCls} placeholder="920862" />
                       </Field>
                       <Field label="Expected Count">
-                        <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 font-mono">
+                        <div className="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-3 py-2 text-sm text-slate-600 font-mono">
                           {sealEval ? sealEval.expectedCount : '—'}
                         </div>
                       </Field>
@@ -1124,7 +1124,7 @@ export default function StockInForm({
                             ${(sealEval?.status === status || (!sealEval && sealStatusOverride === status))
                               ? status === 'ok' ? 'bg-emerald-600 border-emerald-600 text-white'
                                 : 'bg-red-600 border-red-600 text-white'
-                              : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'}`}>
+                              : 'bg-white dark:bg-[#151521] border-slate-200 dark:border-white/10 text-slate-600 hover:border-slate-300'}`}>
                           <input type="radio" name="sealStatus" value={status}
                             checked={sealEval ? sealEval.status === status : sealStatusOverride === status}
                             onChange={() => setSealStatusOverride(status)}
@@ -1152,10 +1152,10 @@ export default function StockInForm({
               </div>
 
               {/* ─── QUALITY / TRACEABILITY ───────────────────────────────────── */}
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <div className="border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
                 <SectionHeader title="Batch Quality Data" icon={FlaskConical} sectionKey="quality"  openSections={openSections} toggleSection={toggleSection} />
                 {openSections.quality && (
-                  <div className="p-4 space-y-4 bg-white">
+                  <div className="p-4 space-y-4 bg-white dark:bg-[#151521]">
                     <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 gap-4">
                       <Field label="Observed Gravity" hint="From Attock/PSO invoice">
                         <input type="number" step="0.0001" value={observedGravity}
@@ -1188,10 +1188,10 @@ export default function StockInForm({
               </div>
 
               {/* ─── DRIVER INFO ──────────────────────────────────────────────── */}
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <div className="border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
                 <SectionHeader title="Driver Info" icon={User} sectionKey="driverInfo"  openSections={openSections} toggleSection={toggleSection} />
                 {openSections.driverInfo && (
-                  <div className="p-4 space-y-4 bg-white">
+                  <div className="p-4 space-y-4 bg-white dark:bg-[#151521]">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <Field label="Driver Name">
                         <input type="text" value={driverName} onChange={e => setDriverName(e.target.value)}
@@ -1216,15 +1216,15 @@ export default function StockInForm({
               </div>
 
               {/* ─── PAYMENT ──────────────────────────────────────────────────── */}
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <div className="border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
                 <SectionHeader title="Payment" icon={CreditCard} sectionKey="payment"  openSections={openSections} toggleSection={toggleSection} />
                 {openSections.payment && (
-                  <div className="p-4 space-y-4 bg-white">
+                  <div className="p-4 space-y-4 bg-white dark:bg-[#151521]">
                     <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-3">
                       {(['credit', 'cash', 'bank', 'partial'] as const).map(mode => (
                         <button key={mode} type="button"
                           onClick={() => { setPaymentMethod(mode); if (mode === 'cash' || mode === 'bank') setAmountPaid((metrics?.totalLandedCost || 0).toFixed(2)); if (mode === 'credit') setAmountPaid(''); }}
-                          className={`py-2.5 rounded-xl text-sm font-semibold border transition-colors ${paymentMethod === mode ? 'bg-orange-600 border-orange-600 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-orange-300'}`}>
+                          className={`py-2.5 rounded-xl text-sm font-semibold border transition-colors ${paymentMethod === mode ? 'bg-orange-600 border-orange-600 text-white' : 'bg-white dark:bg-[#151521] border-slate-200 dark:border-white/10 text-slate-600 hover:border-orange-300'}`}>
                           {mode === 'credit' ? '📝 Credit' : mode === 'cash' ? '💵 Cash' : mode === 'bank' ? '🏦 Bank' : '💳 Partial'}
                         </button>
                       ))}
@@ -1385,7 +1385,7 @@ export default function StockInForm({
 
                 {/* Batch Info Preview */}
                 {metrics && (
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2 text-xs">
+                  <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-4 space-y-2 text-xs">
                     <p className="font-bold text-slate-700 text-sm">Batch Preview</p>
                     <div className="space-y-1.5 text-slate-600">
                       <div className="flex justify-between">
@@ -1414,9 +1414,9 @@ export default function StockInForm({
           </div>
 
           {/* ─── FOOTER ACTIONS ───────────────────────────────────────────────── */}
-          <div className="sticky bottom-0 bg-white border-t border-slate-200 px-4 sm:px-6 py-4 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
+          <div className="sticky bottom-0 bg-white dark:bg-[#151521] border-t border-slate-200 dark:border-white/10 px-4 sm:px-6 py-4 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
             <button type="button" onClick={onClose}
-              className="px-6 py-3 sm:py-2.5 rounded-xl font-medium text-slate-600 hover:bg-slate-100 transition-colors w-full sm:w-auto text-center border border-slate-200">
+              className="px-6 py-3 sm:py-2.5 rounded-xl font-medium text-slate-600 hover:bg-slate-100 dark:bg-white/10 transition-colors w-full sm:w-auto text-center border border-slate-200 dark:border-white/10">
               Cancel
             </button>
             <button type="submit" disabled={saving || validationMessages.some(v => v.severity === 'error')}

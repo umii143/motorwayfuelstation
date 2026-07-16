@@ -69,7 +69,7 @@ export const LanguageSelect: React.FC<LanguageSelectProps> = ({ onSelect }) => {
             whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.15)' }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onSelect('en')}
-            className="w-full bg-white/5 hover:bg-white/10 border border-white/10 p-5 rounded-2xl flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer"
+            className="w-full bg-white dark:bg-[#151521]/5 hover:bg-white dark:bg-[#151521]/10 border border-white/10 p-5 rounded-2xl flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer"
           >
             <span className="text-xl font-bold text-white tracking-wide font-sans">English</span>
             <span className="text-slate-400 text-[10px] uppercase tracking-widest font-bold">English Language</span>

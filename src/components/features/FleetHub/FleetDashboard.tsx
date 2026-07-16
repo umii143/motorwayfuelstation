@@ -104,8 +104,8 @@ export default function FleetDashboard({ settings, stationId }: FleetDashboardPr
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Alerts / Credit Limits */}
         <div className="premium-card border overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-            <h3 className="font-bold text-sm text-slate-800 flex items-center gap-2">
+          <div className="px-5 py-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-white/5/50">
+            <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-rose-500" />
               Credit Limit Alerts
             </h3>
@@ -115,9 +115,9 @@ export default function FleetDashboard({ settings, stationId }: FleetDashboardPr
           </div>
           <div className="divide-y divide-slate-100">
             {overLimitAccounts.map(acc => (
-              <div key={acc.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition">
+              <div key={acc.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:bg-white/5 transition">
                 <div>
-                  <div className="font-bold text-slate-900 text-sm">{acc.companyName}</div>
+                  <div className="font-bold text-slate-900 dark:text-white text-sm">{acc.companyName}</div>
                   <div className="text-xs text-slate-500 mt-0.5">Contact: {acc.contactPerson} ({acc.phone})</div>
                 </div>
                 <div className="text-right">
@@ -139,8 +139,8 @@ export default function FleetDashboard({ settings, stationId }: FleetDashboardPr
 
         {/* Top Consumers */}
         <div className="premium-card border overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-            <h3 className="font-bold text-sm text-slate-800 flex items-center gap-2">
+          <div className="px-5 py-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-white/5/50">
+            <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <UsersRound className="h-4 w-4 text-indigo-500" />
               Top Consumers (MTD)
             </h3>

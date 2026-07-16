@@ -66,11 +66,11 @@ function RecoveryModal({
               onChange={e => setAmount(e.target.value)}
               placeholder={`Max: ${claim.claimAmount}`}
               max={claim.claimAmount}
-              className="w-full border border-theme-main rounded-xl px-3 py-2 text-slate-800 text-sm font-mono focus:outline-none focus:border-emerald-500"
+              className="w-full border border-theme-main rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200 text-sm font-mono focus:outline-none focus:border-emerald-500"
               autoFocus
             />
             {parseFloat(amount) > 0 && (
-              <div className="mt-2 h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div className="mt-2 h-2 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden">
                 <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${Math.min(100, parseFloat(pct))}%` }} />
               </div>
             )}
@@ -83,11 +83,11 @@ function RecoveryModal({
               value={notes}
               onChange={e => setNotes(e.target.value)}
               placeholder="e.g. Credit note received from PSO..."
-              className="w-full border border-theme-main rounded-xl px-3 py-2 text-slate-800 text-sm focus:outline-none focus:border-emerald-500"
+              className="w-full border border-theme-main rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:border-emerald-500"
             />
           </div>
           <div className="flex gap-2 pt-1">
-            <button onClick={onClose} className="flex-1 py-2 rounded-xl border border-theme-main text-slate-600 text-sm font-semibold hover:bg-slate-50">Cancel</button>
+            <button onClick={onClose} className="flex-1 py-2 rounded-xl border border-theme-main text-slate-600 text-sm font-semibold hover:bg-slate-50 dark:bg-white/5">Cancel</button>
             <button
               onClick={() => {
                 const amt = parseFloat(amount);
@@ -254,8 +254,8 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
 
   const recoveryClaimObj = recoveryClaimId ? supplierClaims.find(c => c.id === recoveryClaimId) : null;
 
-  const inputCls = "w-full rounded-xl border border-theme-main bg-theme-card px-3 py-2 text-slate-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none text-sm";
-  const selectCls = "w-full rounded-xl border border-theme-main bg-theme-bg px-3 py-2 text-slate-800 focus:border-orange-500 focus:bg-white focus:outline-none text-sm";
+  const inputCls = "w-full rounded-xl border border-theme-main bg-theme-card px-3 py-2 text-slate-800 dark:text-slate-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none text-sm";
+  const selectCls = "w-full rounded-xl border border-theme-main bg-theme-bg px-3 py-2 text-slate-800 dark:text-slate-200 focus:border-orange-500 focus:bg-white dark:bg-[#151521] focus:outline-none text-sm";
 
   return (
     <div className="space-y-4">
@@ -281,13 +281,13 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
       {/* KPI Header */}
       <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: t('Total Claims', 'کل کلیمز'), value: intelligence.total, icon: AlertTriangle, bg: 'bg-theme-bg border-theme-main', color: 'text-slate-700', valueColor: 'text-slate-800' },
+          { label: t('Total Claims', 'کل کلیمز'), value: intelligence.total, icon: AlertTriangle, bg: 'bg-theme-bg border-theme-main', color: 'text-slate-700', valueColor: 'text-slate-800 dark:text-slate-200' },
           { label: t('Recovery Rate', 'وصولی شرح'), value: `${intelligence.recoveryPct.toFixed(1)}%`, icon: TrendingUp, bg: intelligence.recoveryPct >= 70 ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200', color: intelligence.recoveryPct >= 70 ? 'text-emerald-600' : 'text-red-600', valueColor: intelligence.recoveryPct >= 70 ? 'text-emerald-800' : 'text-red-800' },
           { label: t('Avg Resolution', 'اوسط حل وقت'), value: intelligence.avgResolutionDays > 0 ? `${intelligence.avgResolutionDays.toFixed(0)}d` : '—', icon: Clock, bg: intelligence.avgResolutionDays > 30 ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200', color: 'text-blue-600', valueColor: 'text-blue-800' },
           { label: t('Outstanding', 'بقایا'), value: `Rs.${(intelligence.totalOutstanding / 1000).toFixed(0)}K`, icon: BarChart2, bg: intelligence.totalOutstanding > 0 ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-200', color: intelligence.totalOutstanding > 0 ? 'text-red-600' : 'text-emerald-600', valueColor: intelligence.totalOutstanding > 0 ? 'text-red-800' : 'text-emerald-800' },
         ].map((s, i) => (
           <div key={i} className={`rounded-2xl border p-4 ${s.bg} flex items-center gap-3`}>
-            <div className="size-10 rounded-xl bg-white/60 flex items-center justify-center shrink-0">
+            <div className="size-10 rounded-xl bg-white dark:bg-[#151521]/60 flex items-center justify-center shrink-0">
               <s.icon className={`size-5 ${s.color}`} />
             </div>
             <div>
@@ -306,7 +306,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
             Rs.{intelligence.totalRecovered.toLocaleString('en-PK', { maximumFractionDigits: 0 })} / Rs.{intelligence.totalClaimAmount.toLocaleString('en-PK', { maximumFractionDigits: 0 })}
           </span>
         </div>
-        <div className="h-4 bg-slate-100 rounded-full overflow-hidden">
+        <div className="h-4 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-700 ${intelligence.recoveryPct >= 70 ? 'bg-emerald-500' : intelligence.recoveryPct >= 40 ? 'bg-amber-500' : 'bg-red-500'}`}
             style={{ width: `${Math.min(100, intelligence.recoveryPct)}%` }}
@@ -320,13 +320,13 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
 
       {/* View Toggle + Actions Header */}
       <div className="flex flex-row gap-3 items-start items-center justify-between">
-        <div className="flex gap-1 bg-slate-100 rounded-xl p-1">
+        <div className="flex gap-1 bg-slate-100 dark:bg-white/10 rounded-xl p-1">
           {(['list', 'analytics'] as const).map(v => (
             <button
               key={v}
               onClick={() => setActiveView(v)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all capitalize ${
-                activeView === v ? 'bg-theme-card text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                activeView === v ? 'bg-theme-card text-slate-800 dark:text-slate-200 shadow-sm' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               {v === 'list' ? '📋 Claims List' : '📊 By Supplier'}
@@ -410,7 +410,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
             </div>
           </div>
           <div className="flex gap-3 px-5 pb-5">
-            <button onClick={() => setShowAddForm(false)} className="px-4 py-2.5 rounded-xl border border-theme-main text-slate-600 text-sm font-semibold hover:bg-slate-50">Cancel</button>
+            <button onClick={() => setShowAddForm(false)} className="px-4 py-2.5 rounded-xl border border-theme-main text-slate-600 text-sm font-semibold hover:bg-slate-50 dark:bg-white/5">Cancel</button>
             <button
               onClick={handleSaveClaim}
               disabled={saving || !newClaim.batchId || !newClaim.supplierId || !newClaim.claimAmount}
@@ -438,7 +438,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <Building2 className="size-4 text-slate-500" />
-                      <span className="font-bold text-sm text-slate-800">{s.supplier.name}</span>
+                      <span className="font-bold text-sm text-slate-800 dark:text-slate-200">{s.supplier.name}</span>
                       {s.pending > 0 && (
                         <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-red-100 text-red-700 border border-red-200">
                           {s.pending} open
@@ -488,7 +488,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
       {activeView === 'list' && (
         <div className="premium-card border overflow-hidden">
           {/* Filters */}
-          <div className="px-4 py-3 border-b border-slate-100 flex flex-row gap-2 items-center">
+          <div className="px-4 py-3 border-b border-slate-100 dark:border-white/5 flex flex-row gap-2 items-center">
             <div className="flex flex-wrap gap-1.5">
               {(['all', 'pending', 'submitted', 'approved', 'rejected', 'recovered', 'partial'] as const).map(s => (
                 <button key={s} onClick={() => setFilterStatus(s)}
@@ -526,7 +526,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
                 const isOverdue = (claim.status === 'pending' || claim.status === 'submitted') && daysSinceRaised > 30;
 
                 return (
-                  <div key={claim.id} className={`transition-colors ${isOverdue ? 'bg-red-50/30' : 'hover:bg-slate-50/50'}`}>
+                  <div key={claim.id} className={`transition-colors ${isOverdue ? 'bg-red-50/30' : 'hover:bg-slate-50 dark:bg-white/5/50'}`}>
                     <div
                       className="px-4 py-3.5 flex items-center justify-between gap-4 cursor-pointer"
                       onClick={() => setExpandedId(isExpanded ? null : claim.id)}
@@ -541,7 +541,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
                             <span className={`px-2 py-0.5 rounded-full text-xs font-bold border ${statusCfg.bg} ${statusCfg.color}`}>
                               {statusCfg.label}
                             </span>
-                            <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                            <span className="text-xs text-slate-500 bg-slate-100 dark:bg-white/10 px-2 py-0.5 rounded-full">
                               {CLAIM_TYPE_LABELS[claim.claimType]}
                             </span>
                             {isOverdue && (
@@ -560,7 +560,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
                       <div className="flex items-center gap-4 shrink-0">
                         <div className="text-right hidden sm:block">
                           <p className="text-[10px] text-red-500 font-semibold uppercase">Outstanding</p>
-                          <p className="font-black text-slate-800 text-sm">Rs.{claim.outstandingClaim.toLocaleString('en-PK', { maximumFractionDigits: 0 })}</p>
+                          <p className="font-black text-slate-800 dark:text-slate-200 text-sm">Rs.{claim.outstandingClaim.toLocaleString('en-PK', { maximumFractionDigits: 0 })}</p>
                         </div>
                         {isExpanded ? <ChevronUp className="size-4 text-slate-400" /> : <ChevronDown className="size-4 text-slate-400" />}
                       </div>
@@ -572,10 +572,10 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
                         <div className="bg-theme-card border border-theme-main rounded-xl p-4 space-y-3 shadow-inner">
                           <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                             {[
-                              { label: 'Claim Amount', value: `Rs.${claim.claimAmount.toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, color: 'text-slate-800', bg: 'bg-theme-bg border-slate-100' },
+                              { label: 'Claim Amount', value: `Rs.${claim.claimAmount.toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, color: 'text-slate-800 dark:text-slate-200', bg: 'bg-theme-bg border-slate-100 dark:border-white/5' },
                               { label: 'Recovered', value: `Rs.${claim.recoveredAmount.toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-100' },
                               { label: 'Outstanding', value: `Rs.${claim.outstandingClaim.toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, color: 'text-red-700', bg: 'bg-red-50 border-red-100' },
-                              { label: 'Days Pending', value: `${daysSinceRaised}d`, color: daysSinceRaised > 30 ? 'text-red-700' : 'text-slate-700', bg: daysSinceRaised > 30 ? 'bg-red-50 border-red-100' : 'bg-theme-bg border-slate-100' },
+                              { label: 'Days Pending', value: `${daysSinceRaised}d`, color: daysSinceRaised > 30 ? 'text-red-700' : 'text-slate-700', bg: daysSinceRaised > 30 ? 'bg-red-50 border-red-100' : 'bg-theme-bg border-slate-100 dark:border-white/5' },
                             ].map((item, i) => (
                               <div key={i} className={`rounded-lg p-2.5 border ${item.bg} text-center`}>
                                 <p className="text-slate-400 mb-0.5">{item.label}</p>
@@ -591,7 +591,7 @@ export default function SupplierClaimsPanel({ batches, suppliers, language }: Su
                                 <span>Recovery Progress</span>
                                 <span className="font-bold">{((claim.recoveredAmount / claim.claimAmount) * 100).toFixed(0)}%</span>
                               </div>
-                              <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                              <div className="h-2 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden">
                                 <div className="h-full bg-emerald-500 rounded-full transition-all"
                                   style={{ width: `${Math.min(100, (claim.recoveredAmount / claim.claimAmount) * 100)}%` }} />
                               </div>

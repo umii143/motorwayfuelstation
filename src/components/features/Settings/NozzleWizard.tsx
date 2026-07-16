@@ -96,7 +96,7 @@ export default function NozzleWizard({
 
   return (
     <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-right-4 duration-500">
-      <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-[#151521] rounded-3xl shadow-sm border border-slate-200 dark:border-white/10 overflow-hidden flex flex-col">
         
         <div className="p-6 md:p-8 space-y-8 flex-1">
           
@@ -109,12 +109,12 @@ export default function NozzleWizard({
               {t('Add New Nozzle', 'نئی نوزل شامل کریں', language)}
             </button>
           ) : (
-            <div className="border border-slate-200 rounded-2xl p-6 space-y-5 bg-slate-50 shadow-inner animate-in zoom-in-95 duration-200">
+            <div className="border border-slate-200 dark:border-white/10 rounded-2xl p-6 space-y-5 bg-slate-50 dark:bg-white/5 shadow-inner animate-in zoom-in-95 duration-200">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700">{t('Pump Name', 'پمپ کا نام', language)}</label>
                   <input
-                    className="w-full h-12 px-4 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-medium text-slate-800"
+                    className="w-full h-12 px-4 bg-white dark:bg-[#151521] border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-medium text-slate-800 dark:text-slate-200"
                     placeholder="Pump 1"
                     value={pumpName}
                     onChange={(e) => setPumpName(e.target.value)}
@@ -123,7 +123,7 @@ export default function NozzleWizard({
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700">{t('Nozzle Name/No', 'نوزل کا نام', language)}</label>
                   <input
-                    className="w-full h-12 px-4 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-medium text-slate-800"
+                    className="w-full h-12 px-4 bg-white dark:bg-[#151521] border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-medium text-slate-800 dark:text-slate-200"
                     placeholder="Nozzle 1"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -140,7 +140,7 @@ export default function NozzleWizard({
                   </div>
                 ) : (
                   <select 
-                    className="w-full h-12 px-4 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-medium text-slate-800 appearance-none cursor-pointer"
+                    className="w-full h-12 px-4 bg-white dark:bg-[#151521] border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-medium text-slate-800 dark:text-slate-200 appearance-none cursor-pointer"
                     value={tankId} 
                     onChange={(e) => setTankId(e.target.value)}
                   >
@@ -158,7 +158,7 @@ export default function NozzleWizard({
                 <label className="text-sm font-bold text-slate-700">{t('Opening Reading', 'ابتدائی ریڈنگ', language)}</label>
                 <input
                   type="number"
-                  className="w-full h-12 px-4 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-medium text-slate-800"
+                  className="w-full h-12 px-4 bg-white dark:bg-[#151521] border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-medium text-slate-800 dark:text-slate-200"
                   placeholder="0.00"
                   value={startReading}
                   onChange={(e) => setStartReading(e.target.value)}
@@ -174,7 +174,7 @@ export default function NozzleWizard({
                 </button>
                 <button 
                   onClick={resetForm} 
-                  className="flex-[0.4] h-12 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl font-bold transition-colors cursor-pointer"
+                  className="flex-[0.4] h-12 bg-white dark:bg-[#151521] border border-slate-300 hover:bg-slate-50 dark:bg-white/5 text-slate-700 rounded-xl font-bold transition-colors cursor-pointer"
                 >
                   {t('Cancel', 'منسوخ کریں', language)}
                 </button>
@@ -195,7 +195,7 @@ export default function NozzleWizard({
                   return (
                     <div
                       key={nozzle.id}
-                      className="border border-slate-200 bg-white shadow-sm rounded-2xl p-5 space-y-3 animate-in fade-in slide-in-from-left-4 transition-all hover:border-purple-300 hover:shadow-md"
+                      className="border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] shadow-sm rounded-2xl p-5 space-y-3 animate-in fade-in slide-in-from-left-4 transition-all hover:border-purple-300 hover:shadow-md"
                       style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
                     >
                       <div className="flex items-start justify-between">
@@ -204,10 +204,10 @@ export default function NozzleWizard({
                             <div className="size-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
                               <Gauge className="size-4 text-purple-600" />
                             </div>
-                            <h4 className="font-bold text-lg text-slate-800">{nozzle.name} <span className="text-sm font-medium text-slate-500 ml-1">({pump?.name})</span></h4>
+                            <h4 className="font-bold text-lg text-slate-800 dark:text-slate-200">{nozzle.name} <span className="text-sm font-medium text-slate-500 ml-1">({pump?.name})</span></h4>
                           </div>
                           <div className="flex items-center gap-2 ml-11">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 text-slate-600">
                               {details?.tank?.name}
                             </span>
                             <span className="text-slate-400 text-sm">•</span>
@@ -223,7 +223,7 @@ export default function NozzleWizard({
                           <X className="size-4" />
                         </button>
                       </div>
-                      <div className="ml-11 text-sm pt-3 border-t border-slate-100 mt-3">
+                      <div className="ml-11 text-sm pt-3 border-t border-slate-100 dark:border-white/5 mt-3">
                         <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{t('Opening Reading', 'ابتدائی ریڈنگ', language)} </span>
                         <span className="font-black text-slate-700 ml-2">{Number(nozzle.startReading).toLocaleString()}</span>
                       </div>

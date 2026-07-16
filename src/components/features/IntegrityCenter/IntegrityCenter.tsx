@@ -110,12 +110,12 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
   const scoreArc = (integrityScore / 100) * 283;
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-6 space-y-6">
+    <div className="min-h-screen bg-slate-50 dark:bg-white/5 p-4 md:p-6 space-y-6">
 
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <div className="flex flex-row items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
             <ShieldCheck className="h-7 w-7 text-indigo-600" />
             Enterprise Integrity Center
           </h1>
@@ -126,7 +126,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
         <div className="flex items-center gap-2">
           {/* Shadow Mode Badge */}
           <div className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-full text-xs font-bold">
-            <span className="w-2 h-2 bg-white/70 rounded-full animate-pulse" />
+            <span className="w-2 h-2 bg-white dark:bg-[#151521]/70 rounded-full animate-pulse" />
             SHADOW MODE ACTIVE
           </div>
           <button
@@ -152,7 +152,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
           <button
             onClick={refresh}
             disabled={isRefreshing}
-            className="flex items-center ga.5 px-3 py-1.5 premium-card border text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+            className="flex items-center ga.5 px-3 py-1.5 premium-card border text-sm font-bold text-slate-700 hover:bg-slate-50 dark:bg-white/5 transition-colors"
           >
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin text-indigo-600' : ''}`} />
             Refresh
@@ -168,19 +168,19 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
           { label: 'Matched', value: stats?.matchedShifts ?? 0, icon: CheckSquare, color: 'text-teal-600', bg: 'bg-teal-50' },
           { label: 'Mismatched', value: stats?.mismatchedShifts ?? 0, icon: XCircle, color: 'text-rose-600', bg: 'bg-rose-50' },
           { label: 'Open Drift Logs', value: openCount, icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50' },
-          { label: 'Critical Issues', value: unresolvedCritical, icon: AlertTriangle, color: unresolvedCritical > 0 ? 'text-rose-600' : 'text-slate-400', bg: unresolvedCritical > 0 ? 'bg-rose-50' : 'bg-slate-50' },
+          { label: 'Critical Issues', value: unresolvedCritical, icon: AlertTriangle, color: unresolvedCritical > 0 ? 'text-rose-600' : 'text-slate-400', bg: unresolvedCritical > 0 ? 'bg-rose-50' : 'bg-slate-50 dark:bg-white/5' },
         ].map((kpi, i) => (
           <motion.div
             key={kpi.label}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            className="premium-card border border-slate-200"
+            className="premium-card border border-slate-200 dark:border-white/10"
           >
             <div className={`w-8 h-8 ${kpi.bg} rounded-lg flex items-center justify-center mb-2`}>
               <kpi.icon className={`h-4 w-4 ${kpi.color}`} />
             </div>
-            <div className="text-2xl font-black text-slate-900">{kpi.value.toLocaleString()}</div>
+            <div className="text-2xl font-black text-slate-900 dark:text-white">{kpi.value.toLocaleString()}</div>
             <div className="text-xs font-semibold text-slate-500 mt-0.5">{kpi.label}</div>
           </motion.div>
         ))}
@@ -193,7 +193,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
         <div className="space-y-4">
 
           {/* Score Gauge */}
-          <div className="premium-card border border-slate-200 text-center">
+          <div className="premium-card border border-slate-200 dark:border-white/10 text-center">
             <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">System Integrity Score</h3>
             <div className="relative w-44 h-44 mx-auto">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
@@ -240,7 +240,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
           </div>
 
           {/* Migration Confidence + Gate */}
-          <div className="premium-card border border-slate-200">
+          <div className="premium-card border border-slate-200 dark:border-white/10">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
                 <Lock className="h-4 w-4 text-indigo-500" />
@@ -254,9 +254,9 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
             <div className="mb-3">
               <div className="flex justify-between text-xs font-semibold text-slate-500 mb-1">
                 <span>Migration Confidence</span>
-                <span className="font-black text-slate-800">{migrationConfidence.toFixed(1)}%</span>
+                <span className="font-black text-slate-800 dark:text-slate-200">{migrationConfidence.toFixed(1)}%</span>
               </div>
-              <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-2.5 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-700 ${migrationConfidence >= 99 ? 'bg-emerald-500' : migrationConfidence >= 75 ? 'bg-amber-500' : 'bg-rose-500'}`}
                   style={{ width: `${Math.min(100, migrationConfidence)}%` }}
@@ -308,7 +308,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
                   className={`rounded-xl border p-3 text-center transition-all ${
                     isCritical ? 'bg-rose-50 border-rose-200' :
                     hasDrift ? 'bg-amber-50 border-amber-200' :
-                    'bg-white border-slate-200'
+                    'bg-white dark:bg-[#151521] border-slate-200 dark:border-white/10'
                   }`}
                 >
                   <div className="flex items-center justify-center mb-1">
@@ -326,8 +326,8 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
 
           {/* Drift Log Table */}
           <div className="premium-card border overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+            <div className="px-5 py-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                 <FileText className="h-4 w-4 text-slate-400" />
                 Drift Log
                 {openCount > 0 && (
@@ -339,7 +339,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
                   <button
                     key={f}
                     onClick={() => setActiveFilter(f)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${activeFilter === f ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${activeFilter === f ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-100 dark:bg-white/10'}`}
                   >
                     {f.charAt(0).toUpperCase() + f.slice(1)}
                   </button>
@@ -366,7 +366,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
                     <div
                       key={log.id}
                       onClick={() => setSelectedLog(log)}
-                      className={`p-4 cursor-pointer hover:bg-slate-50 transition-colors ${log.resolved ? 'opacity-60' : ''}`}
+                      className={`p-4 cursor-pointer hover:bg-slate-50 dark:bg-white/5 transition-colors ${log.resolved ? 'opacity-60' : ''}`}
                     >
                       <div className="flex items-start gap-3">
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${sev.bg} border ${sev.border}`}>
@@ -377,10 +377,10 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
                             <span className={`text-[9px] font-black px-1.5 py-0.5 rounded ${sev.badge}`}>{log.severity}</span>
                             <span className="text-[10px] font-bold text-slate-500 uppercase">{mod.label}</span>
                             {log.resolved && (
-                              <span className="text-[9px] font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">RESOLVED</span>
+                              <span className="text-[9px] font-bold bg-slate-100 dark:bg-white/10 text-slate-500 px-1.5 py-0.5 rounded">RESOLVED</span>
                             )}
                           </div>
-                          <p className="text-sm font-semibold text-slate-800 mt-0.5 truncate">{log.description}</p>
+                          <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-0.5 truncate">{log.description}</p>
                           <div className="flex items-center gap-3 mt-1 text-xs text-slate-400">
                             <span>Shift: {log.shiftId.slice(0, 12)}...</span>
                             <span>{new Date(log.timestamp).toLocaleString()}</span>
@@ -408,11 +408,11 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl"
+              className="bg-white dark:bg-[#151521] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 w-full max-w-2xl"
             >
-              <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-                <h3 className="font-black text-slate-900">Drift Investigation</h3>
-                <button onClick={() => { setSelectedLog(null); setResolveNotes(''); }} className="p-1 rounded-lg hover:bg-slate-100">
+              <div className="p-5 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
+                <h3 className="font-black text-slate-900 dark:text-white">Drift Investigation</h3>
+                <button onClick={() => { setSelectedLog(null); setResolveNotes(''); }} className="p-1 rounded-lg hover:bg-slate-100 dark:bg-white/10">
                   <X className="h-4 w-4 text-slate-500" />
                 </button>
               </div>
@@ -426,9 +426,9 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
 
                 {/* Values Comparison */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-center">
-                  <div className="p-3 bg-slate-50 rounded-xl">
+                  <div className="p-3 bg-slate-50 dark:bg-white/5 rounded-xl">
                     <div className="text-xs font-bold text-slate-500 mb-1">Legacy Value</div>
-                    <div className="text-lg font-black text-slate-800">Rs {Math.round(selectedLog.legacyValue).toLocaleString()}</div>
+                    <div className="text-lg font-black text-slate-800 dark:text-slate-200">Rs {Math.round(selectedLog.legacyValue).toLocaleString()}</div>
                   </div>
                   <div className="p-3 bg-rose-50 rounded-xl">
                     <div className="text-xs font-bold text-rose-500 mb-1">Difference</div>
@@ -442,9 +442,9 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
 
                 {/* Details */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-slate-600">
-                  <div><span className="font-bold text-slate-800">Shift: </span>{selectedLog.shiftId}</div>
-                  <div><span className="font-bold text-slate-800">Module: </span>{MODULE_CONFIG[selectedLog.module]?.label || selectedLog.module}</div>
-                  <div><span className="font-bold text-slate-800">Detected: </span>{new Date(selectedLog.timestamp).toLocaleString()}</div>
+                  <div><span className="font-bold text-slate-800 dark:text-slate-200">Shift: </span>{selectedLog.shiftId}</div>
+                  <div><span className="font-bold text-slate-800 dark:text-slate-200">Module: </span>{MODULE_CONFIG[selectedLog.module]?.label || selectedLog.module}</div>
+                  <div><span className="font-bold text-slate-800 dark:text-slate-200">Detected: </span>{new Date(selectedLog.timestamp).toLocaleString()}</div>
                 </div>
 
                 {selectedLog.resolved ? (
@@ -464,7 +464,7 @@ export default function IntegrityCenter({ stationId, onNavigate }: IntegrityCent
                         onChange={e => setResolveNotes(e.target.value)}
                         rows={3}
                         placeholder="Explain the cause and how it was resolved. E.g. 'Legacy supplier advance entered manually outside shift. EOC transaction created manually. Verified by Owner.'"
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm font-medium text-slate-700 focus:border-indigo-500 focus:outline-none resize-none"
+                        className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 p-3 text-sm font-medium text-slate-700 focus:border-indigo-500 focus:outline-none resize-none"
                       />
                     </div>
                     <button

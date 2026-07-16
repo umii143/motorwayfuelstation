@@ -225,7 +225,7 @@ export default function SupplierLiabilityDrillDownModal({
 
   return (
     <div className="premium-modal-overlay">
-      <div className="bg-slate-50 w-full max-w-full max-w-[1400px] h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-700/50">
+      <div className="bg-slate-50 dark:bg-white/5 w-full max-w-full max-w-[1400px] h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-700/50">
         
         {/* Header */}
         <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between shrink-0">
@@ -255,7 +255,7 @@ export default function SupplierLiabilityDrillDownModal({
           {/* Executive KPI Header */}
           <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
             <div className="bg-slate-900 rounded-xl p-4 shadow-sm relative overflow-hidden lg:col-span-2 border border-slate-700">
-              <div className="absolute -right-4 -top-4 size-16 bg-white/5 rounded-full blur-xl pointer-events-none"></div>
+              <div className="absolute -right-4 -top-4 size-16 bg-white dark:bg-[#151521]/5 rounded-full blur-xl pointer-events-none"></div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Outstanding Payables</p>
               <p className="text-3xl font-black text-amber-400">
                 {formatCurrency(stats.totalPayables, settings)}
@@ -307,8 +307,8 @@ export default function SupplierLiabilityDrillDownModal({
               </div>
 
               {/* Recommended Actions */}
-              <div className="premium-card border border-slate-200">
-                <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+              <div className="premium-card border border-slate-200 dark:border-white/10">
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-amber-500" /> Recommended Actions
                 </h3>
                 <div className="space-y-3">
@@ -325,17 +325,17 @@ export default function SupplierLiabilityDrillDownModal({
             {/* Middle Column: Top Creditors */}
             <div className="xl:col-span-1 space-y-6">
               <div className="premium-card border overflow-hidden h-full">
-                <div className="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                  <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <div className="p-5 border-b border-slate-200 dark:border-white/10 flex justify-between items-center bg-slate-50 dark:bg-white/5">
+                  <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-amber-500" /> Largest Creditors
                   </h3>
                 </div>
                 <div className="p-0">
                   {stats.largestCreditors.map((creditor, idx) => (
-                    <div key={creditor.id} className="p-4 border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                    <div key={creditor.id} className="p-4 border-b border-slate-100 dark:border-white/5 last:border-0 hover:bg-slate-50 dark:bg-white/5">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <p className="text-sm font-bold text-slate-800">{creditor.name}</p>
+                          <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{creditor.name}</p>
                           <p className="text-[10px] text-slate-500 truncate max-w-full max-w-[150px]">IBAN: {creditor.accountNo}</p>
                         </div>
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
@@ -344,7 +344,7 @@ export default function SupplierLiabilityDrillDownModal({
                           {idx === 0 ? 'Highest Risk' : 'High Payables'}
                         </span>
                       </div>
-                      <p className="text-lg font-black text-slate-900">{formatCurrency(creditor.balance, settings)}</p>
+                      <p className="text-lg font-black text-slate-900 dark:text-white">{formatCurrency(creditor.balance, settings)}</p>
                     </div>
                   ))}
                   {stats.largestCreditors.length === 0 && (
@@ -358,13 +358,13 @@ export default function SupplierLiabilityDrillDownModal({
             <div className="xl:col-span-2 flex flex-col space-y-4">
               
               {/* Grid Filters */}
-              <div className="premium-card border border-slate-200 p-4 flex flex-wrap ga items-end shrink-0">
+              <div className="premium-card border border-slate-200 dark:border-white/10 p-4 flex flex-wrap ga items-end shrink-0">
                 <div className="flex-1 min-w-full max-w-[200px]">
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Search Supplier</label>
                   <select 
                     value={supplierFilter} 
                     onChange={e => setSupplierFilter(e.target.value)}
-                    className="premium-input text-xs p-2 bg-slate-50 font-semibold"
+                    className="premium-input text-xs p-2 bg-slate-50 dark:bg-white/5 font-semibold"
                   >
                     <option value="all">All Suppliers</option>
                     {suppliers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -372,17 +372,17 @@ export default function SupplierLiabilityDrillDownModal({
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">From</label>
-                  <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="premium-input text-xs p-2 bg-slate-50" />
+                  <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="premium-input text-xs p-2 bg-slate-50 dark:bg-white/5" />
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">To</label>
-                  <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="premium-input text-xs p-2 bg-slate-50" />
+                  <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="premium-input text-xs p-2 bg-slate-50 dark:bg-white/5" />
                 </div>
                 <div className="flex gap-2">
-                  <button className="px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-bold transition-colors">
+                  <button className="px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] bg-slate-100 dark:bg-white/10 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-bold transition-colors">
                     <Download className="h-4 w-4" />
                   </button>
-                  <button className="px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-bold transition-colors">
+                  <button className="px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] bg-slate-100 dark:bg-white/10 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-bold transition-colors">
                     <FileText className="h-4 w-4" />
                   </button>
                 </div>
@@ -404,13 +404,13 @@ export default function SupplierLiabilityDrillDownModal({
                     </thead>
                     <tbody>
                       {stats.viewTimeline.map(entry => (
-                        <tr key={entry.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                        <tr key={entry.id} className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:bg-white/5 transition-colors">
                           <td className="p-3 align-top">
-                            <p className="font-bold text-slate-800">{entry.date}</p>
+                            <p className="font-bold text-slate-800 dark:text-slate-200">{entry.date}</p>
                             <p className="text-[10px] text-slate-500">{entry.time}</p>
                           </td>
                           <td className="p-3 align-top">
-                            <p className="font-bold text-slate-800">{entry.supplierName}</p>
+                            <p className="font-bold text-slate-800 dark:text-slate-200">{entry.supplierName}</p>
                             <p className="text-[10px] text-slate-500 truncate max-w-full max-w-[150px]">{entry.reference}</p>
                           </td>
                           <td className="p-3 align-top text-right">
@@ -422,7 +422,7 @@ export default function SupplierLiabilityDrillDownModal({
                             {entry.paymentAmount > 0 ? (
                               <div>
                                 <p className="font-bold text-emerald-600">-{formatCurrency(entry.paymentAmount, settings)}</p>
-                                <span className="inline-block mt-1 px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-[9px] font-bold uppercase">{entry.mode}</span>
+                                <span className="inline-block mt-1 px-1.5 py-0.5 bg-slate-100 dark:bg-white/10 text-slate-600 rounded text-[9px] font-bold uppercase">{entry.mode}</span>
                               </div>
                             ) : '-'}
                           </td>

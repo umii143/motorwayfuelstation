@@ -126,7 +126,7 @@ export default function ScreenLock({
     <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xl flex flex-col items-center justify-center p-4">
       <div className="absolute inset-0 bg-[url('/station-bg.jpg')] bg-cover bg-center opacity-10 mix-blend-overlay pointer-events-none" />
       
-      <div className={`relative w-full max-w-sm bg-white/10 backdrop-blur-2xl border border-white/20 p-8 rounded-3xl shadow-2xl flex flex-col items-center text-center transition-transform ${shake ? 'animate-shake' : ''}`}>
+      <div className={`relative w-full max-w-sm bg-white dark:bg-[#151521]/10 backdrop-blur-2xl border border-white/20 p-8 rounded-3xl shadow-2xl flex flex-col items-center text-center transition-transform ${shake ? 'animate-shake' : ''}`}>
         
         {logoUrl ? (
           <img src={logoUrl} alt="Logo" className="w-16 h-16 rounded-xl shadow-lg mb-4 object-cover" />
@@ -152,7 +152,7 @@ export default function ScreenLock({
               {[...Array(6)].map((_, i) => (
                 <div 
                   key={i} 
-                  className={`w-3.5 h-3.5 rounded-full transition-all duration-300 ${i < pin.length ? 'bg-white scale-110 shadow-[0_0_10px_rgba(255,255,255,0.8)]' : 'bg-white/20'}`}
+                  className={`w-3.5 h-3.5 rounded-full transition-all duration-300 ${i < pin.length ? 'bg-white dark:bg-[#151521] scale-110 shadow-[0_0_10px_rgba(255,255,255,0.8)]' : 'bg-white dark:bg-[#151521]/20'}`}
                 />
               ))}
             </div>
@@ -167,7 +167,7 @@ export default function ScreenLock({
               key={num}
               onClick={() => handleKeyPress(num.toString())}
               disabled={!!lockoutUntil}
-              className="h-16 rounded-2xl bg-white/5 hover:bg-white/15 active:bg-white/20 border border-white/10 text-2xl font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-16 rounded-2xl bg-white dark:bg-[#151521]/5 hover:bg-white dark:bg-[#151521]/15 active:bg-white dark:bg-[#151521]/20 border border-white/10 text-2xl font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {num}
             </button>
@@ -176,7 +176,7 @@ export default function ScreenLock({
           <button
             onClick={handleBiometric}
             disabled={!biometricEnabled || !!lockoutUntil}
-            className={`h-16 rounded-2xl flex items-center justify-center transition-all ${biometricEnabled && !lockoutUntil ? 'bg-amber-500/20 text-amber-400 border-amber-500/30 hover:bg-amber-500/30' : 'bg-white/5 text-white/20 border-white/5'}`}
+            className={`h-16 rounded-2xl flex items-center justify-center transition-all ${biometricEnabled && !lockoutUntil ? 'bg-amber-500/20 text-amber-400 border-amber-500/30 hover:bg-amber-500/30' : 'bg-white dark:bg-[#151521]/5 text-white/20 border-white/5'}`}
           >
             <Fingerprint className="w-8 h-8" />
           </button>
@@ -184,7 +184,7 @@ export default function ScreenLock({
           <button
             onClick={() => handleKeyPress('0')}
             disabled={!!lockoutUntil}
-            className="h-16 rounded-2xl bg-white/5 hover:bg-white/15 active:bg-white/20 border border-white/10 text-2xl font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="h-16 rounded-2xl bg-white dark:bg-[#151521]/5 hover:bg-white dark:bg-[#151521]/15 active:bg-white dark:bg-[#151521]/20 border border-white/10 text-2xl font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             0
           </button>
@@ -192,7 +192,7 @@ export default function ScreenLock({
           <button
             onClick={handleDelete}
             disabled={pin.length === 0 || !!lockoutUntil}
-            className="h-16 rounded-2xl bg-white/5 hover:bg-white/15 active:bg-white/20 border border-white/10 flex items-center justify-center text-white/80 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            className="h-16 rounded-2xl bg-white dark:bg-[#151521]/5 hover:bg-white dark:bg-[#151521]/15 active:bg-white dark:bg-[#151521]/20 border border-white/10 flex items-center justify-center text-white/80 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <Delete className="w-7 h-7" />
           </button>

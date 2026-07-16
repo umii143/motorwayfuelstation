@@ -20,7 +20,8 @@ import {
   Trash2,
   PlusCircle,
   Coins,
-  Sparkles
+  Sparkles,
+  ArrowLeft
 } from 'lucide-react';
 import EmptyState from '../../ui/EmptyState';
 import { ModuleSearchBar } from '../../shared/ModuleSearchBar';
@@ -76,42 +77,73 @@ const MemoizedCustomerCard = React.memo(({
   if (isOwed) stateColorBar = 'bg-rose-500';
   else if (isAdv) stateColorBar = 'bg-emerald-500';
 
+  const initials = cust.name
+    ? cust.name.trim().split(/\s+/).map(n => n[0]).join('').slice(0, 2).toUpperCase()
+    : '?';
+
   return (
     <motion.button
       onClick={() => onSelect(cust.id)}
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay: Math.min(idx * 0.04, 0.4) }}
-      className={`relative w-full text-left rounded-xl border p-4 shadow-xs transition-all flex items-center justify-between cursor-pointer ${
+      className={`relative w-full text-left rounded-2xl border p-3 md:p-3.5 shadow-xs transition-all flex items-center gap-3 cursor-pointer min-h-0 min-w-0 ${
         isSelected
-          ? 'border-orange-500 bg-orange-50/20'
-          : 'border-theme-main bg-theme-card hover:border-slate-300 hover:shadow-md'
+          ? 'border-orange-500 bg-orange-500/10 dark:bg-orange-500/15 ring-2 ring-orange-500/20'
+          : 'border-theme-main bg-theme-card hover:border-slate-300 dark:hover:border-white/10 hover:shadow-md'
       }`}
     >
-      <div className={`absolute top-0 bottom-0 left-0 w-1.5 rounded-l-md ${stateColorBar}`}></div>
+      <div className={`absolute top-2.5 bottom-2.5 left-0 w-1 rounded-r-md ${stateColorBar}`}></div>
 
-      <div className="pl-2.5 flex-1 min-w-0">
-        <h4 className="font-sans text-sm font-bold text-slate-800">
-          {t(cust.name, cust.urduName)}
-        </h4>
-        <span className="font-mono text-[10px] text-slate-400 mt-1 block tracking-tight">
-          📞 {cust.contact}
-        </span>
+      {/* Initials Circular Avatar */}
+      <div className={`h-9 w-9 md:h-10 md:w-10 rounded-full flex items-center justify-center font-bold text-xs md:text-sm shrink-0 border ${
+        isOwed
+          ? 'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20'
+          : isAdv
+          ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
+          : 'bg-slate-50 text-slate-700 border-slate-100 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20'
+      }`}>
+        {initials}
       </div>
 
-      <div className="flex flex-col items-end gap-1.5 shrink-0">
-        <span className={`font-mono text-xs font-bold block ${isOwed ? 'text-rose-600' : isAdv ? 'text-emerald-700' : 'text-slate-400'}`}>
-          {isOwed ? `${formatCurrency(outstanding, settings)}` : isAdv ? `- ${formatCurrency(Math.abs(outstanding), settings)}` : 'Balanced'}
+      <div className="flex-1 min-w-0">
+        <h4 className="font-sans text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
+          {t(cust.name, cust.urduName)}
+        </h4>
+        <span className="font-mono text-[10px] text-slate-400 mt-0.5 block tracking-tight">
+          📞 {cust.contact}
         </span>
-        <span className="font-sans text-[9px] text-slate-400 uppercase tracking-widest block">
+        {cust.address && (
+          <span className="font-sans text-[9px] text-slate-400 truncate block mt-0.5">
+            📍 {cust.address}
+          </span>
+        )}
+      </div>
+
+      <div className="flex flex-col items-end gap-1 shrink-0">
+        <span className={`font-mono text-xs font-bold block ${isOwed ? 'text-rose-600 dark:text-rose-400' : isAdv ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-400'}`}>
+          {isOwed 
+            ? `${formatCurrency(outstanding, settings)}` 
+            : isAdv 
+            ? `${formatCurrency(outstanding, settings)}` 
+            : t('Settled', 'بے باق')
+          }
+        </span>
+        <span className={`px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold uppercase tracking-wider block ${
+          isOwed 
+            ? 'text-rose-600 bg-rose-50 dark:bg-rose-500/10' 
+            : isAdv 
+            ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10' 
+            : 'text-slate-500 bg-slate-50 dark:bg-white/5'
+        }`}>
           {isOwed ? t('Receivable', 'واجب الوصول') : isAdv ? t('Advance', 'ایڈوانس بقایا') : t('Settled', 'بے باق')}
         </span>
         <button
           onClick={e => { e.stopPropagation(); onOpenLedger(cust); }}
-          className="flex items-center gap-1 rounded-md bg-slate-800 px-2 py-0.5 font-sans text-[10px] font-bold text-white hover:bg-slate-900 transition-colors cursor-pointer mt-1"
+          className="flex items-center gap-1 rounded-md bg-slate-800 dark:bg-white/10 px-2 py-0.5 font-sans text-[9px] font-bold text-white dark:text-slate-300 hover:bg-slate-900 dark:hover:bg-white/20 transition-colors cursor-pointer min-h-0 min-w-0 mt-0.5"
         >
-          <FileBarChart2 className="h-3 w-3" />
-          <span>View Ledger</span>
+          <FileBarChart2 className="h-2.5 w-2.5 text-orange-500" />
+          <span>{t('Ledger', 'لیجر')}</span>
         </button>
       </div>
     </motion.button>
@@ -711,7 +743,7 @@ export default function CustomerDirectory({
         <div className="flex flex-row items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
             <span className="font-mono text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-0.5">OPERATIONS</span>
-            <h2 className="font-sans text-xl sm:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+            <h2 className="font-sans text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
               <User className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600 shrink-0" />
               <span className="truncate">{t('Accounts Receivable', 'گاہکوں کا بقایا کھاتہ')}</span>
             </h2>
@@ -741,7 +773,7 @@ export default function CustomerDirectory({
         </div>
 
         {/* TIME FILTER ROW */}
-        <div className="flex bg-slate-100 rounded-lg p-1 border border-theme-main shadow-sm overflow-x-auto no-scrollbar sm:w-max">
+        <div className="flex bg-slate-100 dark:bg-white/10 rounded-lg p-1 border border-theme-main shadow-sm overflow-x-auto no-scrollbar sm:w-max">
           {(['all', 'weekly', 'monthly', 'yearly'] as const).map((filter) => (
             <button
               key={filter}
@@ -749,7 +781,7 @@ export default function CustomerDirectory({
               className={`px-3 py-1.5 font-sans text-[11px] font-bold uppercase tracking-wider rounded-md transition-all cursor-pointer whitespace-nowrap ${
                 timeFilter === filter
                   ? 'bg-orange-600 text-white shadow-xs'
-                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                  : 'text-slate-500 hover:text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:bg-white/5'
               }`}
             >
               {filter === 'all' && t('All-Time', 'کل وقت')}
@@ -844,10 +876,10 @@ export default function CustomerDirectory({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         
         {/* LEFT COLUMN: CUSTOMER ACCOUNTS LISTINGS */}
-        <div className="space-y-4">
+        <div className={`space-y-4 lg:col-span-1 ${currentCustomer ? 'hidden lg:block' : 'block'}`}>
           <div className="rounded-xl border border-theme-main bg-theme-card p-4 shadow-xs space-y-3.5">
             {/* Filter buttons track */}
             <div className="flex flex-wrap gap-1.5">
@@ -860,10 +892,10 @@ export default function CustomerDirectory({
                 <button
                   key={f.id}
                   onClick={() => setFilterType(f.id as any)}
-                  className={`rounded-md px-2.5 py-1 text-[11px] font-sans font-bold cursor-pointer transition-colors ${
+                  className={`rounded-md px-2.5 py-1 text-[11px] font-sans font-bold cursor-pointer transition-colors min-h-0 min-w-0 ${
                     filterType === f.id
                       ? 'bg-orange-600 text-white shadow-xs'
-                      : 'bg-theme-bg text-slate-500 hover:bg-slate-100'
+                      : 'bg-theme-bg text-slate-500 hover:bg-slate-100 dark:bg-white/10'
                   }`}
                 >
                   {t(f.label, f.urdu)}
@@ -888,7 +920,7 @@ export default function CustomerDirectory({
                 {t('No customers matched filters.', 'کوئی کھاتہ میچ نہیں ہوا۔')}
               </div>
             ) : (
-              <div className="max-h-[500px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+              <div className="max-h-[600px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
                 {filteredCustomers.map((cust, index) => (
                   <MemoizedCustomerCard
                     key={cust.id}
@@ -907,18 +939,26 @@ export default function CustomerDirectory({
         </div>
 
         {/* RIGHT COLUMN (2/3 WIDTH): DETAILED CLIENT LEDGER Timelines */}
-        <div className="lg:col-span-2">
+        <div className={`col-span-1 lg:col-span-2 ${currentCustomer ? 'block' : 'hidden lg:block'}`}>
           {currentCustomer ? (
             <div className="rounded-xl border border-theme-main bg-theme-card shadow-xs p-5 space-y-6">
               
+              {/* Back button for mobile */}
+              <button 
+                onClick={() => setSelectedCustomerId(null)} 
+                className="lg:hidden flex items-center gap-1.5 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white mb-4 font-bold text-xs uppercase tracking-wider transition-colors min-h-0 min-w-0"
+              >
+                <ArrowLeft className="w-4 h-4" /> {t('Back to Khata List', 'کھاتہ لسٹ پر واپس جائیں')}
+              </button>
+
               {/* Client detailed profile row */}
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 dark:border-white/5 pb-4">
                 <div className="flex gap-3 items-center">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
                     <User className="h-6 w-6" />
                   </div>
                   <div>
-                    <h3 className="font-sans text-lg font-bold text-slate-900 leading-tight">
+                    <h3 className="font-sans text-lg font-bold text-slate-900 dark:text-white leading-tight">
                       {t(currentCustomer.name, currentCustomer.urduName)}
                     </h3>
                     <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 font-sans text-xs text-slate-400 font-medium">
@@ -940,7 +980,7 @@ export default function CustomerDirectory({
 
                   <button
                     onClick={() => window.print()}
-                    className="flex items-center gap-1.5 rounded-lg border border-theme-main bg-theme-card px-3 py-1.5 font-sans text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                    className="flex items-center gap-1.5 rounded-lg border border-theme-main bg-theme-card px-3 py-1.5 font-sans text-xs font-bold text-slate-600 hover:bg-slate-50 dark:bg-white/5 transition-colors cursor-pointer"
                   >
                     <FileText className="h-3.5 w-3.5" />
                     <span>{t('Statement PDF', 'اکاؤنٹ لیجر PDF')}</span>
@@ -991,12 +1031,12 @@ export default function CustomerDirectory({
 
               {/* Outstanding metrics display & credit limit warning bar */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="rounded-lg p-4 bg-theme-bg border border-slate-100 font-sans text-xs flex flex-col justify-between relative overflow-hidden">
+                <div className="rounded-lg p-4 bg-theme-bg border border-slate-100 dark:border-white/5 font-sans text-xs flex flex-col justify-between relative overflow-hidden">
                   <div className="absolute top-0 bottom-0 left-0 w-1 bg-red-400"></div>
                   <span className="text-slate-400 font-bold uppercase tracking-wider">{t('Remaining Credit Space:', 'باقی گنجائش بقایا قرض:')}</span>
                   <div className="mt-2.5 flex items-end justify-between">
                     <div>
-                      <strong className="text-sm font-bold text-slate-800">{formatCurrency(Math.max(0, currentCustomer.creditLimit - currentCustomer.balance), settings)}</strong>
+                      <strong className="text-sm font-bold text-slate-800 dark:text-slate-200">{formatCurrency(Math.max(0, currentCustomer.creditLimit - currentCustomer.balance), settings)}</strong>
                       <span className="text-[10px] text-slate-400 block mt-0.5">{t('Allocated Limit:', 'مقررہ حد کریڈٹ:')} {formatCurrency(currentCustomer.creditLimit, settings)}</span>
                     </div>
                     
@@ -1019,7 +1059,7 @@ export default function CustomerDirectory({
               </div>
 
               {/* Fast Transaction Action Drawer */}
-              <div className="border border-theme-main border-dashed rounded-lg p-4 bg-slate-50/50">
+              <div className="border border-theme-main border-dashed rounded-lg p-4 bg-slate-50 dark:bg-white/5/50">
                 {!isAddingTxn ? (
                   <button
                     onClick={() => setIsAddingTxn(true)}
@@ -1030,7 +1070,7 @@ export default function CustomerDirectory({
                   </button>
                 ) : (
                   <form onSubmit={handleManualTransactionSubmit} className="space-y-4">
-                    <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-3">
+                    <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/5 pb-2 mb-3">
                       <strong className="font-sans text-xs font-bold text-slate-700">{t('Direct Ledger Correction Entry:', 'کھاتیدار تصحیح فارم:')}</strong>
                       <button type="button" onClick={() => setIsAddingTxn(false)} className="text-xs font-bold text-slate-400 hover:text-slate-650">Cancel</button>
                     </div>
@@ -1129,7 +1169,7 @@ export default function CustomerDirectory({
 
               {/* Transaction Ledger Timelines */}
               <div className="space-y-3.5 pt-1.5">
-                <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-3">
+                <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-2 mb-3">
                   {t('Comprehensive Ledger History & Ledger Cards', 'تفصیلی کھاتہ کار روزنامچہ')}
                 </h4>
 
@@ -1152,7 +1192,7 @@ export default function CustomerDirectory({
                           {
                             header: t('Description / Narrative', 'تفصیل'),
                             accessor: 'description',
-                            className: 'font-medium text-slate-800 max-w-[200px] truncate',
+                            className: 'font-medium text-slate-800 dark:text-slate-200 max-w-[200px] truncate',
                             isSecondaryMobile: true
                           },
                           {
@@ -1168,7 +1208,7 @@ export default function CustomerDirectory({
                           {
                             header: t('Running Balance', 'بقایا حاصل'),
                             accessor: (ent) => formatCurrency(ent.balance, settings),
-                            className: 'text-right font-mono font-bold text-slate-900'
+                            className: 'text-right font-mono font-bold text-slate-900 dark:text-white'
                           },
                           {
                             header: t('Actions', 'اقدامات'),
@@ -1208,8 +1248,8 @@ export default function CustomerDirectory({
 
             </div>
           ) : (
-            <div className="h-full rounded-xl border border-dashed border-theme-main py-32 text-center text-slate-400 font-sans text-sm flex flex-col justify-center items-center gap-4 bg-white/50">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 text-slate-400 ring-4 ring-white shadow-sm">
+            <div className="h-full rounded-xl border border-dashed border-theme-main py-32 text-center text-slate-400 font-sans text-sm flex flex-col justify-center items-center gap-4 bg-white dark:bg-[#151521]/50">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 text-slate-400 ring-4 ring-white shadow-sm">
                 <Coins className="h-10 w-10" strokeWidth={2} />
               </div>
               <span className="max-w-xs">{t('Select a customer account on the left sidebar to display credit profiles and ledger logs.', 'بائیں پینل سے کسی گاہک کا انتخاب کریں تاکہ اس کا لیجر کھاتہ کھل سکے۔')}</span>
@@ -1235,8 +1275,8 @@ export default function CustomerDirectory({
               transition={{ type: "spring", damping: 25, stiffness: 350 }}
               className="w-full max-w-xl rounded-xl border border-theme-main bg-theme-card p-6 shadow-xl"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-                <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-2">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3 mb-4">
+                <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <UserPlus className="h-5 w-5 text-orange-600" />
                   <span>{t('Register New Customer Account', 'نیا کھاتیدار گاہک رجسٹر کریں')}</span>
                 </h3>
@@ -1342,8 +1382,8 @@ export default function CustomerDirectory({
               transition={{ type: 'spring', damping: 25, stiffness: 350 }}
               className="w-full max-w-2xl"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-5">
-                <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-2">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3 mb-5">
+                <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <User className="h-5 w-5 text-blue-600" />
                   <span>{t('Edit Customer', 'کھاتہ دار ترمیم')}</span>
                 </h3>

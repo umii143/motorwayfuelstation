@@ -295,16 +295,16 @@ export default function SettingsPanel({
   };
 
   return (
-    <div className="flex flex-col h-full min-h-[calc(100dvh-120px)] overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-white max-w-full">
+    <div className="flex flex-col h-full min-h-[calc(100dvh-120px)] overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm bg-white dark:bg-[#151521] max-w-full">
 
       {/* ── HEADER ────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3.5 shrink-0 gap-3">
+      <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] px-4 py-3.5 shrink-0 gap-3">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-orange-50 shrink-0">
             <Settings className="h-5 w-5 text-orange-600" />
           </div>
           <div className="min-w-0">
-            <h2 className="font-sans text-base sm:text-lg font-bold tracking-tight text-slate-900 truncate">
+            <h2 className="font-sans text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white truncate">
               {isLube ? t('Lube Configuration Center', 'لیوب ترتیبات مرکز') : t('Configuration Center', 'ترتیبات مرکز')}
             </h2>
             <p className="font-sans text-[11px] text-slate-400 hidden sm:block truncate">
@@ -323,10 +323,10 @@ export default function SettingsPanel({
 
       <SetupBanner activeViewId={activeTab === 'price' ? 'setup_rates' : activeTab === 'accounts' ? 'setup_accounts' : activeTab === 'audit' ? 'setup_audit' : activeTab === 'margins' ? 'setup_margins' : `setup_${activeTab}`} />
 
-      <div className="flex flex-1 overflow-hidden bg-slate-50 relative flex-col lg:flex-row">
+      <div className="flex flex-1 overflow-hidden bg-slate-50 dark:bg-white/5 relative flex-col lg:flex-row">
 
         {/* ── MOBILE: GROUPED ACCORDION NAV ─────────────────────────────── */}
-        <div className="lg:hidden w-full bg-white border-b border-slate-200 shrink-0">
+        <div className="lg:hidden w-full bg-white dark:bg-[#151521] border-b border-slate-200 dark:border-white/10 shrink-0">
           <div className="divide-y divide-slate-100">
             {SIDEBAR_SECTIONS.map((section) => {
               const isOpen = mobileOpenSections.has(section.id);
@@ -337,7 +337,7 @@ export default function SettingsPanel({
                   <button
                     onClick={() => toggleMobileSection(section.id)}
                     className={`w-full flex items-center justify-between px-4 py-2.5 cursor-pointer transition-colors ${
-                      hasActive ? 'bg-orange-50' : 'bg-white hover:bg-slate-50'
+                      hasActive ? 'bg-orange-50' : 'bg-white dark:bg-[#151521] hover:bg-slate-50 dark:bg-white/5'
                     }`}
                   >
                     <span className={`text-xs font-extrabold uppercase tracking-widest ${
@@ -361,7 +361,7 @@ export default function SettingsPanel({
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.2, ease: 'easeInOut' }}
-                        className="overflow-hidden bg-slate-50"
+                        className="overflow-hidden bg-slate-50 dark:bg-white/5"
                       >
                         <div className="flex flex-wrap gap-2 px-3 py-2.5 overflow-hidden">
                           {section.items.map(item => {
@@ -377,8 +377,8 @@ export default function SettingsPanel({
                                         ? 'bg-red-600 text-white border-red-600 shadow-sm'
                                         : 'bg-orange-600 text-white border-orange-600 shadow-sm shadow-orange-200')
                                     : ((item as any).isDanger
-                                        ? 'bg-white text-red-600 border-red-200 hover:bg-red-50'
-                                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100 hover:border-slate-300')
+                                        ? 'bg-white dark:bg-[#151521] text-red-600 border-red-200 hover:bg-red-50'
+                                        : 'bg-white dark:bg-[#151521] text-slate-600 border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:bg-white/10 hover:border-slate-300')
                                 }`}
                               >
                                 <Icon className={`h-3.5 w-3.5 shrink-0 ${
@@ -402,10 +402,10 @@ export default function SettingsPanel({
         </div>
 
         {/* ── DESKTOP SIDEBAR ────────────────────────────────────────────── */}
-        <div className="hidden lg:flex flex-col w-64 xl:w-72 bg-white border-r border-slate-200 shrink-0">
+        <div className="hidden lg:flex flex-col w-64 xl:w-72 bg-white dark:bg-[#151521] border-r border-slate-200 dark:border-white/10 shrink-0">
 
           {/* Search box */}
-          <div className="p-3 border-b border-slate-100">
+          <div className="p-3 border-b border-slate-100 dark:border-white/5">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
               <input
@@ -413,7 +413,7 @@ export default function SettingsPanel({
                 placeholder={t('Search settings…', 'ترتیبات تلاش کریں…')}
                 value={sidebarSearch}
                 onChange={e => setSidebarSearch(e.target.value)}
-                className="w-full pl-8 pr-8 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 transition-all"
+                className="w-full pl-8 pr-8 py-2 text-xs bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 transition-all"
               />
               {sidebarSearch && (
                 <button
@@ -454,7 +454,7 @@ export default function SettingsPanel({
                                     : 'bg-orange-50 text-orange-800 border border-orange-200 shadow-xs')
                                 : ((item as any).isDanger
                                     ? 'text-slate-500 hover:bg-red-50 hover:text-red-600 border border-transparent'
-                                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-transparent')
+                                    : 'text-slate-600 hover:bg-slate-100 dark:bg-white/10 hover:text-slate-900 dark:text-white border border-transparent')
                             }`}
                           >
                             <Icon className={`h-4 w-4 shrink-0 transition-colors ${
@@ -476,8 +476,8 @@ export default function SettingsPanel({
           </div>
 
           {/* Sidebar footer — version badge */}
-          <div className="p-3 border-t border-slate-100">
-            <div className="flex items-center gap-2 px-2 py-2 rounded-lg bg-slate-50">
+          <div className="p-3 border-t border-slate-100 dark:border-white/5">
+            <div className="flex items-center gap-2 px-2 py-2 rounded-lg bg-slate-50 dark:bg-white/5">
               <div className="w-6 h-6 rounded-md bg-orange-600 flex items-center justify-center shrink-0">
                 <Settings className="h-3.5 w-3.5 text-white" />
               </div>

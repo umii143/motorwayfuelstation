@@ -29,10 +29,10 @@ export default function IntegrationDashboard({ settings, stationId }: Integratio
       <div className="lg:col-span-2 space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {integrations.map(int => (
-            <div key={int.id} className="premium-card border border-slate-200 hover:shadow-md transition">
+            <div key={int.id} className="premium-card border border-slate-200 dark:border-white/10 hover:shadow-md transition">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="font-bold text-slate-900">{int.name}</h3>
+                  <h3 className="font-bold text-slate-900 dark:text-white">{int.name}</h3>
                   <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">{int.type}</span>
                 </div>
                 {int.status === 'connected' && <CheckCircle2 className="h-5 w-5 text-emerald-500" />}
@@ -43,16 +43,16 @@ export default function IntegrationDashboard({ settings, stationId }: Integratio
               <div className="space-y-2 mt-4 text-sm">
                 <div className="flex justify-between">
                   <span className="text-slate-500">Last Sync</span>
-                  <span className="font-medium text-slate-800">{int.lastSync}</span>
+                  <span className="font-medium text-slate-800 dark:text-slate-200">{int.lastSync}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Next Sync</span>
-                  <span className="font-medium text-slate-800">{int.nextSync}</span>
+                  <span className="font-medium text-slate-800 dark:text-slate-200">{int.nextSync}</span>
                 </div>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-slate-100 flex gap-2">
-                <button className="flex-1 text-center py-2 text-xs font-bold bg-slate-50 text-slate-700 rounded hover:bg-slate-100 transition">
+              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-white/5 flex gap-2">
+                <button className="flex-1 text-center py-2 text-xs font-bold bg-slate-50 dark:bg-white/5 text-slate-700 rounded hover:bg-slate-100 dark:bg-white/10 transition">
                   Configure
                 </button>
                 {int.status !== 'disconnected' && (

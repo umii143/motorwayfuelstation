@@ -18,7 +18,7 @@ function TankHealthContent() {
       <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
         {tanks.length > 0 ? tanks.map((t) => {
           return (
-            <div key={t.id} className="bg-white/[0.03] rounded-2xl p-5 border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+            <div key={t.id} className="bg-white dark:bg-[#151521]/[0.03] rounded-2xl p-5 border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <div className="text-sm font-black text-white">{t.name}</div>
@@ -58,11 +58,11 @@ function TankHealthContent() {
 export function TankHealthWidget() {
   return (
     <Suspense fallback={
-      <div className="w-full h-full p-6 flex flex-col animate-pulse bg-white/[0.02]">
-        <div className="h-4 bg-white/10 w-1/3 rounded mb-6"></div>
+      <div className="w-full h-full p-6 flex flex-col animate-pulse bg-white dark:bg-[#151521]/[0.02]">
+        <div className="h-4 bg-white dark:bg-[#151521]/10 w-1/3 rounded mb-6"></div>
         <div className="space-y-4">
-          <div className="h-32 bg-white/5 rounded-2xl"></div>
-          <div className="h-32 bg-white/5 rounded-2xl"></div>
+          <div className="h-32 bg-white dark:bg-[#151521]/5 rounded-2xl"></div>
+          <div className="h-32 bg-white dark:bg-[#151521]/5 rounded-2xl"></div>
         </div>
       </div>
     }>

@@ -520,9 +520,9 @@ export default function Reports({
     <div className="space-y-6 pb-20 lg:pb-5">
 
       {/* HEADER SECTION */}
-      <div className="flex flex-col gap-4 sm:flex-row items-center sm:justify-between border-b border-slate-200 pb-4">
+      <div className="flex flex-col gap-4 sm:flex-row items-center sm:justify-between border-b border-slate-200 dark:border-white/10 pb-4">
         <div>
-          <h2 className="font-sans text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+          <h2 className="font-sans text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             <FileBarChart2 className="h-6 w-6 text-orange-600" />
             <span>{t('Certified Master Audit & Reports Module', 'ماسٹر آڈٹ رپورٹس اور گوشوارے')}</span>
           </h2>
@@ -534,7 +534,7 @@ export default function Reports({
         {/* Global Print trigger */}
         <button
           onClick={() => window.print()}
-          className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 font-sans text-xs font-bold text-slate-700 shadow-xs hover:bg-slate-50 transition-all cursor-pointer self-start sm:self-center"
+          className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] px-4 py-2 font-sans text-xs font-bold text-slate-700 shadow-xs hover:bg-slate-50 dark:bg-white/5 transition-all cursor-pointer self-start sm:self-center"
         >
           <Printer className="h-4 w-4" />
           <span>{t('Print Dashboard Page', 'صفحہ پرنٹ کریں')}</span>
@@ -542,7 +542,7 @@ export default function Reports({
       </div>
 
       {/* TABS SELECTOR */}
-      <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-0.5">
+      <div className="flex flex-wrap gap-2 border-b border-slate-200 dark:border-white/10 pb-0.5">
         {[
           { id: 'corporate_audit', label: '📊 Corporate Audits (50+ Reports)', urdu: '📊 کارپوریٹ آڈٹ لسٹ (50+ رپورٹیں)' },
           { id: 'sales_pnl', label: '📈 Visual Fuel Dashboard', urdu: '📈 گرافیکل سیلز گراف اور چارٹ' },
@@ -557,7 +557,7 @@ export default function Reports({
             className={`px-4 py-2.5 font-sans text-xs font-bold transition-all border-b-2 cursor-pointer ${
               activeReportTab === tb.id
                 ? 'border-orange-600 text-orange-600 font-extrabold'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-200'
             }`}
           >
             {t(tb.label, tb.urdu)}
@@ -573,8 +573,8 @@ export default function Reports({
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
           
           {/* LEFT COLUMN: ACTIVE DIRECTORY ACCORDION OF REPORTS */}
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3 lg:sticky lg:top-5">
-            <span className="font-sans text-[11px] font-bold text-slate-400 uppercase tracking-widest block border-b border-slate-100 pb-1.5">
+          <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-xs space-y-3 lg:sticky lg:top-5">
+            <span className="font-sans text-[11px] font-bold text-slate-400 uppercase tracking-widest block border-b border-slate-100 dark:border-white/5 pb-1.5">
               {t('Available Directory', 'رپورٹس انڈیکس ڈائریکٹری')}
             </span>
 
@@ -584,11 +584,11 @@ export default function Reports({
                 const reportsInCat = REPORT_TEMPLATES.filter(r => r.category === cat.id);
 
                 return (
-                  <div key={cat.id} className="border border-slate-100 rounded-lg overflow-hidden">
+                  <div key={cat.id} className="border border-slate-100 dark:border-white/5 rounded-lg overflow-hidden">
                     <button
                       onClick={() => setExpandedCategory(isExpanded ? '' : cat.id)}
                       className={`w-full flex items-center justify-between p-2.5 font-sans text-xs font-bold text-left transition-colors cursor-pointer ${
-                        isExpanded ? 'bg-orange-55/10 text-orange-700' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
+                        isExpanded ? 'bg-orange-55/10 text-orange-700' : 'bg-slate-50 dark:bg-white/5 text-slate-700 hover:bg-slate-100 dark:bg-white/10'
                       }`}
                     >
                       <div className="flex items-center gap-1.5">
@@ -599,7 +599,7 @@ export default function Reports({
                     </button>
 
                     {isExpanded && (
-                      <div className="p-1.5 bg-white space-y-1 divide-y divide-slate-50">
+                      <div className="p-1.5 bg-white dark:bg-[#151521] space-y-1 divide-y divide-slate-50">
                         {reportsInCat.map(rep => {
                           const isActive = selectedReportId === rep.id;
                           return (
@@ -609,7 +609,7 @@ export default function Reports({
                               className={`w-full text-left p-2 rounded-md font-sans text-[11px] font-semibold transition-all cursor-pointer block ${
                                 isActive
                                   ? 'bg-slate-900 text-white font-extrabold'
-                                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                  : 'text-slate-600 hover:bg-slate-50 dark:bg-white/5 hover:text-slate-900 dark:text-white'
                               }`}
                             >
                               {isUrdu ? rep.urduName : rep.name}
@@ -628,11 +628,11 @@ export default function Reports({
           <div className="lg:col-span-3 space-y-6">
             
             {/* 1. Selected report description panel */}
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs relative">
+            <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-xs relative">
               <span className="font-mono text-[9px] font-bold text-orange-600 uppercase tracking-widest bg-orange-50 px-2 py-0.5 rounded-sm absolute top-4 right-4">
                 Ref Code: {activeTemplate.id}
               </span>
-              <h3 className="font-sans text-lg font-extrabold text-slate-800 tracking-tight">
+              <h3 className="font-sans text-lg font-extrabold text-slate-800 dark:text-slate-200 tracking-tight">
                 {t(activeTemplate.name, activeTemplate.urduName)}
               </h3>
               <p className="font-sans text-xs text-slate-450 mt-1 italic">
@@ -751,8 +751,8 @@ export default function Reports({
 
             {/* 3. OPTIONAL MINI CHARTS PREVIEW ON TOP OF RESULTS */}
             {sortedRows.length > 0 && (
-              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-3">
-                <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+              <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-xs space-y-3">
+                <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block border-b border-slate-100 dark:border-white/5 pb-1.5 flex items-center gap-1.5">
                   <Activity className="h-3.5 w-3.5 text-teal-605" />
                   <span>{t('Transactional Flow Analytics Chart', 'اعداد و شمار چارٹ تجزیہ')}</span>
                 </span>
@@ -823,11 +823,11 @@ export default function Reports({
               </div>
             )}
 
-            <div className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
+            <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] shadow-xs overflow-hidden">
               <div className="overflow-x-auto">
                 <div className="min-w-full">
                   {sortedRows.length === 0 ? (
-                    <div className="py-24 text-center text-slate-400 font-sans italic text-xs bg-white">
+                    <div className="py-24 text-center text-slate-400 font-sans italic text-xs bg-white dark:bg-[#151521]">
                       {t('No ledger records match the query filter selections.', 'آڈٹ فلٹرز یا تلاش کے معیار کے مطابق کوئی ڈیٹا نہیں ملا۔')}
                     </div>
                   ) : (
@@ -856,7 +856,7 @@ export default function Reports({
                             const numericAmount = Number(cellValue || 0);
                             const isPositive = numericAmount >= 0;
                             return (
-                              <span className={isPositive ? 'text-slate-900 font-bold' : 'text-red-500 font-bold'}>
+                              <span className={isPositive ? 'text-slate-900 dark:text-white font-bold' : 'text-red-500 font-bold'}>
                                 {formatCurrency(numericAmount, settings)}
                               </span>
                             );
@@ -896,28 +896,28 @@ export default function Reports({
           {/* Bento box summary widgets row with 5 indicators */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:grid-cols-5">
             
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm flex flex-col justify-between">
+            <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-sm flex flex-col justify-between">
               <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block leading-snug">{t('Summed Period Sales', 'کل سیشنز فروخت رقم')}</span>
-              <strong className="font-mono text-base font-bold text-slate-800 tracking-tight mt-1.5 block">
+              <strong className="font-mono text-base font-bold text-slate-800 dark:text-slate-200 tracking-tight mt-1.5 block">
                 {formatCurrency(summaryTotals.totalSales, settings)}
               </strong>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm flex flex-col justify-between">
+            <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-sm flex flex-col justify-between">
               <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block leading-snug">{t('Estimated Gross Margin', 'تخمینہ منافع مارجن')}</span>
               <strong className="font-mono text-base font-bold text-emerald-600 tracking-tight mt-1.5 block">
                 {formatCurrency(summaryTotals.totalProfit, settings)}
               </strong>
             </div>
 
-            <div className={`rounded-xl border p-4 border-slate-200 bg-white shadow-sm flex flex-col justify-between`}>
+            <div className={`rounded-xl border p-4 border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] shadow-sm flex flex-col justify-between`}>
               <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block leading-snug">{t('Revaluation Impact', 'ریٹ تبدیلی نفع/نقصان')}</span>
               <strong className={`font-mono text-base font-bold tracking-tight mt-1.5 block ${pricingRevaluationImpact >= 0 ? 'text-teal-605' : 'text-red-500'}`}>
                 {pricingRevaluationImpact >= 0 ? '+' : ''}{formatCurrency(pricingRevaluationImpact, settings)}
               </strong>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm flex flex-col justify-between">
+            <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-sm flex flex-col justify-between">
               <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block leading-snug">{t('Conjoined Expenses', 'مجموعی اخراجات مع تنخواہ')}</span>
               <strong className="font-mono text-base font-bold text-red-650 tracking-tight mt-1.5 block">
                 {formatCurrency(summaryTotals.totalExpense, settings)}
@@ -937,8 +937,8 @@ export default function Reports({
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3 lg:grid-cols-2">
             
             {/* 1. Daily Sales timeline charts */}
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
-              <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2 mb-3">
+            <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-sm space-y-4">
+              <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 dark:border-white/5 pb-2 mb-3">
                 <TrendingUp className="h-4 w-4 text-orange-500" />
                 <span>{t('Daily Inflows vs Margin Profit Performance', 'یومیہ آمدنی بمقابلہ منافع گراف')}</span>
               </h3>
@@ -975,8 +975,8 @@ export default function Reports({
             </div>
 
             {/* 2. Fuel Volumetric Distributions sold */}
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
-              <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2 mb-3">
+            <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-sm space-y-4">
+              <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 dark:border-white/5 pb-2 mb-3">
                 <Package className="h-4 w-4 text-sky-500" />
                 <span>{t('Absolute Fuel Litres Volume Pumped', 'کل پمپ شدہ فیول کا حجم بلحاظ لیٹر')}</span>
               </h3>
@@ -1017,8 +1017,8 @@ export default function Reports({
       {activeReportTab === 'party_outstanding' && (
         <div className="space-y-6">
           
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
-            <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2 mb-3 flex items-center justify-between">
+          <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-sm space-y-4">
+            <h3 className="font-sans text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b border-slate-100 dark:border-white/5 pb-2 mb-3 flex items-center justify-between">
               <span>{t('Party wise Outstanding Receivable Statement', 'صارفین اور گاہکوں کے بقایاجات کی فہرست')}</span>
               <span className="font-mono text-xs font-bold text-slate-500">
                 {t('Total Active Debtors:', 'کل گاہک بقایا کھاتہ دار:')} {customers.length}
@@ -1031,7 +1031,7 @@ export default function Reports({
                 columns={[
                   {
                     header: t('Party Name', 'نام کھاتہ دار'),
-                    accessor: (cust) => <span className="font-bold text-slate-800">{t(cust.name, cust.urduName)}</span>,
+                    accessor: (cust) => <span className="font-bold text-slate-800 dark:text-slate-200">{t(cust.name, cust.urduName)}</span>,
                     isPrimaryMobile: true
                   },
                   {
@@ -1075,8 +1075,8 @@ export default function Reports({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             
             {/* INVENTORY TABLE LEFT PANEL (2/3) */}
-            <div className="md:col-span-2 rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
-              <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2 mb-3">
+            <div className="md:col-span-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-sm space-y-4">
+              <h3 className="font-sans text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b border-slate-100 dark:border-white/5 pb-2 mb-3">
                 {t('Bulk Storage Levels & Status Auditing', 'پٹرولیم ٹینک اور پراڈکٹس اسٹاک والیم')}
               </h3>
 
@@ -1086,7 +1086,7 @@ export default function Reports({
                   columns={[
                     {
                       header: t('Product Grade Name', 'پراڈکٹ ٹائپ'),
-                      accessor: (prod) => <span className="font-bold text-slate-800">{t(prod.name, prod.urduName)}</span>,
+                      accessor: (prod) => <span className="font-bold text-slate-800 dark:text-slate-200">{t(prod.name, prod.urduName)}</span>,
                       isPrimaryMobile: true
                     },
                     {
@@ -1099,7 +1099,7 @@ export default function Reports({
                       className: 'text-right',
                       accessor: (prod) => {
                         const isLow = prod.currentStock <= prod.minStock;
-                        return <span className={`font-mono font-bold ${isLow ? 'text-rose-600 font-extrabold' : 'text-slate-800'}`}>{prod.currentStock.toLocaleString()} {prod.unit}</span>;
+                        return <span className={`font-mono font-bold ${isLow ? 'text-rose-600 font-extrabold' : 'text-slate-800 dark:text-slate-200'}`}>{prod.currentStock.toLocaleString()} {prod.unit}</span>;
                       }
                     },
                     {
@@ -1124,8 +1124,8 @@ export default function Reports({
             </div>
 
             {/* STORAGE TANKS FAST SYNC GAUGES SIDE PANEL (1/3) */}
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
-              <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-3">
+            <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-sm space-y-4">
+              <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-2 mb-3">
                 {t('Physical Storage Tanks Status', 'سٹوریج ٹینک مانیٹرنگ')}
               </h3>
 
@@ -1142,10 +1142,10 @@ export default function Reports({
                     return (
                       <div key={tnk.id} className="text-xs space-y-1.5 border-b border-slate-50 pb-3">
                         <div className="flex justify-between font-sans">
-                          <strong className="text-slate-800 font-extrabold">{tnk.name} ({tnk.physicalLabel || 'General'})</strong>
+                          <strong className="text-slate-800 dark:text-slate-200 font-extrabold">{tnk.name} ({tnk.physicalLabel || 'General'})</strong>
                           <span className={`font-semibold ${isUnderCritical ? 'text-red-500' : 'text-teal-650'}`}>{fillPct}% Full</span>
                         </div>
-                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-2 w-full bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden">
                           <div
                             style={{ width: `${Math.min(100, fillPct)}%` }}
                             className={`h-full rounded-full ${isUnderCritical ? 'bg-red-500' : 'bg-teal-500'}`}
@@ -1175,7 +1175,7 @@ export default function Reports({
           
           {/* List of past shifts archived */}
           <div className="space-y-3.5">
-            <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 block">
+            <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-2 block">
               {t('Select Shift session receipt:', 'شفٹ روزنامچہ منتخب کریں:')}
             </h4>
 
@@ -1194,14 +1194,14 @@ export default function Reports({
                     className={`w-full text-left rounded-xl border p-4 shadow-xs transition-colors block cursor-pointer ${
                       selectedHistoricalShiftId === sh.id
                         ? 'border-orange-500 bg-orange-50/20'
-                        : 'border-slate-200 bg-white hover:border-slate-300'
+                        : 'border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] hover:border-slate-300'
                     }`}
                   >
                     <div className="flex justify-between items-center">
-                      <strong className="font-sans text-xs font-bold text-slate-800 uppercase">
+                      <strong className="font-sans text-xs font-bold text-slate-800 dark:text-slate-200 uppercase">
                         {t(`Shift #${sh.id} Final Slip`, `شفٹ رسید نمبر #${sh.id}`)}
                       </strong>
-                      <span className="font-mono text-[10px] text-slate-400 font-semibold uppercase bg-slate-100 px-2 py-0.5 rounded-sm">
+                      <span className="font-mono text-[10px] text-slate-400 font-semibold uppercase bg-slate-100 dark:bg-white/10 px-2 py-0.5 rounded-sm">
                         {sh.type}
                       </span>
                     </div>
@@ -1221,16 +1221,16 @@ export default function Reports({
           {/* Graphical custom invoice template render */}
           <div className="lg:col-span-2">
             {activeShiftToReceipt ? (
-              <div className="rounded-xl border border-slate-250 bg-white shadow-md p-6 space-y-6 relative" id="print-area">
+              <div className="rounded-xl border border-slate-250 bg-white dark:bg-[#151521] shadow-md p-6 space-y-6 relative" id="print-area">
                 
                 <div className="flex flex-col items-center justify-center border-b-2 border-slate-900 pb-5 text-center">
-                  <h3 className="font-sans text-xl font-bold text-slate-900 uppercase tracking-tight">{settings.stationName}</h3>
-                  <h4 className="font-sans text-lg font-semibold text-slate-800 font-urdu mt-1">{settings.stationUrduName}</h4>
+                  <h3 className="font-sans text-xl font-bold text-slate-900 dark:text-white uppercase tracking-tight">{settings.stationName}</h3>
+                  <h4 className="font-sans text-lg font-semibold text-slate-800 dark:text-slate-200 font-urdu mt-1">{settings.stationUrduName}</h4>
                   <p className="font-sans text-[11px] text-slate-400 tracking-tight mt-1">{settings.address} | NTN: {settings.ntn}</p>
                 </div>
 
                 {/* Sub Metadata rows */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-slate-100 pb-4 text-xs font-sans text-slate-600">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-slate-100 dark:border-white/5 pb-4 text-xs font-sans text-slate-600">
                   <div>
                     <span className="block font-bold">Shift ID: <span className="font-mono font-semibold">#{activeShiftToReceipt.id}</span></span>
                     <span className="block mt-1">Date: <span className="font-semibold">{activeShiftToReceipt.date}</span></span>
@@ -1245,14 +1245,14 @@ export default function Reports({
 
                 {/* Financial reconciles */}
                 <div className="space-y-4">
-                  <strong className="font-sans text-xs font-bold text-slate-900 uppercase block border-b border-slate-100 pb-2">
+                  <strong className="font-sans text-xs font-bold text-slate-900 dark:text-white uppercase block border-b border-slate-100 dark:border-white/5 pb-2">
                     {t('Final Cash Audit Sheet Summary', 'حتمی کیش گوشوارہ پڑتال')}
                   </strong>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-sans">
-                    <div className="rounded-lg bg-slate-50 p-3 space-y-1.5 border border-slate-105">
+                    <div className="rounded-lg bg-slate-50 dark:bg-white/5 p-3 space-y-1.5 border border-slate-105">
                       <span className="text-slate-400 font-semibold block">{t('EXPECTED COMPUTED CASH:', 'حسابی کیش ہونا چاہیۓ تھا:')}</span>
-                      <strong className="font-mono text-sm font-bold text-slate-800">{formatCurrency(activeShiftToReceipt.expectedCash, settings)}</strong>
+                      <strong className="font-mono text-sm font-bold text-slate-800 dark:text-slate-200">{formatCurrency(activeShiftToReceipt.expectedCash, settings)}</strong>
                     </div>
 
                     <div className="rounded-lg bg-orange-55/10 p-3 space-y-1.5 border border-orange-100">
@@ -1276,7 +1276,7 @@ export default function Reports({
                   )}
                 </div>
 
-                <div className="pt-4 border-t border-slate-100 flex justify-end gap-2">
+                <div className="pt-4 border-t border-slate-100 dark:border-white/5 flex justify-end gap-2">
                   <button
                     onClick={() => {
                       const printContents = document.getElementById('print-area')?.innerHTML;
@@ -1297,7 +1297,7 @@ export default function Reports({
 
               </div>
             ) : (
-              <div className="h-full rounded-xl border border-dashed border-slate-250 py-32 text-center text-slate-450 font-sans text-xs flex flex-col justify-center items-center gap-3 bg-white/20">
+              <div className="h-full rounded-xl border border-dashed border-slate-250 py-32 text-center text-slate-450 font-sans text-xs flex flex-col justify-center items-center gap-3 bg-white dark:bg-[#151521]/20">
                 <FileText className="h-10 w-10 text-slate-350" />
                 <span>{t('Select an archived finalized shift to render the invoice slip layout.', 'بائیں پینل سے کسی فائنل کردہ شفٹ روزنامچہ رسید کا انتخاب کریں')}</span>
               </div>
@@ -1312,9 +1312,9 @@ export default function Reports({
           ======================================================== */}
       {activeReportTab === 'reconciliation' && (
         <div className="space-y-6">
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+          <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-xs space-y-4">
             <div>
-              <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider">
+              <h3 className="font-sans text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
                 {t('Double-Entry Bank & Digital reconciliation audit panel', 'ڈبل انٹری بینک اور ڈیجیٹل بقایا تصفیہ اور ریکنسیلیشن')}
               </h3>
               <p className="font-sans text-xs text-slate-400 mt-1">
@@ -1325,19 +1325,19 @@ export default function Reports({
 
           {/* Aggregated indicators */}
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <div className="bg-white dark:bg-[#151521] p-4 rounded-xl border border-slate-200 dark:border-white/10">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block leading-snug">{t('Total Shifts Logged', 'کل شفٹ ریکارڈز')}</span>
-              <strong className="font-mono text-lg font-bold text-slate-800 block mt-1">{shifts.length}</strong>
+              <strong className="font-mono text-lg font-bold text-slate-800 dark:text-slate-200 block mt-1">{shifts.length}</strong>
             </div>
-            <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <div className="bg-white dark:bg-[#151521] p-4 rounded-xl border border-slate-200 dark:border-white/10">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block leading-snug">{t('Reconciled & Settle (✓)', 'تصفیہ شدہ شفٹس')}</span>
               <strong className="font-mono text-lg font-bold text-emerald-600 block mt-1">{reconciledShiftIds.length}</strong>
             </div>
-            <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <div className="bg-white dark:bg-[#151521] p-4 rounded-xl border border-slate-200 dark:border-white/10">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block leading-snug">{t('Unreconciled Audits (✕)', 'زیر التوا آڈٹس')}</span>
               <strong className="font-mono text-lg font-bold text-amber-600 block mt-1">{shifts.length - reconciledShiftIds.length}</strong>
             </div>
-            <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <div className="bg-white dark:bg-[#151521] p-4 rounded-xl border border-slate-200 dark:border-white/10">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block leading-snug">{t('Master Bank Balance', 'مجموعی بینک بیلنس')}</span>
               <strong className="font-mono text-lg font-bold text-blue-600 block mt-1">
                 {formatCurrency(banks.reduce((sum, b) => sum + b.balance, 0), settings)}
@@ -1346,8 +1346,8 @@ export default function Reports({
           </div>
 
           {/* Main Reconciliation comparison table */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-            <h4 className="font-sans text-xs font-bold text-slate-550 uppercase tracking-wider border-b border-slate-100 pb-2">
+          <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-xs space-y-4">
+            <h4 className="font-sans text-xs font-bold text-slate-550 uppercase tracking-wider border-b border-slate-100 dark:border-white/5 pb-2">
               {t('Shift-by-Shift Cash Verification Sheet', 'برائے شفٹ وار ڈیجیٹل اور بینک کیش آڈٹ شیٹ')}
             </h4>
 
@@ -1363,7 +1363,7 @@ export default function Reports({
                       accessor: (s) => (
                         <>
                           <span className="font-mono text-[11px] text-slate-400 block">{s.date}</span>
-                          <strong className="text-slate-800 text-xs">SH-{s.id}</strong>
+                          <strong className="text-slate-800 dark:text-slate-200 text-xs">SH-{s.id}</strong>
                         </>
                       ),
                       isSecondaryMobile: true
@@ -1378,7 +1378,7 @@ export default function Reports({
                       className: 'text-right',
                       accessor: (s) => {
                         const totalDigital = (s.digitalCashEntries || []).reduce((sum, dc) => sum + dc.amount, 0);
-                        return <span className="font-mono font-bold text-slate-800">{formatCurrency(totalDigital, settings)}</span>;
+                        return <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{formatCurrency(totalDigital, settings)}</span>;
                       }
                     },
                     {
@@ -1386,7 +1386,7 @@ export default function Reports({
                       className: 'text-right',
                       accessor: (s) => {
                         const totalBank = (s.bankCashEntries || []).reduce((sum, bc) => sum + bc.amount, 0);
-                        return <span className="font-mono font-bold text-slate-800">{formatCurrency(totalBank, settings)}</span>;
+                        return <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{formatCurrency(totalBank, settings)}</span>;
                       }
                     },
                     {
@@ -1432,7 +1432,7 @@ export default function Reports({
                             onClick={() => handleToggleReconcile(s.id)}
                             className={`text-[10.5px] font-bold px-3 py-1 rounded-md transition-all cursor-pointer ${
                               isReconciled
-                                ? 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                                ? 'bg-slate-100 dark:bg-white/10 text-slate-500 hover:bg-slate-200'
                                 : 'bg-orange-600 text-white hover:bg-orange-700'
                             }`}
                           >

@@ -39,7 +39,7 @@ export function CompleteStep({ onFinish, language }: Props) {
 
   return (
     <div className="flex items-center justify-center min-h-[80vh] p-4 animate-in fade-in zoom-in duration-700">
-      <div className="max-w-2xl w-full bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden text-center p-12 space-y-8">
+      <div className="max-w-2xl w-full bg-white dark:bg-[#151521] rounded-3xl shadow-xl border border-slate-100 dark:border-white/5 overflow-hidden text-center p-12 space-y-8">
         
         <div className="flex justify-center animate-bounce duration-1000">
           <div className="size-24 rounded-full bg-emerald-100 flex items-center justify-center shadow-inner">
@@ -48,7 +48,7 @@ export function CompleteStep({ onFinish, language }: Props) {
         </div>
 
         <div className="space-y-4">
-          <h1 className="text-4xl font-black text-slate-800 tracking-tight">
+          <h1 className="text-4xl font-black text-slate-800 dark:text-slate-200 tracking-tight">
             {t('Setup Complete!', 'سیٹ اپ مکمل ہو گیا!', language)}
           </h1>
           <p className="text-slate-500 text-lg font-medium max-w-md mx-auto">

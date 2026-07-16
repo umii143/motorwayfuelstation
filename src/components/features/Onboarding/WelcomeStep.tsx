@@ -11,10 +11,10 @@ interface Props {
 export function WelcomeStep({ onContinue, onCancel, language }: Props) {
   return (
     <div className="flex items-center justify-center min-h-[80vh] p-4 animate-in fade-in zoom-in duration-500">
-      <div className="max-w-2xl w-full bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
+      <div className="max-w-2xl w-full bg-white dark:bg-[#151521] rounded-3xl shadow-xl border border-slate-100 dark:border-white/5 overflow-hidden">
         <div className="pt-12 pb-10 px-6 md:px-12 text-center space-y-8">
           <div className="space-y-4">
-            <h1 className="text-4xl font-black text-slate-800 tracking-tight">
+            <h1 className="text-4xl font-black text-slate-800 dark:text-slate-200 tracking-tight">
               {t('Welcome To FuelPro', 'فیول پرو میں خوش آمدید', language)}
             </h1>
             <p className="text-slate-500 text-lg font-medium">
@@ -22,7 +22,7 @@ export function WelcomeStep({ onContinue, onCancel, language }: Props) {
             </p>
           </div>
 
-          <div className="space-y-4 text-left max-w-md mx-auto bg-slate-50 p-6 rounded-2xl border border-slate-100">
+          <div className="space-y-4 text-left max-w-md mx-auto bg-slate-50 dark:bg-white/5 p-6 rounded-2xl border border-slate-100 dark:border-white/5">
             <p className="text-slate-600 font-bold text-sm uppercase tracking-wider">
               {t('You only need 4 steps:', 'صرف 4 مراحل درکار ہیں:', language)}
             </p>

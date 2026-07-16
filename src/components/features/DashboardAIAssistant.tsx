@@ -68,10 +68,10 @@ export function DashboardAIAssistant({ settings, shifts, customers, products, ba
   ];
 
   return (
-    <div className="rounded-2xl border border-indigo-100 bg-white shadow-xl shadow-indigo-100/50 overflow-hidden flex flex-col mt-6">
+    <div className="rounded-2xl border border-indigo-100 bg-white dark:bg-[#151521] shadow-xl shadow-indigo-100/50 overflow-hidden flex flex-col mt-6">
       <div className="bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3 text-white">
-          <div className="rounded-full bg-white/20 p-2">
+          <div className="rounded-full bg-white dark:bg-[#151521]/20 p-2">
             <Sparkles className="h-5 w-5" />
           </div>
           <div>
@@ -85,9 +85,9 @@ export function DashboardAIAssistant({ settings, shifts, customers, products, ba
         </div>
       </div>
 
-      <div className="p-5 bg-slate-50 flex-1 flex flex-col justify-end">
+      <div className="p-5 bg-slate-50 dark:bg-white/5 flex-1 flex flex-col justify-end">
         {response ? (
-          <div className="mb-6 rounded-xl bg-white border border-indigo-100 p-4 shadow-xs">
+          <div className="mb-6 rounded-xl bg-white dark:bg-[#151521] border border-indigo-100 p-4 shadow-xs">
             <p className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-2">AI Response</p>
             <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap">
               {response}
@@ -125,7 +125,7 @@ export function DashboardAIAssistant({ settings, shifts, customers, products, ba
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t('Ask me anything about your business...', 'اپنے کاروبار کے بارے میں کچھ بھی پوچھیں...')}
-            className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-12 text-sm font-semibold text-slate-800 shadow-xs focus:border-indigo-500 focus:outline-hidden focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] py-3 pl-10 pr-12 text-sm font-semibold text-slate-800 dark:text-slate-200 shadow-xs focus:border-indigo-500 focus:outline-hidden focus:ring-1 focus:ring-indigo-500"
             disabled={isLoading || response !== null}
           />
           <button

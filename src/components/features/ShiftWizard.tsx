@@ -1856,7 +1856,7 @@ export default function ShiftWizard({
                     
                     <div className="absolute bottom-3 right-3 lg:bottom-4 lg:right-4">
                       <div className={`w-4 h-4 lg:w-5 lg:h-5 rounded-full border-2 flex items-center justify-center ${shiftType === 'day' ? 'border-orange-500 bg-orange-500' : 'border-slate-600'}`}>
-                        {shiftType === 'day' && <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-white"></div>}
+                        {shiftType === 'day' && <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-white dark:bg-[#151521]"></div>}
                       </div>
                     </div>
                   </div>
@@ -1874,7 +1874,7 @@ export default function ShiftWizard({
                     
                     <div className="absolute bottom-3 right-3 lg:bottom-4 lg:right-4">
                       <div className={`w-4 h-4 lg:w-5 lg:h-5 rounded-full border-2 flex items-center justify-center ${shiftType === 'night' ? 'border-orange-500 bg-orange-500' : 'border-slate-600'}`}>
-                        {shiftType === 'night' && <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-white"></div>}
+                        {shiftType === 'night' && <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-white dark:bg-[#151521]"></div>}
                       </div>
                     </div>
                   </div>
@@ -2074,9 +2074,9 @@ export default function ShiftWizard({
           STEP 3: ACTIVE SHIFT HUB DRAWERS
           ========================================== */}
       {wizardStep === 3 && activeShift && (
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           {/* Active Shift Info Sidebar */}
-          <div className="space-y-3">
+          <div className="space-y-3 lg:col-span-1">
             <div className="rounded-xl border border-orange-500/50 bg-orange-500/10/50 p-4 shadow-xs">
               <div className="flex items-center gap-2 font-sans text-[10px] text-orange-600 font-bold uppercase tracking-wider">
                 <span className="relative flex h-2 w-2">
@@ -3170,7 +3170,7 @@ export default function ShiftWizard({
           STEP 6: EXPECTED CASH AUDIT RECONCILIATIONS
           ========================================== */}
       {wizardStep === 6 && activeShift && expectedTotals && (
-        <div className="grid grid-cols-2 gap-6 lg:grid-cols-5 items-start">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 items-start">
           {/* Detailed Calculations Columns */}
           <div className="lg:col-span-3 rounded-xl border border-slate-700/50 bg-slate-900/50 p-5 shadow-sm space-y-4">
             <h3 className="font-sans text-sm font-bold text-slate-200 border-b border-slate-700/50 pb-2 mb-4 uppercase tracking-wider flex items-center justify-between">
@@ -3180,7 +3180,7 @@ export default function ShiftWizard({
                   "متوقع سیشن کیش تفصیلی صراحت",
                 )}
               </span>
-              <span className="font-mono text-xs rounded-full bg-slate-100 text-slate-500 px-2.5 py-0.5">
+              <span className="font-mono text-xs rounded-full bg-slate-100 dark:bg-white/10 text-slate-500 px-2.5 py-0.5">
                 FORMULATION
               </span>
             </h3>
@@ -3743,7 +3743,7 @@ export default function ShiftWizard({
                                 return (
                                   <div key={i} className="flex items-center gap-2">
                                     <span className="font-mono text-[9px] text-slate-500 w-28 shrink-0 truncate">{d.batchNumber}</span>
-                                    <div className="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
+                                    <div className="flex-1 h-3 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden">
                                       <div
                                         className={`h-full rounded-full ${isHot ? 'bg-emerald-400' : 'bg-amber-400'}`}
                                         style={{ width: `${Math.min(100, Math.max(5, heatPct))}%` }}

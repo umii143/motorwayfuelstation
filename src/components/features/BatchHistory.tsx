@@ -35,7 +35,7 @@ function MarginBar({ current, max }: { current: number; max: number }) {
   if (max <= 0) return null;
   const pct = Math.min(100, Math.max(0, (current / max) * 100));
   return (
-    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+    <div className="w-full h-1.5 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden">
       <div
         className={`h-full rounded-full ${pct > 60 ? 'bg-emerald-500' : pct > 30 ? 'bg-amber-400' : 'bg-red-400'}`}
         style={{ width: `${pct}%` }}
@@ -78,7 +78,7 @@ export default function BatchHistory({ batches, products, language }: BatchHisto
     const s = batch.batchStatus || batch.status;
     if (s === 'active') return 'bg-emerald-100 text-emerald-700 border-emerald-200';
     if (s === 'partial') return 'bg-amber-100 text-amber-700 border-amber-200';
-    return 'bg-slate-100 text-slate-500 border-slate-200';
+    return 'bg-slate-100 dark:bg-white/10 text-slate-500 border-slate-200 dark:border-white/10';
   };
 
   const getStatusLabel = (batch: StockBatch) => {
@@ -136,7 +136,7 @@ export default function BatchHistory({ batches, products, language }: BatchHisto
             { label: 'Expected PnL', value: `Rs.${stats.totalExpectedProfit.toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, icon: TrendingUp, color: 'text-emerald-600' },
             { label: 'Realized', value: `Rs.${stats.totalRealizedMargin.toLocaleString('en-PK', { maximumFractionDigits: 0 })}`, icon: BarChart2, color: 'text-orange-600' },
           ].map((stat, i) => (
-            <div key={i} className="bg-slate-50/50 dark:bg-slate-800/50 rounded-lg p-2 border border-theme-main">
+            <div key={i} className="bg-slate-50 dark:bg-white/5/50 dark:bg-slate-800/50 rounded-lg p-2 border border-theme-main">
               <p className="text-[9px] text-slate-500 dark:text-slate-400 flex items-center gap-1 mb-0.5 uppercase tracking-wide">
                 <stat.icon className={`size-3 ${stat.color}`} />
                 {stat.label}
@@ -208,7 +208,7 @@ export default function BatchHistory({ batches, products, language }: BatchHisto
                 return (
                   <React.Fragment key={batch.id}>
                     <tr
-                      className={`hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer ${aging.status === 'critical' && batch.status === 'active' ? 'bg-red-500/10' : ''}`}
+                      className={`hover:bg-slate-50 dark:bg-white/5/50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer ${aging.status === 'critical' && batch.status === 'active' ? 'bg-red-500/10' : ''}`}
                       onClick={() => setExpandedId(isExpanded ? null : batch.id)}
                     >
                       <td className="py-2.5 px-3">
@@ -302,7 +302,7 @@ export default function BatchHistory({ batches, products, language }: BatchHisto
 
                     {/* Expanded Detail Row */}
                     {isExpanded && (
-                      <tr className="bg-slate-50/80">
+                      <tr className="bg-slate-50 dark:bg-white/5/80">
                         <td colSpan={9} className="px-4 pb-4 pt-2">
                           <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 xl:grid-cols-6 gap-3 text-xs">
                             {[
@@ -324,7 +324,7 @@ export default function BatchHistory({ batches, products, language }: BatchHisto
                                 item.highlight === 'blue' ? 'bg-blue-50 border-blue-100 text-blue-800' :
                                 item.highlight === 'orange' ? 'bg-orange-50 border-orange-100 text-orange-800' :
                                 item.highlight === 'red' ? 'bg-red-50 border-red-100 text-red-800' :
-                                'bg-white border-slate-200 text-slate-600'
+                                'bg-white dark:bg-[#151521] border-slate-200 dark:border-white/10 text-slate-600'
                               }`}>
                                 <p className="text-slate-400 mb-0.5">{item.label}</p>
                                 <p className="font-bold">{item.value}</p>

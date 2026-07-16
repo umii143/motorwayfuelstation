@@ -93,7 +93,7 @@ export default function ExecutiveRevaluationIntelligence({
           <Activity className="size-5 text-emerald-400" />
         </div>
         <div>
-          <h2 className="text-xl font-black text-slate-800">
+          <h2 className="text-xl font-black text-slate-800 dark:text-slate-200">
             {t('Executive Revaluation Intelligence', 'ایگزیکٹو ریویلیویشن انٹیلیجنس', language)}
           </h2>
           <p className="text-sm text-slate-500 font-medium">
@@ -109,7 +109,7 @@ export default function ExecutiveRevaluationIntelligence({
           onClick={() => openDrillDown('all_time')}
           className="bg-slate-900 rounded-2xl p-5 shadow-lg relative overflow-hidden text-white cursor-pointer hover:ring-2 hover:ring-emerald-500 transition-all group"
         >
-          <div className="absolute -right-6 -top-6 size-24 bg-white/5 rounded-full blur-xl pointer-events-none group-hover:bg-white/10 transition-colors"></div>
+          <div className="absolute -right-6 -top-6 size-24 bg-white dark:bg-[#151521]/5 rounded-full blur-xl pointer-events-none group-hover:bg-white dark:bg-[#151521]/10 transition-colors"></div>
           <p className="text-sm font-bold text-slate-400 mb-2 flex items-center gap-2">
             <DollarSign className="size-4 text-amber-400" />
             Lifetime Net Reserve
@@ -173,7 +173,7 @@ export default function ExecutiveRevaluationIntelligence({
 
       {/* HEATMAP / BAR CHART */}
       <div className="premium-card p-6 border">
-        <h3 className="text-sm font-bold text-slate-800 mb-6 uppercase tracking-wider">
+        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-6 uppercase tracking-wider">
           {t('6-Month Revaluation Trend (Heatmap)', '6 ماہ کا ریویلیویشن ٹرینڈ', language)}
         </h3>
         <div className="h-64">

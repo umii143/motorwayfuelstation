@@ -144,7 +144,7 @@ const AuditCenter: React.FC = () => {
           <div className="p-4 flex justify-center shrink-0">
             <button 
               onClick={() => setVisibleLimit(p => p + 100)}
-              className="px-6 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-full font-bold text-sm transition-colors border border-slate-200"
+              className="px-6 py-2 bg-slate-100 dark:bg-white/10 text-slate-700 hover:bg-slate-200 rounded-full font-bold text-sm transition-colors border border-slate-200 dark:border-white/10"
             >
               Load More ({filtered.length - visibleLimit} remaining)
             </button>
@@ -175,11 +175,11 @@ const AuditCenter: React.FC = () => {
         id: a.id,
         timestamp: (a.timestamp || ''),
         category: (
-          <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded text-[10px] font-bold uppercase">
+          <span className="bg-slate-100 dark:bg-white/10 text-slate-600 px-2 py-1 rounded text-[10px] font-bold uppercase">
             {a.category}
           </span>
         ),
-        action: <span className="font-bold text-slate-800">{a.action}</span>,
+        action: <span className="font-bold text-slate-800 dark:text-slate-200">{a.action}</span>,
         details: <span className="text-sm text-gray-600">{a.details}</span>,
         user: a.user
       }));
@@ -194,7 +194,7 @@ const AuditCenter: React.FC = () => {
           <div className="p-4 flex justify-center shrink-0">
             <button 
               onClick={() => setVisibleLimit(p => p + 100)}
-              className="px-6 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-full font-bold text-sm transition-colors border border-slate-200"
+              className="px-6 py-2 bg-slate-100 dark:bg-white/10 text-slate-700 hover:bg-slate-200 rounded-full font-bold text-sm transition-colors border border-slate-200 dark:border-white/10"
             >
               Load More ({filtered.length - visibleLimit} remaining)
             </button>
@@ -247,7 +247,7 @@ const AuditCenter: React.FC = () => {
           <div className="p-4 flex justify-center shrink-0">
             <button 
               onClick={() => setVisibleLimit(p => p + 100)}
-              className="px-6 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-full font-bold text-sm transition-colors border border-slate-200"
+              className="px-6 py-2 bg-slate-100 dark:bg-white/10 text-slate-700 hover:bg-slate-200 rounded-full font-bold text-sm transition-colors border border-slate-200 dark:border-white/10"
             >
               Load More ({filtered.length - visibleLimit} remaining)
             </button>
@@ -261,7 +261,7 @@ const AuditCenter: React.FC = () => {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <ShieldAlert className="w-8 h-8 text-red-600" />
             {settings.language === 'ur' ? 'آڈٹ سینٹر' : 'Audit Center'}
           </h2>
@@ -271,7 +271,7 @@ const AuditCenter: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-2">
+      <div className="flex flex-wrap gap-2 border-b border-gray-200 dark:border-gray-800 pb-2">
         {tabs.map(tab => (
           <button
             key={tab}
@@ -279,7 +279,7 @@ const AuditCenter: React.FC = () => {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               activeTab === tab
                 ? 'bg-red-50 text-red-700 border border-red-200'
-                : 'text-gray-600 hover:bg-gray-50 border border-transparent'
+                : 'text-gray-600 hover:bg-gray-50 dark:bg-gray-800/40 border border-transparent'
             }`}
           >
             {tab}
@@ -298,7 +298,7 @@ const AuditCenter: React.FC = () => {
                 <select
                   value={dateRange}
                   onChange={(e) => setDateRange(e.target.value as any)}
-                  className="px-3 py-2 border rounded-xl bg-slate-50 focus:ring-2 focus:ring-red-500 outline-none text-sm text-slate-700"
+                  className="px-3 py-2 border rounded-xl bg-slate-50 dark:bg-white/5 focus:ring-2 focus:ring-red-500 outline-none text-sm text-slate-700"
                 >
                   <option value="today">Today</option>
                   <option value="this_week">This Week</option>

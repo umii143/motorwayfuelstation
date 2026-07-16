@@ -81,7 +81,7 @@ export const RiskCenter: React.FC = () => {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
               Risk Center
               {totalRisks > 0 ? (
                 <span className="flex h-3 w-3 relative">
@@ -98,7 +98,7 @@ export const RiskCenter: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-4">
-            <div className="premium-card px-4 py-2 border border-slate-200 flex items-center ga">
+            <div className="premium-card px-4 py-2 border border-slate-200 dark:border-white/10 flex items-center ga">
               <div className="text-right">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Enterprise Health</p>
                 <p className={`text-lg font-black ${riskScore < 50 ? 'text-red-600' : riskScore < 80 ? 'text-orange-500' : 'text-emerald-600'}`}>
@@ -150,26 +150,26 @@ export const RiskCenter: React.FC = () => {
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
           
           {/* Inventory Risk Card */}
-          <div className="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden flex flex-col">
+          <div className="bg-white dark:bg-[#151521] rounded-2xl shadow-md border border-slate-200 dark:border-white/10 overflow-hidden flex flex-col">
             <div className="p-5 bg-gradient-to-r from-orange-50 to-white border-b border-orange-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-orange-100 rounded-lg text-orange-600">
                   <AlertTriangle className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-slate-900">Inventory Risks</h3>
+                  <h3 className="font-black text-slate-900 dark:text-white">Inventory Risks</h3>
                   <p className="text-xs font-semibold text-slate-500">{inventoryRisks.length} Critical Tanks</p>
                 </div>
               </div>
             </div>
             
-            <div className="p-5 flex-1 space-y-6 bg-slate-50/50">
+            <div className="p-5 flex-1 space-y-6 bg-slate-50 dark:bg-white/5/50">
               {inventoryRisks.map(r => (
                 <div key={r.tankId} className="premium-card p-4 border-orange-100 relative overflow-hidden group hover:shadow-md transition-shadow">
                   <div className="absolute top-0 left-0 w-1 h-full bg-orange-500"></div>
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <span className="text-sm font-black text-slate-900 block">{r.tankName}</span>
+                      <span className="text-sm font-black text-slate-900 dark:text-white block">{r.tankName}</span>
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{r.productId}</span>
                     </div>
                     <span className="bg-orange-50 text-orange-700 text-xs font-black px-2 py-1 rounded-md border border-orange-200">
@@ -181,9 +181,9 @@ export const RiskCenter: React.FC = () => {
                   <div className="space-y-1 mb-4">
                     <div className="flex justify-between text-xs font-semibold">
                       <span className="text-slate-500">Volume</span>
-                      <span className="text-slate-900">{r.currentStock?.toLocaleString()} L</span>
+                      <span className="text-slate-900 dark:text-white">{r.currentStock?.toLocaleString()} L</span>
                     </div>
-                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-2 w-full bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-gradient-to-r from-orange-500 to-red-500" 
                         style={{ width: `${Math.max(5, (r.currentStock / (Number(tanks.find(t => t.id === r.tankId)?.capacity) || 1)) * 100)}%` }}
@@ -204,7 +204,7 @@ export const RiskCenter: React.FC = () => {
                     <CheckCircle2 className="h-8 w-8" />
                   </div>
                   <div>
-                    <p className="font-bold text-slate-900">Stock Levels Optimal</p>
+                    <p className="font-bold text-slate-900 dark:text-white">Stock Levels Optimal</p>
                     <p className="text-xs text-slate-500 font-medium">Predictive engine shows no stockouts.</p>
                   </div>
                 </div>
@@ -213,20 +213,20 @@ export const RiskCenter: React.FC = () => {
           </div>
 
           {/* Financial Risk Card */}
-          <div className="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden flex flex-col">
+          <div className="bg-white dark:bg-[#151521] rounded-2xl shadow-md border border-slate-200 dark:border-white/10 overflow-hidden flex flex-col">
             <div className="p-5 bg-gradient-to-r from-red-50 to-white border-b border-red-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-red-100 rounded-lg text-red-600">
                   <TrendingDown className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-slate-900">Financial Risks</h3>
+                  <h3 className="font-black text-slate-900 dark:text-white">Financial Risks</h3>
                   <p className="text-xs font-semibold text-slate-500">{financialRisks.length} High Exposures</p>
                 </div>
               </div>
             </div>
             
-            <div className="p-5 flex-1 space-y-6 bg-slate-50/50">
+            <div className="p-5 flex-1 space-y-6 bg-slate-50 dark:bg-white/5/50">
               {financialRisks.map(c => {
                 const limit = c.creditLimit || 50000;
                 const balance = c.balance || 0;
@@ -237,7 +237,7 @@ export const RiskCenter: React.FC = () => {
                   <div className="absolute top-0 left-0 w-1 h-full bg-red-500"></div>
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <span className="text-sm font-black text-slate-900 block truncate max-w-full max-w-[150px]">{c.name}</span>
+                      <span className="text-sm font-black text-slate-900 dark:text-white block truncate max-w-full max-w-[150px]">{c.name}</span>
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Corporate</span>
                     </div>
                     <span className="bg-red-50 text-red-700 text-xs font-black px-2 py-1 rounded-md border border-red-200">
@@ -250,7 +250,7 @@ export const RiskCenter: React.FC = () => {
                       <span className="text-slate-500">Balance</span>
                       <span className="text-red-600">{balance.toLocaleString()} PKR</span>
                     </div>
-                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-2 w-full bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden">
                       <div 
                         className={`h-full ${utilization >= 100 ? 'bg-red-600 animate-pulse' : 'bg-red-400'}`}
                         style={{ width: `${utilization}%` }}
@@ -274,7 +274,7 @@ export const RiskCenter: React.FC = () => {
                     <CheckCircle2 className="h-8 w-8" />
                   </div>
                   <div>
-                    <p className="font-bold text-slate-900">Credit Health Strong</p>
+                    <p className="font-bold text-slate-900 dark:text-white">Credit Health Strong</p>
                     <p className="text-xs text-slate-500 font-medium">No customers exceeding exposure limits.</p>
                   </div>
                 </div>
@@ -283,27 +283,27 @@ export const RiskCenter: React.FC = () => {
           </div>
 
           {/* Operational Risk Card */}
-          <div className="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden flex flex-col">
+          <div className="bg-white dark:bg-[#151521] rounded-2xl shadow-md border border-slate-200 dark:border-white/10 overflow-hidden flex flex-col">
             <div className="p-5 bg-gradient-to-r from-purple-50 to-white border-b border-purple-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-purple-100 rounded-lg text-purple-600">
                   <AlertOctagon className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-slate-900">Operational Risks</h3>
+                  <h3 className="font-black text-slate-900 dark:text-white">Operational Risks</h3>
                   <p className="text-xs font-semibold text-slate-500">{operationalRisks.length} Anomalies</p>
                 </div>
               </div>
             </div>
             
-            <div className="p-5 flex-1 space-y-6 bg-slate-50/50">
+            <div className="p-5 flex-1 space-y-6 bg-slate-50 dark:bg-white/5/50">
               {operationalRisks.map(s => (
                 <div key={s.id} className="premium-card p-4 border-purple-100 relative overflow-hidden hover:shadow-md transition-shadow">
                   <div className="absolute top-0 left-0 w-1 h-full bg-purple-500"></div>
                   
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <span className="text-sm font-black text-slate-900 block">Shift #{s.id.slice(0, 6)}</span>
+                      <span className="text-sm font-black text-slate-900 dark:text-white block">Shift #{s.id.slice(0, 6)}</span>
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{s.date}</span>
                     </div>
                     <span className="bg-purple-50 text-purple-700 text-xs font-black px-2 py-1 rounded-md border border-purple-200">
@@ -311,10 +311,10 @@ export const RiskCenter: React.FC = () => {
                     </span>
                   </div>
 
-                  <div className="bg-slate-50 rounded-lg p-3 mb-4 border border-slate-100">
+                  <div className="bg-slate-50 dark:bg-white/5 rounded-lg p-3 mb-4 border border-slate-100 dark:border-white/5">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs font-bold text-slate-500">Operator</span>
-                      <span className="text-xs font-black text-slate-900">{staff?.find(st => st.id === s.staffId)?.name || s.staffId}</span>
+                      <span className="text-xs font-black text-slate-900 dark:text-white">{staff?.find(st => st.id === s.staffId)?.name || s.staffId}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-slate-500">Variance</span>
@@ -335,7 +335,7 @@ export const RiskCenter: React.FC = () => {
                     <CheckCircle2 className="h-8 w-8" />
                   </div>
                   <div>
-                    <p className="font-bold text-slate-900">Operations Secure</p>
+                    <p className="font-bold text-slate-900 dark:text-white">Operations Secure</p>
                     <p className="text-xs text-slate-500 font-medium">All recent shifts settled within variance limits.</p>
                   </div>
                 </div>

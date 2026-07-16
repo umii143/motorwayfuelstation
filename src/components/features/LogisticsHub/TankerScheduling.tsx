@@ -171,7 +171,7 @@ export default function TankerScheduling({ settings, stationId }: TankerScheduli
           <div key={schedule.id} className="kpi-card p-2">
             <div className="flex justify-between items-start mb-2">
               <div className="flex items-center gap-2 truncate">
-                <div className={`w-6 h-6 rounded flex items-center justify-center shrink-0 ${schedule.status === 'delivered' ? 'bg-emerald-500/10 text-emerald-600' : schedule.status === 'in_transit' ? 'bg-amber-500/10 text-amber-600' : schedule.status === 'cancelled' ? 'bg-rose-500/10 text-rose-600' : 'bg-slate-500/10 text-slate-600'}`}>
+                <div className={`w-6 h-6 rounded flex items-center justify-center shrink-0 ${schedule.status === 'delivered' ? 'bg-emerald-500/10 text-emerald-600' : schedule.status === 'in_transit' ? 'bg-amber-500/10 text-amber-600' : schedule.status === 'cancelled' ? 'bg-rose-500/10 text-rose-600' : 'bg-slate-50 dark:bg-white/50/10 text-slate-600'}`}>
                   <Truck className="h-3.5 w-3.5" />
                 </div>
                 <div className="truncate">
@@ -228,9 +228,9 @@ export default function TankerScheduling({ settings, stationId }: TankerScheduli
       {/* Form Modal */}
       {isModalOpen && (
         <div className="premium-modal-overlay">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h2 className="text-lg font-black font-sans text-slate-800">
+          <div className="bg-white dark:bg-[#151521] rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5 flex justify-between items-center bg-slate-50 dark:bg-white/5/50">
+              <h2 className="text-lg font-black font-sans text-slate-800 dark:text-slate-200">
                 {editingId ? 'Edit Tanker Schedule' : 'Schedule Tanker Delivery'}
               </h2>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-rose-500 transition">
@@ -242,7 +242,7 @@ export default function TankerScheduling({ settings, stationId }: TankerScheduli
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">OMC / Supplier *</label>
-                  <select value={supplierId} onChange={e => setSupplierId(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white">
+                  <select value={supplierId} onChange={e => setSupplierId(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white dark:bg-[#151521]">
                     {suppliers.map(sup => (
                       <option key={sup.id} value={sup.id}>{sup.name}</option>
                     ))}
@@ -250,11 +250,11 @@ export default function TankerScheduling({ settings, stationId }: TankerScheduli
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Purchase Order (PO) No. *</label>
-                  <input type="text" value={poNumber} onChange={e => setPoNumber(e.target.value.toUpperCase())} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono" />
+                  <input type="text" value={poNumber} onChange={e => setPoNumber(e.target.value.toUpperCase())} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Fuel Product *</label>
-                  <select value={productId} onChange={e => setProductId(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white">
+                  <select value={productId} onChange={e => setProductId(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white dark:bg-[#151521]">
                     {products.map(prod => (
                       <option key={prod.id} value={prod.id}>{prod.name}</option>
                     ))}
@@ -262,31 +262,31 @@ export default function TankerScheduling({ settings, stationId }: TankerScheduli
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Ordered Quantity (Liters) *</label>
-                  <input type="number" value={orderedQuantity} onChange={e => setOrderedQuantity(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="e.g. 20000" />
+                  <input type="number" value={orderedQuantity} onChange={e => setOrderedQuantity(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="e.g. 20000" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Expected Delivery Date *</label>
-                  <input type="date" value={expectedDeliveryDate} onChange={e => setExpectedDeliveryDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
+                  <input type="date" value={expectedDeliveryDate} onChange={e => setExpectedDeliveryDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">ETA (Optional)</label>
-                  <input type="time" value={eta} onChange={e => setEta(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
+                  <input type="time" value={eta} onChange={e => setEta(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
                 </div>
                 
-                <div className="md:col-span-2 pt-4 border-t border-slate-100">
+                <div className="md:col-span-2 pt-4 border-t border-slate-100 dark:border-white/5">
                   <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Logistics Details (Optional)</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">Tanker Reg No.</label>
-                      <input type="text" value={vehicleRegNo} onChange={e => setVehicleRegNo(e.target.value.toUpperCase())} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono uppercase" placeholder="TTR-123" />
+                      <input type="text" value={vehicleRegNo} onChange={e => setVehicleRegNo(e.target.value.toUpperCase())} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono uppercase" placeholder="TTR-123" />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">Driver Name</label>
-                      <input type="text" value={driverName} onChange={e => setDriverName(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="John Doe" />
+                      <input type="text" value={driverName} onChange={e => setDriverName(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="John Doe" />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">Driver Phone</label>
-                      <input type="text" value={driverPhone} onChange={e => setDriverPhone(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="03xx-xxxxxxx" />
+                      <input type="text" value={driverPhone} onChange={e => setDriverPhone(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="03xx-xxxxxxx" />
                     </div>
                   </div>
                 </div>
@@ -295,7 +295,7 @@ export default function TankerScheduling({ settings, stationId }: TankerScheduli
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Status</label>
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  <select value={status} onChange={e => setStatus(e.target.value as any)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white">
+                  <select value={status} onChange={e => setStatus(e.target.value as any)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white dark:bg-[#151521]">
                     <option value="pending">Pending (PO Sent)</option>
                     <option value="in_transit">In Transit</option>
                     <option value="delivered">Delivered</option>
@@ -305,8 +305,8 @@ export default function TankerScheduling({ settings, stationId }: TankerScheduli
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
-              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition">Cancel</button>
+            <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 flex justify-end gap-2">
+              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 dark:text-white transition">Cancel</button>
               <button onClick={handleSave} className="bg-rose-600 text-white px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded-lg text-sm font-bold hover:bg-rose-700 transition shadow-md shadow-rose-500/20">
                 Save Schedule
               </button>

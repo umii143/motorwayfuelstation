@@ -66,11 +66,11 @@ export default function WhatsAppAlerts({ settings, onUpdateSettings }: Props) {
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12">
       <div className="bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 rounded-3xl p-8 md:p-10 text-white shadow-xl shadow-emerald-600/20 relative overflow-hidden group">
-        <div className="absolute right-[-40px] top-[-40px] h-64 w-64 bg-white/5 rounded-full blur-3xl pointer-events-none transition-all duration-700 group-hover:bg-white/10" />
+        <div className="absolute right-[-40px] top-[-40px] h-64 w-64 bg-white dark:bg-[#151521]/5 rounded-full blur-3xl pointer-events-none transition-all duration-700 group-hover:bg-white dark:bg-[#151521]/10" />
         <MessageCircle className="absolute right-[-20px] bottom-[-20px] h-56 w-56 text-white opacity-5 transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-700" />
         
         <div className="relative z-10">
-          <span className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-md border border-white/20 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase mb-4 shadow-sm text-emerald-50">
+          <span className="inline-flex items-center gap-1.5 bg-white dark:bg-[#151521]/15 backdrop-blur-md border border-white/20 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase mb-4 shadow-sm text-emerald-50">
             <BellRing className="h-3 w-3" />
             {t('Enterprise Feature', 'انٹرپرائز فیچر')}
           </span>
@@ -83,19 +83,19 @@ export default function WhatsAppAlerts({ settings, onUpdateSettings }: Props) {
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
-        <div className="flex items-center gap-3 mb-8 border-b border-slate-100 pb-5">
-          <div className="p-2.5 bg-slate-100 rounded-xl">
+      <div className="bg-white dark:bg-[#151521] rounded-3xl shadow-sm border border-slate-200 dark:border-white/10 p-8">
+        <div className="flex items-center gap-3 mb-8 border-b border-slate-100 dark:border-white/5 pb-5">
+          <div className="p-2.5 bg-slate-100 dark:bg-white/10 rounded-xl">
             <Smartphone className="h-6 w-6 text-slate-600" />
           </div>
-          <h3 className="font-sans text-2xl font-black text-slate-800 tracking-tight">
+          <h3 className="font-sans text-2xl font-black text-slate-800 dark:text-slate-200 tracking-tight">
             {t('Device Linking', 'ڈیوائس لنکنگ')}
           </h3>
         </div>
 
-        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 mb-8 flex flex-col md:flex-row items-center gap-8">
+        <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-6 mb-8 flex flex-col md:flex-row items-center gap-8">
           <div className="flex-1 space-y-4">
-            <h4 className="font-sans font-black text-slate-800 text-lg">
+            <h4 className="font-sans font-black text-slate-800 dark:text-slate-200 text-lg">
               {t('Link Your WhatsApp', 'اپنا واٹس ایپ لنک کریں')}
             </h4>
             <p className="font-sans text-sm text-slate-600 leading-relaxed font-semibold">
@@ -118,7 +118,7 @@ export default function WhatsAppAlerts({ settings, onUpdateSettings }: Props) {
             )}
           </div>
           
-          <div className="w-64 h-64 bg-slate-100 rounded-2xl border border-slate-200 flex items-center justify-center relative overflow-hidden">
+          <div className="w-64 h-64 bg-slate-100 dark:bg-white/10 rounded-2xl border border-slate-200 dark:border-white/10 flex items-center justify-center relative overflow-hidden">
             {waStatus.ready ? (
               <div className="flex flex-col items-center gap-3 text-center">
                 <div className="h-16 w-16 bg-emerald-100 rounded-full flex items-center justify-center">
@@ -128,7 +128,7 @@ export default function WhatsAppAlerts({ settings, onUpdateSettings }: Props) {
                 <p className="text-xs text-slate-500 mt-1">Ready to send alerts.</p>
               </div>
             ) : waStatus.qr ? (
-              <div className="premium-card p-2 border-slate-100 inline-block">
+              <div className="premium-card p-2 border-slate-100 dark:border-white/5 inline-block">
                 <QRCodeSVG 
                   value={waStatus.qr} 
                   size={200} 
@@ -152,11 +152,11 @@ export default function WhatsAppAlerts({ settings, onUpdateSettings }: Props) {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 mb-8 border-b border-slate-100 pb-5">
-          <div className="p-2.5 bg-slate-100 rounded-xl">
+        <div className="flex items-center gap-3 mb-8 border-b border-slate-100 dark:border-white/5 pb-5">
+          <div className="p-2.5 bg-slate-100 dark:bg-white/10 rounded-xl">
             <Settings2 className="h-6 w-6 text-slate-600" />
           </div>
-          <h3 className="font-sans text-2xl font-black text-slate-800 tracking-tight">
+          <h3 className="font-sans text-2xl font-black text-slate-800 dark:text-slate-200 tracking-tight">
             {t('Notification Settings', 'نوٹیفکیشن سیٹنگز')}
           </h3>
         </div>
@@ -172,7 +172,7 @@ export default function WhatsAppAlerts({ settings, onUpdateSettings }: Props) {
                 type="text"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                className="relative w-full bg-slate-50 border border-slate-200 rounded-xl pl-4 pr-12 py-3.5 text-lg font-mono font-bold focus:bg-white focus:border-emerald-500 focus:ring-emerald-500 transition-all shadow-sm"
+                className="relative w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl pl-4 pr-12 py-3.5 text-lg font-mono font-bold focus:bg-white dark:bg-[#151521] focus:border-emerald-500 focus:ring-emerald-500 transition-all shadow-sm"
                 placeholder="+92 3XX XXXXXXX"
               />
               <MessageCircle className="absolute right-4 top-4 h-6 w-6 text-slate-400 group-hover:text-emerald-500 transition-colors" />
@@ -183,7 +183,7 @@ export default function WhatsAppAlerts({ settings, onUpdateSettings }: Props) {
           </div>
 
           <div className="pt-2">
-            <h4 className="font-sans text-sm font-black text-slate-800 mb-4 flex items-center gap-2">
+            <h4 className="font-sans text-sm font-black text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
               <BellRing className="h-5 w-5 text-emerald-600" />
               {t('Event Triggers', 'ایونٹ ٹرگرز')}
             </h4>
@@ -216,7 +216,7 @@ export default function WhatsAppAlerts({ settings, onUpdateSettings }: Props) {
                   className={`flex items-start gap-4 p-5 rounded-2xl border transition-all ${
                     alerts[item.id as keyof typeof alerts] 
                       ? 'border-emerald-200 bg-emerald-50/50 shadow-sm' 
-                      : 'border-slate-100 bg-slate-50/50 hover:bg-slate-50'
+                      : 'border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5/50 hover:bg-slate-50 dark:bg-white/5'
                   }`}
                 >
                   <div className="relative flex items-center pt-0.5">
@@ -229,7 +229,7 @@ export default function WhatsAppAlerts({ settings, onUpdateSettings }: Props) {
                     />
                   </div>
                   <label htmlFor={item.id} className="cursor-pointer flex-1">
-                    <span className="block font-sans font-black text-slate-800 text-sm mb-1">{item.label}</span>
+                    <span className="block font-sans font-black text-slate-800 dark:text-slate-200 text-sm mb-1">{item.label}</span>
                     <span className="block font-sans text-xs font-semibold text-slate-500 leading-relaxed">{item.desc}</span>
                   </label>
                 </div>
@@ -237,7 +237,7 @@ export default function WhatsAppAlerts({ settings, onUpdateSettings }: Props) {
             </div>
           </div>
 
-          <div className="pt-8 mt-4 border-t border-slate-100 flex justify-end">
+          <div className="pt-8 mt-4 border-t border-slate-100 dark:border-white/5 flex justify-end">
             <button
               onClick={handleSave}
               className={`flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-sans text-sm font-black text-white transition-all duration-300 transform active:scale-95 ${

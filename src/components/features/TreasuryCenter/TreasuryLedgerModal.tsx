@@ -73,7 +73,7 @@ export default function TreasuryLedgerModal({ stationId, accountType, title, isO
       header: 'Description',
       accessor: (row) => (
         <div>
-          <div className="font-medium text-gray-900">{row.description}</div>
+          <div className="font-medium text-gray-900 dark:text-white">{row.description}</div>
           {row.performedBy && <div className="text-xs text-gray-400">By: {row.performedBy}</div>}
         </div>
       ),
@@ -111,7 +111,7 @@ export default function TreasuryLedgerModal({ stationId, accountType, title, isO
     {
       header: 'Balance',
       accessor: (row) => <span className="font-bold">Rs {row.runningBalance.toLocaleString()}</span>,
-      className: 'text-right text-gray-900'
+      className: 'text-right text-gray-900 dark:text-white'
      
     }
   ];
@@ -121,9 +121,9 @@ export default function TreasuryLedgerModal({ stationId, accountType, title, isO
   const displayedLines = filteredLines.slice(0, visibleLimit);
 
   const content = (
-    <div className="flex flex-col h-full max-h-[80vh] bg-white">
+    <div className="flex flex-col h-full max-h-[80vh] bg-white dark:bg-[#151521]">
       {/* Filters */}
-      <div className="p-4 bg-gray-50 border-b border-gray-100 flex flex-wrap items-center gap-4 shrink-0 justify-between">
+      <div className="p-4 bg-gray-50 dark:bg-gray-800/40 border-b border-gray-100 flex flex-wrap items-center gap-4 shrink-0 justify-between">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-gray-500" />
@@ -164,7 +164,7 @@ export default function TreasuryLedgerModal({ stationId, accountType, title, isO
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-y-auto p-4 bg-slate-50/50">
+      <div className="flex-1 overflow-y-auto p-4 bg-slate-50 dark:bg-white/5/50">
         {loading || isPending ? (
           <div className="flex items-center justify-center h-40">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
@@ -197,10 +197,10 @@ export default function TreasuryLedgerModal({ stationId, accountType, title, isO
     <>
       {/* Desktop Modal View */}
       <div className="hidden lg:flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+        <div className="bg-white dark:bg-[#151521] rounded-2xl shadow-2xl w-full max-w-5xl flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
           <div className="p-5 border-b border-gray-100 flex items-center justify-between shrink-0">
             <div>
-              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <FileText className="h-5 w-5 text-indigo-500" />
                 {title} Ledger
               </h2>

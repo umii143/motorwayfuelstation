@@ -807,7 +807,7 @@ export default function AdvancedReportsHub({
       case "kpi":
         return "bg-teal-100 text-teal-800 border-teal-200";
       default:
-        return "bg-slate-100 text-slate-800 border-slate-200";
+        return "bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-white/10";
     }
   };
 
@@ -847,7 +847,7 @@ export default function AdvancedReportsHub({
   return (
     <div className="space-y-6 pb-20">
       {/* Hyper-Premium Hero Header */}
-      <div className="rounded-auth border border-slate-200 bg-white p-6 md:p-8 shadow-sm flex flex-col md:flex-row gap-6 md:items-center relative overflow-hidden rounded-2xl">
+      <div className="rounded-auth border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-6 md:p-8 shadow-sm flex flex-col md:flex-row gap-6 md:items-center relative overflow-hidden rounded-2xl">
         <div className="absolute top-0 right-0 p-8 opacity-5">
           <LineChart className="w-64 h-64 text-orange-600" />
         </div>
@@ -856,7 +856,7 @@ export default function AdvancedReportsHub({
           <FileCheck className="h-8 w-8 text-orange-600" />
         </div>
         <div className="z-10">
-          <h1 className="font-sans text-2xl md:text-3xl font-black tracking-tight text-slate-900 mb-2">
+          <h1 className="font-sans text-2xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white mb-2">
             Enterprise Advanced Reports
           </h1>
           <p className="font-sans text-sm text-slate-500 max-w-3xl leading-relaxed">
@@ -883,11 +883,11 @@ export default function AdvancedReportsHub({
 
       {/* KPI Stats Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        <div className="premium-card border border-slate-200">
+        <div className="premium-card border border-slate-200 dark:border-white/10">
           <span className="text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider block">
             Total Reports
           </span>
-          <div className="font-mono text-2xl font-black text-slate-900">
+          <div className="font-mono text-2xl font-black text-slate-900 dark:text-white">
             104
           </div>
           <span className="text-slate-400 text-[10px] mt-1 block font-bold">
@@ -955,7 +955,7 @@ export default function AdvancedReportsHub({
               className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${
                 activeFilter === f.id
                   ? "bg-slate-900 text-white border-slate-900 shadow-sm"
-                  : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"
+                  : "bg-white dark:bg-[#151521] text-slate-500 border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:bg-white/5 hover:text-slate-700"
               } flex items-center gap-1.5 cursor-pointer`}
             >
               {f.icon && <f.icon className="w-3.5 h-3.5" />}
@@ -967,9 +967,9 @@ export default function AdvancedReportsHub({
 
       {/* Dynamic Report Matrix */}
       {filteredModules.length === 0 ? (
-        <div className="premium-card border border-slate-200 text-center">
+        <div className="premium-card border border-slate-200 dark:border-white/10 text-center">
           <Search className="w-12 h-12 text-slate-200 mx-auto mb-3" />
-          <h3 className="text-slate-800 font-bold mb-1">No reports found</h3>
+          <h3 className="text-slate-800 dark:text-slate-200 font-bold mb-1">No reports found</h3>
           <p className="text-slate-500 text-sm">
             Try adjusting your search criteria or changing the tag filter.
           </p>
@@ -978,7 +978,7 @@ export default function AdvancedReportsHub({
         <div className="space-y-8">
           {filteredModules.map((mod) => (
             <div key={mod.id} className="animate-in fade-in duration-300">
-              <h2 className="flex items-center gap-2 font-sans text-sm font-bold text-slate-900 border-b-2 border-slate-100 pb-2 mb-4 uppercase tracking-wider">
+              <h2 className="flex items-center gap-2 font-sans text-sm font-bold text-slate-900 dark:text-white border-b-2 border-slate-100 dark:border-white/5 pb-2 mb-4 uppercase tracking-wider">
                 <mod.icon className="w-5 h-5 text-orange-600" />
                 {mod.name}
               </h2>
@@ -988,13 +988,13 @@ export default function AdvancedReportsHub({
                   <div
                     key={report.id}
                     onClick={() => setActiveReport(report.id)}
-                    className="bg-white border border-slate-200 rounded-xl p-4 flex gap-3 hover:border-orange-400 hover:shadow-md transition-all cursor-pointer group"
+                    className="bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 rounded-xl p-4 flex gap-3 hover:border-orange-400 hover:shadow-md transition-all cursor-pointer group"
                   >
                     <div className="font-mono text-[11px] font-bold text-slate-400 pt-0.5 min-w-full max-w-[32px]">
                       {report.id}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-sans text-sm font-bold text-slate-900 mb-1 group-hover:text-orange-600 transition-colors truncate">
+                      <h3 className="font-sans text-sm font-bold text-slate-900 dark:text-white mb-1 group-hover:text-orange-600 transition-colors truncate">
                         {report.name}
                       </h3>
                       <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-3">
@@ -1022,15 +1022,15 @@ export default function AdvancedReportsHub({
       {/* Report Viewer Modal (Premium Mockup for unimplemented) */}
       {activeReport && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 lg:p-8 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-2xl w-full h-full max-w-7xl flex flex-col overflow-hidden border border-slate-200">
+          <div className="bg-white dark:bg-[#151521] rounded-2xl shadow-2xl w-full h-full max-w-7xl flex flex-col overflow-hidden border border-slate-200 dark:border-white/10">
             {/* Modal Header */}
-            <div className="h-16 border-b border-slate-200 flex items-center justify-between px-6 bg-slate-50">
+            <div className="h-16 border-b border-slate-200 dark:border-white/10 flex items-center justify-between px-6 bg-slate-50 dark:bg-white/5">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-orange-100 border border-orange-200 flex items-center justify-center">
                   <Activity className="w-4 h-4 text-orange-600" />
                 </div>
                 <div>
-                  <h2 className="font-bold font-sans text-slate-900 text-lg">
+                  <h2 className="font-bold font-sans text-slate-900 dark:text-white text-lg">
                     {
                       REPORT_MODULES.flatMap((m) => m.reports).find(
                         (r) => r.id === activeReport,
@@ -1051,14 +1051,14 @@ export default function AdvancedReportsHub({
             </div>
 
             {/* Modal Body - Dynamic Loading Simulator */}
-            <div className="flex-1 overflow-auto p-6 bg-slate-50 flex items-center justify-center">
-              <div className="max-w-md w-full mx-auto text-center py-12 bg-white border border-slate-200 shadow-sm rounded-2xl">
+            <div className="flex-1 overflow-auto p-6 bg-slate-50 dark:bg-white/5 flex items-center justify-center">
+              <div className="max-w-md w-full mx-auto text-center py-12 bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl">
                 <div className="relative w-20 h-20 mx-auto mb-6">
-                  <div className="absolute inset-0 rounded-full border-4 border-slate-100"></div>
+                  <div className="absolute inset-0 rounded-full border-4 border-slate-100 dark:border-white/5"></div>
                   <div className="absolute inset-0 rounded-full border-4 border-orange-500 border-t-transparent animate-spin"></div>
                   <LineChart className="w-8 h-8 text-orange-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                 </div>
-                <h3 className="text-xl font-black text-slate-900 mb-2 tracking-tight">
+                <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">
                   Compiling Data Engine...
                 </h3>
                 <p className="text-slate-500 text-sm mx-auto mb-6 px-6 leading-relaxed">
@@ -1066,7 +1066,7 @@ export default function AdvancedReportsHub({
                   populate the enterprise dashboard view. Please wait.
                 </p>
 
-                <div className="w-48 h-1.5 bg-slate-100 rounded-full mx-auto overflow-hidden">
+                <div className="w-48 h-1.5 bg-slate-100 dark:bg-white/10 rounded-full mx-auto overflow-hidden">
                   <div className="h-full bg-orange-500 w-2/3 animate-pulse rounded-full"></div>
                 </div>
                 <div className="mt-4 text-[10px] text-slate-400 font-mono tracking-widest uppercase">

@@ -60,6 +60,24 @@ export const AppShell = () => {
     window.location.reload();
   });
 
+  // Global Theme Synchronization
+  React.useEffect(() => {
+    const root = document.documentElement;
+    const theme = settings?.theme || 'light';
+    
+    // Reset classes
+    root.classList.remove('light', 'dark', 'theme-light', 'theme-dark', 'theme-sunset', 'theme-blue', 'theme-emerald', 'theme-orange', 'theme-white');
+    
+    // Apply current theme
+    if (theme === 'dark' || theme === 'sunset') {
+      root.classList.add('dark');
+      root.classList.add(`theme-${theme}`);
+    } else {
+      root.classList.add('light');
+      root.classList.add(`theme-${theme}`);
+    }
+  }, [settings?.theme]);
+
   const isLubeBusiness = stations.find(s => s.id === activeStationId)?.businessType === 'lube';
 
   // Extract subscription logic
@@ -123,7 +141,7 @@ export const AppShell = () => {
           setSettings({ ...settings, language: languages[nextIndex] });
         }}
         onThemeToggle={() => {
-          const themes: ('light' | 'dark' | 'blue' | 'emerald' | 'orange' | 'white')[] = ['light', 'dark', 'blue', 'emerald', 'orange', 'white'];
+          const themes: ('light' | 'dark' | 'sunset' | 'blue' | 'emerald' | 'orange' | 'white')[] = ['light', 'dark', 'sunset', 'blue', 'emerald', 'orange', 'white'];
           const currentIndex = themes.indexOf(settings.theme || 'light');
           const nextIndex = (currentIndex + 1) % themes.length;
           setSettings({ ...settings, theme: themes[nextIndex] as any });
@@ -166,7 +184,7 @@ export const AppShell = () => {
 
       {/* Main Container Workspace */}
       <main 
-        className="flex-1 w-full pt-[64px] pb-[80px] lg:pb-0 lg:pl-[280px] flex flex-col overflow-y-auto scroll-container relative bg-slate-50 dark:bg-[#151521] transition-all"
+        className="flex-1 w-full pt-[64px] pb-0 lg:pl-[280px] flex flex-col overflow-y-auto scroll-container relative bg-slate-50 dark:bg-[#151521] transition-all"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -187,7 +205,7 @@ export const AppShell = () => {
         
         {isRefreshing && (
           <div className="absolute top-16 left-0 right-0 flex justify-center py-4 z-50">
-            <div className="bg-white shadow-xl rounded-full p-2 border border-slate-100 flex items-center justify-center">
+            <div className="bg-white dark:bg-[#151521] shadow-xl rounded-full p-2 border border-slate-100 dark:border-white/5 flex items-center justify-center">
                <RefreshCw className="h-6 w-6 text-orange-600 animate-spin" />
             </div>
           </div>

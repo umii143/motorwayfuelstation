@@ -33,7 +33,7 @@ export default function LossDashboard({ settings, stationId }: LossDashboardProp
       case 'high': return 'bg-orange-100 text-orange-700 border-orange-200';
       case 'medium': return 'bg-amber-100 text-amber-700 border-amber-200';
       case 'low': return 'bg-blue-100 text-blue-700 border-blue-200';
-      default: return 'bg-slate-100 text-slate-700 border-slate-200';
+      default: return 'bg-slate-100 dark:bg-white/10 text-slate-700 border-slate-200 dark:border-white/10';
     }
   };
 
@@ -59,15 +59,15 @@ export default function LossDashboard({ settings, stationId }: LossDashboardProp
         </div>
 
         <div className="premium-card p-5 border relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-slate-50 rounded-full group-hover:scale-110 transition-transform"></div>
+          <div className="absolute -right-4 -top-4 w-24 h-24 bg-slate-50 dark:bg-white/5 rounded-full group-hover:scale-110 transition-transform"></div>
           <div className="relative">
             <div className="flex justify-between items-start mb-2">
               <span className="text-xs font-bold text-slate-500 uppercase">MTD Incidents</span>
-              <div className="p-2 bg-slate-100 text-slate-600 rounded-lg">
+              <div className="p-2 bg-slate-100 dark:bg-white/10 text-slate-600 rounded-lg">
                 <Scale className="h-4 w-4" />
               </div>
             </div>
-            <div className="text-2xl font-black font-mono text-slate-900">{mtdIncidents.length}</div>
+            <div className="text-2xl font-black font-mono text-slate-900 dark:text-white">{mtdIncidents.length}</div>
             <div className="text-xs text-slate-500 mt-2 font-medium">Total reported this month</div>
           </div>
         </div>
@@ -106,18 +106,18 @@ export default function LossDashboard({ settings, stationId }: LossDashboardProp
       </div>
 
       <div className="premium-card border overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-          <h3 className="font-bold text-sm text-slate-800">Critical & High Priority Incidents</h3>
+        <div className="px-5 py-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-white/5/50">
+          <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">Critical & High Priority Incidents</h3>
         </div>
         <div className="divide-y divide-slate-100">
           {unresolvedIncidents.filter(i => i.severity === 'critical' || i.severity === 'high').map(incident => (
-            <div key={incident.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition">
+            <div key={incident.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:bg-white/5 transition">
               <div className="flex items-center gap-4">
                 <div className={`p-2 rounded-lg border ${getSeverityColor(incident.severity)}`}>
                   {incident.type === 'cash_variance' ? <DollarSign className="h-5 w-5" /> : <Droplets className="h-5 w-5" />}
                 </div>
                 <div>
-                  <div className="font-bold text-slate-900 text-sm capitalize">{incident.type.replace('_', ' ')}</div>
+                  <div className="font-bold text-slate-900 dark:text-white text-sm capitalize">{incident.type.replace('_', ' ')}</div>
                   <div className="text-xs text-slate-500 mt-0.5">Date: {new Date(incident.date).toLocaleDateString()} | Ref: {incident.sourceId}</div>
                 </div>
               </div>

@@ -65,15 +65,15 @@ export function ProductsStep({ products, onUpdate, onContinue, language }: Props
 
   return (
     <div className="flex items-center justify-center min-h-[80vh] p-4 animate-in fade-in slide-in-from-right-4 duration-500">
-      <div className="max-w-2xl w-full bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden flex flex-col h-[85vh] max-h-[800px]">
+      <div className="max-w-2xl w-full bg-white dark:bg-[#151521] rounded-3xl shadow-xl border border-slate-100 dark:border-white/5 overflow-hidden flex flex-col h-[85vh] max-h-[800px]">
         
-        <div className="text-center border-b border-slate-100 p-6 md:p-8 shrink-0 bg-slate-50/50">
+        <div className="text-center border-b border-slate-100 dark:border-white/5 p-6 md:p-8 shrink-0 bg-slate-50 dark:bg-white/5/50">
           <div className="flex justify-center mb-4">
             <div className="size-12 rounded-2xl bg-orange-100 flex items-center justify-center">
               <Fuel className="size-6 text-orange-600" />
             </div>
           </div>
-          <h2 className="text-2xl font-black text-slate-800">
+          <h2 className="text-2xl font-black text-slate-800 dark:text-slate-200">
             {t('Add Fuel Products', 'فیول پراڈکٹس شامل کریں', language)}
           </h2>
           <p className="text-slate-500 font-medium mt-2">
@@ -97,7 +97,7 @@ export function ProductsStep({ products, onUpdate, onContinue, language }: Props
                   className={`h-16 border-2 rounded-2xl flex items-center justify-between px-4 transition-all duration-200 cursor-pointer
                     ${isPresetAdded(preset.name) 
                       ? 'border-emerald-500 bg-emerald-50/50 opacity-60 cursor-not-allowed' 
-                      : 'border-slate-200 hover:border-orange-500 hover:shadow-md bg-white'
+                      : 'border-slate-200 dark:border-white/10 hover:border-orange-500 hover:shadow-md bg-white dark:bg-[#151521]'
                     }`}
                 >
                   <span className="flex items-center gap-3 font-bold text-slate-700">
@@ -119,7 +119,7 @@ export function ProductsStep({ products, onUpdate, onContinue, language }: Props
             </p>
             <div className="flex gap-2">
               <input
-                className="flex-1 h-14 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition-colors font-medium text-slate-700"
+                className="flex-1 h-14 px-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white dark:bg-[#151521] transition-colors font-medium text-slate-700"
                 placeholder={t("e.g., Premium Diesel", "مثلاً پریمیئم ڈیزل", language)}
                 value={customName}
                 onChange={(e) => setCustomName(e.target.value)}
@@ -152,7 +152,7 @@ export function ProductsStep({ products, onUpdate, onContinue, language }: Props
                       <div className="size-8 rounded-full bg-emerald-100 flex items-center justify-center">
                         <Check className="size-4 text-emerald-600" />
                       </div>
-                      <span className="font-bold text-slate-800 text-lg">{product.name}</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200 text-lg">{product.name}</span>
                     </div>
                     <button
                       onClick={() => removeProduct(product.id)}
@@ -168,7 +168,7 @@ export function ProductsStep({ products, onUpdate, onContinue, language }: Props
 
         </div>
 
-        <div className="p-6 border-t border-slate-100 bg-white shrink-0">
+        <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-white dark:bg-[#151521] shrink-0">
           <button
             onClick={onContinue}
             disabled={products.length === 0}

@@ -89,12 +89,12 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className={`w-full ${maxWidth} rounded-2xl border border-slate-200 bg-white shadow-2xl flex flex-col max-h-[90dvh]`}
+              className={`w-full ${maxWidth} rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] shadow-2xl flex flex-col max-h-[90dvh]`}
             >
               {title && (
-                <div className="flex items-center justify-between p-6 pb-4 border-b border-slate-100">
+                <div className="flex items-center justify-between p-6 pb-4 border-b border-slate-100 dark:border-white/5">
                   <h2 className="font-sans text-lg font-bold text-slate-950">{title}</h2>
-                  <button onClick={onClose} className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
+                  <button onClick={onClose} className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:bg-white/10 hover:text-slate-600 transition-colors">
                     <X className="h-5 w-5" />
                   </button>
                 </div>

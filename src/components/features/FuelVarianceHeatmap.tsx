@@ -46,7 +46,7 @@ export function FuelVarianceHeatmap({ tanks, shifts, nozzles }: FuelVarianceHeat
       case 'normal': return 'bg-emerald-500/20 border-emerald-500/30 text-emerald-600 dark:text-emerald-400';
       case 'watch': return 'bg-amber-500/20 border-amber-500/30 text-amber-600 dark:text-amber-400';
       case 'investigate': return 'bg-rose-500/20 border-rose-500/30 text-rose-600 dark:text-rose-400';
-      default: return 'bg-slate-500/20 border-slate-500/30 text-slate-600 dark:text-slate-400';
+      default: return 'bg-slate-50 dark:bg-white/50/20 border-slate-500/30 text-slate-600 dark:text-slate-400';
     }
   };
 

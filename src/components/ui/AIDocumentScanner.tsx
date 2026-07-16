@@ -108,12 +108,12 @@ export default function AIDocumentScanner({ isOpen, onClose, settings, onDataExt
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col max-h-[90vh]">
+      <div className="w-full max-w-3xl overflow-hidden rounded-2xl bg-white dark:bg-[#151521] shadow-2xl flex flex-col max-h-[90vh]">
         
         {/* Header */}
         <div className="flex items-center justify-between bg-indigo-600 px-6 py-4 text-white">
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-white/20 p-2">
+            <div className="rounded-lg bg-white dark:bg-[#151521]/20 p-2">
               <ScanLine className="h-5 w-5 text-indigo-50" />
             </div>
             <div>
@@ -125,13 +125,13 @@ export default function AIDocumentScanner({ isOpen, onClose, settings, onDataExt
               </p>
             </div>
           </div>
-          <button onClick={handleClose} className="rounded-xl p-2 hover:bg-white/20 transition-colors cursor-pointer">
+          <button onClick={handleClose} className="rounded-xl p-2 hover:bg-white dark:bg-[#151521]/20 transition-colors cursor-pointer">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 bg-slate-50 flex flex-col md:flex-row gap-6">
+        <div className="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-white/5 flex flex-col md:flex-row gap-6">
           
           {/* Left Side: Upload & Preview */}
           <div className="flex-1 flex flex-col gap-4">
@@ -140,7 +140,7 @@ export default function AIDocumentScanner({ isOpen, onClose, settings, onDataExt
               className={`relative flex h-64 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed transition-all ${
                 previewUrl 
                   ? 'border-indigo-500 bg-indigo-50/30' 
-                  : 'border-slate-300 bg-slate-100 hover:border-indigo-400 hover:bg-indigo-50'
+                  : 'border-slate-300 bg-slate-100 dark:bg-white/10 hover:border-indigo-400 hover:bg-indigo-50'
               }`}
             >
               <input 
@@ -155,7 +155,7 @@ export default function AIDocumentScanner({ isOpen, onClose, settings, onDataExt
                 <img src={previewUrl} alt="Document Preview" className="h-full w-full object-contain p-2" />
               ) : (
                 <div className="flex flex-col items-center gap-3 text-slate-500 p-6 text-center">
-                  <div className="rounded-full bg-white p-4 shadow-xs">
+                  <div className="rounded-full bg-white dark:bg-[#151521] p-4 shadow-xs">
                     <ImageIcon className="h-8 w-8 text-indigo-400" />
                   </div>
                   <div>
@@ -188,7 +188,7 @@ export default function AIDocumentScanner({ isOpen, onClose, settings, onDataExt
               {previewUrl && (
                 <button
                   onClick={reset}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-3 font-sans text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer"
+                  className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] px-4 py-3 font-sans text-sm font-bold text-slate-700 hover:bg-slate-50 dark:bg-white/5 transition-all cursor-pointer"
                 >
                   {t('Clear', 'صاف کریں')}
                 </button>
@@ -198,21 +198,21 @@ export default function AIDocumentScanner({ isOpen, onClose, settings, onDataExt
 
           {/* Right Side: Results */}
           <div className="flex-1 flex flex-col">
-            <h4 className="font-sans text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+            <h4 className="font-sans text-sm font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
               <FileText className="h-4 w-4 text-indigo-500" />
               {t('Extracted Information', 'نکالی گئی معلومات')}
             </h4>
             
-            <div className="flex-1 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs relative">
+            <div className="flex-1 rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-xs relative">
               {isScanning ? (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-white/80 rounded-2xl">
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-white dark:bg-[#151521]/80 rounded-2xl">
                   <div className="relative h-16 w-16">
                     <div className="absolute inset-0 rounded-full border-4 border-indigo-100"></div>
                     <div className="absolute inset-0 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin"></div>
                     <ScanLine className="absolute inset-0 m-auto h-6 w-6 text-indigo-600 animate-pulse" />
                   </div>
                   <div className="text-center">
-                    <p className="font-sans font-bold text-slate-800">{t('Analyzing Document...', 'دستاویز کا تجزیہ جاری ہے...')}</p>
+                    <p className="font-sans font-bold text-slate-800 dark:text-slate-200">{t('Analyzing Document...', 'دستاویز کا تجزیہ جاری ہے...')}</p>
                     <p className="font-sans text-xs text-slate-500 mt-1">{t('Gemini Vision is extracting data fields', 'جیمنی ویژن ڈیٹا نکال رہا ہے')}</p>
                   </div>
                 </div>

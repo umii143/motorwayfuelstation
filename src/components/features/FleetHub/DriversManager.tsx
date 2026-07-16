@@ -224,9 +224,9 @@ export default function DriversManager({ settings, stationId }: DriversManagerPr
       {/* Form Modal */}
       {isModalOpen && (
         <div className="premium-modal-overlay">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h2 className="text-lg font-black font-sans text-slate-800">
+          <div className="bg-white dark:bg-[#151521] rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5 flex justify-between items-center bg-slate-50 dark:bg-white/5/50">
+              <h2 className="text-lg font-black font-sans text-slate-800 dark:text-slate-200">
                 {editingId ? 'Edit Driver Details' : 'Register New Driver'}
               </h2>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-rose-500 transition">
@@ -244,7 +244,7 @@ export default function DriversManager({ settings, stationId }: DriversManagerPr
                       setAccountId(e.target.value);
                       setAssignedVehicleId(''); // Reset vehicle selection when account changes
                     }} 
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+                    className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-[#151521]"
                   >
                     {accounts.map(acc => (
                       <option key={acc.id} value={acc.id}>{acc.companyName}</option>
@@ -253,19 +253,19 @@ export default function DriversManager({ settings, stationId }: DriversManagerPr
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Driver Name *</label>
-                  <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Full Name" />
+                  <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Full Name" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Driving License Number *</label>
-                  <input type="text" value={licenseNumber} onChange={e => setLicenseNumber(e.target.value.toUpperCase())} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono uppercase" placeholder="License ID" />
+                  <input type="text" value={licenseNumber} onChange={e => setLicenseNumber(e.target.value.toUpperCase())} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono uppercase" placeholder="License ID" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number</label>
-                  <input type="text" value={phone} onChange={e => setPhone(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="03xx-xxxxxxx" />
+                  <input type="text" value={phone} onChange={e => setPhone(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="03xx-xxxxxxx" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Assign to Vehicle (Optional)</label>
-                  <select value={assignedVehicleId} onChange={e => setAssignedVehicleId(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+                  <select value={assignedVehicleId} onChange={e => setAssignedVehicleId(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-[#151521]">
                     <option value="">None (Floating Driver)</option>
                     {availableVehiclesForAccount.map(v => (
                       <option key={v.id} value={v.id}>{v.registrationNumber} ({v.make} {v.model})</option>
@@ -276,7 +276,7 @@ export default function DriversManager({ settings, stationId }: DriversManagerPr
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Status</label>
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  <select value={status} onChange={e => setStatus(e.target.value as any)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+                  <select value={status} onChange={e => setStatus(e.target.value as any)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-[#151521]">
                     <option value="active">Active (Allowed to fuel)</option>
                     <option value="suspended">Suspended / Fired</option>
                   </select>
@@ -284,8 +284,8 @@ export default function DriversManager({ settings, stationId }: DriversManagerPr
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
-              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition">Cancel</button>
+            <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 flex justify-end gap-2">
+              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 dark:text-white transition">Cancel</button>
               <button onClick={handleSave} className="bg-orange-600 text-white px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded-lg text-sm font-bold hover:bg-orange-700 transition shadow-md shadow-orange-500/20">
                 Save Driver
               </button>

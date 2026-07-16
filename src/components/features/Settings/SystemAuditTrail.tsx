@@ -48,7 +48,7 @@ export default function SystemAuditTrail({ language, stationId }: SystemAuditTra
   });
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+    <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-xs space-y-4">
       {/* HEADER COMPONENT */}
       <div className="flex flex-row items-center sm:justify-between border-b pb-3 gap-2">
         <h3 className="font-sans text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
@@ -77,14 +77,14 @@ export default function SystemAuditTrail({ language, stationId }: SystemAuditTra
             placeholder={t('Search action narrative or parameter change...', 'آڈٹ رکارڈ تلاش کریں...')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 border border-slate-200 rounded-lg text-xs font-sans outline-hidden focus:border-orange-500 bg-slate-50/50"
+            className="w-full pl-9 pr-3 py-1.5 border border-slate-200 dark:border-white/10 rounded-lg text-xs font-sans outline-hidden focus:border-orange-500 bg-slate-50 dark:bg-white/5/50"
           />
         </div>
 
         <select
           value={filterCategory}
           onChange={(e) => setFilterCategory(e.target.value)}
-          className="rounded-lg border border-slate-200 bg-white p-1.5 text-xs font-sans text-slate-600 outline-hidden focus:border-orange-500"
+          className="rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-1.5 text-xs font-sans text-slate-600 outline-hidden focus:border-orange-500"
         >
           <option value="">{t('-- All Action Categories --', '-- تمام شعبے --')}</option>
           <option value="System">{t('System & Resets', 'سسٹم اور ری سیٹ')}</option>
@@ -114,7 +114,7 @@ export default function SystemAuditTrail({ language, stationId }: SystemAuditTra
           {
             header: t('Category', 'شعبہ'),
             accessor: (lg) => (
-              <span className="bg-slate-100 text-slate-650 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-tight">
+              <span className="bg-slate-100 dark:bg-white/10 text-slate-650 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-tight">
                 {lg.category}
               </span>
             )
@@ -122,7 +122,7 @@ export default function SystemAuditTrail({ language, stationId }: SystemAuditTra
           {
             header: t('Trigger Event', 'سرگرمی'),
             accessor: (lg) => (
-              <span className="font-bold text-slate-800">{lg.action}</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">{lg.action}</span>
             ),
             isPrimaryMobile: true
           },
@@ -136,7 +136,7 @@ export default function SystemAuditTrail({ language, stationId }: SystemAuditTra
             header: t('Authorized Operator', 'تبدیلی کا مجاز شخص'),
             className: 'text-right',
             accessor: (lg) => (
-              <span className="text-sm font-medium text-slate-800">{lg.user}</span>
+              <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{lg.user}</span>
             )
           }
         ]}

@@ -98,75 +98,75 @@ export default function SupplierDirectory({
   return (
     <div className="space-y-6">
       {/* 4 KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Suppliers */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg relative overflow-hidden group">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400">
-              <Users className="w-6 h-6" />
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 sm:p-5 shadow-lg relative overflow-hidden group">
+          <div className="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
+            <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+              <Users className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div>
-              <p className="text-slate-400 text-xs font-semibold mb-1">Total Suppliers</p>
-              <h3 className="text-white text-2xl font-bold">{suppliers.length}</h3>
+            <div className="min-w-0">
+              <p className="text-slate-400 text-[10px] sm:text-xs font-semibold mb-0.5 truncate">Total Suppliers</p>
+              <h3 className="text-white text-base sm:text-2xl font-bold truncate">{suppliers.length}</h3>
             </div>
           </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-slate-400">Active Suppliers <span className="text-emerald-400 ml-1 font-semibold">{activeSuppliersCount}</span></span>
-            <span className="text-slate-400">Inactive <span className="text-rose-400 ml-1 font-semibold">{inactiveSuppliersCount}</span></span>
+          <div className="flex flex-col min-[380px]:flex-row justify-between text-[9px] min-[380px]:text-xs gap-1">
+            <span className="text-slate-400 truncate">Active <span className="text-emerald-400 ml-0.5 font-semibold">{activeSuppliersCount}</span></span>
+            <span className="text-slate-400 truncate">Inactive <span className="text-rose-400 ml-0.5 font-semibold">{inactiveSuppliersCount}</span></span>
           </div>
         </div>
 
         {/* Total Outstanding */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg relative overflow-hidden group">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center text-orange-400">
-              <AlertCircle className="w-6 h-6" />
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 sm:p-5 shadow-lg relative overflow-hidden group">
+          <div className="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
+            <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-orange-500/20 flex items-center justify-center text-orange-400 shrink-0">
+              <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div>
-              <p className="text-slate-400 text-xs font-semibold mb-1">Total Outstanding</p>
-              <h3 className="text-white text-2xl font-bold">PKR {formatCurrency(totalOutstanding, settings).replace('Rs.', '').trim()}</h3>
+            <div className="min-w-0">
+              <p className="text-slate-400 text-[10px] sm:text-xs font-semibold mb-0.5 truncate">Total Outstanding</p>
+              <h3 className="text-white text-base sm:text-2xl font-bold truncate">PKR {formatCurrency(totalOutstanding, settings).replace('Rs.', '').trim()}</h3>
             </div>
           </div>
-          <div className="flex flex-col text-xs">
-            <span className="text-slate-400 mb-1">Overdue</span>
-            <span className="text-rose-500 font-bold">PKR {formatCurrency(overdueAmount, settings).replace('Rs.', '').trim()}</span>
+          <div className="flex flex-col text-[9px] min-[380px]:text-xs gap-0.5">
+            <span className="text-slate-400 mb-0.5 truncate">Overdue</span>
+            <span className="text-rose-500 font-bold truncate">PKR {formatCurrency(overdueAmount, settings).replace('Rs.', '').trim()}</span>
           </div>
         </div>
 
         {/* Total Purchases (MTD) */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg relative overflow-hidden group">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
-              <Wallet className="w-6 h-6" />
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 sm:p-5 shadow-lg relative overflow-hidden group">
+          <div className="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
+            <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+              <Wallet className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div>
-              <p className="text-slate-400 text-xs font-semibold mb-1">Total Purchases (MTD)</p>
-              <h3 className="text-white text-2xl font-bold">PKR {formatCurrency(purchasesMTD, settings).replace('Rs.', '').trim()}</h3>
+            <div className="min-w-0">
+              <p className="text-slate-400 text-[10px] sm:text-xs font-semibold mb-0.5 truncate text-ellipsis">Purchases (MTD)</p>
+              <h3 className="text-white text-base sm:text-2xl font-bold truncate">PKR {formatCurrency(purchasesMTD, settings).replace('Rs.', '').trim()}</h3>
             </div>
           </div>
-          <div className="flex items-center text-xs">
-            <span className="text-slate-400 mr-2">This Month</span>
+          <div className="flex items-center text-[9px] min-[380px]:text-xs gap-1">
+            <span className="text-slate-400 truncate">This Month</span>
             <span className="text-emerald-400 font-bold flex items-center gap-0.5">▲ 12.5%</span>
           </div>
         </div>
 
         {/* Average Credit Days */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg relative overflow-hidden group">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-400">
-              <Clock className="w-6 h-6" />
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 sm:p-5 shadow-lg relative overflow-hidden group">
+          <div className="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
+            <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
+              <Clock className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div>
-              <p className="text-slate-400 text-xs font-semibold mb-1">Average Credit Days</p>
-              <h3 className="text-white text-2xl font-bold">{avgCreditDays} Days</h3>
+            <div className="min-w-0">
+              <p className="text-slate-400 text-[10px] sm:text-xs font-semibold mb-0.5 truncate">Avg Credit Days</p>
+              <h3 className="text-white text-base sm:text-2xl font-bold truncate">{avgCreditDays} Days</h3>
             </div>
           </div>
-          <div className="flex flex-col text-xs w-full">
-            <div className="flex justify-between mb-1.5">
-              <span className="text-slate-400">Credit Utilization</span>
+          <div className="flex flex-col text-[9px] min-[380px]:text-xs w-full">
+            <div className="flex justify-between mb-1">
+              <span className="text-slate-400 truncate">Util.</span>
               <span className="text-white font-bold">{creditUtilization}%</span>
             </div>
-            <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
               <div className="h-full bg-blue-500 rounded-full" style={{ width: `${creditUtilization}%` }}></div>
             </div>
           </div>

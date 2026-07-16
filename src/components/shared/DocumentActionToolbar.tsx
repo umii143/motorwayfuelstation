@@ -68,7 +68,7 @@ export function DocumentActionToolbar({
       {onPrint && (
         <button
           onClick={onPrint}
-          className="p-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+          className="p-2 rounded-lg bg-slate-100 dark:bg-white/10 text-slate-700 hover:bg-slate-200 transition-colors"
           title="Print"
         >
           <Printer className="w-5 h-5" />

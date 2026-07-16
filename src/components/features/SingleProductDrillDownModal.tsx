@@ -108,16 +108,16 @@ export default function SingleProductDrillDownModal({
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-4xl max-h-[90vh] bg-slate-50 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+          className="relative w-full max-w-4xl max-h-[90vh] bg-slate-50 dark:bg-white/5 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
         >
           {/* HEADER */}
-          <div className="flex-none bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between z-10">
+          <div className="flex-none bg-white dark:bg-[#151521] border-b border-slate-200 dark:border-white/10 px-6 py-4 flex items-center justify-between z-10">
             <div className="flex items-center gap-4">
               <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${product.currentStock <= product.minStock ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'}`}>
                 <Package className="h-6 w-6" />
               </div>
               <div>
-                <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
                   {isUrdu ? product.urduName : product.name}
                   {product.currentStock <= product.minStock && (
                     <span className="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest flex items-center gap-1">
@@ -134,7 +134,7 @@ export default function SingleProductDrillDownModal({
             <div className="flex items-center gap-2">
               <button 
                 onClick={(e) => { e.stopPropagation(); onClose(); onEdit(product); }}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition-colors text-xs border border-slate-200"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition-colors text-xs border border-slate-200 dark:border-white/10"
               >
                 <Pencil className="h-3.5 w-3.5" />
                 {t('Edit', 'ترمیم')}
@@ -149,7 +149,7 @@ export default function SingleProductDrillDownModal({
               <div className="w-px h-6 bg-slate-200 mx-1"></div>
               <button 
                 onClick={onClose}
-                className="h-10 w-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors cursor-pointer"
+                className="h-10 w-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -161,29 +161,29 @@ export default function SingleProductDrillDownModal({
 
             {/* KPI GRID */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="premium-card border border-slate-200">
+              <div className="premium-card border border-slate-200 dark:border-white/10">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">
                   {t('Current Stock', 'موجودہ اسٹاک')}
                 </span>
-                <h3 className="text-2xl font-black text-slate-900">{metrics.currentStock.toLocaleString()} <span className="text-sm font-medium text-slate-500">{product.unit}</span></h3>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white">{metrics.currentStock.toLocaleString()} <span className="text-sm font-medium text-slate-500">{product.unit}</span></h3>
                 <div className="mt-2 flex items-center justify-between text-xs font-bold text-slate-500 border-t pt-2">
                   <span>{t('Min Threshold:', 'کم از کم حد:')}</span>
                   <span>{product.minStock} {product.unit}</span>
                 </div>
               </div>
 
-              <div className="premium-card border border-slate-200">
+              <div className="premium-card border border-slate-200 dark:border-white/10">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">
                   {t('Total Stock Value', 'کل اسٹاک ویلیو')}
                 </span>
-                <h3 className="text-2xl font-black text-slate-900">{formatCurrency(metrics.totalStockValue, settings)}</h3>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white">{formatCurrency(metrics.totalStockValue, settings)}</h3>
                 <div className="mt-2 flex items-center justify-between text-xs font-bold text-slate-500 border-t pt-2">
                   <span>{t('Selling Price:', 'فروخت قیمت:')}</span>
                   <span className="text-orange-600">Rs. {metrics.sellPrice.toLocaleString()}</span>
                 </div>
               </div>
 
-              <div className="premium-card border border-slate-200">
+              <div className="premium-card border border-slate-200 dark:border-white/10">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">
                   {t('Profit Margin', 'منافع مارجن')}
                 </span>
@@ -194,7 +194,7 @@ export default function SingleProductDrillDownModal({
                 </div>
               </div>
 
-              <div className="premium-card border border-slate-200 bg-slate-800 text-white">
+              <div className="premium-card border border-slate-200 dark:border-white/10 bg-slate-800 text-white">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">
                   {t('Profit Per Unit', 'فی یونٹ منافع')}
                 </span>
@@ -209,21 +209,21 @@ export default function SingleProductDrillDownModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
               {/* LAST ACTIVITY LOGS */}
-              <div className="premium-card border border-slate-200">
-                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <div className="premium-card border border-slate-200 dark:border-white/10">
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <History className="h-4 w-4 text-slate-400" />
                   {t('Recent Analytics & Sourcing', 'حالیہ تجزیات')}
                 </h3>
                 
                 <div className="space-y-4">
                   {/* Sourcing details */}
-                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5">
                     <div className="h-10 w-10 shrink-0 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
                       <Truck className="h-5 w-5" />
                     </div>
                     <div className="flex-1">
                       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('Last Purchased From', 'آخری سپلائر')}</div>
-                      <div className="font-bold text-slate-800">{metrics.lastSupplierName}</div>
+                      <div className="font-bold text-slate-800 dark:text-slate-200">{metrics.lastSupplierName}</div>
                       <div className="text-xs text-slate-500 mt-0.5">
                         {metrics.lastReceipt ? new Date(metrics.lastReceipt.date).toLocaleDateString() : 'No record'}
                       </div>
@@ -231,13 +231,13 @@ export default function SingleProductDrillDownModal({
                   </div>
 
                   {/* Sale details */}
-                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5">
                     <div className="h-10 w-10 shrink-0 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
                       <ShoppingCart className="h-5 w-5" />
                     </div>
                     <div className="flex-1">
                       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('Last Sale Record', 'آخری فروخت')}</div>
-                      <div className="font-bold text-slate-800">
+                      <div className="font-bold text-slate-800 dark:text-slate-200">
                         {metrics.lastSale ? `${metrics.lastSale.quantity} ${product.unit} sold` : 'No recent sale log'}
                       </div>
                       <div className="text-xs text-slate-500 mt-0.5">
@@ -249,8 +249,8 @@ export default function SingleProductDrillDownModal({
               </div>
 
               {/* MINI TREND CHART */}
-              <div className="premium-card border border-slate-200">
-                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <div className="premium-card border border-slate-200 dark:border-white/10">
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <BarChart2 className="h-4 w-4 text-slate-400" />
                   {t('Recent Transaction Flow', 'حالیہ ٹرانزیکشن فلو')}
                 </h3>
@@ -260,9 +260,9 @@ export default function SingleProductDrillDownModal({
                     No transactions recorded yet.
                   </div>
                 ) : (
-                  <div className="h-40 flex items-end justify-between gap-2 px-2 pb-6 pt-4 border-b border-slate-100 relative">
+                  <div className="h-40 flex items-end justify-between gap-2 px-2 pb-6 pt-4 border-b border-slate-100 dark:border-white/5 relative">
                     {/* Y-axis placeholder line */}
-                    <div className="absolute left-0 bottom-6 w-full border-t border-dashed border-slate-200"></div>
+                    <div className="absolute left-0 bottom-6 w-full border-t border-dashed border-slate-200 dark:border-white/10"></div>
                     
                     {metrics.recentTxns.map((txn, idx) => {
                       const maxQty = Math.max(...metrics.recentTxns.map(t => t.quantity));

@@ -147,7 +147,7 @@ export default function TreasuryDrillDownModal({
 
   return (
     <div className="premium-modal-overlay">
-      <div className="bg-slate-50 w-full max-w-full max-w-[1400px] h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-700/50">
+      <div className="bg-slate-50 dark:bg-white/5 w-full max-w-full max-w-[1400px] h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-700/50">
         
         {/* Header */}
         <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between shrink-0">
@@ -177,7 +177,7 @@ export default function TreasuryDrillDownModal({
           {/* Executive KPI Header */}
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="bg-slate-900 rounded-xl p-4 shadow-sm relative overflow-hidden lg:col-span-2 border border-slate-700">
-              <div className="absolute -right-4 -top-4 size-16 bg-white/5 rounded-full blur-xl pointer-events-none"></div>
+              <div className="absolute -right-4 -top-4 size-16 bg-white dark:bg-[#151521]/5 rounded-full blur-xl pointer-events-none"></div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Corporate Liquidity</p>
               <p className="text-3xl font-black text-emerald-400">
                 {formatCurrency(stats.totalLiquidity, settings)}
@@ -197,7 +197,7 @@ export default function TreasuryDrillDownModal({
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Physical Cash</p>
                 <Wallet className="h-4 w-4 text-slate-400" />
               </div>
-              <p className="text-xl font-black text-slate-800">{formatCurrency(stats.totalCash, settings)}</p>
+              <p className="text-xl font-black text-slate-800 dark:text-slate-200">{formatCurrency(stats.totalCash, settings)}</p>
             </div>
             
             <div className="premium-card p-4 border flex flex-col justify-between">
@@ -205,7 +205,7 @@ export default function TreasuryDrillDownModal({
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Bank Balance</p>
                 <Building2 className="h-4 w-4 text-slate-400" />
               </div>
-              <p className="text-xl font-black text-slate-800">{formatCurrency(stats.totalBank, settings)}</p>
+              <p className="text-xl font-black text-slate-800 dark:text-slate-200">{formatCurrency(stats.totalBank, settings)}</p>
             </div>
             
             <div className="premium-card p-4 border flex flex-col justify-between">
@@ -213,7 +213,7 @@ export default function TreasuryDrillDownModal({
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Digital Wallets</p>
                 <Smartphone className="h-4 w-4 text-slate-400" />
               </div>
-              <p className="text-xl font-black text-slate-800">{formatCurrency(stats.totalDigital, settings)}</p>
+              <p className="text-xl font-black text-slate-800 dark:text-slate-200">{formatCurrency(stats.totalDigital, settings)}</p>
             </div>
           </div>
 
@@ -241,8 +241,8 @@ export default function TreasuryDrillDownModal({
               </div>
 
               {/* Recommended Actions */}
-              <div className="premium-card border border-slate-200">
-                <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+              <div className="premium-card border border-slate-200 dark:border-white/10">
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
                   <ShieldCheck className="h-4 w-4 text-emerald-500" /> Strategic Recommendations
                 </h3>
                 <div className="space-y-3">
@@ -260,13 +260,13 @@ export default function TreasuryDrillDownModal({
             <div className="xl:col-span-3 flex flex-col space-y-4">
               
               {/* Grid Filters */}
-              <div className="premium-card border border-slate-200 p-4 flex flex-wrap ga items-end shrink-0">
+              <div className="premium-card border border-slate-200 dark:border-white/10 p-4 flex flex-wrap ga items-end shrink-0">
                 <div className="flex-1 min-w-full max-w-[200px]">
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Filter Source</label>
                   <select 
                     value={sourceFilter} 
                     onChange={e => setSourceFilter(e.target.value)}
-                    className="premium-input text-xs p-2 bg-slate-50 font-semibold"
+                    className="premium-input text-xs p-2 bg-slate-50 dark:bg-white/5 font-semibold"
                   >
                     <option value="all">All Sources</option>
                     <option value="cash">Physical Cash</option>
@@ -276,14 +276,14 @@ export default function TreasuryDrillDownModal({
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">From</label>
-                  <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="premium-input text-xs p-2 bg-slate-50" />
+                  <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="premium-input text-xs p-2 bg-slate-50 dark:bg-white/5" />
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">To</label>
-                  <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="premium-input text-xs p-2 bg-slate-50" />
+                  <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="premium-input text-xs p-2 bg-slate-50 dark:bg-white/5" />
                 </div>
                 <div className="flex gap-2">
-                  <button className="px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-bold transition-colors">
+                  <button className="px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] bg-slate-100 dark:bg-white/10 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-bold transition-colors">
                     <Download className="h-4 w-4" />
                   </button>
                 </div>
@@ -305,9 +305,9 @@ export default function TreasuryDrillDownModal({
                     </thead>
                     <tbody>
                       {stats.viewTimeline.map((entry, i) => (
-                        <tr key={entry.id + i} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                        <tr key={entry.id + i} className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:bg-white/5 transition-colors">
                           <td className="p-3 align-top">
-                            <p className="font-bold text-slate-800">{entry.date}</p>
+                            <p className="font-bold text-slate-800 dark:text-slate-200">{entry.date}</p>
                             <p className="text-[10px] text-slate-500">{entry.time}</p>
                           </td>
                           <td className="p-3 align-top">
@@ -320,7 +320,7 @@ export default function TreasuryDrillDownModal({
                             </span>
                           </td>
                           <td className="p-3 align-top">
-                            <p className="font-bold text-slate-800 uppercase text-[10px]">{entry.source}</p>
+                            <p className="font-bold text-slate-800 dark:text-slate-200 uppercase text-[10px]">{entry.source}</p>
                             {entry.destination !== '-' && (
                               <p className="text-[10px] text-slate-500">→ {entry.destination}</p>
                             )}

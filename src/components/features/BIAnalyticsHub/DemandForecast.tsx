@@ -111,10 +111,10 @@ export default function DemandForecast({ settings, stationId }: DemandForecastPr
           const forecast = generateAuthenticForecast(type);
 
           return (
-            <div key={type} className="premium-card border border-slate-200 hover:shadow-md transition">
+            <div key={type} className="premium-card border border-slate-200 dark:border-white/10 hover:shadow-md transition">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h4 className="font-black text-lg text-slate-900">{type}</h4>
+                  <h4 className="font-black text-lg text-slate-900 dark:text-white">{type}</h4>
                   <span className="text-xs text-slate-500">Next 7 Days Forecast</span>
                 </div>
                 <div className="flex flex-col items-end">
@@ -126,8 +126,8 @@ export default function DemandForecast({ settings, stationId }: DemandForecastPr
                 </div>
               </div>
 
-              <div className="py-4 border-y border-slate-100 my-4 flex items-end gap-2">
-                <span className="text-3xl font-black font-mono text-slate-900 tracking-tight">
+              <div className="py-4 border-y border-slate-100 dark:border-white/5 my-4 flex items-end gap-2">
+                <span className="text-3xl font-black font-mono text-slate-900 dark:text-white tracking-tight">
                   {forecast.insufficient ? '---' : forecast.next7Days.toLocaleString()}
                 </span>
                 <span className="text-sm font-bold text-slate-500 mb-1">Liters</span>
@@ -149,7 +149,7 @@ export default function DemandForecast({ settings, stationId }: DemandForecastPr
         })}
 
         {fuelTypes.length === 0 && (
-          <div className="col-span-full py-12 text-center text-slate-500 text-sm border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
+          <div className="col-span-full py-12 text-center text-slate-500 text-sm border-2 border-dashed border-slate-200 dark:border-white/10 rounded-xl bg-slate-50 dark:bg-white/5">
             No tanks configured. Please set up tanks in settings to see AI forecasts.
           </div>
         )}

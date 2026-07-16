@@ -101,13 +101,13 @@ export default function FuelQualityHub({ settings }: FuelQualityHubProps) {
 
   return (
     <div className="premium-card border overflow-hidden">
-      <div className="flex border-b border-slate-200">
+      <div className="flex border-b border-slate-200 dark:border-white/10">
         <button
           onClick={() => setActiveTab('density')}
           className={`flex-1 py-4 px-6 text-sm font-bold font-sans transition-colors ${
             activeTab === 'density' 
               ? 'bg-teal-50 text-teal-700 border-b-2 border-teal-600' 
-              : 'text-slate-500 hover:bg-slate-50'
+              : 'text-slate-500 hover:bg-slate-50 dark:bg-white/5'
           }`}
         >
           {t('Density & Quality Check', 'کثافت اور کوالٹی چیک')}
@@ -117,7 +117,7 @@ export default function FuelQualityHub({ settings }: FuelQualityHubProps) {
           className={`flex-1 py-4 px-6 text-sm font-bold font-sans transition-colors ${
             activeTab === 'volume' 
               ? 'bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600' 
-              : 'text-slate-500 hover:bg-slate-50'
+              : 'text-slate-500 hover:bg-slate-50 dark:bg-white/5'
           }`}
         >
           {t('Volume Variation Check', 'حجم کی تبدیلی چیک')}
@@ -132,7 +132,7 @@ export default function FuelQualityHub({ settings }: FuelQualityHubProps) {
           <Beaker className="h-5 w-5" />
         </div>
         <div>
-          <h2 className="font-sans text-xl font-black text-slate-800">
+          <h2 className="font-sans text-xl font-black text-slate-800 dark:text-slate-200">
             {t('Fuel Quality Verification', 'فیول کوالٹی چیک')}
           </h2>
           <p className="font-sans text-xs text-slate-500 font-medium">
@@ -232,16 +232,16 @@ export default function FuelQualityHub({ settings }: FuelQualityHubProps) {
               </div>
               
               <div className="space-y-4">
-                <div className="premium-card p-4 border-slate-100">
+                <div className="premium-card p-4 border-slate-100 dark:border-white/5">
                   <p className="font-sans text-xs font-bold text-slate-500 uppercase">Converted Density @ 15°C</p>
-                  <p className="font-mono text-2xl font-black text-slate-800 mt-1">
+                  <p className="font-mono text-2xl font-black text-slate-800 dark:text-slate-200 mt-1">
                     {densityResult.converted_density_15C.toFixed(4)}
                   </p>
                 </div>
 
-                <div className="premium-card p-4 border-slate-100">
+                <div className="premium-card p-4 border-slate-100 dark:border-white/5">
                   <p className="font-sans text-xs font-bold text-slate-500 uppercase">Variance</p>
-                  <p className="font-mono text-2xl font-black text-slate-800 mt-1">
+                  <p className="font-mono text-2xl font-black text-slate-800 dark:text-slate-200 mt-1">
                     {densityResult.variance.toFixed(4)}
                   </p>
                   <p className="font-sans text-xs text-slate-500 mt-1">
@@ -257,7 +257,7 @@ export default function FuelQualityHub({ settings }: FuelQualityHubProps) {
               </div>
             </div>
           ) : (
-            <div className="h-full bg-slate-50 border border-slate-200 border-dashed rounded-xl flex flex-col items-center justify-center p-8 text-center">
+            <div className="h-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center p-8 text-center">
               <Beaker className="h-12 w-12 text-slate-300 mb-4" />
               <p className="font-sans text-sm font-bold text-slate-500">
                 {t('Enter values and click Verify to see results.', 'ویلیوز درج کریں اور چیک کے بٹن پر کلک کریں۔')}
@@ -274,7 +274,7 @@ export default function FuelQualityHub({ settings }: FuelQualityHubProps) {
                 <Thermometer className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="font-sans text-xl font-black text-slate-800">
+                <h2 className="font-sans text-xl font-black text-slate-800 dark:text-slate-200">
                   {t('Volume Variation Check', 'حجم کی تبدیلی چیک')}
                 </h2>
                 <p className="font-sans text-xs text-slate-500 font-medium">
@@ -380,7 +380,7 @@ export default function FuelQualityHub({ settings }: FuelQualityHubProps) {
 
               <div>
                 {volumeResult ? (
-                  <div className={`p-6 rounded-xl border ${volumeResult.status === 'Gain' ? 'bg-emerald-50 border-emerald-200' : volumeResult.status === 'Shortage' ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className={`p-6 rounded-xl border ${volumeResult.status === 'Gain' ? 'bg-emerald-50 border-emerald-200' : volumeResult.status === 'Shortage' ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10'}`}>
                     <div className="flex items-center gap-3 mb-6">
                       {volumeResult.status === 'Gain' ? (
                         <CheckCircle2 className="h-8 w-8 text-emerald-600" />
@@ -389,29 +389,29 @@ export default function FuelQualityHub({ settings }: FuelQualityHubProps) {
                       ) : (
                         <CheckCircle2 className="h-8 w-8 text-slate-600" />
                       )}
-                      <h3 className={`font-sans text-xl font-black ${volumeResult.status === 'Gain' ? 'text-emerald-800' : volumeResult.status === 'Shortage' ? 'text-rose-800' : 'text-slate-800'}`}>
+                      <h3 className={`font-sans text-xl font-black ${volumeResult.status === 'Gain' ? 'text-emerald-800' : volumeResult.status === 'Shortage' ? 'text-rose-800' : 'text-slate-800 dark:text-slate-200'}`}>
                         {volumeResult.status === 'Shortage' ? 'Shortage Detected' : volumeResult.status === 'Gain' ? 'Volume Gain Detected' : 'Exact Volume'}
                       </h3>
                     </div>
                     
                     <div className="space-y-4">
-                      <div className="premium-card p-4 border-slate-100">
+                      <div className="premium-card p-4 border-slate-100 dark:border-white/5">
                         <p className="font-sans text-xs font-bold text-slate-500 uppercase">Expected Liters</p>
-                        <p className="font-mono text-2xl font-black text-slate-800 mt-1">
+                        <p className="font-mono text-2xl font-black text-slate-800 dark:text-slate-200 mt-1">
                           {volumeResult.expected_liters.toFixed(2)}
                         </p>
                       </div>
 
-                      <div className="premium-card p-4 border-slate-100">
+                      <div className="premium-card p-4 border-slate-100 dark:border-white/5">
                         <p className="font-sans text-xs font-bold text-slate-500 uppercase">Temperature Variation (Liters)</p>
-                        <p className="font-mono text-2xl font-black text-slate-800 mt-1">
+                        <p className="font-mono text-2xl font-black text-slate-800 dark:text-slate-200 mt-1">
                           {volumeResult.temperature_variation_liters > 0 ? '+' : ''}{volumeResult.temperature_variation_liters.toFixed(2)}
                         </p>
                       </div>
 
-                      <div className={`bg-white rounded-lg p-4 shadow-sm border ${volumeResult.status === 'Shortage' ? 'border-rose-300 bg-rose-50/50' : ''}`}>
+                      <div className={`bg-white dark:bg-[#151521] rounded-lg p-4 shadow-sm border ${volumeResult.status === 'Shortage' ? 'border-rose-300 bg-rose-50/50' : ''}`}>
                         <p className="font-sans text-xs font-bold text-slate-500 uppercase">Final {volumeResult.status}</p>
-                        <p className={`font-mono text-2xl font-black mt-1 ${volumeResult.status === 'Gain' ? 'text-emerald-700' : volumeResult.status === 'Shortage' ? 'text-rose-700' : 'text-slate-800'}`}>
+                        <p className={`font-mono text-2xl font-black mt-1 ${volumeResult.status === 'Gain' ? 'text-emerald-700' : volumeResult.status === 'Shortage' ? 'text-rose-700' : 'text-slate-800 dark:text-slate-200'}`}>
                           {volumeResult.final_shortage_liters > 0 ? '+' : ''}{volumeResult.final_shortage_liters.toFixed(2)} L
                         </p>
                       </div>
@@ -424,7 +424,7 @@ export default function FuelQualityHub({ settings }: FuelQualityHubProps) {
                     </div>
                   </div>
                 ) : (
-                  <div className="h-full bg-slate-50 border border-slate-200 border-dashed rounded-xl flex flex-col items-center justify-center p-8 text-center">
+                  <div className="h-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center p-8 text-center">
                     <Thermometer className="h-12 w-12 text-slate-300 mb-4" />
                     <p className="font-sans text-sm font-bold text-slate-500">
                       {t('Enter values and click Calculate to see volume variations.', 'ویلیوز درج کریں اور چیک کے بٹن پر کلک کریں۔')}

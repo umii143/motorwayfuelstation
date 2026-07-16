@@ -39,8 +39,8 @@ export default function ShiftSettings({ settings, onUpdateSettings, activeStatio
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+      <div className="border-b border-slate-200 dark:border-white/10 pb-4">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
           <Clock className="h-6 w-6 text-indigo-600" />
           {t('Shift Settings', 'شفٹ سیٹنگز')}
         </h2>
@@ -49,28 +49,28 @@ export default function ShiftSettings({ settings, onUpdateSettings, activeStatio
         </p>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden max-w-2xl">
+      <div className="bg-white dark:bg-[#151521] rounded-xl border border-slate-200 dark:border-white/10 shadow-xs overflow-hidden max-w-2xl">
         <div className="p-6 space-y-6">
           
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-sm font-bold text-slate-800">{t('Enforce Shift Hours', 'شفٹ کے اوقات نافذ کریں')}</h4>
+              <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">{t('Enforce Shift Hours', 'شفٹ کے اوقات نافذ کریں')}</h4>
               <p className="text-xs text-slate-500">{t('Block POS transactions when no active shift is running.', 'جب کوئی فعال شفٹ نہ چل رہی ہو تو پی او ایس لین دین کو روکیں۔')}</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" name="enforceShiftHours" checked={shiftSettings.enforceShiftHours} onChange={handleChange} className="sr-only peer" />
-              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:bg-[#151521] after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
             </label>
           </div>
 
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-sm font-bold text-slate-800">{t('Auto-Close Abandoned Shifts', 'ترک شدہ شفٹوں کو خودکار بند کریں')}</h4>
+              <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">{t('Auto-Close Abandoned Shifts', 'ترک شدہ شفٹوں کو خودکار بند کریں')}</h4>
               <p className="text-xs text-slate-500">{t('Automatically force-close shifts exceeding max duration.', 'زیادہ سے زیادہ دورانیے سے تجاوز کرنے والی شفٹوں کو خودکار طور پر بند کریں۔')}</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" name="autoCloseShifts" checked={shiftSettings.autoCloseShifts} onChange={handleChange} className="sr-only peer" />
-              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:bg-[#151521] after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
             </label>
           </div>
 
@@ -83,11 +83,11 @@ export default function ShiftSettings({ settings, onUpdateSettings, activeStatio
               onChange={handleChange}
               min={1}
               max={24}
-              className="w-full px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px].5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              className="w-full px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px].5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-sm text-slate-800 dark:text-slate-200 focus:bg-white dark:bg-[#151521] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             />
           </div>
 
-          <div className="pt-6 border-t border-slate-100">
+          <div className="pt-6 border-t border-slate-100 dark:border-white/5">
             <button 
               onClick={handleSave}
               className="px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px].5 bg-slate-900 text-white rounded-lg text-sm font-bold shadow-xs hover:bg-slate-800 transition-colors flex items-center gap-2"

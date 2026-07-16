@@ -134,7 +134,7 @@ export default function TankVarianceAnalysis({ settings, stationId }: TankVarian
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-row justify-between items-start items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
+      <div className="flex flex-row justify-between items-start items-center gap-4 bg-white dark:bg-[#151521] p-4 rounded-xl border border-slate-200 dark:border-white/10">
         <div className="relative w-full sm:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input 
@@ -142,7 +142,7 @@ export default function TankVarianceAnalysis({ settings, stationId }: TankVarian
             placeholder="Search by Tank or Variance Type..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
           />
         </div>
         <button 
@@ -171,9 +171,9 @@ export default function TankVarianceAnalysis({ settings, stationId }: TankVarian
             <tbody>
               {filteredIncidents.map(inc => {
                 return (
-                  <tr key={inc.id} className="hover:bg-slate-50/50 transition">
+                  <tr key={inc.id} className="hover:bg-slate-50 dark:bg-white/5/50 transition">
                     <td>
-                      <div className="font-medium text-slate-900 flex items-center gap-2">
+                      <div className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
                         {inc.type === 'suspected_theft' ? <ShieldAlert className="h-4 w-4 text-rose-500" /> : 
                          inc.type === 'thermal_expansion' ? <ThermometerSun className="h-4 w-4 text-amber-500" /> : 
                          <Droplets className="h-4 w-4 text-blue-500" />}
@@ -182,7 +182,7 @@ export default function TankVarianceAnalysis({ settings, stationId }: TankVarian
                       <div className="text-xs text-slate-500">{new Date(inc.date).toLocaleDateString()}</div>
                     </td>
                     <td>
-                      <div className="font-medium text-slate-900">{getTankName(inc.sourceId)}</div>
+                      <div className="font-medium text-slate-900 dark:text-white">{getTankName(inc.sourceId)}</div>
                     </td>
                     <td className="text-right font-mono text-slate-600">
                       {inc.expectedAmount.toLocaleString()} L
@@ -231,9 +231,9 @@ export default function TankVarianceAnalysis({ settings, stationId }: TankVarian
       {/* Form Modal */}
       {isModalOpen && (
         <div className="premium-modal-overlay">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h2 className="text-lg font-black font-sans text-slate-800">
+          <div className="bg-white dark:bg-[#151521] rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5 flex justify-between items-center bg-slate-50 dark:bg-white/5/50">
+              <h2 className="text-lg font-black font-sans text-slate-800 dark:text-slate-200">
                 {editingId ? 'Investigate Tank Variance' : 'Log Tank Variance Incident'}
               </h2>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-rose-500 transition">
@@ -245,11 +245,11 @@ export default function TankVarianceAnalysis({ settings, stationId }: TankVarian
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Date *</label>
-                  <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
+                  <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Tank Source *</label>
-                  <select value={sourceId} onChange={e => setSourceId(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white">
+                  <select value={sourceId} onChange={e => setSourceId(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white dark:bg-[#151521]">
                     {tanks.map(tank => (
                       <option key={tank.id} value={tank.id}>{tank.name}</option>
                     ))}
@@ -259,7 +259,7 @@ export default function TankVarianceAnalysis({ settings, stationId }: TankVarian
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Variance Type</label>
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  <select value={type} onChange={e => setType(e.target.value as any)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white">
+                  <select value={type} onChange={e => setType(e.target.value as any)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white dark:bg-[#151521]">
                     <option value="tank_shrinkage">Normal Shrinkage (Evaporation)</option>
                     <option value="thermal_expansion">Thermal Expansion / Contraction</option>
                     <option value="suspected_theft">Suspected Theft / Leakage</option>
@@ -269,7 +269,7 @@ export default function TankVarianceAnalysis({ settings, stationId }: TankVarian
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Severity Level</label>
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  <select value={severity} onChange={e => setSeverity(e.target.value as any)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white">
+                  <select value={severity} onChange={e => setSeverity(e.target.value as any)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white dark:bg-[#151521]">
                     <option value="low">Low (Acceptable limits)</option>
                     <option value="medium">Medium</option>
                     <option value="high">High (Requires investigation)</option>
@@ -277,14 +277,14 @@ export default function TankVarianceAnalysis({ settings, stationId }: TankVarian
                   </select>
                 </div>
 
-                <div className="border-t border-slate-100 pt-4 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="border-t border-slate-100 dark:border-white/5 pt-4 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Expected System Volume (Liters) *</label>
-                    <input type="number" value={expectedAmount} onChange={e => setExpectedAmount(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
+                    <input type="number" value={expectedAmount} onChange={e => setExpectedAmount(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Actual Dip Volume (Liters) *</label>
-                    <input type="number" value={actualAmount} onChange={e => setActualAmount(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
+                    <input type="number" value={actualAmount} onChange={e => setActualAmount(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
                   </div>
                 </div>
 
@@ -293,7 +293,7 @@ export default function TankVarianceAnalysis({ settings, stationId }: TankVarian
                   <input type="number" value={financialLoss} onChange={e => setFinancialLoss(e.target.value)} className="w-full px-3 py-2 border border-rose-200 bg-rose-50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 text-rose-900" placeholder="Monetary value of lost fuel" />
                 </div>
 
-                <div className="md:col-span-2 border-t border-slate-100 pt-4">
+                <div className="md:col-span-2 border-t border-slate-100 dark:border-white/5 pt-4">
                   { }
                   <label className="block text-xs font-bold text-slate-700 mb-1">Investigation Status</label>
                   <div className="flex gap-2">
@@ -306,7 +306,7 @@ export default function TankVarianceAnalysis({ settings, stationId }: TankVarian
                             ? (s === 'resolved' ? 'bg-emerald-100 border-emerald-500 text-emerald-800' : 
                                s === 'investigating' ? 'bg-amber-100 border-amber-500 text-amber-800' : 
                                'bg-rose-100 border-rose-500 text-rose-800')
-                            : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                            : 'bg-white dark:bg-[#151521] border-slate-200 dark:border-white/10 text-slate-500 hover:bg-slate-50 dark:bg-white/5'
                         }`}
                       >
                         <span className="capitalize">{s}</span>
@@ -317,13 +317,13 @@ export default function TankVarianceAnalysis({ settings, stationId }: TankVarian
 
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Investigation & Resolution Notes</label>
-                  <textarea value={resolutionNotes} onChange={e => setResolutionNotes(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="E.g., Adjusted calibration settings. CCTV verified no theft." rows={3}></textarea>
+                  <textarea value={resolutionNotes} onChange={e => setResolutionNotes(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="E.g., Adjusted calibration settings. CCTV verified no theft." rows={3}></textarea>
                 </div>
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
-              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition">Cancel</button>
+            <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 flex justify-end gap-2">
+              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 dark:text-white transition">Cancel</button>
               <button onClick={handleSave} className="bg-rose-600 text-white px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded-lg text-sm font-bold hover:bg-rose-700 transition shadow-md shadow-rose-500/20">
                 Save Incident
               </button>

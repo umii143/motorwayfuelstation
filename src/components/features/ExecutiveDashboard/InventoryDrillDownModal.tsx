@@ -153,22 +153,22 @@ export default function InventoryDrillDownModal({
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-6xl max-h-[90vh] bg-slate-50 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+          className="relative w-full max-w-6xl max-h-[90vh] bg-slate-50 dark:bg-white/5 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
         >
           {/* HEADER */}
-          <div className="flex-none bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between z-10">
+          <div className="flex-none bg-white dark:bg-[#151521] border-b border-slate-200 dark:border-white/10 px-6 py-4 flex items-center justify-between z-10">
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
                 <Database className="h-6 w-6" />
               </div>
               <div>
-                <h2 className="text-xl font-black text-slate-900 tracking-tight">Enterprise Inventory Intelligence</h2>
+                <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Enterprise Inventory Intelligence</h2>
                 <p className="text-sm font-medium text-slate-500">Revaluation, Stock Worth & Price Change Analytics</p>
               </div>
             </div>
             <button 
               onClick={onClose}
-              className="h-10 w-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors cursor-pointer"
+              className="h-10 w-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors cursor-pointer"
             >
               <X className="h-5 w-5" />
             </button>
@@ -179,9 +179,9 @@ export default function InventoryDrillDownModal({
 
             {/* EXECUTIVE KPI HEADER */}
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="premium-card border border-slate-200">
+              <div className="premium-card border border-slate-200 dark:border-white/10">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Current Stock Value</span>
-                <h3 className="text-2xl font-black text-slate-900">{formatCurrency(currentStockValue, settings)}</h3>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white">{formatCurrency(currentStockValue, settings)}</h3>
                 <div className="mt-2 flex items-center gap-1.5 text-xs font-bold text-slate-500">
                   <Package className="h-3.5 w-3.5" />
                   Total Active Inventory
@@ -246,14 +246,14 @@ export default function InventoryDrillDownModal({
             </div>
 
             {/* TOGGLES & TABS */}
-            <div className="flex flex-row items-center justify-between gap-4 border-b border-slate-200 pb-2">
+            <div className="flex flex-row items-center justify-between gap-4 border-b border-slate-200 dark:border-white/10 pb-2">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setActiveTab('overview')}
                   className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer ${
                     activeTab === 'overview'
                       ? 'border-purple-600 text-purple-600'
-                      : 'border-transparent text-slate-500 hover:text-slate-800'
+                      : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-200'
                   }`}
                 >
                   General Overview
@@ -263,7 +263,7 @@ export default function InventoryDrillDownModal({
                   className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer ${
                     activeTab === 'revaluation_ledger'
                       ? 'border-purple-600 text-purple-600'
-                      : 'border-transparent text-slate-500 hover:text-slate-800'
+                      : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-200'
                   }`}
                 >
                   Price Revision Ledger
@@ -271,7 +271,7 @@ export default function InventoryDrillDownModal({
               </div>
 
               <div className="flex items-center gap-3">
-                <label className="flex items-center ga cursor-pointer premium-card px-3 py-1.5 border hover:bg-slate-50 transition-colors">
+                <label className="flex items-center ga cursor-pointer premium-card px-3 py-1.5 border hover:bg-slate-50 dark:bg-white/5 transition-colors">
                   <input 
                     type="checkbox" 
                     checked={excludeManual} 
@@ -288,8 +288,8 @@ export default function InventoryDrillDownModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 
                 {/* Product Impact Breakdown */}
-                <div className="premium-card border border-slate-200">
-                  <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <div className="premium-card border border-slate-200 dark:border-white/10">
+                  <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4 flex items-center gap-2">
                     <Layers className="h-4 w-4 text-slate-400" />
                     Revaluation Impact by Product
                   </h3>
@@ -302,7 +302,7 @@ export default function InventoryDrillDownModal({
                             {impact >= 0 ? '+' : ''}{formatCurrency(impact, settings)}
                           </span>
                         </div>
-                        <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="w-full h-1.5 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden">
                           <div 
                             className={`h-full rounded-full ${impact >= 0 ? 'bg-emerald-400' : 'bg-red-400'}`} 
                             style={{ width: `${Math.min(100, Math.abs(impact) / Math.max(kpis.totalGain, kpis.totalLoss) * 100)}%` }} 
@@ -317,8 +317,8 @@ export default function InventoryDrillDownModal({
                 </div>
 
                 {/* Info Block */}
-                <div className="bg-slate-50 rounded-xl border border-slate-200 p-5 shadow-sm space-y-4">
-                  <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                <div className="bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 p-5 shadow-sm space-y-4">
+                  <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
                     <Info className="h-4 w-4 text-slate-400" />
                     How Revaluation Works
                   </h3>
@@ -340,8 +340,8 @@ export default function InventoryDrillDownModal({
 
             {activeTab === 'revaluation_ledger' && (
               <div className="premium-card border overflow-hidden flex flex-col">
-                <div className="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Comprehensive Price Revision Ledger</h3>
+                <div className="p-4 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Comprehensive Price Revision Ledger</h3>
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2 h-4 w-4 text-slate-400" />
                     <input 
@@ -349,7 +349,7 @@ export default function InventoryDrillDownModal({
                       placeholder="Search reason or user..."
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
-                      className="pl-8 pr-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white w-64"
+                      className="pl-8 pr-3 py-1.5 border border-slate-200 dark:border-white/10 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-[#151521] w-64"
                     />
                   </div>
                 </div>
@@ -378,7 +378,7 @@ export default function InventoryDrillDownModal({
                           const prod = products.find(p => p.id === txn.productId);
                           const impact = txn.revaluationImpact || 0;
                           return (
-                            <tr key={txn.id} className="hover:bg-slate-50/50 transition-colors">
+                            <tr key={txn.id} className="hover:bg-slate-50 dark:bg-white/5/50 transition-colors">
                               <td className="p-3">
                                 {/* @ts-expect-error */}
                                 <div className="font-bold text-slate-700 text-xs">{new Date(txn.timestamp).toLocaleDateString()}</div>
@@ -386,13 +386,13 @@ export default function InventoryDrillDownModal({
                                 <div className="text-[10px] font-medium text-slate-400">{new Date(txn.timestamp).toLocaleTimeString()}</div>
                               </td>
                               <td className="p-3">
-                                <div className="font-bold text-slate-800 text-xs">{prod?.name || 'any'}</div>
+                                <div className="font-bold text-slate-800 dark:text-slate-200 text-xs">{prod?.name || 'any'}</div>
                               </td>
                               <td className="p-3">
                                 <div className="flex items-center justify-center gap-2">
                                   <span className="font-mono text-xs text-slate-500">{(txn.oldRate || 0).toFixed(2)}</span>
                                   <ArrowRightLeft className="h-3 w-3 text-slate-300" />
-                                  <span className="font-mono text-xs font-bold text-slate-900">{(txn.newRate || 0).toFixed(2)}</span>
+                                  <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">{(txn.newRate || 0).toFixed(2)}</span>
                                 </div>
                                 <div className={`text-[10px] font-bold text-center mt-0.5 ${(txn.newRate || 0) > (txn.oldRate || 0) ? 'text-emerald-600' : 'text-red-600'}`}>
                                   {(txn.newRate || 0) > (txn.oldRate || 0) ? '+' : ''}{((txn.newRate || 0) - (txn.oldRate || 0)).toFixed(2)} Rs

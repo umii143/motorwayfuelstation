@@ -212,12 +212,12 @@ export function ClosingReadingsForm({
   return (
     <div className="rounded-2xl border border-slate-700/50 bg-slate-800/80 backdrop-blur-xl p-6 shadow-2xl relative overflow-hidden">
       {/* Decorative background element */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+      <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 relative z-10">
         <div>
           <h3 className="text-xl font-black text-slate-200 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-400 shadow-sm border border-indigo-500/20">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/20 text-orange-400 shadow-sm border border-orange-500/20">
               <CheckCircle className="h-5 w-5" />
             </div>
             {t("Closing Meter Readings", "اختتامی میٹر ریڈنگز")}
@@ -327,7 +327,7 @@ export function ClosingReadingsForm({
         </button>
         <button
           onClick={handleConfirmClosings}
-          className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white px-8 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-500/30 active:scale-95"
+          className="w-full sm:w-auto bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white px-8 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-500/30 active:scale-95"
         >
           <span>{t("CONFIRM CLOSING READINGS", "اختتامی ریڈنگز کنفرم کریں")}</span>
           <ArrowRight className="h-5 w-5" />

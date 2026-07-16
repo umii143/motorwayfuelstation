@@ -72,7 +72,7 @@ export function DashboardShell({ onStartShiftQuick, onNavigate }: { onStartShift
                 Start Shift
               </button>
             )}
-            <button onClick={() => onNavigate?.('shift_logs')} className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold border border-white/10 transition-colors">
+            <button onClick={() => onNavigate?.('shift_logs')} className="px-4 py-2 bg-white dark:bg-[#151521]/10 hover:bg-white dark:bg-[#151521]/20 text-white rounded-xl text-xs font-bold border border-white/10 transition-colors">
               Shift Logs
             </button>
             <button 
@@ -80,7 +80,7 @@ export function DashboardShell({ onStartShiftQuick, onNavigate }: { onStartShift
               className={`px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${
                 isEditMode 
                   ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_15px_rgba(79,70,229,0.5)]' 
-                  : 'bg-white/10 hover:bg-white/20 text-white'
+                  : 'bg-white dark:bg-[#151521]/10 hover:bg-white dark:bg-[#151521]/20 text-white'
               }`}
             >
               {isEditMode ? (

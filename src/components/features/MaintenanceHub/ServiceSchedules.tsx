@@ -138,7 +138,7 @@ export default function ServiceSchedules({ settings, stationId }: ServiceSchedul
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-row justify-between items-start items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
+      <div className="flex flex-row justify-between items-start items-center gap-4 bg-white dark:bg-[#151521] p-4 rounded-xl border border-slate-200 dark:border-white/10">
         <div className="relative w-full sm:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input 
@@ -146,7 +146,7 @@ export default function ServiceSchedules({ settings, stationId }: ServiceSchedul
             placeholder="Search tasks or assets..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
           />
         </div>
         <button 
@@ -161,14 +161,14 @@ export default function ServiceSchedules({ settings, stationId }: ServiceSchedul
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {filteredRecords.map(record => (
-          <div key={record.id} className="premium-card border border-slate-200 hover:shadow-md transition">
+          <div key={record.id} className="premium-card border border-slate-200 dark:border-white/10 hover:shadow-md transition">
             <div className="flex justify-between items-start mb-3">
               <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${record.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : record.status === 'in_progress' ? 'bg-amber-50 text-amber-600' : record.status === 'scheduled' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-600'}`}>
+                <div className={`p-2 rounded-lg ${record.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : record.status === 'in_progress' ? 'bg-amber-50 text-amber-600' : record.status === 'scheduled' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 dark:bg-white/10 text-slate-600'}`}>
                   {record.type === 'preventive' ? <CalendarCheck className="h-5 w-5" /> : <Wrench className="h-5 w-5" />}
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 font-sans tracking-tight capitalize">{record.type} Service</h3>
+                  <h3 className="font-bold text-slate-900 dark:text-white font-sans tracking-tight capitalize">{record.type} Service</h3>
                   <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${record.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : record.status === 'in_progress' ? 'bg-amber-100 text-amber-700' : record.status === 'scheduled' ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-700'}`}>
                     {record.status.replace('_', ' ')}
                   </span>
@@ -182,9 +182,9 @@ export default function ServiceSchedules({ settings, stationId }: ServiceSchedul
               </button>
             </div>
             
-            <p className="text-sm font-medium text-slate-800 mb-3 line-clamp-2">{record.description}</p>
+            <p className="text-sm font-medium text-slate-800 dark:text-slate-200 mb-3 line-clamp-2">{record.description}</p>
 
-            <div className="space-y-2 text-sm text-slate-600 border-t border-slate-100 pt-3">
+            <div className="space-y-2 text-sm text-slate-600 border-t border-slate-100 dark:border-white/5 pt-3">
               <div className="flex justify-between items-center">
                 <span className="text-slate-400">Target Asset</span>
                 <span className="font-bold text-slate-700 truncate ml-2">{getAssetDetails(record.assetId)}</span>
@@ -208,7 +208,7 @@ export default function ServiceSchedules({ settings, stationId }: ServiceSchedul
         ))}
 
         {filteredRecords.length === 0 && (
-          <div className="col-span-full py-12 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
+          <div className="col-span-full py-12 text-center border-2 border-dashed border-slate-200 dark:border-white/10 rounded-xl bg-slate-50 dark:bg-white/5">
             <Wrench className="h-8 w-8 text-slate-300 mx-auto mb-3" />
             <h3 className="text-sm font-bold text-slate-700">No Service Records Found</h3>
             <p className="text-xs text-slate-500 mt-1">Schedule preventive maintenance for your registered assets.</p>
@@ -219,9 +219,9 @@ export default function ServiceSchedules({ settings, stationId }: ServiceSchedul
       {/* Form Modal */}
       {isModalOpen && (
         <div className="premium-modal-overlay">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h2 className="text-lg font-black font-sans text-slate-800">
+          <div className="bg-white dark:bg-[#151521] rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5 flex justify-between items-center bg-slate-50 dark:bg-white/5/50">
+              <h2 className="text-lg font-black font-sans text-slate-800 dark:text-slate-200">
                 {editingId ? 'Edit Service Record' : 'Schedule New Service'}
               </h2>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-rose-500 transition">
@@ -233,7 +233,7 @@ export default function ServiceSchedules({ settings, stationId }: ServiceSchedul
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Target Asset *</label>
-                  <select value={assetId} onChange={e => setAssetId(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white">
+                  <select value={assetId} onChange={e => setAssetId(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white dark:bg-[#151521]">
                     {assets.map(a => (
                       <option key={a.id} value={a.id}>{a.name} ({a.type})</option>
                     ))}
@@ -242,35 +242,35 @@ export default function ServiceSchedules({ settings, stationId }: ServiceSchedul
                 
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Description / Issue *</label>
-                  <input type="text" value={description} onChange={e => setDescription(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="e.g. Replace dispenser hose" />
+                  <input type="text" value={description} onChange={e => setDescription(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="e.g. Replace dispenser hose" />
                 </div>
 
                 { }
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Service Type</label>
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  <select value={type} onChange={e => setType(e.target.value as any)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white">
+                  <select value={type} onChange={e => setType(e.target.value as any)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white dark:bg-[#151521]">
                     <option value="preventive">Preventive (Routine)</option>
                     <option value="corrective">Corrective (Repair)</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Service Provider / Technician *</label>
-                  <input type="text" value={provider} onChange={e => setProvider(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="e.g. John (Internal) or ABC Tech" />
+                  <input type="text" value={provider} onChange={e => setProvider(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="e.g. John (Internal) or ABC Tech" />
                 </div>
 
-                <div className="border-t border-slate-100 pt-4 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="border-t border-slate-100 dark:border-white/5 pt-4 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Scheduled Date *</label>
-                    <input type="date" value={scheduledDate} onChange={e => setScheduledDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
+                    <input type="date" value={scheduledDate} onChange={e => setScheduledDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Estimated/Actual Cost ({settings.currency})</label>
-                    <input type="number" value={cost} onChange={e => setCost(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
+                    <input type="number" value={cost} onChange={e => setCost(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
                   </div>
                 </div>
 
-                <div className="md:col-span-2 border-t border-slate-100 pt-4">
+                <div className="md:col-span-2 border-t border-slate-100 dark:border-white/5 pt-4">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Service Status</label>
                   <div className="flex gap-2">
                     { }
@@ -284,7 +284,7 @@ export default function ServiceSchedules({ settings, stationId }: ServiceSchedul
                                s === 'in_progress' ? 'bg-amber-100 border-amber-500 text-amber-800' : 
                                s === 'scheduled' ? 'bg-blue-100 border-blue-500 text-blue-800' :
                                'bg-rose-100 border-rose-500 text-rose-800')
-                            : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                            : 'bg-white dark:bg-[#151521] border-slate-200 dark:border-white/10 text-slate-500 hover:bg-slate-50 dark:bg-white/5'
                         }`}
                       >
                         <span className="capitalize">{s.replace('_', ' ')}</span>
@@ -296,19 +296,19 @@ export default function ServiceSchedules({ settings, stationId }: ServiceSchedul
                 {status === 'completed' && (
                   <div className="md:col-span-2">
                     <label className="block text-xs font-bold text-slate-700 mb-1">Actual Completion Date</label>
-                    <input type="date" value={completedDate} onChange={e => setCompletedDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
+                    <input type="date" value={completedDate} onChange={e => setCompletedDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
                   </div>
                 )}
 
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Service Notes</label>
-                  <textarea value={notes} onChange={e => setNotes(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="E.g., Parts replaced: 1x filter." rows={2}></textarea>
+                  <textarea value={notes} onChange={e => setNotes(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="E.g., Parts replaced: 1x filter." rows={2}></textarea>
                 </div>
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
-              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition">Cancel</button>
+            <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 flex justify-end gap-2">
+              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 dark:text-white transition">Cancel</button>
               <button onClick={handleSave} className="bg-rose-600 text-white px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded-lg text-sm font-bold hover:bg-rose-700 transition shadow-md shadow-rose-500/20">
                 Save Service
               </button>

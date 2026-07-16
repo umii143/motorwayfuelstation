@@ -23,18 +23,18 @@ export function BISmartMetrics({ metrics }: any) {
       
       {/* Cash Leakage (Test Liters) */}
       <div className="premium-card border overflow-hidden flex flex-col">
-        <div className="p-4 border-b border-slate-100 bg-rose-50 flex items-center justify-between">
+        <div className="p-4 border-b border-slate-100 dark:border-white/5 bg-rose-50 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Droplets className="w-5 h-5 text-rose-600" />
-            <h3 className="font-sans font-bold text-slate-900 text-sm">Leakage & Test Liters</h3>
+            <h3 className="font-sans font-bold text-slate-900 dark:text-white text-sm">Leakage & Test Liters</h3>
           </div>
         </div>
         <div className="p-5 flex flex-col justify-center flex-1">
           <div className="flex justify-between items-center mb-4">
             <span className="text-sm font-medium text-slate-500">Total Test Liters</span>
-            <span className="font-black text-xl text-slate-800">{smartMetrics.totalTestLiters} L</span>
+            <span className="font-black text-xl text-slate-800 dark:text-slate-200">{smartMetrics.totalTestLiters} L</span>
           </div>
-          <div className="w-full bg-slate-100 rounded-full h-1.5 mb-2">
+          <div className="w-full bg-slate-100 dark:bg-white/10 rounded-full h-1.5 mb-2">
             <div className="bg-rose-500 h-1.5 rounded-full" style={{ width: '45%' }}></div>
           </div>
           <p className="text-xs text-slate-500">Check calibration frequency. High test liters impact profitability directly.</p>
@@ -43,18 +43,18 @@ export function BISmartMetrics({ metrics }: any) {
 
       {/* Credit Exposure */}
       <div className="premium-card border overflow-hidden flex flex-col">
-        <div className="p-4 border-b border-slate-100 bg-amber-50 flex items-center justify-between">
+        <div className="p-4 border-b border-slate-100 dark:border-white/5 bg-amber-50 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Receipt className="w-5 h-5 text-amber-600" />
-            <h3 className="font-sans font-bold text-slate-900 text-sm">Credit Exposure</h3>
+            <h3 className="font-sans font-bold text-slate-900 dark:text-white text-sm">Credit Exposure</h3>
           </div>
         </div>
         <div className="p-5 flex flex-col justify-center flex-1">
           <div className="flex justify-between items-center mb-4">
             <span className="text-sm font-medium text-slate-500">Unrecovered Credit</span>
-            <span className="font-black text-xl text-slate-800">{formatCurrency(totalCreditExposure)}</span>
+            <span className="font-black text-xl text-slate-800 dark:text-slate-200">{formatCurrency(totalCreditExposure)}</span>
           </div>
-          <div className="w-full bg-slate-100 rounded-full h-1.5 mb-2">
+          <div className="w-full bg-slate-100 dark:bg-white/10 rounded-full h-1.5 mb-2">
             <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: '60%' }}></div>
           </div>
           <p className="text-xs text-slate-500">Ensure prompt recovery to prevent working capital strangulation.</p>
@@ -63,10 +63,10 @@ export function BISmartMetrics({ metrics }: any) {
 
       {/* Stock Intelligence */}
       <div className="premium-card border overflow-hidden flex flex-col">
-        <div className="p-4 border-b border-slate-100 bg-indigo-50 flex items-center justify-between">
+        <div className="p-4 border-b border-slate-100 dark:border-white/5 bg-indigo-50 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Activity className="w-5 h-5 text-indigo-600" />
-            <h3 className="font-sans font-bold text-slate-900 text-sm">Stock Intelligence</h3>
+            <h3 className="font-sans font-bold text-slate-900 dark:text-white text-sm">Stock Intelligence</h3>
           </div>
         </div>
         <div className="p-5 flex flex-col justify-center flex-1">
@@ -80,7 +80,7 @@ export function BISmartMetrics({ metrics }: any) {
                     <span>{p.name} Stock Level</span>
                     <span>{fillPct.toFixed(0)}%</span>
                   </div>
-                  <div className="w-full bg-slate-100 rounded-full h-1.5">
+                  <div className="w-full bg-slate-100 dark:bg-white/10 rounded-full h-1.5">
                     <div className={`h-1.5 rounded-full ${fillPct < 20 ? 'bg-rose-500' : 'bg-indigo-500'}`} style={{ width: `${Math.min(fillPct, 100)}%` }}></div>
                   </div>
                 </div>

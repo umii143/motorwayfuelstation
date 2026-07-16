@@ -216,14 +216,14 @@ export default function ShiftLogs({
                 <span className="px-2 py-0.5 rounded text-[10px] font-black bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase tracking-widest ml-2">Active</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-lg p-3 backdrop-blur-sm">
+                <div className="flex items-start gap-3 bg-white dark:bg-[#151521]/5 border border-white/10 rounded-lg p-3 backdrop-blur-sm">
                   <div className="w-2 h-2 rounded-full bg-rose-500 mt-1.5 shrink-0 animate-pulse"></div>
                   <div>
                     <div className="text-sm font-bold text-white mb-0.5">Recover High Credit Exposure</div>
                     <div className="text-xs text-indigo-200">You have over Rs. 150,000 in unrecovered Udhar from the last 7 shifts. Immediate recovery recommended from Top 3 debtors.</div>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-lg p-3 backdrop-blur-sm">
+                <div className="flex items-start gap-3 bg-white dark:bg-[#151521]/5 border border-white/10 rounded-lg p-3 backdrop-blur-sm">
                   <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0"></div>
                   <div>
                     <div className="text-sm font-bold text-white mb-0.5">Ali is Top Performer</div>
@@ -277,11 +277,11 @@ export default function ShiftLogs({
               />
             </div>
             
-            <div className="flex items-center gap-3 w-full lg:w-auto">
+            <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
               <select 
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm px-3 py-2 text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-orange-500"
+                className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm px-3 py-2 text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-orange-500 flex-1 sm:flex-initial min-w-[110px]"
               >
                 <option value="all">All Shift Types</option>
                 <option value="day">Day Shifts</option>
@@ -291,7 +291,7 @@ export default function ShiftLogs({
               <select 
                 value={operatorFilter}
                 onChange={(e) => setOperatorFilter(e.target.value)}
-                className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm px-3 py-2 text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-orange-500"
+                className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm px-3 py-2 text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-orange-500 flex-1 sm:flex-initial min-w-[110px]"
               >
                 <option value="all">All Operators</option>
                 {staff.filter(s => s.role === 'operator' || s.role === 'manager').map(s => (
@@ -302,7 +302,7 @@ export default function ShiftLogs({
               <select 
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm px-3 py-2 text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-orange-500"
+                className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm px-3 py-2 text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-orange-500 flex-1 sm:flex-initial min-w-[110px]"
               >
                 <option value="all">All Status</option>
                 <option value="active">Open</option>
@@ -319,33 +319,31 @@ export default function ShiftLogs({
           </div>
 
           {/* Table Data */}
-          <div ref={parentRef} className="overflow-auto flex-1 relative min-h-[400px]">
-            <table className="w-full text-left border-collapse min-w-[800px]">
-              <thead className="sticky top-0 z-10">
-                <tr className="bg-slate-50 dark:bg-[#0B0F19] text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
-                  <th className="px-6 py-4 w-[15%]">SHIFT ID</th>
-                  <th className="px-6 py-4 w-[15%]">SHIFT TYPE</th>
-                  <th className="px-6 py-4 w-[20%]">OPERATOR</th>
-                  <th className="px-6 py-4 w-[20%]">DATE & TIME</th>
-                  <th className="px-6 py-4 w-[15%]">SALES (Rs.)</th>
-                  <th className="px-6 py-4 w-[15%]">CASH IN HAND (Rs.)</th>
-                  <th className="px-6 py-4 w-[15%] text-center">STATUS</th>
-                </tr>
-              </thead>
-              <tbody 
-                className="divide-y divide-slate-100 dark:divide-slate-800 relative block"
+          <div ref={parentRef} className="overflow-auto flex-1 relative min-h-[400px] w-full">
+            <div className="min-w-[850px] w-full block">
+              <div className="sticky top-0 z-10 block w-full min-w-[850px]">
+                <div className="bg-slate-50 dark:bg-[#0B0F19] text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 flex items-center w-full">
+                  <div className="px-6 py-4 w-[15%] shrink-0">SHIFT ID</div>
+                  <div className="px-6 py-4 w-[15%] shrink-0">SHIFT TYPE</div>
+                  <div className="px-6 py-4 w-[20%] shrink-0">OPERATOR</div>
+                  <div className="px-6 py-4 w-[20%] shrink-0">DATE & TIME</div>
+                  <div className="px-6 py-4 w-[15%] shrink-0">SALES (Rs.)</div>
+                  <div className="px-6 py-4 w-[15%] shrink-0">CASH IN HAND (Rs.)</div>
+                  <div className="px-6 py-4 w-[15%] shrink-0 text-center">STATUS</div>
+                </div>
+              </div>
+              <div 
+                className="divide-y divide-slate-100 dark:divide-slate-800 relative block min-w-[850px]"
                 style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
               >
                 {displayedShifts.length === 0 ? (
-                  <tr className="absolute w-full flex justify-center">
-                    <td className="px-6 py-24 text-center">
-                      <div className="flex flex-col items-center justify-center text-slate-400">
-                        <FolderOpen className="w-16 h-16 mb-4 opacity-50" />
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">No shift logs found</h3>
-                        <p className="text-sm">Try adjusting your filters or date range.</p>
-                      </div>
-                    </td>
-                  </tr>
+                  <div className="absolute w-full flex justify-center py-24 text-center">
+                    <div className="flex flex-col items-center justify-center text-slate-400">
+                      <FolderOpen className="w-16 h-16 mb-4 opacity-50" />
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">No shift logs found</h3>
+                      <p className="text-sm">Try adjusting your filters or date range.</p>
+                    </div>
+                  </div>
                 ) : (
                   rowVirtualizer.getVirtualItems().map(virtualRow => {
                     const shift = displayedShifts[virtualRow.index];
@@ -367,12 +365,12 @@ export default function ShiftLogs({
                     const isSelected = selectedShift?.id === shift.id;
 
                     return (
-                      <tr 
+                      <div 
                         key={virtualRow.key}
                         data-index={virtualRow.index}
                         ref={rowVirtualizer.measureElement}
                         onClick={() => setSelectedShift(shift)}
-                        className={`cursor-pointer transition-colors absolute w-full flex items-center ${isSelected ? 'bg-orange-50 dark:bg-orange-500/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+                        className={`cursor-pointer transition-colors absolute w-full flex items-center min-w-[850px] ${isSelected ? 'bg-orange-50 dark:bg-orange-500/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
                         style={{
                           top: 0,
                           left: 0,
@@ -380,25 +378,25 @@ export default function ShiftLogs({
                           height: `${virtualRow.size}px`,
                         }}
                       >
-                        <td className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white w-[15%] truncate">#{shift.id.slice(-5)}</td>
-                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300 w-[15%] truncate">{shift.type === 'day' ? 'Day Shift' : 'Night Shift'}</td>
-                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300 w-[20%] truncate">{getStaffName(shift.staffId)}</td>
-                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300 w-[20%] truncate">{shift.date} <span className="text-slate-400 text-xs ml-1">{shift.startTime}</span></td>
-                        <td className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white w-[15%] truncate">{formatCurrency(shiftSales).replace('PKR', '').trim()}</td>
-                        <td className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white w-[15%] truncate">{formatCurrency(shift.submittedCash || 0).replace('PKR', '').trim()}</td>
-                        <td className="px-6 py-4 text-center w-[15%] truncate">
+                        <div className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white w-[15%] shrink-0 truncate">#{shift.id.slice(-5)}</div>
+                        <div className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300 w-[15%] shrink-0 truncate">{shift.type === 'day' ? 'Day Shift' : 'Night Shift'}</div>
+                        <div className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300 w-[20%] shrink-0 truncate">{getStaffName(shift.staffId)}</div>
+                        <div className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300 w-[20%] shrink-0 truncate">{shift.date} <span className="text-slate-400 text-xs ml-1">{shift.startTime}</span></div>
+                        <div className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white w-[15%] shrink-0 truncate">{formatCurrency(shiftSales).replace('PKR', '').trim()}</div>
+                        <div className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white w-[15%] shrink-0 truncate">{formatCurrency(shift.submittedCash || 0).replace('PKR', '').trim()}</div>
+                        <div className="px-6 py-4 text-center w-[15%] shrink-0 truncate">
                           {shift.status === 'closed' ? (
                             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 uppercase tracking-widest">CLOSED</span>
                           ) : (
                             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 uppercase tracking-widest">OPEN</span>
                           )}
-                        </td>
-                      </tr>
+                        </div>
+                      </div>
                     );
                   })
                 )}
-              </tbody>
-            </table>
+              </div>
+            </div>
           </div>
           
           {/* Pagination Footer */}
@@ -408,7 +406,7 @@ export default function ShiftLogs({
             {filteredShifts.length > displayedShifts.length && (
               <button 
                 onClick={() => setVisibleLimit(prev => prev + 100)}
-                className="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full font-bold transition-colors"
+                className="px-4 py-1.5 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full font-bold transition-colors"
               >
                 Load More
               </button>

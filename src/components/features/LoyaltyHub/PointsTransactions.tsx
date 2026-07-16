@@ -100,7 +100,7 @@ export default function PointsTransactions({ settings, stationId }: PointsTransa
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-row justify-between items-start items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
+      <div className="flex flex-row justify-between items-start items-center gap-4 bg-white dark:bg-[#151521] p-4 rounded-xl border border-slate-200 dark:border-white/10">
         <div className="relative w-full sm:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input 
@@ -108,7 +108,7 @@ export default function PointsTransactions({ settings, stationId }: PointsTransa
             placeholder="Search transactions..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
           />
         </div>
         <button 
@@ -137,12 +137,12 @@ export default function PointsTransactions({ settings, stationId }: PointsTransa
               {filteredTxs.map(tx => {
                 const isPositive = tx.points >= 0;
                 return (
-                  <tr key={tx.id} className="hover:bg-slate-50/50 transition">
+                  <tr key={tx.id} className="hover:bg-slate-50 dark:bg-white/5/50 transition">
                     <td className="text-slate-700">
                       {new Date(tx.date).toLocaleString()}
                     </td>
                     <td>
-                      <div className="font-bold text-slate-900">{getMemberDetails(tx.memberId)}</div>
+                      <div className="font-bold text-slate-900 dark:text-white">{getMemberDetails(tx.memberId)}</div>
                     </td>
                     <td>
                       <span className={`flex items-center gap-1 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full w-max ${
@@ -181,9 +181,9 @@ export default function PointsTransactions({ settings, stationId }: PointsTransa
       {/* Form Modal */}
       {isModalOpen && (
         <div className="premium-modal-overlay">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h2 className="text-lg font-black font-sans text-slate-800 flex items-center gap-2">
+          <div className="bg-white dark:bg-[#151521] rounded-2xl shadow-xl w-full max-w-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5 flex justify-between items-center bg-slate-50 dark:bg-white/5/50">
+              <h2 className="text-lg font-black font-sans text-slate-800 dark:text-slate-200 flex items-center gap-2">
                 <Coins className="h-5 w-5 text-rose-500" />
                 Log Points Activity
               </h2>
@@ -195,7 +195,7 @@ export default function PointsTransactions({ settings, stationId }: PointsTransa
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Select Member *</label>
-                <select value={memberId} onChange={e => setMemberId(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white">
+                <select value={memberId} onChange={e => setMemberId(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white dark:bg-[#151521]">
                   {members.map(m => (
                     <option key={m.id} value={m.id}>{m.name} ({m.phone})</option>
                   ))}
@@ -207,7 +207,7 @@ export default function PointsTransactions({ settings, stationId }: PointsTransa
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Activity Type</label>
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  <select value={type} onChange={e => setType(e.target.value as any)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white">
+                  <select value={type} onChange={e => setType(e.target.value as any)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white dark:bg-[#151521]">
                     <option value="earn">Earn (Add Points)</option>
                     <option value="redeem">Redeem (Subtract Points)</option>
                     <option value="adjustment">Manual Adjustment</option>
@@ -215,18 +215,18 @@ export default function PointsTransactions({ settings, stationId }: PointsTransa
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Points Amount *</label>
-                  <input type="number" value={points} onChange={e => setPoints(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="e.g. 500" min="1" />
+                  <input type="number" value={points} onChange={e => setPoints(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="e.g. 500" min="1" />
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Description / Reason *</label>
-                <input type="text" value={description} onChange={e => setDescription(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="e.g. Purchased 50L Super" />
+                <input type="text" value={description} onChange={e => setDescription(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="e.g. Purchased 50L Super" />
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
-              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition">Cancel</button>
+            <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 flex justify-end gap-2">
+              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 dark:text-white transition">Cancel</button>
               <button onClick={handleSave} className="bg-rose-600 text-white px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded-lg text-sm font-bold hover:bg-rose-700 transition shadow-md shadow-rose-500/20">
                 Process Transaction
               </button>

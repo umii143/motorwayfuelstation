@@ -56,7 +56,7 @@ export default function LoyaltyDashboard({ settings, stationId }: LoyaltyDashboa
                 <Users className="h-4 w-4" />
               </div>
             </div>
-            <div className="text-2xl font-black font-mono text-slate-900">{activeMembers.length}</div>
+            <div className="text-2xl font-black font-mono text-slate-900 dark:text-white">{activeMembers.length}</div>
             <div className="text-xs text-slate-500 mt-2 font-medium">Enrolled customers</div>
           </div>
         </div>
@@ -107,21 +107,21 @@ export default function LoyaltyDashboard({ settings, stationId }: LoyaltyDashboa
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Top Members */}
         <div className="premium-card border overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-            <h3 className="font-bold text-sm text-slate-800 flex items-center gap-2">
+          <div className="px-5 py-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-white/5/50">
+            <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <Award className="h-4 w-4 text-amber-500" />
               Top Members by Balance
             </h3>
           </div>
           <div className="divide-y divide-slate-100">
             {topMembers.map(member => (
-              <div key={member.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition">
+              <div key={member.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:bg-white/5 transition">
                 <div>
-                  <div className="font-bold text-slate-900 text-sm">{member.name}</div>
+                  <div className="font-bold text-slate-900 dark:text-white text-sm">{member.name}</div>
                   <div className="text-xs text-slate-500 mt-0.5">{member.phone}</div>
                 </div>
                 <div className="text-right">
-                  <div className="font-mono text-sm font-bold text-slate-800">{member.pointsBalance.toLocaleString()} pts</div>
+                  <div className="font-mono text-sm font-bold text-slate-800 dark:text-slate-200">{member.pointsBalance.toLocaleString()} pts</div>
                   <div className="mt-1">
                     <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${getTierColor(member.tier)}`}>
                       {member.tier}
@@ -140,8 +140,8 @@ export default function LoyaltyDashboard({ settings, stationId }: LoyaltyDashboa
 
         {/* Recent Activity */}
         <div className="premium-card border overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-            <h3 className="font-bold text-sm text-slate-800 flex items-center gap-2">
+          <div className="px-5 py-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-white/5/50">
+            <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <Coins className="h-4 w-4 text-blue-500" />
               Recent Points Activity
             </h3>
@@ -151,9 +151,9 @@ export default function LoyaltyDashboard({ settings, stationId }: LoyaltyDashboa
               const member = members.find(m => m.id === tx.memberId);
               const isPositive = tx.points >= 0;
               return (
-                <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition">
+                <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:bg-white/5 transition">
                   <div>
-                    <div className="font-bold text-slate-900 text-sm">{member?.name || 'any Member'}</div>
+                    <div className="font-bold text-slate-900 dark:text-white text-sm">{member?.name || 'any Member'}</div>
                     <div className="text-xs text-slate-500 mt-0.5 line-clamp-1">{tx.description}</div>
                   </div>
                   <div className="text-right">

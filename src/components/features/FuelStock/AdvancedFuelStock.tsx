@@ -78,8 +78,14 @@ export default function AdvancedFuelStock() {
   }, [stockTxns, todayStr]);
 
   const stockValue = useMemo(() => {
-    return fuelProducts.reduce((sum, p) => sum + (p.currentStock * p.rate), 0);
-  }, [fuelProducts]);
+    return tanks.reduce((sum, t) => {
+      const prod = products.find(p => p.id === t.productId);
+      if (prod && prod.type === 'fuel') {
+        return sum + (t.currentStock * prod.rate);
+      }
+      return sum;
+    }, 0);
+  }, [tanks, products]);
 
   const lowStockTanksCount = useMemo(() => {
     return tanks.filter(t => t.currentStock <= t.criticalLevel).length;
@@ -112,14 +118,16 @@ export default function AdvancedFuelStock() {
       else if (p.name.toLowerCase().includes('kero')) colorName = 'Kerosene';
       else if (p.name.toLowerCase().includes('ldo')) colorName = 'LDO';
       
+      const productTanksStock = tanks.filter(t => t.productId === p.id).reduce((sum, t) => sum + t.currentStock, 0);
+
       return {
         name: p.name,
-        value: p.currentStock,
+        value: productTanksStock,
         color: COLORS[colorName as keyof typeof COLORS] || COLORS.Default,
         colorName
       };
     }).filter(d => d.value > 0);
-  }, [fuelProducts]);
+  }, [fuelProducts, tanks]);
 
   const totalDonutValue = donutData.reduce((sum, item) => sum + item.value, 0);
 
@@ -267,7 +275,7 @@ export default function AdvancedFuelStock() {
         </div>
 
         {/* Low Stock Alerts */}
-        <div className="bg-gradient-to-br from-red-900/40 to-[#0B1120] border border-red-500/20 rounded-xl p-4 flex justify-between items-start shadow-lg">
+        <div className="bg-gradient-to-br from-red-900/40 to-[#0B1120] border border-red-500/20 rounded-xl p-4 flex justify-between items-start shadow-lg col-span-2 md:col-span-1">
           <div>
             <p className="text-red-300/70 text-[10px] font-semibold uppercase tracking-wider mb-1">Low Stock Alerts</p>
             <h3 className="text-xl lg:text-2xl font-bold text-white tracking-tight">{lowStockTanksCount} <span className="text-xs font-normal text-red-200/50">Tanks</span></h3>
@@ -519,7 +527,7 @@ export default function AdvancedFuelStock() {
                       boxShadow: `0 0 10px ${tank.colorHex}80` 
                     }}
                   >
-                    <div className="absolute top-0 right-0 bottom-0 left-0 bg-white/20 w-full animate-[pulse_2s_infinite]"></div>
+                    <div className="absolute top-0 right-0 bottom-0 left-0 bg-white dark:bg-[#151521]/20 w-full animate-[pulse_2s_infinite]"></div>
                   </div>
                 </div>
               </div>

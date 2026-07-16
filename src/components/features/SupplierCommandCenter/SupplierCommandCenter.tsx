@@ -117,7 +117,7 @@ export default function SupplierCommandCenter({
     <div className="space-y-6 pb-16 lg:pb-0">
       {/* Advanced Clean Header */}
       <div className="flex flex-col gap-1 mb-2">
-        <h1 className="font-sans text-2xl font-bold dark:text-white text-slate-900 tracking-tight">
+        <h1 className="font-sans text-2xl font-bold dark:text-white text-slate-900 dark:text-white tracking-tight">
           {t('Supplier Management', 'سپلائر مینجمنٹ')}
         </h1>
         <p className="font-sans text-sm dark:text-slate-400 text-slate-500">
@@ -137,7 +137,7 @@ export default function SupplierCommandCenter({
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-sans text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
                 isActive 
                   ? 'bg-slate-900 text-white shadow-md' 
-                  : 'bg-theme-card text-slate-600 hover:bg-slate-50 border border-theme-main'
+                  : 'bg-theme-card text-slate-600 hover:bg-slate-50 dark:bg-white/5 border border-theme-main'
               }`}
             >
               <Icon className="h-4 w-4" />

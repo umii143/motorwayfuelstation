@@ -162,7 +162,7 @@ export default function FuelProJarvis() {
           <p className="mt-8 text-white font-bold text-lg tracking-widest uppercase">Listening...</p>
           <button 
             onClick={stopListening}
-            className="mt-12 px-8 py-3 bg-white text-slate-900 rounded-full font-black shadow-xl hover:scale-105 transition-transform"
+            className="mt-12 px-8 py-3 bg-white dark:bg-[#151521] text-slate-900 dark:text-white rounded-full font-black shadow-xl hover:scale-105 transition-transform"
           >
             Done Speaking
           </button>
@@ -189,7 +189,7 @@ export default function FuelProJarvis() {
                 className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl font-black text-lg transition-all shadow-lg ${
                   isProcessing
                   ? 'bg-slate-200 dark:bg-slate-800 text-slate-500 cursor-not-allowed'
-                  : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
+                  : 'bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
                 }`}
               >
                 {isProcessing ? <Loader2 className="w-6 h-6 animate-spin" /> : <Mic className="w-6 h-6" />}

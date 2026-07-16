@@ -296,7 +296,7 @@ export default function PartyLedgerModal({
           >
 
             {/* ─── HEADER ─── */}
-            <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 py-4 border-b border-[var(--border-main)] ${accentClasses.light} print:hidden`}>
+            <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 py-4 border-b border-[var(--border-main)] ${accentClasses.light} dark:bg-slate-900/40 print:hidden`}>
               <div className="flex items-center gap-3 min-w-0">
                 <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${accentClasses.bg} text-white`}>
                   <FileText className="h-5 w-5" />
@@ -315,18 +315,18 @@ export default function PartyLedgerModal({
               </div>
 
               {/* Balance badge */}
-              <div className={`shrink-0 rounded-xl px-4 py-2 border text-center ${isPositiveBalance ? 'bg-rose-50 border-rose-200' : 'bg-emerald-50 border-emerald-200'}`}>
+              <div className={`shrink-0 rounded-xl px-4 py-2 border text-center ${isPositiveBalance ? 'bg-rose-50 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/20' : 'bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20'}`}>
                 <span className="font-sans text-[9px] font-bold uppercase tracking-widest block text-[var(--text-muted)]">
                   {party.type === 'customer' ? 'Outstanding Balance' : 'Payable Balance'}
                 </span>
-                <strong className={`font-mono text-lg font-extrabold block ${isPositiveBalance ? 'text-rose-600' : 'text-emerald-600'}`}>
+                <strong className={`font-mono text-lg font-extrabold block ${isPositiveBalance ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
                   {formatCurrency(party.balance, settings)}
                 </strong>
               </div>
 
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--border-main)] transition-colors cursor-pointer"
+                className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--border-main)] transition-colors cursor-pointer min-h-0 min-w-0"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -340,7 +340,7 @@ export default function PartyLedgerModal({
                   <button
                     key={preset.id}
                     onClick={() => applyPreset(preset.id)}
-                    className={`px-2.5 py-1 rounded-md font-sans text-[10px] font-bold transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-md font-sans text-[10px] font-bold transition-all cursor-pointer min-h-0 min-w-0 ${
                       activePreset === preset.id
                         ? `${accentClasses.bg} text-white`
                         : 'bg-[var(--bg-card)] text-[var(--text-muted)] hover:text-[var(--text-main)] border border-[var(--border-main)]'
@@ -383,14 +383,14 @@ export default function PartyLedgerModal({
               <div className="flex gap-2 shrink-0">
                 <button
                   onClick={exportCSV}
-                  className="flex items-center gap-1 rounded-lg border border-[var(--border-main)] bg-[var(--bg-card)] px-3 py-1.5 font-sans text-[11px] font-bold text-[var(--text-main)] hover:opacity-80 cursor-pointer transition-all"
+                  className="flex items-center gap-1 rounded-lg border border-[var(--border-main)] bg-[var(--bg-card)] px-3 py-1.5 font-sans text-[11px] font-bold text-[var(--text-main)] hover:opacity-80 cursor-pointer transition-all min-h-0 min-w-0"
                 >
                   <Download className="h-3.5 w-3.5" />
                   <span>CSV</span>
                 </button>
                 <button
                   onClick={handlePrint}
-                  className={`flex items-center gap-1 rounded-lg ${accentClasses.bg} px-3 py-1.5 font-sans text-[11px] font-bold text-white hover:opacity-90 cursor-pointer transition-all`}
+                  className={`flex items-center gap-1 rounded-lg ${accentClasses.bg} px-3 py-1.5 font-sans text-[11px] font-bold text-white hover:opacity-90 cursor-pointer transition-all min-h-0 min-w-0`}
                 >
                   <Printer className="h-3.5 w-3.5" />
                   <span>Print</span>
@@ -416,7 +416,7 @@ export default function PartyLedgerModal({
                     <div className="mt-4 flex justify-center pb-8 shrink-0">
                       <button 
                         onClick={() => setVisibleLimit(prev => prev + 100)}
-                        className={`px-6 py-2 ${accentClasses.light} ${accentClasses.text} hover:opacity-80 rounded-full font-bold text-sm transition-colors border ${accentClasses.border}`}
+                        className={`px-6 py-2 ${accentClasses.light} dark:bg-slate-900/40 ${accentClasses.text} hover:opacity-80 rounded-full font-bold text-sm transition-colors border ${accentClasses.border} min-h-0 min-w-0`}
                       >
                         Load More Transactions ({filteredEntries.length - displayedEntries.length} remaining)
                       </button>
@@ -435,25 +435,25 @@ export default function PartyLedgerModal({
                   <strong className="font-mono text-lg font-black text-[var(--text-main)] block mt-0.5">{filteredEntries.length}</strong>
                 </div>
 
-                <div className="rounded-xl bg-rose-50 border border-rose-100 p-3">
-                  <span className="font-sans text-[9px] font-bold uppercase tracking-widest text-rose-600 block flex items-center justify-center gap-1">
+                <div className="rounded-xl bg-rose-50 border border-rose-100 dark:bg-rose-500/10 dark:border-rose-500/20 p-3">
+                  <span className="font-sans text-[9px] font-bold uppercase tracking-widest text-rose-600 dark:text-rose-400 block flex items-center justify-center gap-1">
                     <TrendingUp className="h-3 w-3" /> Total {debitLabel}
                   </span>
-                  <strong className="font-mono text-base font-black text-rose-700 block mt-0.5">{formatCurrency(totals.totalDebit, settings)}</strong>
+                  <strong className="font-mono text-base font-black text-rose-700 dark:text-rose-300 block mt-0.5">{formatCurrency(totals.totalDebit, settings)}</strong>
                 </div>
 
-                <div className="rounded-xl bg-emerald-50 border border-emerald-100 p-3">
-                  <span className="font-sans text-[9px] font-bold uppercase tracking-widest text-emerald-600 block flex items-center justify-center gap-1">
+                <div className="rounded-xl bg-emerald-50 border border-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/20 p-3">
+                  <span className="font-sans text-[9px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 block flex items-center justify-center gap-1">
                     <TrendingDown className="h-3 w-3" /> Total {creditLabel}
                   </span>
-                  <strong className="font-mono text-base font-black text-emerald-700 block mt-0.5">{formatCurrency(totals.totalCredit, settings)}</strong>
+                  <strong className="font-mono text-base font-black text-emerald-700 dark:text-emerald-300 block mt-0.5">{formatCurrency(totals.totalCredit, settings)}</strong>
                 </div>
 
-                <div className={`rounded-xl p-3 border ${totals.net >= 0 ? 'bg-rose-50 border-rose-100' : 'bg-emerald-50 border-emerald-100'}`}>
+                <div className={`rounded-xl p-3 border ${totals.net >= 0 ? 'bg-rose-50 border-rose-100 dark:bg-rose-500/10 dark:border-rose-500/20' : 'bg-emerald-50 border-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/20'}`}>
                   <span className="font-sans text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] block">
                     Net {party.type === 'customer' ? 'Receivable' : 'Payable'}
                   </span>
-                  <strong className={`font-mono text-base font-black block mt-0.5 ${totals.net >= 0 ? 'text-rose-700' : 'text-emerald-700'}`}>
+                  <strong className={`font-mono text-base font-black block mt-0.5 ${totals.net >= 0 ? 'text-rose-700 dark:text-rose-300' : 'text-emerald-700 dark:text-emerald-300'}`}>
                     {formatCurrency(Math.abs(totals.net), settings)}
                     <span className="text-[10px] ml-1 font-bold">{totals.net >= 0 ? 'Dr' : 'Cr'}</span>
                   </strong>

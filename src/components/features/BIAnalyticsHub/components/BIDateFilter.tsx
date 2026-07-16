@@ -53,11 +53,11 @@ export function BIDateFilter({ filter, setFilter, products }: BIDateFilterProps)
     <div className="flex flex-col md:flex-row md:items-center justify-between ga premium-card p-4 border mb-6">
       <div className="flex items-center gap-2">
         <Calendar className="w-5 h-5 text-slate-400" />
-        <div className="flex bg-slate-100 p-1 rounded-lg">
-          <button onClick={() => handlePreset('today')} className="px-3 py-1.5 text-xs font-bold rounded-md hover:bg-white hover:shadow-sm transition-all text-slate-600 focus:bg-white focus:shadow-sm">Today</button>
-          <button onClick={() => handlePreset('this_month')} className="px-3 py-1.5 text-xs font-bold rounded-md hover:bg-white hover:shadow-sm transition-all text-slate-600 focus:bg-white focus:shadow-sm">This Month</button>
-          <button onClick={() => handlePreset('this_year')} className="px-3 py-1.5 text-xs font-bold rounded-md hover:bg-white hover:shadow-sm transition-all text-slate-600 focus:bg-white focus:shadow-sm">This Year</button>
-          <button onClick={() => handlePreset('all_time')} className="px-3 py-1.5 text-xs font-bold rounded-md hover:bg-white hover:shadow-sm transition-all text-slate-600 focus:bg-white focus:shadow-sm">All Time</button>
+        <div className="flex bg-slate-100 dark:bg-white/10 p-1 rounded-lg">
+          <button onClick={() => handlePreset('today')} className="px-3 py-1.5 text-xs font-bold rounded-md hover:bg-white dark:bg-[#151521] hover:shadow-sm transition-all text-slate-600 focus:bg-white dark:bg-[#151521] focus:shadow-sm">Today</button>
+          <button onClick={() => handlePreset('this_month')} className="px-3 py-1.5 text-xs font-bold rounded-md hover:bg-white dark:bg-[#151521] hover:shadow-sm transition-all text-slate-600 focus:bg-white dark:bg-[#151521] focus:shadow-sm">This Month</button>
+          <button onClick={() => handlePreset('this_year')} className="px-3 py-1.5 text-xs font-bold rounded-md hover:bg-white dark:bg-[#151521] hover:shadow-sm transition-all text-slate-600 focus:bg-white dark:bg-[#151521] focus:shadow-sm">This Year</button>
+          <button onClick={() => handlePreset('all_time')} className="px-3 py-1.5 text-xs font-bold rounded-md hover:bg-white dark:bg-[#151521] hover:shadow-sm transition-all text-slate-600 focus:bg-white dark:bg-[#151521] focus:shadow-sm">All Time</button>
         </div>
       </div>
       
@@ -67,21 +67,21 @@ export function BIDateFilter({ filter, setFilter, products }: BIDateFilterProps)
             type="date" 
             value={filter.startDate} 
             onChange={(e) => setFilter({ ...filter, startDate: e.target.value })}
-            className="text-xs font-bold border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-rose-500"
+            className="text-xs font-bold border border-slate-200 dark:border-white/10 rounded-lg px-3 py-1.5 focus:outline-none focus:border-rose-500"
           />
           <span className="text-slate-400 text-xs">to</span>
           <input 
             type="date" 
             value={filter.endDate} 
             onChange={(e) => setFilter({ ...filter, endDate: e.target.value })}
-            className="text-xs font-bold border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-rose-500"
+            className="text-xs font-bold border border-slate-200 dark:border-white/10 rounded-lg px-3 py-1.5 focus:outline-none focus:border-rose-500"
           />
         </div>
         
         <select 
           value={filter.productId}
           onChange={(e) => setFilter({ ...filter, productId: e.target.value })}
-          className="text-xs font-bold border border-slate-200 rounded-lg px-3 py-1.5 bg-slate-50 focus:outline-none focus:border-rose-500"
+          className="text-xs font-bold border border-slate-200 dark:border-white/10 rounded-lg px-3 py-1.5 bg-slate-50 dark:bg-white/5 focus:outline-none focus:border-rose-500"
         >
           <option value="all">All Products</option>
           {products.map(p => (

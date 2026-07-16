@@ -118,7 +118,7 @@ export default function MembersManager({ settings, stationId }: MembersManagerPr
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-row justify-between items-start items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
+      <div className="flex flex-row justify-between items-start items-center gap-4 bg-white dark:bg-[#151521] p-4 rounded-xl border border-slate-200 dark:border-white/10">
         <div className="relative w-full sm:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input 
@@ -126,7 +126,7 @@ export default function MembersManager({ settings, stationId }: MembersManagerPr
             placeholder="Search members, phone, or card..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
           />
         </div>
         <button 
@@ -154,13 +154,13 @@ export default function MembersManager({ settings, stationId }: MembersManagerPr
             </thead>
             <tbody>
               {filteredMembers.map(member => (
-                <tr key={member.id} className="hover:bg-slate-50/50 transition">
+                <tr key={member.id} className="hover:bg-slate-50 dark:bg-white/5/50 transition">
                   <td>
-                    <div className="font-bold text-slate-900">{member.name}</div>
+                    <div className="font-bold text-slate-900 dark:text-white">{member.name}</div>
                     <div className="text-[10px] text-slate-500 mt-0.5">Joined {new Date(member.joinDate).toLocaleDateString()}</div>
                   </td>
                   <td>
-                    <div className="text-slate-800 font-medium">{member.phone}</div>
+                    <div className="text-slate-800 dark:text-slate-200 font-medium">{member.phone}</div>
                     {member.email && <div className="text-xs text-slate-500">{member.email}</div>}
                   </td>
                   <td className="font-mono text-slate-600">
@@ -206,9 +206,9 @@ export default function MembersManager({ settings, stationId }: MembersManagerPr
       {/* Form Modal */}
       {isModalOpen && (
         <div className="premium-modal-overlay">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h2 className="text-lg font-black font-sans text-slate-800 flex items-center gap-2">
+          <div className="bg-white dark:bg-[#151521] rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5 flex justify-between items-center bg-slate-50 dark:bg-white/5/50">
+              <h2 className="text-lg font-black font-sans text-slate-800 dark:text-slate-200 flex items-center gap-2">
                 <Users className="h-5 w-5 text-rose-500" />
                 {editingId ? 'Edit Member Profile' : 'Register New Member'}
               </h2>
@@ -221,23 +221,23 @@ export default function MembersManager({ settings, stationId }: MembersManagerPr
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Full Name *</label>
-                  <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
+                  <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number *</label>
-                  <input type="text" value={phone} onChange={e => setPhone(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
+                  <input type="text" value={phone} onChange={e => setPhone(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
                 </div>
                 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Email (Optional)</label>
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Loyalty Card Number (Optional)</label>
-                  <input type="text" value={cardNumber} onChange={e => setCardNumber(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono" placeholder="SCAN OR TYPE" />
+                  <input type="text" value={cardNumber} onChange={e => setCardNumber(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono" placeholder="SCAN OR TYPE" />
                 </div>
 
-                <div className="border-t border-slate-100 pt-4 md:col-span-2">
+                <div className="border-t border-slate-100 dark:border-white/5 pt-4 md:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Membership Tier</label>
                   <div className="flex gap-2">
                     { }
@@ -248,7 +248,7 @@ export default function MembersManager({ settings, stationId }: MembersManagerPr
                         className={`flex-1 py-2 text-[11px] font-bold rounded-lg border transition uppercase tracking-wider ${
                           tier === t 
                             ? 'bg-rose-50 border-rose-500 text-rose-800'
-                            : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                            : 'bg-white dark:bg-[#151521] border-slate-200 dark:border-white/10 text-slate-500 hover:bg-slate-50 dark:bg-white/5'
                         }`}
                       >
                         {t}
@@ -268,7 +268,7 @@ export default function MembersManager({ settings, stationId }: MembersManagerPr
                         className={`flex-1 py-2 text-[11px] font-bold rounded-lg border transition uppercase tracking-wider ${
                           status === s 
                             ? (s === 'active' ? 'bg-emerald-100 border-emerald-500 text-emerald-800' : 'bg-rose-100 border-rose-500 text-rose-800')
-                            : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                            : 'bg-white dark:bg-[#151521] border-slate-200 dark:border-white/10 text-slate-500 hover:bg-slate-50 dark:bg-white/5'
                         }`}
                       >
                         {s}
@@ -279,8 +279,8 @@ export default function MembersManager({ settings, stationId }: MembersManagerPr
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
-              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition">Cancel</button>
+            <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 flex justify-end gap-2">
+              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 dark:text-white transition">Cancel</button>
               <button onClick={handleSave} className="bg-rose-600 text-white px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded-lg text-sm font-bold hover:bg-rose-700 transition shadow-md shadow-rose-500/20">
                 Save Member
               </button>

@@ -95,15 +95,15 @@ export function NozzlesStep({ nozzles, pumps, tanks, products, onUpdate, onConti
 
   return (
     <div className="flex items-center justify-center min-h-[80vh] p-4 animate-in fade-in slide-in-from-right-4 duration-500">
-      <div className="max-w-2xl w-full bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden flex flex-col h-[85vh] max-h-[800px]">
+      <div className="max-w-2xl w-full bg-white dark:bg-[#151521] rounded-3xl shadow-xl border border-slate-100 dark:border-white/5 overflow-hidden flex flex-col h-[85vh] max-h-[800px]">
         
-        <div className="text-center border-b border-slate-100 p-6 md:p-8 shrink-0 bg-slate-50/50">
+        <div className="text-center border-b border-slate-100 dark:border-white/5 p-6 md:p-8 shrink-0 bg-slate-50 dark:bg-white/5/50">
           <div className="flex justify-center mb-4">
             <div className="size-12 rounded-2xl bg-purple-100 flex items-center justify-center">
               <Gauge className="size-6 text-purple-600" />
             </div>
           </div>
-          <h2 className="text-2xl font-black text-slate-800">
+          <h2 className="text-2xl font-black text-slate-800 dark:text-slate-200">
             {t('Add Nozzles', 'نوزلز شامل کریں', language)}
           </h2>
           <p className="text-slate-500 font-medium mt-2">
@@ -122,12 +122,12 @@ export function NozzlesStep({ nozzles, pumps, tanks, products, onUpdate, onConti
               {t('Add New Nozzle', 'نئی نوزل شامل کریں', language)}
             </button>
           ) : (
-            <div className="border border-slate-200 rounded-2xl p-6 space-y-5 bg-slate-50/50 shadow-sm animate-in zoom-in-95 duration-200">
+            <div className="border border-slate-200 dark:border-white/10 rounded-2xl p-6 space-y-5 bg-slate-50 dark:bg-white/5/50 shadow-sm animate-in zoom-in-95 duration-200">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700">{t('Pump Name', 'پمپ کا نام', language)}</label>
                   <input
-                    className="w-full h-12 px-4 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-medium text-slate-800"
+                    className="w-full h-12 px-4 bg-white dark:bg-[#151521] border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-medium text-slate-800 dark:text-slate-200"
                     placeholder="Pump 1"
                     value={pumpName}
                     onChange={(e) => setPumpName(e.target.value)}
@@ -136,7 +136,7 @@ export function NozzlesStep({ nozzles, pumps, tanks, products, onUpdate, onConti
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700">{t('Nozzle Name/No', 'نوزل کا نام', language)}</label>
                   <input
-                    className="w-full h-12 px-4 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-medium text-slate-800"
+                    className="w-full h-12 px-4 bg-white dark:bg-[#151521] border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-medium text-slate-800 dark:text-slate-200"
                     placeholder="Nozzle 1"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -147,7 +147,7 @@ export function NozzlesStep({ nozzles, pumps, tanks, products, onUpdate, onConti
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700">{t('Link to Tank', 'ٹینک سے منسلک کریں', language)}</label>
                 <select 
-                  className="w-full h-12 px-4 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-medium text-slate-800 appearance-none cursor-pointer"
+                  className="w-full h-12 px-4 bg-white dark:bg-[#151521] border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-medium text-slate-800 dark:text-slate-200 appearance-none cursor-pointer"
                   value={tankId} 
                   onChange={(e) => setTankId(e.target.value)}
                 >
@@ -164,7 +164,7 @@ export function NozzlesStep({ nozzles, pumps, tanks, products, onUpdate, onConti
                 <label className="text-sm font-bold text-slate-700">{t('Opening Reading', 'ابتدائی ریڈنگ', language)}</label>
                 <input
                   type="number"
-                  className="w-full h-12 px-4 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-medium text-slate-800"
+                  className="w-full h-12 px-4 bg-white dark:bg-[#151521] border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-medium text-slate-800 dark:text-slate-200"
                   placeholder="0.00"
                   value={startReading}
                   onChange={(e) => setStartReading(e.target.value)}
@@ -181,7 +181,7 @@ export function NozzlesStep({ nozzles, pumps, tanks, products, onUpdate, onConti
                 </button>
                 <button 
                   onClick={resetForm} 
-                  className="flex-[0.4] h-12 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl font-bold transition-colors cursor-pointer"
+                  className="flex-[0.4] h-12 bg-white dark:bg-[#151521] border border-slate-300 hover:bg-slate-50 dark:bg-white/5 text-slate-700 rounded-xl font-bold transition-colors cursor-pointer"
                 >
                   {t('Done', 'مکمل', language)}
                 </button>
@@ -211,10 +211,10 @@ export function NozzlesStep({ nozzles, pumps, tanks, products, onUpdate, onConti
                             <div className="size-6 rounded-full bg-purple-200 flex items-center justify-center shrink-0">
                               <Check className="size-4 text-purple-700" />
                             </div>
-                            <h4 className="font-bold text-lg text-slate-800">{nozzle.name} <span className="text-sm font-medium text-slate-500 ml-2">({pump?.name})</span></h4>
+                            <h4 className="font-bold text-lg text-slate-800 dark:text-slate-200">{nozzle.name} <span className="text-sm font-medium text-slate-500 ml-2">({pump?.name})</span></h4>
                           </div>
                           <div className="flex items-center gap-2 ml-9">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white border border-purple-200 text-purple-700">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white dark:bg-[#151521] border border-purple-200 text-purple-700">
                               {details?.tank?.name}
                             </span>
                             <span className="text-slate-400 text-sm">•</span>
@@ -243,7 +243,7 @@ export function NozzlesStep({ nozzles, pumps, tanks, products, onUpdate, onConti
 
         </div>
 
-        <div className="p-6 border-t border-slate-100 bg-white shrink-0">
+        <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-white dark:bg-[#151521] shrink-0">
           <button
             onClick={onContinue}
             disabled={nozzles.length === 0}

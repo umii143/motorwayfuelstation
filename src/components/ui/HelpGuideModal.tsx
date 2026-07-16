@@ -109,18 +109,18 @@ export default function HelpGuideModal({ isOpen, onClose, settings }: HelpGuideM
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className={`relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ${
+          className={`relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white dark:bg-[#151521] shadow-2xl ${
             isUrdu ? 'text-right' : 'text-left'
           } dir-${settings.language}`}
         >
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-4">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 px-6 py-4">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
                 <BookOpen className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="font-sans text-xl font-black text-slate-900">
+                <h2 className="font-sans text-xl font-black text-slate-900 dark:text-white">
                   {t('Comprehensive Help Guide', 'یوزر گائیڈ (اے سے زیڈ)')}
                 </h2>
                 <p className="font-sans text-xs font-semibold text-slate-500">
@@ -130,21 +130,21 @@ export default function HelpGuideModal({ isOpen, onClose, settings }: HelpGuideM
             </div>
             <button
               onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-400 shadow-sm hover:bg-slate-100 hover:text-slate-600 cursor-pointer"
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-white dark:bg-[#151521] text-slate-400 shadow-sm hover:bg-slate-100 dark:bg-white/10 hover:text-slate-600 cursor-pointer"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
 
           {/* Search Box */}
-          <div className="border-b border-slate-100 p-4">
+          <div className="border-b border-slate-100 dark:border-white/5 p-4">
             <div className="relative">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t("Search the guide...", "گائیڈ میں تلاش کریں...")}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 font-sans text-sm font-semibold text-slate-800 focus:border-orange-500 focus:bg-white focus:outline-hidden transition-all"
+                className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 py-3 pl-11 pr-4 font-sans text-sm font-semibold text-slate-800 dark:text-slate-200 focus:border-orange-500 focus:bg-white dark:bg-[#151521] focus:outline-hidden transition-all"
               />
               <Search className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
             </div>
@@ -161,17 +161,17 @@ export default function HelpGuideModal({ isOpen, onClose, settings }: HelpGuideM
                     className={`rounded-xl border transition-all duration-200 ${
                       isExpanded
                         ? 'border-orange-200 bg-orange-50/30 shadow-sm'
-                        : 'border-slate-100 hover:border-slate-200 hover:bg-slate-50'
+                        : 'border-slate-100 dark:border-white/5 hover:border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:bg-white/5'
                     }`}
                   >
                     <button
                       onClick={() => setExpandedSection(isExpanded ? null : section.id)}
                       className="flex w-full items-center justify-between p-4 cursor-pointer focus:outline-hidden"
                     >
-                      <span className="font-sans font-bold text-slate-800">{section.title}</span>
+                      <span className="font-sans font-bold text-slate-800 dark:text-slate-200">{section.title}</span>
                       <div
                         className={`flex h-6 w-6 items-center justify-center rounded-full transition-colors ${
-                          isExpanded ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 text-slate-400'
+                          isExpanded ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 dark:bg-white/10 text-slate-400'
                         }`}
                       >
                         {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
@@ -186,7 +186,7 @@ export default function HelpGuideModal({ isOpen, onClose, settings }: HelpGuideM
                           exit={{ height: 0, opacity: 0 }}
                           className="overflow-hidden"
                         >
-                          <div className="border-t border-slate-100 px-4 pb-4 pt-3 font-sans text-sm leading-relaxed text-slate-600">
+                          <div className="border-t border-slate-100 dark:border-white/5 px-4 pb-4 pt-3 font-sans text-sm leading-relaxed text-slate-600">
                             {section.content}
                           </div>
                         </motion.div>
@@ -197,7 +197,7 @@ export default function HelpGuideModal({ isOpen, onClose, settings }: HelpGuideM
               })}
               {filteredSections.length === 0 && (
                 <div className="py-12 text-center">
-                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 text-slate-400">
                     <Search className="h-6 w-6" />
                   </div>
                   <p className="font-sans font-semibold text-slate-500">

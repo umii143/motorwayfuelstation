@@ -160,7 +160,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
              {/* Features Grid */}
              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-2xl mt-4">
                 {features.map(f => (
-                  <div key={f.name} className="flex flex-col items-center justify-center p-4 lg:p-5 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all hover:-translate-y-1 gap-3 text-center group cursor-default">
+                  <div key={f.name} className="flex flex-col items-center justify-center p-4 lg:p-5 rounded-2xl border border-white/5 bg-white dark:bg-[#151521]/[0.02] hover:bg-white dark:bg-[#151521]/[0.04] transition-all hover:-translate-y-1 gap-3 text-center group cursor-default">
                      <f.icon className="h-7 w-7 lg:h-8 lg:w-8 text-orange-500 group-hover:scale-110 transition-transform" />
                      <span className="text-xs text-slate-300 font-medium leading-tight">{f.name}</span>
                   </div>
@@ -293,7 +293,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
                         value={email}
                         placeholder={t("Enter your username or email", "اپنا یوزر نیم یا ای میل درج کریں")}
                         onChange={e => setEmail(e.target.value)}
-                        className="w-full bg-transparent border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-[16px] text-white focus:outline-none focus:border-orange-500 focus:bg-white/5 transition-all placeholder:text-slate-600"
+                        className="w-full bg-transparent border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-[16px] text-white focus:outline-none focus:border-orange-500 focus:bg-white dark:bg-[#151521]/5 transition-all placeholder:text-slate-600"
                       />
                     </div>
                   </div>
@@ -311,7 +311,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
                         value={password}
                         placeholder={t("Enter your password", "اپنا پاس ورڈ درج کریں")}
                         onChange={e => setPassword(e.target.value)}
-                        className="w-full bg-transparent border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-[16px] text-white focus:outline-none focus:border-orange-500 focus:bg-white/5 transition-all placeholder:text-slate-600"
+                        className="w-full bg-transparent border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-[16px] text-white focus:outline-none focus:border-orange-500 focus:bg-white dark:bg-[#151521]/5 transition-all placeholder:text-slate-600"
                       />
                     </div>
                   </div>
@@ -366,7 +366,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
                         type="button"
                         onClick={handleFirebaseGoogleLogin}
                         disabled={isLoading}
-                        className="flex items-center justify-center gap-2 bg-transparent border border-white/10 hover:border-white/20 hover:bg-white/5 rounded-xl py-3 px-4 transition-all group disabled:opacity-50"
+                        className="flex items-center justify-center gap-2 bg-transparent border border-white/10 hover:border-white/20 hover:bg-white dark:bg-[#151521]/5 rounded-xl py-3 px-4 transition-all group disabled:opacity-50"
                      >
                         <svg className="h-4 w-4" viewBox="0 0 24 24">
                           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
@@ -381,7 +381,7 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
                      <button
                         type="button"
                         disabled={isLoading}
-                        className="flex items-center justify-center gap-2 bg-transparent border border-white/10 hover:border-white/20 hover:bg-white/5 rounded-xl py-3 px-4 transition-all group disabled:opacity-50 opacity-50 cursor-not-allowed"
+                        className="flex items-center justify-center gap-2 bg-transparent border border-white/10 hover:border-white/20 hover:bg-white dark:bg-[#151521]/5 rounded-xl py-3 px-4 transition-all group disabled:opacity-50 opacity-50 cursor-not-allowed"
                         title="Coming Soon"
                      >
                         <svg className="h-4 w-4" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
@@ -421,10 +421,10 @@ export default function AuthInterface({ settings, onLoginSuccess }: AuthInterfac
                         type="button"
                         onClick={handleFirebaseGoogleLogin}
                         disabled={isLoading}
-                        className="w-full bg-white text-slate-900 hover:bg-slate-100 font-bold py-4 px-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg disabled:opacity-50"
+                        className="w-full bg-white dark:bg-[#151521] text-slate-900 dark:text-white hover:bg-slate-100 dark:bg-white/10 font-bold py-4 px-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg disabled:opacity-50"
                      >
                         {isLoading ? (
-                           <RefreshCw className="h-5 w-5 animate-spin text-slate-900" />
+                           <RefreshCw className="h-5 w-5 animate-spin text-slate-900 dark:text-white" />
                         ) : (
                            <>
                               <svg className="h-5 w-5" viewBox="0 0 24 24">

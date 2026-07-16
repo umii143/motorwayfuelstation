@@ -15,7 +15,7 @@ export function BusinessOutlookWidget({ forecast, isComputing, settings }: Busin
   const liquidGlass = "relative overflow-hidden backdrop-blur-[30px] saturate-[150%] bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/[0.08] shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_20px_80px_rgba(0,0,0,0.6)] rounded-[24px] transition-all duration-500";
 
   return (
-    <DeferredWidget delay={500} skeleton={<div className={`h-[300px] ${liquidGlass} animate-pulse bg-white/5`}></div>}>
+    <DeferredWidget delay={500} skeleton={<div className={`h-[300px] ${liquidGlass} animate-pulse bg-white dark:bg-[#151521]/5`}></div>}>
       <div className={`${liquidGlass} p-6 flex flex-col h-full`}>
         <div className="flex justify-between items-start mb-6">
           <div>
@@ -28,7 +28,7 @@ export function BusinessOutlookWidget({ forecast, isComputing, settings }: Busin
             <div className="flex flex-col items-end">
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Confidence</span>
               <div className="flex items-center gap-2">
-                <div className="w-24 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div className="w-24 h-1.5 bg-white dark:bg-[#151521]/10 rounded-full overflow-hidden">
                   <div 
                     className={`h-full rounded-full ${forecast.confidenceScore > 75 ? 'bg-emerald-500' : forecast.confidenceScore > 50 ? 'bg-orange-500' : 'bg-red-500'}`} 
                     style={{ width: `${forecast.confidenceScore}%` }} 
@@ -57,7 +57,7 @@ export function BusinessOutlookWidget({ forecast, isComputing, settings }: Busin
             
             {/* Projected Profit & Demand */}
             <div className="grid grid-cols-2 gap-4 shrink-0">
-              <div className="bg-white/[0.03] rounded-2xl p-4 border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+              <div className="bg-white dark:bg-[#151521]/[0.03] rounded-2xl p-4 border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Proj. Weekly Profit</div>
                 {forecast.projectedWeeklyProfit !== null ? (
                   <div className="text-lg font-black text-emerald-400">{formatCurrency(forecast.projectedWeeklyProfit, settings)}</div>
@@ -66,7 +66,7 @@ export function BusinessOutlookWidget({ forecast, isComputing, settings }: Busin
                 )}
               </div>
               
-              <div className="bg-white/[0.03] rounded-2xl p-4 border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+              <div className="bg-white dark:bg-[#151521]/[0.03] rounded-2xl p-4 border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Proj. 7-Day Demand</div>
                 {forecast.demandForecast ? (
                   <div className="text-lg font-black text-blue-400">{forecast.demandForecast.projectedNext7Days.toLocaleString(undefined, {maximumFractionDigits: 0})} L</div>
@@ -84,14 +84,14 @@ export function BusinessOutlookWidget({ forecast, isComputing, settings }: Busin
                 </div>
                 
                 {!forecast.seasonality.isAvailable ? (
-                  <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.05] text-center">
+                  <div className="p-4 rounded-xl bg-white dark:bg-[#151521]/[0.02] border border-white/[0.05] text-center">
                     <div className="text-xs font-bold text-slate-500">Insufficient Seasonal History</div>
                     <div className="text-[10px] font-medium text-slate-600 mt-1">Requires 12 months of data</div>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {/* Busiest Day */}
-                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+                    <div className="p-3 rounded-xl bg-white dark:bg-[#151521]/[0.02] border border-white/[0.05]">
                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Busiest Day</div>
                        <div className="text-sm font-black text-indigo-400">{forecast.seasonality.busiestDay}</div>
                        {forecast.seasonality.weeklyTrend[forecast.seasonality.busiestDay] && (
@@ -112,7 +112,7 @@ export function BusinessOutlookWidget({ forecast, isComputing, settings }: Busin
                          </div>
                       </div>
                     ) : (
-                       <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+                       <div className="p-3 rounded-xl bg-white dark:bg-[#151521]/[0.02] border border-white/[0.05]">
                          <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Month Trend</div>
                          <div className="text-sm font-black text-white">{forecast.seasonality.monthlySeasonStrength.status}</div>
                          <div className="text-[10px] font-bold text-slate-500 mt-1">
@@ -122,7 +122,7 @@ export function BusinessOutlookWidget({ forecast, isComputing, settings }: Busin
                     )}
                     
                     {/* Day/Night Shift Trend */}
-                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.05] sm:col-span-2 flex justify-between items-center">
+                    <div className="p-3 rounded-xl bg-white dark:bg-[#151521]/[0.02] border border-white/[0.05] sm:col-span-2 flex justify-between items-center">
                        <div>
                          <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Shift Pattern Shift</div>
                          <div className="text-xs font-bold text-slate-300">Day vs Night comparison</div>
@@ -153,7 +153,7 @@ export function BusinessOutlookWidget({ forecast, isComputing, settings }: Busin
                     if (tf.status === 'Healthy') return null; // Only show risks
                     
                     return (
-                      <div key={tf.tankId} className="flex justify-between items-center p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+                      <div key={tf.tankId} className="flex justify-between items-center p-3 rounded-xl bg-white dark:bg-[#151521]/[0.02] border border-white/[0.05]">
                         <div className="flex items-center gap-3">
                           <AlertTriangle className={`w-4 h-4 ${tf.status === 'Critical' ? 'text-red-500' : 'text-orange-500'}`} />
                           <div>

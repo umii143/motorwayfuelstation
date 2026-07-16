@@ -92,7 +92,7 @@ export default function DiscountsHub({
 
   return (
     <div className="space-y-6 pb-20">
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm flex flex-col md:flex-row gap-6 md:items-center relative overflow-hidden">
+      <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-6 md:p-8 shadow-sm flex flex-col md:flex-row gap-6 md:items-center relative overflow-hidden">
         <div className="absolute -top-10 -right-10 p-8 opacity-5">
           <Tag className="w-64 h-64 text-indigo-600" />
         </div>
@@ -101,7 +101,7 @@ export default function DiscountsHub({
           <Tag className="h-8 w-8 text-indigo-600" />
         </div>
         <div className="z-10">
-          <h1 className="font-sans text-2xl md:text-3xl font-black tracking-tight text-slate-900 mb-2">
+          <h1 className="font-sans text-2xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white mb-2">
             {t('Central Discounts Hub', 'مرکزی ڈسکاؤنٹ ہب')}
           </h1>
           <p className="font-sans text-sm text-slate-500 max-w-2xl leading-relaxed">
@@ -114,7 +114,7 @@ export default function DiscountsHub({
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="premium-card border border-slate-200">
+        <div className="premium-card border border-slate-200 dark:border-white/10">
           <span className="text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider block">
             {t('Total Discounts Value', 'کل رعیاتی ڈسکاؤنٹ')}
           </span>
@@ -125,18 +125,18 @@ export default function DiscountsHub({
             {t('In current filter range', 'حالیہ فلٹر رینج')}
           </span>
         </div>
-        <div className="premium-card border border-slate-200">
+        <div className="premium-card border border-slate-200 dark:border-white/10">
           <span className="text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider block">
             {t('Discounts Issued', 'مجموعی جاری کردہ ڈسکاؤنٹ')}
           </span>
-          <div className="font-mono text-2xl font-black text-slate-900">
+          <div className="font-mono text-2xl font-black text-slate-900 dark:text-white">
             {filteredDiscounts.length}
           </div>
           <span className="text-slate-400 text-[10px] mt-1 block">
             {t('Total transactions', 'مجموعی کارروائیاں')}
           </span>
         </div>
-        <div className="premium-card border border-slate-200">
+        <div className="premium-card border border-slate-200 dark:border-white/10">
           <span className="text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider block">
             {t('Avg. Discount', 'اوسط رعایت')}
           </span>
@@ -147,7 +147,7 @@ export default function DiscountsHub({
             Per transaction mean
           </span>
         </div>
-        <div className="premium-card border border-slate-200 relative overflow-hidden">
+        <div className="premium-card border border-slate-200 dark:border-white/10 relative overflow-hidden">
           <LineChart className="absolute -right-4 -bottom-4 w-20 h-20 text-slate-50 opacity-50" />
           <span className="text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider block z-10 relative">
             Top Category
@@ -164,7 +164,7 @@ export default function DiscountsHub({
       </div>
 
       <div className="premium-card border overflow-hidden">
-        <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="p-4 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5/50 flex flex-col md:flex-row gap-4 items-center justify-between">
           <div className="flex gap-2 w-full md:w-auto">
             <div className="relative flex-1 md:w-64">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
@@ -173,13 +173,13 @@ export default function DiscountsHub({
                 placeholder="Search customers, reasons..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:border-indigo-500 outline-none"
+                className="w-full pl-9 pr-4 py-2 bg-white dark:bg-[#151521] border border-slate-300 rounded-lg text-sm focus:border-indigo-500 outline-none"
               />
             </div>
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm outline-none"
+              className="px-3 py-2 bg-white dark:bg-[#151521] border border-slate-300 rounded-lg text-sm outline-none"
             >
               <option value="all">All Types</option>
               <option value="Percentage">Percentage</option>
@@ -189,7 +189,7 @@ export default function DiscountsHub({
             </select>
           </div>
 
-          <button className="flex items-center gap-2 px-4 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] border border-slate-300 rounded-lg text-sm font-bold text-slate-600 bg-white hover:bg-slate-50 w-full md:w-auto justify-center cursor-pointer">
+          <button className="flex items-center gap-2 px-4 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] border border-slate-300 rounded-lg text-sm font-bold text-slate-600 bg-white dark:bg-[#151521] hover:bg-slate-50 dark:bg-white/5 w-full md:w-auto justify-center cursor-pointer">
             <Download className="w-4 h-4" /> Export CSV
           </button>
         </div>
@@ -222,10 +222,10 @@ export default function DiscountsHub({
                 filteredDiscounts.map((d, i) => (
                   <tr
                     key={d.id}
-                    className="hover:bg-slate-50 transition-colors"
+                    className="hover:bg-slate-50 dark:bg-white/5 transition-colors"
                   >
                     <td>
-                      <div className="font-mono text-slate-900 font-medium">
+                      <div className="font-mono text-slate-900 dark:text-white font-medium">
                         {new Date(d.timestamp).toLocaleDateString()}
                       </div>
                       <div className="font-mono text-[10px] text-slate-400">
@@ -233,7 +233,7 @@ export default function DiscountsHub({
                       </div>
                     </td>
                     <td>
-                      <div className="font-bold text-slate-800">
+                      <div className="font-bold text-slate-800 dark:text-slate-200">
                         {d.customerName}
                       </div>
                       <div className="text-[10px] text-slate-500 uppercase">

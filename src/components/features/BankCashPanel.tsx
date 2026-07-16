@@ -196,7 +196,7 @@ export default function BankCashPanel({
       <div className="flex flex-row flex-wrap items-start items-center justify-between gap-4 border-b border-theme-main pb-4">
         <div>
           <span className="font-mono text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-0.5">OPERATIONS</span>
-          <h2 className="font-sans text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+          <h2 className="font-sans text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             <Landmark className="h-6 w-6 text-orange-600" />
             <span>{t('Commercial Bank Accounts', 'بینکنگ کیش اور کرنٹ اکاؤنٹس کونسل')}</span>
           </h2>
@@ -207,7 +207,7 @@ export default function BankCashPanel({
 
         {/* TIME FILTER & TRIGGER ROW */}
         <div className="flex flex-wrap items-center gap-2 lg:self-center">
-          <div className="flex bg-slate-100 rounded-lg p-1 border border-theme-main shadow-sm shrink-0">
+          <div className="flex bg-slate-100 dark:bg-white/10 rounded-lg p-1 border border-theme-main shadow-sm shrink-0">
             {(['all', 'weekly', 'monthly', 'yearly'] as const).map((filter) => (
               <button
                 key={filter}
@@ -215,7 +215,7 @@ export default function BankCashPanel({
                 className={`px-3 py-1.5 font-sans text-[11px] font-bold uppercase tracking-wider rounded-md transition-all cursor-pointer ${
                   timeFilter === filter
                     ? 'bg-orange-600 text-white shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:bg-white/5'
                 }`}
               >
                 {filter === 'all' && t('All-Time', 'کل وقت')}
@@ -237,100 +237,100 @@ export default function BankCashPanel({
       </div>
 
       {/* DYNAMIC KPI CARDS SECTION */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* AMBER CARD - TOTAL IN BANKS */}
         <div 
           onClick={() => setIsDrillDownOpen(true)}
-          className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden cursor-pointer hover:bg-amber-100/50 hover:shadow-md transition-all group"
+          className="rounded-2xl border border-amber-200 dark:border-amber-500/20 bg-amber-50/60 dark:bg-amber-500/10 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden cursor-pointer hover:bg-amber-100/50 dark:hover:bg-amber-500/15 hover:shadow-md transition-all group"
         >
           <div className="flex items-start justify-between">
             <div>
-              <span className="font-mono text-[9px] font-black text-amber-800 uppercase tracking-widest block mb-1 group-hover:text-amber-900 transition-colors">TOTAL BANK CASH</span>
-              <h3 className="font-sans text-2xl font-black text-amber-900 mt-1 truncate animate-pulse">
+              <span className="font-mono text-[9px] font-black text-amber-800 dark:text-amber-450 uppercase tracking-widest block mb-1 group-hover:text-amber-900 dark:group-hover:text-amber-300 transition-colors">TOTAL BANK CASH</span>
+              <h3 className="font-sans text-2xl font-black text-amber-900 dark:text-amber-200 mt-1 truncate">
                 {formatCurrency(kpiStats.totalBalance, settings)}
               </h3>
             </div>
-            <div className="rounded-xl bg-amber-100 p-2 text-amber-700 animate-bounce">
+            <div className="rounded-xl bg-amber-100 dark:bg-amber-500/20 p-2 text-amber-700 dark:text-amber-400">
               <Landmark className="h-5 w-5" />
             </div>
           </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-amber-700 font-bold">
+          <div className="mt-3 flex items-center gap-1 text-[10px] text-amber-700 dark:text-amber-400/60 font-bold">
             <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
             <span>Sum of active registers</span>
           </div>
         </div>
 
         {/* GREEN CARD - DISBURSEMENTS OR SHIFTS DEPOSITS */}
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
+        <div className="rounded-2xl border border-emerald-200 dark:border-emerald-500/20 bg-emerald-50/60 dark:bg-emerald-500/10 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
           <div className="flex items-start justify-between">
             <div>
-              <span className="font-mono text-[9px] font-black text-emerald-800 uppercase tracking-widest block mb-1">PERIOD SHIFT DEPOSITS</span>
-              <h3 className="font-sans text-2xl font-black text-emerald-900 mt-1">
+              <span className="font-mono text-[9px] font-black text-emerald-800 dark:text-emerald-450 uppercase tracking-widest block mb-1">PERIOD SHIFT DEPOSITS</span>
+              <h3 className="font-sans text-2xl font-black text-emerald-900 dark:text-emerald-200 mt-1">
                 {formatCurrency(kpiStats.totalShiftDepositsSum, settings)}
               </h3>
             </div>
-            <div className="rounded-xl bg-emerald-100 p-2 text-emerald-700">
+            <div className="rounded-xl bg-emerald-100 dark:bg-emerald-500/20 p-2 text-emerald-700 dark:text-emerald-400">
               <ArrowUpRight className="h-5 w-5" />
             </div>
           </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-emerald-700 font-bold">
+          <div className="mt-3 flex items-center gap-1 text-[10px] text-emerald-700 dark:text-emerald-400/60 font-bold">
             <span>Direct operator submissions</span>
           </div>
         </div>
 
         {/* CRIMSON CARD - SHIFT DEPOSIT ENTRIES */}
-        <div className="rounded-2xl border border-rose-200 bg-rose-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
+        <div className="rounded-2xl border border-rose-200 dark:border-rose-500/20 bg-rose-50/60 dark:bg-rose-500/10 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
           <div className="flex items-start justify-between">
             <div>
-              <span className="font-mono text-[9px] font-black text-rose-800 uppercase tracking-widest block mb-1">DEPOSIT ENTRIES</span>
-              <h3 className="font-sans text-2xl font-black text-rose-900 mt-1">
+              <span className="font-mono text-[9px] font-black text-rose-800 dark:text-rose-455 uppercase tracking-widest block mb-1">DEPOSIT ENTRIES</span>
+              <h3 className="font-sans text-2xl font-black text-rose-900 dark:text-rose-200 mt-1">
                 {kpiStats.shiftDepositsCount}
               </h3>
             </div>
-            <div className="rounded-xl bg-rose-100 p-2 text-rose-700">
+            <div className="rounded-xl bg-rose-100 dark:bg-rose-500/20 p-2 text-rose-700 dark:text-rose-400">
               <Clock className="h-5 w-5" />
             </div>
           </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-rose-700 font-bold">
+          <div className="mt-3 flex items-center gap-1 text-[10px] text-rose-700 dark:text-rose-400/60 font-bold">
             <span>Recorded shift transactions</span>
           </div>
         </div>
 
         {/* BLUE CARD - ACTIVE ACCOUNTS */}
-        <div className="rounded-2xl border border-blue-200 bg-blue-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
+        <div className="rounded-2xl border border-blue-200 dark:border-blue-500/20 bg-blue-50/60 dark:bg-blue-500/10 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
           <div className="flex items-start justify-between">
             <div>
-              <span className="font-mono text-[9px] font-black text-blue-800 uppercase tracking-widest block mb-1">ACTIVE ACCOUNTS</span>
-              <h3 className="font-sans text-2xl font-black text-blue-900 mt-1">
+              <span className="font-mono text-[9px] font-black text-blue-800 dark:text-blue-450 uppercase tracking-widest block mb-1">ACTIVE ACCOUNTS</span>
+              <h3 className="font-sans text-2xl font-black text-blue-900 dark:text-blue-200 mt-1">
                 {kpiStats.activeAccountsCount}
               </h3>
             </div>
-            <div className="rounded-xl bg-blue-100 p-2 text-blue-700">
+            <div className="rounded-xl bg-blue-100 dark:bg-blue-500/20 p-2 text-blue-700 dark:text-blue-400">
               <Briefcase className="h-5 w-5" />
             </div>
           </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-blue-700 font-bold text-ellipsis overflow-hidden truncate">
+          <div className="mt-3 flex items-center gap-1 text-[10px] text-blue-700 dark:text-blue-400/60 font-bold text-ellipsis overflow-hidden truncate">
             <span>Commercial active banks</span>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* LEFT COLUMN (2/3): BANKS DIRECTORY & MANUAL ADJUSTMENTS */}
         <div className="lg:col-span-2 space-y-6">
           <div className="rounded-xl border border-theme-main bg-theme-card p-5 shadow-xs space-y-4">
-            <div className="flex flex-row items-center sm:justify-between gap-3">
-              <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <h3 className="font-sans text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
                 {t('Registered Banking Institutions Directory', 'بینک اکاؤنٹ معلوماتی فہرست')}
               </h3>
-              <div className="relative">
+              <div className="relative w-full sm:w-auto">
                 <Search className="absolute top-2.5 left-2.5 h-3.5 w-3.5 text-slate-400" />
                 <input
                   type="text"
                   placeholder={t('Search bank name...', 'تلاش بینک...')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="rounded-lg border border-slate-250 bg-theme-card pl-8 pr-3 py-1.5 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
+                  className="w-full sm:w-auto rounded-lg border border-slate-250 dark:border-slate-800 bg-theme-card pl-8 pr-3 py-1.5 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
                 />
               </div>
             </div>
@@ -352,7 +352,7 @@ export default function BankCashPanel({
                   </thead>
                   <tbody>
                     {filteredBanks.map((b) => (
-                      <tr key={b.id} className="hover:bg-slate-50/50">
+                      <tr key={b.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 dark:bg-white/5">
                         <td className="px-3">{b.name}</td>
                         <td className="px-3 font-mono text-[11px]">{b.accountNo}</td>
                         <td className="px-3 text-right font-mono font-extrabold text-[12px]">
@@ -361,7 +361,7 @@ export default function BankCashPanel({
                         <td className="px-3 text-right">
                           <button
                             onClick={() => setAdjustBankId(b.id)}
-                            className="bg-slate-900 text-white hover:bg-slate-850 text-[10px] font-bold px-3 py-1 rounded-md transition-colors cursor-pointer"
+                            className="bg-slate-900 dark:bg-slate-800 text-white hover:bg-slate-850 dark:hover:bg-slate-700 text-[10px] font-bold px-3 py-1 rounded-md transition-colors cursor-pointer"
                           >
                             {t('Post Adjustment', 'بیلنس تبدیل کریں')}
                           </button>
@@ -376,7 +376,7 @@ export default function BankCashPanel({
 
           {/* HISTORICAL SHIFTS REFRESH BAGS DIRECTORY */}
           <div className="rounded-xl border border-theme-main bg-theme-card p-5 shadow-xs space-y-4">
-            <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
+            <h3 className="font-sans text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b border-slate-100 dark:border-white/5 pb-2">
               {t('Shift Transactions Bank Deposits Ledger', 'شفٹ وار بینک ڈیپازٹس کا تاریخی کھاتہ')}
             </h3>
 
@@ -398,10 +398,10 @@ export default function BankCashPanel({
                   </thead>
                   <tbody>
                     {compiledShiftDeposits.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50/50">
+                      <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 dark:bg-white/5">
                         <td className="px-3 text-slate-550 font-mono text-[11px]">{item.date}</td>
                         <td className="px-3">
-                          <div className="font-semibold text-slate-800">{item.shiftId}</div>
+                          <div className="font-semibold text-slate-800 dark:text-slate-200">{item.shiftId}</div>
                           <span className="text-[10px] text-slate-400 block mt-0.5">{item.operator.toUpperCase()}</span>
                         </td>
                         <td className="px-3 text-slate-700 font-semibold">{item.bankName}</td>
@@ -434,17 +434,17 @@ export default function BankCashPanel({
           </div>
 
           <div className="rounded-xl border border-theme-main bg-theme-card p-5 shadow-xs space-y-4">
-            <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block border-b border-slate-100 pb-1.5">
+            <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block border-b border-slate-100 dark:border-white/5 pb-1.5">
               {t('Station Banks Directory Summary', 'بینکوں کی مجموعی صورتحال')}
             </span>
             <div className="space-y-2">
               {banks.map((b) => (
                 <div key={b.id} className="p-3 bg-theme-bg rounded-lg flex items-center justify-between">
                   <div>
-                    <strong className="text-slate-800 text-xs block truncate max-w-full max-w-[150px]">{b.name}</strong>
+                    <strong className="text-slate-800 dark:text-slate-200 text-xs block truncate max-w-[150px]">{b.name}</strong>
                     <span className="text-[10px] text-slate-400 font-mono mt-0.5">{b.accountNo}</span>
                   </div>
-                  <strong className="font-mono text-xs text-slate-700">{formatCurrency(b.balance, settings)}</strong>
+                  <strong className="font-mono text-xs text-slate-750 dark:text-slate-200">{formatCurrency(b.balance, settings)}</strong>
                 </div>
               ))}
             </div>
@@ -462,8 +462,8 @@ export default function BankCashPanel({
               exit={{ scale: 0.95, opacity: 0 }}
               className="w-full max-w-sm rounded-xl border border-theme-main bg-theme-card p-6 shadow-xl space-y-4"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-2">
-                <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-2">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3 mb-2">
+                <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <PlusCircle className="h-5 w-5 text-orange-600" />
                   <span>{t('Register New Commercial Bank Account', 'نیا بینک اکاؤنٹ اکاؤنٹ کا اندراج')}</span>
                 </h3>
@@ -539,8 +539,8 @@ export default function BankCashPanel({
               exit={{ scale: 0.95, opacity: 0 }}
               className="w-full max-w-sm rounded-xl border border-theme-main bg-theme-card p-6 shadow-xl space-y-4"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-1">
-                <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-1.5">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3 mb-1">
+                <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                   <Landmark className="h-5 w-5 text-orange-6o0" />
                   <span>{t('Post Manual Bank Adjustment', 'دستی متبادل بیلنس اپ ڈیٹ')}</span>
                 </h3>

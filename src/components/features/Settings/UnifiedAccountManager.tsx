@@ -221,11 +221,11 @@ export default function UnifiedAccountManager({
   return (
     <div className="space-y-6">
       {/* SECTION TABS HEADER */}
-      <div className="flex bg-slate-100 p-1.5 rounded-lg border border-slate-200 gap-1.5 select-none self-start">
+      <div className="flex bg-slate-100 dark:bg-white/10 p-1.5 rounded-lg border border-slate-200 dark:border-white/10 gap-1.5 select-none self-start">
         <button
           onClick={() => setSubTab('banks')}
           className={`flex-1 py-1.5 px-3 rounded-md font-sans text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer ${
-            subTab === 'banks' ? 'bg-white text-slate-850 shadow-2xs' : 'text-slate-500 hover:text-slate-800'
+            subTab === 'banks' ? 'bg-white dark:bg-[#151521] text-slate-850 shadow-2xs' : 'text-slate-500 hover:text-slate-800 dark:text-slate-200'
           }`}
         >
           {t('🏦 Traditional Bank Ledgers', '🏦 بینک اکاؤنٹس')}
@@ -234,7 +234,7 @@ export default function UnifiedAccountManager({
         <button
           onClick={() => setSubTab('digital')}
           className={`flex-1 py-1.5 px-3 rounded-md font-sans text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer ${
-            subTab === 'digital' ? 'bg-white text-slate-850 shadow-2xs' : 'text-slate-500 hover:text-slate-800'
+            subTab === 'digital' ? 'bg-white dark:bg-[#151521] text-slate-850 shadow-2xs' : 'text-slate-500 hover:text-slate-800 dark:text-slate-200'
           }`}
         >
           {t('📲 Mobile Merchant Wallets', '📲 موبائل والٹس')}
@@ -243,7 +243,7 @@ export default function UnifiedAccountManager({
         <button
           onClick={() => setSubTab('products')}
           className={`flex-1 py-1.5 px-3 rounded-md font-sans text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer ${
-            subTab === 'products' ? 'bg-white text-slate-850 shadow-2xs' : 'text-slate-500 hover:text-slate-800'
+            subTab === 'products' ? 'bg-white dark:bg-[#151521] text-slate-850 shadow-2xs' : 'text-slate-500 hover:text-slate-800 dark:text-slate-200'
           }`}
         >
           {t('📦 Station Physical Inventory Catalog', '📦 فیول و لیوبریکنٹ آئٹمز')}
@@ -270,7 +270,7 @@ export default function UnifiedAccountManager({
             /* SEPARATED SAVING AND UPDATING ACCOUNT SECTION */
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl border border-emerald-250 bg-emerald-50/5 animate-fade-in">
               <form onSubmit={handleSaveBank} className="space-y-3 font-sans text-xs text-slate-650">
-                <h5 className="font-bold text-slate-800 uppercase tracking-tight text-[11px] border-b border-dashed border-slate-100 pb-1 flex items-center gap-1">
+                <h5 className="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-tight text-[11px] border-b border-dashed border-slate-100 dark:border-white/5 pb-1 flex items-center gap-1">
                   <Database className="h-3.5 w-3.5 text-emerald-600" />
                   <span>{editingBank ? t('UPDATE SELECTED REGISTER', 'بینک اکاؤنٹ تبدیل کریں (Update)') : t('SAVE NEW BANK LEDGER', 'نیا بینک اکاؤنٹ محفوظ کریں (SaveNew)')}</span>
                 </h5>
@@ -283,7 +283,7 @@ export default function UnifiedAccountManager({
                     placeholder="e.g. Allied Bank Limited (ABL)"
                     value={bankForm.bankName}
                     onChange={(e) => setBankForm({ ...bankForm, bankName: e.target.value })}
-                    className="w-full rounded border border-slate-200 bg-white p-2 text-xs"
+                    className="w-full rounded border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-2 text-xs"
                   />
                 </div>
 
@@ -295,7 +295,7 @@ export default function UnifiedAccountManager({
                     placeholder="e.g. PK83 ABL 1029 3847 2831"
                     value={bankForm.accountNo}
                     onChange={(e) => setBankForm({ ...bankForm, accountNo: e.target.value })}
-                    className="w-full rounded border border-slate-200 bg-white p-2 font-mono text-xs"
+                    className="w-full rounded border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-2 font-mono text-xs"
                   />
                 </div>
 
@@ -307,7 +307,7 @@ export default function UnifiedAccountManager({
                     placeholder="e.g. Sajid Mahmood Petroleum Traders"
                     value={bankForm.accountTitle}
                     onChange={(e) => setBankForm({ ...bankForm, accountTitle: e.target.value })}
-                    className="w-full rounded border border-slate-200 bg-white p-2 text-xs"
+                    className="w-full rounded border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-2 text-xs"
                   />
                 </div>
 
@@ -318,12 +318,12 @@ export default function UnifiedAccountManager({
                     required
                     value={bankForm.balance}
                     onChange={(e) => setBankForm({ ...bankForm, balance: Number(e.target.value) })}
-                    className="w-full rounded border border-slate-200 bg-white p-2 font-mono text-xs"
+                    className="w-full rounded border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-2 font-mono text-xs"
                   />
                 </div>
 
                 <div className="flex gap-2 justify-end pt-2 border-t mt-3">
-                  <button type="button" onClick={() => setShowBankForm(false)} className="px-3 py-1 bg-slate-100 text-slate-600 rounded text-xs font-bold uppercase">{t('Cancel', 'کینسل')}</button>
+                  <button type="button" onClick={() => setShowBankForm(false)} className="px-3 py-1 bg-slate-100 dark:bg-white/10 text-slate-600 rounded text-xs font-bold uppercase">{t('Cancel', 'کینسل')}</button>
                   <button type="submit" className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-extrabold uppercase shadow-2xs">{editingBank ? t('Apply Changes', 'تبدیلی لاگو کریں') : t('Save Parameters', 'محفوظ کریں')}</button>
                 </div>
               </form>
@@ -358,7 +358,7 @@ export default function UnifiedAccountManager({
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {normalBanks.length === 0 ? (
-                <div className="col-span-2 text-center py-8 text-slate-400 text-xs border border-dashed rounded-xl bg-white">{t('No registered traditional bank accounts yet.', 'کوئی عمومی بینک اکاؤنٹ رجسٹرڈ نہیں ہے۔')}</div>
+                <div className="col-span-2 text-center py-8 text-slate-400 text-xs border border-dashed rounded-xl bg-white dark:bg-[#151521]">{t('No registered traditional bank accounts yet.', 'کوئی عمومی بینک اکاؤنٹ رجسٹرڈ نہیں ہے۔')}</div>
               ) : (
                 normalBanks.map(b => {
                   const [bankName, ...titleParts] = b.name.split(' | ');
@@ -366,14 +366,14 @@ export default function UnifiedAccountManager({
                   const titleVal = titleParts.join(' | ') || 'Business Account';
 
                   return (
-                    <div key={b.id} className="rounded-xl border border-slate-205 bg-white p-4 shadow-2xs hover:shadow-xs flex justify-between items-center transition-shadow">
+                    <div key={b.id} className="rounded-xl border border-slate-205 bg-white dark:bg-[#151521] p-4 shadow-2xs hover:shadow-xs flex justify-between items-center transition-shadow">
                       <div>
                         <div className="text-[10px] bg-slate-150 text-slate-700 px-2.5 py-0.5 inline-block rounded-full font-mono font-bold uppercase">{bankNameVal}</div>
-                        <h4 className="font-sans font-bold text-slate-800 text-xs mt-1.5 uppercase leading-none">{titleVal}</h4>
+                        <h4 className="font-sans font-bold text-slate-800 dark:text-slate-200 text-xs mt-1.5 uppercase leading-none">{titleVal}</h4>
                         <div className="font-mono text-[10px] text-slate-400 mt-2">{b.accountNo}</div>
                       </div>
                       <div className="text-right flex flex-col justify-between h-20 items-end">
-                        <strong className="font-mono text-xs text-slate-900 block">Rs. {b.balance?.toLocaleString()}</strong>
+                        <strong className="font-mono text-xs text-slate-900 dark:text-white block">Rs. {b.balance?.toLocaleString()}</strong>
                         <div className="flex gap-2 select-none">
                           <button onClick={() => handleOpenEditBank(b)} className="text-[11px] font-bold text-orange-655 text-orange-600 hover:text-orange-800 inline-flex items-center gap-0.5 cursor-pointer">
                             <Edit className="h-3 w-3" />
@@ -414,7 +414,7 @@ export default function UnifiedAccountManager({
             /* SEPARATED SAVING AND UPDATING MOBILE SECTION */
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl border border-violet-250 bg-violet-50/5 animate-fade-in">
               <form onSubmit={handleSaveWallet} className="space-y-3 font-sans text-xs text-slate-650">
-                <h5 className="font-bold text-slate-800 uppercase tracking-tight text-[11px] border-b border-dashed border-slate-100 pb-1 flex items-center gap-1">
+                <h5 className="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-tight text-[11px] border-b border-dashed border-slate-100 dark:border-white/5 pb-1 flex items-center gap-1">
                   <Wallet className="h-3.5 w-3.5 text-violet-600" />
                   <span>{editingWalletId ? t('UPDATE MOBILE GATEWAY', 'موبائل والٹ تبدیل کریں (Update)') : t('SAVE NEW DIGITAL WALLET', 'نیا موبائل والٹ رجسٹر کریں (SaveNew)')}</span>
                 </h5>
@@ -424,7 +424,7 @@ export default function UnifiedAccountManager({
                   <select
                     value={walletForm.provider}
                     onChange={(e) => setWalletForm({ ...walletForm, provider: e.target.value })}
-                    className="w-full rounded border border-slate-200 bg-white p-2 text-xs"
+                    className="w-full rounded border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-2 text-xs"
                   >
                     <option value="EasyPaisa Merchant Wallet">EasyPaisa Merchant</option>
                     <option value="JazzCash Retail General">JazzCash General</option>
@@ -441,7 +441,7 @@ export default function UnifiedAccountManager({
                     placeholder="e.g. Till No: 102938 / 03001234567"
                     value={walletForm.tillNumber}
                     onChange={(e) => setWalletForm({ ...walletForm, tillNumber: e.target.value })}
-                    className="w-full rounded border border-slate-200 bg-white p-2 font-mono text-xs"
+                    className="w-full rounded border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-2 font-mono text-xs"
                   />
                 </div>
 
@@ -453,7 +453,7 @@ export default function UnifiedAccountManager({
                     placeholder="e.g. SAJID PETRO PETROLEUM SERVICE"
                     value={walletForm.merchantTitle}
                     onChange={(e) => setWalletForm({ ...walletForm, merchantTitle: e.target.value })}
-                    className="w-full rounded border border-slate-200 bg-white p-2 text-xs"
+                    className="w-full rounded border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-2 text-xs"
                   />
                 </div>
 
@@ -464,18 +464,18 @@ export default function UnifiedAccountManager({
                     required
                     value={walletForm.balance}
                     onChange={(e) => setWalletForm({ ...walletForm, balance: Number(e.target.value) })}
-                    className="w-full rounded border border-slate-200 bg-white p-2 font-mono text-xs"
+                    className="w-full rounded border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-2 font-mono text-xs"
                   />
                 </div>
 
                 <div className="flex gap-2 justify-end pt-2 border-t mt-3">
-                  <button type="button" onClick={() => setShowWalletForm(false)} className="px-3 py-1 bg-slate-100 text-slate-600 rounded text-xs font-bold uppercase">{t('Cancel', 'کینسل')}</button>
+                  <button type="button" onClick={() => setShowWalletForm(false)} className="px-3 py-1 bg-slate-100 dark:bg-white/10 text-slate-600 rounded text-xs font-bold uppercase">{t('Cancel', 'کینسل')}</button>
                   <button type="submit" className="px-4 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded text-xs font-extrabold uppercase shadow-2xs">{editingWalletId ? t('Apply Changes', 'تغیر لاگو کریں') : t('Save Parameters', 'محفوظ کریں')}</button>
                 </div>
               </form>
 
               {/* IN-LINE MOBILE OVERLAY RECEIPT MOCKUP PREVIEW */}
-              <div className="flex flex-col items-center justify-center p-4 border border-slate-200 bg-slate-900 rounded-2xl relative shadow-lg min-h-[220px] select-none text-[11px] font-mono text-slate-300 w-64 mx-auto self-center">
+              <div className="flex flex-col items-center justify-center p-4 border border-slate-200 dark:border-white/10 bg-slate-900 rounded-2xl relative shadow-lg min-h-[220px] select-none text-[11px] font-mono text-slate-300 w-64 mx-auto self-center">
                 <div className="absolute top-1 right-2 uppercase font-sans text-[7px] text-emerald-500 font-bold tracking-widest flex items-center gap-1">
                   <span className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-pulse" />
                   <span>{t('GPRS Connected', 'آن لائن')}</span>
@@ -509,7 +509,7 @@ export default function UnifiedAccountManager({
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {digitalWallets.length === 0 ? (
-                <div className="col-span-2 text-center py-8 text-slate-400 text-xs border border-dashed rounded-xl bg-white">{t('No mobile wallets registered in system.', 'کوئی موبائل یا ڈیجیٹل تجارتی والٹ درج نہیں ہے۔')}</div>
+                <div className="col-span-2 text-center py-8 text-slate-400 text-xs border border-dashed rounded-xl bg-white dark:bg-[#151521]">{t('No mobile wallets registered in system.', 'کوئی موبائل یا ڈیجیٹل تجارتی والٹ درج نہیں ہے۔')}</div>
               ) : (
                 digitalWallets.map(w => {
                   const [provider, ...titleParts] = w.name.split(' | ');
@@ -517,14 +517,14 @@ export default function UnifiedAccountManager({
                   const titleVal = titleParts.join(' | ') || 'Merchant Wallet';
 
                   return (
-                    <div key={w.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs hover:shadow-xs flex justify-between items-center border-l-4 border-l-violet-605 border-l-violet-600 transition-shadow">
+                    <div key={w.id} className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-2xs hover:shadow-xs flex justify-between items-center border-l-4 border-l-violet-605 border-l-violet-600 transition-shadow">
                       <div>
                         <div className="text-[9px] bg-violet-100 text-violet-850 px-2 py-0.5 inline-block rounded font-bold uppercase font-mono">{provVal}</div>
-                        <h4 className="font-sans font-bold text-slate-800 text-xs mt-1.5 uppercase leading-none">{titleVal}</h4>
+                        <h4 className="font-sans font-bold text-slate-800 dark:text-slate-200 text-xs mt-1.5 uppercase leading-none">{titleVal}</h4>
                         <div className="font-mono text-[10px] text-slate-400 mt-1.5">{t('Till Number:', 'ٹِل نمبر / سم:')} {w.accountNo}</div>
                       </div>
                       <div className="text-right flex flex-col justify-between h-20 items-end">
-                        <strong className="font-mono text-xs text-slate-900 block font-black">Rs. {w.balance?.toLocaleString()}</strong>
+                        <strong className="font-mono text-xs text-slate-900 dark:text-white block font-black">Rs. {w.balance?.toLocaleString()}</strong>
                         <div className="flex gap-2 select-none">
                           <button onClick={() => handleOpenEditWallet(w)} className="text-[11px] font-bold text-orange-655 text-orange-600 hover:text-orange-850 inline-flex items-center gap-0.5 cursor-pointer">
                             <Edit className="h-3 w-3" />
@@ -561,7 +561,7 @@ export default function UnifiedAccountManager({
             /* SEPARATED SAVING AND UPDATING PRODUCT SECTION */
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl border border-orange-250 bg-orange-50/5 animate-fade-in">
               <form onSubmit={handleSaveProduct} className="space-y-3 font-sans text-xs text-slate-655">
-                <h5 className="font-bold text-slate-800 uppercase tracking-tight text-[11px] border-b border-dashed border-slate-100 pb-1 flex items-center gap-1">
+                <h5 className="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-tight text-[11px] border-b border-dashed border-slate-100 dark:border-white/5 pb-1 flex items-center gap-1">
                   <Database className="h-3.5 w-3.5 text-orange-600" />
                   <span>{editingProduct ? t('UPDATE INVENTORY SKU', 'کیٹلاگ کارڈ ترمیم کریں (Update)') : t('REGISTER NEW PRODUCT BRAND', 'کیٹلاگ مصنوع درج کریں (SaveNew)')}</span>
                 </h5>
@@ -575,7 +575,7 @@ export default function UnifiedAccountManager({
                       placeholder="e.g. High Octane (HOBC)"
                       value={prodForm.name}
                       onChange={(e) => setProdForm({ ...prodForm, name: e.target.value })}
-                      className="w-full rounded border border-slate-200 bg-white p-2 text-xs"
+                      className="w-full rounded border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-2 text-xs"
                     />
                   </div>
 
@@ -587,7 +587,7 @@ export default function UnifiedAccountManager({
                       placeholder="High Octane ہائی اوکٹین"
                       value={prodForm.urduName}
                       onChange={(e) => setProdForm({ ...prodForm, urduName: e.target.value })}
-                      className="w-full rounded border border-slate-205 bg-white p-2 text-xs"
+                      className="w-full rounded border border-slate-205 bg-white dark:bg-[#151521] p-2 text-xs"
                     />
                   </div>
                 </div>
@@ -599,7 +599,7 @@ export default function UnifiedAccountManager({
                     <select
                       value={prodForm.type}
                       onChange={(e) => setProdForm({ ...prodForm, type: e.target.value as any })}
-                      className="w-full rounded border border-slate-200 bg-white p-2 text-xs font-sans"
+                      className="w-full rounded border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-2 text-xs font-sans"
                     >
                       <option value="fuel">{t('Fuel (Petrol/Diesel/CNG)', 'پٹرول ڈیزل مائع')}</option>
                       <option value="lube">{t('Lubricants / Mobile Oils', 'لیوبریکنٹس آئل')}</option>
@@ -615,7 +615,7 @@ export default function UnifiedAccountManager({
                       placeholder="e.g. Litre, Box, Can, Kg"
                       value={prodForm.unit}
                       onChange={(e) => setProdForm({ ...prodForm, unit: e.target.value })}
-                      className="w-full rounded border border-slate-200 bg-white p-2 text-xs"
+                      className="w-full rounded border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-2 text-xs"
                     />
                   </div>
                 </div>
@@ -628,7 +628,7 @@ export default function UnifiedAccountManager({
                       required
                       value={prodForm.rate}
                       onChange={(e) => setProdForm({ ...prodForm, rate: Number(e.target.value) })}
-                      className="w-full rounded border border-slate-200 bg-white p-2 font-mono text-xs"
+                      className="w-full rounded border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-2 font-mono text-xs"
                     />
                   </div>
 
@@ -639,7 +639,7 @@ export default function UnifiedAccountManager({
                       required
                       value={prodForm.currentStock}
                       onChange={(e) => setProdForm({ ...prodForm, currentStock: Number(e.target.value) })}
-                      className="w-full rounded border border-slate-200 bg-white p-2 font-mono text-xs"
+                      className="w-full rounded border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-2 font-mono text-xs"
                     />
                   </div>
 
@@ -650,7 +650,7 @@ export default function UnifiedAccountManager({
                       required
                       value={prodForm.minStock}
                       onChange={(e) => setProdForm({ ...prodForm, minStock: Number(e.target.value) })}
-                      className="w-full rounded border border-slate-200 bg-white p-2 font-mono text-xs"
+                      className="w-full rounded border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-2 font-mono text-xs"
                     />
                   </div>
                 </div>
@@ -662,7 +662,7 @@ export default function UnifiedAccountManager({
               </form>
 
               {/* IN-LINE LIVE PRODUCT CARD MOCKUP PREVIEW */}
-              <div className="rounded-xl border border-dashed border-slate-250 p-4 bg-slate-50 flex flex-col justify-between select-none font-sans text-xs text-slate-650 h-56 self-center">
+              <div className="rounded-xl border border-dashed border-slate-250 p-4 bg-slate-50 dark:bg-white/5 flex flex-col justify-between select-none font-sans text-xs text-slate-650 h-56 self-center">
                 <div>
                   <div className="flex justify-between items-start">
                     <span className="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 font-bold uppercase rounded">{t('SKU Item Preview', 'کارڈ پری ویو')}</span>
@@ -672,10 +672,10 @@ export default function UnifiedAccountManager({
                   <span className="block text-slate-450 font-medium text-[11px] mt-0.5">{prodForm.urduName || t('سامان کا اردو نام', 'سامان کا اردو نام')}</span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-dashed border-slate-200 pt-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-dashed border-slate-200 dark:border-white/10 pt-3">
                   <div>
                     <span className="block text-[8px] text-slate-400 uppercase tracking-widest">{t('Current retail rate:', 'سیلز ریٹ:')}</span>
-                    <strong className="block font-sans text-xs text-slate-800">Rs. {prodForm.rate} / {prodForm.unit}</strong>
+                    <strong className="block font-sans text-xs text-slate-800 dark:text-slate-200">Rs. {prodForm.rate} / {prodForm.unit}</strong>
                   </div>
                   <div className="text-right">
                     <span className="block text-[8px] text-slate-400 uppercase tracking-widest">{t('Catalog Stock levels:', 'ابتدائی انونٹری اسٹاک:')}</span>
@@ -687,17 +687,17 @@ export default function UnifiedAccountManager({
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {products.length === 0 ? (
-                <div className="col-span-2 text-center py-8 text-slate-400 text-xs border border-dashed rounded-xl bg-white">{t('No registered product catalogues yet.', 'کوئی بھی مصنوعات رجسٹرڈ نہیں ہے۔')}</div>
+                <div className="col-span-2 text-center py-8 text-slate-400 text-xs border border-dashed rounded-xl bg-white dark:bg-[#151521]">{t('No registered product catalogues yet.', 'کوئی بھی مصنوعات رجسٹرڈ نہیں ہے۔')}</div>
               ) : (
                 products.map(p => (
-                  <div key={p.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs hover:shadow-xs flex justify-between items-center transition-shadow">
+                  <div key={p.id} className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-2xs hover:shadow-xs flex justify-between items-center transition-shadow">
                     <div>
-                      <div className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5. inline-block rounded font-black uppercase font-mono">{p.type}</div>
-                      <h4 className="font-sans font-bold text-slate-800 text-xs mt-1.5 uppercase leading-none">{t(p.name, p.urduName)}</h4>
+                      <div className="text-[10px] bg-slate-100 dark:bg-white/10 text-slate-600 px-2 py-0.5. inline-block rounded font-black uppercase font-mono">{p.type}</div>
+                      <h4 className="font-sans font-bold text-slate-800 dark:text-slate-200 text-xs mt-1.5 uppercase leading-none">{t(p.name, p.urduName)}</h4>
                       <p className="text-[10.5px] text-slate-500 mt-1">{t('Tariff:', 'سیلز ریٹ :')} Rs. {p.rate?.toFixed(2)} / {p.unit}</p>
                     </div>
                     <div className="text-right flex flex-col justify-between h-16 items-end">
-                      <div className="text-[10.5px] text-slate-450 leading-none">{t('In Stock Inventory:', 'موجودہ اسٹاک:')} <strong className="font-mono text-xs text-slate-800 font-bold">{(p.currentStock || 0).toLocaleString()} {p.unit}</strong></div>
+                      <div className="text-[10.5px] text-slate-450 leading-none">{t('In Stock Inventory:', 'موجودہ اسٹاک:')} <strong className="font-mono text-xs text-slate-800 dark:text-slate-200 font-bold">{(p.currentStock || 0).toLocaleString()} {p.unit}</strong></div>
                       <div className="flex gap-2 select-none mt-2">
                         <button onClick={() => handleOpenEditProduct(p)} className="text-[11px] font-bold text-orange-655 text-orange-600 hover:text-orange-850 inline-flex items-center gap-0.5 cursor-pointer">
                           <Edit className="h-3 w-3" />

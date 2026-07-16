@@ -42,10 +42,10 @@ export function BIPaymentCostBreakdown({ metrics }: any) {
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
       {/* Payment Method Breakdown */}
       <div className="premium-card border overflow-hidden flex flex-col">
-        <div className="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+        <div className="p-5 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CreditCard className="w-5 h-5 text-sky-600" />
-            <h3 className="font-sans text-lg font-bold text-slate-900">Payment Analysis — Sales Inflow</h3>
+            <h3 className="font-sans text-lg font-bold text-slate-900 dark:text-white">Payment Analysis — Sales Inflow</h3>
           </div>
         </div>
         <div className="overflow-x-auto flex-1">
@@ -63,7 +63,7 @@ export function BIPaymentCostBreakdown({ metrics }: any) {
               {renderPaymentRow('Digital Wallet', paymentBreakdown.digital, '📱', 'bg-purple-50 text-purple-700')}
               {renderPaymentRow('Credit Sales', paymentBreakdown.credit, '📋', 'bg-amber-50 text-amber-700')}
             </tbody>
-            <tfoot className="bg-slate-50 font-bold border-t border-slate-200">
+            <tfoot className="bg-slate-50 dark:bg-white/5 font-bold border-t border-slate-200 dark:border-white/10">
               <tr>
                 <td className="px-5">TOTAL</td>
                 <td className="px-5 text-right text-sky-700">{formatCurrency(totalPayments)}</td>
@@ -76,10 +76,10 @@ export function BIPaymentCostBreakdown({ metrics }: any) {
 
       {/* Cost Breakdown */}
       <div className="premium-card border overflow-hidden flex flex-col">
-        <div className="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+        <div className="p-5 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <PieChart className="w-5 h-5 text-rose-600" />
-            <h3 className="font-sans text-lg font-bold text-slate-900">Cost Breakdown</h3>
+            <h3 className="font-sans text-lg font-bold text-slate-900 dark:text-white">Cost Breakdown</h3>
           </div>
         </div>
         <div className="overflow-x-auto flex-1">
@@ -92,11 +92,11 @@ export function BIPaymentCostBreakdown({ metrics }: any) {
               </tr>
             </thead>
             <tbody>
-              {renderCostRow('🛢️ Stock Purchase (COGS)', costs.cogs, 'bg-slate-100 text-slate-700')}
+              {renderCostRow('🛢️ Stock Purchase (COGS)', costs.cogs, 'bg-slate-100 dark:bg-white/10 text-slate-700')}
               {renderCostRow('🚛 Carriage / Transport', costs.carriage, 'bg-orange-50 text-orange-700')}
               {renderCostRow('📋 Other Expenses (Staff/Utilities)', costs.otherExpenses, 'bg-rose-50 text-rose-700')}
             </tbody>
-            <tfoot className="bg-slate-50 font-bold border-t border-slate-200">
+            <tfoot className="bg-slate-50 dark:bg-white/5 font-bold border-t border-slate-200 dark:border-white/10">
               <tr>
                 <td className="px-5">TOTAL</td>
                 <td className="px-5 text-right text-rose-700">{formatCurrency(totalCosts)}</td>

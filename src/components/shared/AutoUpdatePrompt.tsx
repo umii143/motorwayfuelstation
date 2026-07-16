@@ -56,9 +56,9 @@ export function AutoUpdatePrompt() {
             {/* Header Art */}
             <div className="h-32 bg-gradient-to-br from-orange-500 to-orange-600 relative overflow-hidden flex items-center justify-center">
               <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
-              <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
+              <div className="absolute -right-4 -top-4 w-24 h-24 bg-white dark:bg-[#151521]/10 rounded-full blur-2xl" />
               
-              <div className="relative z-10 w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center">
+              <div className="relative z-10 w-16 h-16 bg-white dark:bg-[#151521] rounded-full shadow-lg flex items-center justify-center">
                 <Download className="w-8 h-8 text-orange-600" />
               </div>
             </div>

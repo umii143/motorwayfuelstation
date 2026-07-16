@@ -60,7 +60,7 @@ export const WelcomeCarousel: React.FC<WelcomeCarouselProps> = ({ language, onCo
             className="w-full max-w-sm px-8 flex flex-col items-center text-center"
           >
             <div className={`w-32 h-32 rounded-full bg-gradient-to-br ${slides[currentSlide].color} p-1 mb-10 shadow-2xl relative`}>
-              <div className="absolute inset-0 bg-white/20 blur-xl rounded-full mix-blend-overlay" />
+              <div className="absolute inset-0 bg-white dark:bg-[#151521]/20 blur-xl rounded-full mix-blend-overlay" />
               <div className="w-full h-full bg-slate-950 rounded-full flex items-center justify-center relative overflow-hidden">
                 <div className={`absolute inset-0 opacity-20 bg-gradient-to-br ${slides[currentSlide].color}`} />
                 {React.createElement(slides[currentSlide].icon, { className: "w-14 h-14 text-white" })}

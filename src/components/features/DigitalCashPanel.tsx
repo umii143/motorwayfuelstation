@@ -6,7 +6,10 @@ import {
   Clock,
   Search,
   Notebook,
-  SmartphoneNfc
+  SmartphoneNfc,
+  Wallet,
+  CreditCard,
+  Building
 } from 'lucide-react';
 import { ResponsiveTable } from '../shared/ResponsiveTable';
 import { DigitalAccount, Shift, GlobalSettings, LubePosSale } from '../../types';
@@ -187,13 +190,76 @@ export default function DigitalCashPanel({
     };
   }, [digitalAccounts, compiledShiftDigitalEntries]);
 
+  // Helper to determine visual details for Pakistani payment providers and types
+  const getProviderDetails = (name: string) => {
+    const norm = name.toLowerCase();
+    if (norm.includes('easypaisa') || norm.includes('easy paisa')) {
+      return {
+        provider: 'EasyPaisa',
+        color: 'from-emerald-500/10 to-emerald-600/5 dark:from-emerald-500/10 dark:to-transparent',
+        borderColor: 'border-emerald-200 dark:border-emerald-500/20',
+        textColor: 'text-emerald-700 dark:text-emerald-400',
+        badgeBg: 'bg-emerald-100 dark:bg-emerald-500/20',
+        badgeText: 'text-emerald-800 dark:text-emerald-300',
+        glow: 'shadow-[0_0_15px_-3px_rgba(16,185,129,0.1)] dark:shadow-[0_0_15px_-3px_rgba(16,185,129,0.05)]',
+        icon: <Wallet className="h-4.5 w-4.5 text-emerald-600 dark:text-emerald-450" />
+      };
+    }
+    if (norm.includes('jazzcash') || norm.includes('jazz cash')) {
+      return {
+        provider: 'JazzCash',
+        color: 'from-amber-500/10 to-amber-600/5 dark:from-amber-500/10 dark:to-transparent',
+        borderColor: 'border-amber-250 dark:border-amber-500/20',
+        textColor: 'text-amber-850 dark:text-amber-400',
+        badgeBg: 'bg-amber-100 dark:bg-amber-500/20',
+        badgeText: 'text-amber-900 dark:text-amber-300',
+        glow: 'shadow-[0_0_15px_-3px_rgba(245,158,11,0.1)] dark:shadow-[0_0_15px_-3px_rgba(245,158,11,0.05)]',
+        icon: <Wallet className="h-4.5 w-4.5 text-amber-600 dark:text-amber-455" />
+      };
+    }
+    if (norm.includes('pos') || norm.includes('card') || norm.includes('swipe') || norm.includes('machine') || norm.includes('terminal')) {
+      return {
+        provider: t('POS Terminal', 'پی او ایس'),
+        color: 'from-cyan-500/10 to-cyan-600/5 dark:from-cyan-500/10 dark:to-transparent',
+        borderColor: 'border-cyan-200 dark:border-cyan-500/20',
+        textColor: 'text-cyan-800 dark:text-cyan-400',
+        badgeBg: 'bg-cyan-100 dark:bg-cyan-500/20',
+        badgeText: 'text-cyan-900 dark:text-cyan-300',
+        glow: 'shadow-[0_0_15px_-3px_rgba(6,182,212,0.1)] dark:shadow-[0_0_15px_-3px_rgba(6,182,212,0.05)]',
+        icon: <CreditCard className="h-4.5 w-4.5 text-cyan-600 dark:text-cyan-400" />
+      };
+    }
+    if (norm.includes('bank') || norm.includes('hbl') || norm.includes('alfalah') || norm.includes('mcb') || norm.includes('meezan') || norm.includes('ubl') || norm.includes('allied') || norm.includes('faisal')) {
+      return {
+        provider: t('Bank Account', 'بینک اکاؤنٹ'),
+        color: 'from-indigo-500/10 to-indigo-650/5 dark:from-indigo-500/10 dark:to-transparent',
+        borderColor: 'border-indigo-200 dark:border-indigo-500/20',
+        textColor: 'text-indigo-800 dark:text-indigo-400',
+        badgeBg: 'bg-indigo-100 dark:bg-indigo-500/20',
+        badgeText: 'text-indigo-900 dark:text-indigo-300',
+        glow: 'shadow-[0_0_15px_-3px_rgba(99,102,241,0.1)] dark:shadow-[0_0_15px_-3px_rgba(99,102,241,0.05)]',
+        icon: <Building className="h-4.5 w-4.5 text-indigo-600 dark:text-indigo-400" />
+      };
+    }
+    return {
+      provider: t('Digital Wallet', 'ڈیجیٹل والٹ'),
+      color: 'from-slate-500/5 to-slate-600/5 dark:from-white/5 dark:to-transparent',
+      borderColor: 'border-slate-200 dark:border-white/10',
+      textColor: 'text-slate-700 dark:text-slate-350',
+      badgeBg: 'bg-slate-100 dark:bg-white/10',
+      badgeText: 'text-slate-800 dark:text-slate-300',
+      glow: '',
+      icon: <Smartphone className="h-4.5 w-4.5 text-slate-500 dark:text-slate-400" />
+    };
+  };
+
   return (
     <div className="space-y-6 pb-20 lg:pb-5">
       {/* HEADER SECTION WITH INTEGRATED DYNAMIC TIME FILTER */}
-      <div className="flex flex-row flex-wrap items-start items-center justify-between gap-4 border-b border-slate-200 pb-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-white/10 pb-5">
         <div>
           <span className="font-mono text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-0.5">OPERATIONS</span>
-          <h2 className="font-sans text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+          <h2 className="font-sans text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             <Smartphone className="h-6 w-6 text-orange-600" />
             <span>{t('Digital Wallet Accounts', 'موبائل مانی والٹ اور ڈیجیٹل پیمنٹس اسسٹنٹ')}</span>
           </h2>
@@ -203,16 +269,16 @@ export default function DigitalCashPanel({
         </div>
 
         {/* TIME FILTER & TRIGGER ROW */}
-        <div className="flex flex-wrap items-center gap-2 lg:self-center">
-          <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200 shadow-sm shrink-0">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex bg-slate-100 dark:bg-white/5 rounded-xl p-1 border border-slate-200/60 dark:border-white/10 shadow-inner shrink-0">
             {(['all', 'weekly', 'monthly', 'yearly'] as const).map((filter) => (
               <button
                 key={filter}
                 onClick={() => setTimeFilter(filter)}
-                className={`px-3 py-1.5 font-sans text-[11px] font-bold uppercase tracking-wider rounded-md transition-all cursor-pointer ${
+                className={`px-3.5 py-1.5 font-sans text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all duration-150 cursor-pointer ${
                   timeFilter === filter
-                    ? 'bg-orange-600 text-white shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                    ? 'bg-orange-600 text-white shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-350 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5'
                 }`}
               >
                 {filter === 'all' && t('All-Time', 'کل وقت')}
@@ -225,7 +291,7 @@ export default function DigitalCashPanel({
 
           <button
             onClick={() => setShowAddAccount(true)}
-            className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2 font-sans text-xs font-bold text-white shadow-md hover:bg-orange-700 transition-all cursor-pointer"
+            className="flex items-center justify-center gap-1.5 rounded-xl bg-orange-600 px-4 py-2 font-sans text-xs font-bold text-white shadow-lg shadow-orange-600/10 hover:bg-orange-700 hover:shadow-orange-700/20 active:scale-[0.98] transition-all cursor-pointer"
           >
             <PlusCircle className="h-4 w-4" />
             <span>{t('+ Add Digital Account', 'نیا والٹ رجسٹر کریں')}</span>
@@ -234,148 +300,190 @@ export default function DigitalCashPanel({
       </div>
 
       {/* DYNAMIC KPI CARDS SECTION */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* AMBER CARD - TOTAL IN DIGITAL */}
         <div 
           onClick={() => setIsDrillDownOpen(true)}
-          className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden cursor-pointer hover:bg-amber-100/50 hover:shadow-md transition-all group"
+          className="rounded-2xl border border-amber-200 bg-amber-50/30 dark:border-amber-500/20 dark:bg-[#151521]/90 p-5 shadow-xs flex flex-col justify-between min-h-[115px] relative overflow-hidden cursor-pointer hover:border-amber-500/60 dark:hover:border-amber-500/40 hover:shadow-lg dark:hover:shadow-amber-500/5 hover:scale-[1.01] transition-all duration-200 group"
         >
           <div className="flex items-start justify-between">
             <div>
-              <span className="font-mono text-[9px] font-black text-amber-800 uppercase tracking-widest block mb-1 group-hover:text-amber-900 transition-colors">TOTAL DIGITAL ASSETS</span>
-              <h3 className="font-sans text-2xl font-black text-amber-900 mt-1 whitespace-nowrap animate-pulse">
+              <span className="font-mono text-[9px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-widest block mb-1">TOTAL DIGITAL ASSETS</span>
+              <h3 className="font-sans text-2xl font-black text-slate-900 dark:text-white mt-1 whitespace-nowrap">
                 {formatCurrency(kpiStats.totalBalance, settings)}
               </h3>
             </div>
-            <div className="rounded-xl bg-amber-100 p-2 text-amber-700 animate-bounce">
+            <div className="rounded-xl bg-amber-100 dark:bg-amber-500/10 p-2 text-amber-700 dark:text-amber-400 transition-transform group-hover:scale-105">
               <Smartphone className="h-5 w-5" />
             </div>
           </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-amber-700 font-bold">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-            <span>Wallets cumulative liquidity</span>
+          <div className="mt-3 flex items-center gap-1.5 text-[10px] text-amber-800 dark:text-amber-400/80 font-bold">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-ping" />
+            <span>{t('Wallets cumulative liquidity', 'والٹس کا مجموعی بیلنس')}</span>
           </div>
         </div>
 
         {/* GREEN CARD - DISBURSEMENTS OR SHIFTS RECEIVABLE */}
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/30 dark:border-emerald-500/20 dark:bg-[#151521]/90 p-5 shadow-xs flex flex-col justify-between min-h-[115px] relative overflow-hidden transition-all duration-200 hover:border-emerald-500/40 dark:hover:border-emerald-500/30 group">
           <div className="flex items-start justify-between">
             <div>
-              <span className="font-mono text-[9px] font-black text-emerald-800 uppercase tracking-widest block mb-1">SHIFT DIGITAL PAYMENTS</span>
-              <h3 className="font-sans text-2xl font-black text-emerald-950 mt-1">
+              <span className="font-mono text-[9px] font-bold text-emerald-800 dark:text-emerald-450 uppercase tracking-widest block mb-1">SHIFT DIGITAL PAYMENTS</span>
+              <h3 className="font-sans text-2xl font-black text-slate-900 dark:text-white mt-1">
                 {formatCurrency(kpiStats.totalShiftDigitalSum, settings)}
               </h3>
             </div>
-            <div className="rounded-xl bg-emerald-100 p-2 text-emerald-700">
+            <div className="rounded-xl bg-emerald-100 dark:bg-emerald-500/10 p-2 text-emerald-700 dark:text-emerald-400 transition-transform group-hover:scale-105">
               <SmartphoneNfc className="h-5 w-5" />
             </div>
           </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-emerald-700 font-bold">
-            <span>Direct digital QR & card swipes</span>
+          <div className="mt-3 flex items-center gap-1.5 text-[10px] text-emerald-850 dark:text-emerald-400/80 font-bold">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            <span>{t('Direct digital QR & card swipes', 'کیو آر کوڈز اور کارڈ مشین کی کل رقم')}</span>
           </div>
         </div>
 
         {/* CRIMSON CARD - SHIFT WALLET TRANSACTION LOG COUNT */}
-        <div className="rounded-2xl border border-rose-200 bg-rose-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
+        <div className="rounded-2xl border border-rose-200 bg-rose-50/30 dark:border-rose-500/20 dark:bg-[#151521]/90 p-5 shadow-xs flex flex-col justify-between min-h-[115px] relative overflow-hidden transition-all duration-200 hover:border-rose-500/40 dark:hover:border-rose-500/30 group">
           <div className="flex items-start justify-between">
             <div>
-              <span className="font-mono text-[9px] font-black text-rose-800 uppercase tracking-widest block mb-1">COLLECTION TRANSACTIONS</span>
-              <h3 className="font-sans text-2xl font-black text-rose-900 mt-1">
+              <span className="font-mono text-[9px] font-bold text-rose-800 dark:text-rose-455 uppercase tracking-widest block mb-1">COLLECTION TRANSACTIONS</span>
+              <h3 className="font-sans text-2xl font-black text-slate-900 dark:text-white mt-1">
                 {kpiStats.collectionsCount}
               </h3>
             </div>
-            <div className="rounded-xl bg-rose-100 p-2 text-rose-700">
+            <div className="rounded-xl bg-rose-100 dark:bg-rose-500/10 p-2 text-rose-700 dark:text-rose-400 transition-transform group-hover:scale-105">
               <Clock className="h-5 w-5" />
             </div>
           </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-rose-700 font-bold">
-            <span>Electronic checkouts in this period</span>
+          <div className="mt-3 flex items-center gap-1.5 text-[10px] text-rose-850 dark:text-rose-400/80 font-bold">
+            <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+            <span>{t('Electronic checkouts in this period', 'ڈیجیٹل ٹرانزیکشنز کی تعداد')}</span>
           </div>
         </div>
 
         {/* BLUE CARD - REGISTERED WALLETS AND MERCHANTS */}
-        <div className="rounded-2xl border border-blue-200 bg-blue-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
+        <div className="rounded-2xl border border-blue-200 bg-blue-50/30 dark:border-blue-500/20 dark:bg-[#151521]/90 p-5 shadow-xs flex flex-col justify-between min-h-[115px] relative overflow-hidden transition-all duration-200 hover:border-blue-500/40 dark:hover:border-blue-500/30 group">
           <div className="flex items-start justify-between">
             <div>
-              <span className="font-mono text-[9px] font-black text-blue-800 uppercase tracking-widest block mb-1">ACTIVE WALLETS</span>
-              <h3 className="font-sans text-2xl font-black text-blue-900 mt-1">
+              <span className="font-mono text-[9px] font-bold text-blue-800 dark:text-blue-450 uppercase tracking-widest block mb-1">ACTIVE WALLETS</span>
+              <h3 className="font-sans text-2xl font-black text-slate-900 dark:text-white mt-1">
                 {kpiStats.activeWalletsCount}
               </h3>
             </div>
-            <div className="rounded-xl bg-blue-100 p-2 text-blue-700">
+            <div className="rounded-xl bg-blue-100 dark:bg-blue-500/10 p-2 text-blue-700 dark:text-blue-400 transition-transform group-hover:scale-105">
               <Notebook className="h-5 w-5" />
             </div>
           </div>
-          <div className="mt-3 flex items-center gap-1 text-[10px] text-blue-700 font-bold text-ellipsis overflow-hidden whitespace-nowrap">
-            <span>QR codes and merchant gates</span>
+          <div className="mt-3 flex items-center gap-1.5 text-[10px] text-blue-850 dark:text-blue-400/80 font-bold text-ellipsis overflow-hidden whitespace-nowrap">
+            <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+            <span>{t('QR codes and merchant gates', 'درج شدہ والٹس اور پیمنٹ سورس')}</span>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+      {/* TWO COLUMN CONTENT LAYOUT */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* LEFT COLUMN: WALLETS AND TRANSACTIONS HISTORY */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-            <div className="flex flex-row items-center sm:justify-between gap-3">
-              <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider">
-                {t('Mobile Wallets & Electronic Merchant Accounts', 'موبائل والٹس اور POS ڈائریکٹری')}
-              </h3>
-              <div className="relative">
-                <Search className="absolute top-2.5 left-2.5 h-3.5 w-3.5 text-slate-400" />
+          {/* Active Wallets Listing */}
+          <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-xs space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-white/5 pb-4">
+              <div>
+                <h3 className="font-sans text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                  <Wallet className="h-4.5 w-4.5 text-orange-600" />
+                  <span>{t('Mobile Wallets & Electronic Merchant Accounts', 'موبائل والٹس اور POS ڈائریکٹری')}</span>
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  {t('Manage live balances and track ledger adjustments.', 'والٹس کا بیلنس اور ان کی ایڈجسٹمنٹ کو منظم کریں۔')}
+                </p>
+              </div>
+
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute top-2.5 left-3 h-3.5 w-3.5 text-slate-405 dark:text-slate-500" />
                 <input
                   type="text"
                   placeholder={t('Search merchant account...', 'تلاش اکاؤنٹ...')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="rounded-lg border border-slate-250 bg-white pl-8 pr-3 py-1.5 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
+                  className="w-full rounded-xl border border-slate-250 dark:border-slate-800 bg-white dark:bg-[#12121e] pl-9 pr-3.5 py-1.5 font-sans text-xs focus:ring-1 focus:ring-orange-500/30 focus:border-orange-500 focus:outline-hidden text-slate-900 dark:text-white transition-all shadow-inner"
                 />
               </div>
             </div>
 
             {filteredAccounts.length === 0 ? (
-              <div className="text-center py-12 text-slate-400 text-xs text-sans">
-                {t('No active digital wallets or merchant accounts registered.', 'اسٹیشن پینل میں کوئی ڈیجیٹل اکاونٹ نہیں پایا گیا۔')}
+              <div className="text-center py-12 text-slate-400 text-xs font-sans">
+                {t('No active digital wallets or merchant accounts registered.', 'اسٹیشن پینل میں کوئی ڈیجیٹل اکاؤنٹ نہیں پایا گیا۔')}
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="premium-table">
-                  <thead>
-                    <tr className="border-slate-150 text-[10px]">
-                      <th className="py-2.5 px-3">{t('Account/Method Name', 'والٹ کا نام')}</th>
-                      <th className="py-2.5 px-3">{t('Account No / Merchant ID', 'موبائل / اکاؤنٹ مرچنٹ آئی ڈی')}</th>
-                      <th className="py-2.5 px-3 font-right text-right">{t('Current Active Balance', 'موجودہ والٹ بیلنس')}</th>
-                      <th className="py-2.5 px-3 text-right">{t('Actions', 'تبدیلی')}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredAccounts.map((da) => (
-                      <tr key={da.id} className="hover:bg-slate-50/50">
-                        <td className="px-3">{da.name}</td>
-                        <td className="px-3 font-mono text-[11px]">{da.accountNo}</td>
-                        <td className="px-3 text-right font-mono font-extrabold text-[12px]">
-                          {formatCurrency(da.balance, settings)}
-                        </td>
-                        <td className="px-3 text-right">
-                          <button
-                            onClick={() => setAdjustAccountId(da.id)}
-                            className="bg-slate-900 text-white hover:bg-slate-850 text-[10px] font-bold px-3 py-1 rounded-md transition-colors cursor-pointer"
-                          >
-                            {t('Post Adjustment', 'بیلنس تبدیل کریں')}
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {filteredAccounts.map((da) => {
+                  const details = getProviderDetails(da.name);
+                  return (
+                    <div
+                      key={da.id}
+                      className={`rounded-2xl border ${details.borderColor} bg-gradient-to-br ${details.color} p-4 flex flex-col justify-between min-h-[145px] transition-all hover:scale-[1.01] hover:shadow-md ${details.glow} relative overflow-hidden`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start gap-2.5">
+                          <div className={`rounded-xl ${details.badgeBg} p-2 text-slate-700`}>
+                            {details.icon}
+                          </div>
+                          <div>
+                            <span className={`font-mono text-[9px] font-black uppercase tracking-widest ${details.textColor} block`}>
+                              {details.provider}
+                            </span>
+                            <h4 className="font-sans text-sm font-bold text-slate-900 dark:text-white mt-0.5 truncate max-w-[140px]">
+                              {da.name}
+                            </h4>
+                          </div>
+                        </div>
+                        <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full tracking-wider ${details.badgeBg} ${details.badgeText}`}>
+                          {t('Live Active', 'فعال')}
+                        </span>
+                      </div>
+
+                      <div className="mt-4">
+                        <span className="text-[10px] text-slate-450 dark:text-slate-400 block font-sans">
+                          {t('Account No / Merchant ID:', 'اکاؤنٹ نمبر / کوڈ:')}
+                        </span>
+                        <code className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200">
+                          {da.accountNo}
+                        </code>
+                      </div>
+
+                      <div className="mt-4 flex items-center justify-between border-t border-slate-150/65 dark:border-white/5 pt-3.5">
+                        <div>
+                          <span className="text-[9px] text-slate-450 dark:text-slate-400 block uppercase tracking-wider font-mono">
+                            {t('Current Balance', 'موجودہ بیلنس')}
+                          </span>
+                          <strong className="font-sans text-base font-black text-slate-900 dark:text-white leading-tight block mt-0.5">
+                            {formatCurrency(da.balance, settings)}
+                          </strong>
+                        </div>
+                        <button
+                          onClick={() => setAdjustAccountId(da.id)}
+                          className="bg-slate-900 dark:bg-white text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-100 text-[10px] font-bold px-3 py-1.5 rounded-lg transition-all shadow-xs hover:shadow-sm cursor-pointer"
+                        >
+                          {t('Post Adjustment', 'بیلنس تبدیل کریں')}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
 
           {/* HISTORICAL DIGITAL ENTRIES */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-            <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
-              {t('Shift Log Captured Digital Payments', 'شفٹ وار ڈیجیٹل وصولیوں کا مکمل رجسٹرڈ لاگ')}
-            </h3>
+          <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-xs space-y-4">
+            <div className="border-b border-slate-100 dark:border-white/5 pb-3">
+              <h3 className="font-sans text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                {t('Shift Log Captured Digital Payments', 'شفٹ وار ڈیجیٹل وصولیوں کا لاگ')}
+              </h3>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                {t('Automated registry of digital payments compiled across completed cashier shifts.', 'مکمل ہونے والی شفٹوں میں موصولہ ڈیجیٹل ادائیگیوں کا خودکار لاگ۔')}
+              </p>
+            </div>
 
             {compiledShiftDigitalEntries.length === 0 ? (
               <p className="text-center py-10 font-sans text-xs text-slate-400">
@@ -387,32 +495,32 @@ export default function DigitalCashPanel({
                 columns={[
                   {
                     header: t('Date', 'تاریخ'),
-                    accessor: (item) => <span className="text-slate-550 font-mono text-[11px] truncate">{item.date}</span>,
+                    accessor: (item) => <span className="text-slate-550 dark:text-slate-400 font-mono text-[11px] truncate">{item.date}</span>,
                     isSecondaryMobile: true
                   },
                   {
                     header: t('Shift ID & Operator', 'شفٹ اور کیشئر'),
                     accessor: (item) => (
                       <div>
-                        <div className="font-semibold text-slate-800 truncate">{item.shiftId}</div>
-                        <div className="text-[10px] text-slate-400 truncate mt-0.5">{item.operator.toUpperCase()}</div>
+                        <div className="font-semibold text-slate-800 dark:text-slate-200 truncate">{item.shiftId}</div>
+                        <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate mt-0.5">{item.operator.toUpperCase()}</div>
                       </div>
                     ),
                     isPrimaryMobile: true
                   },
                   {
                     header: t('Method / Wallet', 'طریقہ کار'),
-                    accessor: (item) => <span className="text-slate-700 font-semibold truncate pr-2">{item.methodName}</span>
+                    accessor: (item) => <span className="text-slate-700 dark:text-slate-350 font-semibold truncate pr-2">{item.methodName}</span>
                   },
                   {
                     header: t('Transaction/SMS ID', 'ٹرانزیکشن ID'),
-                    accessor: (item) => <span className="text-slate-500 font-mono text-[11.5px] truncate pr-2">{item.transactionId}</span>
+                    accessor: (item) => <span className="text-slate-500 dark:text-slate-450 font-mono text-[11.5px] truncate pr-2">{item.transactionId}</span>
                   },
                   {
                     header: t('Amount Received', 'وصول شدہ رقم'),
                     className: 'text-right',
                     accessor: (item) => (
-                      <span className="font-mono text-emerald-600 font-extrabold text-[12px] truncate">
+                      <span className="font-mono text-emerald-600 dark:text-emerald-450 font-extrabold text-[12px] truncate">
                         +{formatCurrency(item.amount, settings)}
                       </span>
                     )
@@ -427,39 +535,51 @@ export default function DigitalCashPanel({
 
         {/* RIGHT COLUMN: MANUAL AUDITING POLICIES */}
         <div className="space-y-6">
-          <div className="rounded-xl border border-slate-200 bg-amber-50/20 p-5 shadow-xs border-l-4 border-l-amber-500 space-y-2">
-            <h4 className="font-sans text-xs font-bold text-amber-800 uppercase tracking-widest flex items-center gap-1.5">
+          {/* Reconciliation Advisory notice */}
+          <div className="rounded-2xl border border-amber-200/60 dark:border-amber-500/15 bg-amber-50/30 dark:bg-[#1c1c2b] p-5 shadow-xs border-l-4 border-l-amber-500 space-y-2.5">
+            <h4 className="font-sans text-xs font-bold text-amber-850 dark:text-amber-400 uppercase tracking-widest flex items-center gap-1.5">
               <Clock className="h-4 w-4" />
               <span>{t('Digital Reconciliation Notice', 'والٹ موازنہ ہدایات')}</span>
             </h4>
-            <p className="font-sans text-[11.5px] text-amber-700/90 leading-relaxed">
+            <p className="font-sans text-[11.5px] text-slate-600 dark:text-slate-300 leading-relaxed">
               {t(
                 'Digital cash entries represent payments clients paid directly via mobile banking or credit machines in active shifts. These accumulate for visual verification and can be reconciled against the bank balance using the Bank Reconciliation Tool.',
-                'ڈیجیٹل والٹ بیلنس شفٹ کے اندر موصول کنندہ رقوم کو ظاہر کرتا ہے۔ ان کا موازنہ اور تصفیہ بینک اکاؤنٹ کے ساتھ جوڑنے کیلئے ماسٹر آڈٹ میں موجود "بینک موازنہ اور ریکنسیلیشن پینل" کو استعمال کریں۔'
+                'ڈیجیٹل والٹ بیلنس شفٹ کے اندر موصول کنندہ رقوم کو ظاہر کرتا ہے۔ ان کا موازنہ اور تصفیہ بینک اکاؤنٹ کے ساتھ جوڑنے کے لیے ماسٹر آڈٹ میں موجود "بینک موازنہ اور ریکنسلیشن پینل" کو استعمال کریں۔'
               )}
             </p>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-            <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block border-b border-slate-100 pb-1.5">
+          {/* Interactive wallets summary */}
+          <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-xs space-y-4">
+            <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block border-b border-slate-100 dark:border-white/5 pb-2">
               {t('Interactive Wallets Summary', 'والٹس بلحاظ رقم')}
             </span>
-            <div className="space-y-2">
-              {digitalAccounts.map((da) => (
-                <div key={da.id} className="p-3 bg-slate-50 rounded-lg flex items-center justify-between">
-                  <div>
-                    <strong className="text-slate-800 text-xs block">{da.name}</strong>
-                    <span className="text-[10px] text-slate-400 font-mono mt-0.5">{da.accountNo}</span>
+            <div className="space-y-2.5">
+              {digitalAccounts.map((da) => {
+                const details = getProviderDetails(da.name);
+                return (
+                  <div key={da.id} className="p-3 bg-slate-50 dark:bg-white/5 rounded-xl flex items-center justify-between border border-slate-100 dark:border-white/5">
+                    <div className="flex items-center gap-2">
+                      <div className={`p-1.5 rounded-lg ${details.badgeBg} text-slate-700 scale-90`}>
+                        {details.icon}
+                      </div>
+                      <div>
+                        <strong className="text-slate-800 dark:text-slate-200 text-xs block font-bold">{da.name}</strong>
+                        <span className="text-[9px] text-slate-400 font-mono block mt-0.5">{da.accountNo}</span>
+                      </div>
+                    </div>
+                    <strong className="font-mono text-xs text-slate-800 dark:text-slate-100 font-extrabold">
+                      {formatCurrency(da.balance, settings)}
+                    </strong>
                   </div>
-                  <strong className="font-mono text-xs text-slate-700">{formatCurrency(da.balance, settings)}</strong>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
       </div>
 
-      {/* MODAL 1: ADD NEW WALLET */}
+      {/* MODAL 1: REGISTER NEW wallet */}
       <AnimatePresence>
         {showAddAccount && (
           <div className="premium-modal-overlay">
@@ -467,16 +587,16 @@ export default function DigitalCashPanel({
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-xl space-y-4"
+              className="w-full max-w-sm rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-6 shadow-xl space-y-4"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-2">
-                <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-2">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3.5 mb-2">
+                <h3 className="font-sans text-base font-bold text-slate-905 dark:text-white flex items-center gap-2">
                   <Smartphone className="h-5 w-5 text-orange-600" />
                   <span>{t('Register New Mobile Wallet / Merchant', 'نیا موبائل بٹوے رجسٹر کریں')}</span>
                 </h3>
                 <button
                   onClick={() => setShowAddAccount(false)}
-                  className="text-slate-400 hover:text-slate-650 font-bold text-xl cursor-pointer"
+                  className="text-slate-400 hover:text-slate-600 font-bold text-xl cursor-pointer"
                 >
                   &times;
                 </button>
@@ -484,7 +604,7 @@ export default function DigitalCashPanel({
 
               <form onSubmit={handleCreateAccount} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                     {t('Account Interface Name (EasyPaisa Pro, Card POS etc):', 'ڈیجیٹل کھاتہ یا والٹ کا نام:')}
                   </label>
                   <input
@@ -493,12 +613,12 @@ export default function DigitalCashPanel({
                     placeholder="e.g. EasyPaisa Merchant"
                     value={newAccountName}
                     onChange={(e) => setNewAccountName(e.target.value)}
-                    className="premium-input border bg-white px-3 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border border-slate-250 dark:border-slate-800 bg-white dark:bg-[#12121e] text-slate-900 dark:text-white px-3 py-2 font-sans text-xs focus:border-orange-500 focus:ring-1 focus:ring-orange-500/35 focus:outline-hidden rounded-xl w-full"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                     {t('Mobile Number / POS Merchant Terminal ID:', 'رابطہ نمبر یا مرچنٹ کوڈ:')}
                   </label>
                   <input
@@ -507,12 +627,12 @@ export default function DigitalCashPanel({
                     placeholder="e.g. 03168432329"
                     value={newAccountNo}
                     onChange={(e) => setNewAccountNo(e.target.value)}
-                    className="premium-input border bg-white px-3 font-mono text-xs focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border border-slate-250 dark:border-slate-800 bg-white dark:bg-[#12121e] text-slate-900 dark:text-white px-3 py-2 font-mono text-xs focus:border-orange-500 focus:ring-1 focus:ring-orange-500/35 focus:outline-hidden rounded-xl w-full"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                     {t(`Starting Wallet Book balance (${getCurrencySymbol(settings)}):`, 'ابتدائی بیلنس (روپے):')}
                   </label>
                   <input
@@ -520,13 +640,13 @@ export default function DigitalCashPanel({
                     placeholder="e.g. 15000"
                     value={newBalance}
                     onChange={(e) => setNewBalance(e.target.value)}
-                    className="premium-input border bg-white px-3 .5 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border border-slate-250 dark:border-slate-800 bg-white dark:bg-[#12121e] text-slate-900 dark:text-white px-3 py-2 font-mono text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500/35 focus:outline-hidden rounded-xl w-full"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-sans text-xs font-bold tracking-wider rounded-lg shadow-md cursor-pointer mt-2"
+                  className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-sans text-xs font-bold tracking-wider rounded-xl shadow-md cursor-pointer mt-3 transition-colors duration-150"
                 >
                   {t('REGISTER EXPANDED DIGITAL WALLET', 'نیا ڈیجیٹل پیمنٹ اکاؤنٹ رجسٹر کریں')}
                 </button>
@@ -544,16 +664,16 @@ export default function DigitalCashPanel({
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-xl space-y-4"
+              className="w-full max-w-sm rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-6 shadow-xl space-y-4"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-1">
-                <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-1.5">
-                  <Smartphone className="h-5 w-5 text-orange-6o0" />
-                  <span>{t('Post Manual Wallet Adjustment', 'دستی والٹ بیلنس اپ ڈیٹ')}</span>
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3.5 mb-1">
+                <h3 className="font-sans text-base font-bold text-slate-905 dark:text-white flex items-center gap-1.5">
+                  <Smartphone className="h-5 w-5 text-orange-600" />
+                  <span>{t('Post Manual Wallet Adjustment', 'تبدیلی بیلنس')}</span>
                 </h3>
                 <button
                   onClick={() => setAdjustAccountId(null)}
-                  className="text-slate-400 hover:text-slate-650 font-bold text-xl cursor-pointer"
+                  className="text-slate-405 hover:text-slate-600 font-bold text-xl cursor-pointer"
                 >
                   &times;
                 </button>
@@ -561,17 +681,17 @@ export default function DigitalCashPanel({
 
               <form onSubmit={handleAdjustSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-555 uppercase tracking-wider mb-1">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                     {t('Adjustment Action Type:', 'تبدیلی کی نوعیت:')}
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                     <button
                       type="button"
                       onClick={() => setAdjustType('deposit')}
-                      className={`py-1.5 font-bold rounded-lg border transition-all cursor-pointer ${
+                      className={`py-2 font-bold rounded-xl border transition-all duration-150 cursor-pointer ${
                         adjustType === 'deposit'
-                          ? 'border-emerald-500 bg-emerald-50 text-emerald-700 font-extrabold'
-                          : 'border-slate-200 bg-white text-slate-500'
+                          ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300 font-extrabold shadow-xs'
+                          : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#12121e] text-slate-500 dark:text-slate-400'
                       }`}
                     >
                       {t('Credit / Deposit (+)', 'رقم جمع کریں')}
@@ -579,10 +699,10 @@ export default function DigitalCashPanel({
                     <button
                       type="button"
                       onClick={() => setAdjustType('withdrawal')}
-                      className={`py-1.5 font-bold rounded-lg border transition-all cursor-pointer ${
+                      className={`py-2 font-bold rounded-xl border transition-all duration-150 cursor-pointer ${
                         adjustType === 'withdrawal'
-                          ? 'border-rose-500 bg-rose-50 text-rose-700 font-extrabold'
-                          : 'border-slate-200 bg-white text-slate-500'
+                          ? 'border-rose-500 bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300 font-extrabold shadow-xs'
+                          : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#12121e] text-slate-500 dark:text-slate-400'
                       }`}
                     >
                       {t('Debit / Drawal (-)', 'رقم نکالیں')}
@@ -591,8 +711,8 @@ export default function DigitalCashPanel({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                    {t('Adjustment Amount (PKR Value):', 'منتقل رقم (روپے):')}
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                    {t('Adjustment Amount (PKR Value):', 'منتقلی رقم (روٞی):')}
                   </label>
                   <input
                     type="number"
@@ -600,13 +720,13 @@ export default function DigitalCashPanel({
                     placeholder="e.g. 5000"
                     value={adjustAmount}
                     onChange={(e) => setAdjustAmount(e.target.value)}
-                    className="premium-input border bg-white px-3 .5 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border border-slate-250 dark:border-slate-800 bg-white dark:bg-[#12121e] text-slate-900 dark:text-white px-3 py-2 font-mono text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500/35 focus:outline-hidden rounded-xl w-full"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                    {t('Reason / Memo Statement:', 'تبدیلی کی وجہ / رسید تفصیل:')}
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                    {t('Reason / Memo Statement:', 'تبدیلی کی وجہ / تصٍیہ تفصیل:')}
                   </label>
                   <input
                     type="text"
@@ -614,13 +734,13 @@ export default function DigitalCashPanel({
                     placeholder="reconciling transfer"
                     value={adjustReason}
                     onChange={(e) => setAdjustReason(e.target.value)}
-                    className="premium-input border bg-white px-3 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
+                    className="premium-input border border-slate-250 dark:border-slate-800 bg-white dark:bg-[#12121e] text-slate-900 dark:text-white px-3 py-2 font-sans text-xs focus:border-orange-500 focus:ring-1 focus:ring-orange-500/35 focus:outline-hidden rounded-xl w-full"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-slate-900 hover:bg-slate-850 text-white font-sans text-xs font-bold tracking-wider rounded-lg shadow-md mt-2 cursor-pointer"
+                  className="w-full py-3 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-slate-955 dark:hover:bg-slate-100 text-white font-sans text-xs font-bold tracking-wider rounded-xl shadow-md mt-3 cursor-pointer transition-colors duration-150"
                 >
                   {t('COMMIT BALANCE ADJUSTMENT', 'تبدیلی فنانشل لاگ درج کریں')}
                 </button>

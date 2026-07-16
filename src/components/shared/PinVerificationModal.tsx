@@ -109,7 +109,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
             duration: error ? 0.4 : 0.6,
             bounce: 0.4
           }}
-          className="relative bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/50 rounded-[2.5rem] p-8 w-full max-w-sm shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden"
+          className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10/50 dark:border-slate-700/50 rounded-[2.5rem] p-8 w-full max-w-sm shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden"
         >
           {/* Background glow */}
           <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-full h-32 blur-3xl opacity-20 pointer-events-none transition-colors duration-500 ${successAnim ? 'bg-emerald-500' : error ? 'bg-rose-500' : 'bg-indigo-500'}`} />
@@ -179,7 +179,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
                   key={num}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => handlePadClick(num.toString())}
-                  className="w-16 h-16 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/50 dark:hover:bg-slate-800 flex items-center justify-center text-2xl font-medium text-slate-700 dark:text-slate-200 mx-auto transition-colors shadow-sm"
+                  className="w-16 h-16 rounded-full bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:bg-slate-800/50 dark:hover:bg-slate-800 flex items-center justify-center text-2xl font-medium text-slate-700 dark:text-slate-200 mx-auto transition-colors shadow-sm"
                 >
                   {num}
                 </motion.button>
@@ -188,7 +188,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => handlePadClick('0')}
-                className="w-16 h-16 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/50 dark:hover:bg-slate-800 flex items-center justify-center text-2xl font-medium text-slate-700 dark:text-slate-200 mx-auto transition-colors shadow-sm"
+                className="w-16 h-16 rounded-full bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:bg-slate-800/50 dark:hover:bg-slate-800 flex items-center justify-center text-2xl font-medium text-slate-700 dark:text-slate-200 mx-auto transition-colors shadow-sm"
               >
                 0
               </motion.button>

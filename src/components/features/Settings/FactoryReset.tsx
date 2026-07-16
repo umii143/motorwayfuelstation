@@ -124,8 +124,8 @@ export default function FactoryReset({ settings, activeStationId }: { settings: 
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+      <div className="border-b border-slate-200 dark:border-white/10 pb-4">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
           <ShieldAlert className="h-6 w-6 text-rose-600" />
           {t('Factory Reset', 'فیکٹری ری سیٹ')}
         </h2>
@@ -140,7 +140,7 @@ export default function FactoryReset({ settings, activeStationId }: { settings: 
             <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-rose-100">
               <Trash2 className="h-10 w-10 text-rose-500" />
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">{t('Are you absolutely sure?', 'کیا آپ کو پورا یقین ہے؟')}</h3>
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">{t('Are you absolutely sure?', 'کیا آپ کو پورا یقین ہے؟')}</h3>
             <p className="text-slate-600 mb-8 max-w-lg mx-auto">
               {t('This action cannot be undone. All shifts, inventory, financial ledgers, and settings will be permanently wiped from this device.', 'یہ عمل واپس نہیں کیا جا سکتا۔ تمام شفٹس، انوینٹری، مالیاتی لیجرز، اور ترتیبات کو اس ڈیوائس سے مستقل طور پر مٹا دیا جائے گا۔')}
             </p>
@@ -158,29 +158,29 @@ export default function FactoryReset({ settings, activeStationId }: { settings: 
 
         {step === 2 && (
           <div className="p-8 animate-in slide-in-from-right-8">
-            <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
               <Database className="h-6 w-6 text-indigo-500" />
               {t('Dry Run Analysis', 'ڈرائی رن کا تجزیہ')}
             </h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-              <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
+              <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-5 border border-slate-200 dark:border-white/10">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Records to Delete</p>
                 <p className="text-3xl font-mono font-bold text-rose-600">{recordsCount.toLocaleString()}</p>
                 <p className="text-sm text-slate-500 mt-2">Transactions, Shifts, Customers, etc.</p>
               </div>
               
-              <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
+              <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-5 border border-slate-200 dark:border-white/10">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Estimated Auto-Backup Size</p>
                 <p className="text-3xl font-mono font-bold text-indigo-600">{estimatedSize}</p>
                 <p className="text-sm text-slate-500 mt-2">Will be generated before wiping.</p>
               </div>
             </div>
 
-            <div className="flex justify-between items-center pt-6 border-t border-slate-100">
+            <div className="flex justify-between items-center pt-6 border-t border-slate-100 dark:border-white/5">
               <button 
                 onClick={() => setStep(1)}
-                className="px-6 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-lg font-bold hover:bg-slate-50 transition-colors"
+                className="px-6 py-2.5 bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 text-slate-600 rounded-lg font-bold hover:bg-slate-50 dark:bg-white/5 transition-colors"
               >
                 {t('Cancel', 'کینسل')}
               </button>
@@ -199,7 +199,7 @@ export default function FactoryReset({ settings, activeStationId }: { settings: 
           <div className="p-8 max-w-xl mx-auto animate-in slide-in-from-bottom-8">
             <div className="text-center mb-8">
               <AlertTriangle className="h-12 w-12 text-rose-600 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-slate-900">{t('Final Authorization', 'حتمی اجازت')}</h3>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">{t('Final Authorization', 'حتمی اجازت')}</h3>
               <p className="text-sm text-slate-500 mt-1">Please fulfill all security conditions to unlock the wipe button.</p>
             </div>
 
@@ -221,7 +221,7 @@ export default function FactoryReset({ settings, activeStationId }: { settings: 
                       value={pin}
                       onChange={(e) => setPin(e.target.value)}
                       placeholder="******"
-                      className="w-full pl-10 pr-3 py-3 bg-white border border-rose-200 rounded-lg text-lg font-mono font-bold text-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 tracking-widest text-center shadow-inner"
+                      className="w-full pl-10 pr-3 py-3 bg-white dark:bg-[#151521] border border-rose-200 rounded-lg text-lg font-mono font-bold text-slate-800 dark:text-slate-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 tracking-widest text-center shadow-inner"
                     />
                   </div>
                 </div>
@@ -239,7 +239,7 @@ export default function FactoryReset({ settings, activeStationId }: { settings: 
                     value={totpCode}
                     onChange={(e) => setTotpCode(e.target.value)}
                     placeholder="000000"
-                    className="w-full px-3 py-3 bg-white border border-rose-200 rounded-lg text-lg font-mono font-bold text-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 tracking-widest text-center shadow-inner"
+                    className="w-full px-3 py-3 bg-white dark:bg-[#151521] border border-rose-200 rounded-lg text-lg font-mono font-bold text-slate-800 dark:text-slate-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 tracking-widest text-center shadow-inner"
                   />
                 </div>
               )}
@@ -254,7 +254,7 @@ export default function FactoryReset({ settings, activeStationId }: { settings: 
                   value={confirmText}
                   onChange={(e) => setConfirmText(e.target.value)}
                   placeholder="DELETE ALL FUELPRO DATA"
-                  className="w-full px-3 py-3 bg-white border border-rose-200 rounded-lg text-sm font-mono font-bold text-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 text-center shadow-inner"
+                  className="w-full px-3 py-3 bg-white dark:bg-[#151521] border border-rose-200 rounded-lg text-sm font-mono font-bold text-slate-800 dark:text-slate-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 text-center shadow-inner"
                 />
               </div>
 
@@ -278,7 +278,7 @@ export default function FactoryReset({ settings, activeStationId }: { settings: 
             <div className="text-center mt-6">
               <button 
                 onClick={() => setStep(1)}
-                className="text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors"
+                className="text-sm font-bold text-slate-500 hover:text-slate-800 dark:text-slate-200 transition-colors"
               >
                 Abort & Return
               </button>
@@ -289,13 +289,13 @@ export default function FactoryReset({ settings, activeStationId }: { settings: 
         {step === 4 && (
           <div className="p-12 text-center animate-in fade-in">
             <div className="relative w-24 h-24 mx-auto mb-6">
-              <div className="absolute inset-0 border-4 border-slate-100 rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-slate-100 dark:border-white/5 rounded-full"></div>
               <div className="absolute inset-0 border-4 border-rose-600 rounded-full border-t-transparent animate-spin"></div>
               <div className="absolute inset-0 flex items-center justify-center">
                 <Trash2 className="h-8 w-8 text-rose-600" />
               </div>
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-2">{t('Wiping Data...', 'ڈیٹا حذف ہو رہا ہے...')}</h3>
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{t('Wiping Data...', 'ڈیٹا حذف ہو رہا ہے...')}</h3>
             <p className="text-slate-500">{t('Please do not close this window.', 'براہ کرم اس ونڈو کو بند نہ کریں۔')}</p>
           </div>
         )}

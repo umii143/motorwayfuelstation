@@ -53,12 +53,12 @@ export const PoweredByUmarAli: React.FC<PoweredByUmarAliProps> = ({
             <span className="font-black text-2xl tracking-tight">FuelPro FSMS</span>
           </div>
         )}
-        <div className="flex items-center gap-1.5 text-sm tracking-wide bg-slate-500/10 border border-slate-500/20 px-4 py-1.5 rounded-full shadow-xs backdrop-blur-sm">
+        <div className="flex items-center gap-1.5 text-sm tracking-wide bg-slate-50 dark:bg-white/50/10 border border-slate-500/20 px-4 py-1.5 rounded-full shadow-xs backdrop-blur-sm">
           <span className="font-medium text-[var(--text-muted,inherit)]">Powered by</span>
           <DeveloperTag />
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3">
-          <p className="text-xs font-bold bg-slate-500/10 text-[var(--text-muted,inherit)] px-3 py-1 rounded-full border border-slate-500/20">Motorway Petroleum, Mardan KPK</p>
+          <p className="text-xs font-bold bg-slate-50 dark:bg-white/50/10 text-[var(--text-muted,inherit)] px-3 py-1 rounded-full border border-slate-500/20">Motorway Petroleum, Mardan KPK</p>
           <ContactTag />
         </div>
         <div className="w-full flex justify-center mt-3">
@@ -72,15 +72,15 @@ export const PoweredByUmarAli: React.FC<PoweredByUmarAliProps> = ({
     return (
       <div className={`font-mono text-center text-[10px] sm:text-xs mt-6 pt-3 border-t-2 border-dashed border-slate-300 ${className}`}>
         <div className="font-bold flex flex-col sm:flex-row items-center justify-center gap-x-2 gap-y-1 mb-1">
-          <span className="flex items-center gap-1 text-slate-800">
-            Powered by Umar Ali <Zap className="w-3 h-3 text-slate-800 fill-slate-800" />
+          <span className="flex items-center gap-1 text-slate-800 dark:text-slate-200">
+            Powered by Umar Ali <Zap className="w-3 h-3 text-slate-800 dark:text-slate-200 fill-slate-800" />
           </span>
           <span className="hidden sm:inline text-slate-400">|</span>
           <span className="flex items-center gap-1">
             WA: 0316-8432329
           </span>
         </div>
-        <div className="text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 border border-slate-200 inline-block px-2 py-0.5 rounded-md">FuelPro FSMS v2.0</div>
+        <div className="text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 border border-slate-200 dark:border-white/10 inline-block px-2 py-0.5 rounded-md">FuelPro FSMS v2.0</div>
       </div>
     );
   }
@@ -93,10 +93,10 @@ export const PoweredByUmarAli: React.FC<PoweredByUmarAliProps> = ({
           <span className="text-3xl bg-clip-text text-transparent bg-gradient-to-br from-indigo-700 to-violet-500">FuelPro</span>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <div className="text-xs sm:text-sm font-semibold text-slate-700 flex items-center gap-1.5 uppercase tracking-widest bg-white/80 backdrop-blur-md px-4 py-1.5 rounded-full shadow-lg border border-white/40">
+          <div className="text-xs sm:text-sm font-semibold text-slate-700 flex items-center gap-1.5 uppercase tracking-widest bg-white dark:bg-[#151521]/80 backdrop-blur-md px-4 py-1.5 rounded-full shadow-lg border border-white/40">
             Powered by <DeveloperTag />
           </div>
-          <div className="bg-white/90 backdrop-blur-md px-1 py-1 rounded-lg shadow-lg border border-emerald-100/50">
+          <div className="bg-white dark:bg-[#151521]/90 backdrop-blur-md px-1 py-1 rounded-lg shadow-lg border border-emerald-100/50">
             <ContactTag />
           </div>
         </div>
@@ -110,7 +110,7 @@ export const PoweredByUmarAli: React.FC<PoweredByUmarAliProps> = ({
         <div className="transform -rotate-45 text-6xl md:text-8xl font-black whitespace-nowrap bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
           FuelPro | Umar Ali
         </div>
-        <div className="transform -rotate-45 text-4xl md:text-5xl font-black whitespace-nowrap mt-4 text-slate-800">
+        <div className="transform -rotate-45 text-4xl md:text-5xl font-black whitespace-nowrap mt-4 text-slate-800 dark:text-slate-200">
           WA: 0316-8432329
         </div>
       </div>
@@ -122,7 +122,7 @@ export const PoweredByUmarAli: React.FC<PoweredByUmarAliProps> = ({
       <div className={`w-full bg-[#161618] border border-white/5 rounded-2xl md:rounded-3xl p-4 md:p-6 relative overflow-hidden flex flex-col md:flex-row items-center md:items-stretch gap-4 md:gap-6 shadow-2xl ${className}`}>
         
         {/* Version Badge */}
-        <div className="absolute top-4 right-4 bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">
+        <div className="absolute top-4 right-4 bg-white dark:bg-[#151521]/5 px-2.5 py-1 rounded-lg border border-white/10">
           <span className="text-white/40 text-[11px] font-mono font-medium tracking-wider">v2.5</span>
         </div>
 
@@ -147,8 +147,8 @@ export const PoweredByUmarAli: React.FC<PoweredByUmarAliProps> = ({
         </div>
 
         {/* Divider */}
-        <div className="hidden md:block w-px bg-white/5 my-2 mx-2"></div>
-        <div className="block md:hidden h-px w-3/4 mx-auto bg-white/5 my-0.5"></div>
+        <div className="hidden md:block w-px bg-white dark:bg-[#151521]/5 my-2 mx-2"></div>
+        <div className="block md:hidden h-px w-3/4 mx-auto bg-white dark:bg-[#151521]/5 my-0.5"></div>
 
         {/* Right Section */}
         <div className="flex-1 w-full grid grid-cols-3 gap-2 sm:gap-2 items-start justify-items-center md:pt-2 pb-1 md:pb-2">
@@ -192,7 +192,7 @@ export const PoweredByUmarAli: React.FC<PoweredByUmarAliProps> = ({
       
       <div className="flex items-center justify-between w-full">
         <span className="text-[10px] font-medium text-[var(--text-muted,#94a3b8)] uppercase tracking-widest">Powered By</span>
-        <span className="text-[9px] font-bold text-white/30 bg-white/5 px-1.5 py-0.5 rounded backdrop-blur-md border border-white/5">v2.0</span>
+        <span className="text-[9px] font-bold text-white/30 bg-white dark:bg-[#151521]/5 px-1.5 py-0.5 rounded backdrop-blur-md border border-white/5">v2.0</span>
       </div>
       
       <div className="flex flex-col items-start gap-1">

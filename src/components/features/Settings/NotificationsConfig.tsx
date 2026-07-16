@@ -20,7 +20,7 @@ function NotificationToggle({ icon: Icon, iconColor, title, description, checked
           <Icon className="h-4 w-4" />
         </div>
         <div className="min-w-0">
-          <h4 className="text-sm font-bold text-slate-800">{title}</h4>
+          <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">{title}</h4>
           <p className="text-xs text-slate-500 mt-0.5">{description}</p>
         </div>
       </div>
@@ -32,7 +32,7 @@ function NotificationToggle({ icon: Icon, iconColor, title, description, checked
         aria-checked={checked}
         role="switch"
       >
-        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${
+        <span className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-[#151521] shadow-sm transition-transform duration-200 ${
           checked ? 'translate-x-6' : 'translate-x-1'
         }`} />
       </button>
@@ -84,8 +84,8 @@ export default function NotificationsConfig({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+      <div className="border-b border-slate-200 dark:border-white/10 pb-4">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
           <Bell className="h-5 w-5 text-indigo-600" />
           {t('Notifications', 'اطلاعات')}
         </h2>
@@ -95,8 +95,8 @@ export default function NotificationsConfig({
       </div>
 
       {/* Shift Alerts */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="px-5 py-3 border-b border-slate-100 bg-slate-50">
+      <div className="bg-white dark:bg-[#151521] rounded-2xl border border-slate-200 dark:border-white/10 shadow-xs overflow-hidden">
+        <div className="px-5 py-3 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5">
           <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">
             {t('Shift Alerts', 'شفٹ الرٹس')}
           </span>
@@ -114,8 +114,8 @@ export default function NotificationsConfig({
       </div>
 
       {/* Stock & Price Alerts */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="px-5 py-3 border-b border-slate-100 bg-slate-50">
+      <div className="bg-white dark:bg-[#151521] rounded-2xl border border-slate-200 dark:border-white/10 shadow-xs overflow-hidden">
+        <div className="px-5 py-3 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5">
           <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">
             {t('Stock & Price Alerts', 'اسٹاک اور قیمت الرٹس')}
           </span>
@@ -141,8 +141,8 @@ export default function NotificationsConfig({
       </div>
 
       {/* Financial Alerts */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="px-5 py-3 border-b border-slate-100 bg-slate-50">
+      <div className="bg-white dark:bg-[#151521] rounded-2xl border border-slate-200 dark:border-white/10 shadow-xs overflow-hidden">
+        <div className="px-5 py-3 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5">
           <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">
             {t('Financial Alerts', 'مالیاتی الرٹس')}
           </span>
@@ -176,8 +176,8 @@ export default function NotificationsConfig({
       </div>
 
       {/* WhatsApp Delivery */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="px-5 py-3 border-b border-slate-100 bg-slate-50">
+      <div className="bg-white dark:bg-[#151521] rounded-2xl border border-slate-200 dark:border-white/10 shadow-xs overflow-hidden">
+        <div className="px-5 py-3 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5">
           <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">
             {t('Delivery Channel', 'ترسیل کا ذریعہ')}
           </span>
@@ -202,7 +202,7 @@ export default function NotificationsConfig({
               placeholder="+92 300 1234567"
               value={notif.whatsappNumber}
               onChange={e => set('whatsappNumber', e.target.value)}
-              className="w-full max-w-xs px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 font-medium focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-all"
+              className="w-full max-w-xs px-3 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-800 dark:text-slate-200 font-medium focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-all"
             />
             <p className="text-[11px] text-slate-400 mt-1.5">
               {t('Requires WhatsApp Business API or bot integration', 'واٹس ایپ بزنس API یا بوٹ انضمام ضروری ہے')}

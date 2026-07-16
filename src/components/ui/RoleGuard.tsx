@@ -53,8 +53,8 @@ export default function RoleGuard({
 
   if (fallbackMessage) {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-slate-50 border border-slate-200 rounded-xl">
-        <h2 className="text-xl font-bold text-slate-800 mb-2">Access Denied</h2>
+      <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl">
+        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">Access Denied</h2>
         <p className="text-slate-500">{fallbackMessage}</p>
       </div>
     );

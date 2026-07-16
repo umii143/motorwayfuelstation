@@ -231,8 +231,8 @@ export default function ExecutiveDashboard({ settings, stationId }: ExecutiveDas
       </div>
 
       {/* Real Trend Chart */}
-      <div className="premium-card border border-slate-200">
-        <h3 className="font-bold text-slate-800 mb-6 flex items-center justify-between">
+      <div className="premium-card border border-slate-200 dark:border-white/10">
+        <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-6 flex items-center justify-between">
           <span>Actual Monthly Revenue ({new Date().getFullYear()})</span>
           <button className="text-xs text-rose-600 font-bold flex items-center hover:text-rose-700">View Full Report <ChevronRight className="h-3 w-3 ml-1"/></button>
         </h3>

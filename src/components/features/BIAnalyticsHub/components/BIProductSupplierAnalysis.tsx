@@ -16,10 +16,10 @@ export function BIProductSupplierAnalysis({ metrics }: any) {
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
       {/* Product Analysis */}
       <div className="premium-card border overflow-hidden">
-        <div className="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+        <div className="p-5 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <PackageOpen className="w-5 h-5 text-indigo-600" />
-            <h3 className="font-sans text-lg font-bold text-slate-900">Product Analysis</h3>
+            <h3 className="font-sans text-lg font-bold text-slate-900 dark:text-white">Product Analysis</h3>
           </div>
         </div>
         <div className="p-5">
@@ -33,8 +33,8 @@ export function BIProductSupplierAnalysis({ metrics }: any) {
                 const marginPercent = data.revenue > 0 ? (margin / data.revenue) * 100 : 0;
                 
                 return (
-                  <div key={productId} className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                    <h4 className="font-bold text-slate-800 text-base mb-3 flex items-center gap-2">
+                  <div key={productId} className="bg-slate-50 dark:bg-white/5 p-4 rounded-xl border border-slate-100 dark:border-white/5">
+                    <h4 className="font-bold text-slate-800 dark:text-slate-200 text-base mb-3 flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
                       {prod?.name || productId}
                     </h4>
@@ -51,7 +51,7 @@ export function BIProductSupplierAnalysis({ metrics }: any) {
                         <span className="text-slate-500">Total Profit</span>
                         <span className="font-bold text-emerald-600">{formatCurrency(margin)}</span>
                       </div>
-                      <div className="pt-2 mt-2 border-t border-slate-200 flex justify-between items-center">
+                      <div className="pt-2 mt-2 border-t border-slate-200 dark:border-white/10 flex justify-between items-center">
                         <span className="text-slate-500 text-xs">Avg Margin</span>
                         <span className="text-xs font-bold px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full">
                           {marginPercent.toFixed(2)}%
@@ -68,10 +68,10 @@ export function BIProductSupplierAnalysis({ metrics }: any) {
 
       {/* Supplier Analysis */}
       <div className="premium-card border overflow-hidden">
-        <div className="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+        <div className="p-5 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Truck className="w-5 h-5 text-orange-600" />
-            <h3 className="font-sans text-lg font-bold text-slate-900">Supplier Analysis</h3>
+            <h3 className="font-sans text-lg font-bold text-slate-900 dark:text-white">Supplier Analysis</h3>
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -95,7 +95,7 @@ export function BIProductSupplierAnalysis({ metrics }: any) {
                   .map(([supplierId, data]: [string, any]) => {
                     const supp = suppliers.find(s => s.id === supplierId);
                     return (
-                      <tr key={supplierId} className="hover:bg-slate-50 transition-colors">
+                      <tr key={supplierId} className="hover:bg-slate-50 dark:bg-white/5 transition-colors">
                         <td className="px-5">{supp?.name || 'any Supplier'}</td>
                         <td className="px-5 text-slate-600 text-right">{data.batches}</td>
                         <td className="px-5 text-slate-600 text-right">{data.liters.toLocaleString()} L</td>

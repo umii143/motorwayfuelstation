@@ -58,7 +58,7 @@ export default function MarginAnalysis({ settings, stationId }: MarginAnalysisPr
   return (
     <div className="space-y-4">
       <div className="premium-card p-6 border">
-        <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2">
+        <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-6 flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-emerald-500" />
           Real Gross Margin Analysis by Product
         </h3>
@@ -69,10 +69,10 @@ export default function MarginAnalysis({ settings, stationId }: MarginAnalysisPr
             const isProfitable = stats.marginPercent >= 0;
 
             return (
-              <div key={product.id} className="border border-slate-100 rounded-xl p-5 bg-slate-50/50">
+              <div key={product.id} className="border border-slate-100 dark:border-white/5 rounded-xl p-5 bg-slate-50 dark:bg-white/5/50">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h4 className="font-black text-lg text-slate-900">{product.name}</h4>
+                    <h4 className="font-black text-lg text-slate-900 dark:text-white">{product.name}</h4>
                     <span className="text-xs text-slate-500">{stats.volume.toLocaleString()} L Sold Total</span>
                   </div>
                   <div className={`p-2 rounded-full ${isProfitable ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
@@ -89,27 +89,27 @@ export default function MarginAnalysis({ settings, stationId }: MarginAnalysisPr
                     <span className="text-slate-500">Unit Cost</span>
                     <span className="font-mono font-bold text-slate-700">{settings.currency} {stats.purchasePrice.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between items-center text-sm border-b border-slate-200 pb-2">
+                  <div className="flex justify-between items-center text-sm border-b border-slate-200 dark:border-white/10 pb-2">
                     <span className="text-slate-500">Additional Costs</span>
                     <span className="font-mono font-bold text-slate-700">{settings.currency} {stats.additionalCosts.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between items-center text-sm pt-1">
-                    <span className="font-bold text-slate-800">Effective Margin / L</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-200">Effective Margin / L</span>
                     <span className={`font-mono font-black ${isProfitable ? 'text-emerald-600' : 'text-rose-600'}`}>
                       {settings.currency} {stats.marginPerLiter.toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
-                    <span className="font-bold text-slate-800">Gross Margin %</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-200">Gross Margin %</span>
                     <span className={`font-mono font-black ${isProfitable ? 'text-emerald-600' : 'text-rose-600'}`}>
                       {stats.marginPercent.toFixed(1)}%
                     </span>
                   </div>
                 </div>
 
-                <div className="mt-5 pt-4 border-t border-slate-200">
+                <div className="mt-5 pt-4 border-t border-slate-200 dark:border-white/10">
                   <div className="text-xs text-slate-500 uppercase font-bold mb-1">Total Effective Profit</div>
-                  <div className="text-xl font-black font-mono text-slate-900">
+                  <div className="text-xl font-black font-mono text-slate-900 dark:text-white">
                     {settings.currency} {stats.totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                 </div>
@@ -117,7 +117,7 @@ export default function MarginAnalysis({ settings, stationId }: MarginAnalysisPr
             );
           })}
           {products.length === 0 && (
-            <div className="col-span-full py-12 text-center text-slate-500 text-sm border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
+            <div className="col-span-full py-12 text-center text-slate-500 text-sm border-2 border-dashed border-slate-200 dark:border-white/10 rounded-xl bg-slate-50 dark:bg-white/5">
               No products configured. Please set up products in settings first.
             </div>
           )}

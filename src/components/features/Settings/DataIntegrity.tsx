@@ -35,8 +35,8 @@ export default function DataIntegrity({ settings, activeStationId, onNavigate }:
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
+      <div className="border-b border-slate-200 dark:border-white/10 pb-4">
+        <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
           <ShieldCheck className="h-6 w-6 text-indigo-600" />
           {t('Enterprise Data Integrity', 'ڈیٹا کی درستگی کا مرکز')}
         </h2>
@@ -52,7 +52,7 @@ export default function DataIntegrity({ settings, activeStationId, onNavigate }:
 
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex-1 space-y-4">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 border border-white/20 rounded-full text-xs font-bold text-indigo-200">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-[#151521]/10 border border-white/20 rounded-full text-xs font-bold text-indigo-200">
               <Activity className="h-3.5 w-3.5" />
               {t('System Health Monitoring', 'سسٹم ہیلتھ مانیٹرنگ')}
             </div>
@@ -100,15 +100,15 @@ export default function DataIntegrity({ settings, activeStationId, onNavigate }:
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="premium-card border border-slate-200">
+        <div className="premium-card border border-slate-200 dark:border-white/10">
           <div className="flex items-center gap-2 text-sm font-bold text-slate-500 mb-2">
             <CheckCircle2 className="h-4 w-4 text-emerald-500" />
             {t('Validated Shifts', 'تصدیق شدہ شِفٹس')}
           </div>
-          <div className="text-2xl font-black text-slate-900">{stats?.validatedShifts || 0}</div>
+          <div className="text-2xl font-black text-slate-900 dark:text-white">{stats?.validatedShifts || 0}</div>
         </div>
         
-        <div className="premium-card border border-slate-200">
+        <div className="premium-card border border-slate-200 dark:border-white/10">
           <div className="flex items-center gap-2 text-sm font-bold text-slate-500 mb-2">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
             {t('Open Warnings', 'انتباہات')}
@@ -116,7 +116,7 @@ export default function DataIntegrity({ settings, activeStationId, onNavigate }:
           <div className="text-2xl font-black text-amber-600">{openDrift - criticalDrift}</div>
         </div>
 
-        <div className="premium-card border border-slate-200">
+        <div className="premium-card border border-slate-200 dark:border-white/10">
           <div className="flex items-center gap-2 text-sm font-bold text-slate-500 mb-2">
             <XCircle className="h-4 w-4 text-rose-500" />
             {t('Critical Issues', 'اہم مسائل')}

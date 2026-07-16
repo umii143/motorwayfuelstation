@@ -85,7 +85,7 @@ export default function TankWizard({ tanks, products, language, onAddTank, onUpd
 
   return (
     <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-right-4 duration-500">
-      <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-[#151521] rounded-3xl shadow-sm border border-slate-200 dark:border-white/10 overflow-hidden flex flex-col">
         
         <div className="p-6 md:p-8 space-y-8 flex-1">
           
@@ -98,11 +98,11 @@ export default function TankWizard({ tanks, products, language, onAddTank, onUpd
               {t('Add New Tank', 'نیا ٹینک شامل کریں', language)}
             </button>
           ) : (
-            <div className="border border-slate-200 rounded-2xl p-6 space-y-5 bg-slate-50 shadow-inner animate-in zoom-in-95 duration-200">
+            <div className="border border-slate-200 dark:border-white/10 rounded-2xl p-6 space-y-5 bg-slate-50 dark:bg-white/5 shadow-inner animate-in zoom-in-95 duration-200">
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700">{t('Tank Name', 'ٹینک کا نام', language)}</label>
                 <input
-                  className="w-full h-12 px-4 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-medium text-slate-800"
+                  className="w-full h-12 px-4 bg-white dark:bg-[#151521] border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-medium text-slate-800 dark:text-slate-200"
                   placeholder={t("e.g., Main Petrol Tank", "مثلاً مین پیٹرول ٹینک", language)}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -118,7 +118,7 @@ export default function TankWizard({ tanks, products, language, onAddTank, onUpd
                   </div>
                 ) : (
                   <select 
-                    className="w-full h-12 px-4 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-medium text-slate-800 appearance-none cursor-pointer"
+                    className="w-full h-12 px-4 bg-white dark:bg-[#151521] border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-medium text-slate-800 dark:text-slate-200 appearance-none cursor-pointer"
                     value={productId} 
                     onChange={(e) => setProductId(e.target.value)}
                   >
@@ -137,7 +137,7 @@ export default function TankWizard({ tanks, products, language, onAddTank, onUpd
                   <label className="text-sm font-bold text-slate-700">{t('Capacity (Liters)', 'گنجائش (لیٹر)', language)}</label>
                   <input
                     type="number"
-                    className="w-full h-12 px-4 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-medium text-slate-800"
+                    className="w-full h-12 px-4 bg-white dark:bg-[#151521] border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-medium text-slate-800 dark:text-slate-200"
                     placeholder="12000"
                     value={capacity}
                     onChange={(e) => setCapacity(e.target.value)}
@@ -147,7 +147,7 @@ export default function TankWizard({ tanks, products, language, onAddTank, onUpd
                   <label className="text-sm font-bold text-slate-700">{t('Current Stock (L)', 'موجودہ اسٹاک', language)}</label>
                   <input
                     type="number"
-                    className="w-full h-12 px-4 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-medium text-slate-800"
+                    className="w-full h-12 px-4 bg-white dark:bg-[#151521] border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-medium text-slate-800 dark:text-slate-200"
                     placeholder="8500"
                     value={currentStock}
                     onChange={(e) => setCurrentStock(e.target.value)}
@@ -164,7 +164,7 @@ export default function TankWizard({ tanks, products, language, onAddTank, onUpd
                 </button>
                 <button 
                   onClick={resetForm} 
-                  className="flex-1 h-12 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl font-bold transition-colors cursor-pointer"
+                  className="flex-1 h-12 bg-white dark:bg-[#151521] border border-slate-300 hover:bg-slate-50 dark:bg-white/5 text-slate-700 rounded-xl font-bold transition-colors cursor-pointer"
                 >
                   {t('Cancel', 'منسوخ کریں', language)}
                 </button>
@@ -181,7 +181,7 @@ export default function TankWizard({ tanks, products, language, onAddTank, onUpd
                 {tanks.map((tank, index) => (
                   <div
                     key={tank.id}
-                    className="border border-slate-200 bg-white shadow-sm rounded-2xl p-5 space-y-3 animate-in fade-in slide-in-from-left-4 transition-all hover:border-blue-300 hover:shadow-md"
+                    className="border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] shadow-sm rounded-2xl p-5 space-y-3 animate-in fade-in slide-in-from-left-4 transition-all hover:border-blue-300 hover:shadow-md"
                     style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
                   >
                     <div className="flex items-start justify-between">
@@ -190,11 +190,11 @@ export default function TankWizard({ tanks, products, language, onAddTank, onUpd
                           <div className="size-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
                             <Database className="size-4 text-blue-600" />
                           </div>
-                          <h4 className="font-bold text-lg text-slate-800">{tank.name}</h4>
+                          <h4 className="font-bold text-lg text-slate-800 dark:text-slate-200">{tank.name}</h4>
                         </div>
                         <div className="flex items-center gap-2 ml-11">
                           {getProductName(tank.productId) ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 text-slate-600">
                               {getProductName(tank.productId)}
                             </span>
                           ) : (
@@ -219,7 +219,7 @@ export default function TankWizard({ tanks, products, language, onAddTank, onUpd
                         </button>
                       </div>
                     </div>
-                    <div className="ml-11 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm pt-3 border-t border-slate-100 mt-3">
+                    <div className="ml-11 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm pt-3 border-t border-slate-100 dark:border-white/5 mt-3">
                       <div>
                         <div className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{t('Capacity', 'گنجائش', language)}</div>
                         <div className="font-black text-slate-700">{Number(tank.capacity).toLocaleString()} <span className="text-xs text-slate-400 font-medium">L</span></div>

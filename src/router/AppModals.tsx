@@ -21,50 +21,61 @@ export const AppModals = ({
   return (
     <>
       {/* Premium Global Toast Popup Container */}
-      <div className="fixed top-6 left-1/2 -translate-x-1/2 sm:left-auto sm:right-6 sm:translate-x-0 w-[calc(100%-2rem)] sm:w-full sm:max-w-sm z-55 pointer-events-none">
-        <AnimatePresence>
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 sm:bottom-auto sm:top-6 sm:left-auto sm:right-6 sm:translate-x-0 w-[calc(100%-2rem)] sm:w-full sm:max-w-sm z-[100] pointer-events-none">
+        <AnimatePresence mode="wait">
           {toast?.visible && (
             <motion.div
-              initial={{ opacity: 0, y: -30, scale: 0.9 }}
+              initial={{ opacity: 0, y: 50, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -20, scale: 0.9 }}
-              transition={{ type: "spring", stiffness: 350, damping: 25 }}
-              className={`pointer-events-auto relative w-full overflow-hidden rounded-xl border p-4 shadow-xl backdrop-blur-md transition-all duration-300 ${
+              exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              className={`pointer-events-auto relative w-full overflow-hidden rounded-2xl border p-4 shadow-2xl backdrop-blur-xl transition-all duration-300 ${
                 toast.type === 'success' 
-                  ? 'border-emerald-500/30 bg-[var(--bg-card)]/90 shadow-emerald-500/10'
+                  ? 'border-emerald-500/40 bg-white dark:bg-[#151521]/95 dark:bg-slate-900/95 shadow-emerald-500/20'
                   : toast.type === 'error'
-                    ? 'border-rose-500/30 bg-[var(--bg-card)]/90 shadow-rose-500/10'
-                    : 'border-[var(--border-main)]/60 bg-[var(--bg-card)]/90 shadow-slate-950/10'
+                    ? 'border-rose-500/40 bg-white dark:bg-[#151521]/95 dark:bg-slate-900/95 shadow-rose-500/20'
+                    : 'border-blue-500/40 bg-white dark:bg-[#151521]/95 dark:bg-slate-900/95 shadow-blue-500/20'
               }`}
             >
-              <div className={`absolute top-0 left-0 right-0 h-1 ${
-                toast.type === 'success' 
-                  ? 'bg-emerald-500'
-                  : toast.type === 'error'
-                    ? 'bg-rose-500'
-                    : 'bg-[var(--primary-accent)]'
-              }`} />
-
-              <div className="flex items-start gap-3 mt-1">
-                <div className="mt-0.5 shrink-0">
-                  {toast.type === 'success' && <CheckCircle2 className="h-5 w-5 text-emerald-500" />}
-                  {toast.type === 'error' && <XCircle className="h-5 w-5 text-rose-500" />}
-                  {toast.type === 'info' && <Info className="h-5 w-5 text-[var(--primary-accent)]" />}
+              <div className="flex items-start gap-4 mb-2">
+                <div className={`mt-0.5 shrink-0 rounded-full p-2 ${
+                  toast.type === 'success' ? 'bg-emerald-100/50 dark:bg-emerald-500/20 text-emerald-500' :
+                  toast.type === 'error' ? 'bg-rose-100/50 dark:bg-rose-500/20 text-rose-500' :
+                  'bg-blue-100/50 dark:bg-blue-500/20 text-blue-500'
+                }`}>
+                  {toast.type === 'success' && <CheckCircle2 className="h-6 w-6" />}
+                  {toast.type === 'error' && <XCircle className="h-6 w-6" />}
+                  {toast.type === 'info' && <Info className="h-6 w-6" />}
                 </div>
                 <div className="flex-1">
-                  <p className="font-sans text-xs font-bold text-[var(--text-main)] leading-relaxed">
+                  <h4 className={`text-sm font-bold ${
+                    toast.type === 'success' ? 'text-emerald-700 dark:text-emerald-400' :
+                    toast.type === 'error' ? 'text-rose-700 dark:text-rose-400' :
+                    'text-blue-700 dark:text-blue-400'
+                  }`}>
+                    {toast.type === 'error' 
+                      ? (settings?.language === 'ur' ? 'انتباہ / خرابی' : 'Error / Alert') 
+                      : toast.type === 'success'
+                        ? (settings?.language === 'ur' ? 'کامیابی سے مکمل ہوا' : 'Successfully processed')
+                        : 'Information'
+                    }
+                  </h4>
+                  <p className="mt-1 font-sans text-xs font-semibold text-slate-600 dark:text-slate-300 leading-relaxed">
                     {toast.message}
                   </p>
-                  <div className="mt-2.5 flex items-center justify-between border-t border-[var(--border-main)]/40 pt-2 text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-widest">
-                    <span>
-                      {toast.type === 'error' 
-                        ? (settings?.language === 'ur' ? 'انتباہ / خرابی' : 'Error / Alert') 
-                        : (settings?.language === 'ur' ? 'کامیابی سے مکمل ہوا' : 'Successfully processed')}
-                    </span>
-                    <PoweredByUmarAli variant="compact" />
-                  </div>
                 </div>
               </div>
+              
+              <motion.div 
+                initial={{ width: "100%" }}
+                animate={{ width: "0%" }}
+                transition={{ duration: 3, ease: "linear" }}
+                className={`absolute bottom-0 left-0 h-1.5 ${
+                  toast.type === 'success' ? 'bg-emerald-500' :
+                  toast.type === 'error' ? 'bg-rose-500' :
+                  'bg-blue-500'
+                }`} 
+              />
             </motion.div>
           )}
         </AnimatePresence>

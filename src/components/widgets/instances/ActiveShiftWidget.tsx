@@ -10,7 +10,7 @@ export function ActiveShiftWidget() {
 
   if (!activeShift) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-white/[0.02] rounded-2xl border border-white/[0.05]">
+      <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-white dark:bg-[#151521]/[0.02] rounded-2xl border border-white/[0.05]">
         <h3 className="text-white font-bold text-sm flex items-center gap-2">
           <Power className="w-4 h-4 text-slate-500" />
           No Active Shift
@@ -38,19 +38,19 @@ export function ActiveShiftWidget() {
       </div>
 
       <div className="flex-1 grid grid-cols-2 gap-3">
-         <div className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.05]">
+         <div className="bg-white dark:bg-[#151521]/[0.03] rounded-xl p-3 border border-white/[0.05]">
             <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Operator</div>
             <div className="text-sm font-black text-white truncate">{shiftOperator}</div>
          </div>
-         <div className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.05]">
+         <div className="bg-white dark:bg-[#151521]/[0.03] rounded-xl p-3 border border-white/[0.05]">
             <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Expected Cash</div>
             <div className="text-sm font-black text-white truncate">{formatCurrency(expectedCash, settings)}</div>
          </div>
-         <div className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.05]">
+         <div className="bg-white dark:bg-[#151521]/[0.03] rounded-xl p-3 border border-white/[0.05]">
             <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Opening Cash</div>
             <div className="text-sm font-black text-white truncate">{formatCurrency(openingCash, settings)}</div>
          </div>
-         <div className={`rounded-xl p-3 border transition-colors ${variance < 0 ? 'bg-red-500/10 border-red-500/20' : variance > 0 ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-white/[0.03] border-white/[0.05]'}`}>
+         <div className={`rounded-xl p-3 border transition-colors ${variance < 0 ? 'bg-red-500/10 border-red-500/20' : variance > 0 ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-white dark:bg-[#151521]/[0.03] border-white/[0.05]'}`}>
             <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Variance</div>
             <div className={`text-sm font-black truncate ${variance < 0 ? 'text-red-400' : variance > 0 ? 'text-emerald-400' : 'text-white'}`}>
               {variance === 0 ? 'Balanced' : formatCurrency(variance, settings)}

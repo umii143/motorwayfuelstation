@@ -50,8 +50,8 @@ export default function TreasurySettings({ settings, onUpdateSettings, activeSta
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+      <div className="border-b border-slate-200 dark:border-white/10 pb-4">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
           <Landmark className="h-5 w-5 text-indigo-600" />
           {t('Treasury Configuration', 'ٹریژری ترتیبات')}
         </h2>
@@ -61,8 +61,8 @@ export default function TreasurySettings({ settings, onUpdateSettings, activeSta
       </div>
 
       {/* Cash Rules */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
+      <div className="bg-white dark:bg-[#151521] rounded-2xl border border-slate-200 dark:border-white/10 shadow-xs overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 flex items-center gap-2">
           <Banknote className="h-4 w-4 text-slate-500" />
           <h3 className="text-sm font-bold text-slate-700">{t('Cash Flow Rules', 'نقدی کے قواعد')}</h3>
         </div>
@@ -81,7 +81,7 @@ export default function TreasurySettings({ settings, onUpdateSettings, activeSta
                   min={0}
                   value={config.openingCashFloat}
                   onChange={e => setConfig({ ...config, openingCashFloat: Number(e.target.value) })}
-                  className="w-full pl-7 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 font-medium focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 transition-all"
+                  className="w-full pl-7 pr-3 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-800 dark:text-slate-200 font-medium focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 transition-all"
                 />
               </div>
               <p className="text-[11px] text-slate-400">{t('Cash kept in drawer at shift start', 'شفٹ شروع ہونے پر دراز میں رقم')}</p>
@@ -100,7 +100,7 @@ export default function TreasurySettings({ settings, onUpdateSettings, activeSta
                   min={0}
                   value={config.safeDropLimit}
                   onChange={e => setConfig({ ...config, safeDropLimit: Number(e.target.value) })}
-                  className="w-full pl-7 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 font-medium focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 transition-all"
+                  className="w-full pl-7 pr-3 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-800 dark:text-slate-200 font-medium focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 transition-all"
                 />
               </div>
               <p className="text-[11px] text-slate-400">{t('Alert when cash exceeds this amount', 'اس رقم سے زیادہ ہونے پر اطلاع')}</p>
@@ -119,7 +119,7 @@ export default function TreasurySettings({ settings, onUpdateSettings, activeSta
                   min={0}
                   value={config.pettyCashBudget}
                   onChange={e => setConfig({ ...config, pettyCashBudget: Number(e.target.value) })}
-                  className="w-full pl-7 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 font-medium focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 transition-all"
+                  className="w-full pl-7 pr-3 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-800 dark:text-slate-200 font-medium focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 transition-all"
                 />
               </div>
               <p className="text-[11px] text-slate-400">{t('Daily petty cash allowance', 'روزانہ پیٹی کیش الاؤنس')}</p>
@@ -129,8 +129,8 @@ export default function TreasurySettings({ settings, onUpdateSettings, activeSta
       </div>
 
       {/* Automation Toggles */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
+      <div className="bg-white dark:bg-[#151521] rounded-2xl border border-slate-200 dark:border-white/10 shadow-xs overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 flex items-center gap-2">
           <Clock className="h-4 w-4 text-slate-500" />
           <h3 className="text-sm font-bold text-slate-700">{t('Automation & Alerts', 'خودکار اطلاعات')}</h3>
         </div>
@@ -138,7 +138,7 @@ export default function TreasurySettings({ settings, onUpdateSettings, activeSta
           {/* Safe Drop Alert */}
           <div className="flex items-center justify-between px-5 py-4">
             <div>
-              <h4 className="text-sm font-bold text-slate-800">{t('Safe Drop Alerts', 'سیف ڈراپ الرٹ')}</h4>
+              <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">{t('Safe Drop Alerts', 'سیف ڈراپ الرٹ')}</h4>
               <p className="text-xs text-slate-500 mt-0.5">{t('Notify cashier when cash reaches the safe drop limit', 'نقدی حد تک پہنچنے پر کیشیر کو مطلع کریں')}</p>
             </div>
             <button
@@ -147,7 +147,7 @@ export default function TreasurySettings({ settings, onUpdateSettings, activeSta
                 config.enableSafeDropAlert ? 'bg-indigo-600' : 'bg-slate-200'
               }`}
             >
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-[#151521] shadow-sm transition-transform ${
                 config.enableSafeDropAlert ? 'translate-x-6' : 'translate-x-1'
               }`} />
             </button>
@@ -156,7 +156,7 @@ export default function TreasurySettings({ settings, onUpdateSettings, activeSta
           {/* EOD Auto Reconcile */}
           <div className="flex items-center justify-between px-5 py-4">
             <div>
-              <h4 className="text-sm font-bold text-slate-800">{t('EOD Auto-Reconcile', 'روزانہ خودکار ملان')}</h4>
+              <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">{t('EOD Auto-Reconcile', 'روزانہ خودکار ملان')}</h4>
               <p className="text-xs text-slate-500 mt-0.5">{t('Auto-generate treasury summary at end of each day', 'ہر دن کے اختتام پر ٹریژری خلاصہ خود بنائیں')}</p>
             </div>
             <button
@@ -165,7 +165,7 @@ export default function TreasurySettings({ settings, onUpdateSettings, activeSta
                 config.endOfDayAutoReconcile ? 'bg-indigo-600' : 'bg-slate-200'
               }`}
             >
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-[#151521] shadow-sm transition-transform ${
                 config.endOfDayAutoReconcile ? 'translate-x-6' : 'translate-x-1'
               }`} />
             </button>
@@ -174,7 +174,7 @@ export default function TreasurySettings({ settings, onUpdateSettings, activeSta
           {/* Cash Count Reminder */}
           <div className="flex items-center justify-between px-5 py-4">
             <div className="flex-1 min-w-0 pr-4">
-              <h4 className="text-sm font-bold text-slate-800">{t('Cash Count Reminder', 'نقدی گنتی یاددہانی')}</h4>
+              <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">{t('Cash Count Reminder', 'نقدی گنتی یاددہانی')}</h4>
               <p className="text-xs text-slate-500 mt-0.5">{t('Remind cashier to count cash every N minutes', 'ہر N منٹ بعد کیشیر کو نقدی گننے کی یاددہانی')}</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
@@ -185,7 +185,7 @@ export default function TreasurySettings({ settings, onUpdateSettings, activeSta
                 step={30}
                 value={config.cashCountReminderMin}
                 onChange={e => setConfig({ ...config, cashCountReminderMin: Number(e.target.value) })}
-                className="w-20 px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-center text-slate-800 font-bold focus:outline-none focus:border-indigo-400"
+                className="w-20 px-2 py-1.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-xs text-center text-slate-800 dark:text-slate-200 font-bold focus:outline-none focus:border-indigo-400"
               />
               <span className="text-xs text-slate-500 font-medium">min</span>
             </div>

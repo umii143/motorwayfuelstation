@@ -109,9 +109,9 @@ export function ExportToolbar({ isOpen, onClose, data, columns, title, filenameP
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs">
-      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-2xl">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-          <h3 className="font-sans text-sm font-bold text-slate-900 flex items-center gap-2">
+      <div className="w-full max-w-sm rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-6 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3 mb-4">
+          <h3 className="font-sans text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Download className="h-5 w-5 text-indigo-600" />
             <span>{isUrdu ? 'ڈیٹا ایکسپورٹ کریں' : 'Export Data'}</span>
           </h3>
@@ -143,7 +143,7 @@ export function ExportToolbar({ isOpen, onClose, data, columns, title, filenameP
 
           <button
             onClick={handlePrint}
-            className="flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-4 hover:bg-slate-100 hover:border-slate-300 transition-colors cursor-pointer"
+            className="flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 p-4 hover:bg-slate-100 dark:bg-white/10 hover:border-slate-300 transition-colors cursor-pointer"
           >
             <Printer className="h-6 w-6 text-slate-600" />
             <span className="font-bold text-xs text-slate-700">Print / Thermal</span>

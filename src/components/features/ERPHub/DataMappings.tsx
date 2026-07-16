@@ -22,9 +22,9 @@ export default function DataMappings({ settings, stationId }: DataMappingsProps)
   return (
     <div className="space-y-6 max-w-4xl">
       <div className="premium-card border overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5/50 flex justify-between items-center">
           <div>
-            <h3 className="font-bold text-slate-800 flex items-center gap-2">
+            <h3 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <Database className="h-4 w-4 text-slate-500" />
               Master Data Mappings
             </h3>
@@ -33,7 +33,7 @@ export default function DataMappings({ settings, stationId }: DataMappingsProps)
         </div>
 
         <div className="p-6">
-          <div className="grid grid-cols-12 gap-4 mb-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-100 pb-2">
+          <div className="grid grid-cols-12 gap-4 mb-4 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:border-white/5 pb-2">
             <div className="col-span-4">Local Entity</div>
             <div className="col-span-2 text-center"></div>
             <div className="col-span-4">External Identifier (ERP)</div>
@@ -44,7 +44,7 @@ export default function DataMappings({ settings, stationId }: DataMappingsProps)
             {mappings.map((map, idx) => (
               <div key={idx} className="grid grid-cols-12 gap-4 items-center group">
                 <div className="col-span-4">
-                  <div className="bg-slate-50 border border-slate-200 px-3 py-2 rounded text-sm text-slate-700 font-medium truncate">
+                  <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 px-3 py-2 rounded text-sm text-slate-700 font-medium truncate">
                     {map.local}
                   </div>
                 </div>
@@ -55,11 +55,11 @@ export default function DataMappings({ settings, stationId }: DataMappingsProps)
                   <input 
                     type="text" 
                     defaultValue={map.external}
-                    className="w-full bg-white border border-slate-200 px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded text-sm font-mono text-slate-800 focus:ring-2 focus:ring-rose-500 outline-none"
+                    className="w-full bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded text-sm font-mono text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-rose-500 outline-none"
                   />
                 </div>
                 <div className="col-span-2 text-right">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 bg-slate-100 dark:bg-white/10 px-2 py-1 rounded">
                     {map.type}
                   </span>
                 </div>
@@ -67,7 +67,7 @@ export default function DataMappings({ settings, stationId }: DataMappingsProps)
             ))}
           </div>
           
-          <div className="mt-8 pt-4 border-t border-slate-100 flex justify-end">
+          <div className="mt-8 pt-4 border-t border-slate-100 dark:border-white/5 flex justify-end">
             <button className="flex items-center gap-2 bg-rose-600 text-white px-6 py-3 sm:py-2 min-h-[48px] sm:min-h-[40px] rounded-lg text-sm font-bold hover:bg-rose-700 transition">
               <Save className="h-4 w-4" /> Save Mappings
             </button>

@@ -23,8 +23,8 @@ export default function CredentialsManager({ settings, stationId }: CredentialsM
       </div>
 
       <div className="premium-card border overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-          <h3 className="font-bold text-slate-800 flex items-center gap-2">
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5 flex justify-between items-center bg-slate-50 dark:bg-white/5/50">
+          <h3 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
             <Key className="h-4 w-4 text-slate-500" />
             Active Credentials
           </h3>
@@ -34,16 +34,16 @@ export default function CredentialsManager({ settings, stationId }: CredentialsM
         </div>
         <div className="divide-y divide-slate-100">
           {credentials.map(cred => (
-            <div key={cred.id} className="p-6 flex flex-row items-center justify-between gap-4 hover:bg-slate-50 transition">
+            <div key={cred.id} className="p-6 flex flex-row items-center justify-between gap-4 hover:bg-slate-50 dark:bg-white/5 transition">
               <div>
-                <div className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                <div className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
                   {cred.name}
                   <span className={`text-[9px] uppercase px-2 py-0.5 rounded-full ${cred.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>
                     {cred.status}
                   </span>
                 </div>
                 <div className="mt-2 flex items-center gap-2">
-                  <code className="bg-slate-100 px-2 py-1 rounded text-xs text-slate-600 font-mono">
+                  <code className="bg-slate-100 dark:bg-white/10 px-2 py-1 rounded text-xs text-slate-600 font-mono">
                     {cred.key}
                   </code>
                   <button className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded transition" title="Reveal">
@@ -66,19 +66,19 @@ export default function CredentialsManager({ settings, stationId }: CredentialsM
 
       {/* Webhook Configuration Mock */}
       <div className="premium-card border overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-          <h3 className="font-bold text-slate-800">Outgoing Webhooks</h3>
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5/50">
+          <h3 className="font-bold text-slate-800 dark:text-slate-200">Outgoing Webhooks</h3>
           <p className="text-xs text-slate-500 mt-1">Configure endpoints to receive real-time events when data changes.</p>
         </div>
         <div className="p-6 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Endpoint URL</label>
-              <input type="url" placeholder="https://api.yourcompany.com/webhooks/fuel" className="w-full px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500" />
+              <input type="url" placeholder="https://api.yourcompany.com/webhooks/fuel" className="w-full px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:ring-2 focus:ring-rose-500" />
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Event Types</label>
-              <select className="w-full px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 bg-white">
+              <select className="w-full px-3 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 bg-white dark:bg-[#151521]">
                 <option>All Events (Shifts, Drops, Loyalty)</option>
                 <option>Shift Close Only</option>
                 <option>Tanker Deliveries Only</option>

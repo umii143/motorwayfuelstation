@@ -178,9 +178,9 @@ export default function MeterManagement({ settings, activeStationId }: { setting
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="border-b border-slate-200 dark:border-white/10 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Gauge className="h-6 w-6 text-rose-600" />
             {t('Meter Management', 'میٹر مینجمنٹ')}
           </h2>
@@ -190,11 +190,11 @@ export default function MeterManagement({ settings, activeStationId }: { setting
         </div>
         
         {/* Tabs */}
-        <div className="flex bg-slate-100 p-1 rounded-lg">
+        <div className="flex bg-slate-100 dark:bg-white/10 p-1 rounded-lg">
           <button
             onClick={() => setActiveTab('setup')}
             className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold transition-colors ${
-              activeTab === 'setup' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              activeTab === 'setup' ? 'bg-white dark:bg-[#151521] text-rose-600 shadow-sm' : 'text-slate-600 hover:text-slate-900 dark:text-white'
             }`}
           >
             <Gauge className="h-4 w-4" />
@@ -203,7 +203,7 @@ export default function MeterManagement({ settings, activeStationId }: { setting
           <button
             onClick={() => setActiveTab('history')}
             className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold transition-colors ${
-              activeTab === 'history' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              activeTab === 'history' ? 'bg-white dark:bg-[#151521] text-rose-600 shadow-sm' : 'text-slate-600 hover:text-slate-900 dark:text-white'
             }`}
           >
             <History className="h-4 w-4" />
@@ -213,10 +213,10 @@ export default function MeterManagement({ settings, activeStationId }: { setting
       </div>
 
       {activeTab === 'setup' && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+        <div className="bg-white dark:bg-[#151521] rounded-xl border border-slate-200 dark:border-white/10 shadow-xs overflow-hidden">
           {/* Progress Steps */}
-          <div className="flex items-center border-b border-slate-100 bg-slate-50 px-6 py-3">
-            <div className={`flex items-center gap-2 text-sm font-bold ${step >= 1 ? 'text-slate-900' : 'text-slate-400'}`}>
+          <div className="flex items-center border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 px-6 py-3">
+            <div className={`flex items-center gap-2 text-sm font-bold ${step >= 1 ? 'text-slate-900 dark:text-white' : 'text-slate-400'}`}>
               <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step >= 1 ? 'bg-slate-900 text-white' : 'bg-slate-200'}`}>1</span>
               Setup
             </div>
@@ -226,7 +226,7 @@ export default function MeterManagement({ settings, activeStationId }: { setting
               Analysis
             </div>
             <div className="h-px w-8 bg-slate-300 mx-3 hidden sm:block"></div>
-            <div className={`flex items-center gap-2 text-sm font-bold ${step >= 3 ? 'text-slate-900' : 'text-slate-400'} ml-4 sm:ml-0`}>
+            <div className={`flex items-center gap-2 text-sm font-bold ${step >= 3 ? 'text-slate-900 dark:text-white' : 'text-slate-400'} ml-4 sm:ml-0`}>
               <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step >= 3 ? 'bg-slate-900 text-white' : 'bg-slate-200'}`}>3</span>
               Execute
             </div>
@@ -240,7 +240,7 @@ export default function MeterManagement({ settings, activeStationId }: { setting
                   <select 
                     value={selectedNozzleId}
                     onChange={(e) => setSelectedNozzleId(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold text-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
+                    className="w-full px-3 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-sm font-semibold text-slate-800 dark:text-slate-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
                   >
                     <option value="">{t('-- Select Nozzle --', '-- نوزل منتخب کریں --')}</option>
                     {nozzles.map(n => (
@@ -258,7 +258,7 @@ export default function MeterManagement({ settings, activeStationId }: { setting
                           type="text" 
                           value={currentReading}
                           disabled
-                          className="w-full px-3 py-2.5 bg-slate-100 border border-slate-200 rounded-lg text-sm font-mono font-bold text-slate-500 cursor-not-allowed"
+                          className="w-full px-3 py-2.5 bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-lg text-sm font-mono font-bold text-slate-500 cursor-not-allowed"
                         />
                       </div>
                       <div className="space-y-1.5">
@@ -280,7 +280,7 @@ export default function MeterManagement({ settings, activeStationId }: { setting
                         value={reason}
                         onChange={(e) => setReason(e.target.value)}
                         placeholder="e.g. Dispenser meter replaced, System error jump, Meter Rollover..."
-                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 min-h-[80px]"
+                        className="w-full px-3 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-sm text-slate-800 dark:text-slate-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 min-h-[80px]"
                       />
                     </div>
 
@@ -309,19 +309,19 @@ export default function MeterManagement({ settings, activeStationId }: { setting
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs text-center">
+                  <div className="bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 rounded-xl p-4 shadow-xs text-center">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Difference</p>
-                    <p className="text-2xl font-mono font-bold text-slate-800">
+                    <p className="text-2xl font-mono font-bold text-slate-800 dark:text-slate-200">
                       {readingDifference > 0 ? '+' : ''}{readingDifference.toFixed(2)}
                     </p>
                   </div>
-                  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs text-center">
+                  <div className="bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 rounded-xl p-4 shadow-xs text-center">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Financial Check</p>
                     <p className={`text-2xl font-mono font-bold flex items-center justify-center gap-1 ${readingDifference > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                       {settings.currency} {Math.abs(financialImpact).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </p>
                   </div>
-                  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs text-center">
+                  <div className="bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 rounded-xl p-4 shadow-xs text-center">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Stock Snapshot</p>
                     <p className="text-2xl font-mono font-bold text-blue-600">
                       {selectedProduct?.currentStock.toLocaleString(undefined, { maximumFractionDigits: 0 })} L
@@ -329,8 +329,8 @@ export default function MeterManagement({ settings, activeStationId }: { setting
                   </div>
                 </div>
 
-                <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-                  <h4 className="text-sm font-bold text-slate-800 mb-2">Record Capture Summary</h4>
+                <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg p-4">
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-2">Record Capture Summary</h4>
                   <ul className="text-xs text-slate-600 space-y-1.5 list-disc pl-4">
                     <li>Current stock of <strong>{selectedProduct?.name}</strong> is <strong>{selectedProduct?.currentStock.toFixed(2)} L</strong>. This stock level will be recorded in the reset history.</li>
                     <li>Current rate of <strong>{settings.currency} {selectedProduct?.rate}</strong> will be logged.</li>
@@ -342,7 +342,7 @@ export default function MeterManagement({ settings, activeStationId }: { setting
                 <div className="pt-4 flex justify-between">
                   <button 
                     onClick={() => setStep(1)}
-                    className="px-4 py-2 bg-white text-slate-600 border border-slate-200 rounded-lg text-sm font-bold shadow-xs hover:bg-slate-50 transition-colors"
+                    className="px-4 py-2 bg-white dark:bg-[#151521] text-slate-600 border border-slate-200 dark:border-white/10 rounded-lg text-sm font-bold shadow-xs hover:bg-slate-50 dark:bg-white/5 transition-colors"
                   >
                     {t('Back', 'پیچھے')}
                   </button>
@@ -363,11 +363,11 @@ export default function MeterManagement({ settings, activeStationId }: { setting
                   <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-200 shadow-inner">
                     <ShieldAlert className="h-8 w-8 text-rose-600" />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-900">{t('Owner Authorization', 'مالک کی اجازت')}</h3>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">{t('Owner Authorization', 'مالک کی اجازت')}</h3>
                   <p className="text-sm text-slate-500 mt-1">This action is irreversible and fully audited.</p>
                 </div>
 
-                <div className="space-y-4 bg-slate-50 p-6 rounded-xl border border-slate-200">
+                <div className="space-y-4 bg-slate-50 dark:bg-white/5 p-6 rounded-xl border border-slate-200 dark:border-white/10">
                   {settings.security?.requirePinForMeterReset !== false && (
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('Master Owner PIN', 'ماسٹر اونر پن')}</label>
@@ -381,7 +381,7 @@ export default function MeterManagement({ settings, activeStationId }: { setting
                           onChange={(e) => setPin(e.target.value)}
                           maxLength={6}
                           placeholder="******"
-                          className="w-full pl-10 pr-3 py-3 bg-white border border-slate-200 rounded-lg text-lg font-mono font-bold text-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 text-center tracking-widest"
+                          className="w-full pl-10 pr-3 py-3 bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 rounded-lg text-lg font-mono font-bold text-slate-800 dark:text-slate-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 text-center tracking-widest"
                         />
                       </div>
                     </div>
@@ -394,7 +394,7 @@ export default function MeterManagement({ settings, activeStationId }: { setting
                       value={confirmationText}
                       onChange={(e) => setConfirmationText(e.target.value)}
                       placeholder="RESET METER"
-                      className="w-full px-3 py-3 bg-white border border-slate-200 rounded-lg text-sm font-mono font-bold text-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 text-center"
+                      className="w-full px-3 py-3 bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 rounded-lg text-sm font-mono font-bold text-slate-800 dark:text-slate-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 text-center"
                     />
                   </div>
 
@@ -422,7 +422,7 @@ export default function MeterManagement({ settings, activeStationId }: { setting
 
       {activeTab === 'history' && (
         <div className="space-y-4">
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col sm:flex-row gap-4">
+          <div className="bg-white dark:bg-[#151521] p-4 rounded-xl border border-slate-200 dark:border-white/10 shadow-xs flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
                 {t('Search', 'تلاش کریں')}
@@ -436,7 +436,7 @@ export default function MeterManagement({ settings, activeStationId }: { setting
                   placeholder={t('Search reason, nozzle, salesman...', 'وجہ، نوزل، سیلزمین تلاش کریں...')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:border-slate-400 focus:ring-1 focus:ring-slate-400"
+                  className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:border-slate-400 focus:ring-1 focus:ring-slate-400"
                 />
               </div>
             </div>
@@ -453,7 +453,7 @@ export default function MeterManagement({ settings, activeStationId }: { setting
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full sm:w-40 pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:border-slate-400 focus:ring-1 focus:ring-slate-400"
+                  className="w-full sm:w-40 pl-9 pr-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:border-slate-400 focus:ring-1 focus:ring-slate-400"
                 />
               </div>
             </div>
@@ -470,17 +470,17 @@ export default function MeterManagement({ settings, activeStationId }: { setting
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full sm:w-40 pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:border-slate-400 focus:ring-1 focus:ring-slate-400"
+                  className="w-full sm:w-40 pl-9 pr-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-sm focus:border-slate-400 focus:ring-1 focus:ring-slate-400"
                 />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+          <div className="bg-white dark:bg-[#151521] rounded-xl border border-slate-200 dark:border-white/10 shadow-xs overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200">
+                  <tr className="bg-slate-50 dark:bg-white/5 border-b border-slate-200 dark:border-white/10">
                     <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('Date & Time', 'تاریخ اور وقت')}</th>
                     <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('Nozzle', 'نوزل')}</th>
                     <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">{t('Old Reading', 'پرانی ریڈنگ')}</th>
@@ -495,11 +495,11 @@ export default function MeterManagement({ settings, activeStationId }: { setting
                 <tbody className="divide-y divide-slate-100">
                   {filteredHistory.length > 0 ? (
                     filteredHistory.map((reset) => (
-                      <tr key={reset.id} className="hover:bg-slate-50/50 transition-colors">
+                      <tr key={reset.id} className="hover:bg-slate-50 dark:bg-white/5/50 transition-colors">
                         <td className="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">
                           {new Date(reset.timestamp).toLocaleString()}
                         </td>
-                        <td className="px-4 py-3 text-sm font-bold text-slate-900">
+                        <td className="px-4 py-3 text-sm font-bold text-slate-900 dark:text-white">
                           {reset.nozzleName}
                         </td>
                         <td className="px-4 py-3 text-sm font-mono text-slate-600 text-right">

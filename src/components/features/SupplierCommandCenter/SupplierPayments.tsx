@@ -128,8 +128,8 @@ export default function SupplierPayments({ suppliers, banks, settings, onClose }
   return (
     <div className="premium-modal-overlay">
       <div className="w-full max-w-xl rounded-xl border border-theme-main bg-theme-card p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-          <h3 className="font-sans text-base font-bold text-slate-900 flex items-center gap-2">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3 mb-4">
+          <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <CreditCard className="h-5 w-5 text-emerald-600" />
             <span>{t('Pay Supplier Bill', 'سپلائر بل کی ادائیگی')}</span>
           </h3>

@@ -144,7 +144,7 @@ function ScoreRing({ score, grade }: { score: number; grade: string }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-2xl font-black text-slate-800 leading-none">{score}</span>
+        <span className="text-2xl font-black text-slate-800 dark:text-slate-200 leading-none">{score}</span>
         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">/ 100</span>
       </div>
     </div>
@@ -158,7 +158,7 @@ function MetricBar({ label, value, color }: { label: string; value: number; colo
         <span className="text-[11px] text-slate-500 font-medium">{label}</span>
         <span className="text-[11px] font-bold text-slate-700">{value.toFixed(0)}%</span>
       </div>
-      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-700 ${color}`}
           style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
@@ -213,7 +213,7 @@ export default function SupplierScorecard({ suppliers, batches, supplierClaims, 
             </div>
             <div>
               <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">{s.label}</p>
-              <p className="text-lg font-black text-slate-800 leading-tight">{s.value}</p>
+              <p className="text-lg font-black text-slate-800 dark:text-slate-200 leading-tight">{s.value}</p>
             </div>
           </div>
         ))}
@@ -231,7 +231,7 @@ export default function SupplierScorecard({ suppliers, batches, supplierClaims, 
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <div className="size-12 rounded-full bg-white/20 flex items-center justify-center text-2xl font-black">
+              <div className="size-12 rounded-full bg-white dark:bg-[#151521]/20 flex items-center justify-center text-2xl font-black">
                 {topSupplier.grade}
               </div>
               <div>
@@ -255,7 +255,7 @@ export default function SupplierScorecard({ suppliers, batches, supplierClaims, 
                   {worstSupplier.grade}
                 </div>
                 <div>
-                  <p className="font-black text-slate-800">{worstSupplier.supplier.name}</p>
+                  <p className="font-black text-slate-800 dark:text-slate-200">{worstSupplier.supplier.name}</p>
                   <p className="text-slate-500 text-xs font-semibold">{worstSupplier.score}/100 · {GRADE_CONFIG[worstSupplier.grade]?.label}</p>
                 </div>
               </div>
@@ -304,7 +304,7 @@ export default function SupplierScorecard({ suppliers, batches, supplierClaims, 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-black text-slate-800 text-base">{m.supplier.name}</span>
+                    <span className="font-black text-slate-800 dark:text-slate-200 text-base">{m.supplier.name}</span>
                     <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black ${cfg.bg} ${cfg.text}`}>
                       <GradeIcon className="size-3" />
                       {m.grade} — {cfg.label}
@@ -326,7 +326,7 @@ export default function SupplierScorecard({ suppliers, batches, supplierClaims, 
                 <div className="hidden xl:flex items-center gap-4 text-xs shrink-0">
                   <div className="text-center">
                     <p className="text-slate-400 font-semibold">Deliveries</p>
-                    <p className="font-black text-slate-800 text-lg">{m.deliveries}</p>
+                    <p className="font-black text-slate-800 dark:text-slate-200 text-lg">{m.deliveries}</p>
                   </div>
                   <div className="text-center">
                     <p className="text-slate-400 font-semibold">Qty Short</p>
@@ -347,7 +347,7 @@ export default function SupplierScorecard({ suppliers, batches, supplierClaims, 
 
               {/* Expanded detail */}
               {isExpanded && (
-                <div className="border-t border-slate-100 bg-theme-bg p-4">
+                <div className="border-t border-slate-100 dark:border-white/5 bg-theme-bg p-4">
                   <div className="grid grid-cols-2 sm:grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
                     {[
                       { label: 'Total Delivered', value: `${m.totalQtyDelivered.toLocaleString()}L`, color: 'text-blue-700', bg: 'bg-blue-50 border-blue-100' },

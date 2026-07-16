@@ -67,7 +67,7 @@ function KPICard({
     'text-teal-500': 'bg-teal-500/15 ring-teal-500/20 text-teal-500',
     'text-indigo-500': 'bg-indigo-500/15 ring-indigo-500/20 text-indigo-500',
   };
-  const badgeClasses = bgColorMap[iconColor] || 'bg-slate-500/15 ring-slate-500/20 text-slate-500';
+  const badgeClasses = bgColorMap[iconColor] || 'bg-slate-50 dark:bg-white/50/15 ring-slate-500/20 text-slate-500';
 
   return (
     <div className="bg-white dark:bg-[#1A1A24] rounded-[24px] p-5 shadow-sm border border-slate-200 dark:border-white/5 relative overflow-hidden group">
@@ -117,13 +117,13 @@ function BusinessCard({
       </div>
       <div className="relative z-10">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#151521]/20 backdrop-blur flex items-center justify-center">
             <Icon className="w-5 h-5 text-white" />
           </div>
           <div>
             <h3 className="text-base font-black text-white">{name}</h3>
             <div className={`flex items-center gap-1.5 mt-0.5`}>
-              <div className={`w-1.5 h-1.5 rounded-full ${activeShift ? 'bg-emerald-300 animate-pulse' : 'bg-white/30'}`} />
+              <div className={`w-1.5 h-1.5 rounded-full ${activeShift ? 'bg-emerald-300 animate-pulse' : 'bg-white dark:bg-[#151521]/30'}`} />
               <span className="text-[10px] font-bold text-white/70">
                 {activeShift ? 'Shift Active' : 'No Active Shift'}
               </span>
@@ -132,25 +132,25 @@ function BusinessCard({
         </div>
 
         <div className="grid grid-cols-2 gap-3 mb-5">
-          <div className="bg-white/10 backdrop-blur rounded-xl p-3">
+          <div className="bg-white dark:bg-[#151521]/10 backdrop-blur rounded-xl p-3">
             <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider mb-1">Today's Sales</p>
             <p className="text-lg font-black text-white">
               {todayRevenue > 0 ? `PKR ${(todayRevenue / 1000).toFixed(0)}K` : '—'}
             </p>
           </div>
-          <div className="bg-white/10 backdrop-blur rounded-xl p-3">
+          <div className="bg-white dark:bg-[#151521]/10 backdrop-blur rounded-xl p-3">
             <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider mb-1">Total Revenue</p>
             <p className="text-lg font-black text-white">
               {totalRevenue > 0 ? `PKR ${(totalRevenue / 1000).toFixed(0)}K` : '—'}
             </p>
           </div>
-          <div className="bg-white/10 backdrop-blur rounded-xl p-3">
+          <div className="bg-white dark:bg-[#151521]/10 backdrop-blur rounded-xl p-3">
             <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider mb-1">Gross Profit</p>
             <p className="text-lg font-black text-white">
               {profit > 0 ? `PKR ${(profit / 1000).toFixed(0)}K` : '—'}
             </p>
           </div>
-          <div className="bg-white/10 backdrop-blur rounded-xl p-3">
+          <div className="bg-white dark:bg-[#151521]/10 backdrop-blur rounded-xl p-3">
             <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider mb-1">Udhar Due</p>
             <p className={`text-lg font-black ${creditOutstanding > 0 ? 'text-yellow-300' : 'text-white'}`}>
               {creditOutstanding > 0 ? `PKR ${(creditOutstanding / 1000).toFixed(0)}K` : '—'}
@@ -160,7 +160,7 @@ function BusinessCard({
 
         <button
           onClick={() => onNavigate('dashboard', businessId)}
-          className="w-full flex items-center justify-center gap-2 bg-white/15 hover:bg-white/25 backdrop-blur text-white text-sm font-bold py-2.5 rounded-xl transition-all"
+          className="w-full flex items-center justify-center gap-2 bg-white dark:bg-[#151521]/15 hover:bg-white dark:bg-[#151521]/25 backdrop-blur text-white text-sm font-bold py-2.5 rounded-xl transition-all"
         >
           Open Dashboard <ArrowRight className="w-4 h-4" />
         </button>
@@ -617,7 +617,7 @@ export const EnterpriseDashboard: React.FC<EnterpriseDashboardProps> = ({ onNavi
                 <button
                   key={`${item.view}_${item.stationId}`}
                   onClick={() => handleNav(item.view, item.stationId)}
-                  className="flex items-center gap-2.5 p-3 rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 transition-all text-left group"
+                  className="flex items-center gap-2.5 p-3 rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white dark:bg-[#151521]/10 transition-all text-left group"
                 >
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${item.color.split(' ')[1]}`}>
                     <item.icon className={`w-4 h-4 ${item.color.split(' ')[0]}`} />

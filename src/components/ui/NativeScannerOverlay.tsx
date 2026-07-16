@@ -87,7 +87,7 @@ export const NativeScannerOverlay: React.FC<NativeScannerOverlayProps> = ({
         <div className="flex gap-2">
           <button 
             onClick={toggleTorch}
-            className={`p-3 rounded-full transition-colors ${torchOn ? 'bg-yellow-400 text-slate-900' : 'bg-white/10 text-white hover:bg-white/20'}`}
+            className={`p-3 rounded-full transition-colors ${torchOn ? 'bg-yellow-400 text-slate-900 dark:text-white' : 'bg-white dark:bg-[#151521]/10 text-white hover:bg-white dark:bg-[#151521]/20'}`}
           >
             <Flashlight className="w-5 h-5" />
           </button>

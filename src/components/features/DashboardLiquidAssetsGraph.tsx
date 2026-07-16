@@ -35,7 +35,7 @@ export function DashboardLiquidAssetsGraph({ cashOnHand, banks, dueRecovery }: P
     <div className="premium-card p-6 border h-[380px] flex flex-col">
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="font-bold text-slate-900 text-lg">Liquid Assets & Receivables</h3>
+          <h3 className="font-bold text-slate-900 dark:text-white text-lg">Liquid Assets & Receivables</h3>
           <p className="text-sm text-slate-500">Distribution of physical and book balances</p>
         </div>
       </div>

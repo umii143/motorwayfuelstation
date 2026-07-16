@@ -13,7 +13,7 @@ export function HeroPerformanceWidget() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 h-full">
       {/* Gross Revenue */}
-      <div className="bg-white/[0.03] rounded-2xl p-4 sm:p-5 border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] flex flex-col justify-center relative overflow-hidden group hover:bg-white/[0.05] transition-colors">
+      <div className="bg-white dark:bg-[#151521]/[0.03] rounded-2xl p-4 sm:p-5 border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] flex flex-col justify-center relative overflow-hidden group hover:bg-white dark:bg-[#151521]/[0.05] transition-colors">
         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
           <DollarSign className="w-16 h-16 text-emerald-500" />
         </div>
@@ -26,7 +26,7 @@ export function HeroPerformanceWidget() {
       </div>
 
       {/* Net Profit */}
-      <div className="bg-white/[0.03] rounded-2xl p-4 sm:p-5 border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] flex flex-col justify-center relative overflow-hidden group hover:bg-white/[0.05] transition-colors">
+      <div className="bg-white dark:bg-[#151521]/[0.03] rounded-2xl p-4 sm:p-5 border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] flex flex-col justify-center relative overflow-hidden group hover:bg-white dark:bg-[#151521]/[0.05] transition-colors">
         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
           <Zap className="w-16 h-16 text-indigo-500" />
         </div>
@@ -39,7 +39,7 @@ export function HeroPerformanceWidget() {
       </div>
 
       {/* Sales Volume */}
-      <div className="bg-white/[0.03] rounded-2xl p-4 sm:p-5 border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] flex flex-col justify-center relative overflow-hidden group hover:bg-white/[0.05] transition-colors">
+      <div className="bg-white dark:bg-[#151521]/[0.03] rounded-2xl p-4 sm:p-5 border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] flex flex-col justify-center relative overflow-hidden group hover:bg-white dark:bg-[#151521]/[0.05] transition-colors">
         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
           <Droplets className="w-16 h-16 text-blue-500" />
         </div>
@@ -52,7 +52,7 @@ export function HeroPerformanceWidget() {
       </div>
 
       {/* Active Operations */}
-      <div className="bg-white/[0.03] rounded-2xl p-4 sm:p-5 border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] flex flex-col justify-center relative overflow-hidden group hover:bg-white/[0.05] transition-colors">
+      <div className="bg-white dark:bg-[#151521]/[0.03] rounded-2xl p-4 sm:p-5 border border-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] flex flex-col justify-center relative overflow-hidden group hover:bg-white dark:bg-[#151521]/[0.05] transition-colors">
         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
           <Clock className="w-16 h-16 text-orange-500" />
         </div>
@@ -66,7 +66,7 @@ export function HeroPerformanceWidget() {
             </div>
             <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Shifts</div>
           </div>
-          <div className="w-px h-full bg-white/10 mx-2"></div>
+          <div className="w-px h-full bg-white dark:bg-[#151521]/10 mx-2"></div>
           <div>
             <div className="text-xl sm:text-2xl lg:text-3xl font-black text-white">
               {activeNozzlesCount}/{totalNozzles}

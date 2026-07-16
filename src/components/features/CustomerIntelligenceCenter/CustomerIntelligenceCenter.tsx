@@ -63,7 +63,7 @@ export default function CustomerIntelligenceCenter({
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-sans text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
                 isActive 
                   ? 'bg-slate-900 text-white shadow-md' 
-                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+                  : 'bg-white dark:bg-[#151521] text-slate-600 hover:bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10'
               }`}
             >
               <Icon className="h-4 w-4" />

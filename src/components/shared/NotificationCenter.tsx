@@ -53,7 +53,7 @@ export function NotificationCenter() {
   };
 
   const getBgForType = (type: string, read: boolean) => {
-    if (read) return 'bg-white';
+    if (read) return 'bg-white dark:bg-[#151521]';
     switch (type) {
       case 'warning': return 'bg-amber-50/50';
       case 'alert': return 'bg-red-50/50';
@@ -67,7 +67,7 @@ export function NotificationCenter() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-full hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+        className="relative p-2 rounded-full hover:bg-slate-100 dark:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
         aria-label="Notifications"
       >
         <Bell className="h-5 w-5 text-slate-600" />
@@ -86,10 +86,10 @@ export function NotificationCenter() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl bg-white/90 backdrop-blur-xl shadow-2xl border border-white/20 z-50 overflow-hidden"
+            className="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl bg-white dark:bg-[#151521]/90 backdrop-blur-xl shadow-2xl border border-white/20 z-50 overflow-hidden"
           >
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/50">
-              <h3 className="font-bold text-slate-800 flex items-center gap-2">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5/50">
+              <h3 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                 Notifications
                 {unreadCount > 0 && (
                   <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
@@ -119,14 +119,14 @@ export function NotificationCenter() {
                     <div
                       key={notification.id}
                       onClick={() => markAsRead(notification.id)}
-                      className={`p-4 hover:bg-slate-50 transition-colors cursor-pointer flex gap-3 ${getBgForType(notification.type, notification.read)}`}
+                      className={`p-4 hover:bg-slate-50 dark:bg-white/5 transition-colors cursor-pointer flex gap-3 ${getBgForType(notification.type, notification.read)}`}
                     >
                       <div className="mt-0.5 flex-shrink-0">
                         {getIconForType(notification.type)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-start mb-1">
-                          <p className={`text-sm font-semibold truncate pr-2 ${notification.read ? 'text-slate-600' : 'text-slate-900'}`}>
+                          <p className={`text-sm font-semibold truncate pr-2 ${notification.read ? 'text-slate-600' : 'text-slate-900 dark:text-white'}`}>
                             {notification.title}
                           </p>
                           <span className="text-[10px] text-slate-400 whitespace-nowrap flex items-center gap-1 mt-0.5">
@@ -149,7 +149,7 @@ export function NotificationCenter() {
               )}
             </div>
             
-            <div className="p-2 border-t border-slate-100 bg-slate-50/50 text-center">
+            <div className="p-2 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5/50 text-center">
               <button className="text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer">
                 View All Activity
               </button>

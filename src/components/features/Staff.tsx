@@ -308,9 +308,9 @@ export default function StaffPanel({
     <div className="space-y-6 pb-20 lg:pb-5">
 
       {/* COMPACT BILINGUAL HEADER */}
-      <div className="flex flex-col gap-4 sm:flex-row items-center sm:justify-between border-b border-slate-200 pb-4">
+      <div className="flex flex-col gap-4 sm:flex-row items-center sm:justify-between border-b border-slate-200 dark:border-white/10 pb-4">
         <div>
-          <h2 className="font-sans text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+          <h2 className="font-sans text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             <Users className="h-6 w-6 text-orange-600" />
             <span>{t('Staff, Attendance & Salaried Registers', 'عملے کا حاضری اور تنخواہ رجسٹر')}</span>
           </h2>
@@ -342,18 +342,18 @@ export default function StaffPanel({
       {/* CORE HIGHLIGHT CARDS ROW */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3 sm:gap-4 sm:grid-cols-2">
         {/* Payroll burden */}
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm relative overflow-hidden">
+        <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 bottom-0 left-0 w-1 bg-red-500"></div>
           <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
             {t('Est. Monthly Payroll Allocation', 'ماہانہ تنخواہ کا مجموعی بوجھ')}
           </span>
-          <strong className="font-mono text-xl font-bold text-slate-800 tracking-tight mt-1.5 block">
+          <strong className="font-mono text-xl font-bold text-slate-800 dark:text-slate-200 tracking-tight mt-1.5 block">
             {formatCurrency(totalMonthlyPayrollExpect, settings)}
           </strong>
         </div>
 
         {/* Advances outstanding */}
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm relative overflow-hidden">
+        <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 bottom-0 left-0 w-1 bg-orange-500"></div>
           <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
             {t('Total Outstanding Advances Lent', 'مجموعی واجب الاصول ایڈوانس رقم')}
@@ -364,25 +364,25 @@ export default function StaffPanel({
         </div>
 
         {/* Attendance widget */}
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm relative overflow-hidden">
+        <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 bottom-0 left-0 w-1 bg-teal-500"></div>
           <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
             {t('Today Attendance Roster', 'آج کے روزانہ ملازمین حاضری')}
           </span>
-          <strong className="font-sans text-sm font-bold text-slate-800 tracking-tight mt-1.5 block">
+          <strong className="font-sans text-sm font-bold text-slate-800 dark:text-slate-200 tracking-tight mt-1.5 block">
             {todayAttendanceSummary.present} Present / {todayAttendanceSummary.absent} Absent
           </strong>
         </div>
       </div>
 
       {/* INTERACTIVE NAVIGATION SUBTABS */}
-      <div className="flex items-center gap-1 sm:gap-2 border-b border-slate-200 pb-0.5 overflow-x-auto whitespace-nowrap no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div className="flex items-center gap-1 sm:gap-2 border-b border-slate-200 dark:border-white/10 pb-0.5 overflow-x-auto whitespace-nowrap no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
         <button
           onClick={() => setActiveTab('crew')}
           className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap ${
             activeTab === 'crew'
               ? 'border-orange-600 text-orange-600 font-extrabold'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-200'
           }`}
         >
           {t('👥 Active Operators Roster', '👥 ملازمین کی بنیادی لسٹ')}
@@ -393,7 +393,7 @@ export default function StaffPanel({
           className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap ${
             activeTab === 'attendance'
               ? 'border-orange-600 text-orange-600 font-extrabold'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-200'
           }`}
         >
           {t('📝 Daily Attendance Registers Sheet', '📝 روزانہ ڈیوٹی حاضری شیٹ')}
@@ -404,7 +404,7 @@ export default function StaffPanel({
           className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap ${
             activeTab === 'finance'
               ? 'border-orange-600 text-orange-600 font-extrabold'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-200'
           }`}
         >
           {t('💵 Salary & Advances Ledger', '💵 تنخواہ اور ایڈوانس لاگز')}
@@ -415,7 +415,7 @@ export default function StaffPanel({
           className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap ${
             activeTab === 'legacy_finance'
               ? 'border-orange-600 text-orange-600 font-extrabold'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-200'
           }`}
         >
           {t('📜 Legacy Salary History', '📜 پرانی تنخواہ کا ریکارڈ (صرف پڑھنے کے لیے)')}
@@ -426,7 +426,7 @@ export default function StaffPanel({
           className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap ${
             activeTab === 'performance'
               ? 'border-orange-600 text-orange-600 font-extrabold'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-200'
           }`}
         >
           {t('📊 Performance & Metrics History', '📊 کارکردگی اور ملازمین رپورٹ')}
@@ -437,7 +437,7 @@ export default function StaffPanel({
           className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap ${
             activeTab === 'attendance_reports'
               ? 'border-orange-600 text-orange-600 font-extrabold'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-200'
           }`}
         >
           {t('📅 Duty Attendance Ledger Reports', '📅 حاضری کی تفصیلی رپورٹس')}
@@ -452,7 +452,7 @@ export default function StaffPanel({
               TAB 1: STAFF CREW LIST (ROSTER)
               ========================================== */}
           {activeTab === 'crew' && (
-            <div className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-x-auto">
+            <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] shadow-xs overflow-x-auto">
               <table className="premium-table min-w-[800px]">
                 <thead>
                   <tr className="text-slate-650 text-[10px]">
@@ -466,7 +466,7 @@ export default function StaffPanel({
                 <tbody className="text-slate-705">
                   {staff.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-6 bg-slate-50/10">
+                      <td colSpan={5} className="py-6 bg-slate-50 dark:bg-white/5/10">
                         <EmptyState
                           icon={Users}
                           title={t('No staff members yet.', 'کوئی ملازم موجود نہیں ہے۔')}
@@ -491,14 +491,14 @@ export default function StaffPanel({
                       const activeSalaryBalance = mem.salaryBalance || 0;
 
                       return (
-                        <tr key={mem.id} className="hover:bg-slate-50/50">
+                        <tr key={mem.id} className="hover:bg-slate-50 dark:bg-white/5/50">
                           <td className="py-3.5">
                             <div className="flex items-center gap-2">
-                              <div className="h-7 w-7 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs uppercase">
+                              <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-white/10 text-slate-700 flex items-center justify-center font-bold text-xs uppercase">
                                 {mem.name.substring(0, 2)}
                               </div>
                               <div>
-                                <span className="font-bold text-slate-800 text-xs block">
+                                <span className="font-bold text-slate-800 dark:text-slate-200 text-xs block">
                                   {t(mem.name, mem.urduName)}
                                 </span>
                                 <span className="text-[10px] text-slate-400 block font-mono">ID: {mem.id}</span>
@@ -507,7 +507,7 @@ export default function StaffPanel({
                           </td>
 
                           <td className="py-3.5">
-                            <span className="rounded bg-slate-100 px-2.5 py-0.5 text-[10px] text-slate-600 font-bold capitalize select-none">
+                            <span className="rounded bg-slate-100 dark:bg-white/10 px-2.5 py-0.5 text-[10px] text-slate-600 font-bold capitalize select-none">
                               {mem.role}
                             </span>
                           </td>
@@ -576,10 +576,10 @@ export default function StaffPanel({
               ========================================== */}
           {activeTab === 'attendance' && (
             <div className="space-y-6">
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-                <div className="flex flex-row items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
+              <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-xs space-y-4">
+                <div className="flex flex-row items-center sm:justify-between gap-3 border-b border-slate-100 dark:border-white/5 pb-3">
                   <div>
-                    <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                    <h3 className="font-sans text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-orange-600" />
                       <span>{t('Certified Crew Attendance Sheet', 'عملہ کی روزانہ حاضری رجسٹر')}</span>
                     </h3>
@@ -610,7 +610,7 @@ export default function StaffPanel({
                           setAttendanceStatuses(prev => ({ ...prev, ...fetched }));
                         }
                       }}
-                      className="rounded-lg border border-slate-200 bg-slate-50 text-slate-700 font-mono text-xs px-2.5 py-1.5 outline-hidden focus:bg-white"
+                      className="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-700 font-mono text-xs px-2.5 py-1.5 outline-hidden focus:bg-white dark:bg-[#151521]"
                     />
                   </div>
                 </div>
@@ -655,9 +655,9 @@ export default function StaffPanel({
                           };
 
                           return (
-                            <tr key={s.id} className="hover:bg-slate-50/20">
+                            <tr key={s.id} className="hover:bg-slate-50 dark:bg-white/5/20">
                               <td className="py-3.5 px-3">
-                                <span className="font-bold text-slate-800 text-xs block">{t(s.name, s.urduName)}</span>
+                                <span className="font-bold text-slate-800 dark:text-slate-200 text-xs block">{t(s.name, s.urduName)}</span>
                                 <span className="text-[10px] text-slate-450 block ml-0.5">{s.role.toUpperCase()}</span>
                               </td>
 
@@ -711,7 +711,7 @@ export default function StaffPanel({
                                   onChange={(e) => setCheckIn(e.target.value)}
                                   disabled={current.status !== 'present'}
                                   placeholder="08:00"
-                                  className="w-20 rounded border border-slate-200 bg-white p-1 text-center font-mono text-xs focus:border-orange-500 disabled:bg-slate-100 disabled:text-slate-400"
+                                  className="w-20 rounded border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-1 text-center font-mono text-xs focus:border-orange-500 disabled:bg-slate-100 dark:bg-white/10 disabled:text-slate-400"
                                 />
                               </td>
 
@@ -723,7 +723,7 @@ export default function StaffPanel({
                                   onChange={(e) => setCheckOut(e.target.value)}
                                   disabled={current.status !== 'present'}
                                   placeholder="17:00"
-                                  className="w-20 rounded border border-slate-200 bg-white p-1 text-center font-mono text-xs focus:border-orange-500 disabled:bg-slate-100 disabled:text-slate-400"
+                                  className="w-20 rounded border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-1 text-center font-mono text-xs focus:border-orange-500 disabled:bg-slate-100 dark:bg-white/10 disabled:text-slate-400"
                                 />
                               </td>
                             </tr>
@@ -733,7 +733,7 @@ export default function StaffPanel({
                     </table>
                   </div>
 
-                  <div className="flex justify-end pt-3 border-t border-slate-100">
+                  <div className="flex justify-end pt-3 border-t border-slate-100 dark:border-white/5">
                     <button
                       type="submit"
                       className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] font-sans text-xs font-bold text-white shadow-md hover:bg-orange-700 transition-colors cursor-pointer"
@@ -746,8 +746,8 @@ export default function StaffPanel({
               </div>
 
               {/* STATS RECORD HISTORY */}
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-                <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-2">
+              <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-xs space-y-4">
+                <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-2">
                   <Clock className="h-4 w-4 text-slate-400" />
                   <span>{t('Duty Attendance Historical Records log', 'گزشتہ حاضری ہسٹری لاگز')}</span>
                 </h3>
@@ -759,9 +759,9 @@ export default function StaffPanel({
                     const abs = dayRecs.filter(r => r.status === 'absent').length;
 
                     return (
-                      <div key={dtKey} className="rounded-lg border border-slate-100 p-3 bg-slate-50/50 flex justify-between items-center text-xs">
+                      <div key={dtKey} className="rounded-lg border border-slate-100 dark:border-white/5 p-3 bg-slate-50 dark:bg-white/5/50 flex justify-between items-center text-xs">
                         <div className="space-y-1">
-                          <strong className="font-mono text-slate-800 text-[11.5px] block">{dtKey}</strong>
+                          <strong className="font-mono text-slate-800 dark:text-slate-200 text-[11.5px] block">{dtKey}</strong>
                           <span className="text-slate-450 block font-sans text-[10px]">
                             {prs} {t('Present', 'حاضر')} / {abs} {t('Absent', 'غیر حاضر')}
                           </span>
@@ -783,8 +783,8 @@ export default function StaffPanel({
           {activeTab === 'finance' && (
             <div className="space-y-6">
               {/* SALARY TRANSACTIONS */}
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-                <h3 className="font-sans text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-2">
+              <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-xs space-y-4">
+                <h3 className="font-sans text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-2">
                   <DollarSign className="h-4 w-4 text-emerald-500" />
                   <span>{t('Salary Transactions', 'تنخواہ کی تفصیل')}</span>
                 </h3>
@@ -819,8 +819,8 @@ export default function StaffPanel({
               </div>
 
               {/* STAFF LOANS */}
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-                <h3 className="font-sans text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-2">
+              <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-xs space-y-4">
+                <h3 className="font-sans text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-2">
                   <Briefcase className="h-4 w-4 text-indigo-500" />
                   <span>{t('Staff Loans', 'ملازمین کے قرضے')}</span>
                 </h3>
@@ -855,8 +855,8 @@ export default function StaffPanel({
               </div>
 
               {/* SALARY ADVANCES */}
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-                <h3 className="font-sans text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-2">
+              <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-xs space-y-4">
+                <h3 className="font-sans text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-2">
                   <Coins className="h-4 w-4 text-orange-500" />
                   <span>{t('Salary Advances', 'تنخواہ کے ایڈوانس')}</span>
                 </h3>
@@ -895,8 +895,8 @@ export default function StaffPanel({
               ========================================== */}
           {activeTab === 'legacy_finance' && (
             <div className="space-y-6">
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-                <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-2">
+              <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-xs space-y-4">
+                <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-2">
                   <FileText className="h-4 w-4 text-slate-400" />
                   <span>{t('Salary, Accruals & Handouts Ledger Logs', 'تنخواہ، بقایا جات اور ایڈوانس کی مکمل ہسٹری')}</span>
                 </h3>
@@ -925,7 +925,7 @@ export default function StaffPanel({
                         staffFinance.map(sf => {
                           const mem = staff.find(s => s.id === sf.staffId);
                           return (
-                            <tr key={sf.id} className="hover:bg-slate-50/50">
+                            <tr key={sf.id} className="hover:bg-slate-50 dark:bg-white/5/50">
                               <td className="px-3 font-mono">{sf.date}</td>
                               <td>
                                 {mem ? t(mem.name, mem.urduName) : sf.staffId}
@@ -975,11 +975,11 @@ export default function StaffPanel({
             <div className="space-y-6">
               {/* KPIs Header */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-white p-4 rounded-xl border border-slate-200">
+                <div className="bg-white dark:bg-[#151521] p-4 rounded-xl border border-slate-200 dark:border-white/10">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">{t('Total Shifts Conducted', 'کل شفٹیں برپا کی گئیں')}</span>
-                  <strong className="font-mono text-lg font-bold text-slate-800 block mt-1">{shifts.length}</strong>
+                  <strong className="font-mono text-lg font-bold text-slate-800 dark:text-slate-200 block mt-1">{shifts.length}</strong>
                 </div>
-                <div className="bg-white p-4 rounded-xl border border-slate-200">
+                <div className="bg-white dark:bg-[#151521] p-4 rounded-xl border border-slate-200 dark:border-white/10">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">{t('Team Attendance Rate', 'عملہ کی مجموعی حاضری')}</span>
                   <strong className="font-mono text-lg font-bold text-emerald-600 block mt-1">
                     {attendance.length > 0
@@ -987,13 +987,13 @@ export default function StaffPanel({
                       : '0%'}
                   </strong>
                 </div>
-                <div className="bg-white p-4 rounded-xl border border-slate-200">
+                <div className="bg-white dark:bg-[#151521] p-4 rounded-xl border border-slate-200 dark:border-white/10">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">{t('Total Advances Remaining', 'مجموعی واجب الوصول ایڈوانس')}</span>
                   <strong className="font-mono text-lg font-bold text-rose-600 block mt-1">
                     {formatCurrency(staff.reduce((sum, s) => sum + (s.advanceBalance || 0), 0), settings)}
                   </strong>
                 </div>
-                <div className="bg-white p-4 rounded-xl border border-slate-200">
+                <div className="bg-white dark:bg-[#151521] p-4 rounded-xl border border-slate-200 dark:border-white/10">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">{t('Team Wage Accruals', 'مجموعی بقایا تنخواہ')}</span>
                   <strong className="font-mono text-lg font-bold text-purple-650 block mt-1">
                     {formatCurrency(staff.reduce((sum, s) => sum + (s.salaryBalance || 0), 0), settings)}
@@ -1002,10 +1002,10 @@ export default function StaffPanel({
               </div>
 
               {/* Main Performance auditing board */}
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-                <div className="flex flex-row items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
+              <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-xs space-y-4">
+                <div className="flex flex-row items-center sm:justify-between gap-3 border-b border-slate-100 dark:border-white/5 pb-3">
                   <div>
-                    <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                    <h3 className="font-sans text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
                       <TrendingDown className="h-4 w-4 text-orange-600" />
                       <span>{t('Staff Duty Performance Audits', 'عملہ کی انفرادی کارکردگی اور تصفیہ رپورٹ')}</span>
                     </h3>
@@ -1019,7 +1019,7 @@ export default function StaffPanel({
                     <select
                       value={selectedPerfStaffId}
                       onChange={(e) => setSelectedPerfStaffId(e.target.value)}
-                      className="rounded-lg border border-slate-200 bg-slate-50 text-slate-700 font-sans text-xs px-2.5 py-1.5 focus:bg-white focus:outline-hidden"
+                      className="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-700 font-sans text-xs px-2.5 py-1.5 focus:bg-white dark:bg-[#151521] focus:outline-hidden"
                     >
                       <option value="all">{t('All Active Workers', 'تمام ملازمین کا رکارڈ')}</option>
                       {staff.map(st => (
@@ -1055,9 +1055,9 @@ export default function StaffPanel({
                           const varianceCount = staffShifts.filter(sh => (sh.cashVariance || 0) !== 0).length;
 
                           return (
-                            <tr key={s.id} className="hover:bg-slate-50/50">
+                            <tr key={s.id} className="hover:bg-slate-50 dark:bg-white/5/50">
                               <td className="px-3">
-                                <span className="font-bold text-slate-800 text-xs block">{t(s.name, s.urduName)}</span>
+                                <span className="font-bold text-slate-800 dark:text-slate-200 text-xs block">{t(s.name, s.urduName)}</span>
                                 <span className="text-[10px] text-slate-450 block capitalize">{s.role} | {s.phone}</span>
                               </td>
                               <td className="text-center font-mono">{staffShifts.length}</td>
@@ -1096,10 +1096,10 @@ export default function StaffPanel({
           {activeTab === 'attendance_reports' && (
             <div className="space-y-6">
               {/* Report Controls Options */}
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-                <div className="flex flex-row items-center sm:justify-between gap-3 border-b border-slate-100 pb-3">
+              <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-xs space-y-4">
+                <div className="flex flex-row items-center sm:justify-between gap-3 border-b border-slate-100 dark:border-white/5 pb-3">
                   <div>
-                    <h3 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                    <h3 className="font-sans text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-orange-600" />
                       <span>{t('Comprehensive Attendance Ledger Dashboard', 'حاضری رجسٹر کا تفصیلی آڈٹ')}</span>
                     </h3>
@@ -1113,7 +1113,7 @@ export default function StaffPanel({
                     <button
                       onClick={() => setAttendanceReportView('daily')}
                       className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
-                        attendanceReportView === 'daily' ? 'bg-orange-600 text-white shadow-xs' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                        attendanceReportView === 'daily' ? 'bg-orange-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-white/10 text-slate-500 hover:bg-slate-200'
                       }`}
                     >
                       {t('Daily Sheet', 'روزانہ')}
@@ -1121,7 +1121,7 @@ export default function StaffPanel({
                     <button
                       onClick={() => setAttendanceReportView('weekly')}
                       className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
-                        attendanceReportView === 'weekly' ? 'bg-orange-600 text-white shadow-xs' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                        attendanceReportView === 'weekly' ? 'bg-orange-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-white/10 text-slate-500 hover:bg-slate-200'
                       }`}
                     >
                       {t('Weekly Matrix', 'ہفتہ وار')}
@@ -1129,7 +1129,7 @@ export default function StaffPanel({
                     <button
                       onClick={() => setAttendanceReportView('monthly')}
                       className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
-                        attendanceReportView === 'monthly' ? 'bg-orange-600 text-white shadow-xs' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                        attendanceReportView === 'monthly' ? 'bg-orange-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-white/10 text-slate-500 hover:bg-slate-200'
                       }`}
                     >
                       {t('Monthly Grid', 'ماہانہ')}
@@ -1146,7 +1146,7 @@ export default function StaffPanel({
                         type="date"
                         value={attendanceDate}
                         onChange={(e) => setAttendanceDate(e.target.value)}
-                        className="rounded-lg border border-slate-200 bg-slate-50 text-slate-700 font-mono text-xs px-2.5 py-1.5 focus:bg-white focus:outline-hidden"
+                        className="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-700 font-mono text-xs px-2.5 py-1.5 focus:bg-white dark:bg-[#151521] focus:outline-hidden"
                       />
                     </div>
                   )}
@@ -1158,7 +1158,7 @@ export default function StaffPanel({
                         type="month"
                         value={attendanceReportMonth}
                         onChange={(e) => setAttendanceReportMonth(e.target.value)}
-                        className="rounded-lg border border-slate-200 bg-slate-50 text-slate-700 font-mono text-xs px-2.5 py-1.5 focus:bg-white focus:outline-hidden"
+                        className="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-700 font-mono text-xs px-2.5 py-1.5 focus:bg-white dark:bg-[#151521] focus:outline-hidden"
                       />
                     </div>
                   )}
@@ -1167,7 +1167,7 @@ export default function StaffPanel({
 
               {/* RENDER VIEWS */}
               {attendanceReportView === 'daily' && (
-                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+                <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-xs space-y-4">
                   <h4 className="font-sans text-xs font-bold text-slate-500 uppercase tracking-wide">
                     {t(`Attendance status on date: ${attendanceDate}`, `روز مرہ حاضری بتاریخ: ${attendanceDate}`)}
                   </h4>
@@ -1186,11 +1186,11 @@ export default function StaffPanel({
                           const todayLog = attendance.find(a => a.date === attendanceDate && a.staffId === st.id);
 
                           return (
-                            <tr key={st.id} className="hover:bg-slate-50/25">
+                            <tr key={st.id} className="hover:bg-slate-50 dark:bg-white/5/25">
                               <td className="px-3">{t(st.name, st.urduName)}</td>
                               <td className="px-3 text-center">
                                 {!todayLog ? (
-                                  <span className="rounded bg-slate-100 py-0.5 px-2 text-[10px] font-bold text-slate-400 uppercase">{t('No Log', 'غیر نشان زد')}</span>
+                                  <span className="rounded bg-slate-100 dark:bg-white/10 py-0.5 px-2 text-[10px] font-bold text-slate-400 uppercase">{t('No Log', 'غیر نشان زد')}</span>
                                 ) : todayLog.status === 'present' ? (
                                   <span className="rounded bg-teal-50 py-0.5 px-2 text-[10px] font-bold text-teal-700 uppercase">{t('Present', 'ڈیوٹی پر حاضر')}</span>
                                 ) : todayLog.status === 'leave' ? (
@@ -1211,7 +1211,7 @@ export default function StaffPanel({
               )}
 
               {attendanceReportView === 'weekly' && (
-                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+                <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-xs space-y-4">
                   <h4 className="font-sans text-xs font-bold text-slate-500 uppercase tracking-wide">
                     {t('Roster status matrix of the past 7 days', 'ہفتہ وار ملازمین حاضری گراف شیٹ')}
                   </h4>
@@ -1230,7 +1230,7 @@ export default function StaffPanel({
                       </thead>
                       <tbody className="text-slate-700">
                         {staff.map(st => (
-                          <tr key={st.id} className="hover:bg-slate-50/25">
+                          <tr key={st.id} className="hover:bg-slate-50 dark:bg-white/5/25">
                             <td className="px-3">{t(st.name, st.urduName)}</td>
                             {Array.from({ length: 7 }).map((_, idx) => {
                               const date = new Date();
@@ -1259,7 +1259,7 @@ export default function StaffPanel({
               )}
 
               {attendanceReportView === 'monthly' && (
-                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+                <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-xs space-y-4">
                   <h4 className="font-sans text-xs font-bold text-slate-500 uppercase tracking-wide">
                     {t(`Monthly aggregate metrics for: ${attendanceReportMonth}`, `ماہانہ خلاصہ حاضری شیٹ: ${attendanceReportMonth}`)}
                   </h4>
@@ -1283,7 +1283,7 @@ export default function StaffPanel({
                           const attRate = monthLogs.length > 0 ? Math.round((presents / monthLogs.length) * 100) : 100;
 
                           return (
-                            <tr key={st.id} className="hover:bg-slate-50/25">
+                            <tr key={st.id} className="hover:bg-slate-50 dark:bg-white/5/25">
                               <td className="px-3">{t(st.name, st.urduName)}</td>
                               <td className="text-center font-mono text-slate-700">{presents}</td>
                               <td className="text-center font-mono text-rose-600">{absents}</td>
@@ -1319,10 +1319,10 @@ export default function StaffPanel({
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: 15, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 350 }}
-              className="bg-white rounded-xl border border-slate-200 w-full max-w-xl p-5 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto"
+              className="bg-white dark:bg-[#151521] rounded-xl border border-slate-200 dark:border-white/10 w-full max-w-xl p-5 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto"
             >
-              <div className="flex justify-between items-center border-b border-slate-100 pb-2.5">
-                <h4 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+              <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/5 pb-2.5">
+                <h4 className="font-sans text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
                   <Coins className="h-4 w-4 text-orange-600 animate-bounce" />
                   <span>{t('Post Finance Register Entry:', 'ملازم مالیاتی لیجر پوسٹ کارروائی:')}</span>
                 </h4>
@@ -1331,10 +1331,10 @@ export default function StaffPanel({
                 </button>
               </div>
 
-              <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-xs font-sans space-y-1">
+              <div className="bg-slate-50 dark:bg-white/5 p-2.5 rounded-lg border border-slate-100 dark:border-white/5 text-xs font-sans space-y-1">
                 <div>
                   <span className="text-slate-400 mr-2">{t('Employee Name:', 'ملازم کا نام:')}</span>
-                  <strong className="text-slate-800">{isUrdu ? activeStaffToCharge.urduName : activeStaffToCharge.name}</strong>
+                  <strong className="text-slate-800 dark:text-slate-200">{isUrdu ? activeStaffToCharge.urduName : activeStaffToCharge.name}</strong>
                 </div>
                 <div className="flex justify-between text-[11px] text-slate-500 font-mono">
                   <span>{t('Standard Base Pay:', 'ماہانہ تنخواہ:')} {formatCurrency(activeStaffToCharge.salary, settings)}</span>
@@ -1351,7 +1351,7 @@ export default function StaffPanel({
                     <select
                       value={financeType}
                       onChange={(e: any) => setFinanceType(e.target.value)}
-                      className="premium-input border bg-white px-3 outline-hidden focus:border-orange-500"
+                      className="premium-input border bg-white dark:bg-[#151521] px-3 outline-hidden focus:border-orange-500"
                     >
                       <option value="advance">{t('Lent Short-term Advance', '💵 نیا ایڈوانس پے کریں')}</option>
                       <option value="loan">{t('Issue Long-term Loan', '🏦 نیا قرضہ دیں')}</option>
@@ -1417,7 +1417,7 @@ export default function StaffPanel({
                       <select
                         value={financeMode}
                         onChange={(e: any) => setFinanceMode(e.target.value)}
-                        className="premium-input border bg-white px-3 outline-hidden focus:border-orange-500"
+                        className="premium-input border bg-white dark:bg-[#151521] px-3 outline-hidden focus:border-orange-500"
                       >
                         <option value="cash">{t('Station Daily Cash Box Outflow', 'روزانہ کیش فلو دراز')}</option>
                         <option value="bank">{t('Certified Corporate Bank Remittance', 'سرکاری اکاؤنٹ بینک ٹرانسفر')}</option>
@@ -1438,7 +1438,7 @@ export default function StaffPanel({
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-white/5">
                   <button
                     type="button"
                     onClick={() => setSelectedStaffId(null)}
@@ -1480,10 +1480,10 @@ export default function StaffPanel({
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: 15, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 350 }}
-              className="bg-white rounded-xl border border-slate-200 w-full max-w-2xl p-5 max-h-[90vh] overflow-y-auto"
+              className="bg-white dark:bg-[#151521] rounded-xl border border-slate-200 dark:border-white/10 w-full max-w-2xl p-5 max-h-[90vh] overflow-y-auto"
             >
-              <div className="flex justify-between items-center border-b border-slate-100 pb-2.5">
-                <h4 className="font-sans text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+              <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/5 pb-2.5">
+                <h4 className="font-sans text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
                   <PlusCircle className="h-4.5 w-4.5 text-orange-600 animate-pulse" />
                   <span>{t('Register New Crew Employee:', 'نیا پمپ ملازم بھرتی فارم:')}</span>
                 </h4>
@@ -1501,7 +1501,7 @@ export default function StaffPanel({
                       placeholder="e.g. Abdul Rehman"
                       value={addName}
                       onChange={(e) => setAddName(e.target.value)}
-                      className="premium-input border px-3 outline-hidden focus:border-orange-500 font-sans text-slate-800"
+                      className="premium-input border px-3 outline-hidden focus:border-orange-500 font-sans text-slate-800 dark:text-slate-200"
                     />
                   </div>
 
@@ -1512,7 +1512,7 @@ export default function StaffPanel({
                       placeholder="e.g. عبد الرحمٰن"
                       value={addUrduName}
                       onChange={(e) => setAddUrduName(e.target.value)}
-                      className="premium-input border px-3 outline-hidden focus:border-orange-500 font-sans text-right text-slate-800"
+                      className="premium-input border px-3 outline-hidden focus:border-orange-500 font-sans text-right text-slate-800 dark:text-slate-200"
                      
                     />
                   </div>
@@ -1522,7 +1522,7 @@ export default function StaffPanel({
                     <select
                       value={addRole}
                       onChange={(e: any) => setAddRole(e.target.value)}
-                      className="premium-input border bg-white px-3 outline-hidden focus:border-orange-500 font-sans text-slate-800"
+                      className="premium-input border bg-white dark:bg-[#151521] px-3 outline-hidden focus:border-orange-500 font-sans text-slate-800 dark:text-slate-200"
                     >
                       <option value="salesman">{t('Nozzle Salesman / Operator', 'سیلزمین / نوزل آپریٹر')}</option>
                       <option value="cashier">{t('Cashier / Accountant', 'کیشیئر / کیش گننے والا')}</option>
@@ -1538,7 +1538,7 @@ export default function StaffPanel({
                       placeholder="25000"
                       value={addSalary}
                       onChange={(e) => setAddSalary(e.target.value)}
-                      className="premium-input border pl-10 pr-3 outline-hidden focus:border-orange-500 font-mono text-slate-800"
+                      className="premium-input border pl-10 pr-3 outline-hidden focus:border-orange-500 font-mono text-slate-800 dark:text-slate-200"
                     />
                   </div>
 
@@ -1549,7 +1549,7 @@ export default function StaffPanel({
                       placeholder="e.g. 03001234567"
                       value={addPhone}
                       onChange={(e) => setAddPhone(e.target.value)}
-                      className="premium-input border px-3 outline-hidden focus:border-orange-500 font-mono text-slate-800"
+                      className="premium-input border px-3 outline-hidden focus:border-orange-500 font-mono text-slate-800 dark:text-slate-200"
                     />
                   </div>
 
@@ -1560,7 +1560,7 @@ export default function StaffPanel({
                       placeholder="e.g. 35201-1234567-1"
                       value={addCnic}
                       onChange={(e) => setAddCnic(e.target.value)}
-                      className="premium-input border px-3 outline-hidden focus:border-orange-500 font-mono text-slate-800"
+                      className="premium-input border px-3 outline-hidden focus:border-orange-500 font-mono text-slate-800 dark:text-slate-200"
                     />
                   </div>
 
@@ -1583,13 +1583,13 @@ export default function StaffPanel({
                         pattern="\d*"
                         value={addPin}
                         onChange={(e) => setAddPin(e.target.value.replace(/\D/g, ''))}
-                        className="w-32 border border-slate-200 rounded-lg p-2 text-center text-sm font-sans font-black tracking-widest outline-none focus:border-orange-500 bg-white"
+                        className="w-32 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-center text-sm font-sans font-black tracking-widest outline-none focus:border-orange-500 bg-white dark:bg-[#151521]"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-2 pt-2.5 border-t border-slate-100">
+                <div className="flex justify-end gap-2 pt-2.5 border-t border-slate-100 dark:border-white/5">
                   <button
                     type="button"
                     onClick={() => setShowAddStaff(false)}

@@ -159,22 +159,22 @@ export default function ShiftDrillDownModal({
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-6xl max-h-[90vh] bg-slate-50 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+          className="relative w-full max-w-6xl max-h-[90vh] bg-slate-50 dark:bg-white/5 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
         >
           {/* HEADER */}
-          <div className="flex-none bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between z-10">
+          <div className="flex-none bg-white dark:bg-[#151521] border-b border-slate-200 dark:border-white/10 px-6 py-4 flex items-center justify-between z-10">
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
                 <History className="h-6 w-6" />
               </div>
               <div>
-                <h2 className="text-xl font-black text-slate-900 tracking-tight">Enterprise Shift Intelligence</h2>
+                <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Enterprise Shift Intelligence</h2>
                 <p className="text-sm font-medium text-slate-500">Cash Integrity & Staff Performance Analytics</p>
               </div>
             </div>
             <button 
               onClick={onClose}
-              className="h-10 w-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors cursor-pointer"
+              className="h-10 w-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors cursor-pointer"
             >
               <X className="h-5 w-5" />
             </button>
@@ -185,9 +185,9 @@ export default function ShiftDrillDownModal({
 
             {/* EXECUTIVE KPI HEADER */}
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="premium-card border border-slate-200">
+              <div className="premium-card border border-slate-200 dark:border-white/10">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Total Cash Collected</span>
-                <h3 className="text-2xl font-black text-slate-900">{formatCurrency(kpis.totalCashCollected, settings)}</h3>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white">{formatCurrency(kpis.totalCashCollected, settings)}</h3>
                 <div className="mt-2 flex items-center gap-1.5 text-xs font-bold text-slate-500">
                   <Database className="h-3.5 w-3.5" />
                   Lifetime Collections
@@ -252,14 +252,14 @@ export default function ShiftDrillDownModal({
             </div>
 
             {/* TOGGLES & TABS */}
-            <div className="flex flex-row items-center justify-between gap-4 border-b border-slate-200 pb-2">
+            <div className="flex flex-row items-center justify-between gap-4 border-b border-slate-200 dark:border-white/10 pb-2">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setActiveTab('overview')}
                   className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer ${
                     activeTab === 'overview'
                       ? 'border-amber-600 text-amber-600'
-                      : 'border-transparent text-slate-500 hover:text-slate-800'
+                      : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-200'
                   }`}
                 >
                   General Overview
@@ -269,7 +269,7 @@ export default function ShiftDrillDownModal({
                   className={`px-4 py-2 font-sans text-xs font-bold border-b-2 transition-all cursor-pointer ${
                     activeTab === 'ledger'
                       ? 'border-amber-600 text-amber-600'
-                      : 'border-transparent text-slate-500 hover:text-slate-800'
+                      : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-200'
                   }`}
                 >
                   Shift Ledger
@@ -282,8 +282,8 @@ export default function ShiftDrillDownModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 
                 {/* Staff Performance Chart */}
-                <div className="premium-card border border-slate-200">
-                  <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4">
+                <div className="premium-card border border-slate-200 dark:border-white/10">
+                  <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4">
                     Top 5 Staff Shortages
                   </h3>
                   <div className="h-64">
@@ -304,15 +304,15 @@ export default function ShiftDrillDownModal({
                 </div>
 
                 {/* Staff Breakdown List */}
-                <div className="premium-card border border-slate-200 flex flex-col h-full max-h-[350px]">
-                  <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex-none">
+                <div className="premium-card border border-slate-200 dark:border-white/10 flex flex-col h-full max-h-[350px]">
+                  <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4 flex-none">
                     Detailed Staff Performance
                   </h3>
                   <div className="flex-1 overflow-y-auto pr-2 space-y-4">
                     {Object.entries(kpis.staffPerformance)
                       .sort((a, b) => b[1].shortage - a[1].shortage)
                       .map(([name, data]) => (
-                      <div key={name} className="flex flex-col gap-1.5 pb-3 border-b border-slate-100 last:border-0 last:pb-0">
+                      <div key={name} className="flex flex-col gap-1.5 pb-3 border-b border-slate-100 dark:border-white/5 last:border-0 last:pb-0">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-bold text-slate-700">{name} <span className="text-xs font-medium text-slate-400">({data.shifts} shifts)</span></span>
                           <div className="flex items-center gap-4">
@@ -337,8 +337,8 @@ export default function ShiftDrillDownModal({
 
             {activeTab === 'ledger' && (
               <div className="premium-card border overflow-hidden flex flex-col">
-                <div className="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Comprehensive Shift Ledger</h3>
+                <div className="p-4 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Comprehensive Shift Ledger</h3>
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2 h-4 w-4 text-slate-400" />
                     <input 
@@ -346,7 +346,7 @@ export default function ShiftDrillDownModal({
                       placeholder="Search staff, date..."
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
-                      className="pl-8 pr-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white w-64"
+                      className="pl-8 pr-3 py-1.5 border border-slate-200 dark:border-white/10 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white dark:bg-[#151521] w-64"
                     />
                   </div>
                 </div>
@@ -374,13 +374,13 @@ export default function ShiftDrillDownModal({
                         processedShifts.map((txn) => {
                           const staffName = staff.find(st => st.id === txn.staffId)?.name || 'any';
                           return (
-                            <tr key={txn.id} className="hover:bg-slate-50/50 transition-colors">
+                            <tr key={txn.id} className="hover:bg-slate-50 dark:bg-white/5/50 transition-colors">
                               <td className="p-3">
                                 <div className="font-bold text-slate-700 text-xs">{txn.date}</div>
                                 <div className="text-[10px] font-medium text-slate-400">{txn.startTime}</div>
                               </td>
                               <td className="p-3">
-                                <div className="font-bold text-slate-800 text-xs">{staffName}</div>
+                                <div className="font-bold text-slate-800 dark:text-slate-200 text-xs">{staffName}</div>
                               </td>
                               <td className="p-3 text-right">
                                 <span className="font-mono text-xs font-bold text-slate-700">{formatCurrency(txn.submittedCash || 0, settings)}</span>
@@ -399,7 +399,7 @@ export default function ShiftDrillDownModal({
                                 {txn.status === 'active' ? (
                                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-100 text-amber-700">Active</span>
                                 ) : (
-                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-slate-100 text-slate-600">Closed</span>
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-slate-100 dark:bg-white/10 text-slate-600">Closed</span>
                                 )}
                               </td>
                             </tr>

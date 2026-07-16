@@ -70,7 +70,7 @@ export const BIDashboard: React.FC = () => {
       <div className="space-y-6 animate-fade-in pb-12">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Business Intelligence</h1>
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Business Intelligence</h1>
             <p className="text-sm font-semibold text-slate-500 mt-1">Strategic overview and enterprise KPIs</p>
           </div>
           <div className="flex items-center gap-2 rounded-lg bg-orange-50 px-3 py-1.5 border border-orange-100">
@@ -110,7 +110,7 @@ export const BIDashboard: React.FC = () => {
         {/* Charts Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="premium-card p-6 border">
-            <h3 className="text-base font-bold text-slate-900 mb-6">7-Day Revenue Trend</h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white mb-6">7-Day Revenue Trend</h3>
             <LineChart 
               data={last7Days} 
               xAxisKey="date" 
@@ -119,7 +119,7 @@ export const BIDashboard: React.FC = () => {
             />
           </div>
           <div className="premium-card p-6 border">
-            <h3 className="text-base font-bold text-slate-900 mb-6">Profit vs Revenue</h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white mb-6">Profit vs Revenue</h3>
             <BarChart 
               data={last7Days} 
               xAxisKey="date" 
@@ -133,7 +133,7 @@ export const BIDashboard: React.FC = () => {
         </div>
 
         {/* Demand Forecasting section */}
-        <h2 className="text-xl font-black text-slate-900 tracking-tight mt-8">Fuel Demand Forecast</h2>
+        <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight mt-8">Fuel Demand Forecast</h2>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {forecasts.map(forecast => (
             <div key={forecast.tankId} className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
@@ -179,11 +179,11 @@ const KPICard = React.memo(({ title, value, icon: Icon, benchmark, subValue }: a
     <div className="premium-card p-5 border">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-bold text-slate-500">{title}</h3>
-        <div className="p-2 rounded-lg bg-slate-50 text-slate-600">
+        <div className="p-2 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-600">
           <Icon className="h-4 w-4" />
         </div>
       </div>
-      <div className="text-2xl font-black text-slate-900 mb-1">{value}</div>
+      <div className="text-2xl font-black text-slate-900 dark:text-white mb-1">{value}</div>
       {benchmark && (
         <div className="flex items-center gap-1.5 mt-2">
           {benchmark.trend === 'up' ? (
