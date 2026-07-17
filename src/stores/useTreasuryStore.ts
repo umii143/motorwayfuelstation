@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { CashAccount, TreasuryTransaction, OwnerDrawing, CashReconciliation, CashAccountType } from '../types';
 import { withBusinessScope } from '../lib/businessScope';
 import { db } from '../data/db';
+import { AuditLogger } from '../services/auditLogger';
 
 interface TreasuryState {
   cashAccounts: CashAccount[];
@@ -95,6 +96,16 @@ export const useTreasuryStore = create<TreasuryState>((set, get) => ({
     db.saveCashAccounts(stationId, newAccounts);
     db.saveTreasuryTransactions(stationId, newTxns);
 
+    AuditLogger.logAction(
+      'SAFE_CASH_TRANSFER',
+      'treasury',
+      `Transferred Rs. ${amount} from safe account "${sourceAcc.name}" to safe account "${destAcc.name}"`,
+      { sourceAccount: sourceAcc, destAccount: destAcc },
+      txn,
+      orgId,
+      stationId
+    );
+
     set({
       cashAccounts: newAccounts,
       treasuryTransactions: newTxns
@@ -146,6 +157,16 @@ export const useTreasuryStore = create<TreasuryState>((set, get) => ({
     db.saveCashAccounts(stationId, newAccounts);
     db.saveTreasuryTransactions(stationId, newTxns);
     db.saveOwnerDrawings(stationId, newDrawings);
+
+    AuditLogger.logAction(
+      'OWNER_DRAWING',
+      'treasury',
+      `Withdrew Rs. ${amount} as Owner Drawing from safe account "${sourceAcc.name}" (${description})`,
+      sourceAcc,
+      drawing,
+      orgId,
+      stationId
+    );
 
     set({
       cashAccounts: newAccounts,
@@ -205,6 +226,16 @@ export const useTreasuryStore = create<TreasuryState>((set, get) => ({
     db.saveCashAccounts(stationId, newAccounts);
     if (txn) db.saveTreasuryTransactions(stationId, newTxns);
     db.saveCashReconciliations(stationId, newRecs);
+
+    AuditLogger.logAction(
+      'CASH_RECONCILIATION',
+      'treasury',
+      `Reconciled cash for safe account "${acc.name}": Physical Rs. ${physical} vs Expected Rs. ${expected} (Variance: Rs. ${variance})`,
+      acc,
+      rec,
+      orgId,
+      stationId
+    );
 
     set({
       cashAccounts: newAccounts,

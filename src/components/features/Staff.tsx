@@ -452,123 +452,228 @@ export default function StaffPanel({
               TAB 1: STAFF CREW LIST (ROSTER)
               ========================================== */}
           {activeTab === 'crew' && (
-            <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] shadow-xs overflow-x-auto">
-              <table className="premium-table min-w-[800px]">
-                <thead>
-                  <tr className="text-slate-650 text-[10px]">
-                    <th>{t('Crew Employee Name', 'ملازم کا نام')}</th>
-                    <th>{t('Designated Station Role', 'عہدہ')}</th>
-                    <th className="text-right">{t('Assigned Monthly Salary Rate', 'ماہانہ تنخواہ')}</th>
-                    <th className="text-right">{t('Pending Advance Balance', 'ایڈوانس زِمہ واجب')}</th>
-                    <th className="text-right">{t('Action Management', 'کھاتہ ایکشنز')}</th>
-                  </tr>
-                </thead>
-                <tbody className="text-slate-705">
-                  {staff.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="py-6 bg-slate-50 dark:bg-white/5/10">
-                        <EmptyState
-                          icon={Users}
-                          title={t('No staff members yet.', 'کوئی ملازم موجود نہیں ہے۔')}
-                          description={t('Track salesman commissions, advances, monthly wages, and fuel shifts duty roster.', 'پمپ سیلز مین، آپریٹرز، اور دیگر عملے کا کھاتہ، ایڈوانس، اور ڈیوٹی ریکارڈ کریں۔')}
-                          actionLabel={t('+ Add Staff Member', '+ نیا ملازم شامل کریں')}
-                          onAction={() => setShowAddStaff(true)}
-                        />
-                      </td>
+            <>
+              {/* DESKTOP TABLE VIEW */}
+              <div className="hidden md:block rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] shadow-xs overflow-x-auto">
+                <table className="premium-table min-w-[800px]">
+                  <thead>
+                    <tr className="text-slate-650 text-[10px]">
+                      <th>{t('Crew Employee Name', 'ملازم کا نام')}</th>
+                      <th>{t('Designated Station Role', 'عہدہ')}</th>
+                      <th className="text-right">{t('Assigned Monthly Salary Rate', 'ماہانہ تنخواہ')}</th>
+                      <th className="text-right">{t('Pending Advance Balance', 'ایڈوانس زِمہ واجب')}</th>
+                      <th className="text-right">{t('Action Management', 'کھاتہ ایکشنز')}</th>
                     </tr>
-                  ) : filteredStaff.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="py-6 text-center text-slate-400 font-sans">
-                        {t('No staff found matching search.', 'تلاش کے مطابق کوئی ملازم نہیں ملا۔')}
-                      </td>
-                    </tr>
-                   
-                  ) : (
-                    filteredStaff.map(mem => {
-                      const activeAdvanceBalance = mem.advanceBalance || 0;
-                      const activeLoanBalance = mem.loanBalance || 0;
-                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                      const activeSalaryBalance = mem.salaryBalance || 0;
+                  </thead>
+                  <tbody className="text-slate-705">
+                    {staff.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="py-6 bg-slate-50 dark:bg-white/5/10">
+                          <EmptyState
+                            icon={Users}
+                            title={t('No staff members yet.', 'کوئی ملازم موجود نہیں ہے۔')}
+                            description={t('Track salesman commissions, advances, monthly wages, and fuel shifts duty roster.', 'پمپ سیلز مین، آپریٹرز، اور دیگر عملے کا کھاتہ، ایڈوانس، اور ڈیوٹی ریکارڈ کریں۔')}
+                            actionLabel={t('+ Add Staff Member', '+ نیا ملازم شامل کریں')}
+                            onAction={() => setShowAddStaff(true)}
+                          />
+                        </td>
+                      </tr>
+                    ) : filteredStaff.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="py-6 text-center text-slate-400 font-sans">
+                          {t('No staff found matching search.', 'تلاش کے مطابق کوئی ملازم نہیں ملا۔')}
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredStaff.map(mem => {
+                        const activeAdvanceBalance = mem.advanceBalance || 0;
+                        const activeLoanBalance = mem.loanBalance || 0;
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                        const activeSalaryBalance = mem.salaryBalance || 0;
 
-                      return (
-                        <tr key={mem.id} className="hover:bg-slate-50 dark:bg-white/5/50">
-                          <td className="py-3.5">
-                            <div className="flex items-center gap-2">
-                              <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-white/10 text-slate-700 flex items-center justify-center font-bold text-xs uppercase">
-                                {mem.name.substring(0, 2)}
+                        return (
+                          <tr key={mem.id} className="hover:bg-slate-50 dark:bg-white/5/50">
+                            <td className="py-3.5">
+                              <div className="flex items-center gap-2">
+                                <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-white/10 text-slate-700 flex items-center justify-center font-bold text-xs uppercase">
+                                  {mem.name.substring(0, 2)}
+                                </div>
+                                <div>
+                                  <span className="font-bold text-slate-800 dark:text-slate-200 text-xs block">
+                                    {t(mem.name, mem.urduName)}
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 block font-mono">ID: {mem.id}</span>
+                                </div>
                               </div>
-                              <div>
-                                <span className="font-bold text-slate-800 dark:text-slate-200 text-xs block">
-                                  {t(mem.name, mem.urduName)}
+                            </td>
+
+                            <td className="py-3.5">
+                              <span className="rounded bg-slate-100 dark:bg-white/10 px-2.5 py-0.5 text-[10px] text-slate-600 font-bold capitalize select-none">
+                                {mem.role}
+                              </span>
+                            </td>
+
+                            <td className="py-3.5 text-right font-mono">
+                              {formatCurrency(mem.salary, settings)}
+                            </td>
+
+                            <td className={`py-3.5 px-4 text-right font-mono font-bold ${activeAdvanceBalance > 0 || activeLoanBalance > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
+                              <div className="flex flex-col items-end gap-0.5">
+                                {activeAdvanceBalance > 0 && <span className="text-[10px]"><span className="text-slate-500">Adv:</span> {formatCurrency(activeAdvanceBalance, settings)}</span>}
+                                {activeLoanBalance > 0 && <span className="text-[10px]"><span className="text-slate-500">Loan:</span> {formatCurrency(activeLoanBalance, settings)}</span>}
+                                {activeAdvanceBalance === 0 && activeLoanBalance === 0 && '—'}
+                              </div>
+                            </td>
+
+                            <td className="py-3.5 text-right">
+                              <div className="flex flex-wrap justify-end gap-1.5">
+                                <button
+                                  onClick={() => {
+                                    setSelectedStaffId(mem.id);
+                                    setFinanceType('advance');
+                                    setFinanceAmount('');
+                                    setFinanceNote('');
+                                  }}
+                                  className="px-2.5 py-1 text-[10.5px] font-sans font-semibold rounded border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 cursor-pointer"
+                                >
+                                  {t('💸 Advance', 'ایڈوانس')}
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setSelectedStaffId(mem.id);
+                                    setFinanceType('loan');
+                                    setFinanceAmount('');
+                                    setFinanceNote('');
+                                    setLoanInstallment('');
+                                  }}
+                                  className="px-2.5 py-1 text-[10.5px] font-sans font-semibold rounded border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 cursor-pointer"
+                                >
+                                  {t('🏦 Loan', 'قرضہ')}
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setSelectedStaffId(mem.id);
+                                    setFinanceType('issue');
+                                    setFinanceAmount('');
+                                    setFinanceNote('');
+                                  }}
+                                  className="px-2.5 py-1 text-[10.5px] font-sans font-semibold rounded border border-teal-255 bg-teal-50 text-teal-700 hover:bg-teal-100 cursor-pointer"
+                                >
+                                  {t('⚖️ Salary', 'تنخواہ')}
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* MOBILE CARD VIEW */}
+              <div className="block md:hidden space-y-3">
+                {staff.length === 0 ? (
+                  <div className="py-8 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 p-5 text-center">
+                    <EmptyState
+                      icon={Users}
+                      title={t('No staff members yet.', 'کوئی ملازم موجود نہیں ہے۔')}
+                      description={t('Track salesman commissions, advances, monthly wages, and fuel shifts duty roster.', 'پمپ سیلز مین، آپریٹرز، اور دیگر عملے کا کھاتہ، ایڈوانس، اور ڈیوٹی ریکارڈ کریں۔')}
+                      actionLabel={t('+ Add Staff Member', '+ نیا ملازم شامل کریں')}
+                      onAction={() => setShowAddStaff(true)}
+                    />
+                  </div>
+                ) : filteredStaff.length === 0 ? (
+                  <div className="py-6 text-center text-slate-450 font-sans bg-white dark:bg-[#151521] rounded-xl border border-slate-200 dark:border-white/10 p-4">
+                    {t('No staff found matching search.', 'تلاش کے مطابق کوئی ملازم نہیں ملا۔')}
+                  </div>
+                ) : (
+                  filteredStaff.map(mem => {
+                    const activeAdvanceBalance = mem.advanceBalance || 0;
+                    const activeLoanBalance = mem.loanBalance || 0;
+                    return (
+                      <div key={mem.id} className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-xs space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2.5">
+                            <div className="h-9 w-9 rounded-full bg-orange-50 dark:bg-orange-950/20 text-orange-655 dark:text-orange-400 flex items-center justify-center font-bold text-sm border border-orange-100 dark:border-orange-900/30 uppercase">
+                              {mem.name.substring(0, 2)}
+                            </div>
+                            <div>
+                              <span className="font-bold text-slate-800 dark:text-slate-200 text-xs block">
+                                {t(mem.name, mem.urduName)}
+                              </span>
+                              <span className="text-[9px] text-slate-400 block font-mono">ID: {mem.id}</span>
+                            </div>
+                          </div>
+                          <span className="rounded-full bg-slate-100 dark:bg-white/10 px-2.5 py-0.5 text-[9px] text-slate-600 dark:text-slate-300 font-bold capitalize">
+                            {mem.role}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-white/5 text-xs">
+                          <div>
+                            <span className="text-slate-455 dark:text-slate-455 block text-[9px] uppercase font-bold tracking-wider">{t('Monthly Salary', 'ماہانہ تنخواہ')}</span>
+                            <strong className="font-mono text-slate-800 dark:text-slate-200 text-xs font-bold block mt-0.5">
+                              {formatCurrency(mem.salary, settings)}
+                            </strong>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-slate-455 dark:text-slate-455 block text-[9px] uppercase font-bold tracking-wider">{t('Advances / Loan', 'ایڈوانس / قرضہ')}</span>
+                            <strong className={`font-mono font-bold block mt-0.5 text-xs ${activeAdvanceBalance > 0 || activeLoanBalance > 0 ? 'text-rose-600' : 'text-slate-400 dark:text-slate-500'}`}>
+                              {activeAdvanceBalance > 0 || activeLoanBalance > 0 ? (
+                                <span className="flex flex-col items-end gap-0.5 text-[10px]">
+                                  {activeAdvanceBalance > 0 && <span>Adv: {formatCurrency(activeAdvanceBalance, settings)}</span>}
+                                  {activeLoanBalance > 0 && <span>Loan: {formatCurrency(activeLoanBalance, settings)}</span>}
                                 </span>
-                                <span className="text-[10px] text-slate-400 block font-mono">ID: {mem.id}</span>
-                              </div>
-                            </div>
-                          </td>
+                              ) : (
+                                '—'
+                              )}
+                            </strong>
+                          </div>
+                        </div>
 
-                          <td className="py-3.5">
-                            <span className="rounded bg-slate-100 dark:bg-white/10 px-2.5 py-0.5 text-[10px] text-slate-600 font-bold capitalize select-none">
-                              {mem.role}
-                            </span>
-                          </td>
-
-                          <td className="py-3.5 text-right font-mono">
-                            {formatCurrency(mem.salary, settings)}
-                          </td>
-
-                          <td className={`py-3.5 px-4 text-right font-mono font-bold ${activeAdvanceBalance > 0 || activeLoanBalance > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
-                            <div className="flex flex-col items-end gap-0.5">
-                              {activeAdvanceBalance > 0 && <span className="text-[10px]"><span className="text-slate-500">Adv:</span> {formatCurrency(activeAdvanceBalance, settings)}</span>}
-                              {activeLoanBalance > 0 && <span className="text-[10px]"><span className="text-slate-500">Loan:</span> {formatCurrency(activeLoanBalance, settings)}</span>}
-                              {activeAdvanceBalance === 0 && activeLoanBalance === 0 && '—'}
-                            </div>
-                          </td>
-
-                          <td className="py-3.5 text-right">
-                            <div className="flex flex-wrap justify-end gap-1.5">
-                              <button
-                                onClick={() => {
-                                  setSelectedStaffId(mem.id);
-                                  setFinanceType('advance');
-                                  setFinanceAmount('');
-                                  setFinanceNote('');
-                                }}
-                                className="px-2.5 py-1 text-[10.5px] font-sans font-semibold rounded border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 cursor-pointer"
-                              >
-                                {t('💸 Advance', 'ایڈوانس')}
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setSelectedStaffId(mem.id);
-                                  setFinanceType('loan');
-                                  setFinanceAmount('');
-                                  setFinanceNote('');
-                                  setLoanInstallment('');
-                                }}
-                                className="px-2.5 py-1 text-[10.5px] font-sans font-semibold rounded border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 cursor-pointer"
-                              >
-                                {t('🏦 Loan', 'قرضہ')}
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setSelectedStaffId(mem.id);
-                                  setFinanceType('issue');
-                                  setFinanceAmount('');
-                                  setFinanceNote('');
-                                }}
-                                className="px-2.5 py-1 text-[10.5px] font-sans font-semibold rounded border border-teal-250 bg-teal-50 text-teal-700 hover:bg-teal-100 cursor-pointer"
-                              >
-                                {t('⚖️ Salary', 'تنخواہ')}
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
+                        <div className="flex gap-2 pt-2 border-t border-slate-100 dark:border-white/5">
+                          <button
+                            onClick={() => {
+                              setSelectedStaffId(mem.id);
+                              setFinanceType('advance');
+                              setFinanceAmount('');
+                              setFinanceNote('');
+                            }}
+                            className="flex-1 py-2 text-center text-[10px] font-bold rounded-lg border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 dark:bg-orange-950/20 dark:text-orange-400 dark:border-orange-900/30 transition-colors cursor-pointer"
+                          >
+                            {t('💸 Advance', 'ایڈوانس')}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedStaffId(mem.id);
+                              setFinanceType('loan');
+                              setFinanceAmount('');
+                              setFinanceNote('');
+                              setLoanInstallment('');
+                            }}
+                            className="flex-1 py-2 text-center text-[10px] font-bold rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-950/20 dark:text-indigo-400 dark:border-indigo-900/30 transition-colors cursor-pointer"
+                          >
+                            {t('🏦 Loan', 'قرضہ')}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedStaffId(mem.id);
+                              setFinanceType('issue');
+                              setFinanceAmount('');
+                              setFinanceNote('');
+                            }}
+                            className="flex-1 py-2 text-center text-[10px] font-bold rounded-lg border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-950/20 dark:text-teal-400 dark:border-teal-900/30 transition-colors cursor-pointer"
+                          >
+                            {t('⚖️ Salary', 'تنخواہ')}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </>
           )}
 
           {/* ==========================================
@@ -617,7 +722,8 @@ export default function StaffPanel({
 
                 <form onSubmit={handleSaveAttendance} className="space-y-4">
                   {/* ATTENDANCE MATRIX BOARD */}
-                  <div className="overflow-x-auto">
+                  {/* DESKTOP VIEW */}
+                  <div className="hidden md:block overflow-x-auto">
                     <table className="premium-table">
                       <thead>
                         <tr className="text-[10px]">
@@ -658,7 +764,7 @@ export default function StaffPanel({
                             <tr key={s.id} className="hover:bg-slate-50 dark:bg-white/5/20">
                               <td className="py-3.5 px-3">
                                 <span className="font-bold text-slate-800 dark:text-slate-200 text-xs block">{t(s.name, s.urduName)}</span>
-                                <span className="text-[10px] text-slate-450 block ml-0.5">{s.role.toUpperCase()}</span>
+                                <span className="text-[10px] text-slate-455 block ml-0.5">{s.role.toUpperCase()}</span>
                               </td>
 
                               {/* PRESENT RADIO */}
@@ -671,7 +777,7 @@ export default function StaffPanel({
                                     onChange={() => setStatus('present')}
                                     className="accent-teal-600 h-4 w-4"
                                   />
-                                  <span className="text-xs font-bold text-teal-650">{t('Present', 'حاضر')}</span>
+                                  <span className="text-xs font-bold text-teal-655">{t('Present', 'حاضر')}</span>
                                 </label>
                               </td>
 
@@ -685,7 +791,7 @@ export default function StaffPanel({
                                     onChange={() => setStatus('absent')}
                                     className="accent-red-600 h-4 w-4"
                                   />
-                                  <span className="text-xs font-bold text-red-650">{t('Absent', 'غیر حاضر')}</span>
+                                  <span className="text-xs font-bold text-red-655">{t('Absent', 'غیر حاضر')}</span>
                                 </label>
                               </td>
 
@@ -731,6 +837,109 @@ export default function StaffPanel({
                         })}
                       </tbody>
                     </table>
+                  </div>
+
+                  {/* MOBILE VIEW */}
+                  <div className="block md:hidden space-y-3">
+                    {staff.map(s => {
+                      const current = attendanceStatuses[s.id] || { status: 'present', checkIn: '08:00', checkOut: '17:00' };
+
+                      const setStatus = (st: typeof current['status']) => {
+                        setAttendanceStatuses({
+                          ...attendanceStatuses,
+                          [s.id]: { ...current, status: st }
+                        });
+                      };
+
+                      const setCheckIn = (val: string) => {
+                        setAttendanceStatuses({
+                          ...attendanceStatuses,
+                          [s.id]: { ...current, checkIn: val }
+                        });
+                      };
+
+                      const setCheckOut = (val: string) => {
+                        setAttendanceStatuses({
+                          ...attendanceStatuses,
+                          [s.id]: { ...current, checkOut: val }
+                        });
+                      };
+
+                      return (
+                        <div key={s.id} className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-xs space-y-3">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <span className="font-bold text-slate-800 dark:text-slate-200 text-xs block">{t(s.name, s.urduName)}</span>
+                              <span className="text-[9px] text-slate-400 uppercase font-semibold block mt-0.5">{s.role}</span>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 dark:border-white/5">
+                            <button
+                              type="button"
+                              onClick={() => setStatus('present')}
+                              className={`py-1.5 px-2 rounded-lg text-center text-[10px] font-bold border transition-colors flex items-center justify-center gap-1 cursor-pointer ${
+                                current.status === 'present'
+                                  ? 'bg-teal-50 border-teal-200 text-teal-700 dark:bg-teal-950/20 dark:border-teal-900/30 dark:text-teal-400'
+                                  : 'bg-slate-50 border-slate-200 text-slate-500 dark:bg-white/5 dark:border-white/10'
+                              }`}
+                            >
+                              <div className={`h-2 w-2 rounded-full ${current.status === 'present' ? 'bg-teal-500 animate-pulse' : 'bg-slate-300'}`} />
+                              {t('Present', 'حاضر')}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setStatus('absent')}
+                              className={`py-1.5 px-2 rounded-lg text-center text-[10px] font-bold border transition-colors flex items-center justify-center gap-1 cursor-pointer ${
+                                current.status === 'absent'
+                                  ? 'bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-950/20 dark:border-rose-900/30 dark:text-rose-400'
+                                  : 'bg-slate-50 border-slate-200 text-slate-500 dark:bg-white/5 dark:border-white/10'
+                              }`}
+                            >
+                              <div className={`h-2 w-2 rounded-full ${current.status === 'absent' ? 'bg-rose-500' : 'bg-slate-300'}`} />
+                              {t('Absent', 'غیر')}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setStatus('leave')}
+                              className={`py-1.5 px-2 rounded-lg text-center text-[10px] font-bold border transition-colors flex items-center justify-center gap-1 cursor-pointer ${
+                                current.status === 'leave'
+                                  ? 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-950/20 dark:border-amber-900/30 dark:text-amber-400'
+                                  : 'bg-slate-50 border-slate-200 text-slate-500 dark:bg-white/5 dark:border-white/10'
+                              }`}
+                            >
+                              <div className={`h-2 w-2 rounded-full ${current.status === 'leave' ? 'bg-amber-500' : 'bg-slate-300'}`} />
+                              {t('Leave', 'رخصت')}
+                            </button>
+                          </div>
+
+                          {current.status === 'present' && (
+                            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-white/5 text-xs">
+                              <div>
+                                <span className="text-slate-450 dark:text-slate-400 block text-[9px] uppercase font-bold tracking-wider mb-1">{t('Check-In Time', 'چیک ان وقت')}</span>
+                                <input
+                                  type="text"
+                                  value={current.checkIn}
+                                  onChange={(e) => setCheckIn(e.target.value)}
+                                  placeholder="08:00"
+                                  className="w-full rounded border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] px-2 py-1 font-mono text-xs focus:border-orange-500"
+                                />
+                              </div>
+                              <div>
+                                <span className="text-slate-450 dark:text-slate-400 block text-[9px] uppercase font-bold tracking-wider mb-1">{t('Check-Out Time', 'چیک آؤٹ وقت')}</span>
+                                <input
+                                  type="text"
+                                  value={current.checkOut}
+                                  onChange={(e) => setCheckOut(e.target.value)}
+                                  placeholder="17:00"
+                                  className="w-full rounded border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] px-2 py-1 font-mono text-xs focus:border-orange-500"
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
 
                   <div className="flex justify-end pt-3 border-t border-slate-100 dark:border-white/5">

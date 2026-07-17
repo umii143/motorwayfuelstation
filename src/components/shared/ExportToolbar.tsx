@@ -5,6 +5,7 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { generatePdfBlob } from '../../utils/pdfGenerator';
 import { logger } from '../../lib/logger';
+import { EventEngine } from '../../services/eventEngine';
 
 interface ExportToolbarProps {
   isOpen: boolean;
@@ -41,6 +42,7 @@ export function ExportToolbar({ isOpen, onClose, data, columns, title, filenameP
       const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       
       saveAs(blob, `${filenamePrefix}_${new Date().toISOString().split('T')[0]}.xlsx`);
+      EventEngine.emit({ eventType: 'REPORT_EXPORTED', module: 'reports', summary: `Exported "${title}" to Excel`, referenceNumber: filenamePrefix, stationId: undefined, severity: 'info', tags: ['export', 'excel'] });
       showToast('Excel file generated successfully!', 'success');
     } catch (e) {
       logger.error(String(e));
@@ -95,6 +97,7 @@ export function ExportToolbar({ isOpen, onClose, data, columns, title, filenameP
         columns
       });
       saveAs(blob, `${filenamePrefix}_${new Date().toISOString().split('T')[0]}.pdf`);
+      EventEngine.emit({ eventType: 'REPORT_EXPORTED', module: 'reports', summary: `Exported "${title}" to PDF`, referenceNumber: filenamePrefix, severity: 'info', tags: ['export', 'pdf'] });
       showToast('PDF generated successfully!', 'success');
     } catch (e) {
       logger.error(String(e));

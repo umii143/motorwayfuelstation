@@ -14,7 +14,7 @@ export async function initDatabase() {
     await localforage.ready();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const keys = await localforage.keys();
-    
+
     // Optimize: Bulk load all items concurrently using iterate (drastically faster than sequential awaits)
     try {
       await localforage.iterate((value, key) => {
@@ -28,23 +28,23 @@ export async function initDatabase() {
 
     // Comprehensive Fallback: Sync from localStorage for any missing keys
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-       for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key && !memoryCache[key]) {
-             const val = localStorage.getItem(key);
-             if (val !== null) {
-               memoryCache[key] = val;
-               localforage.setItem(key, val).catch(() => { /* empty */ });
-             }
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && !memoryCache[key]) {
+          const val = localStorage.getItem(key);
+          if (val !== null) {
+            memoryCache[key] = val;
+            localforage.setItem(key, val).catch(() => { /* empty */ });
           }
-       }
+        }
+      }
     }
 
     if (!(memoryCache['fuelpro_fresh_v5_nodummies'] ?? null)) {
       // Safely register the marker without wiping anything to prevent accidental data loss
       memoryCache['fuelpro_fresh_v5_nodummies'] = 'true';
       await localforage.setItem('fuelpro_fresh_v5_nodummies', 'true').catch(() => { /* empty */ });
-       
+
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       try { if (typeof localStorage !== 'undefined') localStorage.setItem('fuelpro_fresh_v5_nodummies', 'true'); } catch (e) { /* ignore */ }
     }
@@ -58,12 +58,12 @@ export async function initDatabase() {
 function flushToIndexedDB(key: string, value: string | null) {
   if (value === null) {
     localforage.removeItem(key).catch(logger.error);
-     
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     try { if (typeof localStorage !== 'undefined') localStorage.removeItem(key); } catch (e) { /* ignore */ }
   } else {
     localforage.setItem(key, value).catch(logger.error);
-     
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     try { if (typeof localStorage !== 'undefined') localStorage.setItem(key, value); } catch (e) { /* ignore */ }
   }
@@ -155,6 +155,8 @@ const STORAGE_KEYS = {
 const SPECIAL_STORAGE_KEYS = {
   STANDALONE_EXPENSES: 'fuelpro_standalone_expenses',
   RECONCILED_SHIFTS: 'fuelpro_reconciled_shifts',
+  REPORT_FAVORITES: 'fuelpro_report_favorites',
+  REPORT_RECENTS: 'fuelpro_report_recents',
   SETTINGS_AUDIT_TRAIL: 'fuelpro_settings_audit_trail',
   LUBE_POS_SALES: 'fuelpro_lube_pos_sales',
   FLEET_ACCOUNTS: 'fuelpro_fleet_accounts',
@@ -186,7 +188,9 @@ const SPECIAL_STORAGE_KEYS = {
   FIFO_DEDUCTIONS: 'fuelpro_fifo_deductions',
   SUPPLIER_CLAIMS: 'fuelpro_supplier_claims',
   INVENTORY_REVALUATIONS: 'fuelpro_inventory_revaluations',
-  SUPPLIER_PERFORMANCE: 'fuelpro_supplier_performance'
+  SUPPLIER_PERFORMANCE: 'fuelpro_supplier_performance',
+  ACTIVITY_REGISTER: 'fuelpro_activity_register',
+  BUSINESS_EVENTS: 'fuelpro_business_events'
 };
 
 
@@ -488,7 +492,7 @@ export const db = {
         parsed.push({ ...SEED_LUBE_STATION, stationId: LUBE_STATION_ID, businessId: LUBE_STATION_ID, businessType: 'lube' });
         modified = true;
       }
-      
+
       const scopedStations = parsed.map((station) => {
         if (!station.businessType) {
           modified = true;
@@ -566,96 +570,96 @@ export const db = {
       return withBusinessScope(SEED_FUEL_SETTINGS, stationId);
     }
   },
-  
-  saveSettings: (stationId: string, settings: GlobalSettings) => 
+
+  saveSettings: (stationId: string, settings: GlobalSettings) =>
     ((memoryCache[db.getStationStorageKey(stationId, STORAGE_KEYS.SETTINGS)] = JSON.stringify(withBusinessScope(settings, stationId))), flushToIndexedDB(db.getStationStorageKey(stationId, STORAGE_KEYS.SETTINGS), JSON.stringify(withBusinessScope(settings, stationId)))),
 
   getStaffList: (stationId: string): Staff[] => {
     const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_STAFF : SEED_FUEL_STAFF;
     return getScopedStorageList(stationId, STORAGE_KEYS.STAFF, seed);
   },
-  saveStaffList: (stationId: string, staff: Staff[]) => 
+  saveStaffList: (stationId: string, staff: Staff[]) =>
     saveScopedStorageList(stationId, STORAGE_KEYS.STAFF, staff),
 
   getProducts: (stationId: string): Product[] => {
     const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_PRODUCTS : SEED_FUEL_PRODUCTS;
     return getScopedStorageList(stationId, STORAGE_KEYS.PRODUCTS, seed, 'products');
   },
-  saveProducts: (stationId: string, products: Product[]) => 
+  saveProducts: (stationId: string, products: Product[]) =>
     saveScopedStorageList(stationId, STORAGE_KEYS.PRODUCTS, products, 'products'),
 
   getPumps: (stationId: string): Pump[] => {
     const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_PUMPS : SEED_FUEL_PUMPS;
     return getScopedStorageList(stationId, STORAGE_KEYS.PUMPS, seed);
   },
-  savePumps: (stationId: string, pumps: Pump[]) => 
+  savePumps: (stationId: string, pumps: Pump[]) =>
     saveScopedStorageList(stationId, STORAGE_KEYS.PUMPS, pumps),
 
   getNozzles: (stationId: string): Nozzle[] => {
     const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_NOZZLES : SEED_FUEL_NOZZLES;
     return getScopedStorageList(stationId, STORAGE_KEYS.NOZZLES, seed);
   },
-  saveNozzles: (stationId: string, nozzles: Nozzle[]) => 
+  saveNozzles: (stationId: string, nozzles: Nozzle[]) =>
     saveScopedStorageList(stationId, STORAGE_KEYS.NOZZLES, nozzles),
 
   getCustomers: (stationId: string): Customer[] => {
     const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_CUSTOMERS : SEED_FUEL_CUSTOMERS;
     return getScopedStorageList(stationId, STORAGE_KEYS.CUSTOMERS, seed);
   },
-  saveCustomers: (stationId: string, customers: Customer[]) => 
+  saveCustomers: (stationId: string, customers: Customer[]) =>
     saveScopedStorageList(stationId, STORAGE_KEYS.CUSTOMERS, customers),
 
   getSuppliers: (stationId: string): Supplier[] => {
     const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_SUPPLIERS : SEED_FUEL_SUPPLIERS;
     return getScopedStorageList(stationId, STORAGE_KEYS.SUPPLIERS, seed);
   },
-  saveSuppliers: (stationId: string, suppliers: Supplier[]) => 
+  saveSuppliers: (stationId: string, suppliers: Supplier[]) =>
     saveScopedStorageList(stationId, STORAGE_KEYS.SUPPLIERS, suppliers),
 
-  getShifts: (stationId: string): Shift[] => 
+  getShifts: (stationId: string): Shift[] =>
     getScopedStorageList(stationId, STORAGE_KEYS.SHIFTS, [] as Shift[], 'shifts'),
-  saveShifts: (stationId: string, shifts: Shift[]) => 
+  saveShifts: (stationId: string, shifts: Shift[]) =>
     saveScopedStorageList(stationId, STORAGE_KEYS.SHIFTS, shifts, 'shifts'),
 
   getBankAccounts: (stationId: string): BankAccount[] => {
     const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_BANKS : SEED_FUEL_BANKS;
     return getScopedStorageList(stationId, STORAGE_KEYS.BANKS, seed);
   },
-  saveBankAccounts: (stationId: string, banks: BankAccount[]) => 
+  saveBankAccounts: (stationId: string, banks: BankAccount[]) =>
     saveScopedStorageList(stationId, STORAGE_KEYS.BANKS, banks),
 
   getDigitalAccounts: (stationId: string): DigitalAccount[] => {
     const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_DIGITAL_ACCOUNTS : SEED_FUEL_DIGITAL_ACCOUNTS;
     return getScopedStorageList(stationId, STORAGE_KEYS.DIGITAL_ACCOUNTS, seed);
   },
-  saveDigitalAccounts: (stationId: string, digital: DigitalAccount[]) => 
+  saveDigitalAccounts: (stationId: string, digital: DigitalAccount[]) =>
     saveScopedStorageList(stationId, STORAGE_KEYS.DIGITAL_ACCOUNTS, digital),
 
-  getStockTransactions: (stationId: string): StockTransaction[] => 
+  getStockTransactions: (stationId: string): StockTransaction[] =>
     getScopedStorageList(stationId, STORAGE_KEYS.STOCK_TXNS, [] as StockTransaction[]),
-  saveStockTransactions: (stationId: string, txns: StockTransaction[]) => 
+  saveStockTransactions: (stationId: string, txns: StockTransaction[]) =>
     saveScopedStorageList(stationId, STORAGE_KEYS.STOCK_TXNS, txns),
 
   getTanks: (stationId: string): Tank[] => {
     const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_TANKS : SEED_FUEL_TANKS;
     return getScopedStorageList(stationId, STORAGE_KEYS.TANKS, seed);
   },
-  saveTanks: (stationId: string, tanks: Tank[]) => 
+  saveTanks: (stationId: string, tanks: Tank[]) =>
     saveScopedStorageList(stationId, STORAGE_KEYS.TANKS, tanks),
 
-  getRateHistory: (stationId: string): RateHistoryEntry[] => 
+  getRateHistory: (stationId: string): RateHistoryEntry[] =>
     getScopedStorageList(stationId, STORAGE_KEYS.RATE_HISTORY, [] as RateHistoryEntry[]),
-  saveRateHistory: (stationId: string, history: RateHistoryEntry[]) => 
+  saveRateHistory: (stationId: string, history: RateHistoryEntry[]) =>
     saveScopedStorageList(stationId, STORAGE_KEYS.RATE_HISTORY, history),
 
-  getStaffFinance: (stationId: string): StaffFinanceEntry[] => 
+  getStaffFinance: (stationId: string): StaffFinanceEntry[] =>
     getScopedStorageList(stationId, STORAGE_KEYS.STAFF_FINANCE, [] as StaffFinanceEntry[]),
-  saveStaffFinance: (stationId: string, finances: StaffFinanceEntry[]) => 
+  saveStaffFinance: (stationId: string, finances: StaffFinanceEntry[]) =>
     saveScopedStorageList(stationId, STORAGE_KEYS.STAFF_FINANCE, finances),
 
-  getAttendance: (stationId: string): AttendanceRecord[] => 
+  getAttendance: (stationId: string): AttendanceRecord[] =>
     getScopedStorageList(stationId, STORAGE_KEYS.ATTENDANCE, [] as AttendanceRecord[]),
-  saveAttendance: (stationId: string, records: AttendanceRecord[]) => 
+  saveAttendance: (stationId: string, records: AttendanceRecord[]) =>
     saveScopedStorageList(stationId, STORAGE_KEYS.ATTENDANCE, records),
 
   getStandaloneExpenses: (stationId: string): ExpenseEntry[] =>
@@ -674,10 +678,42 @@ export const db = {
       ids
     ),
 
+  // ─── ENTERPRISE REPORTS: PINNED FAVORITES & RECENTLY VIEWED ─────────────
+  getReportFavorites: (stationId: string): string[] =>
+    getStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.REPORT_FAVORITES),
+      [] as string[]
+    ),
+  saveReportFavorites: (stationId: string, reportIds: string[]) =>
+    setStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.REPORT_FAVORITES),
+      reportIds
+    ),
+
+  getReportRecents: (stationId: string): string[] =>
+    getStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.REPORT_RECENTS),
+      [] as string[]
+    ),
+  saveReportRecents: (stationId: string, reportIds: string[]) =>
+    setStorageItem(
+      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.REPORT_RECENTS),
+      reportIds
+    ),
+
   getSettingsAuditTrail: (stationId: string): AuditTrailEntry[] =>
     getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL, [] as AuditTrailEntry[]),
   saveSettingsAuditTrail: (stationId: string, entries: AuditTrailEntry[]) =>
     saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL, entries),
+
+  getActivityRegister: (stationId: string): AuditTrailEntry[] =>
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.ACTIVITY_REGISTER, [] as AuditTrailEntry[]),
+  saveActivityRegister: (stationId: string, entries: AuditTrailEntry[]) =>
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.ACTIVITY_REGISTER, entries),
+  getBusinessEvents: (stationId: string): any[] =>
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.BUSINESS_EVENTS, [] as any[]),
+  saveBusinessEvents: (stationId: string, events: any[]) =>
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.BUSINESS_EVENTS, events),
   getLubePosSales: (stationId: string): LubePosSale[] =>
     getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.LUBE_POS_SALES, [] as LubePosSale[], 'lubePosSales'),
   saveLubePosSales: (stationId: string, sales: LubePosSale[]) =>
@@ -788,7 +824,7 @@ export const db = {
       db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.DEALER_MARGIN_SETTINGS),
       settings
     ),
-    
+
   getCashAccounts: (stationId: string): CashAccount[] =>
     getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.CASH_ACCOUNTS, [] as CashAccount[]),
   saveCashAccounts: (stationId: string, accounts: CashAccount[]) =>
@@ -829,21 +865,21 @@ export const db = {
     getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SUPPLIER_PERFORMANCE, [] as SupplierPerformanceScore[]),
   saveSupplierPerformance: (stationId: string, scores: SupplierPerformanceScore[]) =>
     saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SUPPLIER_PERFORMANCE, scores),
-    
+
   getCurrentDealerMargin: (stationId: string, productType: string, atDate: string = new Date().toISOString()): number => {
     const settings = db.getDealerMarginSettings(stationId);
-    
+
     // Check for exact productType or name-based fallback matching
     const normalizedType = productType.toLowerCase();
     let typeToMatch = normalizedType;
     if (normalizedType.includes('petrol') || normalizedType.includes('pmg') || normalizedType.includes('hobc') || normalizedType.includes('altron')) {
-       typeToMatch = 'petrol';
+      typeToMatch = 'petrol';
     } else if (normalizedType.includes('diesel') || normalizedType.includes('hsd')) {
-       typeToMatch = 'diesel';
+      typeToMatch = 'diesel';
     } else if (normalizedType.includes('kerosene') || normalizedType.includes('sko')) {
-       typeToMatch = 'kerosene';
+      typeToMatch = 'kerosene';
     } else if (normalizedType.includes('ldo')) {
-       typeToMatch = 'ldo';
+      typeToMatch = 'ldo';
     }
 
     const setting = settings

@@ -149,6 +149,7 @@ export const AppShell = () => {
         onSetTheme={(theme) => setSettings({ ...settings, theme: theme as any })}
         onSettingsClick={() => handleNavigate('configuration')}
         onTankWizardTrigger={() => setIsTankWizardOpen(true)}
+        onSearchOpen={() => setSearchOpen(true)}
         onJarvisTrigger={() => {
           useStationStore.getState().setAIAssistantVisible?.(true);
           handleNavigate('jarvis');
@@ -242,6 +243,13 @@ export const AppShell = () => {
         nozzles={props.nozzles}
         staff={props.staff}
       />
+
+      <GlobalSearchModal
+        isOpen={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onNavigate={handleNavigate}
+      />
+
 
       <AnimatePresence>
         {isTankWizardOpen && (

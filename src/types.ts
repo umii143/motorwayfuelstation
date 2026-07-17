@@ -66,7 +66,7 @@ export interface Product extends TenantDocument {
   sellingPrice?: number;
   dealerMarginPerUnit?: number;
   currentDealerMargin?: number;
-  
+
   // Backward compatibility / UI requirements
   purchaseRate?: number;
   currentRate?: number;
@@ -113,7 +113,7 @@ export interface Supplier extends TenantDocument {
   contact: string;
   accountNo: string;
   balance: number; // Positive means we owe the supplier money (Cr)
-  
+
   // Advanced fields (optional for backward compatibility)
   creditLimit?: number;
   email?: string;
@@ -276,7 +276,7 @@ export interface MeterResetEvent extends TenantDocument {
   oldReading: number;
   newReading: number;
   meterDifference?: number;
-  
+
   // Stock snapshot
   stockAtReset?: number;
   tankStockBeforeReset?: number;
@@ -290,7 +290,7 @@ export interface MeterResetEvent extends TenantDocument {
 
   reason: string;
   isRollover: boolean;
-  
+
   resetType?: 'ROLLOVER' | 'METER_REPLACEMENT' | 'METER_REPAIR' | 'CALIBRATION' | 'ADMIN_CORRECTION';
   severity?: 'INFO' | 'WARNING' | 'CRITICAL';
   eventHash?: string;
@@ -299,7 +299,7 @@ export interface MeterResetEvent extends TenantDocument {
   shiftNumber?: string;
   salesmanId?: string;
   salesmanName?: string;
-  
+
   authorizedBy: string;
   authorizedByName?: string;
   authorizationMethod?: 'MASTER_PIN' | 'BIOMETRIC' | 'OWNER_ACCOUNT';
@@ -307,10 +307,10 @@ export interface MeterResetEvent extends TenantDocument {
   approvedBy?: string;
   approvedAt?: string;
   isFinanciallyImpacting?: boolean;
-  
+
   timestamp: string;
   createdAt?: number;
-  
+
   evidenceUrl?: string;
   beforeMeterImage?: string;
   afterMeterImage?: string;
@@ -325,21 +325,31 @@ export interface Shift extends TenantDocument {
   startTime: string;
   endTime?: string;
   status: 'active' | 'closed';
-  
+
   isLocked?: boolean;
   lockedBy?: string;
   lockedAt?: number;
   activeMidShiftAlert?: boolean;
   segments?: ShiftPriceSegment[];
   pendingPriceRevisions?: PendingPriceRevision[];
-  
+
+  // Enterprise Shift Intelligence Report header fields
+  shiftNumber?: number;
+  shiftLabel?: string;        // e.g. "Day Shift #12"
+  shiftManagerId?: string;    // Manager who supervised/closing the shift
+  pumpId?: string;            // Island/Pump association
+  openingDateTime?: string;   // ISO timestamp of shift open
+  closingDateTime?: string;   // ISO timestamp of shift close (finalized)
+  weather?: string;           // Optional weather note
+  notes?: string;             // Shift-level notes
+
   openingReadings: { [nozzleId: string]: number }; // ACTUAL readings (display + offset)
   openingReadingsDisplay?: { [nozzleId: string]: number }; // DISPLAY readings (what user saw)
   closingReadings: { [nozzleId: string]: number }; // ACTUAL readings (display + offset)
   closingReadingsDisplay?: { [nozzleId: string]: number }; // DISPLAY readings (what user saw)
   testLiters: { [productId: string]: number };
   rates?: { [productId: string]: number }; // Add rates
-  
+
   debitEntries: DebitEntry[];
   recoveryEntries: RecoveryEntry[];
   expenseEntries: ExpenseEntry[];
@@ -348,13 +358,13 @@ export interface Shift extends TenantDocument {
   discountEntries?: DiscountEntry[];
 
   supplierPayments: SupplierPayment[];
-  
+
   expectedCash: number;
   submittedCash: number;
   shortage: number;
   overage: number;
   cashVariance?: number;
-  
+
   // Backward compatibility / UI requirements
   cashierName?: string;
   totalSales?: number;
@@ -377,7 +387,7 @@ export interface Receipt extends TenantDocument {
   time: string; // HH:mm format
   shiftId?: string;
   cashierId: string;
-  customerId?: string; 
+  customerId?: string;
   customerName?: string;
   vehicleNo?: string;
   paymentMode: 'cash' | 'card' | 'digital' | 'credit';
@@ -662,6 +672,8 @@ export interface AuditTrailEntry extends TenantDocument {
   newValue?: string | object;
   ip?: string;
   device?: string;
+  notes?: string;
+  relatedTransactionId?: string;
 }
 
 export interface GlobalSettings extends TenantDocument {
@@ -673,6 +685,7 @@ export interface GlobalSettings extends TenantDocument {
   theme: 'light' | 'dark' | 'sunset' | 'blue' | 'emerald' | 'orange' | 'white';
   language: 'en' | 'ur' | 'ar' | 'es' | 'zh';
   currency?: string;
+  receiptPrinter?: 'thermal_80mm' | 'thermal_58mm' | 'a4';
   setupCompleted?: boolean;
   setupVersion?: number;
   whatsappSettings?: {
@@ -785,14 +798,14 @@ export interface InventorySnapshot extends TenantDocument {
   createdBy: string;
 }
 
-export type RateChangeReason = 
-  | 'OGRA Revision' 
-  | 'PSO Revision' 
-  | 'Shell Revision' 
-  | 'GO Revision' 
-  | 'APL Revision' 
-  | 'Manual Correction' 
-  | 'Special Adjustment' 
+export type RateChangeReason =
+  | 'OGRA Revision'
+  | 'PSO Revision'
+  | 'Shell Revision'
+  | 'GO Revision'
+  | 'APL Revision'
+  | 'Manual Correction'
+  | 'Special Adjustment'
   | 'System Correction';
 
 export interface RateHistoryEntry extends TenantDocument {
@@ -1181,4 +1194,84 @@ export interface GlobalPricingConfig {
       salePrice: number;
     };
   };
+}
+
+// ==========================================
+// ENTERPRISE BUSINESS EVENT ENGINE
+// ==========================================
+// The Digital Roznamcha is the single source of truth. Every operation
+// emits a standardized BusinessEvent linked to the Business Graph.
+
+export type BusinessEventType =
+  | 'SHIFT_OPENED'
+  | 'SHIFT_CLOSED'
+  | 'SALE_CREATED'
+  | 'SALE_VOIDED'
+  | 'LUBE_SALE_CREATED'
+  | 'CUSTOMER_CREATED'
+  | 'CUSTOMER_UPDATED'
+  | 'SUPPLIER_PAYMENT'
+  | 'PRICE_CHANGED'
+  | 'BANK_DEPOSIT'
+  | 'DIGITAL_PAYMENT'
+  | 'EXPENSE_ADDED'
+  | 'EXPENSE_APPROVED'
+  | 'TANK_DELIVERY'
+  | 'TANK_DIP'
+  | 'NOZZLE_READING'
+  | 'METER_READING'
+  | 'INVENTORY_ADJUSTMENT'
+  | 'STOCK_TRANSFER'
+  | 'PRODUCT_CREATED'
+  | 'PRODUCT_UPDATED'
+  | 'CREDIT_SALE'
+  | 'RECOVERY_RECEIVED'
+  | 'CASH_DEPOSIT'
+  | 'JOURNAL_ENTRY'
+  | 'LOGIN'
+  | 'PERMISSION_CHANGED'
+  | 'SETTINGS_CHANGED'
+  | 'BACKUP_CREATED'
+  | 'REPORT_EXPORTED'
+  | 'METER_RESET'
+  | 'SHIFT_FINALIZED';
+
+export type EventSeverity = 'info' | 'success' | 'warning' | 'critical';
+
+export type EventApprovalStatus = 'not_required' | 'pending' | 'approved' | 'rejected';
+
+/** A reference to a node in the Business Graph. */
+export interface EventEntityRef {
+  kind: 'customer' | 'supplier' | 'shift' | 'product' | 'tank' | 'nozzle' | 'invoice' | 'payment' | 'expense' | 'staff' | 'batch' | 'ledger' | 'journal' | 'audit' | 'roznamcha';
+  id: string;
+  label?: string;
+}
+
+export interface BusinessEvent extends TenantDocument {
+  id: string;
+  eventType: BusinessEventType;
+  timestamp: string;          // ISO datetime
+  businessDate: string;        // YYYY-MM-DD
+  shiftId?: string;
+  userId?: string;
+  userName?: string;
+  userRole?: string;
+  stationId?: string;
+  stationName?: string;
+  module: string;              // e.g. 'shifts', 'inventory', 'sales'
+  entity?: EventEntityRef;     // primary entity affected
+  relatedEntities?: EventEntityRef[];
+  oldValue?: any;
+  newValue?: any;
+  reason?: string;
+  referenceNumber?: string;
+  attachments?: { name: string; url: string; type: string }[];
+  gps?: { lat: number; lng: number };
+  device?: string;
+  ip?: string;
+  severity: EventSeverity;
+  tags?: string[];
+  approvalStatus: EventApprovalStatus;
+  amount?: number;             // monetary/volume impact where relevant
+  summary: string;             // human-readable headline
 }

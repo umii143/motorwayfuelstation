@@ -5,6 +5,7 @@ import { firestoreDb } from '../data/firestore';
 import { getBusinessTypeForStation, isolateProductRecords, isolateTenantRecords, withBusinessScope } from '../lib/businessScope';
 import { useStationStore } from './useStationStore';
 import { logger } from '../lib/logger';
+import { AuditLogger } from '../services/auditLogger';
 
 interface InventoryState {
   products: Product[];
@@ -244,6 +245,16 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
       }
     }
 
+    AuditLogger.logAction(
+      'METER_RESET',
+      'inventory',
+      `Nozzle meter reset/rollover executed for Nozzle "${nozzleToUpdate?.name || reset.nozzleId}": Reading ${reset.oldReading} -> ${reset.newReading}`,
+      nozzleToUpdate,
+      reset,
+      orgId,
+      sId
+    );
+
     if (orgId) {
       await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'meter_resets', reset.id, reset);
     }
@@ -294,17 +305,26 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     if (checkPerm) checkPerm('inventory.manage', 'update product stock', 'پراڈکٹ کا اسٹاک تبدیل کرنے');
     const sId = stationId || db.getActiveStationId();
 
+    const oldProduct = get().products.find(p => p.id === productId);
     set((state) => {
       const updated = state.products.map((p) => (p.id === productId ? { ...p, currentStock: newStock } : p));
       db.saveProducts(sId, updated);
       return { products: updated };
     });
 
-    if (orgId) {
-      const product = get().products.find(p => p.id === productId);
-      if (product) {
-        await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'products', productId, { ...product, currentStock: newStock });
-      }
+    const newProduct = get().products.find(p => p.id === productId);
+    AuditLogger.logAction(
+      'STOCK_ADJUSTMENT',
+      'inventory',
+      `Adjusted stock for "${oldProduct?.name || productId}": ${oldProduct?.currentStock || 0} -> ${newStock}`,
+      oldProduct,
+      newProduct,
+      orgId,
+      sId
+    );
+
+    if (orgId && newProduct) {
+      await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'products', productId, newProduct);
     }
   },
 
@@ -381,6 +401,16 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
       await financialStore.handleAddJournalEntry(result.journalEntry, orgId, sId);
     }
 
+    AuditLogger.logAction(
+      'PRICE_CHANGE',
+      'pricing',
+      `Changed base price for "${productToUpdate.name}": Rs. ${productToUpdate.rate} -> Rs. ${newRate} (${reason})`,
+      productToUpdate,
+      result.updatedProduct,
+      orgId,
+      sId
+    );
+
     if (orgId) {
       const bType = getBusinessType(sId);
       firestoreDb.saveDocument(orgId, sId, bType, 'inventorySnapshots', result.snapshot.id, result.snapshot);
@@ -407,7 +437,9 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   handleUpdateProduct: async (updatedProduct, orgId, stationId) => {
     const sId = stationId || db.getActiveStationId();
     const scopedProduct = withBusinessScope(updatedProduct, sId, orgId);
+    let oldProduct: Product | undefined;
     set((state) => {
+      oldProduct = state.products.find(p => p.id === updatedProduct.id);
       const updated = isolateProductRecords(
         state.products.map((p) => (p.id === updatedProduct.id ? scopedProduct : p)),
         sId,
@@ -417,6 +449,18 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
       return { products: updated };
     });
 
+    if (oldProduct) {
+      AuditLogger.logAction(
+        'UPDATE_PRODUCT',
+        'inventory',
+        `Updated details for product "${updatedProduct.name}"`,
+        oldProduct,
+        scopedProduct,
+        orgId,
+        sId
+      );
+    }
+
     if (orgId) {
       await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'products', scopedProduct.id, scopedProduct);
     }
@@ -424,11 +468,25 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
 
   handleDeleteProduct: async (productId, orgId, stationId) => {
     const sId = stationId || db.getActiveStationId();
+    let oldProduct: Product | undefined;
     set((state) => {
+      oldProduct = state.products.find(p => p.id === productId);
       const updated = state.products.filter((p) => p.id !== productId);
       db.saveProducts(sId, updated);
       return { products: updated };
     });
+
+    if (oldProduct) {
+      AuditLogger.logAction(
+        'DELETE_PRODUCT',
+        'inventory',
+        `Deleted product "${oldProduct.name}"`,
+        oldProduct,
+        undefined,
+        orgId,
+        sId
+      );
+    }
 
     if (orgId) {
       await firestoreDb.deleteDocument(orgId, sId, 'products', productId);
@@ -443,6 +501,16 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
       db.saveProducts(sId, updated);
       return { products: updated };
     });
+
+    AuditLogger.logAction(
+      'CREATE_PRODUCT',
+      'inventory',
+      `Created product profile for "${newProduct.name}" (${newProduct.type})`,
+      undefined,
+      scopedProduct,
+      orgId,
+      sId
+    );
 
     if (orgId) {
       await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'products', scopedProduct.id, scopedProduct);
@@ -748,10 +816,20 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
              }
            });
          }
-       }).catch(err => {
-         logger.error("Error integrating purchase financials:", err);
-       });
-    }
+        }).catch(err => {
+          logger.error("Error integrating purchase financials:", err);
+        });
+     }
+
+     AuditLogger.logAction(
+       'STOCK_DELIVERY',
+       'inventory',
+       `Received stock delivery of ${txn.quantity} units/litres for product ID "${txn.itemId}" (Invoice: ${txn.invoiceNo || 'N/A'})`,
+       undefined,
+       txn,
+       orgId,
+       sId
+     );
   },
 
   handleAddStockBatch: async (batch, orgId, stationId, checkPerm) => {

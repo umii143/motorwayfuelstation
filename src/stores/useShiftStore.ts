@@ -1,11 +1,9 @@
 import { create } from 'zustand';
- 
- 
- 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Shift, Product, Customer, Supplier, Tank, BankAccount, Staff, StockTransaction, InventoryMovement, StaffFinanceEntry, JournalEntry, CogsRecord } from '../types';
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
+import { AuditLogger } from '../services/auditLogger';
+import { EventEngine } from '../services/eventEngine';
 import { useInventoryStore } from './useInventoryStore';
 import { useCustomerStore } from './useCustomerStore';
 import { useSupplierStore } from './useSupplierStore';
@@ -162,6 +160,26 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
       return { shifts: updated };
     });
 
+    AuditLogger.logAction(
+      'OPEN_SHIFT',
+      'shifts',
+      `Opened new operational Shift #${scopedShift.id} for Date ${scopedShift.date}`,
+      undefined,
+      scopedShift,
+      orgId,
+      sId
+    );
+
+    EventEngine.emit({
+      eventType: 'SHIFT_OPENED',
+      module: 'shifts',
+      summary: `Shift #${scopedShift.id} opened (${scopedShift.type}) on ${scopedShift.date}`,
+      entity: { kind: 'shift', id: scopedShift.id, label: `Shift #${scopedShift.id}` },
+      shiftId: scopedShift.id,
+      stationId: sId,
+      severity: 'success'
+    });
+
     if (orgId) {
       await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'shifts', scopedShift.id, scopedShift);
     }
@@ -300,6 +318,7 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
     const bType = getBusinessType(sId);
     if (bType === 'lube') return;
 
+    const oldShift = get().shifts.find(s => s.id === updatedShift.id);
     updatedShift = withBusinessScope({ ...updatedShift }, sId, orgId);
     const showToast = useStationStore.getState().showToast;
     const settings = useStationStore.getState().settings;
@@ -649,6 +668,66 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
       useFinancialStore.getState().setBanks(nextBanks);
       useStaffStore.getState().setStaff(nextStaff);
 
+      // ── Business Event Engine: emit standardized events for every
+      //    committed operation in this shift (single source of truth) ──
+      const shiftRef = { kind: 'shift' as const, id: updatedShift.id, label: `Shift #${updatedShift.id}` };
+      const relatedCust = (cid?: string) => cid ? [{ kind: 'customer' as const, id: cid }] : [];
+
+      EventEngine.emit({
+        eventType: 'SHIFT_CLOSED',
+        module: 'shifts',
+        summary: `Shift #${updatedShift.id} closed — Expected ${updatedShift.expectedCash}, Submitted ${updatedShift.submittedCash}, Variance ${updatedShift.cashVariance || 0}`,
+        entity: shiftRef,
+        severity: (updatedShift.cashVariance || 0) !== 0 ? 'warning' : 'success',
+        amount: updatedShift.submittedCash,
+        shiftId: updatedShift.id,
+        stationId: sId,
+        tags: ['shift', updatedShift.type]
+      });
+
+      updatedShift.debitEntries.forEach(d => EventEngine.emit({
+        eventType: 'CREDIT_SALE', module: 'sales',
+        summary: `Credit sale ${d.slipNumber || d.id} — ${d.quantity} × ${d.rate} = ${d.amount}`,
+        entity: { kind: 'invoice', id: `deb_${d.id}`, label: `Credit ${d.slipNumber || d.id}` },
+        relatedEntities: [...relatedCust(d.customerId), shiftRef],
+        amount: d.amount, shiftId: updatedShift.id, stationId: sId, severity: 'info'
+      }));
+      updatedShift.recoveryEntries.forEach(r => EventEngine.emit({
+        eventType: 'RECOVERY_RECEIVED', module: 'sales',
+        summary: `Recovery ${r.receiptNumber || r.id} via ${r.mode} — ${r.amount}`,
+        entity: { kind: 'payment', id: `rec_${r.id}`, label: `Recovery ${r.receiptNumber || r.id}` },
+        relatedEntities: [...relatedCust(r.customerId), shiftRef],
+        amount: r.amount, shiftId: updatedShift.id, stationId: sId, severity: 'success'
+      }));
+      updatedShift.bankCashEntries.forEach(b => EventEngine.emit({
+        eventType: 'BANK_DEPOSIT', module: 'treasury',
+        summary: `Bank deposit ${b.reference || b.id} — ${b.amount}`,
+        entity: { kind: 'payment', id: `bank_${b.id}`, label: `Deposit ${b.reference || b.id}` },
+        relatedEntities: [shiftRef],
+        amount: b.amount, shiftId: updatedShift.id, stationId: sId, severity: 'info'
+      }));
+      updatedShift.digitalCashEntries.forEach(d => EventEngine.emit({
+        eventType: 'DIGITAL_PAYMENT', module: 'treasury',
+        summary: `Digital payment ${d.method} — ${d.transactionId} — ${d.amount}`,
+        entity: { kind: 'invoice', id: `dig_${d.id}`, label: `Digital ${d.method}` },
+        relatedEntities: [shiftRef],
+        amount: d.amount, shiftId: updatedShift.id, stationId: sId, severity: 'info'
+      }));
+      updatedShift.expenseEntries.forEach(e => EventEngine.emit({
+        eventType: 'EXPENSE_ADDED', module: 'financials',
+        summary: `Expense ${e.categoryName || e.category} — ${e.description} — ${e.amount}`,
+        entity: { kind: 'expense', id: e.id, label: `Expense ${e.categoryName || e.category}` },
+        relatedEntities: [shiftRef],
+        amount: e.amount, shiftId: updatedShift.id, stationId: sId, severity: 'info'
+      }));
+      updatedShift.supplierPayments.forEach(p => EventEngine.emit({
+        eventType: 'SUPPLIER_PAYMENT', module: 'suppliers',
+        summary: `Supplier payment to ${p.supplierId} — ${p.amount} (${p.mode})`,
+        entity: { kind: 'supplier', id: p.supplierId, label: 'Supplier' },
+        relatedEntities: [shiftRef],
+        amount: p.amount, shiftId: updatedShift.id, stationId: sId, severity: 'info'
+      }));
+
       // Phase 2: Shadow Mode Validation (Unified Enterprise Architecture)
       // We dispatch the shift to the new Operational Core without blocking the UI
       dispatchShiftToOperationalCore(updatedShift, sId, 'default', orgId).catch(logger.error);
@@ -670,17 +749,38 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
             body: JSON.stringify({ number: settings.whatsappSettings.number, message: msg })
           }).catch(() => { /* empty */ });
          
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (e) { /* ignore */ }
-      }
+         // eslint-disable-next-line @typescript-eslint/no-unused-vars
+         } catch (e) { /* ignore */ }
+       }
 
-    } else {
-      set((state) => ({ shifts: state.shifts.map((s) => (s.id === updatedShift.id ? updatedShift : s)) }));
-      db.saveShifts(sId, get().shifts);
-      if (orgId) {
-        await firestoreDb.saveDocument(orgId, sId, bType, 'shifts', updatedShift.id, updatedShift);
-      }
-    }
+       AuditLogger.logAction(
+         'CLOSE_SHIFT',
+         'shifts',
+         `Closed Shift #${updatedShift.id} (Operator: ${updatedShift.staffId}) - Expected Cash: ${updatedShift.expectedCash}, Variance: ${updatedShift.cashVariance}`,
+         oldShift,
+         updatedShift,
+         orgId,
+         sId
+       );
+
+     } else {
+       set((state) => ({ shifts: state.shifts.map((s) => (s.id === updatedShift.id ? updatedShift : s)) }));
+       db.saveShifts(sId, get().shifts);
+
+       AuditLogger.logAction(
+         'UPDATE_SHIFT',
+         'shifts',
+         `Updated operational data for Shift #${updatedShift.id} (Status: ${updatedShift.status})`,
+         oldShift,
+         updatedShift,
+         orgId,
+         sId
+       );
+
+       if (orgId) {
+         await firestoreDb.saveDocument(orgId, sId, bType, 'shifts', updatedShift.id, updatedShift);
+       }
+     }
   },
 
   handleDeleteDebitEntry: async (shiftId, entryId, orgId, stationId) => {

@@ -5,6 +5,7 @@ import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
 import { getBusinessTypeForStation, isolateLubePosSales, isolateTenantRecords, withBusinessScope } from '../lib/businessScope';
 import { logger } from '../lib/logger';
+import { AuditLogger } from '../services/auditLogger';
 
 interface FinancialState {
   banks: BankAccount[];
@@ -343,6 +344,16 @@ export const useFinancialStore = create<FinancialState>((set, get) => ({
       return { standaloneExpenses: updated };
     });
 
+    AuditLogger.logAction(
+      'EXPENSE_RECORDED',
+      'financials',
+      `Recorded business expense: Rs. ${scopedExpense.amount} - Category: ${scopedExpense.categoryName || scopedExpense.categoryId} (${scopedExpense.description || 'N/A'})`,
+      undefined,
+      scopedExpense,
+      orgId,
+      sId
+    );
+
     if (orgId) {
       await firestoreDb.saveDocument(orgId, sId, getBusinessType(sId), 'standaloneExpenses', scopedExpense.id, scopedExpense);
     }
@@ -472,6 +483,16 @@ export const useFinancialStore = create<FinancialState>((set, get) => ({
       await firestoreDb.saveDocument(orgId, sId, bType, 'lubePosSales', sale.id, sale);
       // Customer and banks are updated in Firestore via context bridge calls to saveDocument
     }
+
+    AuditLogger.logAction(
+      'LUBE_POS_SALE',
+      'sales',
+      `Lube POS transaction completed (Invoice: ${sale.invoiceNo}): Rs. ${sale.total} via ${sale.paymentMode}`,
+      undefined,
+      sale,
+      orgId,
+      sId
+    );
   },
 
   handleAddJournalEntry: async (entry, orgId, stationId) => {

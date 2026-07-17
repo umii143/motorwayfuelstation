@@ -22,6 +22,7 @@ import {
   writeBatch
 } from 'firebase/firestore';
 import { logger } from '../lib/logger';
+import { EventEngine } from '../services/eventEngine';
 import {
   auth,
   dbFS,
@@ -275,6 +276,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
 
         setUser(profile);
+
+        EventEngine.emit({
+          eventType: 'LOGIN',
+          module: 'security',
+          summary: `User ${profile.email} (${profile.role}) signed in`,
+          entity: { kind: 'staff', id: profile.uid, label: profile.email },
+          severity: 'info',
+          tags: ['auth', 'login']
+        });
 
         // ─── SUPER ADMIN PROTECTION ────────────────────────────────────────
         // If this is the developer's account and their org got accidentally expired, heal it

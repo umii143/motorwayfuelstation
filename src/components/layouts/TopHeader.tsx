@@ -12,6 +12,7 @@ interface TopHeaderProps {
   onSettingsClick?: () => void;
   onTankWizardTrigger?: () => void;
   onJarvisTrigger?: () => void;
+  onSearchOpen?: () => void;
   settings: GlobalSettings;
   stations?: Station[];
   activeStationId?: string;
@@ -24,6 +25,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   onSettingsClick,
   onTankWizardTrigger,
   onJarvisTrigger,
+  onSearchOpen,
   settings,
   stations = [],
   activeStationId
@@ -167,12 +169,14 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           <Search className="w-4 h-4 text-slate-400 absolute left-3 transition-colors group-hover:text-indigo-500" />
           <input 
             type="text" 
-            placeholder="Search or ask Jarvis..." 
+            placeholder="Search everything..." 
             aria-label="Search or ask Jarvis"
-            className="w-56 lg:w-72 h-9 pl-9 pr-10 rounded-full bg-slate-100 dark:bg-[#1A1A24] text-sm font-medium text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 border border-transparent dark:border-white/5 transition-all"
+            onFocus={onSearchOpen}
+            className="w-56 lg:w-72 h-9 pl-9 pr-10 rounded-full bg-slate-100 dark:bg-[#1A1A24] text-sm font-medium text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 border border-transparent dark:border-white/5 transition-all cursor-pointer"
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && onJarvisTrigger) {
-                onJarvisTrigger();
+              if (e.key === 'Enter') {
+                if (onSearchOpen) onSearchOpen();
+                else if (onJarvisTrigger) onJarvisTrigger();
               }
             }}
           />

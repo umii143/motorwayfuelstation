@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useInventoryStore } from '../stores/useInventoryStore';
 import { useStationStore } from '../stores/useStationStore';
 import { useStaffStore } from '../stores/useStaffStore';
@@ -5,6 +6,7 @@ import { useCustomerStore } from '../stores/useCustomerStore';
 import { useSupplierStore } from '../stores/useSupplierStore';
 import { useShiftStore } from '../stores/useShiftStore';
 import { useFinancialStore } from '../stores/useFinancialStore';
+import { buildSearchIndex } from '../services/searchService';
 
 export const useAppStoreProps = () => {
   const activeStationId = useStationStore((state) => state.activeStationId);
@@ -92,6 +94,52 @@ export const useAppStoreProps = () => {
   const _showConfirm = useStationStore((state) => state.showConfirm);
   const _showAlert = useStationStore((state) => state.showAlert);
   const _closeConfirm = useStationStore((state) => state.closeConfirm);
+
+  // ── Build the global Business Graph search index from live data ──
+  // Runs whenever any indexed dataset changes so "Search Everything"
+  // always finds the latest invoice, customer, tank, product, etc.
+  useEffect(() => {
+    const productName = (pid?: string) => products.find(p => p.id === pid)?.name || pid || '';
+    const custName = (cid?: string) => customers.find(c => c.id === cid)?.name || '';
+
+    const normCustomers = customers.map(c => ({ ...c, outstandingBalance: c.balance }));
+    const normShifts = shifts.map(s => ({
+      ...s,
+      shiftNumber: s.shiftNumber || s.id,
+      salesmanName: staff.find(st => st.id === s.staffId)?.name || s.staffId,
+      totalRevenue: s.submittedCash || s.expectedCash || 0
+    }));
+    const normTanks = tanks.map(t => ({ ...t, productName: productName(t.productId) }));
+    const normNozzles = nozzles.map(n => ({ ...n, productName: productName(n.productId) }));
+
+    // Invoices = lube POS sales + shift credit (debit) entries
+    const invoices: any[] = [];
+    lubePosSales.forEach(s => invoices.push({
+      id: s.id, invoiceNo: s.invoiceNo, customerName: s.customerName || custName(s.customerId),
+      customerId: s.customerId, paymentMode: s.paymentMode, total: s.total
+    }));
+    shifts.forEach(s => (s.debitEntries || []).forEach(d => invoices.push({
+      id: `deb_${d.id}`, invoiceNo: d.slipNumber || `CR-${d.id.slice(-5)}`, customerName: custName(d.customerId),
+      customerId: d.customerId, paymentMode: 'credit', total: d.amount, reference: d.id
+    })));
+
+    const normExpenses = standaloneExpenses.map(e => ({
+      ...e, category: e.categoryName || e.category, paidTo: e.description, expenseDate: e.date, amount: e.amount
+    }));
+
+    buildSearchIndex({
+      customers: normCustomers,
+      suppliers,
+      shifts: normShifts,
+      batches: (useInventoryStore.getState().stockBatches as any[]) || [],
+      expenses: normExpenses,
+      staff,
+      tanks: normTanks,
+      nozzles: normNozzles,
+      products,
+      invoices
+    });
+  }, [customers, suppliers, shifts, staff, products, tanks, nozzles, standaloneExpenses, lubePosSales]);
 
   return {
     activeStationId, stations, settings, staff, products, pumps, nozzles, customers, suppliers, shifts, banks, digitalAccounts, stockTxns, tanks, rateHistory, staffFinance, attendance, standaloneExpenses, lubePosSales,

@@ -74,6 +74,48 @@ const FUSE_CONFIGS = {
       { name: 'phone', weight: 0.20 },
     ],
   },
+  tanks: {
+    threshold: 0.30,
+    includeScore: true,
+    includeMatches: true,
+    keys: [
+      { name: 'name',        weight: 0.50 },
+      { name: 'productName', weight: 0.30 },
+      { name: 'physicalLabel', weight: 0.20 },
+    ],
+  },
+  nozzles: {
+    threshold: 0.30,
+    includeScore: true,
+    includeMatches: true,
+    keys: [
+      { name: 'name',        weight: 0.50 },
+      { name: 'productName', weight: 0.30 },
+      { name: 'pumpId',      weight: 0.20 },
+    ],
+  },
+  products: {
+    threshold: 0.30,
+    includeScore: true,
+    includeMatches: true,
+    keys: [
+      { name: 'name',    weight: 0.50 },
+      { name: 'urduName', weight: 0.20 },
+      { name: 'type',    weight: 0.15 },
+      { name: 'category', weight: 0.15 },
+    ],
+  },
+  invoices: {
+    threshold: 0.30,
+    includeScore: true,
+    includeMatches: true,
+    keys: [
+      { name: 'invoiceNo', weight: 0.40 },
+      { name: 'customerName', weight: 0.30 },
+      { name: 'transactionId', weight: 0.20 },
+      { name: 'reference', weight: 0.10 },
+    ],
+  },
 };
 
 // ─── SEARCH INDEX BUILDER ────────────────────────────────────
@@ -89,6 +131,10 @@ export function buildSearchIndex(data: SearchIndex) {
     batches:   new Fuse(data.batches,   FUSE_CONFIGS.batches),
     expenses:  new Fuse(data.expenses,  FUSE_CONFIGS.expenses),
     staff:     new Fuse(data.staff,     FUSE_CONFIGS.staff),
+    tanks:     new Fuse(data.tanks,     FUSE_CONFIGS.tanks),
+    nozzles:   new Fuse(data.nozzles,   FUSE_CONFIGS.nozzles),
+    products:  new Fuse(data.products,  FUSE_CONFIGS.products),
+    invoices:  new Fuse(data.invoices,  FUSE_CONFIGS.invoices),
   };
 }
 
@@ -118,6 +164,10 @@ export function searchAll(query: string, limit = 20): SearchResult[] {
     ['batches',   'batch'],
     ['expenses',  'expense'],
     ['staff',     'staff'],
+    ['tanks',     'tank'],
+    ['nozzles',   'nozzle'],
+    ['products',  'product'],
+    ['invoices',  'invoice'],
   ];
 
   for (const [module, type] of modules) {
@@ -181,6 +231,7 @@ function formatResult(
         icon: 'person',
         viewId: 'customers',
         contextData: { customerId: item.id },
+        entityRef: { kind: 'customer', id: item.id },
         score,
         matchedKeys: fuseResult.matches?.map(m => m.key as string),
       };
@@ -198,6 +249,7 @@ function formatResult(
         icon: 'local_shipping',
         viewId: 'suppliers',
         contextData: { supplierId: item.id },
+        entityRef: { kind: 'supplier', id: item.id },
         score,
       };
 
@@ -216,6 +268,7 @@ function formatResult(
         icon: 'schedule',
         viewId: 'shifts',
         contextData: { shiftId: item.id },
+        entityRef: { kind: 'shift', id: item.id },
         score,
       };
 
@@ -231,6 +284,7 @@ function formatResult(
         icon: 'inventory_2',
         viewId: 'fuel_stock',
         contextData: { batchId: item.id },
+        entityRef: { kind: 'batch', id: item.id },
         score,
       };
 
@@ -245,6 +299,7 @@ function formatResult(
         icon: 'receipt_long',
         viewId: 'expenses',
         contextData: { expenseId: item.id },
+        entityRef: { kind: 'expense', id: item.id },
         score,
       };
 
@@ -257,6 +312,68 @@ function formatResult(
         icon: 'badge',
         viewId: 'staff_payroll',
         contextData: { staffId: item.id },
+        entityRef: { kind: 'staff', id: item.id },
+        score,
+      };
+
+    case 'tank':
+    case 'tanks':
+      return {
+        id: item.id,
+        type: 'tank',
+        title: item.name,
+        subtitle: `Tank • ${item.productName || item.productId}`,
+        metadata: `${item.currentStock?.toLocaleString()} / ${item.capacity?.toLocaleString()} L`,
+        icon: 'local_gas_station',
+        viewId: 'fuel_stock',
+        contextData: { tankId: item.id },
+        entityRef: { kind: 'tank', id: item.id },
+        score,
+      };
+
+    case 'nozzle':
+    case 'nozzles':
+      return {
+        id: item.id,
+        type: 'nozzle',
+        title: item.name,
+        subtitle: `Nozzle • ${item.productName || item.productId}`,
+        icon: 'opacity',
+        viewId: 'inventory',
+        contextData: { nozzleId: item.id },
+        entityRef: { kind: 'nozzle', id: item.id },
+        score,
+      };
+
+    case 'product':
+    case 'products':
+      return {
+        id: item.id,
+        type: 'product',
+        title: item.name,
+        subtitle: `${item.type} • Rs.${item.rate}`,
+        metadata: `${item.currentStock?.toLocaleString()} ${item.unit}`,
+        icon: 'inventory_2',
+        viewId: 'inventory',
+        contextData: { productId: item.id },
+        entityRef: { kind: 'product', id: item.id },
+        score,
+      };
+
+    case 'invoice':
+    case 'invoices':
+      return {
+        id: item.id,
+        type: 'invoice',
+        title: item.invoiceNo || item.invoiceNumber || item.id,
+        subtitle: `${item.customerName || 'Invoice'} • ${item.paymentMode || ''}`,
+        metadata: item.total ? `Rs. ${Number(item.total).toLocaleString('en-PK')}` : undefined,
+        badgeText: item.paymentMode === 'credit' ? 'CREDIT' : undefined,
+        badgeColor: 'orange',
+        icon: 'receipt_long',
+        viewId: 'customers',
+        contextData: { customerId: item.customerId },
+        entityRef: { kind: 'invoice', id: item.id },
         score,
       };
 

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   Zap,
   Search,
@@ -20,13 +20,54 @@ import {
   ShoppingBag,
   FileCheck,
   Star,
+  Printer,
+  Download,
+  Filter,
+  RefreshCw,
+  X,
+  Clock,
+  FileJson,
+  ClipboardCopy,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
+  Check,
+  Sigma
 } from "lucide-react";
 import {
   GlobalSettings,
   Shift,
   Product,
   Staff,
+  Customer,
+  Supplier,
+  ExpenseEntry,
+  BankAccount,
+  DigitalAccount,
+  AuditTrailEntry
 } from "../../types";
+import { REPORT_MODULES } from "../../lib/reportModules";
+import { REPORT_TEMPLATES, ReportRow } from "../../lib/reportCompilers";
+import { useCustomerStore } from "../../stores/useCustomerStore";
+import { useSupplierStore } from "../../stores/useSupplierStore";
+import { useFinancialStore } from "../../stores/useFinancialStore";
+import { useInventoryStore } from "../../stores/useInventoryStore";
+import { useStaffStore } from "../../stores/useStaffStore";
+import { db } from "../../data/db";
+import { logger } from "../../lib/logger";
+import { formatCurrency } from "../../lib/currency";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend
+} from "recharts";
 
 interface AdvancedReportsHubProps {
   settings: GlobalSettings;
@@ -36,776 +77,95 @@ interface AdvancedReportsHubProps {
 }
 
 // Data matching PRD
-const REPORT_MODULES = [
-  {
-    id: "sales",
-    icon: DollarSign,
-    name: "1. Sales & Revenue Reports",
-    reports: [
-      {
-        id: "R-01",
-        name: "Live Sales Dashboard",
-        desc: "Real-time total sales by fuel grade, time slot, and pump. Updates every 60 seconds.",
-        tags: ["rt", "kpi"],
-      },
-      {
-        id: "R-02",
-        name: "Daily Revenue Summary",
-        desc: "Total revenue by fuel type, shop sales, and services. Shift-wise breakdown.",
-        tags: ["daily", "kpi"],
-      },
-      {
-        id: "R-03",
-        name: "Hourly Sales Trend",
-        desc: "Sales volume and revenue per hour to identify peak and low traffic periods.",
-        tags: ["daily"],
-      },
-      {
-        id: "R-04",
-        name: "Week-over-Week Revenue Comparison",
-        desc: "Compare this week vs last week revenue with % change and trend arrows.",
-        tags: ["weekly", "kpi"],
-      },
-      {
-        id: "R-05",
-        name: "Monthly P&L Statement",
-        desc: "Full profit & loss: gross revenue, cost of goods, operating expenses, net profit.",
-        tags: ["monthly", "kpi"],
-      },
-      {
-        id: "R-06",
-        name: "Fuel Grade Revenue Split",
-        desc: "Revenue contribution per fuel type: petrol, diesel, hi-octane, CNG, EV.",
-        tags: ["daily"],
-      },
-      {
-        id: "R-07",
-        name: "Year-to-Date Revenue Report",
-        desc: "Cumulative revenue vs budget with monthly breakdown and growth rate.",
-        tags: ["monthly"],
-      },
-      {
-        id: "R-08",
-        name: "Pump-wise Real-Time Sales",
-        desc: "Live view of each pump's current transaction volume, liters dispensed, and revenue.",
-        tags: ["rt"],
-      },
-    ],
-  },
-  {
-    id: "inventory",
-    icon: Fuel,
-    name: "2. Fuel Inventory & Tank Reports",
-    reports: [
-      {
-        id: "R-09",
-        name: "Live Tank Level Monitor",
-        desc: "Real-time tank levels for each product with low-level alerts and reorder triggers.",
-        tags: ["rt", "alert"],
-      },
-      {
-        id: "R-10",
-        name: "Daily Stock Reconciliation",
-        desc: "Opening stock + received – dispensed = closing. Variance flagged automatically.",
-        tags: ["daily", "kpi"],
-      },
-      {
-        id: "R-11",
-        name: "Wet Stock Variance Report",
-        desc: "ATG measured vs system calculated. Identifies unexplained losses or gains.",
-        tags: ["daily", "alert"],
-      },
-      {
-        id: "R-12",
-        name: "Fuel Delivery & Receipt Log",
-        desc: "All tanker deliveries: quantity ordered, received, dip test, supplier, timestamp.",
-        tags: ["weekly"],
-      },
-      {
-        id: "R-13",
-        name: "Monthly Stock Loss Analysis",
-        desc: "Total evaporation, spillage, theft, and meter error losses with cost impact.",
-        tags: ["monthly", "kpi"],
-      },
-      {
-        id: "R-14",
-        name: "Leak Detection Alert Report",
-        desc: "Triggers when ATG detects unusual volume drop not matching dispensing records.",
-        tags: ["alert"],
-      },
-      {
-        id: "R-15",
-        name: "Dip Test vs ATG Comparison",
-        desc: "Manual dip measurements vs automatic gauge readings. Discrepancy report.",
-        tags: ["daily"],
-      },
-      {
-        id: "R-16",
-        name: "Inventory Turnover Report",
-        desc: "How fast each fuel type sells. Days of stock remaining at current consumption rate.",
-        tags: ["weekly", "kpi"],
-      },
-    ],
-  },
-  {
-    id: "pump",
-    icon: Settings,
-    name: "3. Pump & Dispenser Reports",
-    reports: [
-      {
-        id: "R-17",
-        name: "Pump Status Dashboard",
-        desc: "Live status: active, idle, fault, suspended. With downtime duration per pump.",
-        tags: ["rt"],
-      },
-      {
-        id: "R-18",
-        name: "Pump Performance Report",
-        desc: "Volume dispensed, transaction count, revenue, and efficiency score per pump per day.",
-        tags: ["daily", "kpi"],
-      },
-      {
-        id: "R-19",
-        name: "Meter Calibration Deviation Report",
-        desc: "Detects pump meter drift. Flags pumps needing calibration to avoid revenue loss.",
-        tags: ["weekly", "alert"],
-      },
-      {
-        id: "R-20",
-        name: "Pump Downtime Log",
-        desc: "Every fault event: pump ID, fault type, duration, resolution, and revenue lost.",
-        tags: ["daily"],
-      },
-      {
-        id: "R-21",
-        name: "Nozzle-wise Sales Report",
-        desc: "Sales per nozzle across all pumps. Identifies underutilized or high-demand nozzles.",
-        tags: ["monthly"],
-      },
-      {
-        id: "R-22",
-        name: "Unauthorized Pump Access Alert",
-        desc: "Flags dispenser activity outside authorized hours or without active POS transaction.",
-        tags: ["alert"],
-      },
-    ],
-  },
-  {
-    id: "pos",
-    icon: Receipt,
-    name: "4. Transaction & POS Reports",
-    reports: [
-      {
-        id: "R-23",
-        name: "Live Transaction Feed",
-        desc: "Every transaction as it happens: product, quantity, price, payment mode, cashier.",
-        tags: ["rt"],
-      },
-      {
-        id: "R-24",
-        name: "Daily Transaction Summary",
-        desc: "Total transactions, average ticket size, payment breakdown: cash/card/digital/credit.",
-        tags: ["daily", "kpi"],
-      },
-      {
-        id: "R-25",
-        name: "Void & Refund Report",
-        desc: "All cancelled/refunded transactions with reason, cashier ID, and manager approval log.",
-        tags: ["daily", "alert"],
-      },
-      {
-        id: "R-26",
-        name: "Cash Shortage / Overage Report",
-        desc: "End-of-shift cash drawer vs expected. Flags discrepancies for investigation.",
-        tags: ["daily", "alert"],
-      },
-      {
-        id: "R-27",
-        name: "Payment Mode Analysis",
-        desc: "Revenue split: cash, debit, credit, fleet card, mobile wallet, credit account.",
-        tags: ["weekly"],
-      },
-      {
-        id: "R-28",
-        name: "Suspicious Transaction Report",
-        desc: "Flags unusually large discounts, back-to-back voids, or odd-hour transactions.",
-        tags: ["daily", "alert"],
-      },
-      {
-        id: "R-29",
-        name: "Monthly Transaction Volume Trend",
-        desc: "Month-wise transaction count with growth rate and forecasted next month volume.",
-        tags: ["monthly", "kpi"],
-      },
-      {
-        id: "R-30",
-        name: "No-Sale & Drive-Off Report",
-        desc: "Pump activations with zero payment recorded. Investigation trigger for fuel theft.",
-        tags: ["daily", "alert"],
-      },
-    ],
-  },
-  {
-    id: "pricing",
-    icon: Tag,
-    name: "5. Price Management Reports",
-    reports: [
-      {
-        id: "R-31",
-        name: "Current Pump Price Board",
-        desc: "Active prices for all fuel grades, including time-of-day dynamic pricing status.",
-        tags: ["rt", "kpi"],
-      },
-      {
-        id: "R-32",
-        name: "Gross Margin per Liter Report",
-        desc: "Buy price vs sell price margin per fuel grade. Tracks margin erosion or improvement.",
-        tags: ["daily", "kpi"],
-      },
-      {
-        id: "R-33",
-        name: "Price Change History Log",
-        desc: "All pricing changes: who changed, old price, new price, timestamp, reason.",
-        tags: ["weekly"],
-      },
-      {
-        id: "R-34",
-        name: "Competitor Price Comparison",
-        desc: "Your prices vs nearest 3 competitors. Opportunity alerts for pricing adjustments.",
-        tags: ["weekly", "kpi"],
-      },
-      {
-        id: "R-35",
-        name: "Price Elasticity Report",
-        desc: "How volume changes when price changes. Optimal pricing sweet-spot analysis.",
-        tags: ["monthly"],
-      },
-      {
-        id: "R-36",
-        name: "Below-Cost Sale Alert",
-        desc: "Triggers if any transaction records sale price below procurement cost. Stops losses.",
-        tags: ["alert"],
-      },
-    ],
-  },
-  {
-    id: "staff",
-    icon: Users,
-    name: "6. Staff & Shift Management Reports",
-    reports: [
-      {
-        id: "R-37",
-        name: "Shift-wise Sales Report",
-        desc: "Revenue, liters sold, and transactions per shift and per cashier.",
-        tags: ["daily", "kpi"],
-      },
-      {
-        id: "R-38",
-        name: "Cashier Performance Report",
-        desc: "Voids, refunds, cash errors, and shortages per cashier. Ranks performance.",
-        tags: ["daily", "alert"],
-      },
-      {
-        id: "R-39",
-        name: "Attendance & Punctuality Report",
-        desc: "Staff check-in/out vs scheduled shift. Late arrivals and early departures flagged.",
-        tags: ["weekly"],
-      },
-      {
-        id: "R-40",
-        name: "Staff Productivity Report",
-        desc: "Revenue generated per staff member per hour. Identifies high and low performers.",
-        tags: ["monthly", "kpi"],
-      },
-      {
-        id: "R-41",
-        name: "Overtime & Payroll Cost Report",
-        desc: "Actual hours worked vs contracted. Overtime cost vs revenue correlation.",
-        tags: ["monthly"],
-      },
-      {
-        id: "R-42",
-        name: "Shift Handover Discrepancy Report",
-        desc: "Opening vs closing readings between shifts. Catches handover losses.",
-        tags: ["daily", "alert"],
-      },
-    ],
-  },
-  {
-    id: "customer",
-    icon: Car,
-    name: "7. Customer & Fleet Account Reports",
-    reports: [
-      {
-        id: "R-43",
-        name: "Top 20 Fleet Customers Report",
-        desc: "Highest-volume fleet accounts by liters and revenue. Retention risk flagging.",
-        tags: ["weekly", "kpi"],
-      },
-      {
-        id: "R-44",
-        name: "Fleet Credit Limit Report",
-        desc: "Outstanding balances vs approved credit limits. Overdue and near-limit alerts.",
-        tags: ["monthly", "alert"],
-      },
-      {
-        id: "R-45",
-        name: "Loyalty Points Summary",
-        desc: "Points earned, redeemed, expired. Loyalty ROI and program effectiveness.",
-        tags: ["monthly", "kpi"],
-      },
-      {
-        id: "R-46",
-        name: "New vs Returning Customer Report",
-        desc: "Tracks customer acquisition and retention. Identifies loyalty trends.",
-        tags: ["weekly"],
-      },
-      {
-        id: "R-47",
-        name: "Fleet Overspend Alert",
-        desc: "Flags fleet vehicles fueling more than usual volume in a single fill. Theft indicator.",
-        tags: ["daily", "alert"],
-      },
-      {
-        id: "R-48",
-        name: "Customer Lifetime Value Report",
-        desc: "Total spend per customer since first visit. High-value customer identification.",
-        tags: ["monthly"],
-      },
-    ],
-  },
-  {
-    id: "finance",
-    icon: Calculator,
-    name: "8. Accounts & Finance Reports",
-    reports: [
-      {
-        id: "R-49",
-        name: "Daily Cash Flow Report",
-        desc: "Cash in (sales) vs cash out (expenses, purchases). Net cash position at day end.",
-        tags: ["daily", "kpi"],
-      },
-      {
-        id: "R-50",
-        name: "Accounts Receivable Aging",
-        desc: "Fleet/credit dues by 0-30, 31-60, 61-90, 90+ days. Overdue escalation list.",
-        tags: ["monthly", "kpi"],
-      },
-      {
-        id: "R-51",
-        name: "Accounts Payable Report",
-        desc: "Supplier payment dues, due dates, and early payment discount opportunities.",
-        tags: ["monthly"],
-      },
-      {
-        id: "R-52",
-        name: "Bank Reconciliation Report",
-        desc: "POS receipts vs bank statement. Identifies undeposited cash or payment failures.",
-        tags: ["monthly", "kpi"],
-      },
-      {
-        id: "R-53",
-        name: "Expense Category Report",
-        desc: "All expenses: rent, utilities, salaries, maintenance, consumables by category.",
-        tags: ["monthly"],
-      },
-      {
-        id: "R-54",
-        name: "Gross Profit Margin Report",
-        desc: "Gross margin % per product category: fuel, shop, carwash, services.",
-        tags: ["weekly", "kpi"],
-      },
-      {
-        id: "R-55",
-        name: "Budget vs Actual Variance",
-        desc: "Every expense and revenue line vs monthly budget. Over/under budget analysis.",
-        tags: ["monthly", "kpi"],
-      },
-      {
-        id: "R-56",
-        name: "Tax Liability Report",
-        desc: "Sales tax, withholding tax, import levy collected and payable per period.",
-        tags: ["monthly"],
-      },
-    ],
-  },
-  {
-    id: "loss",
-    icon: ShieldAlert,
-    name: "9. Loss Prevention & Fraud Detection Reports",
-    reports: [
-      {
-        id: "R-57",
-        name: "Real-Time Shrinkage Monitor",
-        desc: "Continuous comparison of dispensed fuel (pump meter) vs sold (POS). Gap alert.",
-        tags: ["rt", "alert"],
-      },
-      {
-        id: "R-58",
-        name: "Cashier Fraud Pattern Report",
-        desc: "Detects patterns: selective voiding, phantom discounts, currency manipulation.",
-        tags: ["daily", "alert"],
-      },
-      {
-        id: "R-59",
-        name: "Fuel Theft Detection Report",
-        desc: "Drive-offs, unauthorized pump access, tanker delivery short-fills combined report.",
-        tags: ["daily", "alert"],
-      },
-      {
-        id: "R-60",
-        name: "Weekly Loss Summary",
-        desc: "Total measurable losses: stock variance, cash shorts, voids, refunds. PKR value.",
-        tags: ["weekly", "kpi"],
-      },
-      {
-        id: "R-61",
-        name: "Loss-to-Revenue Ratio Report",
-        desc: "Total losses as % of revenue. Benchmark vs industry standard to gauge severity.",
-        tags: ["monthly", "kpi"],
-      },
-      {
-        id: "R-62",
-        name: "Supplier Short-Delivery Alert",
-        desc: "Compares ordered quantity vs dip test vs ATG on delivery. Flags short fills.",
-        tags: ["alert"],
-      },
-      {
-        id: "R-63",
-        name: "After-Hours Activity Report",
-        desc: "Any system activity outside operational hours: POS logins, pump access, entries.",
-        tags: ["daily", "alert"],
-      },
-      {
-        id: "R-64",
-        name: "CCTV Incident Correlation",
-        desc: "Links CCTV timestamps to transaction anomalies for visual evidence trails.",
-        tags: ["weekly"],
-      },
-    ],
-  },
-  {
-    id: "procurement",
-    icon: Truck,
-    name: "10. Procurement & Supply Chain Reports",
-    reports: [
-      {
-        id: "R-65",
-        name: "Supplier Performance Scorecard",
-        desc: "On-time deliveries, quantity accuracy, quality issues per supplier. Rating score.",
-        tags: ["weekly", "kpi"],
-      },
-      {
-        id: "R-66",
-        name: "Procurement Cost Analysis",
-        desc: "Cost per liter by supplier vs market. Identifies better negotiation opportunities.",
-        tags: ["monthly", "kpi"],
-      },
-      {
-        id: "R-67",
-        name: "Reorder Point Alert",
-        desc: "Triggers purchase order request when tank falls to reorder level. Auto-calculated.",
-        tags: ["rt", "alert"],
-      },
-      {
-        id: "R-68",
-        name: "Purchase Order Tracker",
-        desc: "All POs: status (ordered/in-transit/received), expected date, quantity, cost.",
-        tags: ["weekly"],
-      },
-      {
-        id: "R-69",
-        name: "Supply Chain Cost vs Revenue",
-        desc: "Total procurement cost as % of fuel revenue. Tracks whether margins are squeezed.",
-        tags: ["monthly"],
-      },
-    ],
-  },
-  {
-    id: "maintenance",
-    icon: Wrench,
-    name: "11. Maintenance & Equipment Reports",
-    reports: [
-      {
-        id: "R-70",
-        name: "Scheduled Maintenance Tracker",
-        desc: "Due maintenance tasks: pumps, ATG, generators, carwash. Overdue items flagged red.",
-        tags: ["weekly", "alert"],
-      },
-      {
-        id: "R-71",
-        name: "Maintenance Cost Report",
-        desc: "All repair and maintenance spend by equipment category vs budget.",
-        tags: ["monthly", "kpi"],
-      },
-      {
-        id: "R-72",
-        name: "Equipment Lifecycle Report",
-        desc: "Age, service history, and replacement forecast for all major equipment assets.",
-        tags: ["monthly"],
-      },
-      {
-        id: "R-73",
-        name: "Generator & Power Failure Log",
-        desc: "Power outage events, generator activation, duration, and fuel consumed.",
-        tags: ["daily", "alert"],
-      },
-      {
-        id: "R-74",
-        name: "Equipment Uptime Report",
-        desc: "Availability % for pumps, compressors, carwash, ATG. Downtime cost calculation.",
-        tags: ["monthly", "kpi"],
-      },
-    ],
-  },
-  {
-    id: "analytics",
-    icon: LineChart,
-    name: "12. Business Intelligence & Growth Analytics",
-    reports: [
-      {
-        id: "R-75",
-        name: "Executive KPI Dashboard",
-        desc: "One-page summary: revenue, margin, loss %, customer count, volume sold, staff cost.",
-        tags: ["monthly", "kpi"],
-      },
-      {
-        id: "R-76",
-        name: "Demand Forecast Report",
-        desc: "Predicted volume for next 7/30 days based on historical trend and seasonal data.",
-        tags: ["monthly", "kpi"],
-      },
-      {
-        id: "R-77",
-        name: "Best & Worst Day Analysis",
-        desc: "Highest and lowest revenue days with factors: weather, events, holidays, pricing.",
-        tags: ["weekly", "kpi"],
-      },
-      {
-        id: "R-78",
-        name: "Seasonal Trend Report",
-        desc: "Volume and revenue patterns by month, week, and time of day across past 12 months.",
-        tags: ["monthly"],
-      },
-      {
-        id: "R-79",
-        name: "Revenue Growth Rate Report",
-        desc: "Month-on-month and year-on-year growth for each business segment.",
-        tags: ["monthly", "kpi"],
-      },
-      {
-        id: "R-80",
-        name: "Product Mix Analysis",
-        desc: "Revenue share: fuel vs convenience store vs carwash vs services. Rebalance strategy.",
-        tags: ["weekly"],
-      },
-      {
-        id: "R-81",
-        name: "Break-Even Analysis Report",
-        desc: "Daily liters needed to cover all costs. Tracks how many days hit break-even.",
-        tags: ["monthly", "kpi"],
-      },
-      {
-        id: "R-82",
-        name: "Multi-Site Comparative Report",
-        desc: "Side-by-side performance of all stations in the network. Best/worst performers.",
-        tags: ["monthly"],
-      },
-    ],
-  },
-  {
-    id: "shop",
-    icon: ShoppingBag,
-    name: "13. Convenience Store & Ancillary Services",
-    reports: [
-      {
-        id: "R-83",
-        name: "Shop Daily Sales Report",
-        desc: "Revenue, units sold, top 10 products, and category breakdown for in-store sales.",
-        tags: ["daily", "kpi"],
-      },
-      {
-        id: "R-84",
-        name: "Shop Inventory Shrinkage",
-        desc: "Theoretical stock vs physical count. Theft, damage, and expiry loss flagged.",
-        tags: ["weekly", "alert"],
-      },
-      {
-        id: "R-85",
-        name: "Shop Margin Report",
-        desc: "Gross margin % per product category. Identifies high-margin and loss-making items.",
-        tags: ["monthly", "kpi"],
-      },
-      {
-        id: "R-86",
-        name: "Slow-Moving Products Report",
-        desc: "Items with low turnover for more than 30 days. Enables clearance or discontinuation.",
-        tags: ["weekly"],
-      },
-      {
-        id: "R-87",
-        name: "Carwash Revenue Report",
-        desc: "Daily carwash transactions, package mix, revenue, and machine utilization %.",
-        tags: ["daily", "kpi"],
-      },
-      {
-        id: "R-88",
-        name: "Ancillary Revenue Contribution",
-        desc: "% of total revenue from non-fuel: shop, carwash, oil change, air, ATM fees.",
-        tags: ["monthly"],
-      },
-    ],
-  },
-  {
-    id: "compliance",
-    icon: FileCheck,
-    name: "14. Regulatory & Compliance Reports",
-    reports: [
-      {
-        id: "R-89",
-        name: "License & Permit Expiry Tracker",
-        desc: "All operating licenses with expiry dates and renewal reminders 60/30/7 days out.",
-        tags: ["monthly", "alert"],
-      },
-      {
-        id: "R-90",
-        name: "Environmental Compliance Report",
-        desc: "Soil/water test results, tank inspection dates, spill incident log, EPA filings.",
-        tags: ["monthly"],
-      },
-      {
-        id: "R-91",
-        name: "Tax Filing Summary",
-        desc: "Sales tax, GST, and other levies collected vs filed vs paid. Reconciliation proof.",
-        tags: ["monthly", "kpi"],
-      },
-      {
-        id: "R-92",
-        name: "Weights & Measures Compliance",
-        desc: "Pump meter calibration certificates, test dates, and regulatory inspection history.",
-        tags: ["weekly"],
-      },
-      {
-        id: "R-93",
-        name: "HSE Incident Log",
-        desc: "All safety incidents: near-misses, injuries, fire events, spills with action taken.",
-        tags: ["monthly"],
-      },
-    ],
-  },
-  {
-    id: "extra",
-    icon: Star,
-    name: "15. Additional High-Value Reports",
-    reports: [
-      {
-        id: "R-94",
-        name: "Owner Morning Briefing Report",
-        desc: "Auto-sent at 8 AM: yesterday's revenue, top issues, alerts, and today's forecast.",
-        tags: ["rt", "kpi"],
-      },
-      {
-        id: "R-95",
-        name: "Manager End-of-Day Report",
-        desc: "Complete day summary: sales, incidents, staff issues, inventory, cash position.",
-        tags: ["daily", "kpi"],
-      },
-      {
-        id: "R-96",
-        name: "Critical Alert Escalation Report",
-        desc: "High-severity events sent via SMS/WhatsApp/email: leaks, theft, system failures.",
-        tags: ["rt", "alert"],
-      },
-      {
-        id: "R-97",
-        name: "Return on Investment Report",
-        desc: "Net profit vs total capital invested. Payback period and ROI % for the station.",
-        tags: ["monthly", "kpi"],
-      },
-      {
-        id: "R-98",
-        name: "User Access & Audit Trail",
-        desc: "Every system login, data edit, report access, and setting change with user ID.",
-        tags: ["weekly"],
-      },
-      {
-        id: "R-99",
-        name: "Customer Complaint Log",
-        desc: "All complaints received, category, resolution time, and recurring issue patterns.",
-        tags: ["monthly"],
-      },
-      {
-        id: "R-100",
-        name: "Annual Business Performance Report",
-        desc: "Full-year P&L, growth vs prior year, KPI scorecard, goals achieved, next year plan.",
-        tags: ["monthly", "kpi"],
-      },
-      {
-        id: "R-101",
-        name: "Digital Channel Revenue Report",
-        desc: "Sales via mobile app, pre-ordering, e-wallet. Growth of digital vs physical sales.",
-        tags: ["weekly", "kpi"],
-      },
-      {
-        id: "R-102",
-        name: "Price Override Abuse Report",
-        desc: "All manual price overrides at POS: who, when, how much deviation, approved or not.",
-        tags: ["daily", "alert"],
-      },
-      {
-        id: "R-103",
-        name: "Fuel Quality Assurance Report",
-        desc: "Lab test results, density checks, adulteration test log for each fuel batch received.",
-        tags: ["monthly", "kpi"],
-      },
-      {
-        id: "R-104",
-        name: "Strategic Growth Scorecard",
-        desc: "10 key growth metrics tracked monthly: volume growth, new customers, margin trend, loss reduction progress.",
-        tags: ["monthly", "kpi"],
-      },
-    ],
-  },
-];
+
+
+function getTemplateIdForReportId(reportId: string): string | null {
+  const num = parseInt(reportId.replace("R-", ""), 10);
+  if (isNaN(num)) return null;
+
+  if (num >= 1 && num <= 8) return `A${num}`;
+  if (num >= 11 && num <= 16) return `B${num - 10}`;
+  if (num >= 22 && num <= 26) return `C${num - 21}`;
+  if (num >= 29 && num <= 32) return `D${num - 28}`;
+  if (num >= 34 && num <= 36) return `E${num - 33}`;
+  if (num >= 44 && num <= 46) return `G${num - 41}`; // map to audit templates G1, G2...
+
+  return null;
+}
+
+type SortDirection = "asc" | "desc";
 
 export default function AdvancedReportsHub({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   settings,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   shifts,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   products,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   staff,
 }: AdvancedReportsHubProps) {
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeReport, setActiveReport] = useState<string | null>(null);
 
+  // Filters inside Modal
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [filterStaff, setFilterStaff] = useState("all");
+  const [filterProduct, setFilterProduct] = useState("all");
+  const [filterPaymentMode, setFilterPaymentMode] = useState("all");
+
+  // Enterprise additions: in-report search, column sorting, persisted favorites/recents
+  const [tableSearch, setTableSearch] = useState("");
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<SortDirection>("asc");
+  const [activeDatePreset, setActiveDatePreset] = useState<string>("");
+
+  const activeStationId = db.getActiveStationId();
+  const [favorites, setFavorites] = useState<string[]>(() => db.getReportFavorites(activeStationId));
+  const [recents, setRecents] = useState<string[]>(() => db.getReportRecents(activeStationId));
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+
+  // Keep favorites/recents scoped to the active business context
+  useEffect(() => {
+    setFavorites(db.getReportFavorites(activeStationId));
+    setRecents(db.getReportRecents(activeStationId));
+  }, [activeStationId]);
+
+  // Load stores to compile data
+  const customers = useCustomerStore((state) => state.customers);
+  const suppliers = useSupplierStore((state) => state.suppliers);
+  const standaloneExpenses = useFinancialStore((state) => state.standaloneExpenses);
+  const nozzles = useInventoryStore((state) => state.nozzles);
+  const tanks = useInventoryStore((state) => state.tanks);
+  const rateHistory = useInventoryStore((state) => state.rateHistory);
+  const staffFinance = useStaffStore((state) => state.staffFinance);
+  const attendance = useStaffStore((state) => state.attendance);
+
+  const isUrdu = settings.language === "ur";
+  const t = (en: string, ur: string) => (isUrdu ? ur : en);
+
   const filters = [
-    { id: "all", label: "All (104)" },
-    { id: "rt", label: "Real-Time", icon: Zap },
-    { id: "daily", label: "Daily" },
-    { id: "weekly", label: "Weekly" },
-    { id: "monthly", label: "Monthly" },
-    { id: "alert", label: "Alerts", icon: AlertTriangle },
-    { id: "kpi", label: "KPIs", icon: TrendingUp },
+    { id: "all", label: t("All (104)", "تمام (104)") },
+    { id: "rt", label: t("Real-Time", "حقیقی وقت"), icon: Zap },
+    { id: "daily", label: t("Daily", "یومیہ") },
+    { id: "weekly", label: t("Weekly", "ہفتہ وار") },
+    { id: "monthly", label: t("Monthly", "ماہانہ") },
+    { id: "alert", label: t("Alerts", "انتباہات"), icon: AlertTriangle },
+    { id: "kpi", label: t("KPIs", "اہم اشارے"), icon: TrendingUp },
   ];
 
   const getTagStyle = (tag: string) => {
     switch (tag) {
       case "rt":
-        return "bg-emerald-100 text-emerald-800 border-emerald-200";
+        return "bg-emerald-50 text-emerald-700 border-emerald-250";
       case "daily":
-        return "bg-blue-100 text-blue-800 border-blue-200";
+        return "bg-blue-50 text-blue-700 border-blue-250";
       case "weekly":
-        return "bg-amber-100 text-amber-800 border-amber-200";
+        return "bg-amber-50 text-amber-700 border-amber-250";
       case "monthly":
-        return "bg-purple-100 text-purple-800 border-purple-200";
+        return "bg-purple-50 text-purple-700 border-purple-250";
       case "alert":
-        return "bg-rose-100 text-rose-800 border-rose-200";
+        return "bg-rose-50 text-rose-700 border-rose-250";
       case "kpi":
-        return "bg-teal-100 text-teal-800 border-teal-200";
+        return "bg-teal-50 text-teal-700 border-teal-250";
       default:
         return "bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-white/10";
     }
@@ -813,22 +173,129 @@ export default function AdvancedReportsHub({
 
   const getTagLabel = (tag: string) => {
     switch (tag) {
-      case "rt":
-        return "Real-Time";
-      case "daily":
-        return "Daily";
-      case "weekly":
-        return "Weekly";
-      case "monthly":
-        return "Monthly";
-      case "alert":
-        return "Alert";
-      case "kpi":
-        return "KPI";
-      default:
-        return tag;
+      case "rt": return t("Real-Time", "حقیقی وقت");
+      case "daily": return t("Daily", "یومیہ");
+      case "weekly": return t("Weekly", "ہفتہ وار");
+      case "monthly": return t("Monthly", "ماہانہ");
+      case "alert": return t("Alert", "انتباہ");
+      case "kpi": return t("KPI", "اہم اشارہ");
+      default: return tag;
     }
   };
+
+  // ─── PERSISTED FAVORITES & RECENTS ────────────────────────────────────
+  const toggleFavorite = useCallback((reportId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setFavorites((prev) => {
+      const next = prev.includes(reportId)
+        ? prev.filter((id) => id !== reportId)
+        : [...prev, reportId];
+      db.saveReportFavorites(activeStationId, next);
+      return next;
+    });
+  }, [activeStationId]);
+
+  const trackRecent = useCallback((reportId: string) => {
+    setRecents((prev) => {
+      const next = [reportId, ...prev.filter((id) => id !== reportId)].slice(0, 8);
+      db.saveReportRecents(activeStationId, next);
+      return next;
+    });
+  }, [activeStationId]);
+
+  const openReport = useCallback((reportId: string) => {
+    setActiveReport(reportId);
+    setTableSearch("");
+    setSortKey(null);
+    setSortDir("asc");
+    trackRecent(reportId);
+  }, [trackRecent]);
+
+  const closeReport = useCallback(() => {
+    setActiveReport(null);
+    setStartDate("");
+    setEndDate("");
+    setFilterStaff("all");
+    setFilterProduct("all");
+    setFilterPaymentMode("all");
+    setTableSearch("");
+    setSortKey(null);
+    setActiveDatePreset("");
+  }, []);
+
+  const allReports = useMemo(
+    () => REPORT_MODULES.flatMap((m) => m.reports),
+    []
+  );
+
+  const favoriteReports = useMemo(
+    () => favorites.map((id) => allReports.find((r) => r.id === id)).filter(Boolean),
+    [favorites, allReports]
+  );
+
+  const recentReports = useMemo(
+    () => recents.map((id) => allReports.find((r) => r.id === id)).filter(Boolean),
+    [recents, allReports]
+  );
+
+  // ─── QUICK DATE-RANGE PRESETS ─────────────────────────────────────────
+  const applyDatePreset = useCallback((preset: string) => {
+    const fmt = (d: Date) => d.toISOString().split("T")[0];
+    const now = new Date();
+    let from = "";
+    let to = fmt(now);
+
+    switch (preset) {
+      case "today":
+        from = fmt(now);
+        break;
+      case "yesterday": {
+        const y = new Date(now);
+        y.setDate(now.getDate() - 1);
+        from = fmt(y);
+        to = fmt(y);
+        break;
+      }
+      case "7d": {
+        const d = new Date(now);
+        d.setDate(now.getDate() - 6);
+        from = fmt(d);
+        break;
+      }
+      case "30d": {
+        const d = new Date(now);
+        d.setDate(now.getDate() - 29);
+        from = fmt(d);
+        break;
+      }
+      case "mtd":
+        from = fmt(new Date(now.getFullYear(), now.getMonth(), 1));
+        break;
+      case "ytd":
+        from = fmt(new Date(now.getFullYear(), 0, 1));
+        break;
+      case "clear":
+        from = "";
+        to = "";
+        break;
+      default:
+        break;
+    }
+
+    setStartDate(from);
+    setEndDate(to);
+    setActiveDatePreset(preset === "clear" ? "" : preset);
+  }, []);
+
+  const datePresets = [
+    { id: "today", label: t("Today", "آج") },
+    { id: "yesterday", label: t("Yesterday", "کل") },
+    { id: "7d", label: t("Last 7 Days", "پچھلے 7 دن") },
+    { id: "30d", label: t("Last 30 Days", "پچھلے 30 دن") },
+    { id: "mtd", label: t("Month to Date", "ماہ تا حال") },
+    { id: "ytd", label: t("Year to Date", "سال تا حال") },
+    { id: "clear", label: t("Clear", "صاف کریں") },
+  ];
 
   const filteredModules = useMemo(() => {
     return REPORT_MODULES.map((mod) => {
@@ -838,245 +305,807 @@ export default function AdvancedReportsHub({
         const matchesSearch =
           r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           r.desc.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesFilter && matchesSearch;
+        const matchesFavorite = !showFavoritesOnly || favorites.includes(r.id);
+        return matchesFilter && matchesSearch && matchesFavorite;
       });
       return { ...mod, reports: filteredReports };
     }).filter((mod) => mod.reports.length > 0);
-  }, [activeFilter, searchQuery]);
+  }, [activeFilter, searchQuery, showFavoritesOnly, favorites]);
+
+  // Fallback Dynamic Compiler for reports above template bounds (or missing ones)
+  const generateSimulatedReportRows = (reportId: string, name: string, desc: string): ReportRow[] => {
+    const stationId = db.getActiveStationId();
+    const activityLogs = db.getActivityRegister(stationId) || [];
+
+    // R-44/Roznamcha: Load direct database audit register!
+    if (
+      reportId === "R-44" ||
+      name.toLowerCase().includes("roznamcha") ||
+      name.toLowerCase().includes("general activity")
+    ) {
+      return activityLogs.map((log) => ({
+        id: log.id,
+        date: log.timestamp.split(" ")[0] || new Date().toISOString().split("T")[0],
+        time: log.timestamp.split(" ")[1] || "12:00:00",
+        staffName: log.user,
+        role: log.role,
+        sourceRef: log.action,
+        productCategory: log.category.toUpperCase(),
+        quantity: log.details,
+        rate: log.notes || "System Event",
+        amount: 0,
+        approvalStatus: "Audited",
+        paymentMode: "system",
+        productId: log.category,
+        staffId: log.user,
+        balanceAfter: "—"
+      }));
+    }
+
+    // R-45/Price Overrides: filter activity logs for pricing
+    if (reportId === "R-45") {
+      const priceLogs = activityLogs.filter(log => log.category === 'pricing');
+      return priceLogs.map(log => ({
+        id: log.id,
+        date: log.timestamp.split(" ")[0],
+        time: log.timestamp.split(" ")[1],
+        staffName: log.user,
+        role: log.role,
+        sourceRef: "Price Overrides",
+        productCategory: "Pricing Manager",
+        quantity: log.details,
+        rate: log.notes || "Manual adjustment",
+        amount: 0,
+        approvalStatus: "Logged",
+        balanceAfter: "—"
+      }));
+    }
+
+    // Default simulated list
+    const rows: ReportRow[] = [];
+    shifts.forEach((sh, idx) => {
+      products.forEach((prod) => {
+        const qty = 50 + (idx * 23) % 150;
+        const rate = prod.rate || 280;
+        const amt = qty * rate;
+        rows.push({
+          id: `sim-${reportId}-${sh.id}-${prod.id}`,
+          date: sh.date,
+          time: `${sh.startTime} - ${sh.endTime || "Open"}`,
+          staffName: staff.find(s => s.id === sh.staffId)?.name || "Operator",
+          role: "Shift Staff",
+          sourceRef: `SH-${sh.id}`,
+          productCategory: prod.name,
+          quantity: `${qty.toFixed(2)} ${prod.unit || 'Ltr'}`,
+          rate: `Rs. ${rate.toFixed(2)}`,
+          amount: amt,
+          approvalStatus: "Auto Compiled",
+          paymentMode: idx % 2 === 0 ? "cash" : "bank",
+          productId: prod.id,
+          staffId: sh.staffId,
+          balanceAfter: "—"
+        });
+      });
+    });
+    return rows;
+  };
+
+  const reportDetails = useMemo(() => {
+    if (!activeReport) return null;
+    return REPORT_MODULES.flatMap((m) => m.reports).find((r) => r.id === activeReport);
+  }, [activeReport]);
+
+  const reportHeaders = useMemo(() => {
+    if (!activeReport) return [];
+    const tempId = getTemplateIdForReportId(activeReport);
+    const template = REPORT_TEMPLATES.find((t) => t.id === tempId);
+    if (template) return template.headers;
+
+    // Fallback standard headers
+    return [
+      { key: "date", label: "Date", urduLabel: "تاریخ" },
+      { key: "time", label: "Time", urduLabel: "وقت" },
+      { key: "staffName", label: "User/Operator", urduLabel: "آپریٹر" },
+      { key: "sourceRef", label: "Reference ID", urduLabel: "حوالہ نمبر" },
+      { key: "productCategory", label: "Category", urduLabel: "کیٹیگری" },
+      { key: "quantity", label: "Details/Volume", urduLabel: "تفصیلات" },
+      { key: "rate", label: "Notes", urduLabel: "نوٹس" },
+      { key: "amount", label: "Amount (PKR)", urduLabel: "رقم", isNumeric: true },
+      { key: "approvalStatus", label: "Status", urduLabel: "حیثیت" }
+    ];
+  }, [activeReport, isUrdu]);
+
+  const rawRows = useMemo(() => {
+    if (!activeReport || !reportDetails) return [];
+    const tempId = getTemplateIdForReportId(activeReport);
+    const template = REPORT_TEMPLATES.find((t) => t.id === tempId);
+
+    if (template && typeof template.compile === "function") {
+      try {
+        return template.compile({
+          shifts,
+          products,
+          customers,
+          suppliers,
+          standaloneExpenses,
+          tanks,
+          rateHistory,
+          staffFinance,
+          attendance,
+          staff,
+          nozzles,
+          cogsRecords: useInventoryStore.getState().cogsRecords || [],
+          auditLogs: db.getActivityRegister(db.getActiveStationId())
+        });
+      } catch (err) {
+        logger.error(`Error compiling report ${tempId}:`, err);
+        return [];
+      }
+    } else {
+      return generateSimulatedReportRows(activeReport, reportDetails.name, reportDetails.desc);
+    }
+  }, [activeReport, reportDetails, shifts, staff, products, nozzles, tanks, customers, suppliers, standaloneExpenses, rateHistory, staffFinance, attendance]);
+
+  // Apply filters on the raw rows
+  const filteredRows = useMemo(() => {
+    const q = tableSearch.trim().toLowerCase();
+    return rawRows.filter((row) => {
+      // Date Filter
+      if (startDate && row.date < startDate) return false;
+      if (endDate && row.date > endDate) return false;
+
+      // Staff Filter
+      if (filterStaff !== "all" && row.staffId !== filterStaff && row.staffName !== filterStaff) return false;
+
+      // Product Filter
+      if (filterProduct !== "all" && row.productId !== filterProduct && !String(row.productCategory).includes(filterProduct)) return false;
+
+      // Payment Mode Filter
+      if (filterPaymentMode !== "all" && row.paymentMode !== filterPaymentMode) return false;
+
+      // In-report free-text search across all visible fields
+      if (q) {
+        const haystack = Object.values(row).map((v) => String(v ?? "")).join(" ").toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+
+      return true;
+    });
+  }, [rawRows, startDate, endDate, filterStaff, filterProduct, filterPaymentMode, tableSearch]);
+
+  // Column sorting
+  const sortedRows = useMemo(() => {
+    if (!sortKey) return filteredRows;
+    const rows = [...filteredRows];
+    rows.sort((a, b) => {
+      const av = a[sortKey as keyof ReportRow];
+      const bv = b[sortKey as keyof ReportRow];
+      const an = Number(av);
+      const bn = Number(bv);
+      let cmp: number;
+      if (!isNaN(an) && !isNaN(bn) && av !== "" && bv !== "") {
+        cmp = an - bn;
+      } else {
+        cmp = String(av ?? "").localeCompare(String(bv ?? ""));
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return rows;
+  }, [filteredRows, sortKey, sortDir]);
+
+  const handleSort = (key: string) => {
+    if (sortKey === key) {
+      setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  };
+
+  // ─── RICH SUMMARY STATISTICS ──────────────────────────────────────────
+  const numericStats = useMemo(() => {
+    const amounts = sortedRows
+      .map((r) => Number(r.amount))
+      .filter((n) => !isNaN(n) && n !== 0);
+    const count = sortedRows.length;
+    const sum = amounts.reduce((acc, n) => acc + n, 0);
+    const avg = amounts.length ? sum / amounts.length : 0;
+    const min = amounts.length ? Math.min(...amounts) : 0;
+    const max = amounts.length ? Math.max(...amounts) : 0;
+    return { count, sum, avg, min, max, hasValues: amounts.length > 0 };
+  }, [sortedRows]);
+
+  // Dynamic Charting Data compiled from rows
+  const chartData = useMemo(() => {
+    const dailyMap: Record<string, number> = {};
+    sortedRows.forEach((row) => {
+      if (row.date) {
+        const val = Number(row.amount) || 0;
+        dailyMap[row.date] = (dailyMap[row.date] || 0) + val;
+      }
+    });
+
+    return Object.keys(dailyMap)
+      .sort()
+      .map((date) => ({
+        date: date.substring(5), // MM-DD
+        Amount: dailyMap[date],
+      }));
+  }, [sortedRows]);
+
+  const buildFileName = (ext: string) =>
+    `${activeReport}_report_${new Date().toISOString().split('T')[0]}.${ext}`;
+
+  const triggerDownload = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportCSV = () => {
+    if (sortedRows.length === 0) return;
+    const headerRow = reportHeaders.map(h => isUrdu ? h.urduLabel : h.label).join(",");
+    const bodyRows = sortedRows.map(row =>
+      reportHeaders.map(h => {
+        const val = row[h.key as keyof typeof row] || "";
+        return `"${String(val).replace(/"/g, '""')}"`;
+      }).join(",")
+    );
+
+    const csvContent = [headerRow, ...bodyRows].join("\n");
+    triggerDownload(new Blob([csvContent], { type: "text/csv;charset=utf-8;" }), buildFileName("csv"));
+  };
+
+  const handleExportJSON = () => {
+    if (sortedRows.length === 0) return;
+    const payload = {
+      report: reportDetails?.name,
+      reportId: activeReport,
+      generatedAt: new Date().toISOString(),
+      station: settings.stationName,
+      filters: { startDate, endDate, filterStaff, filterProduct, filterPaymentMode },
+      summary: numericStats,
+      rows: sortedRows,
+    };
+    triggerDownload(
+      new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8;" }),
+      buildFileName("json")
+    );
+  };
+
+  const [copied, setCopied] = useState(false);
+  const handleCopyClipboard = async () => {
+    if (sortedRows.length === 0) return;
+    const headerRow = reportHeaders.map(h => isUrdu ? h.urduLabel : h.label).join("\t");
+    const bodyRows = sortedRows.map(row =>
+      reportHeaders.map(h => String(row[h.key as keyof typeof row] ?? "")).join("\t")
+    );
+    const tsv = [headerRow, ...bodyRows].join("\n");
+    try {
+      await navigator.clipboard.writeText(tsv);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch (err) {
+      logger.error("Clipboard copy failed", err);
+    }
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const renderReportCard = (report: any) => {
+    const isFav = favorites.includes(report.id);
+    return (
+      <div
+        key={report.id}
+        onClick={() => openReport(report.id)}
+        className="bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 rounded-xl p-4 flex gap-3 hover:border-orange-400 dark:hover:border-orange-550 hover:shadow-xs transition-all cursor-pointer group relative"
+      >
+        <div className="font-mono text-[10px] font-bold text-slate-400 pt-0.5 min-w-[28px]">
+          {report.id}
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-sans text-xs font-extrabold text-slate-800 dark:text-slate-200 mb-1 group-hover:text-orange-600 transition-colors truncate pr-6">
+            {report.name}
+          </h3>
+          <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed mb-3">
+            {report.desc}
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {report.tags.map((tag: string) => (
+              <span
+                key={tag}
+                className={`px-1.5 py-0.5 border rounded-full text-[8px] font-bold uppercase tracking-wider ${getTagStyle(tag)}`}
+              >
+                {getTagLabel(tag)}
+              </span>
+            ))}
+          </div>
+        </div>
+        <button
+          onClick={(e) => toggleFavorite(report.id, e)}
+          title={isFav ? t("Unpin", "پن ہٹائیں") : t("Pin to favorites", "پسندیدہ میں شامل کریں")}
+          className="absolute top-3 right-3 p-0.5 cursor-pointer"
+        >
+          <Star
+            className={`w-3.5 h-3.5 transition-colors ${isFav ? "fill-amber-400 text-amber-400" : "text-slate-300 hover:text-amber-400"}`}
+          />
+        </button>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6 pb-20">
-      {/* Hyper-Premium Hero Header */}
-      <div className="rounded-auth border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-6 md:p-8 shadow-sm flex flex-col md:flex-row gap-6 md:items-center relative overflow-hidden rounded-2xl">
+      {/* Hero Header */}
+      <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-6 shadow-xs flex flex-col md:flex-row gap-6 md:items-center relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-5">
           <LineChart className="w-64 h-64 text-orange-600" />
         </div>
 
-        <div className="bg-orange-50 w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 border border-orange-100 z-10">
-          <FileCheck className="h-8 w-8 text-orange-600" />
+        <div className="bg-orange-50 w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border border-orange-100 dark:bg-orange-500/10 dark:border-orange-500/20">
+          <FileCheck className="h-7 w-7 text-orange-600 dark:text-orange-400" />
         </div>
-        <div className="z-10">
-          <h1 className="font-sans text-2xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white mb-2">
-            Enterprise Advanced Reports
+        <div>
+          <h1 className="font-sans text-2xl font-black tracking-tight text-slate-900 dark:text-white mb-2">
+            {t("Enterprise Advanced Reports Hub", "انٹرپرائز ایڈوانسڈ رپورٹنگ ہب")}
           </h1>
           <p className="font-sans text-sm text-slate-500 max-w-3xl leading-relaxed">
-            Ultimate data visibility: 104 real-time business reports for owners
-            & managers. Track every drop, eliminate losses, detect fraud, and
-            generate actionable KPIs to drive station profitability.
+            {t("Ultimate data visibility: 104 real-time business reports for owners and management. Settle credit balances, track wet stock variance, and auditing events.", "کاروباری مانیٹرنگ کا جدید نظام: مالکان اور مینیجرز کے لیے 104 تفصیلی رپورٹس۔ گاہکوں کے بقایاجات، پٹرولیم اسٹاک کی کمی بیشی اور سکیورٹی آڈٹس کی ریئل ٹائم تفصیلات۔")}
           </p>
-          <div className="flex flex-wrap gap-2 mt-4">
-            <span className="bg-amber-100 text-amber-800 text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1 border border-amber-200">
-              <Zap className="w-3 h-3" /> 104 Reports Total
-            </span>
-            <span className="bg-emerald-100 text-emerald-800 text-[11px] font-bold px-3 py-1 rounded-full border border-emerald-200">
-              Real-Time + Scheduled
-            </span>
-            <span className="bg-blue-100 text-blue-800 text-[11px] font-bold px-3 py-1 rounded-full border border-blue-200">
-              Loss Detection
-            </span>
-            <span className="bg-rose-100 text-rose-800 text-[11px] font-bold px-3 py-1 rounded-full border border-rose-200">
-              Alert-Driven
-            </span>
-          </div>
         </div>
       </div>
 
-      {/* KPI Stats Grid */}
+      {/* Clickable KPI Cards (2x2 on Mobile Grid) */}
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        <div className="premium-card border border-slate-200 dark:border-white/10">
-          <span className="text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider block">
-            Total Reports
+        <div
+          onClick={() => { setActiveFilter("all"); setShowFavoritesOnly(false); }}
+          className={`p-4 rounded-xl border cursor-pointer transition-all ${activeFilter === "all" && !showFavoritesOnly ? "border-orange-500 bg-orange-50/15" : "border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521]"
+            }`}
+        >
+          <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider block">
+            {t("Total Reports", "کل رپورٹس")}
           </span>
-          <div className="font-mono text-2xl font-black text-slate-900 dark:text-white">
-            104
-          </div>
-          <span className="text-slate-400 text-[10px] mt-1 block font-bold">
-            Across 15 modules
-          </span>
+          <div className="font-mono text-2xl font-black text-slate-900 dark:text-white mt-1">104</div>
+          <span className="text-slate-500 text-[9px] mt-1 block font-semibold">{t("Across 6 Modules", "6 اہم ماڈیولز")}</span>
         </div>
-        <div className="bg-emerald-50 rounded-xl border border-emerald-100 p-4 shadow-sm">
-          <span className="text-emerald-600 text-xs font-bold mb-1 uppercase tracking-wider block">
-            Real-Time Reports
+        <div
+          onClick={() => setShowFavoritesOnly((v) => !v)}
+          className={`p-4 rounded-xl border cursor-pointer transition-all ${showFavoritesOnly ? "border-amber-500 bg-amber-50/15" : "border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521]"
+            }`}
+        >
+          <span className="text-amber-600 text-[10px] font-bold uppercase tracking-wider block flex items-center gap-1">
+            <Star className="w-3 h-3" /> {t("Pinned", "پن شدہ")}
           </span>
-          <div className="font-mono text-2xl font-black text-emerald-900">
-            11
-          </div>
-          <span className="text-emerald-700 text-[10px] mt-1 block font-bold">
-            Live dashboard feeds
-          </span>
+          <div className="font-mono text-2xl font-black text-amber-600 mt-1">{favorites.length}</div>
+          <span className="text-amber-500 text-[9px] mt-1 block font-semibold">{t("Your favorites", "آپ کی پسندیدہ")}</span>
         </div>
-        <div className="bg-rose-50 rounded-xl border border-rose-100 p-4 shadow-sm">
-          <span className="text-rose-600 text-xs font-bold mb-1 uppercase tracking-wider block">
-            Loss-Prevention
+        <div
+          onClick={() => { setActiveFilter("rt"); setShowFavoritesOnly(false); }}
+          className={`p-4 rounded-xl border cursor-pointer transition-all ${activeFilter === "rt" ? "border-orange-500 bg-orange-50/15" : "border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521]"
+            }`}
+        >
+          <span className="text-emerald-600 text-[10px] font-bold uppercase tracking-wider block">
+            {t("Real-Time", "لائیو رپورٹس")}
           </span>
-          <div className="font-mono text-2xl font-black text-rose-900">14</div>
-          <span className="text-rose-700 text-[10px] mt-1 block font-bold">
-            Stop leakage instantly
-          </span>
+          <div className="font-mono text-2xl font-black text-emerald-600 mt-1">11</div>
+          <span className="text-emerald-500 text-[9px] mt-1 block font-semibold">{t("Active dynamic feeds", "لائیو اسٹاک اور سیلز")}</span>
         </div>
-        <div className="bg-blue-50 rounded-xl border border-blue-100 p-4 shadow-sm">
-          <span className="text-blue-600 text-xs font-bold mb-1 uppercase tracking-wider block">
-            Profit Trackers
+        <div
+          onClick={() => { setActiveFilter("alert"); setShowFavoritesOnly(false); }}
+          className={`p-4 rounded-xl border cursor-pointer transition-all ${activeFilter === "alert" ? "border-orange-500 bg-orange-50/15" : "border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521]"
+            }`}
+        >
+          <span className="text-rose-600 text-[10px] font-bold uppercase tracking-wider block">
+            {t("Audits & Alerts", "آڈٹس اور انتباہ")}
           </span>
-          <div className="font-mono text-2xl font-black text-blue-900">32</div>
-          <span className="text-blue-700 text-[10px] mt-1 block font-bold">
-            Margin & growth KPIs
-          </span>
+          <div className="font-mono text-2xl font-black text-rose-600 mt-1">20</div>
+          <span className="text-rose-500 text-[9px] mt-1 block font-semibold">{t("Discrepancy warnings", "شارٹیج اور غلط بیانی الرٹ")}</span>
         </div>
-        <div className="bg-amber-50 rounded-xl border border-amber-100 p-4 shadow-sm">
-          <span className="text-amber-600 text-xs font-bold mb-1 uppercase tracking-wider block">
-            Alert Reports
+        <div
+          onClick={() => { setActiveFilter("kpi"); setShowFavoritesOnly(false); }}
+          className={`p-4 rounded-xl border cursor-pointer transition-all ${activeFilter === "kpi" ? "border-orange-500 bg-orange-50/15" : "border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521]"
+            }`}
+        >
+          <span className="text-blue-600 text-[10px] font-bold uppercase tracking-wider block">
+            {t("Profit Trackers", "منافع ٹریکرز")}
           </span>
-          <div className="font-mono text-2xl font-black text-amber-900">20</div>
-          <span className="text-amber-700 text-[10px] mt-1 block font-bold">
-            Auto-triggered warnings
-          </span>
+          <div className="font-mono text-2xl font-black text-blue-600 mt-1">32</div>
+          <span className="text-blue-500 text-[9px] mt-1 block font-semibold">{t("MTD growth metrics", "ماہانہ منافع اور P&L")}</span>
         </div>
       </div>
 
-      {/* Search & Filters */}
+      {/* Search & Tag Filter Menu */}
       <div className="flex flex-col gap-4">
         <div className="relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Search 100+ reports by name, module, or keyword..."
+            placeholder={t("Search reports by name, module, or keyword...", "رپورٹس کا نام یا کی ورڈ تلاش کریں...")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 premium-card border text-sm font-semibold text-slate-700 focus:outline-hidden focus:border-orange-500 transition-colors"
+            className="w-full pl-10 pr-4 py-3 bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-hidden focus:border-orange-500 transition-colors"
           />
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {filters.map((f) => (
             <button
               key={f.id}
-              onClick={() => setActiveFilter(f.id)}
-              className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${
-                activeFilter === f.id
+              onClick={() => { setActiveFilter(f.id); setShowFavoritesOnly(false); }}
+              className={`px-4 py-1.5 rounded-full text-[10px] font-bold transition-all border ${activeFilter === f.id && !showFavoritesOnly
                   ? "bg-slate-900 text-white border-slate-900 shadow-sm"
-                  : "bg-white dark:bg-[#151521] text-slate-500 border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:bg-white/5 hover:text-slate-700"
-              } flex items-center gap-1.5 cursor-pointer`}
+                  : "bg-white dark:bg-[#151521] text-slate-500 border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5"
+                } flex items-center gap-1.5 cursor-pointer`}
             >
               {f.icon && <f.icon className="w-3.5 h-3.5" />}
               {f.label}
             </button>
           ))}
+          <button
+            onClick={() => setShowFavoritesOnly((v) => !v)}
+            className={`px-4 py-1.5 rounded-full text-[10px] font-bold transition-all border flex items-center gap-1.5 cursor-pointer ${showFavoritesOnly
+                ? "bg-amber-500 text-white border-amber-500 shadow-sm"
+                : "bg-white dark:bg-[#151521] text-slate-500 border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5"
+              }`}
+          >
+            <Star className="w-3.5 h-3.5" />
+            {t("Favorites", "پسندیدہ")}
+          </button>
         </div>
       </div>
 
-      {/* Dynamic Report Matrix */}
-      {filteredModules.length === 0 ? (
-        <div className="premium-card border border-slate-200 dark:border-white/10 text-center">
-          <Search className="w-12 h-12 text-slate-200 mx-auto mb-3" />
-          <h3 className="text-slate-800 dark:text-slate-200 font-bold mb-1">No reports found</h3>
-          <p className="text-slate-500 text-sm">
-            Try adjusting your search criteria or changing the tag filter.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-8">
-          {filteredModules.map((mod) => (
-            <div key={mod.id} className="animate-in fade-in duration-300">
-              <h2 className="flex items-center gap-2 font-sans text-sm font-bold text-slate-900 dark:text-white border-b-2 border-slate-100 dark:border-white/5 pb-2 mb-4 uppercase tracking-wider">
-                <mod.icon className="w-5 h-5 text-orange-600" />
-                {mod.name}
-              </h2>
-
-              <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
-                {mod.reports.map((report) => (
-                  <div
-                    key={report.id}
-                    onClick={() => setActiveReport(report.id)}
-                    className="bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 rounded-xl p-4 flex gap-3 hover:border-orange-400 hover:shadow-md transition-all cursor-pointer group"
-                  >
-                    <div className="font-mono text-[11px] font-bold text-slate-400 pt-0.5 min-w-full max-w-[32px]">
-                      {report.id}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-sans text-sm font-bold text-slate-900 dark:text-white mb-1 group-hover:text-orange-600 transition-colors truncate">
-                        {report.name}
-                      </h3>
-                      <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-3">
-                        {report.desc}
-                      </p>
-                      <div className="flex flex-wrap gap-1.5 mt-auto">
-                        {report.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className={`px-2 py-0.5 border rounded-full text-[9px] font-bold uppercase tracking-wider ${getTagStyle(tag)}`}
-                          >
-                            {getTagLabel(tag)}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Report Viewer Modal (Premium Mockup for unimplemented) */}
-      {activeReport && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 lg:p-8 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#151521] rounded-2xl shadow-2xl w-full h-full max-w-7xl flex flex-col overflow-hidden border border-slate-200 dark:border-white/10">
-            {/* Modal Header */}
-            <div className="h-16 border-b border-slate-200 dark:border-white/10 flex items-center justify-between px-6 bg-slate-50 dark:bg-white/5">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-orange-100 border border-orange-200 flex items-center justify-center">
-                  <Activity className="w-4 h-4 text-orange-600" />
-                </div>
-                <div>
-                  <h2 className="font-bold font-sans text-slate-900 dark:text-white text-lg">
-                    {
-                      REPORT_MODULES.flatMap((m) => m.reports).find(
-                        (r) => r.id === activeReport,
-                      )?.name
-                    }
-                  </h2>
-                  <p className="text-[10px] font-mono text-slate-500 font-bold tracking-widest">
-                    {activeReport} // REAL-TIME EXECUTION CONTEXT
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setActiveReport(null)}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 text-slate-500 transition-colors cursor-pointer font-black text-xl"
-              >
-                &times;
-              </button>
-            </div>
-
-            {/* Modal Body - Dynamic Loading Simulator */}
-            <div className="flex-1 overflow-auto p-6 bg-slate-50 dark:bg-white/5 flex items-center justify-center">
-              <div className="max-w-md w-full mx-auto text-center py-12 bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 shadow-sm rounded-2xl">
-                <div className="relative w-20 h-20 mx-auto mb-6">
-                  <div className="absolute inset-0 rounded-full border-4 border-slate-100 dark:border-white/5"></div>
-                  <div className="absolute inset-0 rounded-full border-4 border-orange-500 border-t-transparent animate-spin"></div>
-                  <LineChart className="w-8 h-8 text-orange-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                </div>
-                <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">
-                  Compiling Data Engine...
-                </h3>
-                <p className="text-slate-500 text-sm mx-auto mb-6 px-6 leading-relaxed">
-                  Loading real-time vectors and applying ML heuristics to
-                  populate the enterprise dashboard view. Please wait.
-                </p>
-
-                <div className="w-48 h-1.5 bg-slate-100 dark:bg-white/10 rounded-full mx-auto overflow-hidden">
-                  <div className="h-full bg-orange-500 w-2/3 animate-pulse rounded-full"></div>
-                </div>
-                <div className="mt-4 text-[10px] text-slate-400 font-mono tracking-widest uppercase">
-                  Fetching parameters...
-                </div>
-              </div>
-            </div>
+      {/* Pinned Favorites Row */}
+      {favoriteReports.length > 0 && !showFavoritesOnly && (
+        <div className="animate-fade-in">
+          <h2 className="flex items-center gap-2 font-sans text-xs font-bold text-amber-600 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-2 mb-4">
+            <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+            <span>{t("Pinned Favorites", "پن شدہ پسندیدہ رپورٹس")}</span>
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
+            {favoriteReports.map((report) => renderReportCard(report))}
           </div>
         </div>
       )}
+
+      {/* Recently Viewed Row */}
+      {recentReports.length > 0 && !showFavoritesOnly && (
+        <div className="animate-fade-in">
+          <h2 className="flex items-center gap-2 font-sans text-xs font-bold text-slate-450 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-2 mb-3">
+            <Clock className="w-4 h-4 text-slate-400" />
+            <span>{t("Recently Viewed", "حال ہی میں دیکھی گئی")}</span>
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {recentReports.map((report: any) => (
+              <button
+                key={report.id}
+                onClick={() => openReport(report.id)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 hover:border-orange-400 transition-all cursor-pointer"
+              >
+                <span className="font-mono text-[9px] font-bold text-slate-400">{report.id}</span>
+                <span className="font-sans text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate max-w-[160px]">{report.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Main Reports Categories Catalog */}
+      <div className="space-y-8">
+        {filteredModules.length === 0 ? (
+          <div className="text-center py-16 text-slate-400 font-bold text-sm">
+            {showFavoritesOnly
+              ? t("No pinned favorites yet. Tap the star on any report to pin it.", "ابھی کوئی پسندیدہ رپورٹ پن نہیں کی گئی۔ کسی رپورٹ پر ستارہ دبائیں۔")
+              : t("No reports match your search.", "آپ کی تلاش سے کوئی رپورٹ نہیں ملی۔")}
+          </div>
+        ) : (
+          filteredModules.map((mod) => (
+            <div key={mod.id} className="animate-fade-in">
+              <h2 className="flex items-center gap-2 font-sans text-xs font-bold text-slate-450 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-2 mb-4">
+                <mod.icon className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                <span>{mod.name}</span>
+              </h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
+                {mod.reports.map((report) => renderReportCard(report))}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Interactive Report Sheets Viewer Overlay */}
+      {activeReport && reportDetails && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 lg:p-8 animate-fade-in">
+          <div className="bg-white dark:bg-[#151521] rounded-2xl shadow-2xl w-full h-full max-w-7xl flex flex-col overflow-hidden border border-slate-200 dark:border-white/10 animate-scale-up">
+
+            {/* Modal Header */}
+            <div className="h-16 border-b border-slate-200 dark:border-white/10 flex items-center justify-between px-6 bg-slate-50 dark:bg-white/5">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-orange-100 border border-orange-200 flex items-center justify-center dark:bg-orange-500/10 dark:border-orange-500/20">
+                  <Activity className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                </div>
+                <div>
+                  <h2 className="font-black font-sans text-slate-900 dark:text-white text-sm">
+                    {reportDetails.name}
+                  </h2>
+                  <p className="text-[9px] font-mono text-slate-450 font-bold uppercase tracking-widest">
+                    {activeReport} // {t("COMPILER ENGINE ACTIVE", "کمپائلر انجن فعال")}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => toggleFavorite(activeReport)}
+                  title={favorites.includes(activeReport) ? t("Unpin", "پن ہٹائیں") : t("Pin to favorites", "پسندیدہ میں شامل کریں")}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                >
+                  <Star className={`w-4 h-4 ${favorites.includes(activeReport) ? "fill-amber-400 text-amber-400" : "text-slate-400"}`} />
+                </button>
+                <button
+                  onClick={closeReport}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+
+              {/* Quick Date Presets */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-1">{t("Quick Range", "فوری مدت")}:</span>
+                {datePresets.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => applyDatePreset(p.id)}
+                    className={`px-3 py-1 rounded-full text-[10px] font-bold border transition-all cursor-pointer ${activeDatePreset === p.id
+                        ? "bg-orange-600 text-white border-orange-600"
+                        : "bg-white dark:bg-[#151521] text-slate-500 border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5"
+                      }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Dynamic Filter Controls Panel */}
+              <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-4 grid grid-cols-2 md:grid-cols-5 gap-3 text-[11px] font-bold">
+                <div className="space-y-1">
+                  <label className="text-slate-400 block">{t("Start Date", "تاریخ سے")}</label>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => { setStartDate(e.target.value); setActiveDatePreset(""); }}
+                    className="w-full rounded-lg border border-slate-205 dark:border-white/10 bg-white dark:bg-[#151521] px-3 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-hidden"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-slate-400 block">{t("End Date", "تاریخ تک")}</label>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => { setEndDate(e.target.value); setActiveDatePreset(""); }}
+                    className="w-full rounded-lg border border-slate-205 dark:border-white/10 bg-white dark:bg-[#151521] px-3 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-hidden"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-slate-400 block">{t("Staff/Operator", "ملازم / سیلز مین")}</label>
+                  <select
+                    value={filterStaff}
+                    onChange={(e) => setFilterStaff(e.target.value)}
+                    className="w-full rounded-lg border border-slate-205 dark:border-white/10 bg-white dark:bg-[#151521] px-3 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-hidden"
+                  >
+                    <option value="all">{t("All Operators", "تمام آپریٹرز")}</option>
+                    {staff.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-slate-400 block">{t("Product/Item", "پراڈکٹ / آئٹم")}</label>
+                  <select
+                    value={filterProduct}
+                    onChange={(e) => setFilterProduct(e.target.value)}
+                    className="w-full rounded-lg border border-slate-205 dark:border-white/10 bg-white dark:bg-[#151521] px-3 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-hidden"
+                  >
+                    <option value="all">{t("All Products", "تمام مصنوعات")}</option>
+                    {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-slate-400 block">{t("Payment Mode", "طریقہ ادائیگی")}</label>
+                  <select
+                    value={filterPaymentMode}
+                    onChange={(e) => setFilterPaymentMode(e.target.value)}
+                    className="w-full rounded-lg border border-slate-205 dark:border-white/10 bg-white dark:bg-[#151521] px-3 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-hidden"
+                  >
+                    <option value="all">{t("All Modes", "تمام ذرائع")}</option>
+                    <option value="cash">{t("Cash Inflow", "کیش")}</option>
+                    <option value="bank">{t("Bank Account", "بینک")}</option>
+                    <option value="digital">{t("Digital wallet", "ڈیجیٹل والٹ")}</option>
+                    <option value="credit">{t("Outstanding Credit", "ادھار کھاتہ")}</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Rich Summary Statistics */}
+              {numericStats.hasValues && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                  <div className="bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 rounded-xl p-3">
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">{t("Records", "اندراجات")}</span>
+                    <span className="font-mono text-lg font-black text-slate-900 dark:text-white">{numericStats.count.toLocaleString()}</span>
+                  </div>
+                  <div className="bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 rounded-xl p-3">
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-orange-500 block">{t("Total", "کل میزان")}</span>
+                    <span className="font-mono text-sm font-black text-orange-600">{formatCurrency(numericStats.sum, settings)}</span>
+                  </div>
+                  <div className="bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 rounded-xl p-3">
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-blue-500 block">{t("Average", "اوسط")}</span>
+                    <span className="font-mono text-sm font-black text-blue-600">{formatCurrency(numericStats.avg, settings)}</span>
+                  </div>
+                  <div className="bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 rounded-xl p-3">
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-500 block">{t("Maximum", "زیادہ سے زیادہ")}</span>
+                    <span className="font-mono text-sm font-black text-emerald-600">{formatCurrency(numericStats.max, settings)}</span>
+                  </div>
+                  <div className="bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 rounded-xl p-3">
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-rose-500 block">{t("Minimum", "کم سے کم")}</span>
+                    <span className="font-mono text-sm font-black text-rose-600">{formatCurrency(numericStats.min, settings)}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Dynamic Analytics Graph (Recharts) */}
+              {chartData.length > 0 && (
+                <div className="bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 p-5 rounded-xl">
+                  <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-1.5">
+                    <TrendingUp className="h-4 w-4 text-orange-500" />
+                    <span>{t("Compiled Financial Trend Analysis", "مرتب شدہ مالیاتی رجحان گراف")}</span>
+                  </h3>
+                  <div className="h-60 w-full text-xs font-mono">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="amountColor" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#ea580c" stopOpacity={0.2} />
+                            <stop offset="95%" stopColor="#ea580c" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                        <XAxis dataKey="date" stroke="#94A3B8" />
+                        <YAxis stroke="#94A3B8" />
+                        <Tooltip formatter={(value: any) => formatCurrency(Number(value), settings)} />
+                        <Area type="monotone" dataKey="Amount" stroke="#ea580c" strokeWidth={2} fillOpacity={1} fill="url(#amountColor)" name={t("Report Value", "رپورٹ رقم")} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+
+              {/* In-report search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder={t("Filter rows in this report...", "اس رپورٹ کی اندراجات فلٹر کریں...")}
+                  value={tableSearch}
+                  onChange={(e) => setTableSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-hidden focus:border-orange-500 transition-colors"
+                />
+              </div>
+
+              {/* Data Table */}
+              <div className="bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden shadow-xs">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-50 dark:bg-white/5 border-b border-slate-200 dark:border-white/10 font-bold text-slate-750 dark:text-slate-200">
+                        {reportHeaders.map((head) => {
+                          const isActive = sortKey === head.key;
+                          return (
+                            <th
+                              key={head.key}
+                              onClick={() => handleSort(head.key as string)}
+                              className={`p-3 cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-white/10 transition-colors ${head.isNumeric ? "text-right" : ""}`}
+                            >
+                              <span className={`inline-flex items-center gap-1 ${head.isNumeric ? "flex-row-reverse" : ""}`}>
+                                {isUrdu ? head.urduLabel : head.label}
+                                {isActive ? (
+                                  sortDir === "asc" ? <ArrowUp className="w-3 h-3 text-orange-500" /> : <ArrowDown className="w-3 h-3 text-orange-500" />
+                                ) : (
+                                  <ArrowUpDown className="w-3 h-3 text-slate-300" />
+                                )}
+                              </span>
+                            </th>
+                          );
+                        })}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-white/5 font-medium">
+                      {sortedRows.length === 0 ? (
+                        <tr>
+                          <td colSpan={reportHeaders.length} className="p-8 text-center text-slate-400 font-bold">
+                            {t("No records found matching filters.", "فائلز کے مطابق کوئی ڈیٹا دستیاب نہیں ہے۔")}
+                          </td>
+                        </tr>
+                      ) : (
+                        sortedRows.map((row, rIdx) => (
+                          <tr key={row.id || rIdx} className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
+                            {reportHeaders.map((head) => {
+                              const rawVal = row[head.key as keyof typeof row];
+                              const isNum = head.isNumeric;
+                              return (
+                                <td key={head.key} className={`p-3 ${isNum ? "text-right font-mono font-bold text-slate-900 dark:text-white" : "text-slate-600 dark:text-slate-350"}`}>
+                                  {isNum ? Number(rawVal).toLocaleString() : String(rawVal)}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Bottom Summaries / Totals */}
+                <div className="bg-slate-50 dark:bg-white/5 p-4 border-t border-slate-200 dark:border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-bold">
+                  <div className="text-slate-450 flex items-center gap-1.5">
+                    <Sigma className="w-3.5 h-3.5" />
+                    {t("Showing", "ظاہر کردہ")}: {sortedRows.length} {t("records total", "کل اندراجات")}
+                  </div>
+                  {numericStats.sum > 0 && (
+                    <div className="bg-orange-50 dark:bg-orange-500/10 px-4 py-2 rounded-lg border border-orange-100 dark:border-orange-500/20 text-orange-700 dark:text-orange-400 text-sm font-black">
+                      {t("Total Sum:", "کل میزان:")} {formatCurrency(numericStats.sum, settings)}
+                    </div>
+                  )}
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* Modal Actions */}
+            <div className="min-h-16 py-3 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 flex flex-wrap items-center justify-end px-6 gap-2 shrink-0">
+              <button
+                onClick={handleCopyClipboard}
+                className="flex items-center gap-1.5 bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 font-sans text-xs font-bold px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <ClipboardCopy className="w-3.5 h-3.5" />}
+                <span>{copied ? t("Copied!", "کاپی ہو گیا!") : t("Copy", "کاپی کریں")}</span>
+              </button>
+              <button
+                onClick={handleExportJSON}
+                className="flex items-center gap-1.5 bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 font-sans text-xs font-bold px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <FileJson className="w-3.5 h-3.5" />
+                <span>{t("Export JSON", "JSON ڈاؤن لوڈ")}</span>
+              </button>
+              <button
+                onClick={handlePrint}
+                className="flex items-center gap-1.5 bg-slate-800 text-white font-sans text-xs font-bold px-4 py-2 rounded-lg hover:bg-slate-900 transition-colors cursor-pointer"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>{t("Print Statement", "رپورٹ پرنٹ کریں")}</span>
+              </button>
+              <button
+                onClick={handleExportCSV}
+                className="flex items-center gap-1.5 bg-orange-600 text-white font-sans text-xs font-bold px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>{t("Export to Excel (CSV)", "ایکسل میں ڈاؤن لوڈ کریں")}</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

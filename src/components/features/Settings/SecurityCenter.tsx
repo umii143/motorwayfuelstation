@@ -10,9 +10,7 @@ interface SecurityCenterProps {
 }
 
 export default function SecurityCenter({ settings, onUpdateSettings }: SecurityCenterProps) {
-   
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { user, reauthenticateWithPassword } = useAuth();
+  const { user, reauthenticateWithPassword, requestOTP, verifyOTP } = useAuth();
   const showToast = useStationStore((state) => state.showToast);
 
   const isUrdu = settings.language === 'ur';
@@ -112,15 +110,14 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
       if (forgotMethod === 'password') {
         await reauthenticateWithPassword(accountPassword);
       } else if (forgotMethod === 'email') {
-        if (emailOtp !== '123456') { // Simulated OTP check
-          throw new Error('Invalid OTP Code');
-        }
+        if (!user?.email) throw new Error(t('No account email on file.', 'اکاؤنٹ ای میل دستیاب نہیں۔'));
+        await verifyOTP(user.email, emailOtp);
       }
-      
+
       // If verification succeeds, we move them to 'setup' mode to create a new PIN
       setPinMode('setup');
       setForgotMethod(null);
-       
+
       showToast(t('Identity verified. Please set a new PIN.', 'شناخت کی تصدیق ہو گئی۔ نیا پن درج کریں۔'), 'success');
     } catch (err: any) {
       showToast(err.message || t('Verification failed', 'تصدیق ناکام'), 'error');
@@ -129,13 +126,21 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
     }
   };
 
-  const handleSendEmailOtp = () => {
+  const handleSendEmailOtp = async () => {
+    if (!user?.email) {
+      showToast(t('No account email on file.', 'اکاؤنٹ ای میل دستیاب نہیں۔'), 'error');
+      return;
+    }
     setIsSendingEmail(true);
-    setTimeout(() => {
-      setIsSendingEmail(false);
+    try {
+      await requestOTP(user.email);
       setEmailSent(true);
-      showToast(t('Recovery code sent to your email! (Hint: use 123456)', 'کوڈ آپ کی ای میل پر بھیج دیا گیا ہے!'), 'success');
-    }, 1500);
+      showToast(t('Recovery code sent to your email.', 'ریکوری کوڈ آپ کی ای میل پر بھیج دیا گیا ہے۔'), 'success');
+    } catch (err: any) {
+      showToast(err.message || t('Failed to send recovery email', 'ریکوری ای میل بھیجنے میں ناکامی'), 'error');
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   const cancelPinMode = () => {
@@ -162,7 +167,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
                 {hasMasterPin ? t('Master PIN is Active', 'ماسٹر پن فعال ہے') : t('Master PIN is NOT Set', 'ماسٹر پن سیٹ نہیں ہے')}
               </p>
               <p className="text-xs text-slate-500">
-                {hasMasterPin 
+                {hasMasterPin
                   ? t('Your system is protected by a 6-digit Owner PIN.', 'آپ کا سسٹم 6 ہندسوں کے اونر پن سے محفوظ ہے۔')
                   : t('Set up a 6-digit PIN to protect critical operations.', 'اہم کارروائیوں کی حفاظت کے لیے 6 ہندسوں کا پن سیٹ کریں۔')}
               </p>
@@ -227,7 +232,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
           {forgotMethod === 'password' && (
             <div className="space-y-3 pt-3">
               <div className="relative">
-                <input 
+                <input
                   type={showPin ? "text" : "password"}
                   value={accountPassword}
                   onChange={(e) => setAccountPassword(e.target.value)}
@@ -238,8 +243,8 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
                   {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={handleForgotPinVerify}
                 disabled={!accountPassword || isVerifying}
                 className="w-full py-2.5 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 disabled:opacity-50 transition-colors"
@@ -252,8 +257,8 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
           {forgotMethod === 'email' && (
             <div className="space-y-3 pt-3">
               {!emailSent ? (
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={handleSendEmailOtp}
                   disabled={isSendingEmail}
                   className="w-full py-2.5 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 disabled:opacity-50 transition-colors"
@@ -262,7 +267,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
                 </button>
               ) : (
                 <>
-                  <input 
+                  <input
                     type="text"
                     maxLength={6}
                     value={emailOtp}
@@ -270,8 +275,8 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
                     placeholder="Enter 6-digit code"
                     className="w-full px-3 py-2.5 bg-white dark:bg-[#151521] border border-rose-200 rounded-lg text-sm text-slate-800 dark:text-slate-200 focus:border-rose-500 text-center font-mono tracking-widest shadow-inner"
                   />
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={handleForgotPinVerify}
                     disabled={emailOtp.length !== 6 || isVerifying}
                     className="w-full py-2.5 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 disabled:opacity-50 transition-colors"
@@ -301,7 +306,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
             <div className="space-y-1">
               <label className="text-xs font-bold text-slate-500 uppercase">{t('Current PIN', 'موجودہ پن')}</label>
               <div className="relative">
-                <input 
+                <input
                   type={showPin ? "text" : "password"}
                   maxLength={6}
                   value={currentPin}
@@ -321,7 +326,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-xs font-bold text-slate-500 uppercase">{t('New PIN', 'نیا پن')}</label>
-              <input 
+              <input
                 type={showPin ? "text" : "password"}
                 maxLength={6}
                 value={newPin}
@@ -332,7 +337,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
             </div>
             <div className="space-y-1">
               <label className="text-xs font-bold text-slate-500 uppercase">{t('Confirm New PIN', 'نئے پن کی تصدیق کریں')}</label>
-              <input 
+              <input
                 type={showPin ? "text" : "password"}
                 maxLength={6}
                 value={confirmPin}
@@ -342,13 +347,13 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
               />
             </div>
           </div>
-          
+
           <div className="flex items-center justify-between pt-2">
             <button type="button" onClick={() => setShowPin(!showPin)} className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-700">
               {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               {showPin ? t('Hide', 'چھپائیں') : t('Show', 'دکھائیں')}
             </button>
-            <button 
+            <button
               type="button"
               onClick={handlePinSave}
               disabled={newPin.length !== 6 || confirmPin.length !== 6 || (pinMode === 'change' && currentPin.length !== 6)}
@@ -372,7 +377,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
           </p>
         </div>
         {!isEditing && (
-          <button 
+          <button
             onClick={() => setIsEditing(true)}
             className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold shadow-xs hover:bg-slate-800 transition-colors"
           >
@@ -383,7 +388,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          
+
           {/* PIN Management Section */}
           <div className="bg-white dark:bg-[#151521] rounded-xl border border-slate-200 dark:border-white/10 shadow-xs overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-200 dark:border-white/10 flex items-center gap-2">
@@ -402,7 +407,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
                 <Shield className="h-5 w-5 text-slate-400" />
                 <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">{t('Enforcement & Policies', 'نفاذ اور پالیسیاں')}</h3>
               </div>
-              
+
               <div className="p-6 space-y-6">
                 <div>
                   <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4">{t('PIN Enforcement', 'پن کا نفاذ')}</h4>
@@ -453,15 +458,15 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
 
                 <div className="pt-4 border-t border-slate-100 dark:border-white/5">
                   <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4">{t('Screen Lock Settings', 'سکرین لاک سیٹنگز')}</h4>
-                  
+
                   <div className="space-y-6">
                     {/* Toggles Row */}
                     <div className="flex flex-col sm:flex-row gap-6">
                       <label className="flex items-center gap-3 cursor-pointer">
                         <div className="relative">
-                          <input 
-                            type="checkbox" 
-                            className="sr-only peer" 
+                          <input
+                            type="checkbox"
+                            className="sr-only peer"
                             checked={screenLockEnabled}
                             onChange={(e) => setScreenLockEnabled(e.target.checked)}
                             disabled={!isEditing}
@@ -476,9 +481,9 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
 
                       <label className="flex items-center gap-3 cursor-pointer">
                         <div className="relative">
-                          <input 
-                            type="checkbox" 
-                            className="sr-only peer" 
+                          <input
+                            type="checkbox"
+                            className="sr-only peer"
                             checked={biometricEnabled}
                             onChange={(e) => setBiometricEnabled(e.target.checked)}
                             disabled={!isEditing || !screenLockEnabled}
@@ -500,7 +505,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <Clock className="h-4 w-4 text-slate-400" />
                           </div>
-                          <select 
+                          <select
                             value={sessionTimeoutMinutes}
                             onChange={(e) => setSessionTimeoutMinutes(e.target.value)}
                             disabled={!isEditing || !screenLockEnabled}
@@ -523,7 +528,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-50">
                         <div className="space-y-1.5">
                           <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('Screen Lock PIN', 'سکرین لاک پن')}</label>
-                          <input 
+                          <input
                             type="password"
                             maxLength={6}
                             value={screenLockPin}
@@ -535,7 +540,7 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('Confirm PIN', 'پن کی تصدیق کریں')}</label>
-                          <input 
+                          <input
                             type="password"
                             maxLength={6}
                             value={confirmScreenLockPin}
@@ -553,15 +558,15 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
 
               {isEditing && (
                 <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 flex justify-end gap-3">
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => setIsEditing(false)}
                     className="px-4 py-2 text-sm font-bold text-slate-600 bg-white dark:bg-[#151521] border border-slate-200 dark:border-white/10 rounded-lg hover:bg-slate-100 dark:bg-white/10 transition-colors"
                   >
                     {t('Cancel', 'کینسل')}
                   </button>
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className="px-5 py-2 text-sm font-bold text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors flex items-center gap-2 shadow-xs"
                   >
                     <Save className="h-4 w-4" />
@@ -580,30 +585,18 @@ export default function SecurityCenter({ settings, onUpdateSettings }: SecurityC
               <ShieldAlert className="h-5 w-5 text-rose-500" />
               {t('Recent Failed Logins', 'حالیہ ناکام لاگ انز')}
             </h3>
-            
-            <div className="space-y-4">
-              <div className="flex items-start gap-3 p-3 bg-rose-50 rounded-lg border border-rose-100">
-                <div className="w-2 h-2 rounded-full bg-rose-500 mt-1.5 shrink-0"></div>
-                <div>
-                  <p className="text-sm font-bold text-rose-900">admin@fuelpro.local</p>
-                  <p className="text-xs text-rose-700">Invalid Password</p>
-                  <p className="text-[10px] text-rose-500 mt-1 font-mono">192.168.1.105 • 2 hrs ago</p>
-                </div>
-              </div>
 
-              <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-white/5 rounded-lg border border-slate-100 dark:border-white/5">
-                <div className="w-2 h-2 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>
-                <div>
-                  <p className="text-sm font-bold text-slate-700">manager@fuelpro.local</p>
-                  <p className="text-xs text-slate-500">Invalid 2FA Token</p>
-                  <p className="text-[10px] text-slate-400 mt-1 font-mono">119.160.102.4 • Yesterday</p>
-                </div>
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center mb-3">
+                <Shield className="h-6 w-6 text-emerald-500" />
               </div>
+              <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                {t('No failed login attempts', 'کوئی ناکام لاگ ان کوشش نہیں')}
+              </p>
+              <p className="text-xs text-slate-400 mt-1 max-w-[200px]">
+                {t('Failed sign-in attempts will appear here for your review.', 'ناکام سائن ان کی کوششیں یہاں ظاہر ہوں گی۔')}
+              </p>
             </div>
-            
-            <button className="w-full mt-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-slate-200 transition-colors">
-              {t('View All Logs', 'تمام لاگز دیکھیں')} &rarr;
-            </button>
           </div>
         </div>
       </div>

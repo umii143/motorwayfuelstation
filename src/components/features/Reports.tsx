@@ -34,7 +34,8 @@ import {
   Filter,
   Shield,
   Sliders,
-  Sparkles
+  Sparkles,
+  ArrowLeft
 } from 'lucide-react';
 import EmptyState from '../ui/EmptyState';
 import {
@@ -59,6 +60,12 @@ import { db } from '../../data/db';
 import { fetchWithAuth } from '../../lib/api';
 import { useInventoryStore } from '../../stores/useInventoryStore';
 import { logger } from '../../lib/logger';
+import AdvancedReportsHub from './AdvancedReportsHub';
+import RoznamchaVisualizer from './RoznamchaVisualizer';
+import UnifiedRoznamcha from './UnifiedRoznamcha';
+import DrilldownExplorer from './DrilldownExplorer';
+import CommandCenter from './CommandCenter';
+import ShiftIntelligenceReport from './ShiftIntelligenceReport';
 
 const getFuelCategory = (productId: string, products: Product[]): 'petrol' | 'diesel' | 'cng' | null => {
   const p = products.find((prod) => prod.id === productId);
@@ -139,7 +146,8 @@ export default function Reports({
   // Fuel Station / CNG Reports (Lube business uses LubeReports component)
 
   // States
-  const [activeReportTab, setActiveReportTab] = useState<'sales_pnl' | 'corporate_audit' | 'party_outstanding' | 'inventory_audit' | 'shift_sheets' | 'reconciliation'>('corporate_audit');
+  const [activeReportTab, setActiveReportTab] = useState<'command_center' | 'sales_pnl' | 'corporate_audit' | 'party_outstanding' | 'inventory_audit' | 'shift_sheets' | 'reconciliation' | 'activity_register' | 'shift_intelligence'>('command_center');
+  const [activeDrilldown, setActiveDrilldown] = useState<any | null>(null);
   const [selectedHistoricalShiftId, setSelectedHistoricalShiftId] = useState<string | null>(null);
 
   const cogsRecords = useInventoryStore(useShallow(state => state.cogsRecords));
@@ -167,65 +175,7 @@ export default function Reports({
     db.saveReconciledShiftIds(activeStationId, updated);
   };
 
-  // Corporate Audits state
-  const [selectedReportId, setSelectedReportId] = useState<string>('A1');
-  const [expandedCategory, setExpandedCategory] = useState<string>('A');
-  const [copiedCSV, setCopiedCSV] = useState<boolean>(false);
-  const [csvContent, setCsvContent] = useState<string | null>(null);
 
-  // Filters State
-  const [startDate, setStartDate] = useState<string>('');
-  const [endDate, setEndDate] = useState<string>('');
-  const [filterStaffId, setFilterStaffId] = useState<string>('all');
-  const [filterProductId, setFilterProductId] = useState<string>('all');
-  const [filterEntityName, setFilterEntityName] = useState<string>('all');
-  const [filterShiftType, setFilterShiftType] = useState<string>('all');
-  const [filterPaymentMode, setFilterPaymentMode] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState<string>('');
-
-  // Sorting State
-  const [sortField, setSortField] = useState<string>('');
-  const [sortAscending, setSortAscending] = useState<boolean>(true);
-
-  // AI Analysis State
-  const [isGeneratingAiAnalysis, setIsGeneratingAiAnalysis] = useState(false);
-  const [aiAnalysisResult, setAiAnalysisResult] = useState<string | null>(null);
-
-  const generateAIReportAnalysis = async () => {
-    if (sortedRows.length === 0) return;
-    setIsGeneratingAiAnalysis(true);
-    setAiAnalysisResult(null);
-    try {
-      // Limit to max 50 rows to avoid token limit
-      const contextRows = sortedRows.slice(0, 50);
-      const reportContext = {
-        reportName: activeTemplate.name,
-        totalAmount: tableAggregates.sumAmount,
-        totalRecords: tableAggregates.recordsCount,
-        data: contextRows
-      };
-
-      const response = await fetchWithAuth('/api/ai-assistant', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          systemPrompt: 'You are an AI financial auditor. Analyze the provided report data. Highlight key trends, anomalies, top performers, or risk areas. Provide a concise professional summary in 3-4 sentences.',
-          userMessage: JSON.stringify(reportContext),
-          language: settings.language,
-          conversationHistory: []
-        })
-      });
-
-      if (!response.ok) throw new Error('Failed to generate AI analysis');
-      const data = await response.json();
-      setAiAnalysisResult(data.reply);
-    } catch (error) {
-      logger.error(String(error));
-      setAiAnalysisResult(t("⚠️ Could not generate AI analysis.", "⚠️ AI تجزیہ تیار نہیں ہو سکا۔"));
-    } finally {
-      setIsGeneratingAiAnalysis(false);
-    }
-  };
 
   // Color palette for charts
   const FUEL_COLORS = ['#FF6B00', '#00C49A', '#1A1A2E'];
@@ -374,147 +324,19 @@ export default function Reports({
     return shifts.find(s => s.id === selectedHistoricalShiftId) || null;
   }, [selectedHistoricalShiftId, shifts]);
 
-  // ==========================================
-  // MASTER COMPILER & FILTER EVALUATOR
-  // ==========================================
-  const activeTemplate = useMemo(() => {
-    return REPORT_TEMPLATES.find(t => t.id === selectedReportId) || REPORT_TEMPLATES[0];
-  }, [selectedReportId]);
-
-  const compiledRawRows = useMemo(() => {
-    return activeTemplate.compile({
-      shifts,
-      products,
-      customers,
-      suppliers,
-      standaloneExpenses,
-      tanks,
-      rateHistory,
-      staffFinance,
-      attendance,
-      staff,
-      nozzles,
-      cogsRecords,
-      auditLogs: db.getSettingsAuditTrail(activeStationId)
-    });
-  }, [activeTemplate, shifts, products, customers, suppliers, standaloneExpenses, tanks, rateHistory, staffFinance, attendance, staff, nozzles, cogsRecords, activeStationId]);
-
-  // Apply filters
-  const filteredRows = useMemo(() => {
-    return compiledRawRows.filter(row => {
-      // Date range check
-      if (startDate && row.date && row.date < startDate) return false;
-      if (endDate && row.date && row.date > endDate) return false;
-
-      // Staff filter check
-      if (filterStaffId !== 'all') {
-        if (row.staffId && row.staffId !== filterStaffId) return false;
-        // fallback match name (heuristic)
-        if (!row.staffId && row.staffName && !row.staffName.toLowerCase().includes(filterStaffId.toLowerCase())) {
-          const matchedSt = staff.find(s => s.id === filterStaffId);
-          if (matchedSt && !row.staffName.toLowerCase().includes(matchedSt.name.toLowerCase())) return false;
-        }
-      }
-
-      // Product filter check
-      if (filterProductId !== 'all' && row.productId && row.productId !== filterProductId) return false;
-
-      // Class / Entity check (customer / supplier name)
-      if (filterEntityName !== 'all' && row.entityName && !row.entityName.toLowerCase().includes(filterEntityName.toLowerCase())) {
-        return false;
-      }
-
-      // Shift type check
-      if (filterShiftType !== 'all' && row.shiftType && row.shiftType.toLowerCase() !== filterShiftType.toLowerCase()) return false;
-
-      // Payment Mode check
-      if (filterPaymentMode !== 'all' && row.paymentMode && row.paymentMode.toLowerCase() !== filterPaymentMode.toLowerCase()) return false;
-
-      // Text query search
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        const strVal = Object.values(row).join(' ').toLowerCase();
-        if (!strVal.includes(q)) return false;
-      }
-
-      return true;
-    });
-  }, [compiledRawRows, startDate, endDate, filterStaffId, filterProductId, filterEntityName, filterShiftType, filterPaymentMode, searchQuery, staff]);
-
-  // Apply sorting
-  const sortedRows = useMemo(() => {
-    if (!sortField) return filteredRows;
-    return [...filteredRows].sort((a, b) => {
-      const aVal = (a as any)[sortField];
-      const bVal = (b as any)[sortField];
-
-      if (typeof aVal === 'number' && typeof bVal === 'number') {
-        return sortAscending ? aVal - bVal : bVal - aVal;
-      }
-      const aStr = String(aVal || '').toLowerCase();
-      const bStr = String(bVal || '').toLowerCase();
-      return sortAscending ? aStr.localeCompare(bStr) : bStr.localeCompare(aStr);
-    });
-  }, [filteredRows, sortField, sortAscending]);
-
-  // Compute live aggregates of active report
-  const tableAggregates = useMemo(() => {
-    let sumAmount = 0;
-    const recordsCount = sortedRows.length;
-
-    sortedRows.forEach(r => {
-      if (typeof r.amount === 'number') {
-        sumAmount += r.amount;
-      }
-    });
-
-    return {
-      sumAmount,
-      recordsCount
-    };
-  }, [sortedRows]);
 
 
-  // Export CSV generator
-  const triggerCSVExport = () => {
-    if (sortedRows.length === 0) return;
-    const headers = activeTemplate.headers.map(h => h.label).join(',');
-    const csvLines = sortedRows.map(r => {
-      return activeTemplate.headers.map(h => {
-        let v = (r as any)[h.key] || '';
-        // escape string commas
-        if (typeof v === 'string') v = `"${v.replace(/"/g, '""')}"`;
-        return v;
-      }).join(',');
-    });
-    const built = [headers, ...csvLines].join('\n');
-    setCsvContent(built);
 
-    // Simulate direct download
-    const blob = new Blob([built], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `FuelPro_Report_${activeTemplate.id}_Export.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
 
-    setCopiedCSV(true);
-    setTimeout(() => setCopiedCSV(false), 3000);
-  };
-
-  const REPORT_CATEGORIES = [
-    { id: 'A', name: t('Category A: Fuel Sales Reports', 'کیٹیگری A: فیول سیلز رپورٹیں'), icon: Coins },
-    { id: 'B', name: t('Category B: Institutional Financials', 'کیٹیگری B: مالیاتی آڈٹ کھاتہ'), icon: TrendingUp },
-    { id: 'C', name: t('Category C: Customer Billing Ledgers', 'کیٹیگری C: کسٹمرز بقایا لیجرز'), icon: Users },
-    { id: 'D', name: t('Category D: Refinery Suppliers Ledger', 'کیٹیگری D: آئل رِفائنری سپلائر کھاتہ'), icon: Package },
-    { id: 'E', name: t('Category E: Operator Attendance & Payroll', 'کیٹیگری E: اسٹاف حاضری اور ایڈوانسز لاگ'), icon: Activity },
-    { id: 'F', name: t('Category F: Wet Inventory Stock Audit', 'کیٹیگری F: انوینٹری اور ٹینک آڈٹ رپورٹیں'), icon: Layers },
-    { id: 'G', name: t('Category G: Business Operating Expenses', 'کیٹیگری G: کاروباری اخراجات اور بجٹ خلاصہ'), icon: DollarSign },
-    { id: 'H', name: t('Category H: System Audits & Trace Overrides', 'کیٹیگری H: سیکیورٹی آڈٹ ٹریل لاگ'), icon: Shield },
-    { id: 'I', name: t('Category I: Operational Performance Analysis', 'کیٹیگری I: آپریشنل کارکردگی اور بجٹ'), icon: Sliders }
-  ];
+  if (activeDrilldown) {
+    return (
+      <DrilldownExplorer
+        settings={settings}
+        initialView={activeDrilldown}
+        onClose={() => setActiveDrilldown(null)}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 pb-20 lg:pb-5">
@@ -542,19 +364,22 @@ export default function Reports({
       </div>
 
       {/* TABS SELECTOR */}
-      <div className="flex flex-wrap gap-2 border-b border-slate-200 dark:border-white/10 pb-0.5">
+      <div className="flex overflow-x-auto gap-2 border-b border-slate-200 dark:border-white/10 pb-1.5 whitespace-nowrap scrollbar-none">
         {[
+          { id: 'command_center', label: '🛡️ Operations Command Center', urdu: '🛡️ آپریشنز کمانڈ سینٹر' },
           { id: 'corporate_audit', label: '📊 Corporate Audits (50+ Reports)', urdu: '📊 کارپوریٹ آڈٹ لسٹ (50+ رپورٹیں)' },
+          { id: 'activity_register', label: '📝 Digital Roznamcha Ledger', urdu: '📝 ڈیجیٹل روزنامچہ رجسٹر آڈٹ' },
           { id: 'sales_pnl', label: '📈 Visual Fuel Dashboard', urdu: '📈 گرافیکل سیلز گراف اور چارٹ' },
           { id: 'party_outstanding', label: '👥 Party Outstanding List', urdu: '👥 گاہک بقایا کھاتہ لسٹ' },
           { id: 'inventory_audit', label: '🛢️ Storage Tanks Status', urdu: '🛢️ ٹینکس اسٹاک موازنہ' },
           { id: 'shift_sheets', label: '📋 Finalized Shift Receipts', urdu: '📋 شفٹ فائنل رسیدیں' },
+          { id: 'shift_intelligence', label: '🧾 Enterprise Shift Intelligence', urdu: '🧾 شفٹ انٹیلی جنس رپورٹ' },
           { id: 'reconciliation', label: '🏦 Bank Reconciliation Tool', urdu: '🏦 بینک اور ڈیجیٹل موازنہ' }
         ].map(tb => (
           <button
             key={tb.id}
             onClick={() => setActiveReportTab(tb.id as any)}
-            className={`px-4 py-2.5 font-sans text-xs font-bold transition-all border-b-2 cursor-pointer ${
+            className={`px-4 py-2.5 font-sans text-xs font-bold transition-all border-b-2 cursor-pointer shrink-0 ${
               activeReportTab === tb.id
                 ? 'border-orange-600 text-orange-600 font-extrabold'
                 : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-200'
@@ -567,323 +392,35 @@ export default function Reports({
 
 
       {/* ========================================================
+          COMMAND CENTER LANDING VIEW
+          ======================================================== */}
+      {activeReportTab === 'command_center' && (
+        <CommandCenter
+          settings={settings}
+          shifts={shifts}
+          products={products}
+          staff={staff}
+          onSelectTab={(tabId) => setActiveReportTab(tabId as any)}
+          onTriggerDrilldown={(params) => setActiveDrilldown(params)}
+        />
+      )}
+
+      {/* ========================================================
           NEW VIEW: 50+ CORPORATE REPORT GENERATION CONSOLE
           ======================================================== */}
       {activeReportTab === 'corporate_audit' && (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-          
-          {/* LEFT COLUMN: ACTIVE DIRECTORY ACCORDION OF REPORTS */}
-          <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-xs space-y-3 lg:sticky lg:top-5">
-            <span className="font-sans text-[11px] font-bold text-slate-400 uppercase tracking-widest block border-b border-slate-100 dark:border-white/5 pb-1.5">
-              {t('Available Directory', 'رپورٹس انڈیکس ڈائریکٹری')}
-            </span>
+        <AdvancedReportsHub
+          settings={settings}
+          shifts={shifts}
+          products={products}
+          staff={staff}
+        />
+      )}
 
-            <div className="space-y-2">
-              {REPORT_CATEGORIES.map(cat => {
-                const isExpanded = expandedCategory === cat.id;
-                const reportsInCat = REPORT_TEMPLATES.filter(r => r.category === cat.id);
-
-                return (
-                  <div key={cat.id} className="border border-slate-100 dark:border-white/5 rounded-lg overflow-hidden">
-                    <button
-                      onClick={() => setExpandedCategory(isExpanded ? '' : cat.id)}
-                      className={`w-full flex items-center justify-between p-2.5 font-sans text-xs font-bold text-left transition-colors cursor-pointer ${
-                        isExpanded ? 'bg-orange-55/10 text-orange-700' : 'bg-slate-50 dark:bg-white/5 text-slate-700 hover:bg-slate-100 dark:bg-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <cat.icon className="h-4 w-4" />
-                        <span>{cat.name}</span>
-                      </div>
-                      {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-                    </button>
-
-                    {isExpanded && (
-                      <div className="p-1.5 bg-white dark:bg-[#151521] space-y-1 divide-y divide-slate-50">
-                        {reportsInCat.map(rep => {
-                          const isActive = selectedReportId === rep.id;
-                          return (
-                            <button
-                              key={rep.id}
-                              onClick={() => setSelectedReportId(rep.id)}
-                              className={`w-full text-left p-2 rounded-md font-sans text-[11px] font-semibold transition-all cursor-pointer block ${
-                                isActive
-                                  ? 'bg-slate-900 text-white font-extrabold'
-                                  : 'text-slate-600 hover:bg-slate-50 dark:bg-white/5 hover:text-slate-900 dark:text-white'
-                              }`}
-                            >
-                              {isUrdu ? rep.urduName : rep.name}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* RIGHT PANELS: ADVANCED CONTROLS, CHART TIMELINE & TRACEABLE GRID */}
-          <div className="lg:col-span-3 space-y-6">
-            
-            {/* 1. Selected report description panel */}
-            <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-xs relative">
-              <span className="font-mono text-[9px] font-bold text-orange-600 uppercase tracking-widest bg-orange-50 px-2 py-0.5 rounded-sm absolute top-4 right-4">
-                Ref Code: {activeTemplate.id}
-              </span>
-              <h3 className="font-sans text-lg font-extrabold text-slate-800 dark:text-slate-200 tracking-tight">
-                {t(activeTemplate.name, activeTemplate.urduName)}
-              </h3>
-              <p className="font-sans text-xs text-slate-450 mt-1 italic">
-                {t(activeTemplate.description, activeTemplate.urduDescription)}
-              </p>
-            </div>
-
-            {/* 2. Global Filter Controls Form */}
-            <div className="rounded-xl border border-slate-250 bg-slate-55/40 p-4 space-y-4">
-              <div className="flex items-center gap-1 text-xs font-bold text-slate-700">
-                <Filter className="h-3.5 w-3.5 text-orange-500" />
-                <span>{t('Advanced Query Filter Controls', 'فلٹرز اور آڈٹ سرچ پینل')}</span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 text-xs font-sans">
-                {/* Start Date */}
-                <div>
-                  <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">{t('Start Date', 'شروع تاریخ')}</label>
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500 w-full"
-                  />
-                </div>
-                {/* End Date */}
-                <div>
-                  <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">{t('End Date', 'آخری تاریخ')}</label>
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500 w-full"
-                  />
-                </div>
-
-                {/* Staff Select option */}
-                <div>
-                  <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">{t('Staff/Crew', 'اسٹاف ممبر')}</label>
-                  <select
-                    value={filterStaffId}
-                    onChange={(e) => setFilterStaffId(e.target.value)}
-                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500 w-full cursor-pointer"
-                  >
-                    <option value="all">{t('— All Staff Members —', 'تمام عملہ')}</option>
-                    {staff.map(st => (
-                      <option key={st.id} value={st.id}>{st.name} ({st.role.toUpperCase()})</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Product Select option */}
-                <div>
-                  <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">{t('Fuel Product', 'پٹرولیم ایندھن')}</label>
-                  <select
-                    value={filterProductId}
-                    onChange={(e) => setFilterProductId(e.target.value)}
-                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500 w-full cursor-pointer"
-                  >
-                    <option value="all">{t('— All Products —', 'تمام مصنوعات')}</option>
-                    {products.map(p => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Customer / Supplier selection */}
-                <div>
-                  <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">{t('Party Name', 'پارٹی کھاتہ')}</label>
-                  <select
-                    value={filterEntityName}
-                    onChange={(e) => setFilterEntityName(e.target.value)}
-                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500 w-full cursor-pointer"
-                  >
-                    <option value="all">{t('— All Accounts —', 'تمام بقایا پارٹیاں')}</option>
-                    {customers.map(c => (
-                      <option key={c.id} value={c.name}>{c.name}</option>
-                    ))}
-                    {suppliers.map(s => (
-                      <option key={s.id} value={s.name}>{s.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Shift types */}
-                <div>
-                  <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">{t('Shift Hour Type', 'وقتِ شفٹ')}</label>
-                  <select
-                    value={filterShiftType}
-                    onChange={(e) => setFilterShiftType(e.target.value)}
-                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500 w-full cursor-pointer"
-                  >
-                    <option value="all">{t('All Shift types', 'تمام اوقات')}</option>
-                    <option value="day">{t('Day (08:00 AM - 04:00 PM)', 'دن')}</option>
-                    <option value="night">{t('Night (04:00 PM - 08:00 AM)', 'رات')}</option>
-                  </select>
-                </div>
-
-                {/* Search query */}
-                <div className="sm:col-span-2 md:col-span-3 lg:col-span-6">
-                  <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">{t('Search Inside active report', 'آڈٹ ریسیٹ تلاش کریں')}</label>
-                  <div className="relative">
-                    <Search className="h-3.5 w-3.5 text-slate-400 absolute left-2.5 top-2.5" />
-                    <input
-                      type="text"
-                      placeholder={t('Type voucher ID, operator, names...', 'آپریٹر، رقم یا واؤچر کوڈ درج کریں...')}
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="premium-input pl-8 border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500 w-full"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 3. OPTIONAL MINI CHARTS PREVIEW ON TOP OF RESULTS */}
-            {sortedRows.length > 0 && (
-              <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-xs space-y-3">
-                <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block border-b border-slate-100 dark:border-white/5 pb-1.5 flex items-center gap-1.5">
-                  <Activity className="h-3.5 w-3.5 text-teal-605" />
-                  <span>{t('Transactional Flow Analytics Chart', 'اعداد و شمار چارٹ تجزیہ')}</span>
-                </span>
-                <div className="h-44 w-full text-xs font-sans">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={sortedRows.slice(0, 15)} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="rowGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#0EA5E9" stopOpacity={0.25}/>
-                          <stop offset="95%" stopColor="#0EA5E9" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
-                      <XAxis dataKey="date" stroke="#94A3B8" />
-                      <YAxis stroke="#94A3B8" />
-                      <Tooltip formatter={(val: any) => `Value: ${formatCurrency(Number(val), settings)}`} />
-                      <Area type="monotone" dataKey="amount" stroke="#0EA5E9" strokeWidth={2.5} fillOpacity={1} fill="url(#rowGrad)" name={t('Transaction Amount (PKR)', 'رقم کا بہاؤ')} />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            )}
-
-            {/* 4. RESULTS STATS SUMMARY BAR */}
-            <div className="flex flex-col gap-3 sm:flex-row items-center sm:justify-between bg-slate-900 rounded-xl p-4 text-white font-sans text-xs shadow-xs">
-              <div className="flex items-center gap-4">
-                <div>
-                  <span className="text-slate-400 block text-[9px] uppercase tracking-wider">{t('MATCHED RECORDS', 'کل ریکارڈز تعداد')}</span>
-                  <span className="font-mono text-sm font-extrabold">{tableAggregates.recordsCount} {t('Rows', 'لائنز')}</span>
-                </div>
-                {tableAggregates.sumAmount !== 0 && (
-                  <div className="border-l border-slate-700 pl-4">
-                    <span className="text-slate-400 block text-[9px] uppercase tracking-wider">{t('AGGREGATED SUM (PKR)', 'کل میزان مالیت')}</span>
-                    <span className="font-mono text-sm font-extrabold text-teal-400">{formatCurrency(tableAggregates.sumAmount, settings)}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={generateAIReportAnalysis}
-                  disabled={isGeneratingAiAnalysis || sortedRows.length === 0}
-                  className={`flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 font-sans text-xs font-bold text-white shadow-sm hover:bg-indigo-700 transition-colors cursor-pointer ${isGeneratingAiAnalysis ? 'opacity-50' : ''}`}
-                >
-                  <Sparkles className={`h-4 w-4 ${isGeneratingAiAnalysis ? 'animate-spin' : ''}`} />
-                  <span>{t('AI Analysis', 'اے آئی تجزیہ')}</span>
-                </button>
-                {/* CSV downloads simulation */}
-                <button
-                  onClick={triggerCSVExport}
-                  className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2.5 sm:py-2 min-h-[48px] sm:min-h-[40px] font-sans text-xs font-bold text-white shadow-sm hover:bg-orange-700 transition-colors cursor-pointer"
-                >
-                  <Download className="h-4 w-4" />
-                  <span>{copiedCSV ? t('Downloaded! (CSV)', 'ڈاؤنلوڈ مکمل!') : t('Export CSV', 'ایکسل ڈاؤنلوڈ')}</span>
-                </button>
-              </div>
-            </div>
-
-            {aiAnalysisResult && (
-              <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 shadow-sm relative">
-                <div className="flex items-center gap-2 mb-2">
-                  <Sparkles className="h-4 w-4 text-indigo-500" />
-                  <span className="font-bold text-indigo-800 text-sm">{t('AI Report Analysis', 'اے آئی رپورٹ کا تجزیہ')}</span>
-                </div>
-                <div className="prose prose-sm max-w-none text-indigo-900 whitespace-pre-wrap leading-relaxed text-xs">
-                  {aiAnalysisResult}
-                </div>
-              </div>
-            )}
-
-            <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] shadow-xs overflow-hidden">
-              <div className="overflow-x-auto">
-                <div className="min-w-full">
-                  {sortedRows.length === 0 ? (
-                    <div className="py-24 text-center text-slate-400 font-sans italic text-xs bg-white dark:bg-[#151521]">
-                      {t('No ledger records match the query filter selections.', 'آڈٹ فلٹرز یا تلاش کے معیار کے مطابق کوئی ڈیٹا نہیں ملا۔')}
-                    </div>
-                  ) : (
-                    <ResponsiveTable
-                      data={sortedRows}
-                      columns={activeTemplate.headers.map((h, i) => ({
-                        header: (
-                          <div
-                            onClick={() => {
-                              if (sortField === h.key) {
-                                setSortAscending(!sortAscending);
-                              } else {
-                                setSortField(h.key);
-                                setSortAscending(true);
-                              }
-                            }}
-                            className={`flex items-center gap-1.5 cursor-pointer ${h.isNumeric ? 'justify-end w-full' : ''}`}
-                          >
-                            <span>{isUrdu ? h.urduLabel : h.label}</span>
-                            <ArrowUpDown className="h-3 w-3 text-slate-400" />
-                          </div>
-                        ),
-                        accessor: (row: any) => {
-                          const cellValue = row[h.key];
-                          if (h.key === 'amount') {
-                            const numericAmount = Number(cellValue || 0);
-                            const isPositive = numericAmount >= 0;
-                            return (
-                              <span className={isPositive ? 'text-slate-900 dark:text-white font-bold' : 'text-red-500 font-bold'}>
-                                {formatCurrency(numericAmount, settings)}
-                              </span>
-                            );
-                          }
-
-                          let formattedValue = '';
-                          if (cellValue !== null && cellValue !== undefined) {
-                            const strValue = String(cellValue);
-                            if (strValue.includes('Rs.')) {
-                              formattedValue = strValue.replace(/Rs\./g, getCurrencySymbol(settings));
-                            } else {
-                              formattedValue = strValue;
-                            }
-                          }
-                          return formattedValue;
-                        },
-                        className: h.isNumeric ? 'text-right font-mono' : 'text-left font-sans',
-                        isPrimaryMobile: i === 0,
-                        isSecondaryMobile: i === 1,
-                      }))}
-                      keyExtractor={(row, index) => `${row.id || index}`}
-                    />
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      {activeReportTab === 'activity_register' && (
+        <RoznamchaVisualizer
+          settings={settings}
+        />
       )}
 
       {/* ========================================================
@@ -895,35 +432,50 @@ export default function Reports({
           {/* Bento box summary widgets row with 5 indicators */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:grid-cols-5">
             
-            <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-sm flex flex-col justify-between">
+            <div 
+              onClick={() => setActiveDrilldown({ title: 'BI Explorer > Sales', type: 'sales', level: 1, params: {} })}
+              className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-sm flex flex-col justify-between cursor-pointer hover:border-orange-500 hover:shadow-md transition-all"
+            >
               <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block leading-snug">{t('Summed Period Sales', 'کل سیشنز فروخت رقم')}</span>
               <strong className="font-mono text-base font-bold text-slate-800 dark:text-slate-200 tracking-tight mt-1.5 block">
                 {formatCurrency(summaryTotals.totalSales, settings)}
               </strong>
             </div>
 
-            <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-sm flex flex-col justify-between">
+            <div 
+              onClick={() => setActiveDrilldown({ title: 'BI Explorer > Sales', type: 'sales', level: 1, params: {} })}
+              className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-sm flex flex-col justify-between cursor-pointer hover:border-orange-500 hover:shadow-md transition-all"
+            >
               <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block leading-snug">{t('Estimated Gross Margin', 'تخمینہ منافع مارجن')}</span>
               <strong className="font-mono text-base font-bold text-emerald-600 tracking-tight mt-1.5 block">
                 {formatCurrency(summaryTotals.totalProfit, settings)}
               </strong>
             </div>
 
-            <div className={`rounded-xl border p-4 border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] shadow-sm flex flex-col justify-between`}>
+            <div 
+              onClick={() => setActiveDrilldown({ title: 'BI Explorer > Sales', type: 'sales', level: 1, params: {} })}
+              className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-sm flex flex-col justify-between cursor-pointer hover:border-orange-500 hover:shadow-md transition-all"
+            >
               <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block leading-snug">{t('Revaluation Impact', 'ریٹ تبدیلی نفع/نقصان')}</span>
               <strong className={`font-mono text-base font-bold tracking-tight mt-1.5 block ${pricingRevaluationImpact >= 0 ? 'text-teal-605' : 'text-red-500'}`}>
                 {pricingRevaluationImpact >= 0 ? '+' : ''}{formatCurrency(pricingRevaluationImpact, settings)}
               </strong>
             </div>
 
-            <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-sm flex flex-col justify-between">
+            <div 
+              onClick={() => setActiveDrilldown({ title: 'BI Explorer > Expenses', type: 'expenses', level: 1, params: {} })}
+              className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-sm flex flex-col justify-between cursor-pointer hover:border-orange-500 hover:shadow-md transition-all"
+            >
               <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block leading-snug">{t('Conjoined Expenses', 'مجموعی اخراجات مع تنخواہ')}</span>
               <strong className="font-mono text-base font-bold text-red-650 tracking-tight mt-1.5 block">
                 {formatCurrency(summaryTotals.totalExpense, settings)}
               </strong>
             </div>
 
-            <div className={`rounded-xl border p-4 shadow-sm flex flex-col justify-between ${summaryTotals.netEarning >= 0 ? 'bg-emerald-500/10 border-emerald-200' : 'bg-red-500/10 border-red-200'}`}>
+            <div 
+              onClick={() => setActiveDrilldown({ title: 'BI Explorer > Sales', type: 'sales', level: 1, params: {} })}
+              className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-sm flex flex-col justify-between cursor-pointer hover:border-orange-500 hover:shadow-md transition-all"
+            >
               <span className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest block leading-snug">{t('Net Earnings', 'خالص آمدنی')}</span>
               <strong className={`font-mono text-base font-extrabold tracking-tight mt-1.5 block ${summaryTotals.netEarning >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
                 {formatCurrency(summaryTotals.netEarning, settings)}
@@ -1082,6 +634,7 @@ export default function Reports({
               <div className="overflow-x-auto rounded-lg border border-slate-105">
                 <ResponsiveTable
                   data={products}
+                  onRowClick={(prod) => setActiveDrilldown({ title: `BI Explorer > Inventory > ${prod.name}`, type: 'inventory', level: 3, params: { productId: prod.id } })}
                   columns={[
                     {
                       header: t('Product Grade Name', 'پراڈکٹ ٹائپ'),
@@ -1139,7 +692,11 @@ export default function Reports({
                     const isUnderCritical = tnk.currentStock < tnk.criticalLevel;
 
                     return (
-                      <div key={tnk.id} className="text-xs space-y-1.5 border-b border-slate-50 pb-3">
+                      <div 
+                        key={tnk.id} 
+                        onClick={() => setActiveDrilldown({ title: `BI Explorer > Tanks > ${tnk.name}`, type: 'tanks', level: 2, params: { tankId: tnk.id } })}
+                        className="text-xs space-y-1.5 border-b border-slate-50 pb-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 p-2 rounded-lg transition-all"
+                      >
                         <div className="flex justify-between font-sans">
                           <strong className="text-slate-800 dark:text-slate-200 font-extrabold">{tnk.name} ({tnk.physicalLabel || 'General'})</strong>
                           <span className={`font-semibold ${isUnderCritical ? 'text-red-500' : 'text-teal-650'}`}>{fillPct}% Full</span>
@@ -1170,10 +727,10 @@ export default function Reports({
           REPORT VIEW 4: FINALIZED SHIFT STATEMENT INVOICES / RECEIPTS
           ======================================================== */}
       {activeReportTab === 'shift_sheets' && (
-        <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* List of past shifts archived */}
-          <div className="space-y-3.5">
+          <div className={`space-y-3.5 ${selectedHistoricalShiftId ? 'hidden lg:block' : 'block'}`}>
             <h4 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-2 block">
               {t('Select Shift session receipt:', 'شفٹ روزنامچہ منتخب کریں:')}
             </h4>
@@ -1218,7 +775,16 @@ export default function Reports({
           </div>
 
           {/* Graphical custom invoice template render */}
-          <div className="lg:col-span-2">
+          <div className={`lg:col-span-2 ${!selectedHistoricalShiftId ? 'hidden lg:block' : 'block'}`}>
+            {selectedHistoricalShiftId && (
+              <button
+                onClick={() => setSelectedHistoricalShiftId(null)}
+                className="lg:hidden mb-4 flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-800 cursor-pointer"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>{t('Back to Shifts List', 'شفٹ لسٹ پر واپس جائیں')}</span>
+              </button>
+            )}
             {activeShiftToReceipt ? (
               <div className="rounded-xl border border-slate-250 bg-white dark:bg-[#151521] shadow-md p-6 space-y-6 relative" id="print-area">
                 
@@ -1307,6 +873,27 @@ export default function Reports({
       )}
 
       {/* ========================================================
+          REPORT VIEW: ENTERPRISE SHIFT INTELLIGENCE REPORT
+          ======================================================== */}
+      {activeReportTab === 'shift_intelligence' && (
+        <ShiftIntelligenceReport
+          settings={settings}
+          shifts={shifts}
+          products={products}
+          staff={staff}
+          customers={customers}
+          suppliers={suppliers}
+          banks={banks || []}
+          digitalAccounts={digitalAccounts || []}
+          nozzles={nozzles}
+          tanks={tanks}
+          lubePosSales={[]}
+          rateHistory={rateHistory}
+          cogsRecords={cogsRecords}
+        />
+      )}
+
+      {/* ========================================================
           REPORT VIEW 5: CHANNELS & BANK RECONCILIATION AUDITING CONSOLE
           ======================================================== */}
       {activeReportTab === 'reconciliation' && (
@@ -1358,18 +945,26 @@ export default function Reports({
                   data={shifts}
                   columns={[
                     {
-                      header: t('Shift Date & ID', 'تاریخ و شفٹ'),
-                      accessor: (s) => (
-                        <>
-                          <span className="font-mono text-[11px] text-slate-400 block">{s.date}</span>
-                          <strong className="text-slate-800 dark:text-slate-200 text-xs">SH-{s.id}</strong>
-                        </>
-                      ),
+                      header: t('Shift Date & Time', 'تاریخ و وقت'),
+                      accessor: (s) => {
+                        // Extract a more readable identifier, like the start time, instead of raw timestamp ID
+                        const displayTime = s.startTime || (s.id.includes('_') ? s.id.split('_')[1].slice(-4) : s.id.slice(-4));
+                        return (
+                          <>
+                            <span className="font-mono text-[11px] text-slate-400 block">{s.date}</span>
+                            <strong className="text-slate-800 dark:text-slate-200 text-xs">SH-{displayTime}</strong>
+                          </>
+                        );
+                      },
                       isSecondaryMobile: true
                     },
                     {
                       header: t('Supervisor', 'سپروائزر'),
-                      accessor: (s) => <span className="text-slate-600 truncate max-w-[120px]" title={s.staffId}>{s.staffId?.toUpperCase()}</span>,
+                      accessor: (s) => {
+                        const supervisor = staff.find(st => st.id === s.staffId);
+                        const displayName = supervisor?.name || s.staffId?.toUpperCase() || 'Unknown';
+                        return <span className="text-slate-600 font-semibold truncate max-w-[120px]" title={s.staffId}>{displayName}</span>;
+                      },
                       isPrimaryMobile: true
                     },
                     {

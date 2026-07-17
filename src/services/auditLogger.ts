@@ -12,7 +12,9 @@ export class AuditLogger {
     oldValue?: string | object,
     newValue?: string | object,
     orgId?: string,
-    stationId?: string
+    stationId?: string,
+    notes?: string,
+    relatedTransactionId?: string
   ): Promise<void> {
     const authState = useAuthStore.getState();
     const user = authState.user;
@@ -20,37 +22,45 @@ export class AuditLogger {
     // Fallbacks if user is not available
     const userName = user?.name || 'System';
     const userRole = user?.role || 'System';
-    const branch = stationId || user?.branchId || db.getActiveStationId() || 'any Branch';
+    const branch = stationId || user?.branchId || db.getActiveStationId() || 'st_default';
     
     const entryId = `audit_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
     
     const entry: AuditTrailEntry = {
       id: entryId,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
       category,
       action,
       details,
       user: userName,
       role: userRole,
       branch,
-      oldValue,
-      newValue,
-      ip: 'Client', // In a real backend, this would be retrieved from the request
-      device: navigator.userAgent, // Basic device info from browser
+      oldValue: oldValue && typeof oldValue === 'object' ? JSON.stringify(oldValue, null, 2) : oldValue,
+      newValue: newValue && typeof newValue === 'object' ? JSON.stringify(newValue, null, 2) : newValue,
+      ip: 'Client',
+      device: navigator.userAgent,
+      notes,
+      relatedTransactionId
     };
 
     // Save locally
-    const activeStationId = db.getActiveStationId();
+    const activeStationId = branch;
     if (activeStationId) {
-      // We don't have a specific db.saveAuditLogs right now, so we'll just console log or add to a store if available
-      // In a real implementation we would save this to IndexedDB
-      logger.info('📝 [Audit Log]', entry);
+      try {
+        const existing = db.getActivityRegister(activeStationId) || [];
+        // Keep a rolling limit of 10,000 entries locally
+        const updated = [entry, ...existing].slice(0, 10000);
+        db.saveActivityRegister(activeStationId, updated);
+        logger.info('📝 [Activity Register Logged]', entry);
+      } catch (err) {
+        logger.error('Failed to save log to local activity register:', err);
+      }
     }
 
     // Save to Firebase if orgId is provided
-    if (orgId && stationId) {
+    if (orgId && activeStationId) {
       try {
-        await firestoreDb.saveDocument(orgId, stationId, 'fuel_station', 'auditLogs', entry.id, entry);
+        await firestoreDb.saveDocument(orgId, activeStationId, 'fuel_station', 'auditLogs', entry.id, entry);
       } catch (err) {
         logger.error('Failed to sync audit log to cloud:', err);
       }

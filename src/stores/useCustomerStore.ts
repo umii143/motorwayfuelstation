@@ -3,6 +3,7 @@ import { Customer } from '../types';
 import { db } from '../data/db';
 import { firestoreDb } from '../data/firestore';
 import { getBusinessTypeForStation, isolateTenantRecords, withBusinessScope } from '../lib/businessScope';
+import { AuditLogger } from '../services/auditLogger';
 
 interface CustomerState {
   customers: Customer[];
@@ -35,6 +36,16 @@ export const useCustomerStore = create<CustomerState>((set) => ({
       return { customers: updated };
     });
 
+    AuditLogger.logAction(
+      'CREATE_CUSTOMER',
+      'customers',
+      `Created customer profile for "${newCustomer.name}" with initial balance Rs. ${newCustomer.balance}`,
+      undefined,
+      customerWithBType,
+      orgId,
+      sId
+    );
+
     if (orgId) {
       await firestoreDb.saveDocument(orgId, sId, activeBType, 'customers', newCustomer.id, customerWithBType);
     }
@@ -52,11 +63,25 @@ export const useCustomerStore = create<CustomerState>((set) => ({
     const activeBType = getBusinessTypeForStation(sId);
     const customerWithBType: Customer = withBusinessScope(updatedCustomer, sId, orgId);
 
+    let oldCustomer: Customer | undefined;
     set((state) => {
+      oldCustomer = state.customers.find((c) => c.id === updatedCustomer.id);
       const updated = state.customers.map((c) => (c.id === updatedCustomer.id ? customerWithBType : c));
       db.saveCustomers(sId, updated);
       return { customers: updated };
     });
+
+    if (oldCustomer) {
+      AuditLogger.logAction(
+        'UPDATE_CUSTOMER',
+        'customers',
+        `Updated customer profile details for "${updatedCustomer.name}"`,
+        oldCustomer,
+        customerWithBType,
+        orgId,
+        sId
+      );
+    }
 
     if (orgId) {
       await firestoreDb.saveDocument(orgId, sId, activeBType, 'customers', updatedCustomer.id, customerWithBType);
@@ -73,11 +98,25 @@ export const useCustomerStore = create<CustomerState>((set) => ({
   handleDeleteCustomer: async (customerId, orgId, stationId, language, showToast) => {
     const sId = stationId || db.getActiveStationId();
     
+    let oldCustomer: Customer | undefined;
     set((state) => {
+      oldCustomer = state.customers.find((c) => c.id === customerId);
       const updated = state.customers.filter((c) => c.id !== customerId);
       db.saveCustomers(sId, updated);
       return { customers: updated };
     });
+
+    if (oldCustomer) {
+      AuditLogger.logAction(
+        'DELETE_CUSTOMER',
+        'customers',
+        `Deleted customer profile for "${oldCustomer.name}"`,
+        oldCustomer,
+        undefined,
+        orgId,
+        sId
+      );
+    }
 
     if (orgId) {
       await firestoreDb.deleteDocument(orgId, sId, 'customers', customerId);

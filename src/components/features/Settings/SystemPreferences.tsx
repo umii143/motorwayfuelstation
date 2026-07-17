@@ -3,7 +3,7 @@ import { Sliders, Save, Globe, Monitor, Printer, AlertTriangle } from 'lucide-re
 import { useStationStore } from '../../../stores/useStationStore';
 import { GlobalSettings } from '../../../types';
 
- 
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function SystemPreferences({ settings, onUpdateSettings, activeStationId }: { settings: GlobalSettings, onUpdateSettings: (s: GlobalSettings) => void, activeStationId: string }) {
   const showToast = useStationStore((state) => state.showToast);
@@ -14,9 +14,10 @@ export default function SystemPreferences({ settings, onUpdateSettings, activeSt
   const [prefs, setPrefs] = useState({
     language: settings.language || 'en',
     currency: settings.currency || 'PKR',
-    receiptPrinter: 'thermal_80mm',
+    receiptPrinter: settings.receiptPrinter || 'thermal_80mm',
     theme: settings.theme || 'light'
   });
+
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
     const value = e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value;
@@ -24,12 +25,14 @@ export default function SystemPreferences({ settings, onUpdateSettings, activeSt
   };
 
   const handleSave = () => {
-    onUpdateSettings({ 
-      ...settings, 
+    onUpdateSettings({
+      ...settings,
       language: prefs.language as 'en' | 'ur',
       currency: prefs.currency,
+      receiptPrinter: prefs.receiptPrinter as 'thermal_80mm' | 'thermal_58mm' | 'a4',
       theme: prefs.theme as 'light' | 'dark' | 'sunset' | 'blue' | 'emerald' | 'orange' | 'white'
     });
+
     showToast(t('System preferences saved.', 'سسٹم کی ترجیحات محفوظ ہو گئیں۔'), 'success');
   };
 

@@ -1,8 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSmartSearch } from '../../hooks/useSmartSearch';
 import { useKeyboardShortcut } from '../../hooks/useKeyboardShortcut';
 import { SearchResultCard } from './SearchResultCard';
 import { COMMAND_ACTIONS } from './CommandPalette';
+import EntityDetailDrawer from './EntityDetailDrawer';
+import { EntityRef } from '../../types/search.types';
 
 interface GlobalSearchModalProps {
   isOpen: boolean;
@@ -16,6 +18,7 @@ export function GlobalSearchModal({
   onNavigate,
 }: GlobalSearchModalProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [entityRef, setEntityRef] = useState<EntityRef | null>(null);
 
   const {
     query,
@@ -31,6 +34,12 @@ export function GlobalSearchModal({
     hasResults,
   } = useSmartSearch({
     onNavigate: (result) => {
+      // If the result is a business-graph entity, open the cross-module
+      // drill-down drawer instead of (or in addition to) jumping modules.
+      if (result.entityRef) {
+        setEntityRef(result.entityRef);
+        return;
+      }
       onNavigate(result.viewId, result.contextData);
       onClose();
     },
@@ -42,6 +51,7 @@ export function GlobalSearchModal({
       setTimeout(() => inputRef.current?.focus(), 50);
     } else {
       clearSearch();
+      setEntityRef(null);
     }
   }, [isOpen, clearSearch]);
 
@@ -209,6 +219,16 @@ export function GlobalSearchModal({
             Powered by Umar Ali ⚡
           </span>
         </div>
+
+        {/* Entity cross-module drill-down drawer */}
+        {entityRef && (
+          <EntityDetailDrawer
+            entity={entityRef}
+            onClose={() => setEntityRef(null)}
+            onNavigateModule={(viewId, ctx) => { onNavigate(viewId, ctx); onClose(); setEntityRef(null); }}
+            onReanchor={(ref) => setEntityRef(ref)}
+          />
+        )}
       </div>
     </div>
   );
