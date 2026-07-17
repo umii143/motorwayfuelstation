@@ -132,11 +132,13 @@ export default function Expenses({
   const filteredExpenses = useMemo(() => {
     return allExpenses.filter(e => {
       const matchesSearch = e.description.toLowerCase().includes(searchQuery.toLowerCase()) || e.category!.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = categoryFilter === 'all' || e.category === categoryFilter;
+      const matchesCategory = categoryFilter === 'all' || 
+        (categoryFilter === 'wages-utilities' 
+          ? (e.category === 'salary' || e.category === 'electricity' || e.category === 'generator_fuel')
+          : e.category === categoryFilter);
       const matchesPayment = paymentModeFilter === 'all' || e.paidFrom === paymentModeFilter;
       const matchesTime = isWithinTimeFilter(e.date);
       return matchesSearch && matchesCategory && matchesPayment && matchesTime;
-     
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allExpenses, searchQuery, categoryFilter, paymentModeFilter, timeFilter]);
@@ -377,62 +379,78 @@ export default function Expenses({
       />
 
       {/* DYNAMIC KPI CARDS SECTION */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 px-4 sm:px-0">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4 px-4 sm:px-0">
         {/* AMBER CARD - TOTAL SPEND */}
-        <div className="fp-kpi-compact kpi-orange relative overflow-hidden">
-          <div className="fp-kpi-compact__label">TOTAL SPEND</div>
-          <div className="fp-kpi-compact__value text-3xl">
+        <button
+          onClick={() => {
+            setCategoryFilter('all');
+            setPaymentModeFilter('all');
+            setSearchQuery('');
+          }}
+          className="text-left fp-kpi-compact kpi-orange relative overflow-hidden transition-all duration-200 hover:border-orange-550 dark:hover:border-orange-500/50 hover:shadow-md cursor-pointer border border-transparent rounded-2xl group animate-fade-in"
+        >
+          <div className="fp-kpi-compact__label">{t('TOTAL SPEND', 'کل اخراجات')}</div>
+          <div className="fp-kpi-compact__value text-lg sm:text-2xl font-black">
             {formatCurrency(totalAmountSpent, settings)}
           </div>
-          <div className="fp-kpi-compact__sub text-orange-400">
-            {t('Summed active company expenses', 'مجموعی اخراجات کی رقم')}
+          <div className="fp-kpi-compact__sub text-orange-400 text-[9px] mt-1 block">
+            {t('Click to show all', 'تمام دکھانے کے لیے کلک کریں')}
           </div>
-          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/15 text-orange-500 ring-1 ring-inset ring-orange-500/20 shadow-inner">
-            <Coins className="h-6 w-6" strokeWidth={2.5} />
+          <div className="absolute top-4 right-4 flex h-9 w-9 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-orange-500/15 text-orange-500 ring-1 ring-inset ring-orange-500/20 shadow-inner group-hover:scale-110 transition-transform">
+            <Coins className="h-4.5 w-4.5 sm:h-6 sm:w-6" strokeWidth={2.5} />
           </div>
-        </div>
+        </button>
 
         {/* GREEN CARD - STAFF FOOD & MEALS */}
-        <div className="fp-kpi-compact kpi-green relative overflow-hidden">
-          <div className="fp-kpi-compact__label">STAFF FOOD & MEALS</div>
-          <div className="fp-kpi-compact__value text-3xl">
+        <button
+          onClick={() => setCategoryFilter('meals')}
+          className={`text-left fp-kpi-compact kpi-green relative overflow-hidden transition-all duration-200 hover:border-emerald-550 dark:hover:border-emerald-500/50 hover:shadow-md cursor-pointer border rounded-2xl group animate-fade-in ${categoryFilter === 'meals' ? 'border-emerald-500 bg-emerald-50/10' : 'border-transparent'}`}
+        >
+          <div className="fp-kpi-compact__label">{t('STAFF MEALS', 'سٹاف کا کھانا')}</div>
+          <div className="fp-kpi-compact__value text-lg sm:text-2xl font-black">
             {formatCurrency(widgetStats.mealsSum, settings)}
           </div>
-          <div className="fp-kpi-compact__sub text-emerald-400">
-            {t('Welfare & daily lunches cost', 'سٹاف فلاح و بہبود کھانا')}
+          <div className="fp-kpi-compact__sub text-emerald-400 text-[9px] mt-1 block">
+            {t('Welfare & daily lunches', 'سٹاف کھانا خرچہ')}
           </div>
-          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-500 ring-1 ring-inset ring-emerald-500/20 shadow-inner">
-            <Utensils className="h-6 w-6" strokeWidth={2.5} />
+          <div className="absolute top-4 right-4 flex h-9 w-9 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-500 ring-1 ring-inset ring-emerald-500/20 shadow-inner group-hover:scale-110 transition-transform">
+            <Utensils className="h-4.5 w-4.5 sm:h-6 sm:w-6" strokeWidth={2.5} />
           </div>
-        </div>
+        </button>
 
         {/* CRIMSON CARD - PUMP MAINTENANCE */}
-        <div className="fp-kpi-compact kpi-red relative overflow-hidden">
-          <div className="fp-kpi-compact__label">{isLube ? 'SHOP MAINTENANCE' : 'PUMP MAINTENANCE'}</div>
-          <div className="fp-kpi-compact__value text-3xl">
+        <button
+          onClick={() => setCategoryFilter('maintenance')}
+          className={`text-left fp-kpi-compact kpi-red relative overflow-hidden transition-all duration-200 hover:border-rose-550 dark:hover:border-rose-500/50 hover:shadow-md cursor-pointer border rounded-2xl group animate-fade-in ${categoryFilter === 'maintenance' ? 'border-rose-500 bg-rose-50/10' : 'border-transparent'}`}
+        >
+          <div className="fp-kpi-compact__label">{isLube ? t('SHOP MAINT.', 'شاپ مرمت') : t('PUMP MAINT.', 'پمپ مرمت')}</div>
+          <div className="fp-kpi-compact__value text-lg sm:text-2xl font-black">
             {formatCurrency(widgetStats.maintenanceSum, settings)}
           </div>
-          <div className="fp-kpi-compact__sub text-rose-450">
-            {isLube ? t('Shop repairs & equipment', 'مرمت اور ساز و سامان') : t('Nozzles, calibrations & repairs', 'مرمت اور دیکھ بھال کا خرچہ')}
+          <div className="fp-kpi-compact__sub text-rose-450 text-[9px] mt-1 block">
+            {isLube ? t('Repairs & equipment', 'شاپ مرمت کا خرچہ') : t('Nozzles & calibrations', 'پمپ مرمت کا خرچہ')}
           </div>
-          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-500/15 text-rose-500 ring-1 ring-inset ring-rose-500/20 shadow-inner">
-            <Wrench className="h-6 w-6" strokeWidth={2.5} />
+          <div className="absolute top-4 right-4 flex h-9 w-9 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-rose-500/15 text-rose-500 ring-1 ring-inset ring-rose-500/20 shadow-inner group-hover:scale-110 transition-transform">
+            <Wrench className="h-4.5 w-4.5 sm:h-6 sm:w-6" strokeWidth={2.5} />
           </div>
-        </div>
+        </button>
 
         {/* BLUE CARD - OPERATOR WAGES & UTILITIES */}
-        <div className="fp-kpi-compact kpi-blue relative overflow-hidden">
-          <div className="fp-kpi-compact__label">WAGES & UTILITIES</div>
-          <div className="fp-kpi-compact__value text-3xl">
+        <button
+          onClick={() => setCategoryFilter('wages-utilities')}
+          className={`text-left fp-kpi-compact kpi-blue relative overflow-hidden transition-all duration-200 hover:border-blue-550 dark:hover:border-blue-500/50 hover:shadow-md cursor-pointer border rounded-2xl group animate-fade-in ${categoryFilter === 'wages-utilities' ? 'border-blue-500 bg-blue-50/10' : 'border-transparent'}`}
+        >
+          <div className="fp-kpi-compact__label">{t('WAGES & UTILS', 'بل اور تنخواہیں')}</div>
+          <div className="fp-kpi-compact__value text-lg sm:text-2xl font-black">
             {formatCurrency(widgetStats.salaryAndUtilSum, settings)}
           </div>
-          <div className="fp-kpi-compact__sub text-blue-450 truncate">
-            {t('Power, salaries & gen fuel', 'بجلی بل، تنخواہیں و جنریٹر')}
+          <div className="fp-kpi-compact__sub text-blue-450 text-[9px] mt-1 block truncate">
+            {t('Power, salaries & gen', 'بجلی بل اور تنخواہیں')}
           </div>
-          <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-500 ring-1 ring-inset ring-blue-500/20 shadow-inner">
-            <Lightbulb className="h-6 w-6" strokeWidth={2.5} />
+          <div className="absolute top-4 right-4 flex h-9 w-9 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-500 ring-1 ring-inset ring-blue-500/20 shadow-inner group-hover:scale-110 transition-transform">
+            <Lightbulb className="h-4.5 w-4.5 sm:h-6 sm:w-6" strokeWidth={2.5} />
           </div>
-        </div>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -448,9 +466,10 @@ export default function Expenses({
                 <select
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="w-full rounded-md border border-slate-200 dark:border-white/10 bg-slate-55 dark:bg-white/5 py-1.5 px-2.5 font-sans text-xs focus:border-red-550 focus:outline-hidden"
+                  className="w-full rounded-md border border-slate-200 dark:border-white/10 bg-slate-55 dark:bg-white/5 py-1.5 px-2.5 font-sans text-xs focus:border-red-550 focus:outline-hidden cursor-pointer"
                 >
                   <option value="all">{t('All Categories', 'تمام کیٹیگریز')}</option>
+                  <option value="wages-utilities">{t('Wages & Utilities', 'تنخواہیں اور بلنگ')}</option>
                   {expenseCategories.map(c => (
                     <option key={c.id} value={c.id}>{isUrdu ? c.urdu : c.label}</option>
                   ))}
