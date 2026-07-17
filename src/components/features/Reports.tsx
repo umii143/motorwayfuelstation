@@ -570,7 +570,7 @@ export default function Reports({
           NEW VIEW: 50+ CORPORATE REPORT GENERATION CONSOLE
           ======================================================== */}
       {activeReportTab === 'corporate_audit' && (
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
           
           {/* LEFT COLUMN: ACTIVE DIRECTORY ACCORDION OF REPORTS */}
           <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-xs space-y-3 lg:sticky lg:top-5">
@@ -647,24 +647,25 @@ export default function Reports({
                 <span>{t('Advanced Query Filter Controls', 'فلٹرز اور آڈٹ سرچ پینل')}</span>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3 sm:grid-cols-4 text-xs font-sans">
-                {/* Dates picker */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 text-xs font-sans">
+                {/* Start Date */}
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">{t('Start Date', 'شروع تاریخ')}</label>
                   <input
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500"
+                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500 w-full"
                   />
                 </div>
+                {/* End Date */}
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">{t('End Date', 'آخری تاریخ')}</label>
                   <input
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500"
+                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500 w-full"
                   />
                 </div>
 
@@ -674,7 +675,7 @@ export default function Reports({
                   <select
                     value={filterStaffId}
                     onChange={(e) => setFilterStaffId(e.target.value)}
-                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500"
+                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500 w-full cursor-pointer"
                   >
                     <option value="all">{t('— All Staff Members —', 'تمام عملہ')}</option>
                     {staff.map(st => (
@@ -689,7 +690,7 @@ export default function Reports({
                   <select
                     value={filterProductId}
                     onChange={(e) => setFilterProductId(e.target.value)}
-                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500"
+                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500 w-full cursor-pointer"
                   >
                     <option value="all">{t('— All Products —', 'تمام مصنوعات')}</option>
                     {products.map(p => (
@@ -697,16 +698,14 @@ export default function Reports({
                     ))}
                   </select>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3 sm:grid-cols-4 text-xs font-sans pt-1">
                 {/* Customer / Supplier selection */}
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">{t('Party Name', 'پارٹی کھاتہ')}</label>
                   <select
                     value={filterEntityName}
                     onChange={(e) => setFilterEntityName(e.target.value)}
-                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500"
+                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500 w-full cursor-pointer"
                   >
                     <option value="all">{t('— All Accounts —', 'تمام بقایا پارٹیاں')}</option>
                     {customers.map(c => (
@@ -724,7 +723,7 @@ export default function Reports({
                   <select
                     value={filterShiftType}
                     onChange={(e) => setFilterShiftType(e.target.value)}
-                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500"
+                    className="premium-input border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500 w-full cursor-pointer"
                   >
                     <option value="all">{t('All Shift types', 'تمام اوقات')}</option>
                     <option value="day">{t('Day (08:00 AM - 04:00 PM)', 'دن')}</option>
@@ -733,7 +732,7 @@ export default function Reports({
                 </div>
 
                 {/* Search query */}
-                <div className="sm:col-span-2">
+                <div className="sm:col-span-2 md:col-span-3 lg:col-span-6">
                   <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">{t('Search Inside active report', 'آڈٹ ریسیٹ تلاش کریں')}</label>
                   <div className="relative">
                     <Search className="h-3.5 w-3.5 text-slate-400 absolute left-2.5 top-2.5" />
@@ -742,7 +741,7 @@ export default function Reports({
                       placeholder={t('Type voucher ID, operator, names...', 'آپریٹر، رقم یا واؤچر کوڈ درج کریں...')}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="premium-input pl-8 border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500"
+                      className="premium-input pl-8 border p-2 text-[11px] font-semibold text-slate-700 outline-hidden focus:border-orange-500 w-full"
                     />
                   </div>
                 </div>
@@ -934,7 +933,7 @@ export default function Reports({
           </div>
 
           {/* DYNAMICAL CHARTS MATRIX */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3 lg:grid-cols-2">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
             {/* 1. Daily Sales timeline charts */}
             <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-5 shadow-sm space-y-4">
