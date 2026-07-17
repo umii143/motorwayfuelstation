@@ -47,9 +47,14 @@ const useProps = () => useOutletContext<ReturnType<typeof useAppStoreProps>>();
 // Wrapper Components to map context to props without breaking existing contracts
 const DashboardRoute = () => {
   const props = useProps();
+  const navigate = useNavigate();
   return <Dashboard 
     settings={props.settings} activeStationId={props.activeStationId} shifts={props.shifts} products={props.products} customers={props.customers} suppliers={props.suppliers} banks={props.banks} staff={props.staff} nozzles={props.nozzles} tanks={props.tanks} 
-    onNavigate={(path) => { /* router handles this now, but pass a dummy if it expects one */ window.location.hash = path; }} 
+    onNavigate={(path) => {
+      let cleanPath = `/${path.replace(/_/g, '-')}`;
+      if (path === 'dashboard') cleanPath = '/';
+      navigate(cleanPath);
+    }} 
     lubePosSales={props.lubePosSales} rateHistory={props.rateHistory} stockTxns={props.stockTxns} 
     onStartShiftQuick={() => {}} // Handle navigation
   />;
@@ -66,8 +71,14 @@ const ShiftWizardRoute = () => {
 
 const LubePOSRoute = () => {
   const props = useProps();
+  const navigate = useNavigate();
   return <LubePOS 
-    settings={props.settings} staff={props.staff} products={props.products} customers={props.customers} banks={props.banks} digitalAccounts={props.digitalAccounts} lubePosSales={props.lubePosSales} onAddLubePosSale={props.handleAddLubePosSale} onNavigate={() => {}}
+    settings={props.settings} staff={props.staff} products={props.products} customers={props.customers} banks={props.banks} digitalAccounts={props.digitalAccounts} lubePosSales={props.lubePosSales} onAddLubePosSale={props.handleAddLubePosSale} 
+    onNavigate={(path) => {
+      let cleanPath = `/${path.replace(/_/g, '-')}`;
+      if (path === 'dashboard') cleanPath = '/';
+      navigate(cleanPath);
+    }}
   />;
 };
 
@@ -147,7 +158,24 @@ const PriceManagementRoute = () => {
 
 const EnterpriseHubRoute = () => {
   const props = useProps();
-  return <EnterpriseHub settings={props.settings} activeModule="fleet" onNavigate={() => {}} stationId={props.activeStationId} />;
+  const navigate = useNavigate();
+  return <EnterpriseHub settings={props.settings} activeModule="fleet" 
+    onNavigate={(path) => {
+      let cleanPath = `/${path.replace(/_/g, '-')}`;
+      if (path === 'dashboard') cleanPath = '/';
+      navigate(cleanPath);
+    }} 
+    stationId={props.activeStationId} 
+  />;
+};
+
+const EnterpriseDashboardRoute = () => {
+  const navigate = useNavigate();
+  return <EnterpriseDashboard onNavigate={(view) => {
+    let cleanPath = `/${view.replace(/_/g, '-')}`;
+    if (view === 'dashboard') cleanPath = '/';
+    navigate(cleanPath);
+  }} />;
 };
 
 const DipCalculatorRoute = () => {
@@ -226,7 +254,7 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute requireEnterprise />,
         children: [
           { path: 'risk-center', element: <RiskCenter /> },
-          { path: 'enterprise-dashboard', element: <EnterpriseDashboard onNavigate={() => {}} /> },
+          { path: 'enterprise-dashboard', element: <EnterpriseDashboardRoute /> },
           { path: 'treasury', element: <TreasuryCenter /> }
         ]
       },
