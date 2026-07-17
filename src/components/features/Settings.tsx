@@ -213,6 +213,30 @@ export default function SettingsPanel({
     setActiveTab(id);
   };
 
+  const handleSetupNavigate = (viewId: string) => {
+    let targetTab: SettingsView | null = null;
+    if (viewId === 'setup_products') targetTab = 'products';
+    else if (viewId === 'setup_tanks') targetTab = 'tanks';
+    else if (viewId === 'setup_nozzles') targetTab = 'nozzles';
+    else if (viewId === 'setup_rates') targetTab = 'price';
+    else if (viewId === 'setup_profile') targetTab = 'profile';
+    else if (viewId === 'setup_accounts') targetTab = 'accounts';
+    else if (viewId === 'setup_margins') targetTab = 'margins';
+    else if (viewId === 'setup_audit') targetTab = 'audit';
+    else if (viewId === 'dashboard') {
+      if (onNavigate) {
+        onNavigate('dashboard');
+      }
+      return;
+    } else {
+      targetTab = viewId.replace('setup_', '') as SettingsView;
+    }
+
+    if (targetTab) {
+      handleTabChange(targetTab);
+    }
+  };
+
   const toggleMobileSection = (sectionId: string) => {
     setMobileOpenSections(prev => {
       const next = new Set(prev);
@@ -516,7 +540,7 @@ export default function SettingsPanel({
       {onNavigate && (
         <SetupNavigationFooter
           activeViewId={activeTab === 'price' ? 'setup_rates' : activeTab === 'accounts' ? 'setup_accounts' : activeTab === 'audit' ? 'setup_audit' : activeTab === 'margins' ? 'setup_margins' : `setup_${activeTab}`}
-          onNavigate={onNavigate}
+          onNavigate={handleSetupNavigate}
         />
       )}
 

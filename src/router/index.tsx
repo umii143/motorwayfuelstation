@@ -1,5 +1,5 @@
 import React from 'react';
-import { createBrowserRouter, Navigate, useOutletContext } from 'react-router-dom';
+import { createBrowserRouter, Navigate, useOutletContext, useNavigate } from 'react-router-dom';
 import { AppShell } from './AppShell';
 import { ProtectedRoute } from './ProtectedRoute';
 import LoadingScreen from '../components/ui/LoadingScreen';
@@ -132,7 +132,12 @@ const StaffRoute = () => {
 
 const SettingsRoute = () => {
   const props = useProps();
-  return <SettingsPanel initialTab="profile" activeStationId={props.activeStationId} settings={props.settings} products={props.products} pumps={props.pumps} nozzles={props.nozzles} onUpdateSettings={props.handleUpdateSettings} onUpdateProductRate={props.handleUpdateProductRate} tanks={props.tanks} onAddTank={props.handleAddTank} onUpdateTank={props.handleUpdateTank} onDeleteTank={props.handleDeleteTank} onAddNozzle={props.handleAddNozzle} onUpdateNozzle={props.handleUpdateNozzle} onDeleteNozzle={props.handleDeleteNozzle} rateHistory={props.rateHistory} banks={props.banks} onUpdateBanks={props.setBanks} onUpdateProducts={props.setProducts} onUpdatePumps={props.setPumps} onNavigate={() => {}} />;
+  const navigate = useNavigate();
+  return <SettingsPanel initialTab="profile" activeStationId={props.activeStationId} settings={props.settings} products={props.products} pumps={props.pumps} nozzles={props.nozzles} onUpdateSettings={props.handleUpdateSettings} onUpdateProductRate={props.handleUpdateProductRate} tanks={props.tanks} onAddTank={props.handleAddTank} onUpdateTank={props.handleUpdateTank} onDeleteTank={props.handleDeleteTank} onAddNozzle={props.handleAddNozzle} onUpdateNozzle={props.handleUpdateNozzle} onDeleteNozzle={props.handleDeleteNozzle} rateHistory={props.rateHistory} banks={props.banks} onUpdateBanks={props.setBanks} onUpdateProducts={props.setProducts} onUpdatePumps={props.setPumps} onNavigate={(viewId) => {
+    if (viewId === 'dashboard') {
+      navigate('/');
+    }
+  }} />;
 };
 
 const PriceManagementRoute = () => {
