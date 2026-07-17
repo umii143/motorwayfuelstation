@@ -34,18 +34,6 @@ export default defineConfig(() => {
         output: {
           // Intelligent manual chunking strategy for maximum code splitting
           manualChunks: (id: string) => {
-            // Core vendor libs — load first, cached long-term
-            if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
-              return 'vendor-react';
-            }
-            // Animation library
-            if (id.includes('node_modules/framer-motion')) {
-              return 'vendor-animations';
-            }
-            // Chart library
-            if (id.includes('node_modules/recharts') || id.includes('node_modules/d3')) {
-              return 'vendor-charts';
-            }
             // PDF generation (heavy — lazy loaded)
             if (id.includes('node_modules/@react-pdf') || id.includes('node_modules/jspdf')) {
               return 'vendor-pdf';
@@ -62,9 +50,14 @@ export default defineConfig(() => {
             if (id.includes('node_modules/@capacitor')) {
               return 'vendor-capacitor';
             }
-            // All other node_modules
+            // Chart library
+            if (id.includes('node_modules/recharts') || id.includes('node_modules/d3')) {
+              return 'vendor-charts';
+            }
+            // Core React, React-DOM, and helpers (like react-is) must be bundled together 
+            // to avoid "Cannot read properties of undefined (reading 'forwardRef')" bugs.
             if (id.includes('node_modules')) {
-              return 'vendor-misc';
+              return 'vendor';
             }
           },
         },
