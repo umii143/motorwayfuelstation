@@ -36,6 +36,26 @@ export class CrashCenter extends Component<Props, State> {
       errorInfo
     });
     logger.error("CrashCenter caught an error:", error, errorInfo);
+
+    // Detect dynamic import or chunk loading failures (common after new deployments)
+    const errorStr = String(error.message || error);
+    const isChunkLoadFailed =
+      error.name === 'ChunkLoadError' ||
+      errorStr.includes('Failed to fetch dynamically imported module') ||
+      errorStr.includes('error loading dynamically imported module') ||
+      errorStr.includes('Loading chunk') ||
+      errorStr.includes('Expected a JavaScript-or-Wasm module script');
+
+    if (isChunkLoadFailed) {
+      logger.warn("Dynamic import/chunk load failure detected. Reloading application to fetch the latest assets...");
+      const lastReload = sessionStorage.getItem('chunk_load_fail_reload');
+      const now = Date.now();
+      // Restrict auto-reload to once every 15 seconds to avoid infinite loops if server is down
+      if (!lastReload || now - Number(lastReload) > 15000) {
+        sessionStorage.setItem('chunk_load_fail_reload', String(now));
+        window.location.reload();
+      }
+    }
   }
 
   private handleReset = () => {
