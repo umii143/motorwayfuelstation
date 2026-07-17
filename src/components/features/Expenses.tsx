@@ -328,13 +328,13 @@ export default function Expenses({
         </div>
 
         {/* TIME FILTER & TRIGGER ROW */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0 w-full">
-          <div className="flex bg-slate-100 dark:bg-white/10 rounded-lg p-1 border border-slate-200 dark:border-white/10 shadow-sm shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full">
+          <div className="flex bg-slate-100 dark:bg-white/10 rounded-lg p-1 border border-slate-200 dark:border-white/10 shadow-sm w-full sm:w-auto">
             {(['all', 'weekly', 'monthly', 'yearly'] as const).map((filter) => (
               <button
                 key={filter}
                 onClick={() => setTimeFilter(filter)}
-                className={`px-3 py-1.5 font-sans text-[11px] font-bold uppercase tracking-wider rounded-md transition-all cursor-pointer ${
+                className={`flex-1 sm:flex-initial text-center px-3 py-1.5 font-sans text-[11px] font-bold uppercase tracking-wider rounded-md transition-all cursor-pointer ${
                   timeFilter === filter
                     ? 'bg-orange-600 text-white shadow-xs'
                     : 'text-slate-500 hover:text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:bg-white/5'
@@ -348,21 +348,23 @@ export default function Expenses({
             ))}
           </div>
 
-          <button
-            onClick={() => setShowManageCategories(true)}
-            className="shrink-0 flex items-center justify-center gap-1.5 rounded-lg bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 px-3 py-2 sm:px-4 sm:py-2.5 font-sans text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-200 transition-all cursor-pointer"
-          >
-            <Settings2 className="h-4 w-4" />
-            <span>{t('Categories', 'کیٹیگریز')}</span>
-          </button>
-          
-          <button
-            onClick={() => setShowAddExpense(true)}
-            className="shrink-0 flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-3 py-2 sm:px-4 sm:py-2.5 font-sans text-xs font-bold text-white shadow-md shadow-orange-500/10 hover:bg-orange-700 transition-all cursor-pointer"
-          >
-            <PlusCircle className="h-4 w-4" />
-            <span>{t('+ Log Expense', 'نیا خرچہ لکھیں')}</span>
-          </button>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => setShowManageCategories(true)}
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 rounded-lg bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 px-3 py-2.5 font-sans text-xs font-bold text-slate-700 dark:text-slate-350 shadow-sm hover:bg-slate-200 transition-all cursor-pointer"
+            >
+              <Settings2 className="h-4 w-4" />
+              <span>{t('Categories', 'کیٹیگریز')}</span>
+            </button>
+            
+            <button
+              onClick={() => setShowAddExpense(true)}
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-3 py-2.5 font-sans text-xs font-bold text-white shadow-md shadow-orange-500/10 hover:bg-orange-700 transition-all cursor-pointer"
+            >
+              <PlusCircle className="h-4 w-4" />
+              <span>{t('+ Log Expense', 'نیا خرچہ لکھیں')}</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -375,7 +377,7 @@ export default function Expenses({
       />
 
       {/* DYNAMIC KPI CARDS SECTION */}
-      <div className="fp-kpi-grid-2x2 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 px-4 sm:px-0">
         {/* AMBER CARD - TOTAL SPEND */}
         <div className="fp-kpi-compact kpi-orange relative overflow-hidden">
           <div className="fp-kpi-compact__label">TOTAL SPEND</div>
@@ -410,7 +412,7 @@ export default function Expenses({
           <div className="fp-kpi-compact__value text-3xl">
             {formatCurrency(widgetStats.maintenanceSum, settings)}
           </div>
-          <div className="fp-kpi-compact__sub text-rose-400">
+          <div className="fp-kpi-compact__sub text-rose-450">
             {isLube ? t('Shop repairs & equipment', 'مرمت اور ساز و سامان') : t('Nozzles, calibrations & repairs', 'مرمت اور دیکھ بھال کا خرچہ')}
           </div>
           <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-500/15 text-rose-500 ring-1 ring-inset ring-rose-500/20 shadow-inner">
@@ -424,7 +426,7 @@ export default function Expenses({
           <div className="fp-kpi-compact__value text-3xl">
             {formatCurrency(widgetStats.salaryAndUtilSum, settings)}
           </div>
-          <div className="fp-kpi-compact__sub text-blue-400 truncate">
+          <div className="fp-kpi-compact__sub text-blue-450 truncate">
             {t('Power, salaries & gen fuel', 'بجلی بل، تنخواہیں و جنریٹر')}
           </div>
           <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-500 ring-1 ring-inset ring-blue-500/20 shadow-inner">
@@ -433,7 +435,7 @@ export default function Expenses({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* LEFT COMPEX: TIMELINES & DETAIL LIST OF EXPENDITURES */}
         <div className="lg:col-span-2 space-y-4">
@@ -446,7 +448,7 @@ export default function Expenses({
                 <select
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="w-full rounded-md border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 py-1.5 px-2.5 font-sans text-xs focus:border-red-550 focus:outline-hidden"
+                  className="w-full rounded-md border border-slate-200 dark:border-white/10 bg-slate-55 dark:bg-white/5 py-1.5 px-2.5 font-sans text-xs focus:border-red-550 focus:outline-hidden"
                 >
                   <option value="all">{t('All Categories', 'تمام کیٹیگریز')}</option>
                   {expenseCategories.map(c => (
@@ -459,7 +461,7 @@ export default function Expenses({
                 <select
                   value={paymentModeFilter}
                   onChange={(e) => setPaymentModeFilter(e.target.value)}
-                  className="w-full rounded-md border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 py-1.5 px-2.5 font-sans text-xs focus:border-red-550 focus:outline-hidden"
+                  className="w-full rounded-md border border-slate-200 dark:border-white/10 bg-slate-55 dark:bg-white/5 py-1.5 px-2.5 font-sans text-xs focus:border-red-550 focus:outline-hidden"
                 >
                   <option value="all">{t('All Outflows', 'بک بقایا ادائیگی ذریعہ')}</option>
                   <option value="cash">{t('Paid from Cash Drawer', 'صرف کیش رقم')}</option>
@@ -471,58 +473,106 @@ export default function Expenses({
           </div>
 
           {/* TABLE LOG LISTING */}
-          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] shadow-xs">
-            <table className="premium-table">
-              <thead>
-                <tr className="border-slate-150 text-slate-650">
-                  <th>{t('Session Date', 'تاریخ')}</th>
-                  <th>{t('Expenditure details', 'خرچہ تفصیل')}</th>
-                  <th>{t('Category', 'قسم کیٹیگری')}</th>
-                  <th>{t('Payment Type', 'ذریعہ ادائیگی')}</th>
-                  <th className="text-right">{t('Amount Used', 'خرچہ رقم')}</th>
-                </tr>
-              </thead>
-              <tbody className="text-slate-700">
-                {filteredExpenses.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-6 bg-slate-50 dark:bg-white/5/10">
-                      <EmptyState
-                        icon={Notebook}
-                        title={t('No expenses found for this period.', 'کوئی اخراجات درج نہیں ہیں۔')}
-                        description={t('Track stationery, meals, power utilities, and repair costs.', 'ملازمین کا کھانا، بجلی کا بل، یا جنریٹر ایندھن کا خرچہ ریکارڈ کریں۔')}
-                        actionLabel={t('Log New Expense', 'نیا خرچہ لکھیں')}
-                        onAction={() => setShowAddExpense(true)}
-                      />
-                    </td>
+          <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] shadow-xs overflow-hidden">
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="premium-table">
+                <thead>
+                  <tr className="border-slate-150 text-slate-650">
+                    <th>{t('Session Date', 'تاریخ')}</th>
+                    <th>{t('Expenditure details', 'خرچہ تفصیل')}</th>
+                    <th>{t('Category', 'قسم کیٹیگری')}</th>
+                    <th>{t('Payment Type', 'ذریعہ ادائیگی')}</th>
+                    <th className="text-right">{t('Amount Used', 'خرچہ رقم')}</th>
                   </tr>
-                ) : (
-                  filteredExpenses.map((exp) => {
-                    const catInfo = expenseCategories.find(c => c.id === exp.category);
-                    const labelStyle = exp.paidFrom === 'cash' ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-sky-50 text-sky-700 border-sky-100';
+                </thead>
+                <tbody className="text-slate-700 dark:text-slate-300">
+                  {filteredExpenses.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-6 bg-slate-50 dark:bg-white/5">
+                        <EmptyState
+                          icon={Notebook}
+                          title={t('No expenses found for this period.', 'کوئی اخراجات درج نہیں ہیں۔')}
+                          description={t('Track stationery, meals, power utilities, and repair costs.', 'ملازمین کا کھانا، بجلی کا بل، یا جنریٹر ایندھن کا خرچہ ریکارڈ کریں۔')}
+                          actionLabel={t('Log New Expense', 'نیا خرچہ لکھیں')}
+                          onAction={() => setShowAddExpense(true)}
+                        />
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredExpenses.map((exp) => {
+                      const catInfo = expenseCategories.find(c => c.id === exp.category);
+                      const labelStyle = exp.paidFrom === 'cash' ? 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30' : 'bg-sky-50 text-sky-700 border-sky-100 dark:bg-sky-950/20 dark:text-sky-400 dark:border-sky-900/30';
 
-                    return (
-                      <tr key={exp.id} className="hover:bg-slate-55/40">
-                        <td className="font-mono">{exp.date}</td>
-                        <td className="font-semibold pr-4">{exp.description}</td>
-                        <td>
-                          <span className="rounded-md bg-stone-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
+                      return (
+                        <tr key={exp.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                          <td className="font-mono text-xs text-slate-800 dark:text-slate-100">{exp.date}</td>
+                          <td className="font-semibold text-xs text-slate-800 dark:text-slate-100 pr-4">{exp.description}</td>
+                          <td>
+                            <span className="rounded-md bg-stone-150 dark:bg-white/10 px-2 py-0.5 text-[10px] font-bold text-slate-650 dark:text-slate-350">
+                              {catInfo ? (isUrdu ? catInfo.urdu : catInfo.label) : exp.category}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`rounded-sm border px-1.5 py-0.5 font-bold text-[9px] uppercase ${labelStyle}`}>
+                              {exp.paidFrom === 'cash' ? t('CASH BOX', 'کیش کیبن') : t('BANK ONLINE', 'بینک اکاؤنٹ')}
+                            </span>
+                          </td>
+                          <td className="text-right font-mono text-sm font-bold text-red-650 dark:text-red-400">
+                            {formatCurrency(exp.amount, settings)}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card List View */}
+            <div className="block md:hidden divide-y divide-slate-100 dark:divide-white/5">
+              {filteredExpenses.length === 0 ? (
+                <div className="py-6 px-4">
+                  <EmptyState
+                    icon={Notebook}
+                    title={t('No expenses found for this period.', 'کوئی اخراجات درج نہیں ہیں۔')}
+                    description={t('Track stationery, meals, power utilities, and repair costs.', 'ملازمین کا کھانا، بجلی کا بل، یا جنریٹر ایندھن کا خرچہ ریکارڈ کریں۔')}
+                    actionLabel={t('Log New Expense', 'نیا خرچہ لکھیں')}
+                    onAction={() => setShowAddExpense(true)}
+                  />
+                </div>
+              ) : (
+                filteredExpenses.map((exp) => {
+                  const catInfo = expenseCategories.find(c => c.id === exp.category);
+                  const labelStyle = exp.paidFrom === 'cash' ? 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30' : 'bg-sky-50 text-sky-700 border-sky-100 dark:bg-sky-950/20 dark:text-sky-400 dark:border-sky-900/30';
+
+                  return (
+                    <div key={exp.id} className="p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="space-y-1">
+                          <span className="font-bold text-slate-800 dark:text-slate-100 text-xs block leading-tight">{exp.description}</span>
+                          <span className="inline-flex rounded-md bg-stone-150 dark:bg-white/10 px-2 py-0.5 text-[9px] font-bold text-slate-650 dark:text-slate-350">
                             {catInfo ? (isUrdu ? catInfo.urdu : catInfo.label) : exp.category}
                           </span>
-                        </td>
-                        <td>
-                          <span className={`rounded-sm border px-1.5 py-0.5 font-bold text-[9px] uppercase ${labelStyle}`}>
-                            {exp.paidFrom === 'cash' ? t('CASH BOX', 'کیش کیبن') : t('BANK ONLINE', 'بینک اکاؤنٹ')}
-                          </span>
-                        </td>
-                        <td className="text-right font-mono text-red-600">
+                        </div>
+                        <span className={`inline-flex rounded-sm border px-1.5 py-0.5 font-bold text-[8.5px] uppercase shrink-0 ${labelStyle}`}>
+                          {exp.paidFrom === 'cash' ? t('CASH BOX', 'کیش کیبن') : t('BANK ONLINE', 'بینک اکاؤنٹ')}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="font-mono text-slate-450 dark:text-slate-400">
+                          {exp.date}
+                        </span>
+                        <strong className="font-mono text-sm text-red-650 dark:text-red-400 font-black">
                           {formatCurrency(exp.amount, settings)}
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                        </strong>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
 
         </div>
@@ -538,7 +588,7 @@ export default function Expenses({
             {categoryAggs.map(agg => (
               <div key={agg.categoryId} className="space-y-1.5">
                 <div className="flex justify-between items-center font-sans text-xs font-semibold">
-                  <span className="text-slate-700">{settings.language === 'ur' ? agg.urduLabel : agg.label}</span>
+                  <span className="text-slate-700 dark:text-slate-300">{settings.language === 'ur' ? agg.urduLabel : agg.label}</span>
                   <span className="font-mono text-slate-500">{agg.percentage}% ({formatCurrency(agg.amount, settings)})</span>
                 </div>
 
