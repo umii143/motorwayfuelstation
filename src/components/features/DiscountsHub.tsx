@@ -63,95 +63,12 @@ export default function DiscountsHub({
       }
     });
 
-    // Seed mock entries to guarantee at least 4 records are always visible
-    const mockEntries: (DiscountEntry & {
-      shiftId: string;
-      date: string;
-      shiftType: string;
-    })[] = [
-      {
-        id: "disc-seed-1",
-        amount: 2450,
-        type: "Volume Based",
-        reason: "Daewoo Fleet loyalty rebate on High-Speed Diesel bulk purchase order",
-        customerName: "Daewoo Express (Malik Imran)",
-        approvedBy: "Admin (Owner)",
-        timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
-        shiftId: "SF-2026-0716",
-        date: new Date().toISOString().split("T")[0],
-        shiftType: "Morning Shift",
-        notes: "Authorized via fleet contract standard 1.5% loyalty rate tier B.",
-        productId: products[0]?.id,
-      },
-      {
-        id: "disc-seed-2",
-        amount: 3200,
-        type: "Fixed Amount",
-        reason: "Promotional discount for bulk oil & lubricant purchase above 50 units",
-        customerName: "Karakoram Logistics Pvt.",
-        approvedBy: "Manager Asif",
-        timestamp: new Date(Date.now() - 3600000 * 25).toISOString(),
-        shiftId: "SF-2026-0715",
-        date: new Date(Date.now() - 86400000).toISOString().split("T")[0],
-        shiftType: "Night Shift",
-        notes: "Approved special rate discount for 10x 4L Mobil Delvac tubs.",
-        productId: products[1]?.id,
-      },
-      {
-        id: "disc-seed-3",
-        amount: 850,
-        type: "Percentage",
-        reason: "10% VIP loyalty discount on Premium synthetic lubricant (monthly)",
-        customerName: "Chaudhary Bilal Khan",
-        approvedBy: "Admin (Owner)",
-        timestamp: new Date(Date.now() - 3600000 * 49).toISOString(),
-        shiftId: "SF-2026-0714",
-        date: new Date(Date.now() - 172800000).toISOString().split("T")[0],
-        shiftType: "Evening Shift",
-        notes: "Loyalty card member VIP check-in rebate applied.",
-        productId: products[2]?.id,
-      },
-      {
-        id: "disc-seed-4",
-        amount: 5600,
-        type: "Loyalty Program",
-        reason: "Monthly loyalty rewards points cash rebate settlement — Sardar Cargo",
-        customerName: "Sardar Cargo Services",
-        approvedBy: "Manager Kashif",
-        timestamp: new Date(Date.now() - 3600000 * 73).toISOString(),
-        shiftId: "SF-2026-0713",
-        date: new Date(Date.now() - 259200000).toISOString().split("T")[0],
-        shiftType: "Morning Shift",
-        notes: "Points balance deduction verified. Account code: SCS-9902.",
-        productId: products[0]?.id,
-      },
-      {
-        id: "disc-seed-5",
-        amount: 15000,
-        type: "Percentage",
-        reason: "5% Corporate Fleet discount on full tanker dispatch",
-        customerName: "National Logistics Cell (NLC)",
-        approvedBy: "Admin (Owner)",
-        timestamp: new Date(Date.now() - 3600000 * 96).toISOString(),
-        shiftId: "SF-2026-0712",
-        date: new Date(Date.now() - 345600000).toISOString().split("T")[0],
-        shiftType: "Evening Shift",
-        notes: "Approved pre-negotiated corporate rate for high-volume transport.",
-        productId: products[0]?.id,
-      },
-    ];
-
-    if (list.length < 5) {
-      const needed = 5 - list.length;
-      list.push(...mockEntries.slice(0, needed));
-    }
-
     return list.sort(
       (a, b) =>
         new Date(b.timestamp || "").getTime() -
         new Date(a.timestamp || "").getTime()
     );
-  }, [shifts, products]);
+  }, [shifts]);
 
   // Filtered records
   const filteredDiscounts = useMemo(() => {
@@ -170,6 +87,10 @@ export default function DiscountsHub({
       if (amountFilter === "<1000") matchAmount = d.amount < 1000;
       else if (amountFilter === "1000-5000") matchAmount = d.amount >= 1000 && d.amount <= 5000;
       else if (amountFilter === ">5000") matchAmount = d.amount > 5000;
+      else if (amountFilter === "above-avg") {
+        const avg = allDiscounts.length > 0 ? allDiscounts.reduce((sum, item) => sum + item.amount, 0) / allDiscounts.length : 0;
+        matchAmount = d.amount >= avg;
+      }
 
       let matchDate = true;
       const today = new Date();
@@ -290,43 +211,69 @@ export default function DiscountsHub({
           {
             label: t("Total Discounts Value", "کل رعیاتی ڈسکاؤنٹ"),
             value: formatCurrency(totalAmount, settings),
-            sub: t("In current filter range", "حالیہ فلٹر رینج"),
+            sub: t("Click to reset filters", "فلٹرز ری سیٹ کرنے کے لیے کلک کریں"),
             color: "text-orange-600 dark:text-orange-450",
+            onClick: () => {
+              setTypeFilter("all");
+              setDateFilter("all");
+              setApproverFilter("all");
+              setAmountFilter("all");
+              setSearchTerm("");
+            }
           },
           {
             label: t("Discounts Issued", "جاری کردہ ڈسکاؤنٹ"),
             value: filteredDiscounts.length.toString(),
-            sub: t("Total transactions", "مجموعی کارروائیاں"),
+            sub: t("Click to reset filters", "فلٹرز ری سیٹ کرنے کے لیے کلک کریں"),
             color: "text-slate-800 dark:text-white",
+            onClick: () => {
+              setTypeFilter("all");
+              setDateFilter("all");
+              setApproverFilter("all");
+              setAmountFilter("all");
+              setSearchTerm("");
+            }
           },
           {
             label: t("Avg. Discount", "اوسط رعایت"),
             value: formatCurrency(Math.round(avgDiscount), settings),
-            sub: t("Per transaction mean", "فی ٹرانزیکشن اوسط"),
+            sub: t("Click to filter >= average", "اوسط سے زیادہ فلٹر کرنے کے لیے کلک کریں"),
             color: "text-emerald-600 dark:text-emerald-450",
+            onClick: () => {
+              setAmountFilter("above-avg");
+            }
           },
           {
             label: t("Top Category", "اعلی ترین کیٹیگری"),
             value: topCategory,
-            sub: t("By total value", "کل رقم کے لحاظ سے"),
+            sub: topCategory !== "N/A" ? t("Click to filter this category", "اس کیٹیگری کو فلٹر کرنے کے لیے کلک کریں") : t("No categories available", "کوئی کیٹیگری دستیاب نہیں"),
             color: "text-purple-650 dark:text-purple-400",
             small: true,
+            onClick: () => {
+              if (topCategory !== "N/A") {
+                setTypeFilter(topCategory);
+              }
+            }
           },
         ].map((kpi, i) => (
-          <div key={i} className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-xs relative overflow-hidden">
+          <button
+            key={i}
+            onClick={kpi.onClick}
+            className="w-full text-left rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-xs relative overflow-hidden transition-all duration-200 hover:border-orange-550 dark:hover:border-orange-500/50 hover:shadow-md cursor-pointer group animate-fade-in"
+          >
             {i === 3 && (
-              <div className="absolute -right-3 -bottom-3 opacity-5 pointer-events-none">
+              <div className="absolute -right-3 -bottom-3 opacity-5 pointer-events-none group-hover:scale-110 transition-transform">
                 <LineChart className="w-14 h-14 text-purple-600" />
               </div>
             )}
-            <span className="text-slate-450 dark:text-slate-400 text-[9px] font-bold uppercase tracking-wider block mb-1.5">
+            <span className="text-slate-450 dark:text-slate-400 text-[9px] font-bold uppercase tracking-wider block mb-1.5 group-hover:text-orange-550 dark:group-hover:text-orange-400 transition-colors">
               {kpi.label}
             </span>
             <div className={`font-mono font-black ${kpi.small ? "text-sm leading-tight" : "text-xl"} ${kpi.color} truncate`}>
               {kpi.value}
             </div>
             <span className="text-slate-400 text-[9px] mt-1.5 block">{kpi.sub}</span>
-          </div>
+          </button>
         ))}
       </div>
 
@@ -334,29 +281,34 @@ export default function DiscountsHub({
       {filteredDiscounts.length > 0 && Object.keys(typeDistribution).length > 0 && (
         <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-xs">
           <span className="text-slate-450 dark:text-slate-400 text-[9px] font-bold uppercase tracking-wider block mb-3">
-            {t("Discount Type Distribution", "ڈسکاؤنٹ اقسام کا تناسب")}
+            {t("Discount Type Distribution (Click segment/legend to filter)", "ڈسکاؤنٹ اقسام کا تناسب (فلٹر کرنے کے لیے کلک کریں)")}
           </span>
           <div className="h-2 rounded-full overflow-hidden flex bg-slate-100 dark:bg-white/10">
             {Object.entries(typeDistribution).map(([type, amt]) => {
               const pct = totalAmount > 0 ? (amt / totalAmount) * 100 : 0;
               return (
-                <div
+                <button
                   key={type}
+                  onClick={() => setTypeFilter(type)}
                   style={{ width: `${pct}%` }}
-                  className={`${getTypeBarColor(type)} h-full transition-all`}
-                  title={`${type}: ${Math.round(pct)}%`}
+                  className={`${getTypeBarColor(type)} h-full transition-all cursor-pointer hover:opacity-80`}
+                  title={`${type}: ${Math.round(pct)}% (Click to filter)`}
                 />
               );
             })}
           </div>
-          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2.5">
+          <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-2.5">
             {Object.entries(typeDistribution).map(([type, amt]) => {
               const pct = totalAmount > 0 ? (amt / totalAmount) * 100 : 0;
               return (
-                <div key={type} className="flex items-center gap-1.5 text-[9px] font-semibold text-slate-500 dark:text-slate-400">
+                <button
+                  key={type}
+                  onClick={() => setTypeFilter(type)}
+                  className={`flex items-center gap-1.5 text-[9px] font-semibold transition-colors cursor-pointer px-2 py-0.5 rounded-md border ${typeFilter === type ? "bg-orange-50 border-orange-200 text-orange-700 dark:bg-orange-950/20 dark:border-orange-500/30 dark:text-orange-400" : "bg-slate-50 dark:bg-white/5 border-slate-200/50 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-orange-555 dark:hover:text-orange-400"}`}
+                >
                   <div className={`h-1.5 w-1.5 rounded-full ${getTypeBarColor(type)}`} />
                   <span>{type} ({Math.round(pct)}%) — {formatCurrency(amt, settings)}</span>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -479,6 +431,7 @@ export default function DiscountsHub({
                   <option value="<1000">{t("Under Rs. 1,000", "1000 روپے سے کم")}</option>
                   <option value="1000-5000">{t("Rs. 1,000 - 5,000", "1000 - 5000 روپے")}</option>
                   <option value=">5000">{t("Above Rs. 5,000", "5000 روپے سے زیادہ")}</option>
+                  <option value="above-avg">{t("Above Average", "اوسط سے زیادہ")}</option>
                 </select>
               </div>
             </div>
@@ -501,7 +454,7 @@ export default function DiscountsHub({
                 </span>
               )}
               {dateFilter !== "all" && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-300 text-[10px] rounded-md font-medium border border-sky-100 dark:border-sky-900/30">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-350 text-[10px] rounded-md font-medium border border-sky-100 dark:border-sky-900/30">
                   Date: {dateFilter}
                   <button onClick={() => setDateFilter("all")} className="hover:text-rose-500 cursor-pointer"><X className="w-3 h-3" /></button>
                 </span>
@@ -514,7 +467,7 @@ export default function DiscountsHub({
               )}
               {amountFilter !== "all" && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 text-[10px] rounded-md font-medium border border-amber-100 dark:border-amber-900/30">
-                  Amount: {amountFilter}
+                  Amount: {amountFilter === "above-avg" ? t("Above Avg", "اوسط سے زیادہ") : amountFilter}
                   <button onClick={() => setAmountFilter("all")} className="hover:text-rose-500 cursor-pointer"><X className="w-3 h-3" /></button>
                 </span>
               )}
