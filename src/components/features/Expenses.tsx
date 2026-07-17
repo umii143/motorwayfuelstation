@@ -495,14 +495,14 @@ export default function Expenses({
           <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] shadow-xs overflow-hidden">
             {/* Desktop Table View */}
             <div className="hidden md:block overflow-x-auto">
-              <table className="premium-table">
+              <table className="w-full border-collapse text-left text-xs text-slate-700 dark:text-slate-300">
                 <thead>
-                  <tr className="border-slate-150 text-slate-650">
-                    <th>{t('Session Date', 'تاریخ')}</th>
-                    <th>{t('Expenditure details', 'خرچہ تفصیل')}</th>
-                    <th>{t('Category', 'قسم کیٹیگری')}</th>
-                    <th>{t('Payment Type', 'ذریعہ ادائیگی')}</th>
-                    <th className="text-right">{t('Amount Used', 'خرچہ رقم')}</th>
+                  <tr className="bg-slate-100 dark:bg-[#1A1A24] border-b border-slate-200 dark:border-white/10 text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                    <th className="py-3 px-4 border-r border-slate-200 dark:border-white/10">{t('Date & Time', 'تاریخ اور وقت')}</th>
+                    <th className="py-3 px-4 border-r border-slate-200 dark:border-white/10">{t('Expenditure Details', 'خرچہ تفصیل')}</th>
+                    <th className="py-3 px-4 border-r border-slate-200 dark:border-white/10">{t('Category', 'کیٹیگری')}</th>
+                    <th className="py-3 px-4 border-r border-slate-200 dark:border-white/10">{t('Payment Outflow Source', 'ادائیگی کا ذریعہ')}</th>
+                    <th className="py-3 px-4 text-right">{t('Outflow Amount', 'خرچہ رقم')}</th>
                   </tr>
                 </thead>
                 <tbody className="text-slate-700 dark:text-slate-300">
@@ -522,23 +522,28 @@ export default function Expenses({
                     filteredExpenses.map((exp) => {
                       const catInfo = expenseCategories.find(c => c.id === exp.category);
                       const labelStyle = exp.paidFrom === 'cash' ? 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30' : 'bg-sky-50 text-sky-700 border-sky-100 dark:bg-sky-950/20 dark:text-sky-400 dark:border-sky-900/30';
+                      
+                      let sideBorder = 'border-l-4 border-l-slate-400 dark:border-l-slate-650';
+                      if (exp.category === 'meals') sideBorder = 'border-l-4 border-l-emerald-500';
+                      else if (exp.category === 'maintenance') sideBorder = 'border-l-4 border-l-rose-500';
+                      else if (exp.category === 'salary' || exp.category === 'electricity' || exp.category === 'generator_fuel') sideBorder = 'border-l-4 border-l-blue-500';
 
                       return (
-                        <tr key={exp.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
-                          <td className="font-mono text-xs text-slate-800 dark:text-slate-100">{exp.date}</td>
-                          <td className="font-semibold text-xs text-slate-800 dark:text-slate-100 pr-4">{exp.description}</td>
-                          <td>
-                            <span className="rounded-md bg-stone-150 dark:bg-white/10 px-2 py-0.5 text-[10px] font-bold text-slate-650 dark:text-slate-350">
+                        <tr key={exp.id} className={`border-b border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 odd:bg-[#FAFBFD] even:bg-white dark:odd:bg-[#151521]/70 dark:even:bg-[#151521] transition-colors ${sideBorder}`}>
+                          <td className="py-3 px-4 border-r border-slate-200/60 dark:border-white/10 font-mono text-[11px] font-semibold text-slate-800 dark:text-slate-100">{exp.date}</td>
+                          <td className="py-3 px-4 border-r border-slate-200/60 dark:border-white/10 font-bold text-xs text-slate-800 dark:text-slate-100 max-w-[300px] truncate" title={exp.description}>{exp.description}</td>
+                          <td className="py-3 px-4 border-r border-slate-200/60 dark:border-white/10">
+                            <span className="rounded-md bg-stone-100 dark:bg-white/10 px-2.5 py-0.5 text-[10px] font-bold text-slate-650 dark:text-slate-350 border border-slate-200/40 dark:border-white/5">
                               {catInfo ? (isUrdu ? catInfo.urdu : catInfo.label) : exp.category}
                             </span>
                           </td>
-                          <td>
-                            <span className={`rounded-sm border px-1.5 py-0.5 font-bold text-[9px] uppercase ${labelStyle}`}>
+                          <td className="py-3 px-4 border-r border-slate-200/60 dark:border-white/10">
+                            <span className={`rounded-md border px-2 py-0.5 font-black text-[9px] uppercase tracking-wider ${labelStyle}`}>
                               {exp.paidFrom === 'cash' ? t('CASH BOX', 'کیش کیبن') : t('BANK ONLINE', 'بینک اکاؤنٹ')}
                             </span>
                           </td>
-                          <td className="text-right font-mono text-sm font-bold text-red-650 dark:text-red-400">
-                            {formatCurrency(exp.amount, settings)}
+                          <td className="py-3 px-4 text-right font-mono text-sm font-black text-rose-600 dark:text-rose-450">
+                            -{formatCurrency(exp.amount, settings)}
                           </td>
                         </tr>
                       );
@@ -549,7 +554,7 @@ export default function Expenses({
             </div>
 
             {/* Mobile Card List View */}
-            <div className="block md:hidden divide-y divide-slate-100 dark:divide-white/5">
+            <div className="block md:hidden divide-y divide-slate-250 dark:divide-white/10">
               {filteredExpenses.length === 0 ? (
                 <div className="py-6 px-4">
                   <EmptyState
@@ -564,27 +569,32 @@ export default function Expenses({
                 filteredExpenses.map((exp) => {
                   const catInfo = expenseCategories.find(c => c.id === exp.category);
                   const labelStyle = exp.paidFrom === 'cash' ? 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30' : 'bg-sky-50 text-sky-700 border-sky-100 dark:bg-sky-950/20 dark:text-sky-400 dark:border-sky-900/30';
+                  
+                  let sideBorder = 'border-l-4 border-l-slate-400 dark:border-l-slate-650';
+                  if (exp.category === 'meals') sideBorder = 'border-l-4 border-l-emerald-500';
+                  else if (exp.category === 'maintenance') sideBorder = 'border-l-4 border-l-rose-500';
+                  else if (exp.category === 'salary' || exp.category === 'electricity' || exp.category === 'generator_fuel') sideBorder = 'border-l-4 border-l-blue-500';
 
                   return (
-                    <div key={exp.id} className="p-4 space-y-3">
+                    <div key={exp.id} className={`p-4 space-y-3 transition-colors odd:bg-[#FAFBFD] even:bg-white dark:odd:bg-[#151521]/70 dark:even:bg-[#151521] ${sideBorder}`}>
                       <div className="flex items-start justify-between gap-2">
                         <div className="space-y-1">
                           <span className="font-bold text-slate-800 dark:text-slate-100 text-xs block leading-tight">{exp.description}</span>
-                          <span className="inline-flex rounded-md bg-stone-150 dark:bg-white/10 px-2 py-0.5 text-[9px] font-bold text-slate-650 dark:text-slate-350">
+                          <span className="inline-flex rounded-md bg-stone-100 dark:bg-white/10 px-2 py-0.5 text-[9px] font-bold text-slate-650 dark:text-slate-350 border border-slate-200/40 dark:border-white/5">
                             {catInfo ? (isUrdu ? catInfo.urdu : catInfo.label) : exp.category}
                           </span>
                         </div>
-                        <span className={`inline-flex rounded-sm border px-1.5 py-0.5 font-bold text-[8.5px] uppercase shrink-0 ${labelStyle}`}>
+                        <span className={`inline-flex rounded-md border px-2 py-0.5 font-black text-[8px] uppercase tracking-wider shrink-0 ${labelStyle}`}>
                           {exp.paidFrom === 'cash' ? t('CASH BOX', 'کیش کیبن') : t('BANK ONLINE', 'بینک اکاؤنٹ')}
                         </span>
                       </div>
 
-                      <div className="flex justify-between items-center text-[10px]">
-                        <span className="font-mono text-slate-450 dark:text-slate-400">
+                      <div className="flex justify-between items-center text-[10px] pt-1">
+                        <span className="font-mono text-slate-500 dark:text-slate-400 font-semibold">
                           {exp.date}
                         </span>
-                        <strong className="font-mono text-sm text-red-650 dark:text-red-400 font-black">
-                          {formatCurrency(exp.amount, settings)}
+                        <strong className="font-mono text-sm text-rose-600 dark:text-rose-450 font-black">
+                          -{formatCurrency(exp.amount, settings)}
                         </strong>
                       </div>
                     </div>
