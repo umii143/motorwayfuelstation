@@ -37,6 +37,7 @@ const TreasuryCenter = React.lazy(() => import('../components/features/TreasuryC
 const SyncCenter = React.lazy(() => import('../components/features/SyncCenter/SyncCenter'));
 const AIAssistant = React.lazy(() => import('../components/features/AIAssistant/AIAssistant'));
 const AboutMe = React.lazy(() => import('../components/features/AboutMe/AboutMe'));
+const AIAnalyticsHub = React.lazy(() => import('../components/features/AIAnalyticsHub/AIAnalyticsHub'));
 
 import { useAuth } from '../contexts/AuthContext';
 // Type alias for the context injected by AppShell
@@ -199,6 +200,11 @@ const LicenseManagerRoute = () => {
   return <LicenseManager settings={props.settings} />;
 };
 
+const AIAnalyticsHubRoute = () => {
+  const props = useProps();
+  return <AIAnalyticsHub settings={props.settings} dataContext={props} />;
+};
+
 // Map routes
 export const router = createBrowserRouter([
   {
@@ -220,6 +226,7 @@ export const router = createBrowserRouter([
       { path: 'reports', element: <ReportsRoute /> },
       { path: 'discounts', element: <DiscountsRoute /> },
       { path: 'staff', element: <StaffRoute /> },
+      { path: 'ai-analytics', element: <AIAnalyticsHubRoute /> },
       { path: 'dip-calculator', element: <DipCalculatorRoute /> }, 
       
       // Basic Protected settings
