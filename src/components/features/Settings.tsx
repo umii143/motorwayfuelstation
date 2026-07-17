@@ -34,7 +34,6 @@ import Integrations from './Settings/Integrations';
 import SystemPreferences from './Settings/SystemPreferences';
 import LicenseSubscription from './Settings/LicenseSubscription';
 import TreasurySettings from './Settings/TreasurySettings';
-import { SetupBanner } from './ConfigurationHub/SetupBanner';
 import { SetupNavigationFooter } from './ConfigurationHub/SetupNavigationFooter';
 import { isLubeBusinessStation } from '../../lib/businessScope';
 
@@ -321,8 +320,6 @@ export default function SettingsPanel({
         )}
       </div>
 
-      <SetupBanner activeViewId={activeTab === 'price' ? 'setup_rates' : activeTab === 'accounts' ? 'setup_accounts' : activeTab === 'audit' ? 'setup_audit' : activeTab === 'margins' ? 'setup_margins' : `setup_${activeTab}`} />
-
       <div className="flex flex-1 overflow-hidden bg-slate-50 dark:bg-white/5 relative flex-col lg:flex-row">
 
         {/* ── MOBILE: GROUPED ACCORDION NAV ─────────────────────────────── */}
@@ -361,9 +358,9 @@ export default function SettingsPanel({
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.2, ease: 'easeInOut' }}
-                        className="overflow-hidden bg-slate-50 dark:bg-white/5"
+                        className="overflow-hidden bg-slate-100/50 dark:bg-slate-900/30"
                       >
-                        <div className="flex flex-wrap gap-2 px-3 py-2.5 overflow-hidden">
+                        <div className="flex flex-col px-3 py-2.5 gap-2">
                           {section.items.map(item => {
                             const Icon = item.icon;
                             const isActive = activeTab === item.id;
@@ -371,23 +368,32 @@ export default function SettingsPanel({
                               <button
                                 key={item.id}
                                 onClick={() => handleTabChange(item.id as SettingsView)}
-                                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer border max-w-full ${
+                                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
                                   isActive
                                     ? ((item as any).isDanger
-                                        ? 'bg-red-600 text-white border-red-600 shadow-sm'
-                                        : 'bg-orange-600 text-white border-orange-600 shadow-sm shadow-orange-200')
+                                        ? 'bg-red-600 text-white border-red-600 shadow-md'
+                                        : 'bg-orange-600 text-white border-orange-600 shadow-md shadow-orange-500/10')
                                     : ((item as any).isDanger
-                                        ? 'bg-white dark:bg-[#151521] text-red-600 border-red-200 hover:bg-red-50'
-                                        : 'bg-white dark:bg-[#151521] text-slate-600 border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:bg-white/10 hover:border-slate-300')
+                                        ? 'bg-white dark:bg-[#1a1b2d] text-red-600 border-red-200 dark:border-red-900/20 hover:bg-red-50'
+                                        : 'bg-white dark:bg-[#1a1b2d] text-slate-700 dark:text-slate-200 border-slate-200/60 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5')
                                 }`}
                               >
-                                <Icon className={`h-3.5 w-3.5 shrink-0 ${
-                                  isActive ? 'text-white' : ((item as any).isDanger ? 'text-red-500' : 'text-slate-400')
-                                }`} />
-                                <span className="whitespace-nowrap">{item.label}</span>
-                                {(item as any).biometric && !isActive && (
-                                  <Fingerprint className="h-3 w-3 text-slate-300" />
-                                )}
+                                <div className="flex items-center gap-3">
+                                  <div className={`p-1.5 rounded-lg shrink-0 ${
+                                    isActive
+                                      ? 'bg-white/20 text-white'
+                                      : ((item as any).isDanger ? 'bg-red-50 dark:bg-red-950/30 text-red-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-400')
+                                  }`}>
+                                    <Icon className="h-4 w-4 shrink-0" />
+                                  </div>
+                                  <span className="truncate">{item.label}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  {(item as any).biometric && !isActive && (
+                                    <Fingerprint className="h-4 w-4 text-slate-350 dark:text-slate-500" />
+                                  )}
+                                  <ChevronRight className={`h-4 w-4 transition-transform ${isActive ? 'text-white' : 'text-slate-350 dark:text-slate-500'}`} />
+                                </div>
                               </button>
                             );
                           })}
