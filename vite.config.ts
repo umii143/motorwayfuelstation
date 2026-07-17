@@ -50,12 +50,10 @@ export default defineConfig(() => {
             if (id.includes('node_modules/@capacitor')) {
               return 'vendor-capacitor';
             }
-            // Chart library
-            if (id.includes('node_modules/recharts') || id.includes('node_modules/d3')) {
-              return 'vendor-charts';
-            }
             // Core React, React-DOM, and helpers (like react-is) must be bundled together 
             // to avoid "Cannot read properties of undefined (reading 'forwardRef')" bugs.
+            // We do NOT split recharts/d3 into a separate chunk because it creates 
+            // circular chunk dependencies with the main vendor chunk during initialization.
             if (id.includes('node_modules')) {
               return 'vendor';
             }
