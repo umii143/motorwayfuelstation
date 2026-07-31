@@ -778,10 +778,10 @@ export default function CustomerDirectory({
  <button
  key={filter}
  onClick={() => setTimeFilter(filter)}
- className={`px-3 py-1.5 font-sans text-[11px] font-bold uppercase tracking-wider rounded-md transition-all cursor-pointer whitespace-nowrap${
+ className={`px-3 py-1.5 font-sans text-[11px] font-bold uppercase tracking-wider rounded-md transition-all cursor-pointer whitespace-nowrap ${
  timeFilter === filter
- ? 'bg-orange-600 text-white shadow-xs'
- : 'text-slate-500 hover:text-foreground hover:bg-slate-50 dark:bg-card/5'
+ ? 'bg-orange-600 text-white font-extrabold shadow-xs'
+ : 'text-foreground font-bold hover:bg-card'
  }`}
  >
  {filter === 'all' && t('All-Time', 'کل وقت')}
@@ -892,10 +892,10 @@ export default function CustomerDirectory({
  <button
  key={f.id}
  onClick={() => setFilterType(f.id as any)}
- className={`rounded-md px-2.5 py-1 text-[11px] font-sans font-bold cursor-pointer transition-colors min-h-0 min-w-0${
+ className={`rounded-md px-2.5 py-1 text-[11px] font-sans font-bold cursor-pointer transition-colors border min-h-0 min-w-0 ${
  filterType === f.id
- ? 'bg-orange-600 text-white shadow-xs'
- : 'bg-theme-bg text-slate-500 hover:bg-muted'
+ ? 'bg-orange-600 text-white font-extrabold border-orange-600 shadow-xs'
+ : 'bg-subtle text-foreground border-border hover:bg-card'
  }`}
  >
  {t(f.label, f.urdu)}

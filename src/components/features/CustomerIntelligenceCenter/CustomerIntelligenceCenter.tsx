@@ -60,10 +60,10 @@ export default function CustomerIntelligenceCenter({
  <button
  key={tab.id}
  onClick={() => setActiveTab(tab.id as any)}
- className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-sans text-sm font-bold transition-all whitespace-nowrap cursor-pointer${
+ className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-sans text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
  isActive 
- ? 'bg-card text-white shadow-md' 
- : 'bg-card text-slate-600 hover:bg-slate-50 dark:bg-card/5 border border-border'
+ ? 'bg-orange-600 text-white font-extrabold shadow-md' 
+ : 'bg-subtle text-foreground hover:bg-card border border-border font-bold'
  }`}
  >
  <Icon className="h-4 w-4" />
