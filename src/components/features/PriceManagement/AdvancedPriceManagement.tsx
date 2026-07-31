@@ -86,7 +86,7 @@ export default function AdvancedPriceManagement({
       const marginPerLiter = product.rate - purchaseRate;
 
       // Calculate today's sales for this product from shift sales & tank stock
-      const currentStock = tanks.filter(t => t.productId === product.id).reduce((sum, t) => sum + (t.currentLiters || 0), 0) || 12500;
+      const currentStock = tanks.filter(t => t.productId === product.id).reduce((sum, t) => sum + (t.currentStock || 0), 0) || 12500;
       const todaySalesLiters = Math.round(currentStock * 0.18 + 850); // Realtime operational volume metric
       const todayProfitRs = Math.round(todaySalesLiters * marginPerLiter);
       const remainingProfitPotential = Math.round(currentStock * marginPerLiter);
