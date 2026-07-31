@@ -17,6 +17,7 @@ import { formatCurrency } from '../../lib/currency';
 import { useForecastEngine } from '../../hooks/useForecastEngine';
 import { BusinessOutlookWidget } from './BusinessOutlookWidget';
 import { useStationStore } from '../../stores/useStationStore';
+import { MobileFuelDashboard } from './MobileFuelDashboard';
 
 interface FuelDashboardProps {
   settings: GlobalSettings;
@@ -37,21 +38,50 @@ interface FuelDashboardProps {
 
 type RolePerspective = 'owner' | 'manager' | 'cashier' | 'supervisor';
 
-const FuelDashboard = React.memo(function FuelDashboard({
-  settings,
-  shifts,
-  products,
-  customers,
-  suppliers,
-  banks,
-  nozzles,
-  tanks,
-  stockTxns,
-  onNavigate,
-  onStartShiftQuick,
-  userName,
-  onToggleV2
-}: FuelDashboardProps) {
+const FuelDashboard = React.memo(function FuelDashboard(props: FuelDashboardProps) {
+  const {
+    settings,
+    activeStationId,
+    shifts,
+    products,
+    customers,
+    suppliers,
+    banks,
+    nozzles,
+    tanks,
+    stockTxns,
+    onNavigate,
+    onStartShiftQuick,
+    userName
+  } = props;
+
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  if (isMobile) {
+    return (
+      <MobileFuelDashboard
+        settings={settings}
+        activeStationId={activeStationId}
+        shifts={shifts}
+        products={products}
+        customers={customers}
+        suppliers={suppliers}
+        banks={banks}
+        nozzles={nozzles}
+        tanks={tanks}
+        stockTxns={stockTxns}
+        onNavigate={onNavigate}
+        onStartShiftQuick={onStartShiftQuick}
+        userName={userName}
+      />
+    );
+  }
 
   const [rolePerspective, setRolePerspective] = useState<RolePerspective>('owner');
   const todayStr = new Date().toISOString().split('T')[0];

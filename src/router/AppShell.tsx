@@ -247,6 +247,11 @@ export const AppShell = () => {
  </div>
  </div>
  <Footer />
+ <BottomNavigation 
+    activeView={activeView} 
+    onNavigate={handleNavigate} 
+    onMenuClick={() => setIsSidebarOpen(true)} 
+  />
  </main>
 
 
