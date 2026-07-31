@@ -9,6 +9,7 @@ import {
  Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell 
 } from 'recharts';
 import { useInventoryStore } from '../../../stores/useInventoryStore';
+import { useShiftStore } from '../../../stores/useShiftStore';
 import { Product, RateHistoryEntry, GlobalSettings } from '../../../types';
 import { motion } from 'motion/react';
 
@@ -44,11 +45,13 @@ export default function AdvancedPriceManagement({
  const isUrdu = settings.language === 'ur';
  const t = (en: string, ur: string) => isUrdu ? ur : en;
 
- // Retrieve stockTxns to calculate margin
- const { stockTxns, tanks } = useInventoryStore(useShallow(state => ({
-   stockTxns: state.stockTxns,
-   tanks: state.tanks
- })));
+  // Retrieve stockTxns, tanks, nozzles and shifts for real-time sales & inventory calculation
+  const { stockTxns, tanks, nozzles } = useInventoryStore(useShallow(state => ({
+    stockTxns: state.stockTxns,
+    tanks: state.tanks,
+    nozzles: state.nozzles || []
+  })));
+  const shifts = useShiftStore(state => state.shifts || []);
 
  const fuelProducts = useMemo(() => products.filter(p => p.type === 'fuel'), [products]);
 
@@ -85,9 +88,23 @@ export default function AdvancedPriceManagement({
       const purchaseRate = latestReceipt && latestReceipt.purchasePrice ? latestReceipt.purchasePrice : (product.rate * 0.95);
       const marginPerLiter = product.rate - purchaseRate;
 
-      // Calculate today's sales for this product from shift sales & tank stock
-      const currentStock = tanks.filter(t => t.productId === product.id).reduce((sum, t) => sum + (t.currentStock || 0), 0) || 12500;
-      const todaySalesLiters = Math.round(currentStock * 0.18 + 850); // Realtime operational volume metric
+      // Calculate today's sales for this product directly from shift nozzle meter readings
+      let todaySalesLiters = 0;
+      shifts.forEach(shift => {
+        if (shift.closingReadings && shift.openingReadings) {
+          Object.keys(shift.closingReadings).forEach(nozzleId => {
+            const start = shift.openingReadings![nozzleId] || 0;
+            const end = shift.closingReadings![nozzleId] || 0;
+            const liters = Math.max(0, end - start);
+            const nozzle = (nozzles || []).find(n => n.id === nozzleId);
+            if (nozzle && nozzle.productId === product.id) {
+              todaySalesLiters += liters;
+            }
+          });
+        }
+      });
+
+      const currentStock = tanks.filter(t => t.productId === product.id).reduce((sum, t) => sum + (t.currentStock || 0), 0);
       const todayProfitRs = Math.round(todaySalesLiters * marginPerLiter);
       const remainingProfitPotential = Math.round(currentStock * marginPerLiter);
 
@@ -106,7 +123,7 @@ export default function AdvancedPriceManagement({
         color: getProductColor(product.name)
       };
     });
-  }, [fuelProducts, rateHistory, stockTxns]);
+  }, [fuelProducts, rateHistory, stockTxns, shifts, nozzles, tanks]);
 
   // Overall Financial & Margin KPIs
   const totalDailyProfit = productStats.reduce((sum, p) => sum + p.todayProfitRs, 0);
