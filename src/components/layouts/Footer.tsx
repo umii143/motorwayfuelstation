@@ -11,7 +11,7 @@ export const Footer: React.FC = () => {
  <footer className="w-full h-[28px] flex items-center justify-center gap-[10px] px-3 bg-transparent">
  <span className="text-[10px] sm:text-[11px] font-medium text-muted-foreground /60 whitespace-nowrap">Developed by Umar Ali</span>
  <span className="text-muted-foreground /20 text-[10px]">|</span>
- <span className="text-[10px] sm:text-[11px] font-medium text-orange-500 whitespace-nowrap">Pak RozNamcha</span>
+ <span className="text-[10px] sm:text-[11px] font-bold text-orange-500 whitespace-nowrap">FuelPro Enterprise</span>
  <span className="text-muted-foreground /20 text-[10px]">|</span>
  <a href="https://wa.me/923168432329" className="flex items-center gap-1 text-[10px] sm:text-[11px] font-medium text-emerald-600 whitespace-nowrap hover:text-emerald-500 dark:hover:text-emerald-400">
  <Phone className="w-3 h-3" />
