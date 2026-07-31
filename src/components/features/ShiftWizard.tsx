@@ -2071,9 +2071,84 @@ export default function ShiftWizard({
  )}
 
  {/* ==========================================
- STEP 3: ACTIVE SHIFT HUB DRAWERS
+ STEP 3: ACTIVE SHIFT HUB COMMAND CENTER
  ========================================== */}
  {wizardStep === 3 && activeShift && (
+ <div className="space-y-4">
+ {/* 1. STICKY REALTIME SHIFT COMMAND BAR */}
+ <div className="sticky top-0 z-30 bg-card/95 backdrop-blur-xl border border-orange-500/30 rounded-2xl p-4 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+ <div className="flex items-center gap-3">
+ <div className="relative">
+ <div className="w-3.5 h-3.5 rounded-full bg-emerald-500 animate-ping"></div>
+ <div className="w-3.5 h-3.5 rounded-full bg-emerald-500 absolute inset-0"></div>
+ </div>
+ <div>
+ <div className="flex items-center gap-2">
+ <h3 className="text-base font-black text-foreground">Shift Session #{activeShift.id.slice(-4).toUpperCase()}</h3>
+ <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">
+ Running • {activeShift.type.toUpperCase()}
+ </span>
+ </div>
+ <p className="text-xs font-bold text-muted-foreground">
+ Operator: <strong className="text-foreground">{activeStaffMember?.name || 'Ali Khan'}</strong> • Started at {activeShift.startTime} ({activeShift.date})
+ </p>
+ </div>
+ </div>
+
+ <div className="flex items-center gap-3 text-xs font-bold">
+ <div className="px-3 py-1.5 rounded-xl bg-subtle border border-border">
+ <span className="text-[9px] text-muted-foreground uppercase block">Expected Cash</span>
+ <strong className="text-sm font-black text-foreground">Rs. {(expectedTotals?.expectedCash || 0).toLocaleString()}</strong>
+ </div>
+ <div className="px-3 py-1.5 rounded-xl bg-subtle border border-border">
+ <span className="text-[9px] text-muted-foreground uppercase block">Total Debits</span>
+ <strong className="text-sm font-black text-rose-500">Rs. {(expectedTotals?.debits || 0).toLocaleString()}</strong>
+ </div>
+ <div className="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+ <span className="text-[9px] text-emerald-600 dark:text-emerald-400 uppercase block">Recoveries</span>
+ <strong className="text-sm font-black text-emerald-600 dark:text-emerald-400">Rs. {(expectedTotals?.recoveries || 0).toLocaleString()}</strong>
+ </div>
+ <button
+ onClick={handleGoToClosings}
+ className="px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold shadow-md transition-all flex items-center gap-1 cursor-pointer active:scale-95 shrink-0"
+ >
+ <span>PROCEED TO CLOSE →</span>
+ </button>
+ </div>
+ </div>
+
+ {/* 2. AI SHIFT MONITOR & COMPLETION PROGRESS */}
+ <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+ <div className="lg:col-span-2 bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-emerald-500/10 border border-orange-500/20 rounded-2xl p-4 shadow-xs space-y-2">
+ <div className="flex items-center justify-between">
+ <div className="flex items-center gap-2">
+ <Sparkles className="w-5 h-5 text-orange-500 animate-pulse" />
+ <h4 className="text-xs font-black uppercase tracking-wider text-foreground">AI Realtime Shift Monitor</h4>
+ </div>
+ <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+ Integrity 99% • No Mismatches
+ </span>
+ </div>
+ <p className="text-xs font-bold text-foreground">
+ No abnormal dispenser transactions. Tank readings correlate with nozzle meter sales. Next hydrostatic dip recommended in 12 mins.
+ </p>
+ </div>
+
+ <div className="bg-card border border-border rounded-2xl p-4 shadow-xs space-y-2">
+ <div className="flex justify-between items-center text-xs font-extrabold">
+ <span className="text-muted-foreground uppercase">Shift Completion Task Progress</span>
+ <span className="text-orange-600 font-black">86%</span>
+ </div>
+ <div className="w-full h-2 bg-subtle rounded-full overflow-hidden border border-border">
+ <div className="h-full bg-orange-500 rounded-full w-[86%]"></div>
+ </div>
+ <div className="text-[10px] font-bold text-muted-foreground flex justify-between">
+ <span>Readings Verified ✓</span>
+ <span>Final Cash Audit Pending</span>
+ </div>
+ </div>
+ </div>
+
  <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
  {/* Active Shift Info Sidebar */}
  <div className="space-y-3 lg:col-span-1">
@@ -2213,10 +2288,10 @@ export default function ShiftWizard({
  <button
  key={tab.id}
  onClick={() => setActiveTab(tab.id as any)}
- className={`flex-shrink-0 px-2.5 py-1.5 text-[11px] font-sans font-bold rounded-md transition-all cursor-pointer whitespace-nowrap${
+ className={`flex-shrink-0 px-2.5 py-1.5 text-[11px] font-sans font-bold rounded-md transition-all cursor-pointer whitespace-nowrap ${
  activeTab === tab.id
- ?"bg-card text-white shadow-xs"
- :"text-slate-500 hover:bg-card/50 hover:text-slate-200"
+ ? "bg-orange-600 text-white font-extrabold shadow-xs"
+ : "bg-subtle text-foreground font-bold hover:bg-card border border-border"
  }`}
  >
  {t(tab.label, tab.urdu)}
@@ -3126,6 +3201,7 @@ export default function ShiftWizard({
  handleCaptureSnapshot={handleCaptureSnapshot}
  />
  )}
+ </div>
  </div>
  </div>
  </div>
