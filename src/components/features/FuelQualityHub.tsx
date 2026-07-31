@@ -104,20 +104,20 @@ export default function FuelQualityHub({ settings }: FuelQualityHubProps) {
  <div className="flex border-b border-border">
  <button
  onClick={() => setActiveTab('density')}
- className={`flex-1 py-4 px-6 text-sm font-bold font-sans transition-colors${
+ className={`flex-1 py-4 px-6 text-sm font-bold font-sans transition-colors ${
  activeTab === 'density' 
- ? 'bg-teal-50 text-teal-700 border-b-2 border-teal-600' 
- : 'text-slate-500 hover:bg-slate-50 dark:bg-card/5'
+ ? 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-b-2 border-teal-600' 
+ : 'text-foreground font-bold hover:bg-card'
  }`}
  >
  {t('Density & Quality Check', 'کثافت اور کوالٹی چیک')}
  </button>
  <button
  onClick={() => setActiveTab('volume')}
- className={`flex-1 py-4 px-6 text-sm font-bold font-sans transition-colors${
+ className={`flex-1 py-4 px-6 text-sm font-bold font-sans transition-colors ${
  activeTab === 'volume' 
- ? 'bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600' 
- : 'text-slate-500 hover:bg-slate-50 dark:bg-card/5'
+ ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600' 
+ : 'text-foreground font-bold hover:bg-card'
  }`}
  >
  {t('Volume Variation Check', 'حجم کی تبدیلی چیک')}

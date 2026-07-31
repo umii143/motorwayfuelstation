@@ -51,10 +51,10 @@ export default function LossPreventionHub({ settings }: LossPreventionHubProps) 
  key={tab.id}
  
  onClick={() => setActiveTab(tab.id as any)}
- className={`flex items-center gap-2 px-4 py-2 rounded-t-xl font-sans text-xs font-bold whitespace-nowrap transition-all border-b-2${
+ className={`flex items-center gap-2 px-4 py-2 rounded-t-xl font-sans text-xs font-bold whitespace-nowrap transition-all border-b-2 ${
  isActive
  ? 'border-rose-500 text-rose-600 bg-rose-50/50'
- : 'border-transparent text-slate-500 hover:bg-slate-50 dark:bg-card/5 hover:text-slate-700'
+ : 'border-transparent text-foreground hover:bg-card font-bold'
  }`}
  >
  <Icon className="h-4 w-4" />
