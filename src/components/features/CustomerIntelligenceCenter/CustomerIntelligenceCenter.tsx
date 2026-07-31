@@ -9,6 +9,8 @@ import { User } from 'lucide-react';
 import { Customer, Shift, Product, GlobalSettings, LubePosSale } from '../../../types';
 import { t as translate } from '../../../lib/translations';
 import CustomerDirectory from './CustomerDirectory';
+import { CreditRiskControlCenter } from './CreditRiskControlCenter';
+import { ShieldAlert } from 'lucide-react';
 
 interface CustomerIntelligenceCenterProps {
  settings: GlobalSettings;
@@ -39,19 +41,17 @@ export default function CustomerIntelligenceCenter({
  onDeleteDebitEntry,
  onDeleteRecoveryEntry
 }: CustomerIntelligenceCenterProps) {
- const [activeTab, setActiveTab] = useState<'directory'>('directory');
+ const [activeTab, setActiveTab] = useState<'risk_center' | 'directory'>('risk_center');
  const t = (en: string, ur: string) => translate(en, ur, settings);
 
  const tabs = [
- { id: 'directory', icon: User, label: 'Profiles & Billing', urdu: 'پروفائلز اور بلنگ' },
- // Expandable in the future
- // { id: 'recovery', icon: Wallet, label: 'Recovery Hub', urdu: 'ریکوری سینٹر' },
- // { id: 'statements', icon: FileText, label: 'Statements', urdu: 'اسٹیٹمنٹس' }
+ { id: 'risk_center', icon: ShieldAlert, label: 'Credit Risk & Control Center', urdu: 'کریڈٹ رسک اور کنٹرول سینٹر' },
+ { id: 'directory', icon: User, label: 'Customer Profiles & Khata', urdu: 'پروفائلز اور کھاتہ' }
  ];
 
  return (
  <div className="space-y-6 pb-16 lg:pb-0">
- {/* Navigation Tabs (Optional if only one exists for now, but kept for future scale) */}
+ {/* Navigation Tabs */}
  <div className="flex overflow-x-auto no-scrollbar gap-2 pb-2">
  {tabs.map(tab => {
  const Icon = tab.icon;
@@ -80,6 +80,14 @@ export default function CustomerIntelligenceCenter({
  animate={{ opacity: 1, y: 0 }}
  transition={{ duration: 0.2 }}
  >
+ {activeTab === 'risk_center' && (
+ <CreditRiskControlCenter
+ settings={settings}
+ customers={customers}
+ shifts={shifts}
+ />
+ )}
+
  {activeTab === 'directory' && (
  <CustomerDirectory
  settings={settings}
