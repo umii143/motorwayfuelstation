@@ -3,11 +3,11 @@ import { useAuthStore, UserRole, UserPermissions } from '../../stores/useAuthSto
 import { useShallow } from 'zustand/react/shallow';
 
 interface RoleGuardProps {
-  children: React.ReactNode;
-  allowedRoles?: UserRole[];
-  requiredPermission?: keyof UserPermissions;
-  fallback?: React.ReactNode;
-  fallbackMessage?: string;
+ children: React.ReactNode;
+ allowedRoles?: UserRole[];
+ requiredPermission?: keyof UserPermissions;
+ fallback?: React.ReactNode;
+ fallbackMessage?: string;
 }
 
 /**
@@ -15,50 +15,50 @@ interface RoleGuardProps {
  * If the user does not meet the requirements, it either renders null or the provided fallback.
  */
 export default function RoleGuard({ 
-  children, 
-  allowedRoles, 
-  requiredPermission, 
-  fallback = null,
-  fallbackMessage
+ children, 
+ allowedRoles, 
+ requiredPermission, 
+ fallback = null,
+ fallbackMessage
 }: RoleGuardProps) {
-  const { user, hasPermission } = useAuthStore(useShallow(s => ({
-    user: s.user,
-    hasPermission: s.hasPermission
-  })));
+ const { user, hasPermission } = useAuthStore(useShallow(s => ({
+ user: s.user,
+ hasPermission: s.hasPermission
+ })));
 
-  if (!user) {
-    return <>{fallback}</>;
-  }
+ if (!user) {
+ return <>{fallback}</>;
+ }
 
-  // Owner always bypasses RoleGuard
-  if (user.role === 'Owner') {
-    return <>{children}</>;
-  }
+ // Owner always bypasses RoleGuard
+ if (user.role === 'Owner') {
+ return <>{children}</>;
+ }
 
-  let isAllowed = true;
+ let isAllowed = true;
 
-  // Check roles if specified
-  if (allowedRoles && allowedRoles.length > 0) {
-    isAllowed = allowedRoles.includes(user.role);
-  }
+ // Check roles if specified
+ if (allowedRoles && allowedRoles.length > 0) {
+ isAllowed = allowedRoles.includes(user.role);
+ }
 
-  // Check permissions if specified and still allowed
-  if (isAllowed && requiredPermission) {
-    isAllowed = hasPermission(requiredPermission);
-  }
+ // Check permissions if specified and still allowed
+ if (isAllowed && requiredPermission) {
+ isAllowed = hasPermission(requiredPermission);
+ }
 
-  if (isAllowed) {
-    return <>{children}</>;
-  }
+ if (isAllowed) {
+ return <>{children}</>;
+ }
 
-  if (fallbackMessage) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl">
-        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">Access Denied</h2>
-        <p className="text-slate-500">{fallbackMessage}</p>
-      </div>
-    );
-  }
+ if (fallbackMessage) {
+ return (
+ <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-subtle border border-border rounded-xl">
+ <h2 className="text-xl font-bold text-foreground mb-2">Access Denied</h2>
+ <p className="text-muted-foreground">{fallbackMessage}</p>
+ </div>
+ );
+ }
 
-  return <>{fallback}</>;
+ return <>{fallback}</>;
 }

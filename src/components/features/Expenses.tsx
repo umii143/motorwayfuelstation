@@ -6,15 +6,15 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  Coins,
-  PlusCircle,
-  Wrench,
-  Utensils,
-  Lightbulb,
-  Notebook,
-  Sparkles,
-  Trash2,
-  Settings2
+ Coins,
+ PlusCircle,
+ Wrench,
+ Utensils,
+ Lightbulb,
+ Notebook,
+ Sparkles,
+ Trash2,
+ Settings2
 } from 'lucide-react';
 import EmptyState from '../ui/EmptyState';
 import { ModuleSearchBar } from '../shared/ModuleSearchBar';
@@ -27,816 +27,816 @@ import { useStationStore } from '../../stores/useStationStore';
 import { isLubeBusinessStation } from '../../lib/businessScope';
 
 interface ExpensesProps {
-  settings: GlobalSettings;
-  activeStationId: string;
-  shifts: Shift[];
-  onAddExpenseShift?: (expense: ExpenseEntry) => void;
-  // Dynamic direct standalone expenses state persistence if shifts are not running
-  standaloneExpenses: ExpenseEntry[];
-  onAddStandaloneExpense: (expense: ExpenseEntry) => void;
+ settings: GlobalSettings;
+ activeStationId: string;
+ shifts: Shift[];
+ onAddExpenseShift?: (expense: ExpenseEntry) => void;
+ // Dynamic direct standalone expenses state persistence if shifts are not running
+ standaloneExpenses: ExpenseEntry[];
+ onAddStandaloneExpense: (expense: ExpenseEntry) => void;
 }
 
 export default function Expenses({
-  settings,
-  activeStationId,
-  shifts,
-  standaloneExpenses,
-  onAddStandaloneExpense
+ settings,
+ activeStationId,
+ shifts,
+ standaloneExpenses,
+ onAddStandaloneExpense
 }: ExpensesProps) {
-  const showToast = useStationStore((state) => state.showToast);
-  const handleUpdateSettings = useStationStore((state) => state.handleUpdateSettings);
-  const t = (en: string, ur: string) => translate(en, ur, settings);
-  const isUrdu = settings.language === 'ur';
-
-  // States
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [paymentModeFilter, setPaymentModeFilter] = useState<string>('all');
-  const [showAddExpense, setShowAddExpense] = useState(false);
-  const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [timeFilter, setTimeFilter] = useState<'all' | 'weekly' | 'monthly' | 'yearly'>('all');
-  const [showManageCategories, setShowManageCategories] = useState(false);
-  const [newCatLabel, setNewCatLabel] = useState('');
-  const [newCatUrdu, setNewCatUrdu] = useState('');
-
-  // Time filter checking helper
-  const isWithinTimeFilter = (dateStr: string) => {
-    if (timeFilter === 'all') return true;
-    const baseline = new Date('2026-06-01');
-    const target = new Date(dateStr);
-    if (isNaN(target.getTime())) return true;
-    const diffDays = (baseline.getTime() - target.getTime()) / (1000 * 3600 * 24);
-    if (timeFilter === 'weekly') return diffDays >= 0 && diffDays <= 7;
-    if (timeFilter === 'monthly') return diffDays >= 0 && diffDays <= 30;
-    if (timeFilter === 'yearly') return diffDays >= 0 && diffDays <= 365;
-    return true;
-  };
-
-  // Form states
-  const [formCategory, setFormCategory] = useState('meals');
-  const [formAmount, setFormAmount] = useState('');
-  const [formDescription, setFormDescription] = useState('');
-  const [formPaidFrom, setFormPaidFrom] = useState<'cash' | 'bank'>('cash');
-  const [showExport, setShowExport] = useState(false);
-
-  // Single source of truth: use activeStationId, not shift-existence heuristic
-  const isLube = isLubeBusinessStation(activeStationId);
-
-  // Categories list helper — lube-appropriate labels
-   
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const baseExpenseCategories = isLube ? [
-    { id: 'meals', label: 'Staff Food & Meals', urdu: 'عملے کا کھانا' },
-    { id: 'maintenance', label: 'Shop Maintenance', urdu: 'دکان کی دیکھ بھال/مرمت' },
-    { id: 'electricity', label: 'Utility Grid Bills', urdu: 'بجلی اور گیس بل' },
-    { id: 'workshop_tools', label: 'Workshop Tools & Equipment', urdu: 'ورکشاپ ٹولز اور سامان' },
-    { id: 'salary', label: 'Staff Wages/Pay', urdu: 'عملے کی تنخواہ' },
-    { id: 'stationery', label: 'Stationery & Packaging', urdu: 'اسٹیشنری و پیکنگ' },
-    { id: 'other', label: 'Miscellaneous Other', urdu: 'دیگر متفرق اخراجات' }
-  ] : [
-    { id: 'meals', label: 'Staff Food & Meals', urdu: 'عملے کا کھانا' },
-    { id: 'maintenance', label: 'Pump Maintenance', urdu: 'پمپ کی دیکھ بھال/مرمت' },
-    { id: 'electricity', label: 'Utility Grid Bills', urdu: 'بجلی اور گیس بل' },
-    { id: 'generator_fuel', label: 'Generator Fuel Oil', urdu: 'جنریٹر کا ایندھن' },
-    { id: 'salary', label: 'Operator Wages/Pay', urdu: 'عملے کی تنخواہ' },
-    { id: 'stationery', label: 'Stationery & Slips', urdu: 'اسٹیشنری و پرنٹنگ' },
-    { id: 'other', label: 'Miscellaneous Other', urdu: 'دیگر متفرق اخراجات' }
-  ];
-
-  const expenseCategories = useMemo(() => {
-    const custom = settings.customExpenseCategories || [];
-    return [...baseExpenseCategories, ...custom];
-  }, [baseExpenseCategories, settings.customExpenseCategories]);
-
-  // Compile ALL expenses dynamically (Shifts expenses + standalone expenses)
-  const allExpenses = useMemo(() => {
-    const list: ExpenseEntry[] = [...standaloneExpenses];
-
-    shifts.forEach(sh => {
-      // Find expense logged inside shift session
-      sh.expenseEntries.forEach(exp => {
-        list.push({
-          ...exp,
-          // Retain parent shift context
-          id: `shift_${sh.id}_${exp.id}`,
-          date: sh.date // overwrite or fallback to shift execution date
-        });
-      });
-    });
-
-    // Sort by Date descending
-    return list.sort((a, b) => b.date.localeCompare(a.date));
-  }, [shifts, standaloneExpenses]);
-
-  // Handle Search and category filtering
-  const filteredExpenses = useMemo(() => {
-    return allExpenses.filter(e => {
-      const matchesSearch = e.description.toLowerCase().includes(searchQuery.toLowerCase()) || e.category!.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = categoryFilter === 'all' || 
-        (categoryFilter === 'wages-utilities' 
-          ? (e.category === 'salary' || e.category === 'electricity' || e.category === 'generator_fuel')
-          : e.category === categoryFilter);
-      const matchesPayment = paymentModeFilter === 'all' || e.paidFrom === paymentModeFilter;
-      const matchesTime = isWithinTimeFilter(e.date);
-      return matchesSearch && matchesCategory && matchesPayment && matchesTime;
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allExpenses, searchQuery, categoryFilter, paymentModeFilter, timeFilter]);
-
-  const exportColumns = [
-    { key: 'date', label: 'Date', urduLabel: 'تاریخ' },
-    { key: 'category', label: 'Category', urduLabel: 'کیٹیگری' },
-    { key: 'description', label: 'Description', urduLabel: 'تفصیل' },
-    { key: 'paidFrom', label: 'Paid From', urduLabel: 'ادائیگی کا ذریعہ' },
-    { key: 'amount', label: 'Amount', urduLabel: 'رقم' }
-  ];
-
-  // Aggregate metrics
-  const totalAmountSpent = useMemo(() => {
-    return filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
-  }, [filteredExpenses]);
-
-  const categoryAggs = useMemo(() => {
-    const map: Record<string, number> = { /* empty */ };
-    expenseCategories.forEach(cat => { map[cat.id] = 0; });
-
-    allExpenses.forEach(e => {
-      // @ts-expect-error
-      if (map[e.category] !== undefined) {
-        // @ts-expect-error
-        map[e.category] += e.amount;
-      } else {
-        map['other'] = (map['other'] || 0) + e.amount;
-      }
-    });
-
-    return Object.entries(map).map(([k, v]) => ({
-      categoryId: k,
-      amount: v,
-      percentage: allExpenses.length > 0 ? Math.round((v / allExpenses.reduce((sum, x) => sum + x.amount, 0)) * 100) : 0,
-      label: expenseCategories.find(item => item.id === k)?.label || k,
-       
-      urduLabel: expenseCategories.find(item => item.id === k)?.urdu || k
-    })).sort((a, b) => b.amount - a.amount);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allExpenses]);
-
-
-  // ==========================================
-  // FORM SUBMIT HANDLERS
-  // ==========================================
-
-  const handleCreateExpenseSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const amt = Number(formAmount);
-    if (!amt || amt <= 0) {
-      showToast(t('Please enter a valid expense amount.', 'براہ کرم درست خرچہ رقم درج کریں۔'), 'error');
-      return;
-    }
-
-    if (!formDescription) {
-      showToast(t('Please describe the expenditure.', 'تفصیل لکھنا ضروری ہے۔'), 'error');
-      return;
-    }
-
-    if (formCategory === 'salary') {
-      showToast(t('Please use the Staff module to process salaries to maintain the ledger.', 'تنخواہ کا اندراج سٹاف ماڈیول سے کریں۔'), 'error');
-      return;
-    }
-
-    // Capture standalone direct expense entry
-    const newExp: ExpenseEntry = {
-      id: `exp_${Date.now()}`,
-      category: formCategory,
-      amount: amt,
-      description: formDescription,
-      date: new Date().toISOString().split('T')[0],
-      paidFrom: formPaidFrom
-    };
-
-    onAddStandaloneExpense(newExp);
-
-    setFormAmount('');
-    setFormDescription('');
-    setShowAddExpense(false);
-     
-    showToast(t('Direct station expense registered successfully!', 'اسٹیشن کا براہ راست خرچہ رجسٹر ہو گیا!'), 'success');
-  };
-
-  const handleExpenseAutoFill = (data: any) => {
-    if (data.Amount) {
-      const amtMatch = String(data.Amount).replace(/[^0-9.]/g, '');
-      if (amtMatch) setFormAmount(amtMatch);
-    }
-    
-    if (data.Category || data['Product Details']) {
-      const text = String(data.Category || data['Product Details']).toLowerCase();
-      if (text.includes('meal') || text.includes('food')) setFormCategory('meals');
-      else if (text.includes('mainten') || text.includes('repair')) setFormCategory('maintenance');
-      else if (text.includes('elect') || text.includes('util') || text.includes('bill')) setFormCategory('electricity');
-      else if (text.includes('gen') || text.includes('fuel')) setFormCategory('generator_fuel');
-      else if (text.includes('sal') || text.includes('wage')) setFormCategory('salary');
-      else if (text.includes('stat') || text.includes('print') || text.includes('paper')) setFormCategory('stationery');
-      else setFormCategory('other');
-    }
-    
-    let desc = '';
-    if (data['Supplier/Customer Name'] && data['Supplier/Customer Name'] !== 'N/A') desc += `${data['Supplier/Customer Name']} - `;
-    if (data['Product Details'] && data['Product Details'] !== 'N/A') desc += data['Product Details'];
-    
-    if (desc) setFormDescription(desc);
-    else if (data.Remarks) setFormDescription(data.Remarks);
-    
-    if (data['Payment Method']) {
-      const pMode = String(data['Payment Method']).toLowerCase();
-      if (pMode.includes('bank') || pMode.includes('card') || pMode.includes('transfer')) setFormPaidFrom('bank');
-      else setFormPaidFrom('cash');
-    }
-
-    setTimeout(() => {
-      setIsScannerOpen(false);
-      showToast('Form auto-filled from receipt!', 'success');
-    }, 1500);
-  };
-
-  // Aggregate widget stats based on filtered list
-  const widgetStats = useMemo(() => {
-    let mealsSum = 0;
-    let maintenanceSum = 0;
-    let salaryAndUtilSum = 0;
-
-    filteredExpenses.forEach(e => {
-      if (e.category === 'meals') {
-        mealsSum += e.amount;
-      } else if (e.category === 'maintenance') {
-        maintenanceSum += e.amount;
-      } else if (e.category === 'salary' || e.category === 'electricity' || e.category === 'generator_fuel') {
-        salaryAndUtilSum += e.amount;
-      }
-    });
-
-    return {
-      mealsSum,
-      maintenanceSum,
-      salaryAndUtilSum
-    };
-  }, [filteredExpenses]);
-
-  const handleAddCustomCategory = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCatLabel || !newCatUrdu) {
-      showToast(t('Please enter both English and Urdu names.', 'براہ کرم انگلش اور اردو دونوں نام درج کریں۔'), 'error');
-      return;
-    }
-    const id = 'custom_' + Date.now();
-    const newCat = { id, label: newCatLabel, urdu: newCatUrdu };
-    const currentCustom = settings.customExpenseCategories || [];
-    handleUpdateSettings({
-      ...settings,
-      customExpenseCategories: [...currentCustom, newCat]
-    });
-    setNewCatLabel('');
-    setNewCatUrdu('');
-    showToast(t('Custom category added!', 'کسٹم کیٹیگری شامل کر دی گئی!'), 'success');
-  };
-
-  const handleDeleteCustomCategory = (id: string) => {
-    if (!window.confirm(t('Are you sure you want to delete this category?', 'کیا آپ واقعی یہ کیٹیگری حذف کرنا چاہتے ہیں؟'))) return;
-    const currentCustom = settings.customExpenseCategories || [];
-    handleUpdateSettings({
-      ...settings,
-      customExpenseCategories: currentCustom.filter(c => c.id !== id)
-    });
-    showToast(t('Custom category deleted!', 'کسٹم کیٹیگری حذف کر دی گئی!'), 'success');
-  };
-
-  return (
-    <div className="space-y-6 pb-16 lg:pb-0">
-
-      {/* HEADER ROW WITH INTEGRATED DYNAMIC TIME FILTER */}
-      {/* HEADER ROW WITH INTEGRATED DYNAMIC TIME FILTER */}
-      <div className="flex flex-col gap-4 border-b border-slate-200 dark:border-white/10 pb-4">
-        <div className="flex flex-row items-center justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <span className="font-mono text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-0.5">OPERATIONS</span>
-            <h2 className="font-sans text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-              <Coins className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600 shrink-0" />
-              <span className="truncate">{t('Operational Expenses', 'اخراجات اور کاروباری بلنگ')}</span>
-            </h2>
-            <p className="font-sans text-xs text-slate-500 mt-1 hidden sm:block">
-              {t('Audit and document stationary purchases, machinery calibrations, meals and overheads.', 'اسٹیشن کے تمام آپریشنل اور ذاتی اخراجات، تنخواہیں اور مرمت کے بلوں کی مانیٹرنگ۔')}
-            </p>
-          </div>
-        </div>
-
-        {/* TIME FILTER & TRIGGER ROW */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full">
-          <div className="flex bg-slate-100 dark:bg-white/10 rounded-lg p-1 border border-slate-200 dark:border-white/10 shadow-sm w-full sm:w-auto">
-            {(['all', 'weekly', 'monthly', 'yearly'] as const).map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setTimeFilter(filter)}
-                className={`flex-1 sm:flex-initial text-center px-3 py-1.5 font-sans text-[11px] font-bold uppercase tracking-wider rounded-md transition-all cursor-pointer ${
-                  timeFilter === filter
-                    ? 'bg-orange-600 text-white shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:bg-white/5'
-                }`}
-              >
-                {filter === 'all' && t('All-Time', 'کل وقت')}
-                {filter === 'weekly' && t('Weekly', 'ہفتہ وار')}
-                {filter === 'monthly' && t('Monthly', 'ماہانہ')}
-                {filter === 'yearly' && t('Yearly', 'سالانہ')}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex gap-2 w-full sm:w-auto">
-            <button
-              onClick={() => setShowManageCategories(true)}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 rounded-lg bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 px-3 py-2.5 font-sans text-xs font-bold text-slate-700 dark:text-slate-350 shadow-sm hover:bg-slate-200 transition-all cursor-pointer"
-            >
-              <Settings2 className="h-4 w-4" />
-              <span>{t('Categories', 'کیٹیگریز')}</span>
-            </button>
-            
-            <button
-              onClick={() => setShowAddExpense(true)}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-3 py-2.5 font-sans text-xs font-bold text-white shadow-md shadow-orange-500/10 hover:bg-orange-700 transition-all cursor-pointer"
-            >
-              <PlusCircle className="h-4 w-4" />
-              <span>{t('+ Log Expense', 'نیا خرچہ لکھیں')}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* UNIVERSAL MODULE SEARCH BAR */}
-      <ModuleSearchBar
-        moduleName={t('Expenses', 'اخراجات')}
-        placeholder={t('Search notes description...', 'تفصیل تلاش کریں...')}
-        onSearch={setSearchQuery}
-        onExport={() => setShowExport(true)}
-      />
-
-      {/* DYNAMIC KPI CARDS SECTION */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4 px-4 sm:px-0">
-        {/* AMBER CARD - TOTAL SPEND */}
-        <button
-          onClick={() => {
-            setCategoryFilter('all');
-            setPaymentModeFilter('all');
-            setSearchQuery('');
-          }}
-          className="text-left fp-kpi-compact kpi-orange relative overflow-hidden transition-all duration-200 hover:border-orange-550 dark:hover:border-orange-500/50 hover:shadow-md cursor-pointer border border-transparent rounded-2xl group animate-fade-in"
-        >
-          <div className="fp-kpi-compact__label">{t('TOTAL SPEND', 'کل اخراجات')}</div>
-          <div className="fp-kpi-compact__value text-lg sm:text-2xl font-black">
-            {formatCurrency(totalAmountSpent, settings)}
-          </div>
-          <div className="fp-kpi-compact__sub text-orange-400 text-[9px] mt-1 block">
-            {t('Click to show all', 'تمام دکھانے کے لیے کلک کریں')}
-          </div>
-          <div className="absolute top-4 right-4 flex h-9 w-9 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-orange-500/15 text-orange-500 ring-1 ring-inset ring-orange-500/20 shadow-inner group-hover:scale-110 transition-transform">
-            <Coins className="h-4.5 w-4.5 sm:h-6 sm:w-6" strokeWidth={2.5} />
-          </div>
-        </button>
-
-        {/* GREEN CARD - STAFF FOOD & MEALS */}
-        <button
-          onClick={() => setCategoryFilter('meals')}
-          className={`text-left fp-kpi-compact kpi-green relative overflow-hidden transition-all duration-200 hover:border-emerald-550 dark:hover:border-emerald-500/50 hover:shadow-md cursor-pointer border rounded-2xl group animate-fade-in ${categoryFilter === 'meals' ? 'border-emerald-500 bg-emerald-50/10' : 'border-transparent'}`}
-        >
-          <div className="fp-kpi-compact__label">{t('STAFF MEALS', 'سٹاف کا کھانا')}</div>
-          <div className="fp-kpi-compact__value text-lg sm:text-2xl font-black">
-            {formatCurrency(widgetStats.mealsSum, settings)}
-          </div>
-          <div className="fp-kpi-compact__sub text-emerald-400 text-[9px] mt-1 block">
-            {t('Welfare & daily lunches', 'سٹاف کھانا خرچہ')}
-          </div>
-          <div className="absolute top-4 right-4 flex h-9 w-9 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-500 ring-1 ring-inset ring-emerald-500/20 shadow-inner group-hover:scale-110 transition-transform">
-            <Utensils className="h-4.5 w-4.5 sm:h-6 sm:w-6" strokeWidth={2.5} />
-          </div>
-        </button>
-
-        {/* CRIMSON CARD - PUMP MAINTENANCE */}
-        <button
-          onClick={() => setCategoryFilter('maintenance')}
-          className={`text-left fp-kpi-compact kpi-red relative overflow-hidden transition-all duration-200 hover:border-rose-550 dark:hover:border-rose-500/50 hover:shadow-md cursor-pointer border rounded-2xl group animate-fade-in ${categoryFilter === 'maintenance' ? 'border-rose-500 bg-rose-50/10' : 'border-transparent'}`}
-        >
-          <div className="fp-kpi-compact__label">{isLube ? t('SHOP MAINT.', 'شاپ مرمت') : t('PUMP MAINT.', 'پمپ مرمت')}</div>
-          <div className="fp-kpi-compact__value text-lg sm:text-2xl font-black">
-            {formatCurrency(widgetStats.maintenanceSum, settings)}
-          </div>
-          <div className="fp-kpi-compact__sub text-rose-450 text-[9px] mt-1 block">
-            {isLube ? t('Repairs & equipment', 'شاپ مرمت کا خرچہ') : t('Nozzles & calibrations', 'پمپ مرمت کا خرچہ')}
-          </div>
-          <div className="absolute top-4 right-4 flex h-9 w-9 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-rose-500/15 text-rose-500 ring-1 ring-inset ring-rose-500/20 shadow-inner group-hover:scale-110 transition-transform">
-            <Wrench className="h-4.5 w-4.5 sm:h-6 sm:w-6" strokeWidth={2.5} />
-          </div>
-        </button>
-
-        {/* BLUE CARD - OPERATOR WAGES & UTILITIES */}
-        <button
-          onClick={() => setCategoryFilter('wages-utilities')}
-          className={`text-left fp-kpi-compact kpi-blue relative overflow-hidden transition-all duration-200 hover:border-blue-550 dark:hover:border-blue-500/50 hover:shadow-md cursor-pointer border rounded-2xl group animate-fade-in ${categoryFilter === 'wages-utilities' ? 'border-blue-500 bg-blue-50/10' : 'border-transparent'}`}
-        >
-          <div className="fp-kpi-compact__label">{t('WAGES & UTILS', 'بل اور تنخواہیں')}</div>
-          <div className="fp-kpi-compact__value text-lg sm:text-2xl font-black">
-            {formatCurrency(widgetStats.salaryAndUtilSum, settings)}
-          </div>
-          <div className="fp-kpi-compact__sub text-blue-450 text-[9px] mt-1 block truncate">
-            {t('Power, salaries & gen', 'بجلی بل اور تنخواہیں')}
-          </div>
-          <div className="absolute top-4 right-4 flex h-9 w-9 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-500 ring-1 ring-inset ring-blue-500/20 shadow-inner group-hover:scale-110 transition-transform">
-            <Lightbulb className="h-4.5 w-4.5 sm:h-6 sm:w-6" strokeWidth={2.5} />
-          </div>
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* LEFT COMPEX: TIMELINES & DETAIL LIST OF EXPENDITURES */}
-        <div className="lg:col-span-2 space-y-4">
-          
-          {/* SEARCH & FILTER CONTROLS CARD */}
-          <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-xs space-y-3.5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-              <div>
-                <select
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="w-full rounded-md border border-slate-200 dark:border-white/10 bg-slate-55 dark:bg-white/5 py-1.5 px-2.5 font-sans text-xs focus:border-red-550 focus:outline-hidden cursor-pointer"
-                >
-                  <option value="all">{t('All Categories', 'تمام کیٹیگریز')}</option>
-                  <option value="wages-utilities">{t('Wages & Utilities', 'تنخواہیں اور بلنگ')}</option>
-                  {expenseCategories.map(c => (
-                    <option key={c.id} value={c.id}>{isUrdu ? c.urdu : c.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <select
-                  value={paymentModeFilter}
-                  onChange={(e) => setPaymentModeFilter(e.target.value)}
-                  className="w-full rounded-md border border-slate-200 dark:border-white/10 bg-slate-55 dark:bg-white/5 py-1.5 px-2.5 font-sans text-xs focus:border-red-550 focus:outline-hidden"
-                >
-                  <option value="all">{t('All Outflows', 'بک بقایا ادائیگی ذریعہ')}</option>
-                  <option value="cash">{t('Paid from Cash Drawer', 'صرف کیش رقم')}</option>
-                  <option value="bank">{t('Paid from Bank Current Account', 'بینک اکاؤنٹ منتقلی')}</option>
-                </select>
-              </div>
-
-            </div>
-          </div>
-
-          {/* TABLE LOG LISTING */}
-          <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] shadow-xs overflow-hidden">
-            {/* Desktop Table View */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full border-collapse text-left text-xs text-slate-700 dark:text-slate-300">
-                <thead>
-                  <tr className="bg-slate-100 dark:bg-[#1A1A24] border-b border-slate-200 dark:border-white/10 text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                    <th className="py-3 px-4 border-r border-slate-200 dark:border-white/10">{t('Date & Time', 'تاریخ اور وقت')}</th>
-                    <th className="py-3 px-4 border-r border-slate-200 dark:border-white/10">{t('Expenditure Details', 'خرچہ تفصیل')}</th>
-                    <th className="py-3 px-4 border-r border-slate-200 dark:border-white/10">{t('Category', 'کیٹیگری')}</th>
-                    <th className="py-3 px-4 border-r border-slate-200 dark:border-white/10">{t('Payment Outflow Source', 'ادائیگی کا ذریعہ')}</th>
-                    <th className="py-3 px-4 text-right">{t('Outflow Amount', 'خرچہ رقم')}</th>
-                  </tr>
-                </thead>
-                <tbody className="text-slate-700 dark:text-slate-300">
-                  {filteredExpenses.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="py-6 bg-slate-50 dark:bg-white/5">
-                        <EmptyState
-                          icon={Notebook}
-                          title={t('No expenses found for this period.', 'کوئی اخراجات درج نہیں ہیں۔')}
-                          description={t('Track stationery, meals, power utilities, and repair costs.', 'ملازمین کا کھانا، بجلی کا بل، یا جنریٹر ایندھن کا خرچہ ریکارڈ کریں۔')}
-                          actionLabel={t('Log New Expense', 'نیا خرچہ لکھیں')}
-                          onAction={() => setShowAddExpense(true)}
-                        />
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredExpenses.map((exp) => {
-                      const catInfo = expenseCategories.find(c => c.id === exp.category);
-                      const labelStyle = exp.paidFrom === 'cash' ? 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30' : 'bg-sky-50 text-sky-700 border-sky-100 dark:bg-sky-950/20 dark:text-sky-400 dark:border-sky-900/30';
-                      
-                      let sideBorder = 'border-l-4 border-l-slate-400 dark:border-l-slate-650';
-                      if (exp.category === 'meals') sideBorder = 'border-l-4 border-l-emerald-500';
-                      else if (exp.category === 'maintenance') sideBorder = 'border-l-4 border-l-rose-500';
-                      else if (exp.category === 'salary' || exp.category === 'electricity' || exp.category === 'generator_fuel') sideBorder = 'border-l-4 border-l-blue-500';
-
-                      return (
-                        <tr key={exp.id} className={`border-b border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 odd:bg-[#FAFBFD] even:bg-white dark:odd:bg-[#151521]/70 dark:even:bg-[#151521] transition-colors ${sideBorder}`}>
-                          <td className="py-3 px-4 border-r border-slate-200/60 dark:border-white/10 font-mono text-[11px] font-semibold text-slate-800 dark:text-slate-100">{exp.date}</td>
-                          <td className="py-3 px-4 border-r border-slate-200/60 dark:border-white/10 font-bold text-xs text-slate-800 dark:text-slate-100 max-w-[300px] truncate" title={exp.description}>{exp.description}</td>
-                          <td className="py-3 px-4 border-r border-slate-200/60 dark:border-white/10">
-                            <span className="rounded-md bg-stone-100 dark:bg-white/10 px-2.5 py-0.5 text-[10px] font-bold text-slate-650 dark:text-slate-350 border border-slate-200/40 dark:border-white/5">
-                              {catInfo ? (isUrdu ? catInfo.urdu : catInfo.label) : exp.category}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 border-r border-slate-200/60 dark:border-white/10">
-                            <span className={`rounded-md border px-2 py-0.5 font-black text-[9px] uppercase tracking-wider ${labelStyle}`}>
-                              {exp.paidFrom === 'cash' ? t('CASH BOX', 'کیش کیبن') : t('BANK ONLINE', 'بینک اکاؤنٹ')}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 text-right font-mono text-sm font-black text-rose-600 dark:text-rose-450">
-                            -{formatCurrency(exp.amount, settings)}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile Card List View */}
-            <div className="block md:hidden divide-y divide-slate-250 dark:divide-white/10">
-              {filteredExpenses.length === 0 ? (
-                <div className="py-6 px-4">
-                  <EmptyState
-                    icon={Notebook}
-                    title={t('No expenses found for this period.', 'کوئی اخراجات درج نہیں ہیں۔')}
-                    description={t('Track stationery, meals, power utilities, and repair costs.', 'ملازمین کا کھانا، بجلی کا بل، یا جنریٹر ایندھن کا خرچہ ریکارڈ کریں۔')}
-                    actionLabel={t('Log New Expense', 'نیا خرچہ لکھیں')}
-                    onAction={() => setShowAddExpense(true)}
-                  />
-                </div>
-              ) : (
-                filteredExpenses.map((exp) => {
-                  const catInfo = expenseCategories.find(c => c.id === exp.category);
-                  const labelStyle = exp.paidFrom === 'cash' ? 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30' : 'bg-sky-50 text-sky-700 border-sky-100 dark:bg-sky-950/20 dark:text-sky-400 dark:border-sky-900/30';
-                  
-                  let sideBorder = 'border-l-4 border-l-slate-400 dark:border-l-slate-650';
-                  if (exp.category === 'meals') sideBorder = 'border-l-4 border-l-emerald-500';
-                  else if (exp.category === 'maintenance') sideBorder = 'border-l-4 border-l-rose-500';
-                  else if (exp.category === 'salary' || exp.category === 'electricity' || exp.category === 'generator_fuel') sideBorder = 'border-l-4 border-l-blue-500';
-
-                  return (
-                    <div key={exp.id} className={`p-4 space-y-3 transition-colors odd:bg-[#FAFBFD] even:bg-white dark:odd:bg-[#151521]/70 dark:even:bg-[#151521] ${sideBorder}`}>
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="space-y-1">
-                          <span className="font-bold text-slate-800 dark:text-slate-100 text-xs block leading-tight">{exp.description}</span>
-                          <span className="inline-flex rounded-md bg-stone-100 dark:bg-white/10 px-2 py-0.5 text-[9px] font-bold text-slate-650 dark:text-slate-350 border border-slate-200/40 dark:border-white/5">
-                            {catInfo ? (isUrdu ? catInfo.urdu : catInfo.label) : exp.category}
-                          </span>
-                        </div>
-                        <span className={`inline-flex rounded-md border px-2 py-0.5 font-black text-[8px] uppercase tracking-wider shrink-0 ${labelStyle}`}>
-                          {exp.paidFrom === 'cash' ? t('CASH BOX', 'کیش کیبن') : t('BANK ONLINE', 'بینک اکاؤنٹ')}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between items-center text-[10px] pt-1">
-                        <span className="font-mono text-slate-500 dark:text-slate-400 font-semibold">
-                          {exp.date}
-                        </span>
-                        <strong className="font-mono text-sm text-rose-600 dark:text-rose-450 font-black">
-                          -{formatCurrency(exp.amount, settings)}
-                        </strong>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-
-        </div>
-
-        {/* RIGHT ANALYTICS BOARD PANEL: BURDEN CATEGORIES */}
-        <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-4 shadow-xs space-y-4">
-          <h3 className="font-sans text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-2.5">
-            <Notebook className="h-4.5 w-4.5 text-slate-400" />
-            <span>{t('Categorized burden summaries', 'تفصیلی کیٹیگری موازنہ کلاسیفیکیشن')}</span>
-          </h3>
-
-          <div className="space-y-4">
-            {categoryAggs.map(agg => (
-              <div key={agg.categoryId} className="space-y-1.5">
-                <div className="flex justify-between items-center font-sans text-xs font-semibold">
-                  <span className="text-slate-700 dark:text-slate-300">{settings.language === 'ur' ? agg.urduLabel : agg.label}</span>
-                  <span className="font-mono text-slate-500">{agg.percentage}% ({formatCurrency(agg.amount, settings)})</span>
-                </div>
-
-                <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-red-500 transition-all duration-300"
-                    style={{ width: `${agg.percentage}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-      </div>
-
-      {/* DETAILED LOG OVERLAY MODAL */}
-      <AnimatePresence>
-        {showAddExpense && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="premium-modal-overlay"
-          >
-            <motion.div
-              initial={{ scale: 0.95, y: 15, opacity: 0 }}
-              animate={{ scale: 1, y: 0, opacity: 1 }}
-              exit={{ scale: 0.95, y: 15, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 350 }}
-              className="w-full max-w-sm rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-6 shadow-xl"
-            >
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3 mb-4">
-                <h3 className="font-sans text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Coins className="h-5 w-5 text-red-550" />
-                  <span>{t('Register Standalone Expenditure', 'اسٹیشن کا نیا روز مرہ خرچہ درج کریں')}</span>
-                </h3>
-                <button onClick={() => setShowAddExpense(false)} className="text-slate-400 hover:text-slate-650 cursor-pointer font-bold text-xl">&times;</button>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsScannerOpen(true)}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 font-sans text-sm font-bold py-2.5 hover:bg-indigo-100 transition-colors cursor-pointer mb-5 shadow-xs"
-              >
-                <Sparkles className="h-4.5 w-4.5" />
-                {t('Auto-Fill with Receipt Scanner', 'رسید سکین کر کے آٹو فل کریں')}
-              </button>
-
-              <form onSubmit={handleCreateExpenseSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Select Expenditure Category:', 'خرچہ کی قسم منتخب کریں:')}</label>
-                  <select
-                    value={formCategory}
-                    onChange={(e) => setFormCategory(e.target.value)}
-                    className="premium-input border bg-white dark:bg-[#151521] px-2.5 font-sans text-sm focus:border-red-500 focus:outline-hidden"
-                  >
-                    {expenseCategories.filter(c => c.id !== 'salary').map(c => (
-                      <option key={c.id} value={c.id}>{isUrdu ? c.urdu : c.label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Rupees Amount (PKR):', 'اخراجات کی رقم:')}</label>
-                  <input
-                    type="number"
-                    required
-                    value={formAmount}
-                    onChange={(e) => setFormAmount(e.target.value)}
-                    placeholder="e.g. 1500"
-                    className="premium-input border bg-white dark:bg-[#151521] px-3 .5 font-mono text-sm focus:border-red-500 focus:outline-hidden"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Paid From Account:', 'رقم کہاں سے ادا کی گئی:')}</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <button
-                      type="button"
-                      onClick={() => setFormPaidFrom('cash')}
-                      className={`py-2 rounded-lg border font-sans text-xs font-bold cursor-pointer transition-all ${
-                        formPaidFrom === 'cash' ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-xs' : 'border-slate-200 dark:border-white/10 text-slate-500'
-                      }`}
-                    >
-                      💵 {t('Cash counter drawer', 'کیش کیبن')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormPaidFrom('bank')}
-                      className={`py-2 rounded-lg border font-sans text-xs font-bold cursor-pointer transition-all ${
-                        formPaidFrom === 'bank' ? 'border-sky-500 bg-sky-50 text-sky-700 shadow-xs' : 'border-slate-200 dark:border-white/10 text-slate-500'
-                      }`}
-                    >
-                      🏦 {t('Bank online transfer', 'بینک اکاؤنٹ')}
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('Expense Narrative description:', 'خرچہ کی تفصیل:')}</label>
-                  <input
-                    type="text"
-                    required
-                    value={formDescription}
-                    onChange={(e) => setFormDescription(e.target.value)}
-                    placeholder="e.g. Weekly tea and biscuits for shift workers"
-                    className="premium-input border bg-white dark:bg-[#151521] px-3 font-sans text-xs focus:border-red-500 focus:outline-hidden"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-sans text-sm font-bold tracking-wider rounded-lg shadow-md mt-4 cursor-pointer"
-                >
-                  {t('SUBMIT EXPENDITURE BILL', 'خرچہ درج کر دیں')}
-                </button>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-
-        {showManageCategories && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="premium-modal-overlay"
-          >
-            <motion.div
-              initial={{ scale: 0.95, y: 15, opacity: 0 }}
-              animate={{ scale: 1, y: 0, opacity: 1 }}
-              exit={{ scale: 0.95, y: 15, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 350 }}
-              className="w-full max-w-xl rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151521] p-6 shadow-xl"
-            >
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3 mb-4">
-                <h3 className="font-sans text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Settings2 className="h-5 w-5 text-indigo-550" />
-                  <span>{t('Manage Expense Categories', 'اخراجات کی کیٹیگریز ترتیب دیں')}</span>
-                </h3>
-                <button onClick={() => setShowManageCategories(false)} className="text-slate-400 hover:text-slate-650 cursor-pointer font-bold text-xl">&times;</button>
-              </div>
-
-              {/* List existing custom categories */}
-              <div className="mb-6 space-y-2 max-h-[30vh] overflow-y-auto pr-1">
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('Custom Categories:', 'آپ کی بنائی گئی کیٹیگریز:')}</label>
-                {(!settings.customExpenseCategories || settings.customExpenseCategories.length === 0) ? (
-                  <div className="text-center p-4 bg-slate-50 dark:bg-white/5 rounded-lg text-slate-400 text-xs font-bold">
-                    {t('No custom categories yet.', 'ابھی تک کوئی کسٹم کیٹیگری نہیں ہے۔')}
-                  </div>
-                ) : (
-                  settings.customExpenseCategories.map(cat => (
-                    <div key={cat.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-white/5 rounded-lg border border-slate-200 dark:border-white/10">
-                      <div>
-                        <div className="font-bold text-sm text-slate-800 dark:text-slate-200">{cat.label}</div>
-                        <div className="text-xs text-slate-500">{cat.urdu}</div>
-                      </div>
-                      <button 
-                        onClick={() => handleDeleteCustomCategory(cat.id)}
-                        className="p-2 text-rose-500 hover:bg-rose-100 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Add New Category Form */}
-              <form onSubmit={handleAddCustomCategory} className="space-y-4 pt-4 border-t border-slate-100 dark:border-white/5">
-                <label className="block text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">{t('Create New Category:', 'نئی کیٹیگری بنائیں:')}</label>
-                <div>
-                  <input
-                    type="text"
-                    required
-                    value={newCatLabel}
-                    onChange={(e) => setNewCatLabel(e.target.value)}
-                    placeholder={t("Category Name (English)", "انگلش نام")}
-                    className="premium-input border bg-white dark:bg-[#151521] px-3 font-sans text-sm focus:border-indigo-500 focus:outline-hidden mb-3"
-                  />
-                  <input
-                    type="text"
-                    required
-                    value={newCatUrdu}
-                    onChange={(e) => setNewCatUrdu(e.target.value)}
-                    dir="rtl"
-                    placeholder={t("Category Name (Urdu)", "اردو نام")}
-                    className="premium-input border bg-white dark:bg-[#151521] px-3 font-sans text-sm focus:border-indigo-500 focus:outline-hidden mb-3"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full py-2.5 premium-button hover:bg-indigo-700 font-sans text-xs font-bold tracking-wider shadow-md cursor-pointer"
-                >
-                  {t('+ ADD CATEGORY', 'کیٹیگری شامل کریں')}
-                </button>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AIDocumentScanner
-        isOpen={isScannerOpen}
-        onClose={() => setIsScannerOpen(false)}
-        settings={settings}
-        extractionPrompt='You are an expert fuel station accounting assistant. Extract data from this expense receipt and return it strictly as JSON with exactly these keys: "Amount" (number or string with number), "Category" (e.g. meals, maintenance, electricity, generator_fuel, salary, stationery, other), "Supplier/Customer Name", "Product Details" (what was bought), "Payment Method". Do not use markdown backticks, just the raw JSON object.'
-        onDataExtracted={handleExpenseAutoFill}
-      />
-
-      <ExportToolbar
-        isOpen={showExport}
-        onClose={() => setShowExport(false)}
-        data={filteredExpenses}
-        columns={exportColumns}
-        title="Expenses Report"
-        filenamePrefix="expenses_report"
-      />
-    </div>
-  );
+ const showToast = useStationStore((state) => state.showToast);
+ const handleUpdateSettings = useStationStore((state) => state.handleUpdateSettings);
+ const t = (en: string, ur: string) => translate(en, ur, settings);
+ const isUrdu = settings.language === 'ur';
+
+ // States
+ const [searchQuery, setSearchQuery] = useState('');
+ const [categoryFilter, setCategoryFilter] = useState<string>('all');
+ const [paymentModeFilter, setPaymentModeFilter] = useState<string>('all');
+ const [showAddExpense, setShowAddExpense] = useState(false);
+ const [isScannerOpen, setIsScannerOpen] = useState(false);
+ const [timeFilter, setTimeFilter] = useState<'all' | 'weekly' | 'monthly' | 'yearly'>('all');
+ const [showManageCategories, setShowManageCategories] = useState(false);
+ const [newCatLabel, setNewCatLabel] = useState('');
+ const [newCatUrdu, setNewCatUrdu] = useState('');
+
+ // Time filter checking helper
+ const isWithinTimeFilter = (dateStr: string) => {
+ if (timeFilter === 'all') return true;
+ const baseline = new Date('2026-06-01');
+ const target = new Date(dateStr);
+ if (isNaN(target.getTime())) return true;
+ const diffDays = (baseline.getTime() - target.getTime()) / (1000 * 3600 * 24);
+ if (timeFilter === 'weekly') return diffDays >= 0 && diffDays <= 7;
+ if (timeFilter === 'monthly') return diffDays >= 0 && diffDays <= 30;
+ if (timeFilter === 'yearly') return diffDays >= 0 && diffDays <= 365;
+ return true;
+ };
+
+ // Form states
+ const [formCategory, setFormCategory] = useState('meals');
+ const [formAmount, setFormAmount] = useState('');
+ const [formDescription, setFormDescription] = useState('');
+ const [formPaidFrom, setFormPaidFrom] = useState<'cash' | 'bank'>('cash');
+ const [showExport, setShowExport] = useState(false);
+
+ // Single source of truth: use activeStationId, not shift-existence heuristic
+ const isLube = isLubeBusinessStation(activeStationId);
+
+ // Categories list helper — lube-appropriate labels
+ 
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+ const baseExpenseCategories = isLube ? [
+ { id: 'meals', label: 'Staff Food & Meals', urdu: 'عملے کا کھانا' },
+ { id: 'maintenance', label: 'Shop Maintenance', urdu: 'دکان کی دیکھ بھال/مرمت' },
+ { id: 'electricity', label: 'Utility Grid Bills', urdu: 'بجلی اور گیس بل' },
+ { id: 'workshop_tools', label: 'Workshop Tools & Equipment', urdu: 'ورکشاپ ٹولز اور سامان' },
+ { id: 'salary', label: 'Staff Wages/Pay', urdu: 'عملے کی تنخواہ' },
+ { id: 'stationery', label: 'Stationery & Packaging', urdu: 'اسٹیشنری و پیکنگ' },
+ { id: 'other', label: 'Miscellaneous Other', urdu: 'دیگر متفرق اخراجات' }
+ ] : [
+ { id: 'meals', label: 'Staff Food & Meals', urdu: 'عملے کا کھانا' },
+ { id: 'maintenance', label: 'Pump Maintenance', urdu: 'پمپ کی دیکھ بھال/مرمت' },
+ { id: 'electricity', label: 'Utility Grid Bills', urdu: 'بجلی اور گیس بل' },
+ { id: 'generator_fuel', label: 'Generator Fuel Oil', urdu: 'جنریٹر کا ایندھن' },
+ { id: 'salary', label: 'Operator Wages/Pay', urdu: 'عملے کی تنخواہ' },
+ { id: 'stationery', label: 'Stationery & Slips', urdu: 'اسٹیشنری و پرنٹنگ' },
+ { id: 'other', label: 'Miscellaneous Other', urdu: 'دیگر متفرق اخراجات' }
+ ];
+
+ const expenseCategories = useMemo(() => {
+ const custom = settings.customExpenseCategories || [];
+ return [...baseExpenseCategories, ...custom];
+ }, [baseExpenseCategories, settings.customExpenseCategories]);
+
+ // Compile ALL expenses dynamically (Shifts expenses + standalone expenses)
+ const allExpenses = useMemo(() => {
+ const list: ExpenseEntry[] = [...standaloneExpenses];
+
+ shifts.forEach(sh => {
+ // Find expense logged inside shift session
+ sh.expenseEntries.forEach(exp => {
+ list.push({
+ ...exp,
+ // Retain parent shift context
+ id: `shift_${sh.id}_${exp.id}`,
+ date: sh.date // overwrite or fallback to shift execution date
+ });
+ });
+ });
+
+ // Sort by Date descending
+ return list.sort((a, b) => b.date.localeCompare(a.date));
+ }, [shifts, standaloneExpenses]);
+
+ // Handle Search and category filtering
+ const filteredExpenses = useMemo(() => {
+ return allExpenses.filter(e => {
+ const matchesSearch = e.description.toLowerCase().includes(searchQuery.toLowerCase()) || e.category!.toLowerCase().includes(searchQuery.toLowerCase());
+ const matchesCategory = categoryFilter === 'all' || 
+ (categoryFilter === 'wages-utilities' 
+ ? (e.category === 'salary' || e.category === 'electricity' || e.category === 'generator_fuel')
+ : e.category === categoryFilter);
+ const matchesPayment = paymentModeFilter === 'all' || e.paidFrom === paymentModeFilter;
+ const matchesTime = isWithinTimeFilter(e.date);
+ return matchesSearch && matchesCategory && matchesPayment && matchesTime;
+ });
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+ }, [allExpenses, searchQuery, categoryFilter, paymentModeFilter, timeFilter]);
+
+ const exportColumns = [
+ { key: 'date', label: 'Date', urduLabel: 'تاریخ' },
+ { key: 'category', label: 'Category', urduLabel: 'کیٹیگری' },
+ { key: 'description', label: 'Description', urduLabel: 'تفصیل' },
+ { key: 'paidFrom', label: 'Paid From', urduLabel: 'ادائیگی کا ذریعہ' },
+ { key: 'amount', label: 'Amount', urduLabel: 'رقم' }
+ ];
+
+ // Aggregate metrics
+ const totalAmountSpent = useMemo(() => {
+ return filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
+ }, [filteredExpenses]);
+
+ const categoryAggs = useMemo(() => {
+ const map: Record<string, number> = { /* empty */ };
+ expenseCategories.forEach(cat => { map[cat.id] = 0; });
+
+ allExpenses.forEach(e => {
+ // @ts-expect-error
+ if (map[e.category] !== undefined) {
+ // @ts-expect-error
+ map[e.category] += e.amount;
+ } else {
+ map['other'] = (map['other'] || 0) + e.amount;
+ }
+ });
+
+ return Object.entries(map).map(([k, v]) => ({
+ categoryId: k,
+ amount: v,
+ percentage: allExpenses.length > 0 ? Math.round((v / allExpenses.reduce((sum, x) => sum + x.amount, 0)) * 100) : 0,
+ label: expenseCategories.find(item => item.id === k)?.label || k,
+ 
+ urduLabel: expenseCategories.find(item => item.id === k)?.urdu || k
+ })).sort((a, b) => b.amount - a.amount);
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+ }, [allExpenses]);
+
+
+ // ==========================================
+ // FORM SUBMIT HANDLERS
+ // ==========================================
+
+ const handleCreateExpenseSubmit = (e: React.FormEvent) => {
+ e.preventDefault();
+ const amt = Number(formAmount);
+ if (!amt || amt <= 0) {
+ showToast(t('Please enter a valid expense amount.', 'براہ کرم درست خرچہ رقم درج کریں۔'), 'error');
+ return;
+ }
+
+ if (!formDescription) {
+ showToast(t('Please describe the expenditure.', 'تفصیل لکھنا ضروری ہے۔'), 'error');
+ return;
+ }
+
+ if (formCategory === 'salary') {
+ showToast(t('Please use the Staff module to process salaries to maintain the ledger.', 'تنخواہ کا اندراج سٹاف ماڈیول سے کریں۔'), 'error');
+ return;
+ }
+
+ // Capture standalone direct expense entry
+ const newExp: ExpenseEntry = {
+ id: `exp_${Date.now()}`,
+ category: formCategory,
+ amount: amt,
+ description: formDescription,
+ date: new Date().toISOString().split('T')[0],
+ paidFrom: formPaidFrom
+ };
+
+ onAddStandaloneExpense(newExp);
+
+ setFormAmount('');
+ setFormDescription('');
+ setShowAddExpense(false);
+ 
+ showToast(t('Direct station expense registered successfully!', 'اسٹیشن کا براہ راست خرچہ رجسٹر ہو گیا!'), 'success');
+ };
+
+ const handleExpenseAutoFill = (data: any) => {
+ if (data.Amount) {
+ const amtMatch = String(data.Amount).replace(/[^0-9.]/g, '');
+ if (amtMatch) setFormAmount(amtMatch);
+ }
+ 
+ if (data.Category || data['Product Details']) {
+ const text = String(data.Category || data['Product Details']).toLowerCase();
+ if (text.includes('meal') || text.includes('food')) setFormCategory('meals');
+ else if (text.includes('mainten') || text.includes('repair')) setFormCategory('maintenance');
+ else if (text.includes('elect') || text.includes('util') || text.includes('bill')) setFormCategory('electricity');
+ else if (text.includes('gen') || text.includes('fuel')) setFormCategory('generator_fuel');
+ else if (text.includes('sal') || text.includes('wage')) setFormCategory('salary');
+ else if (text.includes('stat') || text.includes('print') || text.includes('paper')) setFormCategory('stationery');
+ else setFormCategory('other');
+ }
+ 
+ let desc = '';
+ if (data['Supplier/Customer Name'] && data['Supplier/Customer Name'] !== 'N/A') desc += `${data['Supplier/Customer Name']} - `;
+ if (data['Product Details'] && data['Product Details'] !== 'N/A') desc += data['Product Details'];
+ 
+ if (desc) setFormDescription(desc);
+ else if (data.Remarks) setFormDescription(data.Remarks);
+ 
+ if (data['Payment Method']) {
+ const pMode = String(data['Payment Method']).toLowerCase();
+ if (pMode.includes('bank') || pMode.includes('card') || pMode.includes('transfer')) setFormPaidFrom('bank');
+ else setFormPaidFrom('cash');
+ }
+
+ setTimeout(() => {
+ setIsScannerOpen(false);
+ showToast('Form auto-filled from receipt!', 'success');
+ }, 1500);
+ };
+
+ // Aggregate widget stats based on filtered list
+ const widgetStats = useMemo(() => {
+ let mealsSum = 0;
+ let maintenanceSum = 0;
+ let salaryAndUtilSum = 0;
+
+ filteredExpenses.forEach(e => {
+ if (e.category === 'meals') {
+ mealsSum += e.amount;
+ } else if (e.category === 'maintenance') {
+ maintenanceSum += e.amount;
+ } else if (e.category === 'salary' || e.category === 'electricity' || e.category === 'generator_fuel') {
+ salaryAndUtilSum += e.amount;
+ }
+ });
+
+ return {
+ mealsSum,
+ maintenanceSum,
+ salaryAndUtilSum
+ };
+ }, [filteredExpenses]);
+
+ const handleAddCustomCategory = (e: React.FormEvent) => {
+ e.preventDefault();
+ if (!newCatLabel || !newCatUrdu) {
+ showToast(t('Please enter both English and Urdu names.', 'براہ کرم انگلش اور اردو دونوں نام درج کریں۔'), 'error');
+ return;
+ }
+ const id = 'custom_' + Date.now();
+ const newCat = { id, label: newCatLabel, urdu: newCatUrdu };
+ const currentCustom = settings.customExpenseCategories || [];
+ handleUpdateSettings({
+ ...settings,
+ customExpenseCategories: [...currentCustom, newCat]
+ });
+ setNewCatLabel('');
+ setNewCatUrdu('');
+ showToast(t('Custom category added!', 'کسٹم کیٹیگری شامل کر دی گئی!'), 'success');
+ };
+
+ const handleDeleteCustomCategory = (id: string) => {
+ if (!window.confirm(t('Are you sure you want to delete this category?', 'کیا آپ واقعی یہ کیٹیگری حذف کرنا چاہتے ہیں؟'))) return;
+ const currentCustom = settings.customExpenseCategories || [];
+ handleUpdateSettings({
+ ...settings,
+ customExpenseCategories: currentCustom.filter(c => c.id !== id)
+ });
+ showToast(t('Custom category deleted!', 'کسٹم کیٹیگری حذف کر دی گئی!'), 'success');
+ };
+
+ return (
+ <div className="space-y-6 pb-16 lg:pb-0">
+
+ {/* HEADER ROW WITH INTEGRATED DYNAMIC TIME FILTER */}
+ {/* HEADER ROW WITH INTEGRATED DYNAMIC TIME FILTER */}
+ <div className="flex flex-col gap-4 border-b border-border pb-4">
+ <div className="flex flex-row items-center justify-between gap-4">
+ <div className="flex-1 min-w-0">
+ <span className="font-mono text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-0.5">OPERATIONS</span>
+ <h2 className="font-sans text-xl sm:text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
+ <Coins className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600 shrink-0" />
+ <span className="truncate">{t('Operational Expenses', 'اخراجات اور کاروباری بلنگ')}</span>
+ </h2>
+ <p className="font-sans text-xs text-muted-foreground mt-1 hidden sm:block">
+ {t('Audit and document stationary purchases, machinery calibrations, meals and overheads.', 'اسٹیشن کے تمام آپریشنل اور ذاتی اخراجات، تنخواہیں اور مرمت کے بلوں کی مانیٹرنگ۔')}
+ </p>
+ </div>
+ </div>
+
+ {/* TIME FILTER & TRIGGER ROW */}
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full">
+ <div className="flex bg-muted rounded-lg p-1 border border-border shadow-sm w-full sm:w-auto">
+ {(['all', 'weekly', 'monthly', 'yearly'] as const).map((filter) => (
+ <button
+ key={filter}
+ onClick={() => setTimeFilter(filter)}
+ className={`flex-1 sm:flex-initial text-center px-3 py-1.5 font-sans text-[11px] font-bold uppercase tracking-wider rounded-md transition-all cursor-pointer${
+ timeFilter === filter
+ ? 'bg-orange-600 text-white shadow-xs'
+ : 'text-slate-500 hover:text-foreground hover:bg-slate-50 dark:bg-card/5'
+ }`}
+ >
+ {filter === 'all' && t('All-Time', 'کل وقت')}
+ {filter === 'weekly' && t('Weekly', 'ہفتہ وار')}
+ {filter === 'monthly' && t('Monthly', 'ماہانہ')}
+ {filter === 'yearly' && t('Yearly', 'سالانہ')}
+ </button>
+ ))}
+ </div>
+
+ <div className="flex gap-2 w-full sm:w-auto">
+ <button
+ onClick={() => setShowManageCategories(true)}
+ className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 rounded-lg bg-muted border border-border px-3 py-2.5 font-sans text-xs font-bold text-foreground shadow-sm hover:bg-slate-200 transition-all cursor-pointer"
+ >
+ <Settings2 className="h-4 w-4" />
+ <span>{t('Categories', 'کیٹیگریز')}</span>
+ </button>
+ 
+ <button
+ onClick={() => setShowAddExpense(true)}
+ className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-3 py-2.5 font-sans text-xs font-bold text-white shadow-md shadow-orange-500/10 hover:bg-orange-700 transition-all cursor-pointer"
+ >
+ <PlusCircle className="h-4 w-4" />
+ <span>{t('+ Log Expense', 'نیا خرچہ لکھیں')}</span>
+ </button>
+ </div>
+ </div>
+ </div>
+
+ {/* UNIVERSAL MODULE SEARCH BAR */}
+ <ModuleSearchBar
+ moduleName={t('Expenses', 'اخراجات')}
+ placeholder={t('Search notes description...', 'تفصیل تلاش کریں...')}
+ onSearch={setSearchQuery}
+ onExport={() => setShowExport(true)}
+ />
+
+ {/* DYNAMIC KPI CARDS SECTION */}
+ <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4 px-4 sm:px-0">
+ {/* AMBER CARD - TOTAL SPEND */}
+ <button
+ onClick={() => {
+ setCategoryFilter('all');
+ setPaymentModeFilter('all');
+ setSearchQuery('');
+ }}
+ className="text-left fp-kpi-compact kpi-orange relative overflow-hidden transition-all duration-200 hover:border-orange-550 dark:hover:border-orange-500/50 hover:shadow-md cursor-pointer border border-transparent rounded-2xl group animate-fade-in"
+ >
+ <div className="fp-kpi-compact__label">{t('TOTAL SPEND', 'کل اخراجات')}</div>
+ <div className="fp-kpi-compact__value text-lg sm:text-2xl font-black">
+ {formatCurrency(totalAmountSpent, settings)}
+ </div>
+ <div className="fp-kpi-compact__sub text-orange-400 text-[9px] mt-1 block">
+ {t('Click to show all', 'تمام دکھانے کے لیے کلک کریں')}
+ </div>
+ <div className="absolute top-4 right-4 flex h-9 w-9 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-orange-500/15 text-orange-500 ring-1 ring-inset ring-orange-500/20 shadow-inner group-hover:scale-110 transition-transform">
+ <Coins className="h-4.5 w-4.5 sm:h-6 sm:w-6" strokeWidth={2.5} />
+ </div>
+ </button>
+
+ {/* GREEN CARD - STAFF FOOD & MEALS */}
+ <button
+ onClick={() => setCategoryFilter('meals')}
+ className={`text-left fp-kpi-compact kpi-green relative overflow-hidden transition-all duration-200 hover:border-emerald-550 dark:hover:border-emerald-500/50 hover:shadow-md cursor-pointer border rounded-2xl group animate-fade-in${categoryFilter === 'meals' ? 'border-emerald-500 bg-emerald-50/10' : 'border-transparent'}`}
+ >
+ <div className="fp-kpi-compact__label">{t('STAFF MEALS', 'سٹاف کا کھانا')}</div>
+ <div className="fp-kpi-compact__value text-lg sm:text-2xl font-black">
+ {formatCurrency(widgetStats.mealsSum, settings)}
+ </div>
+ <div className="fp-kpi-compact__sub text-emerald-400 text-[9px] mt-1 block">
+ {t('Welfare & daily lunches', 'سٹاف کھانا خرچہ')}
+ </div>
+ <div className="absolute top-4 right-4 flex h-9 w-9 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-500 ring-1 ring-inset ring-emerald-500/20 shadow-inner group-hover:scale-110 transition-transform">
+ <Utensils className="h-4.5 w-4.5 sm:h-6 sm:w-6" strokeWidth={2.5} />
+ </div>
+ </button>
+
+ {/* CRIMSON CARD - PUMP MAINTENANCE */}
+ <button
+ onClick={() => setCategoryFilter('maintenance')}
+ className={`text-left fp-kpi-compact kpi-red relative overflow-hidden transition-all duration-200 hover:border-rose-550 dark:hover:border-rose-500/50 hover:shadow-md cursor-pointer border rounded-2xl group animate-fade-in${categoryFilter === 'maintenance' ? 'border-rose-500 bg-rose-50/10' : 'border-transparent'}`}
+ >
+ <div className="fp-kpi-compact__label">{isLube ? t('SHOP MAINT.', 'شاپ مرمت') : t('PUMP MAINT.', 'پمپ مرمت')}</div>
+ <div className="fp-kpi-compact__value text-lg sm:text-2xl font-black">
+ {formatCurrency(widgetStats.maintenanceSum, settings)}
+ </div>
+ <div className="fp-kpi-compact__sub text-rose-450 text-[9px] mt-1 block">
+ {isLube ? t('Repairs & equipment', 'شاپ مرمت کا خرچہ') : t('Nozzles & calibrations', 'پمپ مرمت کا خرچہ')}
+ </div>
+ <div className="absolute top-4 right-4 flex h-9 w-9 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-rose-500/15 text-rose-500 ring-1 ring-inset ring-rose-500/20 shadow-inner group-hover:scale-110 transition-transform">
+ <Wrench className="h-4.5 w-4.5 sm:h-6 sm:w-6" strokeWidth={2.5} />
+ </div>
+ </button>
+
+ {/* BLUE CARD - OPERATOR WAGES & UTILITIES */}
+ <button
+ onClick={() => setCategoryFilter('wages-utilities')}
+ className={`text-left fp-kpi-compact kpi-blue relative overflow-hidden transition-all duration-200 hover:border-blue-550 dark:hover:border-blue-500/50 hover:shadow-md cursor-pointer border rounded-2xl group animate-fade-in${categoryFilter === 'wages-utilities' ? 'border-blue-500 bg-blue-50/10' : 'border-transparent'}`}
+ >
+ <div className="fp-kpi-compact__label">{t('WAGES & UTILS', 'بل اور تنخواہیں')}</div>
+ <div className="fp-kpi-compact__value text-lg sm:text-2xl font-black">
+ {formatCurrency(widgetStats.salaryAndUtilSum, settings)}
+ </div>
+ <div className="fp-kpi-compact__sub text-blue-450 text-[9px] mt-1 block truncate">
+ {t('Power, salaries & gen', 'بجلی بل اور تنخواہیں')}
+ </div>
+ <div className="absolute top-4 right-4 flex h-9 w-9 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-500 ring-1 ring-inset ring-blue-500/20 shadow-inner group-hover:scale-110 transition-transform">
+ <Lightbulb className="h-4.5 w-4.5 sm:h-6 sm:w-6" strokeWidth={2.5} />
+ </div>
+ </button>
+ </div>
+
+ <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+ 
+ {/* LEFT COMPEX: TIMELINES & DETAIL LIST OF EXPENDITURES */}
+ <div className="lg:col-span-2 space-y-4">
+ 
+ {/* SEARCH & FILTER CONTROLS CARD */}
+ <div className="rounded-xl border border-border bg-card p-4 shadow-xs space-y-3.5">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+ <div>
+ <select
+ value={categoryFilter}
+ onChange={(e) => setCategoryFilter(e.target.value)}
+ className="w-full rounded-md border border-border bg-slate-55 py-1.5 px-2.5 font-sans text-xs focus:border-red-550 focus:outline-hidden cursor-pointer"
+ >
+ <option value="all">{t('All Categories', 'تمام کیٹیگریز')}</option>
+ <option value="wages-utilities">{t('Wages & Utilities', 'تنخواہیں اور بلنگ')}</option>
+ {expenseCategories.map(c => (
+ <option key={c.id} value={c.id}>{isUrdu ? c.urdu : c.label}</option>
+ ))}
+ </select>
+ </div>
+
+ <div>
+ <select
+ value={paymentModeFilter}
+ onChange={(e) => setPaymentModeFilter(e.target.value)}
+ className="w-full rounded-md border border-border bg-slate-55 py-1.5 px-2.5 font-sans text-xs focus:border-red-550 focus:outline-hidden"
+ >
+ <option value="all">{t('All Outflows', 'بک بقایا ادائیگی ذریعہ')}</option>
+ <option value="cash">{t('Paid from Cash Drawer', 'صرف کیش رقم')}</option>
+ <option value="bank">{t('Paid from Bank Current Account', 'بینک اکاؤنٹ منتقلی')}</option>
+ </select>
+ </div>
+
+ </div>
+ </div>
+
+ {/* TABLE LOG LISTING */}
+ <div className="rounded-xl border border-border bg-card shadow-xs overflow-hidden">
+ {/* Desktop Table View */}
+ <div className="hidden md:block overflow-x-auto">
+ <table className="w-full border-collapse text-left text-xs text-foreground">
+ <thead>
+ <tr className="bg-muted border-b border-border text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+ <th className="py-3 px-4 border-r border-border">{t('Date & Time', 'تاریخ اور وقت')}</th>
+ <th className="py-3 px-4 border-r border-border">{t('Expenditure Details', 'خرچہ تفصیل')}</th>
+ <th className="py-3 px-4 border-r border-border">{t('Category', 'کیٹیگری')}</th>
+ <th className="py-3 px-4 border-r border-border">{t('Payment Outflow Source', 'ادائیگی کا ذریعہ')}</th>
+ <th className="py-3 px-4 text-right">{t('Outflow Amount', 'خرچہ رقم')}</th>
+ </tr>
+ </thead>
+ <tbody className="text-foreground">
+ {filteredExpenses.length === 0 ? (
+ <tr>
+ <td colSpan={5} className="py-6 bg-subtle">
+ <EmptyState
+ icon={Notebook}
+ title={t('No expenses found for this period.', 'کوئی اخراجات درج نہیں ہیں۔')}
+ description={t('Track stationery, meals, power utilities, and repair costs.', 'ملازمین کا کھانا، بجلی کا بل، یا جنریٹر ایندھن کا خرچہ ریکارڈ کریں۔')}
+ actionLabel={t('Log New Expense', 'نیا خرچہ لکھیں')}
+ onAction={() => setShowAddExpense(true)}
+ />
+ </td>
+ </tr>
+ ) : (
+ filteredExpenses.map((exp) => {
+ const catInfo = expenseCategories.find(c => c.id === exp.category);
+ const labelStyle = exp.paidFrom === 'cash' ? 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30' : 'bg-sky-50 text-sky-700 border-sky-100 dark:bg-sky-950/20 dark:text-sky-400 dark:border-sky-900/30';
+ 
+ let sideBorder = 'border-l-4 border-l-slate-400 dark:border-l-slate-650';
+ if (exp.category === 'meals') sideBorder = 'border-l-4 border-l-emerald-500';
+ else if (exp.category === 'maintenance') sideBorder = 'border-l-4 border-l-rose-500';
+ else if (exp.category === 'salary' || exp.category === 'electricity' || exp.category === 'generator_fuel') sideBorder = 'border-l-4 border-l-blue-500';
+
+ return (
+ <tr key={exp.id} className={`border-b border-border hover:bg-slate-50 dark:hover:bg-white/5 odd:bg-[#FAFBFD] even:bg-white dark:odd:bg-card/70 dark:even:bg-card transition-colors${sideBorder}`}>
+ <td className="py-3 px-4 border-r border-border/60 font-mono text-[11px] font-semibold text-foreground">{exp.date}</td>
+ <td className="py-3 px-4 border-r border-border/60 font-bold text-xs text-foreground max-w-[300px] truncate" title={exp.description}>{exp.description}</td>
+ <td className="py-3 px-4 border-r border-border/60">
+ <span className="rounded-md bg-muted px-2.5 py-0.5 text-[10px] font-bold text-slate-650 border border-border/40">
+ {catInfo ? (isUrdu ? catInfo.urdu : catInfo.label) : exp.category}
+ </span>
+ </td>
+ <td className="py-3 px-4 border-r border-border/60">
+ <span className={`rounded-md border px-2 py-0.5 font-black text-[9px] uppercase tracking-wider${labelStyle}`}>
+ {exp.paidFrom === 'cash' ? t('CASH BOX', 'کیش کیبن') : t('BANK ONLINE', 'بینک اکاؤنٹ')}
+ </span>
+ </td>
+ <td className="py-3 px-4 text-right font-mono text-sm font-black text-rose-600">
+ -{formatCurrency(exp.amount, settings)}
+ </td>
+ </tr>
+ );
+ })
+ )}
+ </tbody>
+ </table>
+ </div>
+
+ {/* Mobile Card List View */}
+ <div className="block md:hidden divide-y divide-border dark:divide-white/10">
+ {filteredExpenses.length === 0 ? (
+ <div className="py-6 px-4">
+ <EmptyState
+ icon={Notebook}
+ title={t('No expenses found for this period.', 'کوئی اخراجات درج نہیں ہیں۔')}
+ description={t('Track stationery, meals, power utilities, and repair costs.', 'ملازمین کا کھانا، بجلی کا بل، یا جنریٹر ایندھن کا خرچہ ریکارڈ کریں۔')}
+ actionLabel={t('Log New Expense', 'نیا خرچہ لکھیں')}
+ onAction={() => setShowAddExpense(true)}
+ />
+ </div>
+ ) : (
+ filteredExpenses.map((exp) => {
+ const catInfo = expenseCategories.find(c => c.id === exp.category);
+ const labelStyle = exp.paidFrom === 'cash' ? 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30' : 'bg-sky-50 text-sky-700 border-sky-100 dark:bg-sky-950/20 dark:text-sky-400 dark:border-sky-900/30';
+ 
+ let sideBorder = 'border-l-4 border-l-slate-400 dark:border-l-slate-650';
+ if (exp.category === 'meals') sideBorder = 'border-l-4 border-l-emerald-500';
+ else if (exp.category === 'maintenance') sideBorder = 'border-l-4 border-l-rose-500';
+ else if (exp.category === 'salary' || exp.category === 'electricity' || exp.category === 'generator_fuel') sideBorder = 'border-l-4 border-l-blue-500';
+
+ return (
+ <div key={exp.id} className={`p-4 space-y-3 transition-colors odd:bg-[#FAFBFD] even:bg-white dark:odd:bg-card/70 dark:even:bg-card${sideBorder}`}>
+ <div className="flex items-start justify-between gap-2">
+ <div className="space-y-1">
+ <span className="font-bold text-foreground text-xs block leading-tight">{exp.description}</span>
+ <span className="inline-flex rounded-md bg-muted px-2 py-0.5 text-[9px] font-bold text-slate-650 border border-border/40">
+ {catInfo ? (isUrdu ? catInfo.urdu : catInfo.label) : exp.category}
+ </span>
+ </div>
+ <span className={`inline-flex rounded-md border px-2 py-0.5 font-black text-[8px] uppercase tracking-wider shrink-0${labelStyle}`}>
+ {exp.paidFrom === 'cash' ? t('CASH BOX', 'کیش کیبن') : t('BANK ONLINE', 'بینک اکاؤنٹ')}
+ </span>
+ </div>
+
+ <div className="flex justify-between items-center text-[10px] pt-1">
+ <span className="font-mono text-muted-foreground font-semibold">
+ {exp.date}
+ </span>
+ <strong className="font-mono text-sm text-rose-600 font-black">
+ -{formatCurrency(exp.amount, settings)}
+ </strong>
+ </div>
+ </div>
+ );
+ })
+ )}
+ </div>
+ </div>
+
+ </div>
+
+ {/* RIGHT ANALYTICS BOARD PANEL: BURDEN CATEGORIES */}
+ <div className="rounded-xl border border-border bg-card p-4 shadow-xs space-y-4">
+ <h3 className="font-sans text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2 border-b border-border pb-2.5">
+ <Notebook className="h-4.5 w-4.5 text-muted-foreground" />
+ <span>{t('Categorized burden summaries', 'تفصیلی کیٹیگری موازنہ کلاسیفیکیشن')}</span>
+ </h3>
+
+ <div className="space-y-4">
+ {categoryAggs.map(agg => (
+ <div key={agg.categoryId} className="space-y-1.5">
+ <div className="flex justify-between items-center font-sans text-xs font-semibold">
+ <span className="text-foreground">{settings.language === 'ur' ? agg.urduLabel : agg.label}</span>
+ <span className="font-mono text-muted-foreground">{agg.percentage}% ({formatCurrency(agg.amount, settings)})</span>
+ </div>
+
+ <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+ <div
+ className="h-full rounded-full bg-red-500 transition-all duration-300"
+ style={{ width: `${agg.percentage}%` }}
+ ></div>
+ </div>
+ </div>
+ ))}
+ </div>
+ </div>
+
+ </div>
+
+ {/* DETAILED LOG OVERLAY MODAL */}
+ <AnimatePresence>
+ {showAddExpense && (
+ <motion.div
+ initial={{ opacity: 0 }}
+ animate={{ opacity: 1 }}
+ exit={{ opacity: 0 }}
+ className="premium-modal-overlay"
+ >
+ <motion.div
+ initial={{ scale: 0.95, y: 15, opacity: 0 }}
+ animate={{ scale: 1, y: 0, opacity: 1 }}
+ exit={{ scale: 0.95, y: 15, opacity: 0 }}
+ transition={{ type:"spring", damping: 25, stiffness: 350 }}
+ className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl"
+ >
+ <div className="flex items-center justify-between border-b border-border pb-3 mb-4">
+ <h3 className="font-sans text-sm font-bold text-foreground flex items-center gap-2">
+ <Coins className="h-5 w-5 text-red-550" />
+ <span>{t('Register Standalone Expenditure', 'اسٹیشن کا نیا روز مرہ خرچہ درج کریں')}</span>
+ </h3>
+ <button onClick={() => setShowAddExpense(false)} className="text-muted-foreground hover:text-slate-650 cursor-pointer font-bold text-xl">&times;</button>
+ </div>
+
+ <button
+ type="button"
+ onClick={() => setIsScannerOpen(true)}
+ className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 font-sans text-sm font-bold py-2.5 hover:bg-indigo-100 transition-colors cursor-pointer mb-5 shadow-xs"
+ >
+ <Sparkles className="h-4.5 w-4.5" />
+ {t('Auto-Fill with Receipt Scanner', 'رسید سکین کر کے آٹو فل کریں')}
+ </button>
+
+ <form onSubmit={handleCreateExpenseSubmit} className="space-y-4">
+ <div>
+ <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1.5">{t('Select Expenditure Category:', 'خرچہ کی قسم منتخب کریں:')}</label>
+ <select
+ value={formCategory}
+ onChange={(e) => setFormCategory(e.target.value)}
+ className="premium-input border bg-card px-2.5 font-sans text-sm focus:border-red-500 focus:outline-hidden"
+ >
+ {expenseCategories.filter(c => c.id !== 'salary').map(c => (
+ <option key={c.id} value={c.id}>{isUrdu ? c.urdu : c.label}</option>
+ ))}
+ </select>
+ </div>
+
+ <div>
+ <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1.5">{t('Rupees Amount (PKR):', 'اخراجات کی رقم:')}</label>
+ <input
+ type="number"
+ required
+ value={formAmount}
+ onChange={(e) => setFormAmount(e.target.value)}
+ placeholder="e.g. 1500"
+ className="premium-input border bg-card px-3 .5 font-mono text-sm focus:border-red-500 focus:outline-hidden"
+ />
+ </div>
+
+ <div>
+ <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1.5">{t('Paid From Account:', 'رقم کہاں سے ادا کی گئی:')}</label>
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+ <button
+ type="button"
+ onClick={() => setFormPaidFrom('cash')}
+ className={`py-2 rounded-lg border font-sans text-xs font-bold cursor-pointer transition-all${
+ formPaidFrom === 'cash' ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-xs' : 'border-border text-slate-500'
+ }`}
+ >
+ 💵 {t('Cash counter drawer', 'کیش کیبن')}
+ </button>
+ <button
+ type="button"
+ onClick={() => setFormPaidFrom('bank')}
+ className={`py-2 rounded-lg border font-sans text-xs font-bold cursor-pointer transition-all${
+ formPaidFrom === 'bank' ? 'border-sky-500 bg-sky-50 text-sky-700 shadow-xs' : 'border-border text-slate-500'
+ }`}
+ >
+ 🏦 {t('Bank online transfer', 'بینک اکاؤنٹ')}
+ </button>
+ </div>
+ </div>
+
+ <div>
+ <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1.5">{t('Expense Narrative description:', 'خرچہ کی تفصیل:')}</label>
+ <input
+ type="text"
+ required
+ value={formDescription}
+ onChange={(e) => setFormDescription(e.target.value)}
+ placeholder="e.g. Weekly tea and biscuits for shift workers"
+ className="premium-input border bg-card px-3 font-sans text-xs focus:border-red-500 focus:outline-hidden"
+ />
+ </div>
+
+ <button
+ type="submit"
+ className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-sans text-sm font-bold tracking-wider rounded-lg shadow-md mt-4 cursor-pointer"
+ >
+ {t('SUBMIT EXPENDITURE BILL', 'خرچہ درج کر دیں')}
+ </button>
+ </form>
+ </motion.div>
+ </motion.div>
+ )}
+
+ {showManageCategories && (
+ <motion.div
+ initial={{ opacity: 0 }}
+ animate={{ opacity: 1 }}
+ exit={{ opacity: 0 }}
+ className="premium-modal-overlay"
+ >
+ <motion.div
+ initial={{ scale: 0.95, y: 15, opacity: 0 }}
+ animate={{ scale: 1, y: 0, opacity: 1 }}
+ exit={{ scale: 0.95, y: 15, opacity: 0 }}
+ transition={{ type:"spring", damping: 25, stiffness: 350 }}
+ className="w-full max-w-xl rounded-xl border border-border bg-card p-6 shadow-xl"
+ >
+ <div className="flex items-center justify-between border-b border-border pb-3 mb-4">
+ <h3 className="font-sans text-sm font-bold text-foreground flex items-center gap-2">
+ <Settings2 className="h-5 w-5 text-indigo-550" />
+ <span>{t('Manage Expense Categories', 'اخراجات کی کیٹیگریز ترتیب دیں')}</span>
+ </h3>
+ <button onClick={() => setShowManageCategories(false)} className="text-muted-foreground hover:text-slate-650 cursor-pointer font-bold text-xl">&times;</button>
+ </div>
+
+ {/* List existing custom categories */}
+ <div className="mb-6 space-y-2 max-h-[30vh] overflow-y-auto pr-1">
+ <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">{t('Custom Categories:', 'آپ کی بنائی گئی کیٹیگریز:')}</label>
+ {(!settings.customExpenseCategories || settings.customExpenseCategories.length === 0) ? (
+ <div className="text-center p-4 bg-subtle rounded-lg text-muted-foreground text-xs font-bold">
+ {t('No custom categories yet.', 'ابھی تک کوئی کسٹم کیٹیگری نہیں ہے۔')}
+ </div>
+ ) : (
+ settings.customExpenseCategories.map(cat => (
+ <div key={cat.id} className="flex items-center justify-between p-3 bg-subtle rounded-lg border border-border">
+ <div>
+ <div className="font-bold text-sm text-foreground">{cat.label}</div>
+ <div className="text-xs text-muted-foreground">{cat.urdu}</div>
+ </div>
+ <button 
+ onClick={() => handleDeleteCustomCategory(cat.id)}
+ className="p-2 text-rose-500 hover:bg-rose-100 rounded-lg transition-colors"
+ >
+ <Trash2 className="w-4 h-4" />
+ </button>
+ </div>
+ ))
+ )}
+ </div>
+
+ {/* Add New Category Form */}
+ <form onSubmit={handleAddCustomCategory} className="space-y-4 pt-4 border-t border-border">
+ <label className="block text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">{t('Create New Category:', 'نئی کیٹیگری بنائیں:')}</label>
+ <div>
+ <input
+ type="text"
+ required
+ value={newCatLabel}
+ onChange={(e) => setNewCatLabel(e.target.value)}
+ placeholder={t("Category Name (English)","انگلش نام")}
+ className="premium-input border bg-card px-3 font-sans text-sm focus:border-indigo-500 focus:outline-hidden mb-3"
+ />
+ <input
+ type="text"
+ required
+ value={newCatUrdu}
+ onChange={(e) => setNewCatUrdu(e.target.value)}
+ dir="rtl"
+ placeholder={t("Category Name (Urdu)","اردو نام")}
+ className="premium-input border bg-card px-3 font-sans text-sm focus:border-indigo-500 focus:outline-hidden mb-3"
+ />
+ </div>
+ <button
+ type="submit"
+ className="w-full py-2.5 premium-button hover:bg-indigo-700 font-sans text-xs font-bold tracking-wider shadow-md cursor-pointer"
+ >
+ {t('+ ADD CATEGORY', 'کیٹیگری شامل کریں')}
+ </button>
+ </form>
+ </motion.div>
+ </motion.div>
+ )}
+ </AnimatePresence>
+
+ <AIDocumentScanner
+ isOpen={isScannerOpen}
+ onClose={() => setIsScannerOpen(false)}
+ settings={settings}
+ extractionPrompt='You are an expert fuel station accounting assistant. Extract data from this expense receipt and return it strictly as JSON with exactly these keys:"Amount" (number or string with number),"Category" (e.g. meals, maintenance, electricity, generator_fuel, salary, stationery, other),"Supplier/Customer Name","Product Details" (what was bought),"Payment Method". Do not use markdown backticks, just the raw JSON object.'
+ onDataExtracted={handleExpenseAutoFill}
+ />
+
+ <ExportToolbar
+ isOpen={showExport}
+ onClose={() => setShowExport(false)}
+ data={filteredExpenses}
+ columns={exportColumns}
+ title="Expenses Report"
+ filenamePrefix="expenses_report"
+ />
+ </div>
+ );
 }

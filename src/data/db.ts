@@ -9,188 +9,188 @@ let memoryCache: Record<string, string> = { /* empty */ };
 let dbInitialized = false;
 
 export async function initDatabase() {
-  if (dbInitialized) return;
-  try {
-    await localforage.ready();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const keys = await localforage.keys();
+ if (dbInitialized) return;
+ try {
+ await localforage.ready();
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
+ const keys = await localforage.keys();
 
-    // Optimize: Bulk load all items concurrently using iterate (drastically faster than sequential awaits)
-    try {
-      await localforage.iterate((value, key) => {
-        if (value !== null) {
-          memoryCache[key] = value as string;
-        }
-      });
-    } catch (e) {
-      logger.warn('localforage.iterate failed', e);
-    }
+ // Optimize: Bulk load all items concurrently using iterate (drastically faster than sequential awaits)
+ try {
+ await localforage.iterate((value, key) => {
+ if (value !== null) {
+ memoryCache[key] = value as string;
+ }
+ });
+ } catch (e) {
+ logger.warn('localforage.iterate failed', e);
+ }
 
-    // Comprehensive Fallback: Sync from localStorage for any missing keys
-    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && !memoryCache[key]) {
-          const val = localStorage.getItem(key);
-          if (val !== null) {
-            memoryCache[key] = val;
-            localforage.setItem(key, val).catch(() => { /* empty */ });
-          }
-        }
-      }
-    }
+ // Comprehensive Fallback: Sync from localStorage for any missing keys
+ if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+ for (let i = 0; i < localStorage.length; i++) {
+ const key = localStorage.key(i);
+ if (key && !memoryCache[key]) {
+ const val = localStorage.getItem(key);
+ if (val !== null) {
+ memoryCache[key] = val;
+ localforage.setItem(key, val).catch(() => { /* empty */ });
+ }
+ }
+ }
+ }
 
-    if (!(memoryCache['fuelpro_fresh_v5_nodummies'] ?? null)) {
-      // Safely register the marker without wiping anything to prevent accidental data loss
-      memoryCache['fuelpro_fresh_v5_nodummies'] = 'true';
-      await localforage.setItem('fuelpro_fresh_v5_nodummies', 'true').catch(() => { /* empty */ });
+ if (!(memoryCache['fuelpro_fresh_v5_nodummies'] ?? null)) {
+ // Safely register the marker without wiping anything to prevent accidental data loss
+ memoryCache['fuelpro_fresh_v5_nodummies'] = 'true';
+ await localforage.setItem('fuelpro_fresh_v5_nodummies', 'true').catch(() => { /* empty */ });
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      try { if (typeof localStorage !== 'undefined') localStorage.setItem('fuelpro_fresh_v5_nodummies', 'true'); } catch (e) { /* ignore */ }
-    }
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
+ try { if (typeof localStorage !== 'undefined') localStorage.setItem('fuelpro_fresh_v5_nodummies', 'true'); } catch (e) { /* ignore */ }
+ }
 
-    dbInitialized = true;
-  } catch (err) {
-    logger.error('Error initializing IndexedDB:', err);
-  }
+ dbInitialized = true;
+ } catch (err) {
+ logger.error('Error initializing IndexedDB:', err);
+ }
 }
 
 function flushToIndexedDB(key: string, value: string | null) {
-  if (value === null) {
-    localforage.removeItem(key).catch(logger.error);
+ if (value === null) {
+ localforage.removeItem(key).catch(logger.error);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    try { if (typeof localStorage !== 'undefined') localStorage.removeItem(key); } catch (e) { /* ignore */ }
-  } else {
-    localforage.setItem(key, value).catch(logger.error);
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
+ try { if (typeof localStorage !== 'undefined') localStorage.removeItem(key); } catch (e) { /* ignore */ }
+ } else {
+ localforage.setItem(key, value).catch(logger.error);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    try { if (typeof localStorage !== 'undefined') localStorage.setItem(key, value); } catch (e) { /* ignore */ }
-  }
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
+ try { if (typeof localStorage !== 'undefined') localStorage.setItem(key, value); } catch (e) { /* ignore */ }
+ }
 }
 
 import {
-  Staff,
-  Product,
-  Nozzle,
-  Pump,
-  Customer,
-  Supplier,
-  Shift,
-  BankAccount,
-  DigitalAccount,
-  StockTransaction,
-  GlobalSettings,
-  ExpenseEntry,
-  Tank,
-  RateHistoryEntry,
-  StaffFinanceEntry,
-  AttendanceRecord,
-  Station,
-  AuditTrailEntry,
-  LubePosSale,
-  FleetAccount,
-  FleetVehicle,
-  Driver,
-  FleetTransaction,
-  TankerSchedule,
-  TankerDelivery,
-  VarianceIncident,
-  Asset,
-  MaintenanceRecord,
-  RewardTransaction,
-  InventoryMovement,
-  JournalEntry,
-  StockBatch,
-  CogsRecord,
-  FIFODeduction,
-  SupplierClaim,
-  InventoryRevaluation,
-  SupplierPerformanceScore,
-  LoyaltyMember,
-  DealerMarginSetting,
-  TenantDocument,
-  SalaryTransaction,
-  StaffLoan,
-  SalaryAdvance,
-  InventorySnapshot,
-  CashAccount,
-  TreasuryTransaction,
-  OwnerDrawing,
-  CashReconciliation,
-  MeterResetEvent
+ Staff,
+ Product,
+ Nozzle,
+ Pump,
+ Customer,
+ Supplier,
+ Shift,
+ BankAccount,
+ DigitalAccount,
+ StockTransaction,
+ GlobalSettings,
+ ExpenseEntry,
+ Tank,
+ RateHistoryEntry,
+ StaffFinanceEntry,
+ AttendanceRecord,
+ Station,
+ AuditTrailEntry,
+ LubePosSale,
+ FleetAccount,
+ FleetVehicle,
+ Driver,
+ FleetTransaction,
+ TankerSchedule,
+ TankerDelivery,
+ VarianceIncident,
+ Asset,
+ MaintenanceRecord,
+ RewardTransaction,
+ InventoryMovement,
+ JournalEntry,
+ StockBatch,
+ CogsRecord,
+ FIFODeduction,
+ SupplierClaim,
+ InventoryRevaluation,
+ SupplierPerformanceScore,
+ LoyaltyMember,
+ DealerMarginSetting,
+ TenantDocument,
+ SalaryTransaction,
+ StaffLoan,
+ SalaryAdvance,
+ InventorySnapshot,
+ CashAccount,
+ TreasuryTransaction,
+ OwnerDrawing,
+ CashReconciliation,
+ MeterResetEvent
 } from '../types';
 import { logger } from '../lib/logger';
 import {
-  DEFAULT_FUEL_STATION_ID,
-  LUBE_STATION_ID,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getBusinessTypeForStation,
-  isolateLubePosSales,
-  isolateProductRecords,
-  isolateShiftRecords,
-  isolateTenantRecords,
-  resolveStationId,
-  withBusinessScope
+ DEFAULT_FUEL_STATION_ID,
+ LUBE_STATION_ID,
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
+ getBusinessTypeForStation,
+ isolateLubePosSales,
+ isolateProductRecords,
+ isolateShiftRecords,
+ isolateTenantRecords,
+ resolveStationId,
+ withBusinessScope
 } from '../lib/businessScope';
 
 const STORAGE_KEYS = {
-  SETTINGS: 'fuelpro_settings',
-  STAFF: 'fuelpro_staff',
-  PRODUCTS: 'fuelpro_products',
-  PUMPS: 'fuelpro_pumps',
-  NOZZLES: 'fuelpro_nozzles',
-  CUSTOMERS: 'fuelpro_customers',
-  SUPPLIERS: 'fuelpro_suppliers',
-  SHIFTS: 'fuelpro_shifts',
-  BANKS: 'fuelpro_banks',
-  DIGITAL_ACCOUNTS: 'fuelpro_digital_accounts',
-  STOCK_TXNS: 'fuelpro_stock_txns',
-  TANKS: 'fuelpro_tanks',
-  RATE_HISTORY: 'fuelpro_rate_history',
-  STAFF_FINANCE: 'fuelpro_staff_finance',
-  ATTENDANCE: 'fuelpro_attendance'
+ SETTINGS: 'fuelpro_settings',
+ STAFF: 'fuelpro_staff',
+ PRODUCTS: 'fuelpro_products',
+ PUMPS: 'fuelpro_pumps',
+ NOZZLES: 'fuelpro_nozzles',
+ CUSTOMERS: 'fuelpro_customers',
+ SUPPLIERS: 'fuelpro_suppliers',
+ SHIFTS: 'fuelpro_shifts',
+ BANKS: 'fuelpro_banks',
+ DIGITAL_ACCOUNTS: 'fuelpro_digital_accounts',
+ STOCK_TXNS: 'fuelpro_stock_txns',
+ TANKS: 'fuelpro_tanks',
+ RATE_HISTORY: 'fuelpro_rate_history',
+ STAFF_FINANCE: 'fuelpro_staff_finance',
+ ATTENDANCE: 'fuelpro_attendance'
 };
 
 const SPECIAL_STORAGE_KEYS = {
-  STANDALONE_EXPENSES: 'fuelpro_standalone_expenses',
-  RECONCILED_SHIFTS: 'fuelpro_reconciled_shifts',
-  REPORT_FAVORITES: 'fuelpro_report_favorites',
-  REPORT_RECENTS: 'fuelpro_report_recents',
-  SETTINGS_AUDIT_TRAIL: 'fuelpro_settings_audit_trail',
-  LUBE_POS_SALES: 'fuelpro_lube_pos_sales',
-  FLEET_ACCOUNTS: 'fuelpro_fleet_accounts',
-  FLEET_VEHICLES: 'fuelpro_fleet_vehicles',
-  FLEET_DRIVERS: 'fuelpro_fleet_drivers',
-  FLEET_TRANSACTIONS: 'fuelpro_fleet_transactions',
-  TANKER_SCHEDULES: 'fuelpro_tanker_schedules',
-  TANKER_DELIVERIES: 'fuelpro_tanker_deliveries',
-  VARIANCE_INCIDENTS: 'fuelpro_variance_incidents',
-  ASSETS: 'fuelpro_assets',
-  MAINTENANCE_RECORDS: 'fuelpro_maintenance_records',
-  LOYALTY_MEMBERS: 'fuelpro_loyalty_members',
-  REWARD_TRANSACTIONS: 'fuelpro_reward_transactions',
-  INVENTORY_MOVEMENTS: 'fuelpro_inventory_movements',
-  JOURNAL_ENTRIES: 'fuelpro_journal_entries',
-  STOCK_BATCHES: 'fuelpro_stock_batches',
-  COGS_RECORDS: 'fuelpro_cogs_records',
-  DEALER_MARGIN_SETTINGS: 'fuelpro_dealer_margin_settings',
-  SALARY_TRANSACTIONS: 'fuelpro_salary_transactions',
-  STAFF_LOANS: 'fuelpro_staff_loans',
-  SALARY_ADVANCES: 'fuelpro_salary_advances',
-  INVENTORY_SNAPSHOTS: 'fuelpro_inventory_snapshots',
-  CASH_ACCOUNTS: 'fuelpro_cash_accounts',
-  TREASURY_TRANSACTIONS: 'fuelpro_treasury_transactions',
-  OWNER_DRAWINGS: 'fuelpro_owner_drawings',
-  CASH_RECONCILIATIONS: 'fuelpro_cash_reconciliations',
-  METER_RESETS: 'fuelpro_meter_resets',
-  // Enterprise Fuel Costing Engine (v2)
-  FIFO_DEDUCTIONS: 'fuelpro_fifo_deductions',
-  SUPPLIER_CLAIMS: 'fuelpro_supplier_claims',
-  INVENTORY_REVALUATIONS: 'fuelpro_inventory_revaluations',
-  SUPPLIER_PERFORMANCE: 'fuelpro_supplier_performance',
-  ACTIVITY_REGISTER: 'fuelpro_activity_register',
-  BUSINESS_EVENTS: 'fuelpro_business_events'
+ STANDALONE_EXPENSES: 'fuelpro_standalone_expenses',
+ RECONCILED_SHIFTS: 'fuelpro_reconciled_shifts',
+ REPORT_FAVORITES: 'fuelpro_report_favorites',
+ REPORT_RECENTS: 'fuelpro_report_recents',
+ SETTINGS_AUDIT_TRAIL: 'fuelpro_settings_audit_trail',
+ LUBE_POS_SALES: 'fuelpro_lube_pos_sales',
+ FLEET_ACCOUNTS: 'fuelpro_fleet_accounts',
+ FLEET_VEHICLES: 'fuelpro_fleet_vehicles',
+ FLEET_DRIVERS: 'fuelpro_fleet_drivers',
+ FLEET_TRANSACTIONS: 'fuelpro_fleet_transactions',
+ TANKER_SCHEDULES: 'fuelpro_tanker_schedules',
+ TANKER_DELIVERIES: 'fuelpro_tanker_deliveries',
+ VARIANCE_INCIDENTS: 'fuelpro_variance_incidents',
+ ASSETS: 'fuelpro_assets',
+ MAINTENANCE_RECORDS: 'fuelpro_maintenance_records',
+ LOYALTY_MEMBERS: 'fuelpro_loyalty_members',
+ REWARD_TRANSACTIONS: 'fuelpro_reward_transactions',
+ INVENTORY_MOVEMENTS: 'fuelpro_inventory_movements',
+ JOURNAL_ENTRIES: 'fuelpro_journal_entries',
+ STOCK_BATCHES: 'fuelpro_stock_batches',
+ COGS_RECORDS: 'fuelpro_cogs_records',
+ DEALER_MARGIN_SETTINGS: 'fuelpro_dealer_margin_settings',
+ SALARY_TRANSACTIONS: 'fuelpro_salary_transactions',
+ STAFF_LOANS: 'fuelpro_staff_loans',
+ SALARY_ADVANCES: 'fuelpro_salary_advances',
+ INVENTORY_SNAPSHOTS: 'fuelpro_inventory_snapshots',
+ CASH_ACCOUNTS: 'fuelpro_cash_accounts',
+ TREASURY_TRANSACTIONS: 'fuelpro_treasury_transactions',
+ OWNER_DRAWINGS: 'fuelpro_owner_drawings',
+ CASH_RECONCILIATIONS: 'fuelpro_cash_reconciliations',
+ METER_RESETS: 'fuelpro_meter_resets',
+ // Enterprise Fuel Costing Engine (v2)
+ FIFO_DEDUCTIONS: 'fuelpro_fifo_deductions',
+ SUPPLIER_CLAIMS: 'fuelpro_supplier_claims',
+ INVENTORY_REVALUATIONS: 'fuelpro_inventory_revaluations',
+ SUPPLIER_PERFORMANCE: 'fuelpro_supplier_performance',
+ ACTIVITY_REGISTER: 'fuelpro_activity_register',
+ BUSINESS_EVENTS: 'fuelpro_business_events'
 };
 
 
@@ -201,50 +201,50 @@ const STATION_SCOPE_MIGRATION_KEY = 'fuelpro_station_scope_v2';
 // SEED DATA FOR BUSINESS 1: FUEL STATION (st_default)
 // ==========================================
 const SEED_FUEL_STATION: Station = {
-  id: DEFAULT_STATION_ID,
-  name: 'PSO Super Star Fuel Station',
-  urduName: 'پی ایس او سپر اسٹار فیول اسٹیشن',
-  address: 'Main Kyb-e-Ittehad, DHA Phase 6, Karachi',
-  ntn: 'NTN-4839201-5-PSO',
-  ownerContact: '0300-8884422'
+ id: DEFAULT_STATION_ID,
+ name: 'PSO Super Star Fuel Station',
+ urduName: 'پی ایس او سپر اسٹار فیول اسٹیشن',
+ address: 'Main Kyb-e-Ittehad, DHA Phase 6, Karachi',
+ ntn: 'NTN-4839201-5-PSO',
+ ownerContact: '0300-8884422'
 };
 
 const SEED_FUEL_SETTINGS: GlobalSettings = {
-  stationName: 'PSO Super Star Fuel Station',
-  stationUrduName: 'پی ایس او سپر اسٹار فیول اسٹیشن',
-  address: 'Main Kyb-e-Ittehad, DHA Phase 6, Karachi',
-  ntn: 'NTN-4839201-5-PSO',
-  ownerContact: '0300-8884422',
-  theme: 'orange',
-  language: 'en',
-  currency: 'PKR',
-  setupCompleted: false,
-  setupVersion: 1
+ stationName: 'PSO Super Star Fuel Station',
+ stationUrduName: 'پی ایس او سپر اسٹار فیول اسٹیشن',
+ address: 'Main Kyb-e-Ittehad, DHA Phase 6, Karachi',
+ ntn: 'NTN-4839201-5-PSO',
+ ownerContact: '0300-8884422',
+ theme: 'cream',
+ language: 'en',
+ currency: 'PKR',
+ setupCompleted: false,
+ setupVersion: 1
 };
 
 // ==========================================
 // SEED DATA FOR BUSINESS 2: LUBE BUSINESS (st_lube)
 // ==========================================
 const SEED_LUBE_STATION: Station = {
-  id: LUBE_STATION_ID,
-  name: 'Super Star Lube Hub',
-  urduName: 'سپر اسٹار لیوب ہب',
-  address: 'Main Commercial Area, DHA Phase 5, Karachi',
-  ntn: 'NTN-9847291-3-LUBE',
-  ownerContact: '0316-8432329'
+ id: LUBE_STATION_ID,
+ name: 'Super Star Lube Hub',
+ urduName: 'سپر اسٹار لیوب ہب',
+ address: 'Main Commercial Area, DHA Phase 5, Karachi',
+ ntn: 'NTN-9847291-3-LUBE',
+ ownerContact: '0316-8432329'
 };
 
 const SEED_LUBE_SETTINGS: GlobalSettings = {
-  stationName: 'Super Star Lube Hub',
-  stationUrduName: 'سپر اسٹار لیوب ہب',
-  address: 'Main Commercial Area, DHA Phase 5, Karachi',
-  ntn: 'NTN-9847291-3-LUBE',
-  ownerContact: '0316-8432329',
-  theme: 'blue',
-  language: 'en',
-  currency: 'PKR',
-  setupCompleted: false,
-  setupVersion: 1
+ stationName: 'Super Star Lube Hub',
+ stationUrduName: 'سپر اسٹار لیوب ہب',
+ address: 'Main Commercial Area, DHA Phase 5, Karachi',
+ ntn: 'NTN-9847291-3-LUBE',
+ ownerContact: '0316-8432329',
+ theme: 'blue',
+ language: 'en',
+ currency: 'PKR',
+ setupCompleted: false,
+ setupVersion: 1
 };
 
 const SEED_LUBE_STAFF: any = [];
@@ -290,46 +290,46 @@ const SEED_FUEL_DIGITAL_ACCOUNTS: any = [];
 // SEED DATA FOR DEALER MARGINS
 // ==========================================
 const SEED_DEALER_MARGINS: DealerMarginSetting[] = [
-  {
-    id: 'dm_petrol_1',
-    productType: 'petrol',
-    marginPerLiter: 8.64,
-    effectiveFrom: '2024-01-01',
-    effectiveTo: null,
-    setBy: 'system',
-    notes: 'OGRA fixed dealer margin - current rate',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'dm_diesel_1',
-    productType: 'diesel',
-    marginPerLiter: 8.64,
-    effectiveFrom: '2024-01-01',
-    effectiveTo: null,
-    setBy: 'system',
-    notes: 'OGRA fixed dealer margin - current rate',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'dm_kerosene_1',
-    productType: 'kerosene',
-    marginPerLiter: 6.50,
-    effectiveFrom: '2024-01-01',
-    effectiveTo: null,
-    setBy: 'system',
-    notes: 'OGRA fixed dealer margin - current rate',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'dm_ldo_1',
-    productType: 'ldo',
-    marginPerLiter: 6.50,
-    effectiveFrom: '2024-01-01',
-    effectiveTo: null,
-    setBy: 'system',
-    notes: 'OGRA fixed dealer margin - current rate',
-    createdAt: new Date().toISOString(),
-  }
+ {
+ id: 'dm_petrol_1',
+ productType: 'petrol',
+ marginPerLiter: 8.64,
+ effectiveFrom: '2024-01-01',
+ effectiveTo: null,
+ setBy: 'system',
+ notes: 'OGRA fixed dealer margin - current rate',
+ createdAt: new Date().toISOString(),
+ },
+ {
+ id: 'dm_diesel_1',
+ productType: 'diesel',
+ marginPerLiter: 8.64,
+ effectiveFrom: '2024-01-01',
+ effectiveTo: null,
+ setBy: 'system',
+ notes: 'OGRA fixed dealer margin - current rate',
+ createdAt: new Date().toISOString(),
+ },
+ {
+ id: 'dm_kerosene_1',
+ productType: 'kerosene',
+ marginPerLiter: 6.50,
+ effectiveFrom: '2024-01-01',
+ effectiveTo: null,
+ setBy: 'system',
+ notes: 'OGRA fixed dealer margin - current rate',
+ createdAt: new Date().toISOString(),
+ },
+ {
+ id: 'dm_ldo_1',
+ productType: 'ldo',
+ marginPerLiter: 6.50,
+ effectiveFrom: '2024-01-01',
+ effectiveTo: null,
+ setBy: 'system',
+ notes: 'OGRA fixed dealer margin - current rate',
+ createdAt: new Date().toISOString(),
+ }
 ];
 
 // ==========================================
@@ -337,595 +337,595 @@ const SEED_DEALER_MARGINS: DealerMarginSetting[] = [
 // ==========================================
 
 const STATION_DATA_BASE_KEYS = [
-  ...Object.values(STORAGE_KEYS),
-  ...Object.values(SPECIAL_STORAGE_KEYS)
+ ...Object.values(STORAGE_KEYS),
+ ...Object.values(SPECIAL_STORAGE_KEYS)
 ];
 
 function buildScopedStorageKey(stationId: string, baseKey: string): string {
-  return `${baseKey}_${resolveStationId(stationId)}`;
+ return `${baseKey}_${resolveStationId(stationId)}`;
 }
 
 function buildLegacyStorageKey(stationId: string, baseKey: string): string {
-  const resolvedStationId = resolveStationId(stationId);
-  if (resolvedStationId === DEFAULT_STATION_ID) {
-    return baseKey;
-  }
-  return `${baseKey}_${resolvedStationId}`;
+ const resolvedStationId = resolveStationId(stationId);
+ if (resolvedStationId === DEFAULT_STATION_ID) {
+ return baseKey;
+ }
+ return `${baseKey}_${resolvedStationId}`;
 }
 
 function migrateLegacyStationScope(): void {
-  if (typeof window === 'undefined') {
-    return;
-  }
+ if (typeof window === 'undefined') {
+ return;
+ }
 
-  if ((memoryCache[STATION_SCOPE_MIGRATION_KEY] ?? null)) {
-    return;
-  }
+ if ((memoryCache[STATION_SCOPE_MIGRATION_KEY] ?? null)) {
+ return;
+ }
 
-  STATION_DATA_BASE_KEYS.forEach((baseKey) => {
-    const scopedKey = buildScopedStorageKey(DEFAULT_STATION_ID, baseKey);
-    const legacyKey = buildLegacyStorageKey(DEFAULT_STATION_ID, baseKey);
-    const scopedValue = (memoryCache[scopedKey] ?? null);
-    const legacyValue = (memoryCache[legacyKey] ?? null);
+ STATION_DATA_BASE_KEYS.forEach((baseKey) => {
+ const scopedKey = buildScopedStorageKey(DEFAULT_STATION_ID, baseKey);
+ const legacyKey = buildLegacyStorageKey(DEFAULT_STATION_ID, baseKey);
+ const scopedValue = (memoryCache[scopedKey] ?? null);
+ const legacyValue = (memoryCache[legacyKey] ?? null);
 
-    if (legacyKey !== scopedKey && scopedValue === null && legacyValue !== null) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      ((memoryCache[scopedKey] = legacyValue), flushToIndexedDB(scopedKey, legacyValue));
-    }
+ if (legacyKey !== scopedKey && scopedValue === null && legacyValue !== null) {
+ // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+ ((memoryCache[scopedKey] = legacyValue), flushToIndexedDB(scopedKey, legacyValue));
+ }
 
-    if (legacyKey !== scopedKey && legacyValue !== null) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      (delete memoryCache[legacyKey], flushToIndexedDB(legacyKey, null));
-    }
-  });
+ if (legacyKey !== scopedKey && legacyValue !== null) {
+ // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+ (delete memoryCache[legacyKey], flushToIndexedDB(legacyKey, null));
+ }
+ });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-  ((memoryCache[STATION_SCOPE_MIGRATION_KEY] = 'true'), flushToIndexedDB(STATION_SCOPE_MIGRATION_KEY, 'true'));
+ // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+ ((memoryCache[STATION_SCOPE_MIGRATION_KEY] = 'true'), flushToIndexedDB(STATION_SCOPE_MIGRATION_KEY, 'true'));
 }
 
 migrateLegacyStationScope();
 
 function getStorageItem<T>(key: string, seed: T): T {
-  try {
-    const item = (memoryCache[key] ?? null);
-    if (!item) {
-      if (dbInitialized) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        ((memoryCache[key] = JSON.stringify(seed)), flushToIndexedDB(key, JSON.stringify(seed)));
-      }
-      return seed;
-    }
-    return JSON.parse(item) as T;
-  } catch (error) {
-    logger.error(`Error reading ${key} from storage:`, error);
-    return seed;
-  }
+ try {
+ const item = (memoryCache[key] ?? null);
+ if (!item) {
+ if (dbInitialized) {
+ // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+ ((memoryCache[key] = JSON.stringify(seed)), flushToIndexedDB(key, JSON.stringify(seed)));
+ }
+ return seed;
+ }
+ return JSON.parse(item) as T;
+ } catch (error) {
+ logger.error(`Error reading ${key} from storage:`, error);
+ return seed;
+ }
 }
 
 function setStorageItem<T>(key: string, data: T): void {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    ((memoryCache[key] = JSON.stringify(data)), flushToIndexedDB(key, JSON.stringify(data)));
-  } catch (error) {
-    logger.error(`Error writing ${key} to storage:`, error);
-  }
+ try {
+ // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+ ((memoryCache[key] = JSON.stringify(data)), flushToIndexedDB(key, JSON.stringify(data)));
+ } catch (error) {
+ logger.error(`Error writing ${key} to storage:`, error);
+ }
 }
 
 type ScopedListKind = 'default' | 'products' | 'shifts' | 'lubePosSales';
 
 function scopeStorageRecords<T extends TenantDocument>(
-  stationId: string,
-  records: T[],
-  kind: ScopedListKind = 'default'
+ stationId: string,
+ records: T[],
+ kind: ScopedListKind = 'default'
 ): T[] {
-  if (kind === 'products') {
-    return isolateProductRecords(records as any as Product[], stationId) as any as T[];
-  }
+ if (kind === 'products') {
+ return isolateProductRecords(records as any as Product[], stationId) as any as T[];
+ }
 
-  if (kind === 'shifts') {
-    return isolateShiftRecords(records as any as Shift[], stationId) as any as T[];
-  }
+ if (kind === 'shifts') {
+ return isolateShiftRecords(records as any as Shift[], stationId) as any as T[];
+ }
 
-  if (kind === 'lubePosSales') {
-    return isolateLubePosSales(records as any as LubePosSale[], stationId) as any as T[];
-  }
+ if (kind === 'lubePosSales') {
+ return isolateLubePosSales(records as any as LubePosSale[], stationId) as any as T[];
+ }
 
-  return isolateTenantRecords(records, stationId);
+ return isolateTenantRecords(records, stationId);
 }
 
 function getScopedStorageList<T extends TenantDocument>(
-  stationId: string,
-  baseKey: string,
-  seed: T[],
-  kind: ScopedListKind = 'default'
+ stationId: string,
+ baseKey: string,
+ seed: T[],
+ kind: ScopedListKind = 'default'
 ): T[] {
-  const key = db.getStationStorageKey(stationId, baseKey);
-  const scopedSeed = scopeStorageRecords(stationId, seed, kind);
-  const stored = getStorageItem<T[]>(key, scopedSeed);
-  const scopedStored = scopeStorageRecords(stationId, stored, kind);
+ const key = db.getStationStorageKey(stationId, baseKey);
+ const scopedSeed = scopeStorageRecords(stationId, seed, kind);
+ const stored = getStorageItem<T[]>(key, scopedSeed);
+ const scopedStored = scopeStorageRecords(stationId, stored, kind);
 
-  if (JSON.stringify(stored) !== JSON.stringify(scopedStored)) {
-    setStorageItem(key, scopedStored);
-  }
+ if (JSON.stringify(stored) !== JSON.stringify(scopedStored)) {
+ setStorageItem(key, scopedStored);
+ }
 
-  return scopedStored;
+ return scopedStored;
 }
 
 function saveScopedStorageList<T extends TenantDocument>(
-  stationId: string,
-  baseKey: string,
-  records: T[],
-  kind: ScopedListKind = 'default'
+ stationId: string,
+ baseKey: string,
+ records: T[],
+ kind: ScopedListKind = 'default'
 ): void {
-  setStorageItem(
-    db.getStationStorageKey(stationId, baseKey),
-    scopeStorageRecords(stationId, records, kind)
-  );
+ setStorageItem(
+ db.getStationStorageKey(stationId, baseKey),
+ scopeStorageRecords(stationId, records, kind)
+ );
 }
 
 export const db = {
-  getStationStorageKey: (stationId: string, baseKey: string): string => {
-    return buildScopedStorageKey(stationId, baseKey);
-  },
-
-  getStationsList: (): Station[] => {
-    try {
-      const list = (memoryCache['fuelpro_stations'] ?? null);
-      if (!list) {
-        const defaultList: Station[] = [
-          { ...SEED_FUEL_STATION, stationId: DEFAULT_STATION_ID, businessId: DEFAULT_STATION_ID, businessType: 'fuel_station' },
-          { ...SEED_LUBE_STATION, stationId: LUBE_STATION_ID, businessId: LUBE_STATION_ID, businessType: 'lube' }
-        ];
-        if (dbInitialized) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-          ((memoryCache['fuelpro_stations'] = JSON.stringify(defaultList)), flushToIndexedDB('fuelpro_stations', JSON.stringify(defaultList)));
-        }
-        return defaultList;
-      }
-      const parsed = JSON.parse(list) as Station[];
-      let modified = false;
-      if (!parsed.some(s => s.id === DEFAULT_STATION_ID)) {
-        parsed.unshift({ ...SEED_FUEL_STATION, stationId: DEFAULT_STATION_ID, businessId: DEFAULT_STATION_ID, businessType: 'fuel_station' });
-        modified = true;
-      }
-      if (!parsed.some(s => s.id === LUBE_STATION_ID)) {
-        parsed.push({ ...SEED_LUBE_STATION, stationId: LUBE_STATION_ID, businessId: LUBE_STATION_ID, businessType: 'lube' });
-        modified = true;
-      }
-
-      const scopedStations = parsed.map((station) => {
-        if (!station.businessType) {
-          modified = true;
-          return {
-            ...station,
-            stationId: station.id,
-            businessId: station.id,
-            businessType: (station.id === LUBE_STATION_ID ? 'lube' : 'fuel_station') as 'lube' | 'fuel_station' | 'cng'
-          };
-        }
-        return station;
-      });
-
-      if (modified) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        ((memoryCache['fuelpro_stations'] = JSON.stringify(scopedStations)), flushToIndexedDB('fuelpro_stations', JSON.stringify(scopedStations)));
-      }
-      return scopedStations;
-    } catch {
-      return [
-        { ...SEED_FUEL_STATION, stationId: DEFAULT_STATION_ID, businessId: DEFAULT_STATION_ID, businessType: 'fuel_station' },
-        { ...SEED_LUBE_STATION, stationId: LUBE_STATION_ID, businessId: LUBE_STATION_ID, businessType: 'lube' }
-      ] as Station[];
-    }
-  },
-
-  saveStationsList: (stations: Station[]) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    ((memoryCache['fuelpro_stations'] = JSON.stringify(stations)), flushToIndexedDB('fuelpro_stations', JSON.stringify(stations)));
-  },
-
-  getActiveStationId: (): string => {
-    try {
-      const active = (memoryCache['fuelpro_active_station_id'] ?? null);
-      if (!active) {
-        if (dbInitialized) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-          ((memoryCache['fuelpro_active_station_id'] = DEFAULT_STATION_ID), flushToIndexedDB('fuelpro_active_station_id', DEFAULT_STATION_ID));
-        }
-        return DEFAULT_STATION_ID;
-      }
-      return active;
-    } catch {
-      return DEFAULT_STATION_ID;
-    }
-  },
-
-  setActiveStationId: (id: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    ((memoryCache['fuelpro_active_station_id'] = id), flushToIndexedDB('fuelpro_active_station_id', id));
-  },
-
-  getSettings: (stationId: string): GlobalSettings => {
-    const key = db.getStationStorageKey(stationId, STORAGE_KEYS.SETTINGS);
-    try {
-      const item = (memoryCache[key] ?? null);
-      if (!item) {
-        const isLube = stationId === LUBE_STATION_ID;
-        const initialSettings = withBusinessScope(isLube ? SEED_LUBE_SETTINGS : SEED_FUEL_SETTINGS, stationId);
-        if (dbInitialized) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-          ((memoryCache[key] = JSON.stringify(initialSettings)), flushToIndexedDB(key, JSON.stringify(initialSettings)));
-        }
-        return initialSettings;
-      }
-      const scopedSettings = withBusinessScope(JSON.parse(item) as GlobalSettings, stationId);
-      if (JSON.stringify(JSON.parse(item)) !== JSON.stringify(scopedSettings)) {
-        if (dbInitialized) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-          ((memoryCache[key] = JSON.stringify(scopedSettings)), flushToIndexedDB(key, JSON.stringify(scopedSettings)));
-        }
-      }
-      return scopedSettings;
-    } catch {
-      return withBusinessScope(SEED_FUEL_SETTINGS, stationId);
-    }
-  },
-
-  saveSettings: (stationId: string, settings: GlobalSettings) =>
-    ((memoryCache[db.getStationStorageKey(stationId, STORAGE_KEYS.SETTINGS)] = JSON.stringify(withBusinessScope(settings, stationId))), flushToIndexedDB(db.getStationStorageKey(stationId, STORAGE_KEYS.SETTINGS), JSON.stringify(withBusinessScope(settings, stationId)))),
-
-  getStaffList: (stationId: string): Staff[] => {
-    const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_STAFF : SEED_FUEL_STAFF;
-    return getScopedStorageList(stationId, STORAGE_KEYS.STAFF, seed);
-  },
-  saveStaffList: (stationId: string, staff: Staff[]) =>
-    saveScopedStorageList(stationId, STORAGE_KEYS.STAFF, staff),
-
-  getProducts: (stationId: string): Product[] => {
-    const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_PRODUCTS : SEED_FUEL_PRODUCTS;
-    return getScopedStorageList(stationId, STORAGE_KEYS.PRODUCTS, seed, 'products');
-  },
-  saveProducts: (stationId: string, products: Product[]) =>
-    saveScopedStorageList(stationId, STORAGE_KEYS.PRODUCTS, products, 'products'),
-
-  getPumps: (stationId: string): Pump[] => {
-    const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_PUMPS : SEED_FUEL_PUMPS;
-    return getScopedStorageList(stationId, STORAGE_KEYS.PUMPS, seed);
-  },
-  savePumps: (stationId: string, pumps: Pump[]) =>
-    saveScopedStorageList(stationId, STORAGE_KEYS.PUMPS, pumps),
-
-  getNozzles: (stationId: string): Nozzle[] => {
-    const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_NOZZLES : SEED_FUEL_NOZZLES;
-    return getScopedStorageList(stationId, STORAGE_KEYS.NOZZLES, seed);
-  },
-  saveNozzles: (stationId: string, nozzles: Nozzle[]) =>
-    saveScopedStorageList(stationId, STORAGE_KEYS.NOZZLES, nozzles),
-
-  getCustomers: (stationId: string): Customer[] => {
-    const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_CUSTOMERS : SEED_FUEL_CUSTOMERS;
-    return getScopedStorageList(stationId, STORAGE_KEYS.CUSTOMERS, seed);
-  },
-  saveCustomers: (stationId: string, customers: Customer[]) =>
-    saveScopedStorageList(stationId, STORAGE_KEYS.CUSTOMERS, customers),
-
-  getSuppliers: (stationId: string): Supplier[] => {
-    const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_SUPPLIERS : SEED_FUEL_SUPPLIERS;
-    return getScopedStorageList(stationId, STORAGE_KEYS.SUPPLIERS, seed);
-  },
-  saveSuppliers: (stationId: string, suppliers: Supplier[]) =>
-    saveScopedStorageList(stationId, STORAGE_KEYS.SUPPLIERS, suppliers),
-
-  getShifts: (stationId: string): Shift[] =>
-    getScopedStorageList(stationId, STORAGE_KEYS.SHIFTS, [] as Shift[], 'shifts'),
-  saveShifts: (stationId: string, shifts: Shift[]) =>
-    saveScopedStorageList(stationId, STORAGE_KEYS.SHIFTS, shifts, 'shifts'),
-
-  getBankAccounts: (stationId: string): BankAccount[] => {
-    const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_BANKS : SEED_FUEL_BANKS;
-    return getScopedStorageList(stationId, STORAGE_KEYS.BANKS, seed);
-  },
-  saveBankAccounts: (stationId: string, banks: BankAccount[]) =>
-    saveScopedStorageList(stationId, STORAGE_KEYS.BANKS, banks),
-
-  getDigitalAccounts: (stationId: string): DigitalAccount[] => {
-    const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_DIGITAL_ACCOUNTS : SEED_FUEL_DIGITAL_ACCOUNTS;
-    return getScopedStorageList(stationId, STORAGE_KEYS.DIGITAL_ACCOUNTS, seed);
-  },
-  saveDigitalAccounts: (stationId: string, digital: DigitalAccount[]) =>
-    saveScopedStorageList(stationId, STORAGE_KEYS.DIGITAL_ACCOUNTS, digital),
-
-  getStockTransactions: (stationId: string): StockTransaction[] =>
-    getScopedStorageList(stationId, STORAGE_KEYS.STOCK_TXNS, [] as StockTransaction[]),
-  saveStockTransactions: (stationId: string, txns: StockTransaction[]) =>
-    saveScopedStorageList(stationId, STORAGE_KEYS.STOCK_TXNS, txns),
-
-  getTanks: (stationId: string): Tank[] => {
-    const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_TANKS : SEED_FUEL_TANKS;
-    return getScopedStorageList(stationId, STORAGE_KEYS.TANKS, seed);
-  },
-  saveTanks: (stationId: string, tanks: Tank[]) =>
-    saveScopedStorageList(stationId, STORAGE_KEYS.TANKS, tanks),
-
-  getRateHistory: (stationId: string): RateHistoryEntry[] =>
-    getScopedStorageList(stationId, STORAGE_KEYS.RATE_HISTORY, [] as RateHistoryEntry[]),
-  saveRateHistory: (stationId: string, history: RateHistoryEntry[]) =>
-    saveScopedStorageList(stationId, STORAGE_KEYS.RATE_HISTORY, history),
-
-  getStaffFinance: (stationId: string): StaffFinanceEntry[] =>
-    getScopedStorageList(stationId, STORAGE_KEYS.STAFF_FINANCE, [] as StaffFinanceEntry[]),
-  saveStaffFinance: (stationId: string, finances: StaffFinanceEntry[]) =>
-    saveScopedStorageList(stationId, STORAGE_KEYS.STAFF_FINANCE, finances),
-
-  getAttendance: (stationId: string): AttendanceRecord[] =>
-    getScopedStorageList(stationId, STORAGE_KEYS.ATTENDANCE, [] as AttendanceRecord[]),
-  saveAttendance: (stationId: string, records: AttendanceRecord[]) =>
-    saveScopedStorageList(stationId, STORAGE_KEYS.ATTENDANCE, records),
-
-  getStandaloneExpenses: (stationId: string): ExpenseEntry[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.STANDALONE_EXPENSES, [] as ExpenseEntry[]),
-  saveStandaloneExpenses: (stationId: string, expenses: ExpenseEntry[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.STANDALONE_EXPENSES, expenses),
-
-  getReconciledShiftIds: (stationId: string): string[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.RECONCILED_SHIFTS),
-      [] as string[]
-    ),
-  saveReconciledShiftIds: (stationId: string, ids: string[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.RECONCILED_SHIFTS),
-      ids
-    ),
-
-  // ─── ENTERPRISE REPORTS: PINNED FAVORITES & RECENTLY VIEWED ─────────────
-  getReportFavorites: (stationId: string): string[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.REPORT_FAVORITES),
-      [] as string[]
-    ),
-  saveReportFavorites: (stationId: string, reportIds: string[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.REPORT_FAVORITES),
-      reportIds
-    ),
-
-  getReportRecents: (stationId: string): string[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.REPORT_RECENTS),
-      [] as string[]
-    ),
-  saveReportRecents: (stationId: string, reportIds: string[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.REPORT_RECENTS),
-      reportIds
-    ),
-
-  getSettingsAuditTrail: (stationId: string): AuditTrailEntry[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL, [] as AuditTrailEntry[]),
-  saveSettingsAuditTrail: (stationId: string, entries: AuditTrailEntry[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL, entries),
-
-  getActivityRegister: (stationId: string): AuditTrailEntry[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.ACTIVITY_REGISTER, [] as AuditTrailEntry[]),
-  saveActivityRegister: (stationId: string, entries: AuditTrailEntry[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.ACTIVITY_REGISTER, entries),
-  getBusinessEvents: (stationId: string): any[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.BUSINESS_EVENTS, [] as any[]),
-  saveBusinessEvents: (stationId: string, events: any[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.BUSINESS_EVENTS, events),
-  getLubePosSales: (stationId: string): LubePosSale[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.LUBE_POS_SALES, [] as LubePosSale[], 'lubePosSales'),
-  saveLubePosSales: (stationId: string, sales: LubePosSale[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.LUBE_POS_SALES, sales, 'lubePosSales'),
-
-  getFleetAccounts: (stationId: string): FleetAccount[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_ACCOUNTS, [] as FleetAccount[]),
-  saveFleetAccounts: (stationId: string, accounts: FleetAccount[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_ACCOUNTS, accounts),
-
-  getFleetVehicles: (stationId: string): FleetVehicle[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_VEHICLES, [] as FleetVehicle[]),
-  saveFleetVehicles: (stationId: string, vehicles: FleetVehicle[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_VEHICLES, vehicles),
-
-  getFleetDrivers: (stationId: string): Driver[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_DRIVERS, [] as Driver[]),
-  saveFleetDrivers: (stationId: string, drivers: Driver[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_DRIVERS, drivers),
-
-  getFleetTransactions: (stationId: string): FleetTransaction[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_TRANSACTIONS, [] as FleetTransaction[]),
-  saveFleetTransactions: (stationId: string, txns: FleetTransaction[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_TRANSACTIONS, txns),
-
-  getTankerSchedules: (stationId: string): TankerSchedule[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.TANKER_SCHEDULES, [] as TankerSchedule[]),
-  saveTankerSchedules: (stationId: string, schedules: TankerSchedule[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.TANKER_SCHEDULES, schedules),
-
-  getTankerDeliveries: (stationId: string): TankerDelivery[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.TANKER_DELIVERIES, [] as TankerDelivery[]),
-  saveTankerDeliveries: (stationId: string, deliveries: TankerDelivery[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.TANKER_DELIVERIES, deliveries),
-
-  getVarianceIncidents: (stationId: string): VarianceIncident[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.VARIANCE_INCIDENTS, [] as VarianceIncident[]),
-  saveVarianceIncidents: (stationId: string, incidents: VarianceIncident[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.VARIANCE_INCIDENTS, incidents),
-
-  getAssets: (stationId: string): Asset[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.ASSETS, [] as Asset[]),
-  saveAssets: (stationId: string, assets: Asset[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.ASSETS, assets),
-
-  getMaintenanceRecords: (stationId: string): MaintenanceRecord[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.MAINTENANCE_RECORDS, [] as MaintenanceRecord[]),
-  saveMaintenanceRecords: (stationId: string, records: MaintenanceRecord[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.MAINTENANCE_RECORDS, records),
-
-  getLoyaltyMembers: (stationId: string): LoyaltyMember[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.LOYALTY_MEMBERS, [] as LoyaltyMember[]),
-  saveLoyaltyMembers: (stationId: string, members: LoyaltyMember[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.LOYALTY_MEMBERS, members),
-
-  getRewardTransactions: (stationId: string): RewardTransaction[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.REWARD_TRANSACTIONS, [] as RewardTransaction[]),
-  saveRewardTransactions: (stationId: string, transactions: RewardTransaction[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.REWARD_TRANSACTIONS, transactions),
-
-  getInventoryMovements: (stationId: string): InventoryMovement[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_MOVEMENTS, [] as InventoryMovement[]),
-  saveInventoryMovements: (stationId: string, movements: InventoryMovement[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_MOVEMENTS, movements),
-
-  getJournalEntries: (stationId: string): JournalEntry[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.JOURNAL_ENTRIES, [] as JournalEntry[]),
-  saveJournalEntries: (stationId: string, entries: JournalEntry[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.JOURNAL_ENTRIES, entries),
-
-  getStockBatches: (stationId: string): StockBatch[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.STOCK_BATCHES, [] as StockBatch[]),
-  saveStockBatches: (stationId: string, batches: StockBatch[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.STOCK_BATCHES, batches),
-
-  getCOGSRecords: (stationId: string): CogsRecord[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.COGS_RECORDS, [] as CogsRecord[]),
-  saveCOGSRecords: (stationId: string, records: CogsRecord[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.COGS_RECORDS, records),
-
-  getSalaryTransactions: (stationId: string): SalaryTransaction[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SALARY_TRANSACTIONS, [] as SalaryTransaction[]),
-  saveSalaryTransactions: (stationId: string, txns: SalaryTransaction[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SALARY_TRANSACTIONS, txns),
-
-  getStaffLoans: (stationId: string): StaffLoan[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.STAFF_LOANS, [] as StaffLoan[]),
-  saveStaffLoans: (stationId: string, loans: StaffLoan[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.STAFF_LOANS, loans),
-
-  getSalaryAdvances: (stationId: string): SalaryAdvance[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SALARY_ADVANCES, [] as SalaryAdvance[]),
-  saveSalaryAdvances: (stationId: string, advances: SalaryAdvance[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SALARY_ADVANCES, advances),
-
-  getInventorySnapshots: (stationId: string): InventorySnapshot[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_SNAPSHOTS, [] as InventorySnapshot[]),
-  saveInventorySnapshots: (stationId: string, snapshots: InventorySnapshot[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_SNAPSHOTS, snapshots),
-
-  getDealerMarginSettings: (stationId: string): DealerMarginSetting[] =>
-    getStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.DEALER_MARGIN_SETTINGS),
-      SEED_DEALER_MARGINS
-    ),
-  saveDealerMarginSettings: (stationId: string, settings: DealerMarginSetting[]) =>
-    setStorageItem(
-      db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.DEALER_MARGIN_SETTINGS),
-      settings
-    ),
-
-  getCashAccounts: (stationId: string): CashAccount[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.CASH_ACCOUNTS, [] as CashAccount[]),
-  saveCashAccounts: (stationId: string, accounts: CashAccount[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.CASH_ACCOUNTS, accounts),
-
-  getTreasuryTransactions: (stationId: string): TreasuryTransaction[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.TREASURY_TRANSACTIONS, [] as TreasuryTransaction[]),
-  saveTreasuryTransactions: (stationId: string, transactions: TreasuryTransaction[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.TREASURY_TRANSACTIONS, transactions),
-
-  getOwnerDrawings: (stationId: string): OwnerDrawing[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.OWNER_DRAWINGS, [] as OwnerDrawing[]),
-  saveOwnerDrawings: (stationId: string, drawings: OwnerDrawing[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.OWNER_DRAWINGS, drawings),
-
-  getCashReconciliations: (stationId: string): CashReconciliation[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.CASH_RECONCILIATIONS, [] as CashReconciliation[]),
-  saveCashReconciliations: (stationId: string, reconciliations: CashReconciliation[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.CASH_RECONCILIATIONS, reconciliations),
-
-  // ─── ENTERPRISE FUEL COSTING ENGINE (v2) ───────────────────────────────
-  getFIFODeductions: (stationId: string): FIFODeduction[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FIFO_DEDUCTIONS, [] as FIFODeduction[]),
-  saveFIFODeductions: (stationId: string, deductions: FIFODeduction[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FIFO_DEDUCTIONS, deductions),
-
-  getSupplierClaims: (stationId: string): SupplierClaim[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SUPPLIER_CLAIMS, [] as SupplierClaim[]),
-  saveSupplierClaims: (stationId: string, claims: SupplierClaim[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SUPPLIER_CLAIMS, claims),
-
-  getInventoryRevaluations: (stationId: string): InventoryRevaluation[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_REVALUATIONS, [] as InventoryRevaluation[]),
-  saveInventoryRevaluations: (stationId: string, revaluations: InventoryRevaluation[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_REVALUATIONS, revaluations),
-
-  getSupplierPerformance: (stationId: string): SupplierPerformanceScore[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SUPPLIER_PERFORMANCE, [] as SupplierPerformanceScore[]),
-  saveSupplierPerformance: (stationId: string, scores: SupplierPerformanceScore[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SUPPLIER_PERFORMANCE, scores),
-
-  getCurrentDealerMargin: (stationId: string, productType: string, atDate: string = new Date().toISOString()): number => {
-    const settings = db.getDealerMarginSettings(stationId);
-
-    // Check for exact productType or name-based fallback matching
-    const normalizedType = productType.toLowerCase();
-    let typeToMatch = normalizedType;
-    if (normalizedType.includes('petrol') || normalizedType.includes('pmg') || normalizedType.includes('hobc') || normalizedType.includes('altron')) {
-      typeToMatch = 'petrol';
-    } else if (normalizedType.includes('diesel') || normalizedType.includes('hsd')) {
-      typeToMatch = 'diesel';
-    } else if (normalizedType.includes('kerosene') || normalizedType.includes('sko')) {
-      typeToMatch = 'kerosene';
-    } else if (normalizedType.includes('ldo')) {
-      typeToMatch = 'ldo';
-    }
-
-    const setting = settings
-      .filter(s => s.productType === typeToMatch)
-      .filter(s => s.effectiveFrom <= atDate)
-      .filter(s => s.effectiveTo === null || s.effectiveTo >= atDate)
-      .sort((a, b) => b.effectiveFrom.localeCompare(a.effectiveFrom))[0];
-
-    return setting?.marginPerLiter ?? 8.64; // fallback to current OGRA rate
-  },
-
-  getMeterResets: (stationId: string): MeterResetEvent[] =>
-    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.METER_RESETS, [] as MeterResetEvent[]),
-  saveMeterResets: (stationId: string, resets: MeterResetEvent[]) =>
-    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.METER_RESETS, resets),
-
-  clearSettingsAuditTrail: (stationId: string) => {
-    const scopedKey = db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL);
-    const legacyKey = buildLegacyStorageKey(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL);
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    (delete memoryCache[scopedKey], flushToIndexedDB(scopedKey, null));
-    if (legacyKey !== scopedKey) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      (delete memoryCache[legacyKey], flushToIndexedDB(legacyKey, null));
-    }
-  },
-
-  clearStationData: (stationId: string) => {
-    STATION_DATA_BASE_KEYS.forEach((baseKey) => {
-      const scopedKey = db.getStationStorageKey(stationId, baseKey);
-      const legacyKey = buildLegacyStorageKey(stationId, baseKey);
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      (delete memoryCache[scopedKey], flushToIndexedDB(scopedKey, null));
-      if (legacyKey !== scopedKey) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        (delete memoryCache[legacyKey], flushToIndexedDB(legacyKey, null));
-      }
-    });
-  },
-
-  resetToDefault: async () => {
-    memoryCache = { /* empty */ };
-    if (typeof localStorage !== 'undefined') {
-      localStorage.clear();
-    }
-    await localforage.clear();
-    window.location.reload();
-  }
+ getStationStorageKey: (stationId: string, baseKey: string): string => {
+ return buildScopedStorageKey(stationId, baseKey);
+ },
+
+ getStationsList: (): Station[] => {
+ try {
+ const list = (memoryCache['fuelpro_stations'] ?? null);
+ if (!list) {
+ const defaultList: Station[] = [
+ { ...SEED_FUEL_STATION, stationId: DEFAULT_STATION_ID, businessId: DEFAULT_STATION_ID, businessType: 'fuel_station' },
+ { ...SEED_LUBE_STATION, stationId: LUBE_STATION_ID, businessId: LUBE_STATION_ID, businessType: 'lube' }
+ ];
+ if (dbInitialized) {
+ // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+ ((memoryCache['fuelpro_stations'] = JSON.stringify(defaultList)), flushToIndexedDB('fuelpro_stations', JSON.stringify(defaultList)));
+ }
+ return defaultList;
+ }
+ const parsed = JSON.parse(list) as Station[];
+ let modified = false;
+ if (!parsed.some(s => s.id === DEFAULT_STATION_ID)) {
+ parsed.unshift({ ...SEED_FUEL_STATION, stationId: DEFAULT_STATION_ID, businessId: DEFAULT_STATION_ID, businessType: 'fuel_station' });
+ modified = true;
+ }
+ if (!parsed.some(s => s.id === LUBE_STATION_ID)) {
+ parsed.push({ ...SEED_LUBE_STATION, stationId: LUBE_STATION_ID, businessId: LUBE_STATION_ID, businessType: 'lube' });
+ modified = true;
+ }
+
+ const scopedStations = parsed.map((station) => {
+ if (!station.businessType) {
+ modified = true;
+ return {
+ ...station,
+ stationId: station.id,
+ businessId: station.id,
+ businessType: (station.id === LUBE_STATION_ID ? 'lube' : 'fuel_station') as 'lube' | 'fuel_station' | 'cng'
+ };
+ }
+ return station;
+ });
+
+ if (modified) {
+ // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+ ((memoryCache['fuelpro_stations'] = JSON.stringify(scopedStations)), flushToIndexedDB('fuelpro_stations', JSON.stringify(scopedStations)));
+ }
+ return scopedStations;
+ } catch {
+ return [
+ { ...SEED_FUEL_STATION, stationId: DEFAULT_STATION_ID, businessId: DEFAULT_STATION_ID, businessType: 'fuel_station' },
+ { ...SEED_LUBE_STATION, stationId: LUBE_STATION_ID, businessId: LUBE_STATION_ID, businessType: 'lube' }
+ ] as Station[];
+ }
+ },
+
+ saveStationsList: (stations: Station[]) => {
+ // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+ ((memoryCache['fuelpro_stations'] = JSON.stringify(stations)), flushToIndexedDB('fuelpro_stations', JSON.stringify(stations)));
+ },
+
+ getActiveStationId: (): string => {
+ try {
+ const active = (memoryCache['fuelpro_active_station_id'] ?? null);
+ if (!active) {
+ if (dbInitialized) {
+ // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+ ((memoryCache['fuelpro_active_station_id'] = DEFAULT_STATION_ID), flushToIndexedDB('fuelpro_active_station_id', DEFAULT_STATION_ID));
+ }
+ return DEFAULT_STATION_ID;
+ }
+ return active;
+ } catch {
+ return DEFAULT_STATION_ID;
+ }
+ },
+
+ setActiveStationId: (id: string) => {
+ // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+ ((memoryCache['fuelpro_active_station_id'] = id), flushToIndexedDB('fuelpro_active_station_id', id));
+ },
+
+ getSettings: (stationId: string): GlobalSettings => {
+ const key = db.getStationStorageKey(stationId, STORAGE_KEYS.SETTINGS);
+ try {
+ const item = (memoryCache[key] ?? null);
+ if (!item) {
+ const isLube = stationId === LUBE_STATION_ID;
+ const initialSettings = withBusinessScope(isLube ? SEED_LUBE_SETTINGS : SEED_FUEL_SETTINGS, stationId);
+ if (dbInitialized) {
+ // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+ ((memoryCache[key] = JSON.stringify(initialSettings)), flushToIndexedDB(key, JSON.stringify(initialSettings)));
+ }
+ return initialSettings;
+ }
+ const scopedSettings = withBusinessScope(JSON.parse(item) as GlobalSettings, stationId);
+ if (JSON.stringify(JSON.parse(item)) !== JSON.stringify(scopedSettings)) {
+ if (dbInitialized) {
+ // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+ ((memoryCache[key] = JSON.stringify(scopedSettings)), flushToIndexedDB(key, JSON.stringify(scopedSettings)));
+ }
+ }
+ return scopedSettings;
+ } catch {
+ return withBusinessScope(SEED_FUEL_SETTINGS, stationId);
+ }
+ },
+
+ saveSettings: (stationId: string, settings: GlobalSettings) =>
+ ((memoryCache[db.getStationStorageKey(stationId, STORAGE_KEYS.SETTINGS)] = JSON.stringify(withBusinessScope(settings, stationId))), flushToIndexedDB(db.getStationStorageKey(stationId, STORAGE_KEYS.SETTINGS), JSON.stringify(withBusinessScope(settings, stationId)))),
+
+ getStaffList: (stationId: string): Staff[] => {
+ const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_STAFF : SEED_FUEL_STAFF;
+ return getScopedStorageList(stationId, STORAGE_KEYS.STAFF, seed);
+ },
+ saveStaffList: (stationId: string, staff: Staff[]) =>
+ saveScopedStorageList(stationId, STORAGE_KEYS.STAFF, staff),
+
+ getProducts: (stationId: string): Product[] => {
+ const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_PRODUCTS : SEED_FUEL_PRODUCTS;
+ return getScopedStorageList(stationId, STORAGE_KEYS.PRODUCTS, seed, 'products');
+ },
+ saveProducts: (stationId: string, products: Product[]) =>
+ saveScopedStorageList(stationId, STORAGE_KEYS.PRODUCTS, products, 'products'),
+
+ getPumps: (stationId: string): Pump[] => {
+ const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_PUMPS : SEED_FUEL_PUMPS;
+ return getScopedStorageList(stationId, STORAGE_KEYS.PUMPS, seed);
+ },
+ savePumps: (stationId: string, pumps: Pump[]) =>
+ saveScopedStorageList(stationId, STORAGE_KEYS.PUMPS, pumps),
+
+ getNozzles: (stationId: string): Nozzle[] => {
+ const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_NOZZLES : SEED_FUEL_NOZZLES;
+ return getScopedStorageList(stationId, STORAGE_KEYS.NOZZLES, seed);
+ },
+ saveNozzles: (stationId: string, nozzles: Nozzle[]) =>
+ saveScopedStorageList(stationId, STORAGE_KEYS.NOZZLES, nozzles),
+
+ getCustomers: (stationId: string): Customer[] => {
+ const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_CUSTOMERS : SEED_FUEL_CUSTOMERS;
+ return getScopedStorageList(stationId, STORAGE_KEYS.CUSTOMERS, seed);
+ },
+ saveCustomers: (stationId: string, customers: Customer[]) =>
+ saveScopedStorageList(stationId, STORAGE_KEYS.CUSTOMERS, customers),
+
+ getSuppliers: (stationId: string): Supplier[] => {
+ const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_SUPPLIERS : SEED_FUEL_SUPPLIERS;
+ return getScopedStorageList(stationId, STORAGE_KEYS.SUPPLIERS, seed);
+ },
+ saveSuppliers: (stationId: string, suppliers: Supplier[]) =>
+ saveScopedStorageList(stationId, STORAGE_KEYS.SUPPLIERS, suppliers),
+
+ getShifts: (stationId: string): Shift[] =>
+ getScopedStorageList(stationId, STORAGE_KEYS.SHIFTS, [] as Shift[], 'shifts'),
+ saveShifts: (stationId: string, shifts: Shift[]) =>
+ saveScopedStorageList(stationId, STORAGE_KEYS.SHIFTS, shifts, 'shifts'),
+
+ getBankAccounts: (stationId: string): BankAccount[] => {
+ const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_BANKS : SEED_FUEL_BANKS;
+ return getScopedStorageList(stationId, STORAGE_KEYS.BANKS, seed);
+ },
+ saveBankAccounts: (stationId: string, banks: BankAccount[]) =>
+ saveScopedStorageList(stationId, STORAGE_KEYS.BANKS, banks),
+
+ getDigitalAccounts: (stationId: string): DigitalAccount[] => {
+ const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_DIGITAL_ACCOUNTS : SEED_FUEL_DIGITAL_ACCOUNTS;
+ return getScopedStorageList(stationId, STORAGE_KEYS.DIGITAL_ACCOUNTS, seed);
+ },
+ saveDigitalAccounts: (stationId: string, digital: DigitalAccount[]) =>
+ saveScopedStorageList(stationId, STORAGE_KEYS.DIGITAL_ACCOUNTS, digital),
+
+ getStockTransactions: (stationId: string): StockTransaction[] =>
+ getScopedStorageList(stationId, STORAGE_KEYS.STOCK_TXNS, [] as StockTransaction[]),
+ saveStockTransactions: (stationId: string, txns: StockTransaction[]) =>
+ saveScopedStorageList(stationId, STORAGE_KEYS.STOCK_TXNS, txns),
+
+ getTanks: (stationId: string): Tank[] => {
+ const seed = stationId === LUBE_STATION_ID ? SEED_LUBE_TANKS : SEED_FUEL_TANKS;
+ return getScopedStorageList(stationId, STORAGE_KEYS.TANKS, seed);
+ },
+ saveTanks: (stationId: string, tanks: Tank[]) =>
+ saveScopedStorageList(stationId, STORAGE_KEYS.TANKS, tanks),
+
+ getRateHistory: (stationId: string): RateHistoryEntry[] =>
+ getScopedStorageList(stationId, STORAGE_KEYS.RATE_HISTORY, [] as RateHistoryEntry[]),
+ saveRateHistory: (stationId: string, history: RateHistoryEntry[]) =>
+ saveScopedStorageList(stationId, STORAGE_KEYS.RATE_HISTORY, history),
+
+ getStaffFinance: (stationId: string): StaffFinanceEntry[] =>
+ getScopedStorageList(stationId, STORAGE_KEYS.STAFF_FINANCE, [] as StaffFinanceEntry[]),
+ saveStaffFinance: (stationId: string, finances: StaffFinanceEntry[]) =>
+ saveScopedStorageList(stationId, STORAGE_KEYS.STAFF_FINANCE, finances),
+
+ getAttendance: (stationId: string): AttendanceRecord[] =>
+ getScopedStorageList(stationId, STORAGE_KEYS.ATTENDANCE, [] as AttendanceRecord[]),
+ saveAttendance: (stationId: string, records: AttendanceRecord[]) =>
+ saveScopedStorageList(stationId, STORAGE_KEYS.ATTENDANCE, records),
+
+ getStandaloneExpenses: (stationId: string): ExpenseEntry[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.STANDALONE_EXPENSES, [] as ExpenseEntry[]),
+ saveStandaloneExpenses: (stationId: string, expenses: ExpenseEntry[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.STANDALONE_EXPENSES, expenses),
+
+ getReconciledShiftIds: (stationId: string): string[] =>
+ getStorageItem(
+ db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.RECONCILED_SHIFTS),
+ [] as string[]
+ ),
+ saveReconciledShiftIds: (stationId: string, ids: string[]) =>
+ setStorageItem(
+ db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.RECONCILED_SHIFTS),
+ ids
+ ),
+
+ // ─── ENTERPRISE REPORTS: PINNED FAVORITES & RECENTLY VIEWED ─────────────
+ getReportFavorites: (stationId: string): string[] =>
+ getStorageItem(
+ db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.REPORT_FAVORITES),
+ [] as string[]
+ ),
+ saveReportFavorites: (stationId: string, reportIds: string[]) =>
+ setStorageItem(
+ db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.REPORT_FAVORITES),
+ reportIds
+ ),
+
+ getReportRecents: (stationId: string): string[] =>
+ getStorageItem(
+ db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.REPORT_RECENTS),
+ [] as string[]
+ ),
+ saveReportRecents: (stationId: string, reportIds: string[]) =>
+ setStorageItem(
+ db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.REPORT_RECENTS),
+ reportIds
+ ),
+
+ getSettingsAuditTrail: (stationId: string): AuditTrailEntry[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL, [] as AuditTrailEntry[]),
+ saveSettingsAuditTrail: (stationId: string, entries: AuditTrailEntry[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL, entries),
+
+ getActivityRegister: (stationId: string): AuditTrailEntry[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.ACTIVITY_REGISTER, [] as AuditTrailEntry[]),
+ saveActivityRegister: (stationId: string, entries: AuditTrailEntry[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.ACTIVITY_REGISTER, entries),
+ getBusinessEvents: (stationId: string): any[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.BUSINESS_EVENTS, [] as any[]),
+ saveBusinessEvents: (stationId: string, events: any[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.BUSINESS_EVENTS, events),
+ getLubePosSales: (stationId: string): LubePosSale[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.LUBE_POS_SALES, [] as LubePosSale[], 'lubePosSales'),
+ saveLubePosSales: (stationId: string, sales: LubePosSale[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.LUBE_POS_SALES, sales, 'lubePosSales'),
+
+ getFleetAccounts: (stationId: string): FleetAccount[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_ACCOUNTS, [] as FleetAccount[]),
+ saveFleetAccounts: (stationId: string, accounts: FleetAccount[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_ACCOUNTS, accounts),
+
+ getFleetVehicles: (stationId: string): FleetVehicle[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_VEHICLES, [] as FleetVehicle[]),
+ saveFleetVehicles: (stationId: string, vehicles: FleetVehicle[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_VEHICLES, vehicles),
+
+ getFleetDrivers: (stationId: string): Driver[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_DRIVERS, [] as Driver[]),
+ saveFleetDrivers: (stationId: string, drivers: Driver[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_DRIVERS, drivers),
+
+ getFleetTransactions: (stationId: string): FleetTransaction[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_TRANSACTIONS, [] as FleetTransaction[]),
+ saveFleetTransactions: (stationId: string, txns: FleetTransaction[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_TRANSACTIONS, txns),
+
+ getTankerSchedules: (stationId: string): TankerSchedule[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.TANKER_SCHEDULES, [] as TankerSchedule[]),
+ saveTankerSchedules: (stationId: string, schedules: TankerSchedule[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.TANKER_SCHEDULES, schedules),
+
+ getTankerDeliveries: (stationId: string): TankerDelivery[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.TANKER_DELIVERIES, [] as TankerDelivery[]),
+ saveTankerDeliveries: (stationId: string, deliveries: TankerDelivery[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.TANKER_DELIVERIES, deliveries),
+
+ getVarianceIncidents: (stationId: string): VarianceIncident[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.VARIANCE_INCIDENTS, [] as VarianceIncident[]),
+ saveVarianceIncidents: (stationId: string, incidents: VarianceIncident[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.VARIANCE_INCIDENTS, incidents),
+
+ getAssets: (stationId: string): Asset[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.ASSETS, [] as Asset[]),
+ saveAssets: (stationId: string, assets: Asset[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.ASSETS, assets),
+
+ getMaintenanceRecords: (stationId: string): MaintenanceRecord[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.MAINTENANCE_RECORDS, [] as MaintenanceRecord[]),
+ saveMaintenanceRecords: (stationId: string, records: MaintenanceRecord[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.MAINTENANCE_RECORDS, records),
+
+ getLoyaltyMembers: (stationId: string): LoyaltyMember[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.LOYALTY_MEMBERS, [] as LoyaltyMember[]),
+ saveLoyaltyMembers: (stationId: string, members: LoyaltyMember[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.LOYALTY_MEMBERS, members),
+
+ getRewardTransactions: (stationId: string): RewardTransaction[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.REWARD_TRANSACTIONS, [] as RewardTransaction[]),
+ saveRewardTransactions: (stationId: string, transactions: RewardTransaction[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.REWARD_TRANSACTIONS, transactions),
+
+ getInventoryMovements: (stationId: string): InventoryMovement[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_MOVEMENTS, [] as InventoryMovement[]),
+ saveInventoryMovements: (stationId: string, movements: InventoryMovement[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_MOVEMENTS, movements),
+
+ getJournalEntries: (stationId: string): JournalEntry[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.JOURNAL_ENTRIES, [] as JournalEntry[]),
+ saveJournalEntries: (stationId: string, entries: JournalEntry[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.JOURNAL_ENTRIES, entries),
+
+ getStockBatches: (stationId: string): StockBatch[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.STOCK_BATCHES, [] as StockBatch[]),
+ saveStockBatches: (stationId: string, batches: StockBatch[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.STOCK_BATCHES, batches),
+
+ getCOGSRecords: (stationId: string): CogsRecord[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.COGS_RECORDS, [] as CogsRecord[]),
+ saveCOGSRecords: (stationId: string, records: CogsRecord[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.COGS_RECORDS, records),
+
+ getSalaryTransactions: (stationId: string): SalaryTransaction[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SALARY_TRANSACTIONS, [] as SalaryTransaction[]),
+ saveSalaryTransactions: (stationId: string, txns: SalaryTransaction[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SALARY_TRANSACTIONS, txns),
+
+ getStaffLoans: (stationId: string): StaffLoan[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.STAFF_LOANS, [] as StaffLoan[]),
+ saveStaffLoans: (stationId: string, loans: StaffLoan[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.STAFF_LOANS, loans),
+
+ getSalaryAdvances: (stationId: string): SalaryAdvance[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SALARY_ADVANCES, [] as SalaryAdvance[]),
+ saveSalaryAdvances: (stationId: string, advances: SalaryAdvance[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SALARY_ADVANCES, advances),
+
+ getInventorySnapshots: (stationId: string): InventorySnapshot[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_SNAPSHOTS, [] as InventorySnapshot[]),
+ saveInventorySnapshots: (stationId: string, snapshots: InventorySnapshot[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_SNAPSHOTS, snapshots),
+
+ getDealerMarginSettings: (stationId: string): DealerMarginSetting[] =>
+ getStorageItem(
+ db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.DEALER_MARGIN_SETTINGS),
+ SEED_DEALER_MARGINS
+ ),
+ saveDealerMarginSettings: (stationId: string, settings: DealerMarginSetting[]) =>
+ setStorageItem(
+ db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.DEALER_MARGIN_SETTINGS),
+ settings
+ ),
+
+ getCashAccounts: (stationId: string): CashAccount[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.CASH_ACCOUNTS, [] as CashAccount[]),
+ saveCashAccounts: (stationId: string, accounts: CashAccount[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.CASH_ACCOUNTS, accounts),
+
+ getTreasuryTransactions: (stationId: string): TreasuryTransaction[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.TREASURY_TRANSACTIONS, [] as TreasuryTransaction[]),
+ saveTreasuryTransactions: (stationId: string, transactions: TreasuryTransaction[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.TREASURY_TRANSACTIONS, transactions),
+
+ getOwnerDrawings: (stationId: string): OwnerDrawing[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.OWNER_DRAWINGS, [] as OwnerDrawing[]),
+ saveOwnerDrawings: (stationId: string, drawings: OwnerDrawing[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.OWNER_DRAWINGS, drawings),
+
+ getCashReconciliations: (stationId: string): CashReconciliation[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.CASH_RECONCILIATIONS, [] as CashReconciliation[]),
+ saveCashReconciliations: (stationId: string, reconciliations: CashReconciliation[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.CASH_RECONCILIATIONS, reconciliations),
+
+ // ─── ENTERPRISE FUEL COSTING ENGINE (v2) ───────────────────────────────
+ getFIFODeductions: (stationId: string): FIFODeduction[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FIFO_DEDUCTIONS, [] as FIFODeduction[]),
+ saveFIFODeductions: (stationId: string, deductions: FIFODeduction[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FIFO_DEDUCTIONS, deductions),
+
+ getSupplierClaims: (stationId: string): SupplierClaim[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SUPPLIER_CLAIMS, [] as SupplierClaim[]),
+ saveSupplierClaims: (stationId: string, claims: SupplierClaim[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SUPPLIER_CLAIMS, claims),
+
+ getInventoryRevaluations: (stationId: string): InventoryRevaluation[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_REVALUATIONS, [] as InventoryRevaluation[]),
+ saveInventoryRevaluations: (stationId: string, revaluations: InventoryRevaluation[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.INVENTORY_REVALUATIONS, revaluations),
+
+ getSupplierPerformance: (stationId: string): SupplierPerformanceScore[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SUPPLIER_PERFORMANCE, [] as SupplierPerformanceScore[]),
+ saveSupplierPerformance: (stationId: string, scores: SupplierPerformanceScore[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.SUPPLIER_PERFORMANCE, scores),
+
+ getCurrentDealerMargin: (stationId: string, productType: string, atDate: string = new Date().toISOString()): number => {
+ const settings = db.getDealerMarginSettings(stationId);
+
+ // Check for exact productType or name-based fallback matching
+ const normalizedType = productType.toLowerCase();
+ let typeToMatch = normalizedType;
+ if (normalizedType.includes('petrol') || normalizedType.includes('pmg') || normalizedType.includes('hobc') || normalizedType.includes('altron')) {
+ typeToMatch = 'petrol';
+ } else if (normalizedType.includes('diesel') || normalizedType.includes('hsd')) {
+ typeToMatch = 'diesel';
+ } else if (normalizedType.includes('kerosene') || normalizedType.includes('sko')) {
+ typeToMatch = 'kerosene';
+ } else if (normalizedType.includes('ldo')) {
+ typeToMatch = 'ldo';
+ }
+
+ const setting = settings
+ .filter(s => s.productType === typeToMatch)
+ .filter(s => s.effectiveFrom <= atDate)
+ .filter(s => s.effectiveTo === null || s.effectiveTo >= atDate)
+ .sort((a, b) => b.effectiveFrom.localeCompare(a.effectiveFrom))[0];
+
+ return setting?.marginPerLiter ?? 8.64; // fallback to current OGRA rate
+ },
+
+ getMeterResets: (stationId: string): MeterResetEvent[] =>
+ getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.METER_RESETS, [] as MeterResetEvent[]),
+ saveMeterResets: (stationId: string, resets: MeterResetEvent[]) =>
+ saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.METER_RESETS, resets),
+
+ clearSettingsAuditTrail: (stationId: string) => {
+ const scopedKey = db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL);
+ const legacyKey = buildLegacyStorageKey(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL);
+ // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+ (delete memoryCache[scopedKey], flushToIndexedDB(scopedKey, null));
+ if (legacyKey !== scopedKey) {
+ // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+ (delete memoryCache[legacyKey], flushToIndexedDB(legacyKey, null));
+ }
+ },
+
+ clearStationData: (stationId: string) => {
+ STATION_DATA_BASE_KEYS.forEach((baseKey) => {
+ const scopedKey = db.getStationStorageKey(stationId, baseKey);
+ const legacyKey = buildLegacyStorageKey(stationId, baseKey);
+ // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+ (delete memoryCache[scopedKey], flushToIndexedDB(scopedKey, null));
+ if (legacyKey !== scopedKey) {
+ // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+ (delete memoryCache[legacyKey], flushToIndexedDB(legacyKey, null));
+ }
+ });
+ },
+
+ resetToDefault: async () => {
+ memoryCache = { /* empty */ };
+ if (typeof localStorage !== 'undefined') {
+ localStorage.clear();
+ }
+ await localforage.clear();
+ window.location.reload();
+ }
 };

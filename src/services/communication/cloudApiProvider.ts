@@ -1,10 +1,10 @@
 // Placeholder for future Twilio / WA Cloud APIs
 import { logger } from '../../lib/logger';
 export class CloudApiProvider {
-   
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static async send(payload: any) {
-    logger.info('Cloud API not enabled for MVP');
-    return false;
-  }
+ 
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
+ static async send(payload: any) {
+ logger.info('Cloud API not enabled for MVP');
+ return false;
+ }
 }

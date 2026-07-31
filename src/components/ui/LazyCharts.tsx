@@ -1,7 +1,7 @@
 import React from 'react';
 import {
-  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  BarChart, Bar, Cell, LineChart, Line, PieChart, Pie
+ AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
+ BarChart, Bar, Cell, LineChart, Line, PieChart, Pie
 } from 'recharts';
 
 // Wrapping Recharts in a standalone file so we can lazy load them.
@@ -22,5 +22,5 @@ export const LazyPieChart = (props: React.ComponentProps<typeof PieChart>) => <P
 export const LazyPie = (props: React.ComponentProps<typeof Pie>) => <Pie {...props} />;
 
 export default function RechartsModule() {
-  return null; // Dummy export for dynamic import root if needed
+ return null; // Dummy export for dynamic import root if needed
 }

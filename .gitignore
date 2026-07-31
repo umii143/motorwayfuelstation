@@ -7,3 +7,42 @@ coverage/
 .env*
 !.env.example
 *firebase-adminsdk*.json
+
+# Encrypted server database (contains user credentials & TOTP secrets — never commit)
+server_database.enc
+FuelPro_ERP_Backup_*.enc
+
+# Build artifacts
+*.apk
+
+# One-off maintenance/patch scripts & audit dumps (not part of the app)
+fix*.py
+fix*.cjs
+patch*.py
+patch*.cjs
+patcher.cjs
+replace*.py
+replace*.cjs
+replace*.js
+test*.py
+test*.js
+test*.cjs
+parse*.py
+diag.py
+get_*.py
+tag_counter.py
+migrate_context.py
+refactor_components.py
+dark_mode_patch*.py
+script.py
+
+# Scratch text/report dumps
+*.txt
+!requirements.txt
+diff_report.txt
+eslint_*.txt
+eslint_*.json
+tsc_output.txt
+propakistani.html
+scratch/
+

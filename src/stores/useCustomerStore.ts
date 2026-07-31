@@ -6,127 +6,127 @@ import { getBusinessTypeForStation, isolateTenantRecords, withBusinessScope } fr
 import { AuditLogger } from '../services/auditLogger';
 
 interface CustomerState {
-  customers: Customer[];
-  setCustomers: (customers: Customer[]) => void;
-  handleAddCustomer: (newCustomer: Customer, orgId?: string, stationId?: string, language?: string, showToast?: (m: string, t?: 'success' | 'error' | 'info') => void) => Promise<void>;
-  handleUpdateCustomer: (updatedCustomer: Customer, orgId?: string, stationId?: string, language?: string, showToast?: (m: string, t?: 'success' | 'error' | 'info') => void) => Promise<void>;
-  handleDeleteCustomer: (customerId: string, orgId?: string, stationId?: string, language?: string, showToast?: (m: string, t?: 'success' | 'error' | 'info') => void) => Promise<void>;
+ customers: Customer[];
+ setCustomers: (customers: Customer[]) => void;
+ handleAddCustomer: (newCustomer: Customer, orgId?: string, stationId?: string, language?: string, showToast?: (m: string, t?: 'success' | 'error' | 'info') => void) => Promise<void>;
+ handleUpdateCustomer: (updatedCustomer: Customer, orgId?: string, stationId?: string, language?: string, showToast?: (m: string, t?: 'success' | 'error' | 'info') => void) => Promise<void>;
+ handleDeleteCustomer: (customerId: string, orgId?: string, stationId?: string, language?: string, showToast?: (m: string, t?: 'success' | 'error' | 'info') => void) => Promise<void>;
 }
 
 export const useCustomerStore = create<CustomerState>((set) => ({
-  customers: db.getCustomers(db.getActiveStationId()),
+ customers: db.getCustomers(db.getActiveStationId()),
 
-  setCustomers: (customers) => {
-    const stationId = db.getActiveStationId();
-    const scopedCustomers = isolateTenantRecords(customers, stationId);
-    set({ customers: scopedCustomers });
-    if (stationId) {
-      db.saveCustomers(stationId, scopedCustomers);
-    }
-  },
+ setCustomers: (customers) => {
+ const stationId = db.getActiveStationId();
+ const scopedCustomers = isolateTenantRecords(customers, stationId);
+ set({ customers: scopedCustomers });
+ if (stationId) {
+ db.saveCustomers(stationId, scopedCustomers);
+ }
+ },
 
-  handleAddCustomer: async (newCustomer, orgId, stationId, language, showToast) => {
-    const sId = stationId || db.getActiveStationId();
-    const activeBType = getBusinessTypeForStation(sId);
-    const customerWithBType: Customer = withBusinessScope(newCustomer, sId, orgId);
-    
-    set((state) => {
-      const updated = [...state.customers, customerWithBType];
-      db.saveCustomers(sId, updated);
-      return { customers: updated };
-    });
+ handleAddCustomer: async (newCustomer, orgId, stationId, language, showToast) => {
+ const sId = stationId || db.getActiveStationId();
+ const activeBType = getBusinessTypeForStation(sId);
+ const customerWithBType: Customer = withBusinessScope(newCustomer, sId, orgId);
+ 
+ set((state) => {
+ const updated = [...state.customers, customerWithBType];
+ db.saveCustomers(sId, updated);
+ return { customers: updated };
+ });
 
-    AuditLogger.logAction(
-      'CREATE_CUSTOMER',
-      'customers',
-      `Created customer profile for "${newCustomer.name}" with initial balance Rs. ${newCustomer.balance}`,
-      undefined,
-      customerWithBType,
-      orgId,
-      sId
-    );
+ AuditLogger.logAction(
+ 'CREATE_CUSTOMER',
+ 'customers',
+ `Created customer profile for"${newCustomer.name}" with initial balance Rs. ${newCustomer.balance}`,
+ undefined,
+ customerWithBType,
+ orgId,
+ sId
+ );
 
-    if (orgId) {
-      await firestoreDb.saveDocument(orgId, sId, activeBType, 'customers', newCustomer.id, customerWithBType);
-    }
+ if (orgId) {
+ await firestoreDb.saveDocument(orgId, sId, activeBType, 'customers', newCustomer.id, customerWithBType);
+ }
 
-    if (showToast) {
-      const msg = language === 'ur'
-        ? 'گاہک کا کھاتہ کامیابی سے شامل ہو گیا۔'
-        : 'Customer profile successfully created.';
-      showToast(msg, 'success');
-    }
-  },
+ if (showToast) {
+ const msg = language === 'ur'
+ ? 'گاہک کا کھاتہ کامیابی سے شامل ہو گیا۔'
+ : 'Customer profile successfully created.';
+ showToast(msg, 'success');
+ }
+ },
 
-  handleUpdateCustomer: async (updatedCustomer, orgId, stationId, language, showToast) => {
-    const sId = stationId || db.getActiveStationId();
-    const activeBType = getBusinessTypeForStation(sId);
-    const customerWithBType: Customer = withBusinessScope(updatedCustomer, sId, orgId);
+ handleUpdateCustomer: async (updatedCustomer, orgId, stationId, language, showToast) => {
+ const sId = stationId || db.getActiveStationId();
+ const activeBType = getBusinessTypeForStation(sId);
+ const customerWithBType: Customer = withBusinessScope(updatedCustomer, sId, orgId);
 
-    let oldCustomer: Customer | undefined;
-    set((state) => {
-      oldCustomer = state.customers.find((c) => c.id === updatedCustomer.id);
-      const updated = state.customers.map((c) => (c.id === updatedCustomer.id ? customerWithBType : c));
-      db.saveCustomers(sId, updated);
-      return { customers: updated };
-    });
+ let oldCustomer: Customer | undefined;
+ set((state) => {
+ oldCustomer = state.customers.find((c) => c.id === updatedCustomer.id);
+ const updated = state.customers.map((c) => (c.id === updatedCustomer.id ? customerWithBType : c));
+ db.saveCustomers(sId, updated);
+ return { customers: updated };
+ });
 
-    if (oldCustomer) {
-      AuditLogger.logAction(
-        'UPDATE_CUSTOMER',
-        'customers',
-        `Updated customer profile details for "${updatedCustomer.name}"`,
-        oldCustomer,
-        customerWithBType,
-        orgId,
-        sId
-      );
-    }
+ if (oldCustomer) {
+ AuditLogger.logAction(
+ 'UPDATE_CUSTOMER',
+ 'customers',
+ `Updated customer profile details for"${updatedCustomer.name}"`,
+ oldCustomer,
+ customerWithBType,
+ orgId,
+ sId
+ );
+ }
 
-    if (orgId) {
-      await firestoreDb.saveDocument(orgId, sId, activeBType, 'customers', updatedCustomer.id, customerWithBType);
-    }
+ if (orgId) {
+ await firestoreDb.saveDocument(orgId, sId, activeBType, 'customers', updatedCustomer.id, customerWithBType);
+ }
 
-    if (showToast) {
-      const msg = language === 'ur'
-        ? 'گاہک کی تفصیلات کامیابی سے اپ ڈیٹ ہو گئیں۔'
-        : 'Customer profile successfully updated.';
-      showToast(msg, 'success');
-    }
-  },
+ if (showToast) {
+ const msg = language === 'ur'
+ ? 'گاہک کی تفصیلات کامیابی سے اپ ڈیٹ ہو گئیں۔'
+ : 'Customer profile successfully updated.';
+ showToast(msg, 'success');
+ }
+ },
 
-  handleDeleteCustomer: async (customerId, orgId, stationId, language, showToast) => {
-    const sId = stationId || db.getActiveStationId();
-    
-    let oldCustomer: Customer | undefined;
-    set((state) => {
-      oldCustomer = state.customers.find((c) => c.id === customerId);
-      const updated = state.customers.filter((c) => c.id !== customerId);
-      db.saveCustomers(sId, updated);
-      return { customers: updated };
-    });
+ handleDeleteCustomer: async (customerId, orgId, stationId, language, showToast) => {
+ const sId = stationId || db.getActiveStationId();
+ 
+ let oldCustomer: Customer | undefined;
+ set((state) => {
+ oldCustomer = state.customers.find((c) => c.id === customerId);
+ const updated = state.customers.filter((c) => c.id !== customerId);
+ db.saveCustomers(sId, updated);
+ return { customers: updated };
+ });
 
-    if (oldCustomer) {
-      AuditLogger.logAction(
-        'DELETE_CUSTOMER',
-        'customers',
-        `Deleted customer profile for "${oldCustomer.name}"`,
-        oldCustomer,
-        undefined,
-        orgId,
-        sId
-      );
-    }
+ if (oldCustomer) {
+ AuditLogger.logAction(
+ 'DELETE_CUSTOMER',
+ 'customers',
+ `Deleted customer profile for"${oldCustomer.name}"`,
+ oldCustomer,
+ undefined,
+ orgId,
+ sId
+ );
+ }
 
-    if (orgId) {
-      await firestoreDb.deleteDocument(orgId, sId, 'customers', customerId);
-    }
+ if (orgId) {
+ await firestoreDb.deleteDocument(orgId, sId, 'customers', customerId);
+ }
 
-    if (showToast) {
-      const msg = language === 'ur'
-        ? 'گاہک کا کھاتہ کامیابی سے حذف ہو گیا۔'
-        : 'Customer profile successfully deleted.';
-      showToast(msg, 'success');
-    }
-  }
+ if (showToast) {
+ const msg = language === 'ur'
+ ? 'گاہک کا کھاتہ کامیابی سے حذف ہو گیا۔'
+ : 'Customer profile successfully deleted.';
+ showToast(msg, 'success');
+ }
+ }
 }));

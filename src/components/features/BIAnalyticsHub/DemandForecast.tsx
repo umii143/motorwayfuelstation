@@ -4,157 +4,157 @@ import { db } from '../../../data/db';
 import { BarChart3, TrendingUp, Sparkles, AlertTriangle } from 'lucide-react';
 
 interface DemandForecastProps {
-  settings: GlobalSettings;
-  stationId: string;
+ settings: GlobalSettings;
+ stationId: string;
 }
 
 const getFuelTypeFromProductName = (name: string) => {
-  const lower = name.toLowerCase();
-  if (lower.includes('octane') || lower.includes('hobc') || lower.includes('v-power') || lower.includes('high')) {
-    return 'V-Power';
-  }
-  if (lower.includes('diesel') || lower.includes('hsd') || lower.includes('euro')) {
-    return 'Diesel';
-  }
-  return 'Super'; // default to Super / PMG / Petrol
+ const lower = name.toLowerCase();
+ if (lower.includes('octane') || lower.includes('hobc') || lower.includes('v-power') || lower.includes('high')) {
+ return 'V-Power';
+ }
+ if (lower.includes('diesel') || lower.includes('hsd') || lower.includes('euro')) {
+ return 'Diesel';
+ }
+ return 'Super'; // default to Super / PMG / Petrol
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function DemandForecast({ settings, stationId }: DemandForecastProps) {
-  const [shifts, setShifts] = useState<Shift[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [tanks, setTanks] = useState<Tank[]>([]);
-  const [nozzles, setNozzles] = useState<Nozzle[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
+ const [shifts, setShifts] = useState<Shift[]>([]);
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
+ const [tanks, setTanks] = useState<Tank[]>([]);
+ const [nozzles, setNozzles] = useState<Nozzle[]>([]);
+ const [products, setProducts] = useState<Product[]>([]);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setShifts(db.getShifts(stationId));
-    setTanks(db.getTanks(stationId));
-    setNozzles(db.getNozzles(stationId));
-    setProducts(db.getProducts(stationId));
-  }, [stationId]);
+ useEffect(() => {
+ // eslint-disable-next-line react-hooks/set-state-in-effect
+ setShifts(db.getShifts(stationId));
+ setTanks(db.getTanks(stationId));
+ setNozzles(db.getNozzles(stationId));
+ setProducts(db.getProducts(stationId));
+ }, [stationId]);
 
-  const fuelTypes = ['Super', 'Diesel', 'V-Power'];
+ const fuelTypes = ['Super', 'Diesel', 'V-Power'];
 
-  // Authentic Forecast Logic: Look at historical average to project next 7 days using moving average
-  const generateAuthenticForecast = (type: string) => {
-    // Only look at closed shifts with dates
-    const closedShifts = shifts.filter(s => s.status === 'closed' && s.date);
-    
-    // Safety check: Minimum Data Requirement
-    if (closedShifts.length < 7) {
-      return {
-        next7Days: 0,
-        confidence: 0,
-        trend: 'Insufficient Data',
-        recommendation: 'Not enough historical data. Close at least 7 shifts to generate forecast.',
-        insufficient: true
-      };
-    }
+ // Authentic Forecast Logic: Look at historical average to project next 7 days using moving average
+ const generateAuthenticForecast = (type: string) => {
+ // Only look at closed shifts with dates
+ const closedShifts = shifts.filter(s => s.status === 'closed' && s.date);
+ 
+ // Safety check: Minimum Data Requirement
+ if (closedShifts.length < 7) {
+ return {
+ next7Days: 0,
+ confidence: 0,
+ trend: 'Insufficient Data',
+ recommendation: 'Not enough historical data. Close at least 7 shifts to generate forecast.',
+ insufficient: true
+ };
+ }
 
-    let totalVol = 0;
-    
-    closedShifts.forEach(s => {
-      if (!s.closingReadings || !s.openingReadings) return;
-      let shiftVol = 0;
-      Object.keys(s.closingReadings).forEach(nozzleId => {
-        const nozzle = nozzles.find(n => n.id === nozzleId);
-        if (!nozzle) return;
-        const product = products.find(p => p.id === nozzle.productId);
-        if (!product) return;
-        const fuelType = getFuelTypeFromProductName(product.name);
-        if (fuelType !== type) return;
+ let totalVol = 0;
+ 
+ closedShifts.forEach(s => {
+ if (!s.closingReadings || !s.openingReadings) return;
+ let shiftVol = 0;
+ Object.keys(s.closingReadings).forEach(nozzleId => {
+ const nozzle = nozzles.find(n => n.id === nozzleId);
+ if (!nozzle) return;
+ const product = products.find(p => p.id === nozzle.productId);
+ if (!product) return;
+ const fuelType = getFuelTypeFromProductName(product.name);
+ if (fuelType !== type) return;
 
-        const nozzleVol = Math.max(0, (s.closingReadings[nozzleId] || 0) - (s.openingReadings[nozzleId] || 0));
-        shiftVol += nozzleVol;
-      });
-      totalVol += shiftVol;
-    });
+ const nozzleVol = Math.max(0, (s.closingReadings[nozzleId] || 0) - (s.openingReadings[nozzleId] || 0));
+ shiftVol += nozzleVol;
+ });
+ totalVol += shiftVol;
+ });
 
-    const avgVolPerShift = totalVol / closedShifts.length;
-    // Assume roughly 1 shift per day for simplification, or average vol per shift * 7
-    const projected7Days = avgVolPerShift * 7;
-    
-    const confidence = Math.min(100, Math.round((closedShifts.length / 30) * 100));
-    
-    return {
-      next7Days: Math.round(projected7Days),
-      confidence,
-      trend: 'Based on moving avg',
-      recommendation: `Order ${Math.round(projected7Days / 1000) * 1000}L to cover projected 7-day demand.`,
-      insufficient: false
-    };
-  };
+ const avgVolPerShift = totalVol / closedShifts.length;
+ // Assume roughly 1 shift per day for simplification, or average vol per shift * 7
+ const projected7Days = avgVolPerShift * 7;
+ 
+ const confidence = Math.min(100, Math.round((closedShifts.length / 30) * 100));
+ 
+ return {
+ next7Days: Math.round(projected7Days),
+ confidence,
+ trend: 'Based on moving avg',
+ recommendation: `Order ${Math.round(projected7Days / 1000) * 1000}L to cover projected 7-day demand.`,
+ insufficient: false
+ };
+ };
 
-  return (
-    <div className="space-y-6">
-      <div className="bg-gradient-to-br from-indigo-900 to-slate-900 p-6 rounded-2xl border border-indigo-800 shadow-lg text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-10">
-          <Sparkles className="w-48 h-48" />
-        </div>
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-indigo-500/20 rounded-lg">
-              <BarChart3 className="h-6 w-6 text-indigo-300" />
-            </div>
-            <h3 className="font-black text-xl tracking-tight">AI Demand Forecast</h3>
-          </div>
-          <p className="text-indigo-200 text-sm max-w-2xl">
-            Our predictive model analyzes your historical sales velocity to accurately forecast moving average demand for the next 7 days.
-          </p>
-        </div>
-      </div>
+ return (
+ <div className="space-y-6">
+ <div className="bg-gradient-to-br from-indigo-900 to-slate-900 p-6 rounded-2xl border border-indigo-800 shadow-lg text-white relative overflow-hidden">
+ <div className="absolute top-0 right-0 p-8 opacity-10">
+ <Sparkles className="w-48 h-48" />
+ </div>
+ <div className="relative z-10">
+ <div className="flex items-center gap-3 mb-2">
+ <div className="p-2 bg-indigo-500/20 rounded-lg">
+ <BarChart3 className="h-6 w-6 text-indigo-300" />
+ </div>
+ <h3 className="font-black text-xl tracking-tight">AI Demand Forecast</h3>
+ </div>
+ <p className="text-indigo-200 text-sm max-w-2xl">
+ Our predictive model analyzes your historical sales velocity to accurately forecast moving average demand for the next 7 days.
+ </p>
+ </div>
+ </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        {fuelTypes.map(type => {
-          const forecast = generateAuthenticForecast(type);
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+ {fuelTypes.map(type => {
+ const forecast = generateAuthenticForecast(type);
 
-          return (
-            <div key={type} className="premium-card border border-slate-200 dark:border-white/10 hover:shadow-md transition">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h4 className="font-black text-lg text-slate-900 dark:text-white">{type}</h4>
-                  <span className="text-xs text-slate-500">Next 7 Days Forecast</span>
-                </div>
-                <div className="flex flex-col items-end">
-                  <div className={`flex items-center gap-1 text-sm font-bold px-2 py-1 rounded-md ${forecast.insufficient ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}`}>
-                    {forecast.insufficient ? <AlertTriangle className="h-3 w-3" /> : <TrendingUp className="h-3 w-3" />}
-                    {forecast.trend}
-                  </div>
-                  <span className="text-[10px] text-slate-400 mt-1">{forecast.confidence}% Confidence</span>
-                </div>
-              </div>
+ return (
+ <div key={type} className="premium-card border border-border hover:shadow-md transition">
+ <div className="flex justify-between items-start mb-4">
+ <div>
+ <h4 className="font-black text-lg text-foreground">{type}</h4>
+ <span className="text-xs text-muted-foreground">Next 7 Days Forecast</span>
+ </div>
+ <div className="flex flex-col items-end">
+ <div className={`flex items-center gap-1 text-sm font-bold px-2 py-1 rounded-md${forecast.insufficient ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}`}>
+ {forecast.insufficient ? <AlertTriangle className="h-3 w-3" /> : <TrendingUp className="h-3 w-3" />}
+ {forecast.trend}
+ </div>
+ <span className="text-[10px] text-muted-foreground mt-1">{forecast.confidence}% Confidence</span>
+ </div>
+ </div>
 
-              <div className="py-4 border-y border-slate-100 dark:border-white/5 my-4 flex items-end gap-2">
-                <span className="text-3xl font-black font-mono text-slate-900 dark:text-white tracking-tight">
-                  {forecast.insufficient ? '---' : forecast.next7Days.toLocaleString()}
-                </span>
-                <span className="text-sm font-bold text-slate-500 mb-1">Liters</span>
-              </div>
+ <div className="py-4 border-y border-border my-4 flex items-end gap-2">
+ <span className="text-3xl font-black font-mono text-foreground tracking-tight">
+ {forecast.insufficient ? '---' : forecast.next7Days.toLocaleString()}
+ </span>
+ <span className="text-sm font-bold text-muted-foreground mb-1">Liters</span>
+ </div>
 
-              <div className={`${forecast.insufficient ? 'bg-amber-50 border-amber-100' : 'bg-indigo-50 border-indigo-100'} border rounded-lg p-3 flex gap-3 items-start`}>
-                {forecast.insufficient ? <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" /> : <Sparkles className="h-4 w-4 text-indigo-500 shrink-0 mt-0.5" />}
-                <div>
-                  <div className={`text-xs font-bold uppercase tracking-wider mb-0.5 ${forecast.insufficient ? 'text-amber-900' : 'text-indigo-900'}`}>
-                    AI Recommendation
-                  </div>
-                  <div className={`text-sm font-medium ${forecast.insufficient ? 'text-amber-800' : 'text-indigo-800'}`}>
-                    {forecast.recommendation}
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+ <div className={`${forecast.insufficient ? 'bg-amber-50 border-amber-100' : 'bg-indigo-50 border-indigo-100'}border rounded-lg p-3 flex gap-3 items-start`}>
+ {forecast.insufficient ? <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" /> : <Sparkles className="h-4 w-4 text-indigo-500 shrink-0 mt-0.5" />}
+ <div>
+ <div className={`text-xs font-bold uppercase tracking-wider mb-0.5${forecast.insufficient ? 'text-amber-900' : 'text-indigo-900'}`}>
+ AI Recommendation
+ </div>
+ <div className={`text-sm font-medium${forecast.insufficient ? 'text-amber-800' : 'text-indigo-800'}`}>
+ {forecast.recommendation}
+ </div>
+ </div>
+ </div>
+ </div>
+ );
+ })}
 
-        {fuelTypes.length === 0 && (
-          <div className="col-span-full py-12 text-center text-slate-500 text-sm border-2 border-dashed border-slate-200 dark:border-white/10 rounded-xl bg-slate-50 dark:bg-white/5">
-            No tanks configured. Please set up tanks in settings to see AI forecasts.
-          </div>
-        )}
-      </div>
+ {fuelTypes.length === 0 && (
+ <div className="col-span-full py-12 text-center text-muted-foreground text-sm border-2 border-dashed border-border rounded-xl bg-subtle">
+ No tanks configured. Please set up tanks in settings to see AI forecasts.
+ </div>
+ )}
+ </div>
 
-    </div>
-  );
+ </div>
+ );
 }

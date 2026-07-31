@@ -1,113 +1,113 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import {
-  User as FirebaseUser,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendEmailVerification,
-  sendPasswordResetEmail,
-  confirmPasswordReset as fbConfirmPasswordReset,
-  reload as reloadUser,
-  signOut,
-  onAuthStateChanged,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-  signInWithCustomToken
+ User as FirebaseUser,
+ signInWithEmailAndPassword,
+ createUserWithEmailAndPassword,
+ sendEmailVerification,
+ sendPasswordResetEmail,
+ confirmPasswordReset as fbConfirmPasswordReset,
+ reload as reloadUser,
+ signOut,
+ onAuthStateChanged,
+ EmailAuthProvider,
+ reauthenticateWithCredential,
+ signInWithCustomToken
 } from 'firebase/auth';
 import {
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  onSnapshot,
-  writeBatch
+ doc,
+ getDoc,
+ setDoc,
+ updateDoc,
+ onSnapshot,
+ writeBatch
 } from 'firebase/firestore';
 import { logger } from '../lib/logger';
 import { EventEngine } from '../services/eventEngine';
 import {
-  auth,
-  dbFS,
-  signInWithGoogle as googleSignIn,
-  withFirestoreRetry,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  sendEmailOTP,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  verifyEmailOTP
+ auth,
+ dbFS,
+ signInWithGoogle as googleSignIn,
+ withFirestoreRetry,
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
+ sendEmailOTP,
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
+ verifyEmailOTP
 } from '../lib/firebase';
 
 export interface UserSession {
-  id: string;
-  userId: string;
-  email: string;
-  deviceName: string;
-  browser: string;
-  ipHistory: string[];
-  loginTimestamp: string;
-  lastActivity: string;
-  status: 'active' | 'revoked';
+ id: string;
+ userId: string;
+ email: string;
+ deviceName: string;
+ browser: string;
+ ipHistory: string[];
+ loginTimestamp: string;
+ lastActivity: string;
+ status: 'active' | 'revoked';
 }
 
 export interface UserProfile {
-  uid: string;
-  email: string;
-  role: 'owner' | 'manager' | 'staff';
-  orgId: string;
-  status: 'active' | 'suspended' | 'blocked' | 'pending_verification' | 'trial_expired';
-  permissions: string[];
-  totpSecret?: string;
-  totpEnabled: boolean;
-  createdAt: string;
+ uid: string;
+ email: string;
+ role: 'owner' | 'manager' | 'staff';
+ orgId: string;
+ status: 'active' | 'suspended' | 'blocked' | 'pending_verification' | 'trial_expired';
+ permissions: string[];
+ totpSecret?: string;
+ totpEnabled: boolean;
+ createdAt: string;
 }
 
 export interface Organization {
-  orgId: string;
-  name: string;
-  subscriptionStatus: 'active' | 'trialing' | 'expired' | 'unpaid' | 'pending_verification';
-  subscriptionTier: 'trial' | 'basic' | 'professional' | 'enterprise';
-  trialStartDate: string;
-  trialEndDate: string;
-  expiryDate?: string;
-  phone?: string;
-  ownerId: string;
-  createdAt: string;
+ orgId: string;
+ name: string;
+ subscriptionStatus: 'active' | 'trialing' | 'expired' | 'unpaid' | 'pending_verification';
+ subscriptionTier: 'trial' | 'basic' | 'professional' | 'enterprise';
+ trialStartDate: string;
+ trialEndDate: string;
+ expiryDate?: string;
+ phone?: string;
+ ownerId: string;
+ createdAt: string;
 }
 
 export interface AuthContextType {
-  user: UserProfile | null;
-  firebaseUser: FirebaseUser | null;
-  organization: Organization | null;
-  session: UserSession | null;
-  isSuperAdmin: boolean;
-  checkingAuth: boolean;
-  pendingVerification: boolean;
-  hasPermission: (permission: string) => boolean;
-  loginWithEmail: (email: string, password: string) => Promise<any>;
-  loginWithGoogle: () => Promise<any>;
-  signUpUser: (email: string, password: string) => Promise<any>;
-  resendVerificationEmail: () => Promise<void>;
-  checkEmailVerified: () => Promise<boolean>;
-  logout: () => Promise<void>;
-  verifyTOTPChallenge: (code: string, tempToken: string) => Promise<any>;
-  registerVerify2FA: (code: string, tempToken: string) => Promise<any>;
-  sendPasswordReset: (email: string) => Promise<void>;
-  confirmPasswordReset: (token: string, newPass: string) => Promise<void>;
-  reauthenticateWithPassword: (password: string) => Promise<boolean>;
-  requestOTP: (email: string) => Promise<void>;
-  verifyOTP: (email: string, otp: string) => Promise<any>;
+ user: UserProfile | null;
+ firebaseUser: FirebaseUser | null;
+ organization: Organization | null;
+ session: UserSession | null;
+ isSuperAdmin: boolean;
+ checkingAuth: boolean;
+ pendingVerification: boolean;
+ hasPermission: (permission: string) => boolean;
+ loginWithEmail: (email: string, password: string) => Promise<any>;
+ loginWithGoogle: () => Promise<any>;
+ signUpUser: (email: string, password: string) => Promise<any>;
+ resendVerificationEmail: () => Promise<void>;
+ checkEmailVerified: () => Promise<boolean>;
+ logout: () => Promise<void>;
+ verifyTOTPChallenge: (code: string, tempToken: string) => Promise<any>;
+ registerVerify2FA: (code: string, tempToken: string) => Promise<any>;
+ sendPasswordReset: (email: string) => Promise<void>;
+ confirmPasswordReset: (token: string, newPass: string) => Promise<void>;
+ reauthenticateWithPassword: (password: string) => Promise<boolean>;
+ requestOTP: (email: string) => Promise<void>;
+ verifyOTP: (email: string, otp: string) => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const ROLE_PERMISSIONS: Record<'owner' | 'manager' | 'staff', string[]> = {
-  owner: [
-    'reports.view', 'reports.export', 'dashboard.view', 'shift.close',
-    'inventory.edit', 'users.manage', 'billing.manage', 'settings.manage',
-    'pricing.manage', 'tank.manage', 'inventory.manage'
-  ],
-  manager: [
-    'reports.view', 'dashboard.view', 'shift.close', 'inventory.edit', 'settings.manage',
-    'pricing.manage', 'tank.manage', 'inventory.manage'
-  ],
-  staff: ['dashboard.view', 'shift.close']
+ owner: [
+ 'reports.view', 'reports.export', 'dashboard.view', 'shift.close',
+ 'inventory.edit', 'users.manage', 'billing.manage', 'settings.manage',
+ 'pricing.manage', 'tank.manage', 'inventory.manage'
+ ],
+ manager: [
+ 'reports.view', 'dashboard.view', 'shift.close', 'inventory.edit', 'settings.manage',
+ 'pricing.manage', 'tank.manage', 'inventory.manage'
+ ],
+ staff: ['dashboard.view', 'shift.close']
 };
 
 /**
@@ -115,50 +115,50 @@ const ROLE_PERMISSIONS: Record<'owner' | 'manager' | 'staff', string[]> = {
  * Safe to call multiple times — will not overwrite existing profiles.
  */
 async function createFirestoreProfiles(
-  fbUser: FirebaseUser
+ fbUser: FirebaseUser
 ): Promise<{ profile: UserProfile; orgProfile: Organization }> {
-  const orgId = `org_${Date.now()}`;
-  const trialStart = new Date();
-  const trialEnd = new Date();
-  trialEnd.setDate(trialStart.getDate() + 7);
+ const orgId = `org_${Date.now()}`;
+ const trialStart = new Date();
+ const trialEnd = new Date();
+ trialEnd.setDate(trialStart.getDate() + 7);
 
-  const profile: UserProfile = {
-    uid: fbUser.uid,
-    email: fbUser.email || '',
-    role: 'owner',
-    orgId,
-    status: 'active',
-    permissions: ROLE_PERMISSIONS.owner,
-    totpEnabled: false,
-    createdAt: new Date().toISOString()
-  };
+ const profile: UserProfile = {
+ uid: fbUser.uid,
+ email: fbUser.email || '',
+ role: 'owner',
+ orgId,
+ status: 'active',
+ permissions: ROLE_PERMISSIONS.owner,
+ totpEnabled: false,
+ createdAt: new Date().toISOString()
+ };
 
-  const orgProfile: Organization = {
-    orgId,
-    name: `${fbUser.displayName || fbUser.email?.split('@')[0] || 'FuelPro'} Station Group`,
-    subscriptionStatus: 'trialing',
-    subscriptionTier: 'trial',
-    trialStartDate: trialStart.toISOString(),
-    trialEndDate: trialEnd.toISOString(),
-    ownerId: fbUser.uid,
-    createdAt: new Date().toISOString()
-  };
+ const orgProfile: Organization = {
+ orgId,
+ name: `${fbUser.displayName || fbUser.email?.split('@')[0] || 'FuelPro'} Station Group`,
+ subscriptionStatus: 'trialing',
+ subscriptionTier: 'trial',
+ trialStartDate: trialStart.toISOString(),
+ trialEndDate: trialEnd.toISOString(),
+ ownerId: fbUser.uid,
+ createdAt: new Date().toISOString()
+ };
 
-  const batch = writeBatch(dbFS);
-  batch.set(doc(dbFS, 'users', fbUser.uid), profile);
-  batch.set(doc(dbFS, 'organizations', orgId), orgProfile);
-  batch.set(doc(dbFS, 'auditLogs', `aud_${Date.now()}`), {
-    userId: fbUser.uid,
-    email: fbUser.email || '',
-    action: 'organization_created',
-    details: 'New FuelPro organization created. Trial: 7 days.',
-    ip: '127.0.0.1',
-    device: navigator.userAgent,
-    timestamp: new Date().toISOString()
-  });
+ const batch = writeBatch(dbFS);
+ batch.set(doc(dbFS, 'users', fbUser.uid), profile);
+ batch.set(doc(dbFS, 'organizations', orgId), orgProfile);
+ batch.set(doc(dbFS, 'auditLogs', `aud_${Date.now()}`), {
+ userId: fbUser.uid,
+ email: fbUser.email || '',
+ action: 'organization_created',
+ details: 'New FuelPro organization created. Trial: 7 days.',
+ ip: '127.0.0.1',
+ device: navigator.userAgent,
+ timestamp: new Date().toISOString()
+ });
 
-  await batch.commit();
-  return { profile, orgProfile };
+ await batch.commit();
+ return { profile, orgProfile };
 }
 
 /**
@@ -166,493 +166,493 @@ async function createFirestoreProfiles(
  * This is the single source of truth — called by onAuthStateChanged.
  */
 async function loadUserProfile(
-  fbUser: FirebaseUser
+ fbUser: FirebaseUser
 ): Promise<{ profile: UserProfile; orgProfile: Organization | null }> {
-  const userDocRef = doc(dbFS, 'users', fbUser.uid);
+ const userDocRef = doc(dbFS, 'users', fbUser.uid);
 
-  const userSnap = await withFirestoreRetry(() => getDoc(userDocRef));
+ const userSnap = await withFirestoreRetry(() => getDoc(userDocRef));
 
-  if (!userSnap.exists()) {
-    const { profile, orgProfile } = await createFirestoreProfiles(fbUser);
-    return { profile, orgProfile };
-  }
+ if (!userSnap.exists()) {
+ const { profile, orgProfile } = await createFirestoreProfiles(fbUser);
+ return { profile, orgProfile };
+ }
 
-  const profile = userSnap.data() as UserProfile;
-  let orgProfile: Organization | null = null;
+ const profile = userSnap.data() as UserProfile;
+ let orgProfile: Organization | null = null;
 
-  if (profile.orgId) {
-    const orgSnap = await withFirestoreRetry(() =>
-      getDoc(doc(dbFS, 'organizations', profile.orgId))
-    );
-    if (orgSnap.exists()) {
-      orgProfile = orgSnap.data() as Organization;
-    }
-  }
+ if (profile.orgId) {
+ const orgSnap = await withFirestoreRetry(() =>
+ getDoc(doc(dbFS, 'organizations', profile.orgId))
+ );
+ if (orgSnap.exists()) {
+ orgProfile = orgSnap.data() as Organization;
+ }
+ }
 
-  return { profile, orgProfile };
+ return { profile, orgProfile };
 }
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [organization, setOrganization] = useState<Organization | null>(null);
-  const [session, setSession] = useState<UserSession | null>(null);
-  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
-  const [pendingVerification, setPendingVerification] = useState(false);
+ const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+ const [user, setUser] = useState<UserProfile | null>(null);
+ const [organization, setOrganization] = useState<Organization | null>(null);
+ const [session, setSession] = useState<UserSession | null>(null);
+ const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+ const [checkingAuth, setCheckingAuth] = useState(true);
+ const [pendingVerification, setPendingVerification] = useState(false);
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Auth state listener — single source of truth for all login methods
-  // ─────────────────────────────────────────────────────────────────────────
-  useEffect(() => {
-    let active = true;
+ // ─────────────────────────────────────────────────────────────────────────
+ // Auth state listener — single source of truth for all login methods
+ // ─────────────────────────────────────────────────────────────────────────
+ useEffect(() => {
+ let active = true;
 
-    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      if (!active) return;
-      if (window.location.search.includes('mock=1')) {
-        const mockProfile: UserProfile = {
-          uid: 'mock_uid_123',
-          email: 'admin@fuelpro.local',
-          role: 'owner',
-          orgId: '',
-          status: 'active',
-          permissions: ['owner'],
-          totpEnabled: false,
-          createdAt: new Date().toISOString()
-        };
-        setUser(mockProfile);
-        setOrganization({
-          orgId: '',
-          name: 'Local Demo Group',
-          subscriptionStatus: 'active',
-          subscriptionTier: 'enterprise',
-          trialStartDate: new Date().toISOString(),
-          trialEndDate: new Date().toISOString(),
-          ownerId: 'mock_uid_123',
-          createdAt: new Date().toISOString()
-        });
-        setIsSuperAdmin(true);
-        setCheckingAuth(false);
-        return;
-      }
+ const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+ if (!active) return;
+ if (window.location.search.includes('mock=1')) {
+ const mockProfile: UserProfile = {
+ uid: 'mock_uid_123',
+ email: 'admin@fuelpro.local',
+ role: 'owner',
+ orgId: '',
+ status: 'active',
+ permissions: ['owner'],
+ totpEnabled: false,
+ createdAt: new Date().toISOString()
+ };
+ setUser(mockProfile);
+ setOrganization({
+ orgId: '',
+ name: 'Local Demo Group',
+ subscriptionStatus: 'active',
+ subscriptionTier: 'enterprise',
+ trialStartDate: new Date().toISOString(),
+ trialEndDate: new Date().toISOString(),
+ ownerId: 'mock_uid_123',
+ createdAt: new Date().toISOString()
+ });
+ setIsSuperAdmin(true);
+ setCheckingAuth(false);
+ return;
+ }
 
-      setFirebaseUser(fbUser);
+ setFirebaseUser(fbUser);
 
-      if (!fbUser) {
-        setPendingVerification(false);
-        setUser(null);
-        setOrganization(null);
-        setSession(null);
-        setCheckingAuth(false);
-        return;
-      }
+ if (!fbUser) {
+ setPendingVerification(false);
+ setUser(null);
+ setOrganization(null);
+ setSession(null);
+ setCheckingAuth(false);
+ return;
+ }
 
-      // Email/password accounts must verify their email first
-      const isEmailProvider = fbUser.providerData.some(p => p.providerId === 'password');
-      if (isEmailProvider && !fbUser.emailVerified) {
-        setPendingVerification(true);
-        setUser(null);
-        setOrganization(null);
-        setCheckingAuth(false);
-        return;
-      }
+ // Email/password accounts must verify their email first
+ const isEmailProvider = fbUser.providerData.some(p => p.providerId === 'password');
+ if (isEmailProvider && !fbUser.emailVerified) {
+ setPendingVerification(true);
+ setUser(null);
+ setOrganization(null);
+ setCheckingAuth(false);
+ return;
+ }
 
-      setPendingVerification(false);
+ setPendingVerification(false);
 
-      try {
-        // eslint-disable-next-line prefer-const
-        let { profile, orgProfile } = await loadUserProfile(fbUser);
-        if (!active) return;
+ try {
+ // eslint-disable-next-line prefer-const
+ let { profile, orgProfile } = await loadUserProfile(fbUser);
+ if (!active) return;
 
-        // Check if user is Super Admin
-        let superAdminStatus = false;
-        try {
-          const saDoc = await getDoc(doc(dbFS, 'systemSettings', 'superAdmin'));
-          if (saDoc.exists() && saDoc.data().uid === fbUser.uid) {
-            superAdminStatus = true;
-          }
-        } catch (e) {
-          logger.warn("Could not fetch superAdmin status", e);
-        }
+ // Check if user is Super Admin
+ let superAdminStatus = false;
+ try {
+ const saDoc = await getDoc(doc(dbFS, 'systemSettings', 'superAdmin'));
+ if (saDoc.exists() && saDoc.data().uid === fbUser.uid) {
+ superAdminStatus = true;
+ }
+ } catch (e) {
+ logger.warn("Could not fetch superAdmin status", e);
+ }
 
-        setUser(profile);
+ setUser(profile);
 
-        EventEngine.emit({
-          eventType: 'LOGIN',
-          module: 'security',
-          summary: `User ${profile.email} (${profile.role}) signed in`,
-          entity: { kind: 'staff', id: profile.uid, label: profile.email },
-          severity: 'info',
-          tags: ['auth', 'login']
-        });
+ EventEngine.emit({
+ eventType: 'LOGIN',
+ module: 'security',
+ summary: `User ${profile.email} (${profile.role}) signed in`,
+ entity: { kind: 'staff', id: profile.uid, label: profile.email },
+ severity: 'info',
+ tags: ['auth', 'login']
+ });
 
-        // ─── SUPER ADMIN PROTECTION ────────────────────────────────────────
-        // If this is the developer's account and their org got accidentally expired, heal it
-        if (orgProfile && orgProfile.orgId && superAdminStatus) {
-          const permanentExpiry = new Date('2099-12-31T23:59:59.999Z');
-          const needsHeal = orgProfile.subscriptionStatus !== 'active' || orgProfile.subscriptionTier !== 'enterprise';
-          if (needsHeal) {
-            try {
-              await updateDoc(doc(dbFS, 'organizations', orgProfile.orgId), {
-                subscriptionStatus: 'active',
-                subscriptionTier: 'enterprise',
-                expiryDate: permanentExpiry.toISOString(),
-              });
-              orgProfile = { ...orgProfile, subscriptionStatus: 'active', subscriptionTier: 'enterprise', expiryDate: permanentExpiry.toISOString() };
-            } catch (e) { logger.warn('[Auth] Could not heal super admin org:', e); }
-          }
-        }
-        // ──────────────────────────────────────────────────────────────────
+ // ─── SUPER ADMIN PROTECTION ────────────────────────────────────────
+ // If this is the developer's account and their org got accidentally expired, heal it
+ if (orgProfile && orgProfile.orgId && superAdminStatus) {
+ const permanentExpiry = new Date('2099-12-31T23:59:59.999Z');
+ const needsHeal = orgProfile.subscriptionStatus !== 'active' || orgProfile.subscriptionTier !== 'enterprise';
+ if (needsHeal) {
+ try {
+ await updateDoc(doc(dbFS, 'organizations', orgProfile.orgId), {
+ subscriptionStatus: 'active',
+ subscriptionTier: 'enterprise',
+ expiryDate: permanentExpiry.toISOString(),
+ });
+ orgProfile = { ...orgProfile, subscriptionStatus: 'active', subscriptionTier: 'enterprise', expiryDate: permanentExpiry.toISOString() };
+ } catch (e) { logger.warn('[Auth] Could not heal super admin org:', e); }
+ }
+ }
+ // ──────────────────────────────────────────────────────────────────
 
-        // ─── SUBSCRIPTION EXPIRY ENFORCEMENT ──────────────────────────────
-        // Check on every login: if trial or paid period has ended, mark expired.
-        // This is the financial safety gate \u2014 prevents free usage past due date.
-        if (orgProfile && orgProfile.orgId && !superAdminStatus) {
-          const now = new Date();
-          // Use expiryDate (paid plans) first, fall back to trialEndDate (trial)
-          const expiryStr = orgProfile.expiryDate || orgProfile.trialEndDate;
-          if (expiryStr) {
-            const expiry = new Date(expiryStr);
-            if (!isNaN(expiry.getTime()) && expiry < now) {
-              // Period has ended \u2014 immediately expire in Firebase
-               
-              if (orgProfile.subscriptionStatus !== ('expired' as any) && orgProfile.subscriptionStatus !== ('canceled' as any)) {
-                try {
-                  await updateDoc(doc(dbFS, 'organizations', orgProfile.orgId), {
-                    subscriptionStatus: 'expired'
-                  });
-                  // Reflect locally too
-                  orgProfile = { ...orgProfile, subscriptionStatus: 'expired' as any };
-                } catch (e) {
-                  logger.warn('[Auth] Could not auto-expire org:', e);
-                }
-              }
-            }
-          }
-        }
-        // ──────────────────────────────────────────────────────────────────
+ // ─── SUBSCRIPTION EXPIRY ENFORCEMENT ──────────────────────────────
+ // Check on every login: if trial or paid period has ended, mark expired.
+ // This is the financial safety gate \u2014 prevents free usage past due date.
+ if (orgProfile && orgProfile.orgId && !superAdminStatus) {
+ const now = new Date();
+ // Use expiryDate (paid plans) first, fall back to trialEndDate (trial)
+ const expiryStr = orgProfile.expiryDate || orgProfile.trialEndDate;
+ if (expiryStr) {
+ const expiry = new Date(expiryStr);
+ if (!isNaN(expiry.getTime()) && expiry < now) {
+ // Period has ended \u2014 immediately expire in Firebase
+ 
+ if (orgProfile.subscriptionStatus !== ('expired' as any) && orgProfile.subscriptionStatus !== ('canceled' as any)) {
+ try {
+ await updateDoc(doc(dbFS, 'organizations', orgProfile.orgId), {
+ subscriptionStatus: 'expired'
+ });
+ // Reflect locally too
+ orgProfile = { ...orgProfile, subscriptionStatus: 'expired' as any };
+ } catch (e) {
+ logger.warn('[Auth] Could not auto-expire org:', e);
+ }
+ }
+ }
+ }
+ }
+ // ──────────────────────────────────────────────────────────────────
 
-        setOrganization(orgProfile);
-        setIsSuperAdmin(superAdminStatus);
-        // eslint-disable-next-line react-hooks/immutability
-        await syncSessionState(fbUser, profile.orgId);
-      } catch (error: any) {
-        if (!active) return;
-        logger.error('[Auth] Failed to load user profile:', error?.message);
-        // Sign out cleanly on profile load failure
-        setUser(null);
-        setOrganization(null);
-        setSession(null);
-        setFirebaseUser(null);
-         
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        try { await signOut(auth); } catch (_) { /* ignore */ }
-      } finally {
-        if (active) setCheckingAuth(false);
-      }
-    });
+ setOrganization(orgProfile);
+ setIsSuperAdmin(superAdminStatus);
+ // eslint-disable-next-line react-hooks/immutability
+ await syncSessionState(fbUser, profile.orgId);
+ } catch (error: any) {
+ if (!active) return;
+ logger.error('[Auth] Failed to load user profile:', error?.message);
+ // Sign out cleanly on profile load failure
+ setUser(null);
+ setOrganization(null);
+ setSession(null);
+ setFirebaseUser(null);
+ 
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
+ try { await signOut(auth); } catch (_) { /* ignore */ }
+ } finally {
+ if (active) setCheckingAuth(false);
+ }
+ });
 
-    return () => {
-      active = false;
-      unsubscribe();
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+ return () => {
+ active = false;
+ unsubscribe();
+ };
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+ }, []);
 
-  // Monitor session — force logout if revoked remotely
-  useEffect(() => {
-    if (!user || !session) return;
-    const sessionRef = doc(dbFS, 'sessions', session.id);
-    const unsub = onSnapshot(sessionRef, (snap) => {
-      if (snap.exists()) {
-        const sessData = snap.data() as UserSession;
-        setSession(sessData);
-        if (sessData.status === 'revoked') {
-          // eslint-disable-next-line react-hooks/immutability
-          logout();
-        }
-      }
-    });
-    return unsub;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, session?.id]);
+ // Monitor session — force logout if revoked remotely
+ useEffect(() => {
+ if (!user || !session) return;
+ const sessionRef = doc(dbFS, 'sessions', session.id);
+ const unsub = onSnapshot(sessionRef, (snap) => {
+ if (snap.exists()) {
+ const sessData = snap.data() as UserSession;
+ setSession(sessData);
+ if (sessData.status === 'revoked') {
+ // eslint-disable-next-line react-hooks/immutability
+ logout();
+ }
+ }
+ });
+ return unsub;
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+ }, [user, session?.id]);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const syncSessionState = async (fbUser: FirebaseUser, orgId: string) => {
-    const userAgent = navigator.userAgent;
-    // eslint-disable-next-line react-hooks/purity
-    const sessionId = localStorage.getItem('fuelpro_current_session_id') || `sess_${Date.now()}`;
-    localStorage.setItem('fuelpro_current_session_id', sessionId);
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
+ const syncSessionState = async (fbUser: FirebaseUser, orgId: string) => {
+ const userAgent = navigator.userAgent;
+ // eslint-disable-next-line react-hooks/purity
+ const sessionId = localStorage.getItem('fuelpro_current_session_id') || `sess_${Date.now()}`;
+ localStorage.setItem('fuelpro_current_session_id', sessionId);
 
-    const sessionRef = doc(dbFS, 'sessions', sessionId);
+ const sessionRef = doc(dbFS, 'sessions', sessionId);
 
-    let existingData: any = null;
-    try {
-      const snap = await withFirestoreRetry(() => getDoc(sessionRef));
-      if (snap.exists()) existingData = snap.data();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (_) { /* non-critical */ }
+ let existingData: any = null;
+ try {
+ const snap = await withFirestoreRetry(() => getDoc(sessionRef));
+ if (snap.exists()) existingData = snap.data();
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
+ } catch (_) { /* non-critical */ }
 
-    const sessionData: UserSession = {
-      id: sessionId,
-      userId: fbUser.uid,
-      email: fbUser.email || '',
-      deviceName: userAgent,
-      browser: getBrowserName(userAgent),
-      ipHistory: existingData
-        ? Array.from(new Set([...(existingData.ipHistory || []), '127.0.0.1']))
-        : ['127.0.0.1'],
-      loginTimestamp: existingData?.loginTimestamp || new Date().toISOString(),
-      lastActivity: new Date().toISOString(),
-      status: existingData?.status || 'active'
-    };
+ const sessionData: UserSession = {
+ id: sessionId,
+ userId: fbUser.uid,
+ email: fbUser.email || '',
+ deviceName: userAgent,
+ browser: getBrowserName(userAgent),
+ ipHistory: existingData
+ ? Array.from(new Set([...(existingData.ipHistory || []), '127.0.0.1']))
+ : ['127.0.0.1'],
+ loginTimestamp: existingData?.loginTimestamp || new Date().toISOString(),
+ lastActivity: new Date().toISOString(),
+ status: existingData?.status || 'active'
+ };
 
-    try {
-      await setDoc(sessionRef, sessionData, { merge: true });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (_) { /* non-critical */ }
+ try {
+ await setDoc(sessionRef, sessionData, { merge: true });
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
+ } catch (_) { /* non-critical */ }
 
-    setSession(sessionData);
+ setSession(sessionData);
 
-    if (sessionData.status === 'revoked') {
-      await logout();
-      throw new Error('Session revoked.');
-    }
-  };
+ if (sessionData.status === 'revoked') {
+ await logout();
+ throw new Error('Session revoked.');
+ }
+ };
 
-  const getBrowserName = (ua: string): string => {
-    if (ua.includes('Firefox')) return 'Firefox';
-    if (ua.includes('Chrome')) return 'Chrome';
-    if (ua.includes('Safari') && !ua.includes('Chrome')) return 'Safari';
-    if (ua.includes('Edge')) return 'Edge';
-    return 'any Browser';
-  };
+ const getBrowserName = (ua: string): string => {
+ if (ua.includes('Firefox')) return 'Firefox';
+ if (ua.includes('Chrome')) return 'Chrome';
+ if (ua.includes('Safari') && !ua.includes('Chrome')) return 'Safari';
+ if (ua.includes('Edge')) return 'Edge';
+ return 'any Browser';
+ };
 
-  const hasPermission = (permission: string): boolean => {
-    if (!user) return false;
-    if (user.status === 'suspended' || user.status === 'blocked') return false;
-    if (organization?.subscriptionStatus === 'expired') {
-      return permission === 'billing.manage';
-    }
-    return user.permissions.includes(permission);
-  };
+ const hasPermission = (permission: string): boolean => {
+ if (!user) return false;
+ if (user.status === 'suspended' || user.status === 'blocked') return false;
+ if (organization?.subscriptionStatus === 'expired') {
+ return permission === 'billing.manage';
+ }
+ return user.permissions.includes(permission);
+ };
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // EMAIL / PASSWORD LOGIN
-  // ─────────────────────────────────────────────────────────────────────────
-  const loginWithEmail = async (email: string, password: string) => {
-    const credential = await signInWithEmailAndPassword(auth, email, password);
+ // ─────────────────────────────────────────────────────────────────────────
+ // EMAIL / PASSWORD LOGIN
+ // ─────────────────────────────────────────────────────────────────────────
+ const loginWithEmail = async (email: string, password: string) => {
+ const credential = await signInWithEmailAndPassword(auth, email, password);
 
-    if (!credential.user.emailVerified) {
-      // Resend verification and hold in pending state
-      await sendEmailVerification(credential.user, {
-        url: `${window.location.origin}/?verified=1`
-      });
-      setPendingVerification(true);
-      await signOut(auth);
-      return { emailNotVerified: true };
-    }
+ if (!credential.user.emailVerified) {
+ // Resend verification and hold in pending state
+ await sendEmailVerification(credential.user, {
+ url: `${window.location.origin}/?verified=1`
+ });
+ setPendingVerification(true);
+ await signOut(auth);
+ return { emailNotVerified: true };
+ }
 
-    // onAuthStateChanged handles the rest
-    return { mfaRequired: false };
-  };
+ // onAuthStateChanged handles the rest
+ return { mfaRequired: false };
+ };
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // GOOGLE LOGIN — uses popup with COOP unsafe-none header from server
-  // ─────────────────────────────────────────────────────────────────────────
-  const loginWithGoogle = async () => {
-    const { user: fbUser, token } = await googleSignIn();
-    
-    // Check if user exists in firestore, if not create profile
-    const { profile, orgProfile } = await loadUserProfile(fbUser);
-    setUser(profile);
-    setOrganization(orgProfile);
-    await syncSessionState(fbUser, profile.orgId);
-    
-    return { user: profile, token };
-  };
+ // ─────────────────────────────────────────────────────────────────────────
+ // GOOGLE LOGIN — uses popup with COOP unsafe-none header from server
+ // ─────────────────────────────────────────────────────────────────────────
+ const loginWithGoogle = async () => {
+ const { user: fbUser, token } = await googleSignIn();
+ 
+ // Check if user exists in firestore, if not create profile
+ const { profile, orgProfile } = await loadUserProfile(fbUser);
+ setUser(profile);
+ setOrganization(orgProfile);
+ await syncSessionState(fbUser, profile.orgId);
+ 
+ return { user: profile, token };
+ };
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // SIGNUP — Firebase Email Verification
-  // ─────────────────────────────────────────────────────────────────────────
-  const signUpUser = async (email: string, password: string) => {
-    const credential = await createUserWithEmailAndPassword(auth, email, password);
-    await sendEmailVerification(credential.user, {
-      url: `${window.location.origin}/?verified=1`,
-      handleCodeInApp: false
-    });
-    setPendingVerification(true);
-    // Sign out — don't create Firestore profile until email is verified
-    await signOut(auth);
-    return { verificationEmailSent: true, email };
-  };
+ // ─────────────────────────────────────────────────────────────────────────
+ // SIGNUP — Firebase Email Verification
+ // ─────────────────────────────────────────────────────────────────────────
+ const signUpUser = async (email: string, password: string) => {
+ const credential = await createUserWithEmailAndPassword(auth, email, password);
+ await sendEmailVerification(credential.user, {
+ url: `${window.location.origin}/?verified=1`,
+ handleCodeInApp: false
+ });
+ setPendingVerification(true);
+ // Sign out — don't create Firestore profile until email is verified
+ await signOut(auth);
+ return { verificationEmailSent: true, email };
+ };
 
-  const resendVerificationEmail = async () => {
-    const fbUser = auth.currentUser || firebaseUser;
-    if (!fbUser) throw new Error('No active session to resend to.');
-    await sendEmailVerification(fbUser, {
-      url: `${window.location.origin}/?verified=1`,
-      handleCodeInApp: false
-    });
-  };
+ const resendVerificationEmail = async () => {
+ const fbUser = auth.currentUser || firebaseUser;
+ if (!fbUser) throw new Error('No active session to resend to.');
+ await sendEmailVerification(fbUser, {
+ url: `${window.location.origin}/?verified=1`,
+ handleCodeInApp: false
+ });
+ };
 
-  const checkEmailVerified = async (): Promise<boolean> => {
-    const fbUser = auth.currentUser;
-    if (!fbUser) return false;
-    await reloadUser(fbUser);
-    return fbUser.emailVerified;
-  };
+ const checkEmailVerified = async (): Promise<boolean> => {
+ const fbUser = auth.currentUser;
+ if (!fbUser) return false;
+ await reloadUser(fbUser);
+ return fbUser.emailVerified;
+ };
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // LEGACY TOTP (kept for existing MFA users)
-  // ─────────────────────────────────────────────────────────────────────────
-  const verifyTOTPChallenge = async (code: string, tempToken: string) => {
-    if (code !== '000000') throw new Error('Invalid TOTP Code.');
-    const uid = tempToken.replace('mock_token_', '');
-    return { token: 'firebase_session', user: { id: uid } };
-  };
+ // ─────────────────────────────────────────────────────────────────────────
+ // LEGACY TOTP (kept for existing MFA users)
+ // ─────────────────────────────────────────────────────────────────────────
+ const verifyTOTPChallenge = async (code: string, tempToken: string) => {
+ if (code !== '000000') throw new Error('Invalid TOTP Code.');
+ const uid = tempToken.replace('mock_token_', '');
+ return { token: 'firebase_session', user: { id: uid } };
+ };
 
-   
-   
-  const registerVerify2FA = async (_code: string, _tempToken: string) => {
-    return { user: { /* empty */ }, token: 'firebase_session' };
-  };
+ 
+ 
+ const registerVerify2FA = async (_code: string, _tempToken: string) => {
+ return { user: { /* empty */ }, token: 'firebase_session' };
+ };
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // EMAIL OTP (New Flow via Local Express Server)
-  // ─────────────────────────────────────────────────────────────────────────
-  const requestOTP = async (email: string) => {
-    try {
-      const response = await fetch("/api/auth/request-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email })
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to send OTP");
-      }
-    } catch (err: any) {
-      logger.error("requestOTP error:", err);
-      throw new Error(err.message || "Failed to send OTP");
-    }
-  };
+ // ─────────────────────────────────────────────────────────────────────────
+ // EMAIL OTP (New Flow via Local Express Server)
+ // ─────────────────────────────────────────────────────────────────────────
+ const requestOTP = async (email: string) => {
+ try {
+ const response = await fetch("/api/auth/request-otp", {
+ method:"POST",
+ headers: {"Content-Type":"application/json" },
+ body: JSON.stringify({ email })
+ });
+ const data = await response.json();
+ if (!response.ok) {
+ throw new Error(data.error ||"Failed to send OTP");
+ }
+ } catch (err: any) {
+ logger.error("requestOTP error:", err);
+ throw new Error(err.message ||"Failed to send OTP");
+ }
+ };
 
-  const verifyOTP = async (email: string, otp: string) => {
-    try {
-      const response = await fetch("/api/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp })
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Invalid OTP");
-      }
-      
-      const { token } = data;
-      if (token) {
-        const credential = await signInWithCustomToken(auth, token);
-        const { profile, orgProfile } = await loadUserProfile(credential.user);
-        setUser(profile);
-        setOrganization(orgProfile);
-        await syncSessionState(credential.user, profile.orgId);
-        return { user: profile, token };
-      }
-      throw new Error("No token returned");
-    } catch (err: any) {
-      logger.error("verifyOTP error:", err);
-      throw new Error(err.message || "Invalid OTP");
-    }
-  };
+ const verifyOTP = async (email: string, otp: string) => {
+ try {
+ const response = await fetch("/api/auth/verify-otp", {
+ method:"POST",
+ headers: {"Content-Type":"application/json" },
+ body: JSON.stringify({ email, otp })
+ });
+ const data = await response.json();
+ if (!response.ok) {
+ throw new Error(data.error ||"Invalid OTP");
+ }
+ 
+ const { token } = data;
+ if (token) {
+ const credential = await signInWithCustomToken(auth, token);
+ const { profile, orgProfile } = await loadUserProfile(credential.user);
+ setUser(profile);
+ setOrganization(orgProfile);
+ await syncSessionState(credential.user, profile.orgId);
+ return { user: profile, token };
+ }
+ throw new Error("No token returned");
+ } catch (err: any) {
+ logger.error("verifyOTP error:", err);
+ throw new Error(err.message ||"Invalid OTP");
+ }
+ };
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // LOGOUT
-  // ─────────────────────────────────────────────────────────────────────────
-  const logout = async () => {
-    try {
-      if (session) {
-        try {
-          await updateDoc(doc(dbFS, 'sessions', session.id), { status: 'revoked' });
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (_) { /* non-critical */ }
-      }
-      await signOut(auth);
-    } catch (err) {
-      logger.error('Logout error:', err);
-    } finally {
-      localStorage.removeItem('fuelpro_auth_token');
-      localStorage.removeItem('fuelpro_google_access_token');
-      localStorage.removeItem('fuelpro_current_session_id');
-      setUser(null);
-      setOrganization(null);
-      setSession(null);
-      setFirebaseUser(null);
-      setPendingVerification(false);
-    }
-  };
+ // ─────────────────────────────────────────────────────────────────────────
+ // LOGOUT
+ // ─────────────────────────────────────────────────────────────────────────
+ const logout = async () => {
+ try {
+ if (session) {
+ try {
+ await updateDoc(doc(dbFS, 'sessions', session.id), { status: 'revoked' });
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
+ } catch (_) { /* non-critical */ }
+ }
+ await signOut(auth);
+ } catch (err) {
+ logger.error('Logout error:', err);
+ } finally {
+ localStorage.removeItem('fuelpro_auth_token');
+ localStorage.removeItem('fuelpro_google_access_token');
+ localStorage.removeItem('fuelpro_current_session_id');
+ setUser(null);
+ setOrganization(null);
+ setSession(null);
+ setFirebaseUser(null);
+ setPendingVerification(false);
+ }
+ };
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // FORGOT PASSWORD — Firebase native (sends link to Gmail)
-  // ─────────────────────────────────────────────────────────────────────────
-  const sendPasswordReset = async (email: string) => {
-    await sendPasswordResetEmail(auth, email, {
-      url: `${window.location.origin}/`,
-      handleCodeInApp: false
-    });
-  };
+ // ─────────────────────────────────────────────────────────────────────────
+ // FORGOT PASSWORD — Firebase native (sends link to Gmail)
+ // ─────────────────────────────────────────────────────────────────────────
+ const sendPasswordReset = async (email: string) => {
+ await sendPasswordResetEmail(auth, email, {
+ url: `${window.location.origin}/`,
+ handleCodeInApp: false
+ });
+ };
 
-  const confirmPasswordReset = async (token: string, newPass: string) => {
-    await fbConfirmPasswordReset(auth, token, newPass);
-  };
+ const confirmPasswordReset = async (token: string, newPass: string) => {
+ await fbConfirmPasswordReset(auth, token, newPass);
+ };
 
-  const reauthenticateWithPassword = async (password: string): Promise<boolean> => {
-    const fbUser = auth.currentUser;
-    if (!fbUser || !fbUser.email) throw new Error('No user logged in.');
-    
-    try {
-      const credential = EmailAuthProvider.credential(fbUser.email, password);
-      await reauthenticateWithCredential(fbUser, credential);
-      return true;
-    } catch (err: any) {
-      logger.error("Reauthentication failed:", err);
-      throw new Error('Incorrect password');
-    }
-  };
+ const reauthenticateWithPassword = async (password: string): Promise<boolean> => {
+ const fbUser = auth.currentUser;
+ if (!fbUser || !fbUser.email) throw new Error('No user logged in.');
+ 
+ try {
+ const credential = EmailAuthProvider.credential(fbUser.email, password);
+ await reauthenticateWithCredential(fbUser, credential);
+ return true;
+ } catch (err: any) {
+ logger.error("Reauthentication failed:", err);
+ throw new Error('Incorrect password');
+ }
+ };
 
-  return (
-    <AuthContext.Provider value={{
-      user,
-      firebaseUser,
-      organization,
-      session,
-      isSuperAdmin,
-      checkingAuth,
-      pendingVerification,
-      hasPermission,
-      loginWithEmail,
-      loginWithGoogle,
-      signUpUser,
-      resendVerificationEmail,
-      checkEmailVerified,
-      logout,
-      verifyTOTPChallenge,
-      registerVerify2FA,
-      sendPasswordReset,
-      confirmPasswordReset,
-      reauthenticateWithPassword,
-      requestOTP,
-      verifyOTP
-    }}>
-      {children}
-    </AuthContext.Provider>
-  );
+ return (
+ <AuthContext.Provider value={{
+ user,
+ firebaseUser,
+ organization,
+ session,
+ isSuperAdmin,
+ checkingAuth,
+ pendingVerification,
+ hasPermission,
+ loginWithEmail,
+ loginWithGoogle,
+ signUpUser,
+ resendVerificationEmail,
+ checkEmailVerified,
+ logout,
+ verifyTOTPChallenge,
+ registerVerify2FA,
+ sendPasswordReset,
+ confirmPasswordReset,
+ reauthenticateWithPassword,
+ requestOTP,
+ verifyOTP
+ }}>
+ {children}
+ </AuthContext.Provider>
+ );
 };
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+ const context = useContext(AuthContext);
+ if (context === undefined) {
+ throw new Error('useAuth must be used within an AuthProvider');
+ }
+ return context;
 };

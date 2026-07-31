@@ -7,228 +7,228 @@ import { useDebounce } from '../../../hooks/useDebounce';
 import { logger } from '../../../lib/logger';
 
 interface TreasuryLedgerModalProps {
-  stationId: string;
-  accountType: TreasuryAccountType;
-  title: string;
-  isOpen: boolean;
-  onClose: () => void;
+ stationId: string;
+ accountType: TreasuryAccountType;
+ title: string;
+ isOpen: boolean;
+ onClose: () => void;
 }
 
 export default function TreasuryLedgerModal({ stationId, accountType, title, isOpen, onClose }: TreasuryLedgerModalProps) {
-  const [ledgerLines, setLedgerLines] = useState<TreasuryLedgerLine[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [fromDate, setFromDate] = useState<string>('');
-  const [toDate, setToDate] = useState<string>('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  const [isPending, startTransition] = React.useTransition();
+ const [ledgerLines, setLedgerLines] = useState<TreasuryLedgerLine[]>([]);
+ const [loading, setLoading] = useState(true);
+ const [fromDate, setFromDate] = useState<string>('');
+ const [toDate, setToDate] = useState<string>('');
+ const [searchTerm, setSearchTerm] = useState('');
+ const debouncedSearchTerm = useDebounce(searchTerm, 300);
+ const [isPending, startTransition] = React.useTransition();
 
-  useEffect(() => {
-    if (isOpen) {
-       
-      // eslint-disable-next-line react-hooks/immutability
-      loadLedger();
-     
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, accountType, stationId]);
+ useEffect(() => {
+ if (isOpen) {
+ 
+ // eslint-disable-next-line react-hooks/immutability
+ loadLedger();
+ 
+ }
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+ }, [isOpen, accountType, stationId]);
 
-  const loadLedger = async () => {
-    setLoading(true);
-    try {
-      const fd = fromDate ? new Date(fromDate).toISOString() : undefined;
-      const td = toDate ? new Date(toDate + 'T23:59:59.999Z').toISOString() : undefined;
-      const lines = await getAccountLedger(stationId, accountType, fd, td);
-      startTransition(() => {
-        setLedgerLines(lines);
-       
-      });
-    } catch (error) {
-      logger.error("Failed to load ledger:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const loadLedger = async () => {
+ setLoading(true);
+ try {
+ const fd = fromDate ? new Date(fromDate).toISOString() : undefined;
+ const td = toDate ? new Date(toDate + 'T23:59:59.999Z').toISOString() : undefined;
+ const lines = await getAccountLedger(stationId, accountType, fd, td);
+ startTransition(() => {
+ setLedgerLines(lines);
+ 
+ });
+ } catch (error) {
+ logger.error("Failed to load ledger:", error);
+ } finally {
+ setLoading(false);
+ }
+ };
 
-  const filteredLines = React.useMemo(() => {
-    if (!debouncedSearchTerm) return ledgerLines;
-    const lower = debouncedSearchTerm.toLowerCase();
-    return ledgerLines.filter(row => 
-      row.description.toLowerCase().includes(lower) || 
-      (row.performedBy && row.performedBy.toLowerCase().includes(lower)) ||
-      row.txnType.toLowerCase().includes(lower)
-    );
-  }, [ledgerLines, debouncedSearchTerm]);
+ const filteredLines = React.useMemo(() => {
+ if (!debouncedSearchTerm) return ledgerLines;
+ const lower = debouncedSearchTerm.toLowerCase();
+ return ledgerLines.filter(row => 
+ row.description.toLowerCase().includes(lower) || 
+ (row.performedBy && row.performedBy.toLowerCase().includes(lower)) ||
+ row.txnType.toLowerCase().includes(lower)
+ );
+ }, [ledgerLines, debouncedSearchTerm]);
 
-  if (!isOpen) return null;
+ if (!isOpen) return null;
 
-  const columns: TableColumn<TreasuryLedgerLine>[] = [
-    {
-      header: 'Date',
-      accessor: (row) => new Date(row.date).toLocaleString(),
-      isPrimaryMobile: false,
-      isSecondaryMobile: false,
-    },
-    {
-      header: 'Description',
-      accessor: (row) => (
-        <div>
-          <div className="font-medium text-gray-900 dark:text-white">{row.description}</div>
-          {row.performedBy && <div className="text-xs text-gray-400">By: {row.performedBy}</div>}
-        </div>
-      ),
-      isPrimaryMobile: true,
-    },
-    {
-      header: 'Type',
-      accessor: (row) => (
-        <span className="px-2.5 py-1 bg-gray-100 text-gray-700 rounded-md text-[10px] font-bold uppercase tracking-wider">
-          {row.txnType.replace('_', ' ')}
-        </span>
-      ),
-      isSecondaryMobile: true,
-    },
-    {
-      header: 'Cash In',
-      accessor: (row) => row.cashIn > 0 ? (
-        <div className="flex items-center justify-end gap-1 text-green-600 font-bold">
-          <ArrowDownRight className="h-3.5 w-3.5" />
-          {row.cashIn.toLocaleString()}
-        </div>
-      ) : '-',
-      className: 'text-right'
-    },
-    {
-      header: 'Cash Out',
-      accessor: (row) => row.cashOut > 0 ? (
-        <div className="flex items-center justify-end gap-1 text-red-600 font-bold">
-          <ArrowUpRight className="h-3.5 w-3.5" />
-          {row.cashOut.toLocaleString()}
-        </div>
-      ) : '-',
-      className: 'text-right'
-    },
-    {
-      header: 'Balance',
-      accessor: (row) => <span className="font-bold">Rs {row.runningBalance.toLocaleString()}</span>,
-      className: 'text-right text-gray-900 dark:text-white'
-     
-    }
-  ];
+ const columns: TableColumn<TreasuryLedgerLine>[] = [
+ {
+ header: 'Date',
+ accessor: (row) => new Date(row.date).toLocaleString(),
+ isPrimaryMobile: false,
+ isSecondaryMobile: false,
+ },
+ {
+ header: 'Description',
+ accessor: (row) => (
+ <div>
+ <div className="font-medium text-foreground">{row.description}</div>
+ {row.performedBy && <div className="text-xs text-muted-foreground">By: {row.performedBy}</div>}
+ </div>
+ ),
+ isPrimaryMobile: true,
+ },
+ {
+ header: 'Type',
+ accessor: (row) => (
+ <span className="px-2.5 py-1 bg-muted text-foreground rounded-md text-[10px] font-bold uppercase tracking-wider">
+ {row.txnType.replace('_', ' ')}
+ </span>
+ ),
+ isSecondaryMobile: true,
+ },
+ {
+ header: 'Cash In',
+ accessor: (row) => row.cashIn > 0 ? (
+ <div className="flex items-center justify-end gap-1 text-green-600 font-bold">
+ <ArrowDownRight className="h-3.5 w-3.5" />
+ {row.cashIn.toLocaleString()}
+ </div>
+ ) : '-',
+ className: 'text-right'
+ },
+ {
+ header: 'Cash Out',
+ accessor: (row) => row.cashOut > 0 ? (
+ <div className="flex items-center justify-end gap-1 text-red-600 font-bold">
+ <ArrowUpRight className="h-3.5 w-3.5" />
+ {row.cashOut.toLocaleString()}
+ </div>
+ ) : '-',
+ className: 'text-right'
+ },
+ {
+ header: 'Balance',
+ accessor: (row) => <span className="font-bold">Rs {row.runningBalance.toLocaleString()}</span>,
+ className: 'text-right text-gray-900 '
+ 
+ }
+ ];
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [visibleLimit, setVisibleLimit] = useState(100);
-  const displayedLines = filteredLines.slice(0, visibleLimit);
+ // eslint-disable-next-line react-hooks/rules-of-hooks
+ const [visibleLimit, setVisibleLimit] = useState(100);
+ const displayedLines = filteredLines.slice(0, visibleLimit);
 
-  const content = (
-    <div className="flex flex-col h-full max-h-[80vh] bg-white dark:bg-[#151521]">
-      {/* Filters */}
-      <div className="p-4 bg-gray-50 dark:bg-gray-800/40 border-b border-gray-100 flex flex-wrap items-center gap-4 shrink-0 justify-between">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-gray-500" />
-            <input 
-              type="date" 
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-          <span className="text-gray-400">to</span>
-          <div className="flex items-center gap-2">
-            <input 
-              type="date" 
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-          <button 
-            onClick={loadLedger}
-            className="px-4 py-1.5 bg-indigo-50 text-indigo-600 font-medium rounded-lg text-sm hover:bg-indigo-100 transition-colors"
-          >
-            Apply Filters
-          </button>
-        </div>
-        
-        <div className="relative w-full sm:w-64">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search descriptions, types..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
-          />
-        </div>
-      </div>
+ const content = (
+ <div className="flex flex-col h-full max-h-[80vh] bg-card">
+ {/* Filters */}
+ <div className="p-4 bg-subtle border-b border-border flex flex-wrap items-center gap-4 shrink-0 justify-between">
+ <div className="flex flex-wrap items-center gap-4">
+ <div className="flex items-center gap-2">
+ <Calendar className="h-4 w-4 text-muted-foreground" />
+ <input 
+ type="date" 
+ value={fromDate}
+ onChange={(e) => setFromDate(e.target.value)}
+ className="px-3 py-1.5 rounded-lg border border-border text-sm focus:ring-2 focus:ring-indigo-500"
+ />
+ </div>
+ <span className="text-muted-foreground">to</span>
+ <div className="flex items-center gap-2">
+ <input 
+ type="date" 
+ value={toDate}
+ onChange={(e) => setToDate(e.target.value)}
+ className="px-3 py-1.5 rounded-lg border border-border text-sm focus:ring-2 focus:ring-indigo-500"
+ />
+ </div>
+ <button 
+ onClick={loadLedger}
+ className="px-4 py-1.5 bg-indigo-50 text-indigo-600 font-medium rounded-lg text-sm hover:bg-indigo-100 transition-colors"
+ >
+ Apply Filters
+ </button>
+ </div>
+ 
+ <div className="relative w-full sm:w-64">
+ <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+ <input
+ type="text"
+ placeholder="Search descriptions, types..."
+ value={searchTerm}
+ onChange={(e) => setSearchTerm(e.target.value)}
+ className="w-full pl-9 pr-4 py-1.5 border border-border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+ />
+ </div>
+ </div>
 
-      {/* Table */}
-      <div className="flex-1 overflow-y-auto p-4 bg-slate-50 dark:bg-white/5/50">
-        {loading || isPending ? (
-          <div className="flex items-center justify-center h-40">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-          </div>
-        ) : (
-          <div className="flex flex-col h-full">
-            <ResponsiveTable
-              data={displayedLines}
-              columns={columns}
-              keyExtractor={(row) => row.id}
-              emptyMessage="No transactions found for this period."
-            />
-            {filteredLines.length > displayedLines.length && (
-              <div className="mt-4 flex justify-center pb-4">
-                <button 
-                  onClick={() => setVisibleLimit(prev => prev + 100)}
-                  className="px-6 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-full font-bold text-sm transition-colors"
-                >
-                  Load More Transactions ({filteredLines.length - displayedLines.length} remaining)
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
+ {/* Table */}
+ <div className="flex-1 overflow-y-auto p-4 bg-subtle">
+ {loading || isPending ? (
+ <div className="flex items-center justify-center h-40">
+ <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+ </div>
+ ) : (
+ <div className="flex flex-col h-full">
+ <ResponsiveTable
+ data={displayedLines}
+ columns={columns}
+ keyExtractor={(row) => row.id}
+ emptyMessage="No transactions found for this period."
+ />
+ {filteredLines.length > displayedLines.length && (
+ <div className="mt-4 flex justify-center pb-4">
+ <button 
+ onClick={() => setVisibleLimit(prev => prev + 100)}
+ className="px-6 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-full font-bold text-sm transition-colors"
+ >
+ Load More Transactions ({filteredLines.length - displayedLines.length} remaining)
+ </button>
+ </div>
+ )}
+ </div>
+ )}
+ </div>
+ </div>
+ );
 
-  return (
-    <>
-      {/* Desktop Modal View */}
-      <div className="hidden lg:flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-        <div className="bg-white dark:bg-[#151521] rounded-2xl shadow-2xl w-full max-w-5xl flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
-          <div className="p-5 border-b border-gray-100 flex items-center justify-between shrink-0">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <FileText className="h-5 w-5 text-indigo-500" />
-                {title} Ledger
-              </h2>
-              <p className="text-sm text-gray-500 mt-1">Detailed transaction history</p>
-            </div>
-            <button 
-              onClick={onClose}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <X className="h-5 w-5 text-gray-500" />
-            </button>
-          </div>
-          {content}
-        </div>
-      </div>
+ return (
+ <>
+ {/* Desktop Modal View */}
+ <div className="hidden lg:flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+ <div className="bg-card rounded-2xl shadow-2xl w-full max-w-5xl flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+ <div className="p-5 border-b border-border flex items-center justify-between shrink-0">
+ <div>
+ <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+ <FileText className="h-5 w-5 text-indigo-500" />
+ {title} Ledger
+ </h2>
+ <p className="text-sm text-muted-foreground mt-1">Detailed transaction history</p>
+ </div>
+ <button 
+ onClick={onClose}
+ className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+ >
+ <X className="h-5 w-5 text-muted-foreground" />
+ </button>
+ </div>
+ {content}
+ </div>
+ </div>
 
-      {/* Mobile Bottom Sheet View */}
-      <div className="lg:hidden">
-        <BottomSheet 
-          isOpen={true} 
-          onClose={onClose} 
-          title={`${title} Ledger`} 
-          snapPoints={['90vh']} 
-          allowFullscreen={true}
-        >
-          {content}
-        </BottomSheet>
-      </div>
-    </>
-  );
+ {/* Mobile Bottom Sheet View */}
+ <div className="lg:hidden">
+ <BottomSheet 
+ isOpen={true} 
+ onClose={onClose} 
+ title={`${title} Ledger`} 
+ snapPoints={['90vh']} 
+ allowFullscreen={true}
+ >
+ {content}
+ </BottomSheet>
+ </div>
+ </>
+ );
 }

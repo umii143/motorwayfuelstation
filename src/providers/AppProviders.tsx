@@ -6,19 +6,19 @@ import { ScannerProvider } from '../contexts/ScannerContext';
 import { StationProvider } from '../contexts/StationContext';
 
 interface AppProvidersProps {
-  children: React.ReactNode;
+ children: React.ReactNode;
 }
 
 export function AppProviders({ children }: AppProvidersProps) {
-  return (
-    <NativeFeedbackProvider>
-      <AuthProvider>
-        <NativeAuthProvider>
-          <ScannerProvider>
-            {children}
-          </ScannerProvider>
-        </NativeAuthProvider>
-      </AuthProvider>
-    </NativeFeedbackProvider>
-  );
+ return (
+ <NativeFeedbackProvider>
+ <AuthProvider>
+ <NativeAuthProvider>
+ <ScannerProvider>
+ {children}
+ </ScannerProvider>
+ </NativeAuthProvider>
+ </AuthProvider>
+ </NativeFeedbackProvider>
+ );
 }

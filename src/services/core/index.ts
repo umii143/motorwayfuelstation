@@ -22,17 +22,17 @@ export * as OperationalCore from './operationalCore';
 
 // Re-export the most commonly used functions directly
 export {
-  processCreditSale,
-  processRecovery,
-  processExpense,
-  processBankDeposit,
-  processDigitalPayment,
-  processSupplierPayment,
-  processDiscount,
+ processCreditSale,
+ processRecovery,
+ processExpense,
+ processBankDeposit,
+ processDigitalPayment,
+ processSupplierPayment,
+ processDiscount,
 
-  processReversal,
-  processShiftOpen,
-  processShiftClose,
-  getShiftTransactions,
-  getPendingTransactions,
+ processReversal,
+ processShiftOpen,
+ processShiftClose,
+ getShiftTransactions,
+ getPendingTransactions,
 } from './operationalCore';

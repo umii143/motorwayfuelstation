@@ -90,8 +90,25 @@ app.use((_req, res, next) => {
   next();
 });
 
-// Load or generate JWT Secret
-const JWT_SECRET = process.env.JWT_SECRET || "default_fuelpro_super_security_secret_phrase_2026";
+// Environment gate: dev-only conveniences (mock tokens, master TOTP bypass) must
+// never be active in production.
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
+
+// Load JWT Secret. In production the secret MUST be provided via env — we fail
+// fast rather than fall back to a hardcoded value that would be publicly known.
+const JWT_SECRET = process.env.JWT_SECRET || (() => {
+  if (IS_PRODUCTION) {
+    throw new Error(
+      "FATAL: JWT_SECRET environment variable is required in production. Refusing to start with an insecure default."
+    );
+  }
+  console.warn(
+    "[Security] JWT_SECRET not set — using an ephemeral development secret. Set JWT_SECRET before deploying."
+  );
+  // Generate a random per-process secret for local dev so it is never a known constant.
+  return crypto.randomBytes(48).toString("hex");
+})();
+
 // Drive client credentials (loaded if Google account active)
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
@@ -253,8 +270,9 @@ async function requireAuth(req: express.Request, res: express.Response, next: ex
   }
 
   try {
-    // 0. Development Mock User Bypass
-    if (token === "mock_token_owner") {
+    // 0. Development Mock User Bypass (disabled in production)
+    if (!IS_PRODUCTION && token === "mock_token_owner") {
+
       (req as any).user = {
         id: "mock_uid_123",
         email: "admin@fuelpro.local",
@@ -267,7 +285,7 @@ async function requireAuth(req: express.Request, res: express.Response, next: ex
     // 1. First try to verify as custom local JWT
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string; role: string };
-      
+
       // Validate session in Active Sessions database
       const dbData = loadDatabase();
       const dbSession = dbData.sessions.find(s => s.token === token && s.active);
@@ -291,7 +309,7 @@ async function requireAuth(req: express.Request, res: express.Response, next: ex
       // 2. If signature fails, try verifying as a Firebase ID token (SaaS Mode)
       if (adminAuthInstance) {
         const decodedToken = await adminAuthInstance.verifyIdToken(token);
-        
+
         // Fetch user document from Firestore to fetch role
         let role = "staff"; // Default fallback
         try {
@@ -440,7 +458,7 @@ app.post("/api/auth/verify-otp", async (req, res) => {
     if (!adminAuthInstance) {
       throw new Error("Firebase Admin SDK is not initialized on the server. Cannot create custom token.");
     }
-    
+
     let uid;
     try {
       const userRecord = await adminAuthInstance.getUserByEmail(cleanedEmail);
@@ -478,7 +496,7 @@ app.post("/api/auth/signup", (req, res) => {
 
   const dbData = loadDatabase();
   const existingUser = dbData.users.find(u => u.email.toLowerCase() === email.toLowerCase());
-  
+
   if (existingUser) {
     // Record audit of failed signup duplication
     const audit: AuditLogSchema = {
@@ -571,20 +589,23 @@ app.post("/api/auth/register-verify", (req, res) => {
       return res.status(400).json({ error: "Invalid registration token scope." });
     }
 
-    // Verify code against speakeasy
-    const verified = code === "000000" || speakeasy.totp.verify({
+    // Verify code against speakeasy.
+    // The "000000" master bypass is a development convenience only and is
+    // never honored in production.
+    const verified = (!IS_PRODUCTION && code === "000000") || speakeasy.totp.verify({
       secret: decoded.totpSecret,
       encoding: "base32",
       token: code,
       window: 4 // Match current and last time slot to prevent network delay block
     });
 
+
     if (!verified) {
       return res.status(400).json({ error: "Incorrect 6-digit Authenticator code. Try again." });
     }
 
     const dbData = loadDatabase();
-    
+
     // Double check email uniqueness inside write lock
     if (dbData.users.some(u => u.email === decoded.email)) {
       return res.status(409).json({ error: "Profile has been configured concurrently. Please start again." });
@@ -791,13 +812,16 @@ app.post("/api/auth/login-mfa", (req, res) => {
       return res.status(404).json({ error: "User profile was suspended or removed during challenge." });
     }
 
-    // Verify Multi-Factor Token code
-    const isTokenValid = code === "000000" || speakeasy.totp.verify({
+    // Verify Multi-Factor Token code.
+    // The "000000" master bypass is a development convenience only and is
+    // never honored in production.
+    const isTokenValid = (!IS_PRODUCTION && code === "000000") || speakeasy.totp.verify({
       secret: user.totpSecret,
       encoding: "base32",
       token: code,
       window: 4
     });
+
 
     if (!isTokenValid) {
       // Record failed token challenge
@@ -824,7 +848,7 @@ app.post("/api/auth/login-mfa", (req, res) => {
     if (!isKnownDevice) {
       newDeviceLoginAlert = true;
       user.deviceBindings.push(userAgent); // Bind new device
-      
+
       // Save Alert Audit
       const alertAudit: AuditLogSchema = {
         id: `aud_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`,
@@ -1063,7 +1087,7 @@ app.post("/api/auth/reset-password", (req, res) => {
   }
 
   const dbData = loadDatabase();
-  
+
   // Find user by resetToken
   const user = dbData.users.find((u: any) => u.resetToken === token);
 
@@ -1260,18 +1284,18 @@ app.post("/api/security/factory-reset", requireAuth, async (req, res) => {
         const dbFSAdmin = getFirestore();
         const userSnap = await dbFSAdmin.collection("users").doc(actUser.id).get();
         if (userSnap.exists) {
-           const userData = userSnap.data();
-           if (userData && userData.orgId) {
-             const orgId = userData.orgId;
-             // Delete stations collection (which holds all records: shifts, customers, banks, etc)
-             await dbFSAdmin.recursiveDelete(dbFSAdmin.collection("organizations").doc(orgId).collection("stations"));
-           }
+          const userData = userSnap.data();
+          if (userData && userData.orgId) {
+            const orgId = userData.orgId;
+            // Delete stations collection (which holds all records: shifts, customers, banks, etc)
+            await dbFSAdmin.recursiveDelete(dbFSAdmin.collection("organizations").doc(orgId).collection("stations"));
+          }
         }
       } catch (fsErr) {
         console.error("Firestore wipe failed:", fsErr);
       }
     }
-    
+
     // Re-initialize with default DB
     const newDb = loadDatabase();
 
@@ -1437,28 +1461,28 @@ app.post('/api/ai-assistant', requireRole(["owner", "manager", "station_manager"
     console.warn('[AI Assistant] GEMINI_API_KEY not found. Running in Demo Mock Mode.');
     // Delay to simulate AI thinking
     await new Promise(resolve => setTimeout(resolve, 1500));
-    return res.json({ 
-      reply: "*(Demo Mode)* Your overall station performance looks solid today! Total fuel revenue is stable. However, please investigate a potential **cash variance on Nozzle 3** from the morning shift.\n\n*(Note: To enable real AI analysis of your actual data, please add a `GEMINI_API_KEY` to your `.env` file.)*" 
+    return res.json({
+      reply: "*(Demo Mode)* Your overall station performance looks solid today! Total fuel revenue is stable. However, please investigate a potential **cash variance on Nozzle 3** from the morning shift.\n\n*(Note: To enable real AI analysis of your actual data, please add a `GEMINI_API_KEY` to your `.env` file.)*"
     });
   }
 
   try {
     const { GoogleGenAI } = await import('@google/genai');
     const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-    
+
     // Construct chat history for Gemini
     // We combine the system prompt and history into the contents array
     const contents = [];
-    
+
     if (systemPrompt) {
       contents.push({ role: 'user', parts: [{ text: `System Instruction: ${systemPrompt}\n\nPlease acknowledge and follow these instructions for the rest of the conversation.` }] });
       contents.push({ role: 'model', parts: [{ text: 'Understood. I will act as FuelPro AI.' }] });
     }
-    
+
     for (const msg of conversationHistory) {
-      contents.push({ 
-        role: msg.role === 'assistant' ? 'model' : 'user', 
-        parts: [{ text: msg.content }] 
+      contents.push({
+        role: msg.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: msg.content }]
       });
     }
     contents.push({ role: 'user', parts: [{ text: userMessage }] });
@@ -1494,7 +1518,7 @@ app.post('/api/dip-calculator', requireRole(["owner", "manager", "station_manage
   }
   const inputCm = Number(dipCm);
   const sorted = [...dipChart].sort((a: any, b: any) => a.cm - b.cm);
-  
+
   // Boundary clamping to prevent negative or wild extrapolation
   const minCm = sorted[0].cm;
   const maxCm = sorted[sorted.length - 1].cm;
@@ -1535,17 +1559,17 @@ app.get('/api/ogra-news-feed', requireRole(["owner", "manager", "station_manager
 app.get('/api/ogra-prices', requireRole(["owner", "manager", "station_manager", "staff"]), async (_req, res) => {
   try {
     // Current valid official rates
-      const officialRates = [
-        { product: 'Petrol (PMG)', productId: 'petrol', rate: 375.00, previousRate: 248.38, change: 126.62 },
-        { product: 'High Speed Diesel (HSD)', productId: 'diesel', rate: 375.00, previousRate: 255.14, change: 119.86 },
-        { product: 'Kerosene Oil (SKO)', productId: 'kerosene', rate: 250.00, previousRate: 161.54, change: 88.46 },
-        { product: 'Light Diesel Oil (LDO)', productId: 'ldo', rate: 240.00, previousRate: 147.51, change: 92.49 }
-      ];
+    const officialRates = [
+      { product: 'Petrol (PMG)', productId: 'petrol', rate: 375.00, previousRate: 248.38, change: 126.62 },
+      { product: 'High Speed Diesel (HSD)', productId: 'diesel', rate: 375.00, previousRate: 255.14, change: 119.86 },
+      { product: 'Kerosene Oil (SKO)', productId: 'kerosene', rate: 250.00, previousRate: 161.54, change: 88.46 },
+      { product: 'Light Diesel Oil (LDO)', productId: 'ldo', rate: 240.00, previousRate: 147.51, change: 92.49 }
+    ];
 
     // Note: Automated scraping of news websites (ProPakistani, PakWheels, etc.) 
     // frequently returns outdated historical SEO data (e.g. 272). 
     // It has been disabled to ensure the Enterprise system only uses accurate official rates.
-    
+
     res.json({
       source: 'OGRA Pakistan - Official Enterprise Rates',
       sourceUrl: 'https://www.ogra.org.pk/',
@@ -1596,10 +1620,10 @@ app.post('/api/wa/send', requireRole(["owner", "manager", "station_manager", "de
 app.post('/api/ai-assistant', requireRole(["owner", "manager", "station_manager", "staff", "desk_operator", "cashier"]), async (req, res) => {
   try {
     const { systemPrompt, userMessage, conversationHistory, language } = req.body;
-    
+
     // Construct the context
     let promptContent = systemPrompt ? `System: ${systemPrompt}\n\n` : '';
-    
+
     if (language) {
       promptContent += `System: IMPORTANT: You must provide your final response in ${language === 'ur' ? 'Urdu (using Urdu script)' : 'English'}.\n\n`;
     }
@@ -1611,7 +1635,7 @@ app.post('/api/ai-assistant', requireRole(["owner", "manager", "station_manager"
         groqMessages.push({ role: msg.role === 'assistant' ? 'assistant' : 'user', content: msg.content });
       });
     }
-    
+
     groqMessages.push({ role: "user", content: userMessage });
 
     const groqApiKey = process.env.GROQ_API_KEY;
@@ -1696,10 +1720,10 @@ app.post('/api/ai-vision', requireRole(["owner", "manager", "station_manager", "
 app.post('/api/ai/jarvis', requireRole(["owner", "manager", "station_manager", "staff", "desk_operator", "cashier"]), async (req, res) => {
   try {
     const { messages, tools, systemInstruction } = req.body;
-    
+
     // Use Groq API instead of Gemini for unlimited fast inference
     const groqApiKey = process.env.GROQ_API_KEY;
-    
+
     // Map Gemini tools to OpenAI/Groq tools
     const groqTools = tools ? tools.map((t: any) => ({
       type: "function",
@@ -1723,7 +1747,7 @@ app.post('/api/ai/jarvis', requireRole(["owner", "manager", "station_manager", "
     if (systemInstruction?.parts?.[0]?.text) {
       groqMessages.push({ role: "system", content: systemInstruction.parts[0].text });
     }
-    
+
     let lastToolCallId = "call_" + Math.random().toString(36).substring(7);
 
     for (const m of messages) {

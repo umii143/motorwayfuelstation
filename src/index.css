@@ -105,8 +105,9 @@ textarea {
 }
 
 /* Base Light Theme */
-:root {
+:root, .theme-light, .theme-white, .light {
   --bg-app: #F8FAFC;
+  --bg-app-gradient: none;
   --bg-card: #FFFFFF;
   --bg-hover: #F1F5F9;
   --bg-subtle: #F1F5F9;
@@ -199,35 +200,17 @@ textarea {
 }
 
 /* Custom CSS Variable themed classes */
-.theme-white {
-  --bg-app: #f8fafc;
-  --bg-app-gradient: linear-gradient(180deg, #fafafa, #f3f4f6);
-  --bg-card: rgba(255, 255, 255, 0.65);
-  --bg-hover: #F8FAFC;
-  --bg-subtle: #F1F5F9;
-  --text-main: #0F172A;
-  --text-muted: #64748B;
-  --border-main: #E2E8F0;
-  --border-muted: #F1F5F9;
-  --primary-accent: #0F172A;
-  --primary-hover: #1E293B;
-  --color-accent: #F97316;
-  --color-success: #10B981;
-  --color-warning: #F59E0B;
-  --color-error: #EF4444;
-}
-
 .theme-dark, .dark {
-  --bg-app: #020617; /* Dark Mode Surface */
+  --bg-app: #090D16; /* Executive Dark Mode Surface */
   --bg-app-gradient: none;
-  --bg-card: #0F172A; /* Dark Mode Surface */
-  --bg-hover: #1E293B;
-  --bg-subtle: #020617;
-  --text-main: #F8FAFC;
-  --text-muted: #94A3B8;
-  --border-main: #1E293B;
-  --border-muted: #0F172A;
-  --primary-accent: #F97316; /* In dark mode, accent usually takes primary */
+  --bg-card: #111827;
+  --bg-hover: #1F2937;
+  --bg-subtle: #0D1322;
+  --text-main: #F9FAFB;
+  --text-muted: #9CA3AF;
+  --border-main: #1F2937;
+  --border-muted: #111827;
+  --primary-accent: #F97316;
   --primary-hover: #EA580C;
   --color-accent: #F97316;
   --color-success: #10B981;
@@ -235,37 +218,43 @@ textarea {
   --color-error: #EF4444;
 }
 
-.theme-blue {
-  --bg-app: #030712; /* Gray 950 */
+.theme-cream, .theme-creamy {
+  --bg-app: #FAF8F2; /* Soft, clean, bright warm cream off-white */
   --bg-app-gradient: none;
-  --bg-card: #0f172a; /* Slate 900 */
-  --bg-hover: #1e293b; /* Slate 800 */
-  --bg-subtle: #020617; /* Slate 950 */
-  --text-main: #f1f5f9; /* Slate 100 */
-  --text-muted: #94a3b8; /* Slate 400 */
-  --border-main: #1e293b; /* Slate 800 */
-  --border-muted: #020617;
-  --primary-accent: #3b82f6;
-  --primary-hover: #2563eb;
-  --color-accent: #8b5cf6;
+  --bg-card: #FFFFFF; /* Pure clean white cards */
+  --bg-hover: #F2EDE2;
+  --bg-subtle: #F6F3E9;
+  --text-main: #1C1917; /* High contrast charcoal dark text */
+  --text-muted: #78716C;
+  --border-main: #E7E2D4;
+  --border-muted: #F0ECE0;
+  --primary-accent: #D97706;
+  --primary-hover: #B45309;
+  --color-accent: #D97706;
+  --color-success: #15803D;
+  --color-warning: #D97706;
+  --color-error: #DC2626;
 }
 
-.theme-emerald {
-  --bg-app: #022c22; /* Emerald 950 */
+.theme-solarized-light {
+  --bg-app: #FDF6E3;
   --bg-app-gradient: none;
-  --bg-card: #064e3b; /* Emerald 900 */
-  --bg-hover: #047857; /* Emerald 700 */
-  --bg-subtle: #022c22;
-  --text-main: #ecfdf5; /* Emerald 50 */
-  --text-muted: #a7f3d0; /* Emerald 200 */
-  --border-main: #047857; /* Emerald 700 */
-  --border-muted: #064e40;
-  --primary-accent: #10b981;
-  --primary-hover: #059669;
-  --color-accent: #34d399;
+  --bg-card: #EEE8D5;
+  --bg-hover: #E4DAC4;
+  --bg-subtle: #EEE8D5;
+  --text-main: #657B83;
+  --text-muted: #93A1A1;
+  --border-main: #D9D2C4;
+  --border-muted: #EEE8D5;
+  --primary-accent: #268BD2;
+  --primary-hover: #2AA198;
+  --color-accent: #CB4B16;
+  --color-success: #859900;
+  --color-warning: #B58900;
+  --color-error: #DC322F;
 }
 
-.theme-orange {
+.theme-sunset {
   --bg-app: #1c1917; /* Stone 900 */
   --bg-app-gradient: none;
   --bg-card: #292524; /* Stone 800 */
@@ -278,17 +267,55 @@ textarea {
   --primary-accent: #ea580c;
   --primary-hover: #c2410c;
   --color-accent: #fb923c;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+}
+
+.theme-green, .theme-emerald {
+  --bg-app: #04221A; /* Emerald 950 */
+  --bg-app-gradient: none;
+  --bg-card: #09382C; /* Emerald 900 */
+  --bg-hover: #0E4D3D; /* Emerald 700 */
+  --bg-subtle: #062B21;
+  --text-main: #ECFDF5; /* Emerald 50 */
+  --text-muted: #A7F3D0; /* Emerald 200 */
+  --border-main: #0E4D3D; /* Emerald 700 */
+  --border-muted: #09382C;
+  --primary-accent: #10B981;
+  --primary-hover: #059669;
+  --color-accent: #34D399;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+}
+
+.theme-blue {
+  --bg-app: #0B132B; /* Deep Slate Navy */
+  --bg-app-gradient: none;
+  --bg-card: #1C2541; /* Slate Navy Card */
+  --bg-hover: #2A365C;
+  --bg-subtle: #131E3A;
+  --text-main: #F1F5F9;
+  --text-muted: #94A3B8;
+  --border-main: #2A365C;
+  --border-muted: #1C2541;
+  --primary-accent: #38BDF8;
+  --primary-hover: #0284C7;
+  --color-accent: #38BDF8;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
 }
 
 /* =========================================
    LEGACY OVERRIDES
    =========================================
-   These ensure the old non-refactored components
-   continue to respect the theme while we
-   iteratively migrate to semantic variables.
+   These ensure non-refactored components
+   respect the active theme custom CSS variables.
    ========================================= */
 
-.theme-dark, .dark, .theme-white {
+.theme-dark, .dark, .theme-cream, .theme-creamy, .theme-blue, .theme-emerald, .theme-light, .theme-white, .theme-sunset {
   &, &.bg-slate-50, &.bg-slate-100 {
     background-color: var(--bg-app) !important;
     color: var(--text-main) !important;
@@ -354,11 +381,11 @@ textarea {
     .border-orange-500, .border-indigo-500 { border-color: #10b981 !important; }
   }
 
-  &.theme-orange {
-    .text-orange-600, .text-orange-655, .text-indigo-600 { color: #fb923c !important; }
-    .bg-orange-600, .bg-indigo-600 { background-color: #ea580c !important; }
-    .bg-orange-600:hover, .bg-indigo-600:hover { background-color: #c2410c !important; }
-    .border-orange-500, .border-indigo-500 { border-color: #f97316 !important; }
+  &.theme-cream, &.theme-creamy {
+    .text-orange-600, .text-orange-655, .text-indigo-600 { color: #d97706 !important; }
+    .bg-orange-600, .bg-indigo-600 { background-color: #c96800 !important; }
+    .bg-orange-600:hover, .bg-indigo-600:hover { background-color: #a85300 !important; }
+    .border-orange-500, .border-indigo-500 { border-color: #d97706 !important; }
   }
 }
 

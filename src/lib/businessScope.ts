@@ -6,143 +6,143 @@ export const LUBE_STATION_ID = 'st_lube';
 export type BusinessType = NonNullable<TenantDocument['businessType']>;
 
 const FUEL_ONLY_VIEWS = new Set([
-  'shift_logs',
-  'price_management',
-  'fleet',
-  'fuel_quality',
-  'tanker_delivery',
-  'loss_prevention',
-  'dip_calculator',
+ 'shift_logs',
+ 'price_management',
+ 'fleet',
+ 'fuel_quality',
+ 'tanker_delivery',
+ 'loss_prevention',
+ 'dip_calculator',
 
-  'onboarding',
+ 'onboarding',
 ]);
 
 const LUBE_ONLY_VIEWS = new Set(['lube_pos']);
 
 export function resolveStationId(stationId?: string): string {
-  return stationId || DEFAULT_FUEL_STATION_ID;
+ return stationId || DEFAULT_FUEL_STATION_ID;
 }
 
 import { db } from '../data/db';
 
 export function getBusinessTypeForStation(stationId?: string): BusinessType {
-  const resolvedId = resolveStationId(stationId);
-  if (resolvedId === LUBE_STATION_ID) return 'lube';
-  
-  try {
-    const stations = db.getStationsList();
-    const st = stations.find(s => s.id === resolvedId);
-    if (st && st.businessType) return st.businessType;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch(e) {
-    // Fallback if db isn't ready
-  }
-  
-  return 'fuel_station';
+ const resolvedId = resolveStationId(stationId);
+ if (resolvedId === LUBE_STATION_ID) return 'lube';
+ 
+ try {
+ const stations = db.getStationsList();
+ const st = stations.find(s => s.id === resolvedId);
+ if (st && st.businessType) return st.businessType;
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
+ } catch(e) {
+ // Fallback if db isn't ready
+ }
+ 
+ return 'fuel_station';
 }
 
 export function isLubeBusinessStation(stationId?: string): boolean {
-  return getBusinessTypeForStation(stationId) === 'lube';
+ return getBusinessTypeForStation(stationId) === 'lube';
 }
 
 export function isRecordInBusinessScope(
-  record: TenantDocument | undefined,
-  stationId?: string,
-  orgId?: string
+ record: TenantDocument | undefined,
+ stationId?: string,
+ orgId?: string
 ): boolean {
-  if (!record) return true;
+ if (!record) return true;
 
-  const resolvedStationId = resolveStationId(stationId);
-  const expectedBusinessType = getBusinessTypeForStation(resolvedStationId);
+ const resolvedStationId = resolveStationId(stationId);
+ const expectedBusinessType = getBusinessTypeForStation(resolvedStationId);
 
-  if (orgId && record.orgId && record.orgId !== orgId) return false;
-  if (record.stationId && record.stationId !== resolvedStationId) return false;
-  if (record.businessId && record.businessId !== resolvedStationId) return false;
-  if (record.businessType && record.businessType !== expectedBusinessType) return false;
+ if (orgId && record.orgId && record.orgId !== orgId) return false;
+ if (record.stationId && record.stationId !== resolvedStationId) return false;
+ if (record.businessId && record.businessId !== resolvedStationId) return false;
+ if (record.businessType && record.businessType !== expectedBusinessType) return false;
 
-  return true;
+ return true;
 }
 
 export function withBusinessScope<T extends TenantDocument>(
-  record: T,
-  stationId?: string,
-  orgId?: string
+ record: T,
+ stationId?: string,
+ orgId?: string
 ): T {
-  const resolvedStationId = resolveStationId(stationId);
-  const scoped: TenantDocument = {
-    ...record,
-    stationId: resolvedStationId,
-    businessId: resolvedStationId,
-    businessType: getBusinessTypeForStation(resolvedStationId),
-  };
+ const resolvedStationId = resolveStationId(stationId);
+ const scoped: TenantDocument = {
+ ...record,
+ stationId: resolvedStationId,
+ businessId: resolvedStationId,
+ businessType: getBusinessTypeForStation(resolvedStationId),
+ };
 
-  if (orgId) {
-    scoped.orgId = orgId;
-  }
+ if (orgId) {
+ scoped.orgId = orgId;
+ }
 
-  return scoped as T;
+ return scoped as T;
 }
 
 export function isolateTenantRecords<T extends TenantDocument>(
-  records: T[],
-  stationId?: string,
-  orgId?: string
+ records: T[],
+ stationId?: string,
+ orgId?: string
 ): T[] {
-  return records
-    .filter((record) => isRecordInBusinessScope(record, stationId, orgId))
-    .map((record) => withBusinessScope(record, stationId, orgId));
+ return records
+ .filter((record) => isRecordInBusinessScope(record, stationId, orgId))
+ .map((record) => withBusinessScope(record, stationId, orgId));
 }
 
 export function isolateProductRecords(
-  products: Product[],
-  stationId?: string,
-  orgId?: string
+ products: Product[],
+ stationId?: string,
+ orgId?: string
 ): Product[] {
-  const scopedProducts = isolateTenantRecords(products, stationId, orgId);
+ const scopedProducts = isolateTenantRecords(products, stationId, orgId);
 
-  if (isLubeBusinessStation(stationId)) {
-    return scopedProducts.filter((product) => product.type !== 'fuel');
-  }
+ if (isLubeBusinessStation(stationId)) {
+ return scopedProducts.filter((product) => product.type !== 'fuel');
+ }
 
-  return scopedProducts.filter((product) => product.type === 'fuel');
+ return scopedProducts.filter((product) => product.type === 'fuel');
 }
 
 export function isolateShiftRecords(
-  shifts: Shift[],
-  stationId?: string,
-  orgId?: string
+ shifts: Shift[],
+ stationId?: string,
+ orgId?: string
 ): Shift[] {
-  const scopedShifts = isolateTenantRecords(shifts, stationId, orgId);
+ const scopedShifts = isolateTenantRecords(shifts, stationId, orgId);
 
-  if (isLubeBusinessStation(stationId)) {
-    return [];
-  }
+ if (isLubeBusinessStation(stationId)) {
+ return [];
+ }
 
-  return scopedShifts.map((shift) => ({
-    ...shift,
+ return scopedShifts.map((shift) => ({
+ ...shift,
 
-  }));
+ }));
 }
 
 export function isolateLubePosSales(
-  sales: LubePosSale[],
-  stationId?: string,
-  orgId?: string
+ sales: LubePosSale[],
+ stationId?: string,
+ orgId?: string
 ): LubePosSale[] {
-  if (!isLubeBusinessStation(stationId)) {
-    return [];
-  }
+ if (!isLubeBusinessStation(stationId)) {
+ return [];
+ }
 
-  return isolateTenantRecords(sales, stationId, orgId);
+ return isolateTenantRecords(sales, stationId, orgId);
 }
 
 export function resolveViewForBusiness(view: string, stationId?: string): string {
-  if (isLubeBusinessStation(stationId)) {
-    if (view === 'shift_wizard') return 'lube_pos';
-    if (FUEL_ONLY_VIEWS.has(view)) return 'dashboard';
-    return view;
-  }
+ if (isLubeBusinessStation(stationId)) {
+ if (view === 'shift_wizard') return 'lube_pos';
+ if (FUEL_ONLY_VIEWS.has(view)) return 'dashboard';
+ return view;
+ }
 
-  if (LUBE_ONLY_VIEWS.has(view)) return 'dashboard';
-  return view;
+ if (LUBE_ONLY_VIEWS.has(view)) return 'dashboard';
+ return view;
 }

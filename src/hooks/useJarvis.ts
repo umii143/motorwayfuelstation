@@ -4,255 +4,255 @@ import { jarvisFunctionDeclarations, executeJarvisFunction } from '../lib/AIFunc
 import { logger } from '../lib/logger';
 
 interface Message {
-  role: 'user' | 'model' | 'function';
-  parts: { text?: string; functionCall?: any; functionResponse?: any }[];
+ role: 'user' | 'model' | 'function';
+ parts: { text?: string; functionCall?: any; functionResponse?: any }[];
 }
 
 export function useJarvis() {
-  const [isListening, setIsListening] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [isCallModeActive, setIsCallModeActive] = useState(false);
-  const [transcript, setTranscript] = useState('');
-  const [chatHistory, setChatHistory] = useState<Message[]>([
-    {
-      role: 'model',
-      parts: [{ text: "Hello Sir. I am Jarvis, your FuelPro AI Assistant. How can I help you today?" }]
-    }
-  ]);
-  
-  const recognitionRef = useRef<any>(null);
-  const synthRef = useRef<SpeechSynthesis | null>(null);
-  const callModeRef = useRef<boolean>(false);
-  const transcriptRef = useRef<string>('');
-  const processAudioInputRef = useRef<any>(null);
-  const hasUnlockedSpeechRef = useRef<boolean>(false);
+ const [isListening, setIsListening] = useState(false);
+ const [isSpeaking, setIsSpeaking] = useState(false);
+ const [isProcessing, setIsProcessing] = useState(false);
+ const [isCallModeActive, setIsCallModeActive] = useState(false);
+ const [transcript, setTranscript] = useState('');
+ const [chatHistory, setChatHistory] = useState<Message[]>([
+ {
+ role: 'model',
+ parts: [{ text:"Hello Sir. I am Jarvis, your FuelPro AI Assistant. How can I help you today?" }]
+ }
+ ]);
+ 
+ const recognitionRef = useRef<any>(null);
+ const synthRef = useRef<SpeechSynthesis | null>(null);
+ const callModeRef = useRef<boolean>(false);
+ const transcriptRef = useRef<string>('');
+ const processAudioInputRef = useRef<any>(null);
+ const hasUnlockedSpeechRef = useRef<boolean>(false);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        recognitionRef.current = new SpeechRecognition();
-        recognitionRef.current.continuous = false;
-        recognitionRef.current.interimResults = true;
-        recognitionRef.current.lang = 'ur-PK'; // Urdu by default, supports mixed English
+ useEffect(() => {
+ if (typeof window !== 'undefined') {
+ const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+ if (SpeechRecognition) {
+ recognitionRef.current = new SpeechRecognition();
+ recognitionRef.current.continuous = false;
+ recognitionRef.current.interimResults = true;
+ recognitionRef.current.lang = 'ur-PK'; // Urdu by default, supports mixed English
 
-        recognitionRef.current.onresult = (event: any) => {
-          let currentTranscript = '';
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            currentTranscript += event.results[i][0].transcript;
-          }
-          setTranscript(currentTranscript);
-          transcriptRef.current = currentTranscript;
-        };
+ recognitionRef.current.onresult = (event: any) => {
+ let currentTranscript = '';
+ for (let i = event.resultIndex; i < event.results.length; i++) {
+ currentTranscript += event.results[i][0].transcript;
+ }
+ setTranscript(currentTranscript);
+ transcriptRef.current = currentTranscript;
+ };
 
-        recognitionRef.current.onend = () => {
-          setIsListening(false);
-          const finalStr = transcriptRef.current;
-          if (finalStr.trim()) {
-            transcriptRef.current = '';
-            if (processAudioInputRef.current) {
-              processAudioInputRef.current(finalStr);
-            }
-          } else if (callModeRef.current && !synthRef.current?.speaking) {
-            // Keep listening if call mode is active and we're not speaking
-            try {
-              recognitionRef.current.start();
-              setIsListening(true);
-            } catch (error) {
-              // ignore
-            }
-          }
-        };
-      }
-      synthRef.current = window.speechSynthesis;
-    }
-  }, []);
+ recognitionRef.current.onend = () => {
+ setIsListening(false);
+ const finalStr = transcriptRef.current;
+ if (finalStr.trim()) {
+ transcriptRef.current = '';
+ if (processAudioInputRef.current) {
+ processAudioInputRef.current(finalStr);
+ }
+ } else if (callModeRef.current && !synthRef.current?.speaking) {
+ // Keep listening if call mode is active and we're not speaking
+ try {
+ recognitionRef.current.start();
+ setIsListening(true);
+ } catch (error) {
+ // ignore
+ }
+ }
+ };
+ }
+ synthRef.current = window.speechSynthesis;
+ }
+ }, []);
 
-  const speak = (text: string) => {
-    if (!synthRef.current) return;
-    setIsSpeaking(true);
-    
-    // Quick language detection heuristic: if mostly ASCII, use English, else use Urdu/Hindi
-    const isUrdu = /[ا-ی]/.test(text);
-    
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = isUrdu ? 'ur-PK' : 'en-US';
-    utterance.rate = 0.95;
-    utterance.pitch = 1.0;
-    
-    utterance.onend = () => {
-      setIsSpeaking(false);
-      if (callModeRef.current) {
-        // Restart listening after speaking finishes
-        setTimeout(() => {
-          if (callModeRef.current) {
-            try {
-              recognitionRef.current?.start();
-              setIsListening(true);
-            } catch (e) {
-              logger.error("Auto-restart failed", e);
-            }
-          }
-        }, 500);
-      }
-    };
-    synthRef.current.speak(utterance);
-  };
+ const speak = (text: string) => {
+ if (!synthRef.current) return;
+ setIsSpeaking(true);
+ 
+ // Quick language detection heuristic: if mostly ASCII, use English, else use Urdu/Hindi
+ const isUrdu = /[ا-ی]/.test(text);
+ 
+ const utterance = new SpeechSynthesisUtterance(text);
+ utterance.lang = isUrdu ? 'ur-PK' : 'en-US';
+ utterance.rate = 0.95;
+ utterance.pitch = 1.0;
+ 
+ utterance.onend = () => {
+ setIsSpeaking(false);
+ if (callModeRef.current) {
+ // Restart listening after speaking finishes
+ setTimeout(() => {
+ if (callModeRef.current) {
+ try {
+ recognitionRef.current?.start();
+ setIsListening(true);
+ } catch (e) {
+ logger.error("Auto-restart failed", e);
+ }
+ }
+ }, 500);
+ }
+ };
+ synthRef.current.speak(utterance);
+ };
 
-  const processAudioInput = useCallback(async (finalTranscript: string) => {
-    if (!finalTranscript.trim()) return;
-    
-    // Check if user wants to end call manually via voice
-    const lowerText = finalTranscript.toLowerCase();
-    if (callModeRef.current && (lowerText.includes('stop') || lowerText.includes('bye') || lowerText.includes('end') || lowerText.includes('band karo') || lowerText.includes('khatam karo') || lowerText.includes('shukriya'))) {
-      callModeRef.current = false;
-      setIsCallModeActive(false);
-      speak("Goodbye Sir, ending the call.");
-      return;
-    }
+ const processAudioInput = useCallback(async (finalTranscript: string) => {
+ if (!finalTranscript.trim()) return;
+ 
+ // Check if user wants to end call manually via voice
+ const lowerText = finalTranscript.toLowerCase();
+ if (callModeRef.current && (lowerText.includes('stop') || lowerText.includes('bye') || lowerText.includes('end') || lowerText.includes('band karo') || lowerText.includes('khatam karo') || lowerText.includes('shukriya'))) {
+ callModeRef.current = false;
+ setIsCallModeActive(false);
+ speak("Goodbye Sir, ending the call.");
+ return;
+ }
 
-    setIsProcessing(true);
-    setTranscript('');
-    transcriptRef.current = '';
-    
-    const newUserMsg: Message = { role: 'user', parts: [{ text: finalTranscript }] };
-    const updatedHistory = [...chatHistory, newUserMsg];
-    setChatHistory(updatedHistory);
+ setIsProcessing(true);
+ setTranscript('');
+ transcriptRef.current = '';
+ 
+ const newUserMsg: Message = { role: 'user', parts: [{ text: finalTranscript }] };
+ const updatedHistory = [...chatHistory, newUserMsg];
+ setChatHistory(updatedHistory);
 
-    try {
-      const systemInstruction = {
-        parts: [{ text: "You are FuelPro Jarvis, an elite Strategic AI Advisor and Manager of a Fuel Station in Pakistan. You have full unrestricted access to the station's ERP via function calls. Act as a highly intelligent, proactive business consultant. You have Full Power: you can start shifts, add customers, add suppliers, register staff, add bank accounts, transfer funds, mark attendance, and sell lubes. CRITICAL INSTRUCTION: When a user asks you to add, create, or register anything (staff, customer, supplier, bank, shift, expense), YOU MUST IMMEDIATELY CALL THE RELEVANT FUNCTION. NEVER say 'I cannot do this' or 'It is not possible'. You have the capability. Keep answers concise. Respond naturally in the user's preferred language." }]
-      };
+ try {
+ const systemInstruction = {
+ parts: [{ text:"You are FuelPro Jarvis, an elite Strategic AI Advisor and Manager of a Fuel Station in Pakistan. You have full unrestricted access to the station's ERP via function calls. Act as a highly intelligent, proactive business consultant. You have Full Power: you can start shifts, add customers, add suppliers, register staff, add bank accounts, transfer funds, mark attendance, and sell lubes. CRITICAL INSTRUCTION: When a user asks you to add, create, or register anything (staff, customer, supplier, bank, shift, expense), YOU MUST IMMEDIATELY CALL THE RELEVANT FUNCTION. NEVER say 'I cannot do this' or 'It is not possible'. You have the capability. Keep answers concise. Respond naturally in the user's preferred language." }]
+ };
 
-      // 1. Send text to backend
-      const res = await fetchWithAuth('/api/ai/jarvis', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          messages: updatedHistory.map(m => ({ role: m.role === 'function' ? 'user' : m.role, parts: m.parts })), // Formatting for Gemini 2.5
-          tools: jarvisFunctionDeclarations,
-          systemInstruction
-        })
-      });
+ // 1. Send text to backend
+ const res = await fetchWithAuth('/api/ai/jarvis', {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json'
+ },
+ body: JSON.stringify({
+ messages: updatedHistory.map(m => ({ role: m.role === 'function' ? 'user' : m.role, parts: m.parts })), // Formatting for Gemini 2.5
+ tools: jarvisFunctionDeclarations,
+ systemInstruction
+ })
+ });
 
-      const data = await res.json();
+ const data = await res.json();
 
-      if (data.error) {
-        logger.error('Backend returned error:', data.error);
-        setChatHistory(prev => [...prev, { role: 'model', parts: [{ text: `System Error: ${data.error}` }] }]);
-        speak("Sir, there is a server error: " + (data.error.includes("configured") ? "API key is missing" : data.error));
-        return;
-      }
+ if (data.error) {
+ logger.error('Backend returned error:', data.error);
+ setChatHistory(prev => [...prev, { role: 'model', parts: [{ text: `System Error: ${data.error}` }] }]);
+ speak("Sir, there is a server error:" + (data.error.includes("configured") ?"API key is missing" : data.error));
+ return;
+ }
 
-      // 2. Handle Function Call
-      if (data.type === 'function_call') {
-        const funcCallMsg: Message = { role: 'model', parts: [{ functionCall: { name: data.functionName, args: data.functionArgs } }] };
-        setChatHistory(prev => [...prev, funcCallMsg]);
+ // 2. Handle Function Call
+ if (data.type === 'function_call') {
+ const funcCallMsg: Message = { role: 'model', parts: [{ functionCall: { name: data.functionName, args: data.functionArgs } }] };
+ setChatHistory(prev => [...prev, funcCallMsg]);
 
-        // Execute local DB function
-        const mockStores = {}; // In a real implementation, bind Zustand hooks here or pass them as args
-        const result = await executeJarvisFunction(data.functionName, data.functionArgs, mockStores);
+ // Execute local DB function
+ const mockStores = {}; // In a real implementation, bind Zustand hooks here or pass them as args
+ const result = await executeJarvisFunction(data.functionName, data.functionArgs, mockStores);
 
-        const funcResMsg: Message = { 
-          role: 'function', 
-          parts: [{ functionResponse: { name: data.functionName, response: result } }] 
-        };
-        const historyWithFunc = [...updatedHistory, funcCallMsg, funcResMsg];
-        setChatHistory(historyWithFunc);
+ const funcResMsg: Message = { 
+ role: 'function', 
+ parts: [{ functionResponse: { name: data.functionName, response: result } }] 
+ };
+ const historyWithFunc = [...updatedHistory, funcCallMsg, funcResMsg];
+ setChatHistory(historyWithFunc);
 
-        // 3. Send result back to Gemini for natural language response
-        const secondRes = await fetchWithAuth('/api/ai/jarvis', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            messages: historyWithFunc.map(m => ({ role: m.role === 'function' ? 'user' : m.role, parts: m.parts })),
-            systemInstruction
-          })
-        });
+ // 3. Send result back to Gemini for natural language response
+ const secondRes = await fetchWithAuth('/api/ai/jarvis', {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json'
+ },
+ body: JSON.stringify({
+ messages: historyWithFunc.map(m => ({ role: m.role === 'function' ? 'user' : m.role, parts: m.parts })),
+ systemInstruction
+ })
+ });
 
-        const secondData = await secondRes.json();
-        if (secondData.type === 'text') {
-          setChatHistory(prev => [...prev, { role: 'model', parts: [{ text: secondData.reply }] }]);
-          speak(secondData.reply);
-        }
-      } 
-      // 4. Handle Direct Text
-      else if (data.type === 'text') {
-        setChatHistory(prev => [...prev, { role: 'model', parts: [{ text: data.reply }] }]);
-        speak(data.reply);
-      }
+ const secondData = await secondRes.json();
+ if (secondData.type === 'text') {
+ setChatHistory(prev => [...prev, { role: 'model', parts: [{ text: secondData.reply }] }]);
+ speak(secondData.reply);
+ }
+ } 
+ // 4. Handle Direct Text
+ else if (data.type === 'text') {
+ setChatHistory(prev => [...prev, { role: 'model', parts: [{ text: data.reply }] }]);
+ speak(data.reply);
+ }
 
-    } catch (err) {
-      logger.error('Jarvis Error:', err);
-      speak("Sorry Sir, I encountered a network error connecting to the backend gateway.");
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [chatHistory]);
+ } catch (err) {
+ logger.error('Jarvis Error:', err);
+ speak("Sorry Sir, I encountered a network error connecting to the backend gateway.");
+ } finally {
+ setIsProcessing(false);
+ }
+ }, [chatHistory]);
 
-  useEffect(() => {
-    processAudioInputRef.current = processAudioInput;
-  }, [processAudioInput]);
+ useEffect(() => {
+ processAudioInputRef.current = processAudioInput;
+ }, [processAudioInput]);
 
-  const startListening = useCallback(() => {
-    if (synthRef.current && !hasUnlockedSpeechRef.current) {
-      // Unlock speech synthesis on Android/iOS by playing a silent utterance on first user click
-      const silentUtterance = new SpeechSynthesisUtterance('');
-      silentUtterance.volume = 0;
-      synthRef.current.speak(silentUtterance);
-      hasUnlockedSpeechRef.current = true;
-    }
+ const startListening = useCallback(() => {
+ if (synthRef.current && !hasUnlockedSpeechRef.current) {
+ // Unlock speech synthesis on Android/iOS by playing a silent utterance on first user click
+ const silentUtterance = new SpeechSynthesisUtterance('');
+ silentUtterance.volume = 0;
+ synthRef.current.speak(silentUtterance);
+ hasUnlockedSpeechRef.current = true;
+ }
 
-    if (recognitionRef.current) {
-      if (synthRef.current?.speaking) {
-        synthRef.current.cancel();
-      }
-      setIsListening(true);
-      setTranscript('');
-      try {
-        recognitionRef.current.start();
-      } catch (e) {
-        logger.error("Microphone already started", e);
-      }
-    }
-  }, []);
+ if (recognitionRef.current) {
+ if (synthRef.current?.speaking) {
+ synthRef.current.cancel();
+ }
+ setIsListening(true);
+ setTranscript('');
+ try {
+ recognitionRef.current.start();
+ } catch (e) {
+ logger.error("Microphone already started", e);
+ }
+ }
+ }, []);
 
-  const stopListening = useCallback(() => {
-    if (recognitionRef.current && isListening) {
-      recognitionRef.current.stop();
-      processAudioInput(transcript);
-    }
-  }, [isListening, transcript, processAudioInput]);
+ const stopListening = useCallback(() => {
+ if (recognitionRef.current && isListening) {
+ recognitionRef.current.stop();
+ processAudioInput(transcript);
+ }
+ }, [isListening, transcript, processAudioInput]);
 
-  const toggleCallMode = useCallback(() => {
-    if (callModeRef.current) {
-      // Turn off
-      callModeRef.current = false;
-      setIsCallModeActive(false);
-      if (isListening) stopListening();
-      if (synthRef.current?.speaking) synthRef.current.cancel();
-    } else {
-      // Turn on
-      callModeRef.current = true;
-      setIsCallModeActive(true);
-      startListening();
-    }
-  }, [isListening, startListening, stopListening]);
+ const toggleCallMode = useCallback(() => {
+ if (callModeRef.current) {
+ // Turn off
+ callModeRef.current = false;
+ setIsCallModeActive(false);
+ if (isListening) stopListening();
+ if (synthRef.current?.speaking) synthRef.current.cancel();
+ } else {
+ // Turn on
+ callModeRef.current = true;
+ setIsCallModeActive(true);
+ startListening();
+ }
+ }, [isListening, startListening, stopListening]);
 
-  return {
-    isListening,
-    isSpeaking,
-    isProcessing,
-    isCallModeActive,
-    transcript,
-    chatHistory,
-    startListening,
-    stopListening,
-    toggleCallMode
-  };
+ return {
+ isListening,
+ isSpeaking,
+ isProcessing,
+ isCallModeActive,
+ transcript,
+ chatHistory,
+ startListening,
+ stopListening,
+ toggleCallMode
+ };
 }
