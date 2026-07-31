@@ -16,6 +16,8 @@ import SupplierPayments from './SupplierPayments';
 import SupplierClaimsPanel from './SupplierClaimsPanel';
 import SupplierScorecard from './SupplierScorecard';
 import SupplierDetailsFullPage from './SupplierDetailsFullPage';
+import { SupplierComparisonCenter } from './SupplierComparisonCenter';
+import { Sparkles } from 'lucide-react';
 
 interface SupplierCommandCenterProps {
  settings: GlobalSettings;
@@ -40,7 +42,7 @@ export default function SupplierCommandCenter({
  onDeleteSupplier,
  onDeleteSupplierPayment
 }: SupplierCommandCenterProps) {
- const [activeTab, setActiveTab] = useState<'directory' | 'payables' | 'payments' | 'claims' | 'scorecard'>('directory');
+ const [activeTab, setActiveTab] = useState<'comparison' | 'directory' | 'payables' | 'payments' | 'claims' | 'scorecard'>('comparison');
  const [currentSupplierId, setCurrentSupplierId] = React.useState<string | null>(() => {
  const path = window.location.pathname;
  if (path.startsWith('/suppliers/') && path.length > 11) {
@@ -83,6 +85,7 @@ export default function SupplierCommandCenter({
  const payments: any[] = []; // Default empty
 
  const tabs = [
+ { id: 'comparison', icon: Sparkles, label: 'Rate Comparison & AI', urdu: 'ریٹ کا موازنہ اور AI' },
  { id: 'directory', icon: Truck, label: 'Supplier Directory', urdu: 'سپلائر ڈائریکٹری' },
  { id: 'payables', icon: Building2, label: 'Aging Payables', urdu: 'واجب الادا رقوم' },
  { id: 'payments', icon: CreditCard, label: 'Payment Gateway', urdu: 'ادائیگیاں' },
@@ -118,10 +121,10 @@ export default function SupplierCommandCenter({
  {/* Advanced Clean Header */}
  <div className="flex flex-col gap-1 mb-2">
  <h1 className="font-sans text-2xl font-bold text-foreground tracking-tight">
- {t('Supplier Management', 'سپلائر مینجمنٹ')}
+ {t('Supplier Management & Procurement', 'سپلائر مینجمنٹ اور خریداری')}
  </h1>
  <p className="font-sans text-sm text-muted-foreground">
- {t('Manage your fuel, lubricant and service suppliers', 'اپنے فیول، لبریکنٹ اور سروس سپلائرز کا انتظام کریں')}
+ {t('Operational headquarters for fuel purchasing, rate comparison, and supplier scorecards', 'فیول کی خریداری، قیمتوں کا موازنہ اور سپلائر اسکور کارڈ کا کنٹرول روم')}
  </p>
  </div>
  {/* Navigation Tabs */}
@@ -154,6 +157,15 @@ export default function SupplierCommandCenter({
  animate={{ opacity: 1, y: 0 }}
  transition={{ duration: 0.2 }}
  >
+ {activeTab === 'comparison' && (
+ <SupplierComparisonCenter
+ settings={settings}
+ suppliers={suppliers}
+ products={products}
+ onNavigateToSupplier={navigateToSupplier}
+ />
+ )}
+
  {activeTab === 'directory' && (
  <SupplierDirectory
  settings={settings}
