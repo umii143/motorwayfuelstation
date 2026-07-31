@@ -64,6 +64,12 @@ export default function ShiftLogs({
  const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
  const [activeGlobalModal, setActiveGlobalModal] = useState<string | null>(null);
  
+ React.useEffect(() => {
+   if (!selectedShift && shifts.length > 0) {
+     setSelectedShift(shifts[0]);
+   }
+ }, [shifts, selectedShift]);
+
  // Pagination / Incremental Loading state
  const [visibleLimit, setVisibleLimit] = useState(100);
 
@@ -180,13 +186,13 @@ export default function ShiftLogs({
  {/* HEADER */}
  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
  <div>
- <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
- <Activity className="w-6 h-6 text-orange-500" />
- Shift Wizard Logs
- </h1>
- <p className="text-sm text-muted-foreground mt-1">
- View, analyze and audit all shift sessions with complete financial details.
- </p>
+        <h1 className="text-xl sm:text-2xl font-black text-foreground flex items-center gap-2 tracking-tight">
+          <Activity className="w-6 h-6 text-orange-500" />
+          Operations Intelligence & Audit Center
+        </h1>
+        <p className="text-xs text-muted-foreground mt-1">
+          {t('Enterprise Audit Center for shift audit trails, financial reconciliation, fraud indicators & telemetry', 'شفٹ آڈٹ ٹریل، مالیاتی مفاہمت، فراڈ انڈیکیٹرز اور لائیو ٹیلرمیٹری کا مرکزی کنٹرول روم')}
+        </p>
  </div>
  
  <div className="flex items-center gap-3">
