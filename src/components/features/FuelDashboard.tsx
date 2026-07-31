@@ -55,35 +55,16 @@ const FuelDashboard = React.memo(function FuelDashboard(props: FuelDashboardProp
     userName
   } = props;
 
+  // ── ALL HOOKS MUST RUN UNCONDITIONALLY (REACT RULES OF HOOKS) ──
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
-
+  const [rolePerspective, setRolePerspective] = useState<RolePerspective>('owner');
+  
   React.useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  if (isMobile) {
-    return (
-      <MobileFuelDashboard
-        settings={settings}
-        activeStationId={activeStationId}
-        shifts={shifts}
-        products={products}
-        customers={customers}
-        suppliers={suppliers}
-        banks={banks}
-        nozzles={nozzles}
-        tanks={tanks}
-        stockTxns={stockTxns}
-        onNavigate={onNavigate}
-        onStartShiftQuick={onStartShiftQuick}
-        userName={userName}
-      />
-    );
-  }
-
-  const [rolePerspective, setRolePerspective] = useState<RolePerspective>('owner');
   const todayStr = new Date().toISOString().split('T')[0];
   const { forecast, isComputing } = useForecastEngine(shifts, tanks, products);
   const activeShift = shifts.find(s => s.status === 'active');
@@ -332,6 +313,26 @@ const FuelDashboard = React.memo(function FuelDashboard(props: FuelDashboardProp
   const themeWrap = "min-h-screen bg-background text-foreground font-sans overflow-x-hidden pb-6 lg:pb-12 relative transition-colors duration-500";
   const enterpriseCard = "bg-card border border-border rounded-2xl shadow-xs p-4 sm:p-5 transition-all duration-300 hover:border-border/80";
   const buttonStyle = "px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer active:scale-95 hover:-translate-y-0.5 shadow-xs flex items-center gap-1.5";
+
+  if (isMobile) {
+    return (
+      <MobileFuelDashboard
+        settings={settings}
+        activeStationId={activeStationId}
+        shifts={shifts}
+        products={products}
+        customers={customers}
+        suppliers={suppliers}
+        banks={banks}
+        nozzles={nozzles}
+        tanks={tanks}
+        stockTxns={stockTxns}
+        onNavigate={onNavigate}
+        onStartShiftQuick={onStartShiftQuick}
+        userName={userName}
+      />
+    );
+  }
 
   return (
     <div className={themeWrap}>
