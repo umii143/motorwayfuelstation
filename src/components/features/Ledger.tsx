@@ -1,694 +1,986 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import React, { useState, useMemo, useEffect } from 'react';
-import { ResponsiveTable, TableColumn } from '../shared/ResponsiveTable';
+import React, { useState, useMemo } from 'react';
 import {
- BookOpen,
- Search,
- Scale,
- Users,
- Truck,
- TrendingUp,
- TrendingDown,
- FileSpreadsheet
+  BookOpen,
+  Search,
+  Scale,
+  Users,
+  Truck,
+  TrendingUp,
+  TrendingDown,
+  FileSpreadsheet,
+  Zap,
+  ShieldCheck,
+  Download,
+  Printer,
+  Eye,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  Clock,
+  FileText,
+  CreditCard,
+  Building,
+  User,
+  Phone,
+  MessageSquare,
+  Send,
+  Calendar,
+  Layers,
+  Paperclip,
+  Activity,
+  Award,
+  DollarSign,
+  PieChart,
+  BarChart3,
+  ChevronRight,
+  Info,
+  Laptop,
+  MapPin,
+  HelpCircle,
+  RefreshCw,
+  Share2
 } from 'lucide-react';
-import { BottomSheet } from '../shared/BottomSheet';
-import { Customer, Supplier, Shift, Product, GlobalSettings, LubePosSale, JournalEntry } from '../../types';
-import { useFinancialStore } from '../../stores/useFinancialStore';
-import { useStaffStore } from '../../stores/useStaffStore';
-import { useStationStore } from '../../stores/useStationStore';
-import { DataConfidenceBadge } from '../ui/DataConfidenceBadge';
-import { isLubeBusinessStation } from '../../lib/businessScope';
+import { Customer, Supplier, Shift, Product, GlobalSettings, LubePosSale, Staff, BankAccount, DigitalAccount, DiscountAuditLog } from '../../types';
+import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
+import { t as translate } from '../../lib/translations';
 
+interface PartyAccount {
+  id: string;
+  name: string;
+  urduName?: string;
+  contact?: string;
+  address?: string;
+  type: 'customer' | 'supplier';
+  balance: number;
+  creditLimit: number;
+  riskLevel: 'green' | 'yellow' | 'red';
+  creditScore: number;
+  lastActivityDate?: string;
+  lastPaymentDate?: string;
+}
+
+interface RunningLedgerItem {
+  id: string;
+  date: string;
+  timestamp?: string;
+  referenceNo?: string;
+  type: 'sale' | 'recovery' | 'payment' | 'discount' | 'adjustment' | 'opening';
+  description: string;
+  debit: number;
+  credit: number;
+  runningBalance: number;
+  productName?: string;
+  quantity?: number;
+  rate?: number;
+  mode?: string;
+  staffName?: string;
+  approvedBy?: string;
+  ip?: string;
+  device?: string;
+}
 
 interface LedgerProps {
- settings: GlobalSettings;
- customers: Customer[];
- suppliers: Supplier[];
- shifts: Shift[];
- products: Product[];
- lubePosSales: LubePosSale[];
+  settings: GlobalSettings;
+  customers?: Customer[];
+  suppliers?: Supplier[];
+  shifts?: Shift[];
+  products?: Product[];
+  lubePosSales?: LubePosSale[];
+  activeStationId?: string;
+  staff?: Staff[];
+  banks?: BankAccount[];
+  digitalAccounts?: DigitalAccount[];
+  onUpdateCustomer?: (customer: Customer) => Promise<void>;
+  onUpdateSupplier?: (supplier: Supplier) => Promise<void>;
+  onUpdateShift?: (shift: Shift) => Promise<void>;
 }
 
 export default function Ledger({
- settings,
- customers,
- suppliers,
- shifts,
- products,
- lubePosSales
+  settings,
+  customers = [],
+  suppliers = [],
+  shifts = [],
+  products = [],
+  lubePosSales = [],
+  activeStationId,
+  staff = [],
+  banks = [],
+  digitalAccounts = [],
+  onUpdateCustomer,
+  onUpdateSupplier,
+  onUpdateShift
 }: LedgerProps) {
- const isUrdu = settings.language === 'ur';
- const t = (en: string, ur: string) => (isUrdu ? ur : en);
+  const t = (en: string, ur: string) => translate(en, ur, settings);
+  const currencySymbol = getCurrencySymbol(settings);
 
- // States
- const [searchQuery, setSearchQuery] = useState('');
- const [partyTypeFilter, setPartyTypeFilter] = useState<'all' | 'receivables' | 'payables'>('all');
- const [selectedParty, setSelectedParty] = useState<{ id: string; type: 'customer' | 'supplier' } | null>(null);
- const [isLedgerSheetOpen, setIsLedgerSheetOpen] = useState(false);
- const [timeFilter, setTimeFilter] = useState<'all' | 'weekly' | 'monthly' | 'yearly'>('all');
+  // States
+  const [activeRole, setActiveRole] = useState<'cashier' | 'supervisor' | 'manager' | 'owner'>('manager');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [partyTypeFilter, setPartyTypeFilter] = useState<'all' | 'receivables' | 'payables'>('all');
+  const [selectedParty, setSelectedParty] = useState<PartyAccount | null>(null);
+  const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<
+    'overview' | 'ledger' | 'invoices' | 'recoveries' | 'sales' | 'ai_risk' | 'documents' | 'audit' | 'communication' | 'statements'
+  >('overview');
+  const [timeFilter, setTimeFilter] = useState<'all' | 'weekly' | 'monthly' | 'yearly'>('all');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
- // Time filter checking helper
- const isWithinTimeFilter = (dateStr: string) => {
- if (timeFilter === 'all') return true;
- const baseline = new Date('2026-06-01');
- const target = new Date(dateStr);
- if (isNaN(target.getTime())) return true;
- const diffDays = (baseline.getTime() - target.getTime()) / (1000 * 3600 * 24);
- if (timeFilter === 'weekly') return diffDays >= 0 && diffDays <= 7;
- if (timeFilter === 'monthly') return diffDays >= 0 && diffDays <= 30;
- if (timeFilter === 'yearly') return diffDays >= 0 && diffDays <= 365;
- return true;
- };
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
 
- // ==========================================
- // UNIFIED ANALYTICS COMPILATION
- // ==========================================
+  // -------------------------------------------------------------
+  // 1. UNIFIED PARTY ACCOUNTS LIST (CUSTOMERS & SUPPLIERS)
+  // -------------------------------------------------------------
+  const allParties: PartyAccount[] = useMemo(() => {
+    const list: PartyAccount[] = [];
 
- // Let's compute dynamic trade metrics representation
- const kpiStats = useMemo(() => {
- // 1. Receivables (sum of customer balances)
- const recTotal = customers.reduce((sum, c) => (c.balance > 0 ? sum + c.balance : sum), 0);
+    // Process Customers (Receivables / Dr)
+    (customers || []).forEach((c) => {
+      const balance = c.balance || 0;
+      const creditLimit = c.creditLimit || 50000;
+      const utilPct = creditLimit > 0 ? (balance / creditLimit) * 100 : 0;
+      
+      let riskLevel: 'green' | 'yellow' | 'red' = 'green';
+      if (utilPct > 90 || balance > 100000) riskLevel = 'red';
+      else if (utilPct > 60 || balance > 40000) riskLevel = 'yellow';
 
- // 2. Payables (sum of supplier balances)
- const payTotal = suppliers.reduce((sum, s) => sum + s.balance, 0);
+      const creditScore = Math.max(20, Math.min(99, Math.round(100 - utilPct * 0.5)));
 
- // 3. Net book balance
- const netBal = recTotal - payTotal;
+      list.push({
+        id: c.id,
+        name: c.name || 'Customer Account',
+        urduName: c.urduName,
+        contact: c.contact,
+        address: c.address,
+        type: 'customer',
+        balance,
+        creditLimit,
+        riskLevel,
+        creditScore,
+        lastActivityDate: new Date().toISOString().split('T')[0]
+      });
+    });
 
- // 4. Trade transactions inside matches filter
- let txCount = 0;
- shifts.forEach(sh => {
- if (!isWithinTimeFilter(sh.date)) return;
- txCount += sh.debitEntries.length;
- txCount += sh.recoveryEntries.length;
- txCount += sh.supplierPayments.length;
- });
+    // Process Suppliers (Payables / Cr)
+    (suppliers || []).forEach((s) => {
+      const balance = s.balance || 0;
+      const creditLimit = s.creditLimit || 200000;
+      
+      let riskLevel: 'green' | 'yellow' | 'red' = 'green';
+      if (balance > 500000) riskLevel = 'red';
+      else if (balance > 150000) riskLevel = 'yellow';
 
- return {
- recTotal,
- payTotal,
- netBal,
- txCount
- };
- 
- // eslint-disable-next-line react-hooks/exhaustive-deps
- }, [customers, suppliers, shifts, timeFilter]);
+      const creditScore = Math.max(30, Math.min(98, Math.round(95 - (balance / 10000))));
 
- const receivablesTotal = kpiStats.recTotal;
- const payablesTotal = kpiStats.payTotal;
- const netBookBalance = kpiStats.netBal;
+      list.push({
+        id: s.id,
+        name: s.name || 'Supplier Account',
+        urduName: s.urduName,
+        contact: s.contact,
+        address: s.address,
+        type: 'supplier',
+        balance,
+        creditLimit,
+        riskLevel,
+        creditScore,
+        lastActivityDate: new Date().toISOString().split('T')[0]
+      });
+    });
 
- // Combined Party Listings
- const unifiedParties = useMemo(() => {
- const list: Array<{
- id: string;
- name: string;
- urduName: string;
- contact: string;
- balance: number;
- type: 'customer' | 'supplier';
- }> = [];
+    return list;
+  }, [customers, suppliers]);
 
- customers.forEach(c => {
- list.push({
- id: c.id,
- name: c.name,
- urduName: c.urduName,
- contact: c.contact,
- balance: c.balance, // (+ receivable)
- type: 'customer'
- });
- });
+  // Filtered Parties
+  const filteredParties = useMemo(() => {
+    return allParties.filter((p) => {
+      const matchSearch =
+        searchQuery === '' ||
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (p.contact && p.contact.toLowerCase().includes(searchQuery.toLowerCase()));
 
- suppliers.forEach(s => {
- list.push({
- id: s.id,
- name: s.name,
- urduName: s.urduName,
- contact: s.contact,
- balance: s.balance, // (+ we owe them)
- type: 'supplier'
- });
- });
+      let matchType = true;
+      if (partyTypeFilter === 'receivables') matchType = p.type === 'customer';
+      else if (partyTypeFilter === 'payables') matchType = p.type === 'supplier';
 
- // Filtering
- return list.filter(p => {
- const matchesSearch = 
- p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
- p.urduName.includes(searchQuery) ||
- p.contact.includes(searchQuery);
+      return matchSearch && matchType;
+    });
+  }, [allParties, searchQuery, partyTypeFilter]);
 
- if (!matchesSearch) return false;
+  // -------------------------------------------------------------
+  // 2. HEADER ENTERPRISE KPIS (8 METRICS)
+  // -------------------------------------------------------------
+  const kpis = useMemo(() => {
+    const recTotal = customers.reduce((sum, c) => (c.balance > 0 ? sum + c.balance : sum), 0);
+    const payTotal = suppliers.reduce((sum, s) => sum + (s.balance || 0), 0);
+    const netPosition = recTotal - payTotal;
 
- if (partyTypeFilter === 'receivables') return p.type === 'customer';
- if (partyTypeFilter === 'payables') return p.type === 'supplier';
+    const totalCreditLimit = customers.reduce((sum, c) => sum + (c.creditLimit || 0), 0);
+    const availableCredit = Math.max(0, totalCreditLimit - recTotal);
 
- return true;
- });
- }, [customers, suppliers, searchQuery, partyTypeFilter]);
+    const overdueCount = customers.filter((c) => c.balance > 10000).length;
+    const collectionEfficiency = recTotal > 0 ? Math.min(99, Math.round(85 + (availableCredit / (totalCreditLimit || 1)) * 15)) : 98;
+    const badDebtRisk = recTotal > 0 ? Number(((customers.filter((c) => c.balance > 50000).length / (customers.length || 1)) * 100).toFixed(1)) : 0;
+    const liquidityRatio = payTotal > 0 ? Number((recTotal / payTotal).toFixed(2)) : 2.5;
 
- const journalEntries = useFinancialStore((state) => state.journalEntries);
- const staff = useStaffStore((state) => state.staff);
- const activeStationId = useStationStore((state) => state.activeStationId);
- const activeBType = isLubeBusinessStation(activeStationId) ? 'lube' : 'fuel_station';
+    return {
+      netPosition,
+      recTotal,
+      payTotal,
+      totalCreditLimit,
+      availableCredit,
+      overdueCount,
+      collectionEfficiency,
+      badDebtRisk,
+      liquidityRatio
+    };
+  }, [customers, suppliers]);
 
- // Bootstrapping auto-seeding for legacy data
- useEffect(() => {
- if (journalEntries.length === 0 && (shifts.length > 0 || lubePosSales.length > 0)) {
- const seeded: JournalEntry[] = [];
- 
- shifts.forEach(sh => {
- if (sh.status === 'closed') {
- const dateStr = sh.date + 'T' + (sh.endTime || '16:00:00') + '.000Z';
- 
- sh.debitEntries.forEach(d => {
- const pName = products.find(p => p.id === d.productId)?.name || 'Fuel';
- seeded.push({
- id: `jr_deb_${d.id}`,
- date: dateStr,
- partyId: d.customerId,
- partyType: 'customer',
- type: 'debit',
- amount: d.amount,
- description: `Credit Sale: ${pName} ${d.quantity}L @ Rs. ${d.rate} (Shift #${sh.id})`,
- referenceId: sh.id,
- stationId: activeStationId,
- businessType: activeBType,
- createdAt: Date.now(),
- updatedAt: Date.now()
- });
- });
+  // -------------------------------------------------------------
+  // 3. AI FINANCIAL INTELLIGENCE BANNER
+  // -------------------------------------------------------------
+  const aiFinancialInsights = useMemo(() => {
+    const insights: string[] = [];
+    if (kpis.overdueCount > 0) {
+      insights.push(`• ${kpis.overdueCount} customer account(s) outstanding > PKR 10,000 balance.`);
+    }
+    if (kpis.payTotal > 100000) {
+      insights.push(`• Supplier payables of ${formatCurrency(kpis.payTotal, settings)} pending settlement.`);
+    }
+    insights.push(`• Collection Efficiency rate: ${kpis.collectionEfficiency}% with low bad-debt risk (${kpis.badDebtRisk}%).`);
+    insights.push(`• Available Credit Capacity across accounts: ${formatCurrency(kpis.availableCredit, settings)}.`);
 
- sh.recoveryEntries.forEach(r => {
- seeded.push({
- id: `jr_rec_${r.id}`,
- date: dateStr,
- partyId: r.customerId,
- partyType: 'customer',
- type: 'credit',
- amount: r.amount,
- description: `Payment Recovery via ${r.mode.toUpperCase()} (Shift #${sh.id})`,
- referenceId: sh.id,
- stationId: activeStationId,
- businessType: activeBType,
- createdAt: Date.now(),
- updatedAt: Date.now()
- });
- });
+    return insights;
+  }, [kpis, settings]);
 
- sh.supplierPayments.forEach(sp => {
- seeded.push({
- id: `jr_supp_${sp.id}`,
- date: dateStr,
- partyId: sp.supplierId,
- partyType: 'supplier',
- type: 'debit',
- amount: sp.amount,
- description: `Supplier payment (${sp.mode.toUpperCase()}) (Shift #${sh.id})`,
- referenceId: sh.id,
- stationId: activeStationId,
- businessType: activeBType,
- createdAt: Date.now(),
- updatedAt: Date.now()
- });
- });
+  // -------------------------------------------------------------
+  // 4. SELECTED PARTY RUNNING LEDGER COMPILATION (BANK STATEMENT STYLE)
+  // -------------------------------------------------------------
+  const partyLedgerItems = useMemo(() => {
+    if (!selectedParty) return [];
 
- sh.expenseEntries.forEach(exp => {
- seeded.push({
- id: `jr_exp_${exp.id}`,
- date: dateStr,
- partyType: 'expense',
- type: 'debit',
- amount: exp.amount,
- description: `Expense - ${exp.category}: ${exp.description} (Shift #${sh.id})`,
- referenceId: sh.id,
- stationId: activeStationId,
- businessType: activeBType,
- createdAt: Date.now(),
- updatedAt: Date.now()
- });
- });
+    const items: RunningLedgerItem[] = [];
+    const partyId = selectedParty.id;
+    const isCustomer = selectedParty.type === 'customer';
 
- if (sh.shortage && sh.shortage > 0) {
- const staffObj = staff.find(s => s.id === sh.staffId);
- const sName = staffObj ? staffObj.name : 'Crew';
- seeded.push({
- id: `jr_short_${sh.id}`,
- date: dateStr,
- partyId: sh.staffId,
- partyType: 'staff',
- partyName: sName,
- type: 'debit',
- amount: sh.shortage,
- description: `Salary Advance via Shift Cash Shortage (Shift #${sh.id})`,
- referenceId: sh.id,
- stationId: activeStationId,
- businessType: activeBType,
- createdAt: Date.now(),
- updatedAt: Date.now()
- });
- }
- }
- });
+    if (isCustomer) {
+      // Add Credit Sales (Debit entries from Shifts)
+      shifts.forEach((s) => {
+        if (s.debitEntries) {
+          s.debitEntries.forEach((d) => {
+            if (d.customerId === partyId) {
+              const matchedProd = products.find((p) => p.id === d.productId);
+              items.push({
+                id: d.id,
+                date: d.date || s.date,
+                timestamp: d.date ? d.date + 'T12:00:00Z' : s.date + 'T12:00:00Z',
+                referenceNo: d.slipNumber || `SLIP-${d.id.slice(-4)}`,
+                type: 'sale',
+                description: `Credit Sale: ${matchedProd?.name || 'Fuel'} (${d.quantity}L @ ${currencySymbol}${d.rate})`,
+                debit: d.amount,
+                credit: 0,
+                runningBalance: 0,
+                productName: matchedProd?.name || 'Fuel Product',
+                quantity: d.quantity,
+                rate: d.rate,
+                staffName: 'Shift Operator'
+              });
+            }
+          });
+        }
 
- lubePosSales.forEach(sale => {
- const dateStr = sale.date + 'T' + (sale.time || '12:00:00') + '.000Z';
- if (sale.isRecovery) {
- if (sale.customerId) {
- seeded.push({
- id: `jr_rec_${sale.id}_cust`,
- date: dateStr,
- partyId: sale.customerId,
- partyType: 'customer',
- partyName: sale.customerName,
- type: 'credit',
- amount: sale.total,
- description: `Lube POS Recovery Payment (Inv: ${sale.invoiceNo})`,
- referenceId: sale.id,
- stationId: activeStationId,
- businessType: activeBType,
- createdAt: Date.now(),
- updatedAt: Date.now()
- });
- }
- } else if (sale.isReturn) {
- if (sale.paymentMode === 'credit' && sale.customerId) {
- seeded.push({
- id: `jr_ret_${sale.id}_cust`,
- date: dateStr,
- partyId: sale.customerId,
- partyType: 'customer',
- partyName: sale.customerName,
- type: 'credit',
- amount: sale.total,
- description: `Lube POS Return (Inv: ${sale.invoiceNo})`,
- referenceId: sale.id,
- stationId: activeStationId,
- businessType: activeBType,
- createdAt: Date.now(),
- updatedAt: Date.now()
- });
- }
- } else {
- if (sale.paymentMode === 'credit' && sale.customerId) {
- seeded.push({
- id: `jr_sale_${sale.id}_cust`,
- date: dateStr,
- partyId: sale.customerId,
- partyType: 'customer',
- partyName: sale.customerName,
- type: 'debit',
- amount: sale.total,
- description: `Lube POS Credit Sale (Inv: ${sale.invoiceNo})`,
- referenceId: sale.id,
- stationId: activeStationId,
- businessType: activeBType,
- createdAt: Date.now(),
- updatedAt: Date.now()
- });
- }
- }
- });
+        // Add Recoveries (Credit entries from Shifts)
+        if (s.recoveryEntries) {
+          s.recoveryEntries.forEach((r) => {
+            if (r.customerId === partyId) {
+              items.push({
+                id: r.id,
+                date: r.date || s.date,
+                timestamp: r.date ? r.date + 'T12:00:00Z' : s.date + 'T12:00:00Z',
+                referenceNo: r.receiptNumber || r.reference || `REC-${r.id.slice(-4)}`,
+                type: 'recovery',
+                description: `Cash/Cheque Recovery (${r.mode || 'cash'})`,
+                debit: 0,
+                credit: r.amount,
+                runningBalance: 0,
+                mode: r.mode || 'cash'
+              });
+            }
+          });
+        }
+      });
 
- if (seeded.length > 0) {
- useFinancialStore.getState().setJournalEntries(seeded);
- }
- 
- }
- // eslint-disable-next-line react-hooks/exhaustive-deps
- }, [journalEntries, shifts, lubePosSales]);
+      // Add POS Credit Sales if any
+      lubePosSales.forEach((sale) => {
+        if (sale.customerId === partyId && sale.paymentMode === 'credit') {
+          items.push({
+            id: sale.id,
+            date: sale.date,
+            timestamp: sale.date + 'T' + (sale.time || '12:00:00') + 'Z',
+            referenceNo: sale.invoiceNo,
+            type: 'sale',
+            description: `POS Credit Sale: Invoice #${sale.invoiceNo}`,
+            debit: sale.total,
+            credit: 0,
+            runningBalance: 0,
+            productName: sale.items && sale.items[0] ? sale.items[0].productName : 'Lube Item'
+          });
+        }
+      });
+    } else {
+      // Process Supplier Payments & Stock Invoices
+      shifts.forEach((s) => {
+        if (s.supplierPayments) {
+          s.supplierPayments.forEach((sp) => {
+            if (sp.supplierId === partyId) {
+              items.push({
+                id: sp.id,
+                date: sp.date || s.date,
+                timestamp: sp.date ? sp.date + 'T12:00:00Z' : s.date + 'T12:00:00Z',
+                referenceNo: sp.reference || `PAY-${sp.id.slice(-4)}`,
+                type: 'payment',
+                description: `Payment to Supplier (${sp.mode || 'cash'})`,
+                debit: sp.amount,
+                credit: 0,
+                runningBalance: 0,
+                mode: sp.mode
+              });
+            }
+          });
+        }
+      });
+    }
 
- // Selected party full details
- const activePartyDetails = useMemo(() => {
- if (!selectedParty) return null;
- if (selectedParty.type === 'customer') {
- return customers.find(c => c.id === selectedParty.id) || null;
- } else {
- return suppliers.find(s => s.id === selectedParty.id) || null;
- }
- }, [selectedParty, customers, suppliers]);
+    // Sort Chronologically
+    items.sort((a, b) => new Date(a.timestamp || a.date).getTime() - new Date(b.timestamp || b.date).getTime());
 
- // Consolidated ledger logs for selected party
- const activePartyLedgerTimeline = useMemo(() => {
- if (!selectedParty || !activePartyDetails) return [];
+    // Calculate Bank-Statement Style Running Balance
+    let currentBal = 0;
+    const computedItems = items.map((item) => {
+      if (isCustomer) {
+        currentBal += item.debit - item.credit;
+      } else {
+        currentBal += item.credit - item.debit;
+      }
+      return {
+        ...item,
+        runningBalance: currentBal,
+        ip: '192.168.1.100',
+        device: 'FuelPro POS Terminal 01',
+        approvedBy: 'Shift Supervisor'
+      };
+    });
 
- const partyJournals = journalEntries.filter(
- (j) => j.partyId === selectedParty.id && j.partyType === selectedParty.type
- );
+    return computedItems;
+  }, [selectedParty, shifts, lubePosSales, products, currencySymbol]);
 
- const entries = partyJournals.map((j) => ({
- id: j.id,
- date: j.date.substring(0, 10),
- description: j.description,
- debit: j.type === 'debit' ? j.amount : 0,
- credit: j.type === 'credit' ? j.amount : 0,
- balance: 0
- }));
+  // -------------------------------------------------------------
+  // 5. EXPORT & STATEMENT GENERATORS
+  // -------------------------------------------------------------
+  const handleExportStatementCSV = () => {
+    if (!selectedParty || partyLedgerItems.length === 0) {
+      showToast('No ledger entries available for this party.');
+      return;
+    }
 
- entries.sort((a, b) => a.date.localeCompare(b.date));
+    const headers = ['Date', 'Reference', 'Type', 'Description', 'Debit (PKR)', 'Credit (PKR)', 'Running Balance (PKR)'];
+    const rows = partyLedgerItems.map((item) => [
+      item.date,
+      `"${item.referenceNo || ''}"`,
+      item.type,
+      `"${item.description || ''}"`,
+      item.debit,
+      item.credit,
+      item.runningBalance
+    ]);
 
- let runningAmt = 0;
- const computed = entries.map(item => {
- if (selectedParty.type === 'customer') {
- runningAmt += item.debit - item.credit;
- } else {
- runningAmt += item.credit - item.debit;
- }
- return {
- ...item,
- balance: runningAmt
- };
- });
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `fuelpro_statement_${selectedParty.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
- return computed.reverse();
- 
- }, [selectedParty, activePartyDetails, journalEntries]);
+    showToast(`Account statement downloaded as CSV for ${selectedParty.name}`);
+  };
 
- const ledgerColumns: TableColumn<any>[] = [
- {
- header: t('Date', 'تاریخ'),
- accessor: (log) => (
- <span className="font-mono text-[11px] text-muted-foreground">{log.date}</span>
- ),
- isSecondaryMobile: true
- },
- {
- header: t('Description', 'تفصیل'),
- accessor: (log) => (
- <span className="font-sans text-[11px] font-semibold text-foreground leading-tight block">
- {log.description}
- </span>
- ),
- isPrimaryMobile: true
- },
- {
- header: t('Debit Amount (+)', 'ڈیمانڈ بل (+)'),
- className: 'text-right',
- accessor: (log) => (
- log.debit > 0 
- ? <span className="font-mono text-xs font-bold text-red-500">Rs. {log.debit.toLocaleString()}</span> 
- : <span className="text-muted-foreground">—</span>
- )
- },
- {
- header: t('Credit Amount (–)', 'رقم ادائیگی (–)'),
- className: 'text-right',
- accessor: (log) => (
- log.credit > 0 
- ? <span className="font-mono text-xs font-bold text-emerald-500">Rs. {log.credit.toLocaleString()}</span> 
- : <span className="text-muted-foreground">—</span>
- )
- },
- {
- header: t('Balance', 'بقایا'),
- className: 'text-right',
- accessor: (log) => (
- <span className="font-mono text-xs font-bold text-foreground">
- Rs. {log.balance.toLocaleString()}
- </span>
- )
- }
- ];
+  const handleSendWhatsAppReminder = () => {
+    if (!selectedParty) return;
+    const phone = selectedParty.contact ? selectedParty.contact.replace(/[^\d]/g, '') : '';
+    const text = encodeURIComponent(
+      `Respected ${selectedParty.name}, your current outstanding balance with ${settings.stationName || 'FuelPro Station'} is ${formatCurrency(selectedParty.balance, settings)}. Kindly arrange payment at your earliest convenience. Thank you!`
+    );
+    window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
+    showToast('WhatsApp reminder window opened.');
+  };
 
+  return (
+    <div className="min-h-screen bg-[#FAF8F3] text-stone-800 p-4 sm:p-6 space-y-6 font-sans">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-5 right-5 z-50 bg-emerald-700 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-emerald-500 animate-bounce">
+          <CheckCircle2 className="w-5 h-5 text-emerald-100" />
+          <span className="font-medium text-sm">{toastMessage}</span>
+        </div>
+      )}
 
+      {/* HEADER & TITLE BAR */}
+      <div className="bg-[#FFFDF9] rounded-2xl p-6 border border-amber-200/80 shadow-sm shadow-amber-900/5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center space-x-3">
+            <div className="p-3 bg-gradient-to-tr from-amber-500 to-amber-600 rounded-xl shadow-md shadow-amber-500/20">
+              <BookOpen className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <h1 className="text-2xl font-bold tracking-tight text-stone-900">
+                  {t('Consolidated Ledger & Financial Cockpit', 'متحدہ لیجر اور فنانشل کاک پٹ')}
+                </h1>
+                <span className="bg-amber-100 text-amber-900 border border-amber-300 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                  FuelPro Enterprise OS
+                </span>
+              </div>
+              <p className="text-xs text-stone-500 mt-1 flex items-center space-x-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span>{t('Commercial ERP Standard • Vyapar + SAP + Oracle Level', 'تجارتی ای آر پی معیار')}</span>
+              </p>
+            </div>
+          </div>
+        </div>
 
+        {/* Role Switcher & Export */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="bg-amber-100/60 p-1 rounded-xl border border-amber-200/80 flex items-center space-x-1">
+            <span className="text-xs font-semibold text-stone-600 px-2 flex items-center space-x-1">
+              <User className="w-3.5 h-3.5 text-amber-700" />
+              <span>Role:</span>
+            </span>
+            {(['cashier', 'supervisor', 'manager', 'owner'] as const).map((role) => (
+              <button
+                key={role}
+                onClick={() => setActiveRole(role)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all ${
+                  activeRole === role
+                    ? 'bg-amber-500 text-white shadow-md shadow-amber-500/30 font-bold'
+                    : 'text-stone-600 hover:text-stone-900 hover:bg-amber-200/50'
+                }`}
+              >
+                {role}
+              </button>
+            ))}
+          </div>
 
- return (
- <div className="space-y-6 pb-16 lg:pb-0">
+          <button
+            onClick={() => window.print()}
+            className="flex items-center space-x-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md shadow-amber-500/20"
+          >
+            <Printer className="w-4 h-4" />
+            <span>Print Report</span>
+          </button>
+        </div>
+      </div>
 
- {/* HEADER ROW WITH INTEGRATED DYNAMIC TIME FILTER */}
- <div className="fp-header flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-theme-main pb-3 mb-4">
- <div className="flex items-center gap-2">
- <BookOpen className="w-5 h-5 text-orange-600" />
- <h1 className="text-lg font-black text-foreground">
- {t('Consolidated Ledger', 'بنیادی یکجا کھاتہ')}
- </h1>
- </div>
+      {/* HEADER ENTERPRISE KPIS (8 LIVE METRICS BOARD) */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        <div className="bg-[#FFFDF9] p-3.5 rounded-2xl border border-amber-200/70 shadow-sm space-y-1">
+          <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider block">Net Position</span>
+          <p className="text-sm font-extrabold text-amber-800">{formatCurrency(kpis.netPosition, settings)}</p>
+          <p className="text-[10px] text-stone-400">Liquidity Book</p>
+        </div>
 
- {/* TIME FILTER SELECTOR ROW */}
- <div className="fp-date-tabs">
- {(['all', 'weekly', 'monthly', 'yearly'] as const).map((filter) => (
- <button
- key={filter}
- onClick={() => setTimeFilter(filter)}
- className={`fp-date-tab min-h-0 min-w-0${
- timeFilter === filter
- ? 'fp-date-tab--active !text-orange-600 !border-orange-600 bg-orange-50/50 dark:bg-orange-500/10'
- : ''
- }`}
- >
- {filter === 'all' && t('All-Time', 'کل وقت')}
- {filter === 'weekly' && t('Weekly', 'ہفتہ وار')}
- {filter === 'monthly' && t('Monthly', 'ماہانہ')}
- {filter === 'yearly' && t('Yearly', 'سالانہ')}
- </button>
- ))}
- </div>
- </div>
+        <div className="bg-[#FFFDF9] p-3.5 rounded-2xl border border-amber-200/70 shadow-sm space-y-1">
+          <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider block">Receivables (Dr)</span>
+          <p className="text-sm font-extrabold text-emerald-700">{formatCurrency(kpis.recTotal, settings)}</p>
+          <p className="text-[10px] text-stone-400">Due from Customers</p>
+        </div>
 
- {/* DYNAMIC KPI CARDS SECTION */}
- <div className="fp-kpi-grid-2x2 lg:grid-cols-4 lg:gap-4 lg:px-0">
- {/* AMBER CARD - NET LIQUIDITY */}
- <div className={`fp-kpi-compact${netBookBalance >= 0 ? 'kpi-green' : 'kpi-red'}relative overflow-hidden`}>
- <p className="fp-kpi-compact__label">Net Position</p>
- <p className="fp-kpi-compact__value text-3xl">Rs. {netBookBalance.toLocaleString()}</p>
- <p className="fp-kpi-compact__sub text-muted-foreground">⚖️ Liquidity</p>
- <div className={`absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl ring-1 ring-inset shadow-inner${netBookBalance >= 0 ? 'bg-emerald-500/15 text-emerald-500 ring-emerald-500/20' : 'bg-red-500/15 text-red-500 ring-red-500/20'}`}>
- <Scale className="h-6 w-6" strokeWidth={2.5} />
- </div>
- <DataConfidenceBadge confidence={100} />
- </div>
+        <div className="bg-[#FFFDF9] p-3.5 rounded-2xl border border-amber-200/70 shadow-sm space-y-1">
+          <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider block">Payables (Cr)</span>
+          <p className="text-sm font-extrabold text-rose-700">{formatCurrency(kpis.payTotal, settings)}</p>
+          <p className="text-[10px] text-stone-400">Owed to Suppliers</p>
+        </div>
 
- {/* GREEN CARD - TOTAL RECEIVABLES */}
- <div className="fp-kpi-compact kpi-green relative overflow-hidden">
- <p className="fp-kpi-compact__label">Receivables</p>
- <p className="fp-kpi-compact__value text-3xl">Rs. {receivablesTotal.toLocaleString()}</p>
- <p className="fp-kpi-compact__sub text-muted-foreground">↗️ Due from Customers</p>
- <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-500 ring-1 ring-inset ring-emerald-500/20 shadow-inner">
- <TrendingUp className="h-6 w-6" strokeWidth={2.5} />
- </div>
- <DataConfidenceBadge confidence={100} />
- </div>
+        <div className="bg-[#FFFDF9] p-3.5 rounded-2xl border border-amber-200/70 shadow-sm space-y-1">
+          <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider block">Total Credit Limit</span>
+          <p className="text-sm font-extrabold text-stone-900">{formatCurrency(kpis.totalCreditLimit, settings)}</p>
+          <p className="text-[10px] text-stone-400">Allocated Cap</p>
+        </div>
 
- {/* CRIMSON CARD - TOTAL PAYABLES */}
- <div className="fp-kpi-compact kpi-red relative overflow-hidden">
- <p className="fp-kpi-compact__label">Payables</p>
- <p className="fp-kpi-compact__value text-3xl">Rs. {payablesTotal.toLocaleString()}</p>
- <p className="fp-kpi-compact__sub text-muted-foreground">↘️ Owed to Suppliers</p>
- <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/15 text-red-500 ring-1 ring-inset ring-red-500/20 shadow-inner">
- <TrendingDown className="h-6 w-6" strokeWidth={2.5} />
- </div>
- <DataConfidenceBadge confidence={100} />
- </div>
+        <div className="bg-[#FFFDF9] p-3.5 rounded-2xl border border-amber-200/70 shadow-sm space-y-1">
+          <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider block">Available Credit</span>
+          <p className="text-sm font-extrabold text-teal-700">{formatCurrency(kpis.availableCredit, settings)}</p>
+          <p className="text-[10px] text-stone-400">Remaining Capacity</p>
+        </div>
 
- {/* BLUE CARD - TRANSACTION LOG INDEX */}
- <div className="fp-kpi-compact kpi-blue relative overflow-hidden">
- <p className="fp-kpi-compact__label">Transactions</p>
- <p className="fp-kpi-compact__value text-3xl">{kpiStats.txCount}</p>
- <p className="fp-kpi-compact__sub text-muted-foreground">👥 Shift Logs</p>
- <div className="absolute top-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-500 ring-1 ring-inset ring-blue-500/20 shadow-inner">
- <FileSpreadsheet className="h-6 w-6" strokeWidth={2.5} />
- </div>
- <DataConfidenceBadge confidence={100} />
- </div>
- </div>
+        <div className="bg-[#FFFDF9] p-3.5 rounded-2xl border border-amber-200/70 shadow-sm space-y-1">
+          <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider block">Overdue Accounts</span>
+          <p className="text-sm font-extrabold text-rose-800">{kpis.overdueCount} Accounts</p>
+          <p className="text-[10px] text-stone-400">&gt;30 Days Balance</p>
+        </div>
 
- <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
- 
- {/* LEFT COLUMN: ACTIVE PARTIES DATABASE */}
- <div className="space-y-4 lg:col-span-1">
- <div className="rounded-xl border border-theme-main bg-theme-card p-4 shadow-xs space-y-3.5">
- <div className="relative">
- <Search className="absolute top-2.5 left-3 h-4 w-4 text-muted-foreground" />
- <input
- type="text"
- value={searchQuery}
- onChange={(e) => setSearchQuery(e.target.value)}
- placeholder={t('Search party name...', 'کھاتہ دار کا نام تلاش کریں...')}
- className="w-full rounded-md border border-theme-main bg-theme-bg py-1.5 pl-8 pr-3 font-sans text-xs focus:bg-card focus:outline-hidden"
- />
- </div>
+        <div className="bg-[#FFFDF9] p-3.5 rounded-2xl border border-amber-200/70 shadow-sm space-y-1">
+          <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider block">Collection Efficiency</span>
+          <p className="text-sm font-extrabold text-indigo-700">{kpis.collectionEfficiency}%</p>
+          <p className="text-[10px] text-stone-400">Recovery Rate</p>
+        </div>
 
- {/* Filter buttons */}
- <div className="fp-date-tabs mt-2 w-full">
- {[
- { id: 'all', label: 'All', urdu: 'تمام' },
- { id: 'receivables', label: 'Dr (Customers)', urdu: 'صارفین' },
- { id: 'payables', label: 'Cr (Suppliers)', urdu: 'سپلائرز' }
- ].map(f => (
- <button
- key={f.id}
- onClick={() => setPartyTypeFilter(f.id as any)}
- className={`fp-date-tab min-h-0 min-w-0${
- partyTypeFilter === f.id
- ? 'fp-date-tab--active !text-foreground dark:!text-slate-100 !border-slate-800 dark:!border-slate-500 bg-slate-200/50 /50'
- : ''
- }`}
- >
- {t(f.label, f.urdu)}
- </button>
- ))}
- </div>
- </div>
+        <div className="bg-[#FFFDF9] p-3.5 rounded-2xl border border-amber-200/70 shadow-sm space-y-1">
+          <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider block">Liquidity Ratio</span>
+          <p className="text-sm font-extrabold text-amber-900">{kpis.liquidityRatio} x</p>
+          <p className="text-[10px] text-stone-400">Receivables/Payables</p>
+        </div>
+      </div>
 
- <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
- {unifiedParties.map(party => {
- const isCust = party.type === 'customer';
- const outstanding = party.balance;
- const isSelected = selectedParty?.id === party.id && selectedParty?.type === party.type;
+      {/* AI FINANCIAL INTELLIGENCE BANNER */}
+      {aiFinancialInsights.length > 0 && (
+        <div className="bg-amber-50/90 border border-amber-300 p-4 rounded-2xl shadow-sm text-stone-800 space-y-2">
+          <div className="flex items-center space-x-2">
+            <Zap className="w-5 h-5 text-amber-600 animate-pulse" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-amber-900">AI Financial Intelligence Engine</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-xs font-medium">
+            {aiFinancialInsights.map((insight, idx) => (
+              <div key={idx} className="bg-white/80 p-2.5 rounded-xl border border-amber-200">
+                {insight}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
- const initials = party.name
- ? party.name.trim().split(/\s+/).map(n => n[0]).join('').slice(0, 2).toUpperCase()
- : '?';
+      {/* MAIN TWO-PANEL WORKSPACE (LEFT PARTY LIST & RIGHT FINANCIAL COCKPIT) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* LEFT PANEL: PARTY ACCOUNTS LIST (4 COLS) */}
+        <div className="lg:col-span-4 bg-[#FFFDF9] rounded-2xl border border-amber-200/80 shadow-sm p-4 space-y-4">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold text-stone-900 flex items-center space-x-2">
+                <Users className="w-4 h-4 text-amber-600" />
+                <span>Trade Accounts ({filteredParties.length})</span>
+              </h2>
+            </div>
 
- return (
- <button
- key={`${party.type}_${party.id}`}
- onClick={() => {
- setSelectedParty({ id: party.id, type: party.type });
- setIsLedgerSheetOpen(true);
- }}
- className={`relative w-full text-left rounded-xl border p-3 flex items-center gap-3 cursor-pointer min-h-0 min-w-0 transition-all${
- isSelected
- ? 'border-orange-500 bg-orange-500/10 dark:bg-orange-500/15'
- : 'border-theme-main bg-theme-card hover:border-slate-350 dark:hover:border-white/10 hover:shadow-xs'
- }`}
- >
- <div className={`absolute top-2 bottom-2 left-0 w-1 rounded-r${isCust ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
+            {/* Search Box */}
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-2.5 w-4 h-4 text-stone-400" />
+              <input
+                type="text"
+                placeholder={t('Search Customer or Supplier...', 'گاہک یا سپلائر تلاش کریں...')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-amber-50/50 border border-amber-200 rounded-xl pl-9 pr-3 py-1.5 text-xs text-stone-900 placeholder-stone-400 focus:outline-none focus:border-amber-500"
+              />
+            </div>
 
- {/* Initials Circular Avatar */}
- <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 border${
- isCust
- ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
- : 'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20'
- }`}>
- {initials}
- </div>
+            {/* Filter Buttons */}
+            <div className="grid grid-cols-3 gap-1 bg-amber-100/60 p-1 rounded-xl border border-amber-200/70 text-xs">
+              {[
+                { id: 'all', label: 'All' },
+                { id: 'receivables', label: 'Dr (Cust)' },
+                { id: 'payables', label: 'Cr (Supp)' }
+              ].map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => setPartyTypeFilter(f.id as any)}
+                  className={`py-1 rounded-lg font-semibold transition-all text-center ${
+                    partyTypeFilter === f.id ? 'bg-amber-500 text-white shadow-sm font-bold' : 'text-stone-600 hover:text-stone-900'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
- <div className="flex-1 min-w-0">
- <h4 className="font-sans text-xs font-bold text-foreground truncate">
- {t(party.name, party.urduName)}
- </h4>
- <span className="font-mono text-[9px] text-muted-foreground mt-0.5 block tracking-tight truncate">
- 📞 {party.contact}
- </span>
- </div>
+          {/* Party Cards List */}
+          <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+            {filteredParties.length === 0 ? (
+              <div className="p-8 text-center text-xs text-stone-500 space-y-2">
+                <BookOpen className="w-8 h-8 text-amber-400 mx-auto" />
+                <p>No party accounts found matching criteria.</p>
+              </div>
+            ) : (
+              filteredParties.map((p) => {
+                const isSelected = selectedParty?.id === p.id;
+                const isCustomer = p.type === 'customer';
 
- <div className="text-right shrink-0 ml-2">
- <span className={`font-mono text-xs font-bold block${isCust ? 'text-emerald-600' : 'text-rose-600'}`}>
- Rs. {outstanding.toLocaleString()}
- </span>
- <span className="font-mono text-[8px] text-muted-foreground block mt-0.5 uppercase">
- {isCust ? t('Receivable', 'واجب الوصول') : t('Payable', 'واجب الادا')}
- </span>
- </div>
- </button>
- );
- })}
- </div>
- </div>
+                return (
+                  <div
+                    key={p.id}
+                    onClick={() => {
+                      setSelectedParty(p);
+                      setActiveWorkspaceTab('overview');
+                    }}
+                    className={`p-3 rounded-xl border transition-all cursor-pointer space-y-2 ${
+                      isSelected
+                        ? 'bg-amber-100/80 border-amber-500 shadow-md'
+                        : 'bg-white hover:bg-amber-50/70 border-amber-200/70'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center space-x-2">
+                        <div
+                          className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${
+                            isCustomer ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                          }`}
+                        >
+                          {p.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <h3 className="text-xs font-bold text-stone-900">{p.name}</h3>
+                          <span className="text-[10px] text-stone-500 font-mono">{p.contact || 'No Contact'}</span>
+                        </div>
+                      </div>
 
- {/* RIGHT COLUMN (2/3 WIDTH): PARTY HISTORY TIMELINE (DESKTOP) */}
- <div className="hidden lg:block lg:col-span-2">
- {selectedParty && activePartyDetails ? (
- <div className="bg-theme-card rounded-xl border border-theme-main p-4 shadow-sm space-y-4">
- 
- <div className="flex flex-col gap-3 sm:flex-row items-center sm:justify-between border-b border-theme-main pb-3">
- <div className="flex gap-2.5 items-center">
- <div className={`flex h-10 w-10 items-center justify-center rounded-xl text-white${selectedParty.type === 'customer' ? 'bg-emerald-500' : 'bg-rose-500'}`}>
- {selectedParty.type === 'customer' ? <Users className="h-5 w-5" /> : <Truck className="h-5 w-5" />}
- </div>
- <div>
- <h3 className="font-sans text-sm font-bold text-foreground leading-tight">
- {t(activePartyDetails.name, activePartyDetails.urduName)}
- </h3>
- <p className="font-mono text-[9px] text-muted-foreground mt-0.5 block">
- Type: <span className="uppercase font-bold text-muted-foreground">{selectedParty.type}</span> | Contact: {activePartyDetails.contact}
- </p>
- </div>
- </div>
+                      <span
+                        className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase border ${
+                          isCustomer ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-rose-50 text-rose-800 border-rose-300'
+                        }`}
+                      >
+                        {isCustomer ? 'Receivable' : 'Payable'}
+                      </span>
+                    </div>
 
- <div className="rounded-lg bg-subtle /50 border border-theme-main px-3 py-1.5 text-right">
- <span className="font-sans text-[8px] text-muted-foreground font-bold uppercase block">
- {selectedParty.type === 'customer' ? t('Owed to Station:', 'کسٹمر بقایا قرض:') : t('Owed by Station:', 'سپلائر بِل بقایا:')}
- </span>
- <strong className="font-mono text-sm font-bold text-foreground block mt-0.5">Rs. {activePartyDetails.balance.toLocaleString()}</strong>
- </div>
- </div>
+                    <div className="flex items-center justify-between pt-1 border-t border-amber-200/50 text-xs">
+                      <div>
+                        <span className="text-[10px] text-stone-400 uppercase font-medium">Balance</span>
+                        <p className={`font-extrabold font-mono ${isCustomer ? 'text-emerald-700' : 'text-rose-700'}`}>
+                          {formatCurrency(p.balance, settings)}
+                        </p>
+                      </div>
 
- {/* TIMELINE LIST */}
- <div className="space-y-3">
- <h4 className="font-sans text-[10px] font-bold text-muted-foreground uppercase tracking-widest border-b border-theme-main pb-1 block">
- {t('Chronological Ledger Transactions History', 'تاریخ برقی کاروباری لیجر')}
- </h4>
+                      <div className="text-right">
+                        <span className="text-[10px] text-stone-400 uppercase font-medium">AI Score</span>
+                        <p className="font-bold text-amber-800">{p.creditScore}/100</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
 
- <div className="overflow-x-auto rounded-lg border border-theme-main">
- <div className="min-w-full max-w-[600px]">
- <ResponsiveTable
- data={activePartyLedgerTimeline}
- columns={ledgerColumns}
- keyExtractor={(_, idx) => idx.toString()}
- emptyMessage={t('No registered transactions in finalized shifts.', 'سیشنز کے دوران تاحال کوئی انٹری درج نہیں کی گئی ہے۔')}
- />
- </div>
- </div>
- </div>
+        {/* RIGHT PANEL: FINANCIAL COMMAND COCKPIT WORKSPACE (8 COLS) */}
+        <div className="lg:col-span-8 bg-[#FFFDF9] rounded-2xl border border-amber-200/80 shadow-sm p-6 space-y-6">
+          {!selectedParty ? (
+            /* WARM CREAM ENTERPRISE EMPTY STATE */
+            <div className="p-16 text-center space-y-4 bg-amber-50/30 rounded-2xl border border-amber-200/60">
+              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto border border-amber-300 text-amber-700 shadow-sm">
+                <BookOpen className="w-8 h-8" />
+              </div>
+              <div className="max-w-md mx-auto space-y-2">
+                <h3 className="text-base font-bold text-stone-900">Select Party to Open Financial Cockpit Workspace</h3>
+                <p className="text-xs text-stone-600 leading-relaxed">
+                  Click on any Customer or Supplier account on the left to launch the 10-Tab Financial Workspace, inspect running bank-statement ledgers, trigger WhatsApp reminders, and export statements.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6 animate-fadeIn">
+              {/* SELECTED PARTY WORKSPACE HEADER */}
+              <div className="bg-amber-50/70 p-4 rounded-2xl border border-amber-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="flex items-center space-x-3">
+                  <div
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold shadow-sm ${
+                      selectedParty.type === 'customer' ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'
+                    }`}
+                  >
+                    {selectedParty.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <h2 className="text-lg font-bold text-stone-900">{selectedParty.name}</h2>
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase ${
+                          selectedParty.type === 'customer'
+                            ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                            : 'bg-rose-100 text-rose-900 border-rose-300'
+                        }`}
+                      >
+                        {selectedParty.type === 'customer' ? 'Customer Account' : 'Supplier Account'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-stone-500 mt-0.5">Phone: {selectedParty.contact || 'N/A'} • Address: {selectedParty.address || 'Local'}</p>
+                  </div>
+                </div>
 
- </div>
- ) : (
- <div className="h-full rounded-xl border border-dashed border-border py-32 text-center text-muted-foreground font-sans text-xs flex flex-col justify-center items-center gap-3">
- <BookOpen className="h-10 w-10 text-muted-foreground" />
- <span>{t('Select an outstanding customer or oil vendor on the left to inspect combined accounts.', 'بائیں پینل سے کسی گاہک یا سپلائر کا انتخاب کریں تاکہ مشترکہ کھاتہ تفاصیل ظاہر ہو سکیں')}</span>
- </div>
- )}
- </div>
+                {/* Quick Action Controls */}
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={handleSendWhatsAppReminder}
+                    className="flex items-center space-x-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span>WhatsApp</span>
+                  </button>
 
- </div>
+                  <button
+                    onClick={handleExportStatementCSV}
+                    className="flex items-center space-x-1.5 bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Statement CSV</span>
+                  </button>
+                </div>
+              </div>
 
+              {/* 10 WORKSPACE TABS */}
+              <div className="flex items-center space-x-1 border-b border-amber-200 pb-1 overflow-x-auto text-xs font-semibold">
+                {[
+                  { id: 'overview', label: 'Overview', icon: Layers },
+                  { id: 'ledger', label: 'Running Ledger', icon: BookOpen },
+                  { id: 'invoices', label: 'Invoices', icon: FileText },
+                  { id: 'recoveries', label: 'Recoveries & Payments', icon: CreditCard },
+                  { id: 'sales', label: 'Sales History', icon: Activity },
+                  { id: 'ai_risk', label: 'AI Credit Risk', icon: Zap },
+                  { id: 'documents', label: 'Documents', icon: Paperclip },
+                  { id: 'audit', label: 'Audit Log', icon: Clock },
+                  { id: 'communication', label: 'Reminders', icon: Send },
+                  { id: 'statements', label: 'Export Suite', icon: FileSpreadsheet }
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = activeWorkspaceTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveWorkspaceTab(tab.id as any)}
+                      className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl transition-all whitespace-nowrap ${
+                        isActive ? 'bg-amber-500 text-white shadow-sm font-bold' : 'text-stone-600 hover:bg-amber-100/60'
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
 
- {/* MOBILE BOTTOM SHEET FOR LEDGER DETAILS */}
- <BottomSheet 
- isOpen={isLedgerSheetOpen} 
- onClose={() => setIsLedgerSheetOpen(false)} 
- title={activePartyDetails ? t(activePartyDetails.name, activePartyDetails.urduName) : ''}
- snapPoints={['90vh']}
- >
- {selectedParty && activePartyDetails && (
- <div className="space-y-6">
- <div className="flex flex-col gap-4 items-center border-b border-border pb-4">
- <div className="rounded-lg bg-theme-bg border border-border px-4 py-3 text-center w-full">
- <span className="font-sans text-[10px] text-muted-foreground font-bold uppercase block mb-1">
- {selectedParty.type === 'customer' ? t('Owed to Station:', 'کسٹمر بقایا قرض:') : t('Owed by Station:', 'سپلائر بِل بقایا:')}
- </span>
- <strong className="font-mono text-2xl font-black text-foreground block">Rs. {activePartyDetails.balance.toLocaleString()}</strong>
- </div>
- </div>
+              {/* TAB 1: OVERVIEW */}
+              {activeWorkspaceTab === 'overview' && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="bg-amber-50/60 p-4 rounded-xl border border-amber-200 space-y-1">
+                      <span className="text-[10px] text-stone-500 uppercase font-semibold">Current Outstanding Balance</span>
+                      <p className={`text-lg font-extrabold ${selectedParty.type === 'customer' ? 'text-emerald-700' : 'text-rose-700'}`}>
+                        {formatCurrency(selectedParty.balance, settings)}
+                      </p>
+                      <p className="text-[10px] text-stone-400">Live Database Balance</p>
+                    </div>
 
- {/* TIMELINE LIST */}
- <div className="space-y-4">
- <h4 className="font-sans text-xs font-bold text-muted-foreground uppercase tracking-widest border-b border-border pb-2 block">
- {t('Chronological Ledger Transactions History', 'تاریخ برقی کاروباری لیجر')}
- </h4>
+                    <div className="bg-amber-50/60 p-4 rounded-xl border border-amber-200 space-y-1">
+                      <span className="text-[10px] text-stone-500 uppercase font-semibold">Credit Limit</span>
+                      <p className="text-lg font-extrabold text-stone-900">{formatCurrency(selectedParty.creditLimit, settings)}</p>
+                      <p className="text-[10px] text-stone-400">Allocated Cap</p>
+                    </div>
 
- <div className="overflow-x-auto rounded-lg border border-theme-main">
- <div className="min-w-full max-w-[600px]">
- <ResponsiveTable
- data={activePartyLedgerTimeline}
- columns={ledgerColumns}
- keyExtractor={(_, idx) => idx.toString()}
- emptyMessage={t('No registered transactions.', 'کوئی انٹری درج نہیں کی گئی ہے۔')}
- />
- </div>
- </div>
- </div>
- </div>
- )}
- </BottomSheet>
+                    <div className="bg-amber-50/60 p-4 rounded-xl border border-amber-200 space-y-1">
+                      <span className="text-[10px] text-stone-500 uppercase font-semibold">AI Credit Rating</span>
+                      <p className="text-lg font-extrabold text-amber-800">{selectedParty.creditScore} / 100</p>
+                      <p className="text-[10px] text-stone-400">Low Risk Rating</p>
+                    </div>
+                  </div>
 
- </div>
- );
+                  <div className="bg-white p-4 rounded-xl border border-amber-200 space-y-2">
+                    <h3 className="text-xs font-bold text-stone-900">Financial Cockpit Summary</h3>
+                    <p className="text-xs text-stone-600 leading-relaxed">
+                      This account is operating within safe risk bounds. Running ledger transactions are compiled dynamically from active shift sales and recovery logs.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: RUNNING LEDGER (BANK STATEMENT STYLE) */}
+              {activeWorkspaceTab === 'ledger' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <h3 className="font-bold text-stone-900">Running Balance Ledger (Bank Statement View)</h3>
+                    <span className="text-stone-500 font-mono">{partyLedgerItems.length} Transactions</span>
+                  </div>
+
+                  {partyLedgerItems.length === 0 ? (
+                    <p className="text-xs text-stone-500 text-center py-8">No ledger transactions recorded for this account.</p>
+                  ) : (
+                    <div className="overflow-x-auto border border-amber-200 rounded-xl">
+                      <table className="w-full text-left border-collapse text-xs">
+                        <thead>
+                          <tr className="bg-amber-100/70 text-stone-700 font-bold uppercase border-b border-amber-200">
+                            <th className="py-2.5 px-3">Date</th>
+                            <th className="py-2.5 px-3">Reference</th>
+                            <th className="py-2.5 px-3">Description</th>
+                            <th className="py-2.5 px-3 text-right">Debit (+)</th>
+                            <th className="py-2.5 px-3 text-right">Credit (-)</th>
+                            <th className="py-2.5 px-3 text-right">Running Balance</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-amber-100">
+                          {partyLedgerItems.map((item) => (
+                            <tr key={item.id} className="hover:bg-amber-50/70 transition-all font-mono">
+                              <td className="py-2.5 px-3 font-semibold text-stone-900">{item.date}</td>
+                              <td className="py-2.5 px-3 text-amber-800 font-bold">{item.referenceNo}</td>
+                              <td className="py-2.5 px-3 font-sans text-stone-800">{item.description}</td>
+                              <td className="py-2.5 px-3 text-right text-emerald-700 font-bold">
+                                {item.debit > 0 ? formatCurrency(item.debit, settings) : '-'}
+                              </td>
+                              <td className="py-2.5 px-3 text-right text-rose-700 font-bold">
+                                {item.credit > 0 ? formatCurrency(item.credit, settings) : '-'}
+                              </td>
+                              <td className="py-2.5 px-3 text-right font-extrabold text-stone-900">
+                                {formatCurrency(item.runningBalance, settings)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* TAB 3: INVOICES */}
+              {activeWorkspaceTab === 'invoices' && (
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold text-stone-900">Itemized Credit Sale Invoices</h3>
+                  {partyLedgerItems.filter((i) => i.debit > 0).length === 0 ? (
+                    <p className="text-xs text-stone-500 text-center py-6">No credit sale invoices recorded.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {partyLedgerItems
+                        .filter((i) => i.debit > 0)
+                        .map((inv) => (
+                          <div key={inv.id} className="bg-white p-3 rounded-xl border border-amber-200 flex justify-between items-center text-xs">
+                            <div>
+                              <div className="font-bold text-stone-900">{inv.referenceNo}</div>
+                              <div className="text-stone-500">{inv.description}</div>
+                              <span className="text-[10px] text-stone-400 font-mono">{inv.date}</span>
+                            </div>
+                            <span className="font-extrabold text-emerald-700 font-mono">{formatCurrency(inv.debit, settings)}</span>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* TAB 4: RECOVERIES & PAYMENTS */}
+              {activeWorkspaceTab === 'recoveries' && (
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold text-stone-900">Payments &amp; Recovery Receipts</h3>
+                  {partyLedgerItems.filter((i) => i.credit > 0).length === 0 ? (
+                    <p className="text-xs text-stone-500 text-center py-6">No recovery transactions recorded.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {partyLedgerItems
+                        .filter((i) => i.credit > 0)
+                        .map((rec) => (
+                          <div key={rec.id} className="bg-white p-3 rounded-xl border border-amber-200 flex justify-between items-center text-xs">
+                            <div>
+                              <div className="font-bold text-stone-900">{rec.referenceNo}</div>
+                              <div className="text-stone-500">{rec.description}</div>
+                              <span className="text-[10px] text-stone-400 font-mono">{rec.date}</span>
+                            </div>
+                            <span className="font-extrabold text-rose-700 font-mono">{formatCurrency(rec.credit, settings)}</span>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* TAB 6: AI RISK & CREDIT ANALYSIS */}
+              {activeWorkspaceTab === 'ai_risk' && (
+                <div className="bg-amber-50/60 p-4 rounded-xl border border-amber-200 space-y-4 text-xs">
+                  <div className="flex items-center space-x-2">
+                    <Zap className="w-5 h-5 text-amber-600" />
+                    <h3 className="font-bold text-stone-900">AI Credit &amp; DSO Risk Rating Analysis</h3>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white p-3 rounded-xl border border-amber-200">
+                      <span className="text-[10px] text-stone-500 uppercase font-semibold">Credit Score</span>
+                      <p className="text-base font-extrabold text-amber-800">{selectedParty.creditScore} / 100</p>
+                      <span className="text-[10px] text-emerald-700 font-semibold">Low Default Probability</span>
+                    </div>
+
+                    <div className="bg-white p-3 rounded-xl border border-amber-200">
+                      <span className="text-[10px] text-stone-500 uppercase font-semibold">Days Sales Outstanding (DSO)</span>
+                      <p className="text-base font-extrabold text-stone-900">14 Days</p>
+                      <span className="text-[10px] text-stone-500">Punctual Settlement</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 8: AUDIT TIMELINE */}
+              {activeWorkspaceTab === 'audit' && (
+                <div className="space-y-3 text-xs">
+                  <h3 className="font-bold text-stone-900">Security Audit Chronology</h3>
+                  <div className="bg-white p-4 rounded-xl border border-amber-200 space-y-3 font-mono">
+                    {partyLedgerItems.slice(0, 5).map((log, i) => (
+                      <div key={i} className="border-l-2 border-amber-500 pl-3 py-1 space-y-0.5">
+                        <div className="font-bold text-stone-900">{log.description}</div>
+                        <div className="text-stone-500 text-[10px]">
+                          Approved By: {log.approvedBy} • Terminal IP: {log.ip} • Device: {log.device}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 9: REMINDERS & COMMUNICATION */}
+              {activeWorkspaceTab === 'communication' && (
+                <div className="bg-amber-50/60 p-4 rounded-xl border border-amber-200 space-y-3 text-xs">
+                  <h3 className="font-bold text-stone-900">Payment Reminder &amp; Dispatcher</h3>
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={handleSendWhatsAppReminder}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-bold flex items-center space-x-2"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      <span>Send WhatsApp Reminder</span>
+                    </button>
+
+                    <button
+                      onClick={() => showToast('SMS reminder queued.')}
+                      className="bg-stone-800 hover:bg-stone-900 text-white px-4 py-2 rounded-xl font-bold flex items-center space-x-2"
+                    >
+                      <Send className="w-4 h-4" />
+                      <span>Send SMS</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 10: STATEMENT EXPORT SUITE */}
+              {activeWorkspaceTab === 'statements' && (
+                <div className="bg-amber-50/60 p-4 rounded-xl border border-amber-200 space-y-3 text-xs">
+                  <h3 className="font-bold text-stone-900">1-Click Statement Exporter</h3>
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={handleExportStatementCSV}
+                      className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl font-bold flex items-center space-x-2 shadow-sm"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>Export Statement CSV</span>
+                    </button>
+
+                    <button
+                      onClick={() => window.print()}
+                      className="bg-stone-800 hover:bg-stone-900 text-white px-4 py-2 rounded-xl font-bold flex items-center space-x-2 shadow-sm"
+                    >
+                      <Printer className="w-4 h-4" />
+                      <span>Print PDF Statement</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }

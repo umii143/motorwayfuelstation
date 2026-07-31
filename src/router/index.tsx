@@ -100,12 +100,40 @@ const SuppliersRoute = () => {
 
 const LedgerRoute = () => {
  const props = useProps();
- return <Ledger settings={props.settings} customers={props.customers} suppliers={props.suppliers} shifts={props.shifts} products={props.products} lubePosSales={props.lubePosSales} />;
+ return (
+   <Ledger
+     settings={props.settings}
+     customers={props.customers}
+     suppliers={props.suppliers}
+     shifts={props.shifts}
+     products={props.products}
+     lubePosSales={props.lubePosSales}
+     activeStationId={props.activeStationId}
+     staff={props.staff}
+     banks={props.banks}
+     digitalAccounts={props.digitalAccounts}
+     onUpdateCustomer={props.handleUpdateCustomer}
+     onUpdateSupplier={props.handleUpdateSupplier}
+     onUpdateShift={props.handleUpdateShift}
+   />
+ );
 };
 
 const BankCashRoute = () => {
  const props = useProps();
- return <BankCashPanel settings={props.settings} banks={props.banks} onAddBank={props.handleAddBank} onUpdateBanks={props.handleUpdateBanks} shifts={props.shifts} lubePosSales={props.lubePosSales} />;
+ return (
+   <BankCashPanel
+     settings={props.settings}
+     banks={props.banks}
+     onAddBank={props.handleAddBank}
+     onUpdateBanks={props.handleUpdateBanks}
+     shifts={props.shifts}
+     lubePosSales={props.lubePosSales}
+     activeStationId={props.activeStationId}
+     staff={props.staff}
+     onUpdateShift={props.handleUpdateShift}
+   />
+ );
 };
 
 const DigitalCashRoute = () => {
@@ -120,7 +148,22 @@ const InventoryRoute = () => {
 
 const ExpensesRoute = () => {
  const props = useProps();
- return <Expenses settings={props.settings} activeStationId={props.activeStationId} shifts={props.shifts} standaloneExpenses={props.standaloneExpenses} onAddStandaloneExpense={props.handleAddStandaloneExpense} />;
+ return (
+   <Expenses
+     settings={props.settings}
+     activeStationId={props.activeStationId}
+     shifts={props.shifts}
+     standaloneExpenses={props.standaloneExpenses}
+     onAddStandaloneExpense={props.handleAddStandaloneExpense}
+     staff={props.staff}
+     banks={props.banks}
+     digitalAccounts={props.digitalAccounts}
+     suppliers={props.suppliers}
+     products={props.products}
+     pumps={props.pumps}
+     onUpdateShift={props.handleUpdateShift}
+   />
+ );
 };
 
 const ReportsRoute = () => {
@@ -134,7 +177,20 @@ const ReportsRoute = () => {
 
 const DiscountsRoute = () => {
  const props = useProps();
- return <DiscountsHub settings={props.settings} shifts={props.shifts} products={props.products} />;
+ return (
+   <DiscountsHub
+     settings={props.settings}
+     activeStationId={props.activeStationId}
+     shifts={props.shifts}
+     products={props.products}
+     customers={props.customers}
+     staff={props.staff}
+     pumps={props.pumps}
+     nozzles={props.nozzles}
+     lubePosSales={props.lubePosSales}
+     onUpdateShift={props.handleUpdateShift}
+   />
+ );
 };
 
 const StaffRoute = () => {

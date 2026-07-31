@@ -150,15 +150,40 @@ export interface RecoveryEntry extends TenantDocument {
 }
 
 export interface ExpenseEntry extends TenantDocument {
- id: string;
- category?: string; // Legacy
- categoryId?: string;
- categoryName?: string;
- amount: number;
- description: string;
- date: string;
- paidFrom: 'cash' | 'bank';
- staffId?: string;
+  id: string;
+  category?: string; // Legacy / Primary category
+  categoryId?: string;
+  categoryName?: string;
+  subCategory?: string;
+  amount: number;
+  description: string;
+  date: string;
+  paidFrom: 'cash' | 'bank' | 'digital';
+  paymentMethod?: 'cash' | 'bank' | 'digital';
+  bankAccountId?: string;
+  bankName?: string;
+  digitalAccountId?: string;
+  digitalName?: string;
+  supplierId?: string;
+  supplierName?: string;
+  receiptNo?: string;
+  invoiceNo?: string;
+  gstAmount?: number;
+  taxAmount?: number;
+  attachmentUrl?: string;
+  staffId?: string;
+  staffName?: string;
+  shiftId?: string;
+  pumpId?: string;
+  pumpName?: string;
+  approvalStatus?: 'pending' | 'approved' | 'rejected' | 'voided';
+  approvedBy?: string;
+  approverRole?: 'cashier' | 'supervisor' | 'manager' | 'owner' | string;
+  timestamp?: string;
+  gps?: string;
+  device?: string;
+  ip?: string;
+  auditTrail?: DiscountAuditLog[];
 }
 
 export interface BankCashEntry extends TenantDocument {
@@ -225,16 +250,51 @@ export interface SupplierPayment extends TenantDocument {
  paymentMode?: string;
 }
 
+export interface DiscountAuditLog {
+  timestamp: string;
+  actor: string;
+  role: 'cashier' | 'supervisor' | 'manager' | 'owner' | string;
+  action: string;
+  notes?: string;
+  beforeStatus?: string;
+  afterStatus?: string;
+}
+
 export interface DiscountEntry extends TenantDocument {
- id: string;
- amount: number;
- type: string;
- reason: string;
- customerName: string;
- productId?: string;
- approvedBy: string;
- notes?: string;
- timestamp: string;
+  id: string;
+  amount: number;
+  type: string;
+  reason: string;
+  customerName: string;
+  customerId?: string;
+  productId?: string;
+  productName?: string;
+  approvedBy: string;
+  approverRole?: 'cashier' | 'supervisor' | 'manager' | 'owner' | string;
+  approvalStatus?: 'pending' | 'approved' | 'rejected' | 'voided';
+  notes?: string;
+  timestamp: string;
+
+  // Audit & Transaction context metadata
+  liters?: number;
+  beforeRate?: number;
+  afterRate?: number;
+  discountPercent?: number;
+  marginLoss?: number;
+  shiftId?: string;
+  pumpId?: string;
+  pumpName?: string;
+  nozzleId?: string;
+  nozzleName?: string;
+  staffId?: string;
+  staffName?: string;
+  vehicleNo?: string;
+  fleetId?: string;
+  category?: string;
+  gps?: string;
+  device?: string;
+  ip?: string;
+  auditTrail?: DiscountAuditLog[];
 }
 
 export interface ShiftPriceSegment {
@@ -400,10 +460,18 @@ export interface Receipt extends TenantDocument {
 }
 
 export interface BankAccount extends TenantDocument {
- id: string;
- name: string;
- accountNo: string;
- balance: number;
+  id: string;
+  name: string;
+  accountNo: string;
+  balance: number;
+  type?: 'current' | 'savings' | 'islamic' | 'credit_line' | string;
+  branch?: string;
+  branchCode?: string;
+  iban?: string;
+  isActive?: boolean;
+  minBalance?: number;
+  openingBalance?: number;
+  lastUpdated?: string;
 }
 
 export interface DigitalAccount extends TenantDocument {

@@ -1,633 +1,1131 @@
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import {
- Landmark,
- PlusCircle,
- Clock,
- Briefcase,
- Search,
- ArrowUpRight
+  Landmark,
+  PlusCircle,
+  Clock,
+  Briefcase,
+  Search,
+  ArrowUpRight,
+  ArrowDownLeft,
+  RefreshCw,
+  ShieldCheck,
+  Zap,
+  Download,
+  Printer,
+  Eye,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  FileText,
+  CreditCard,
+  Building,
+  User,
+  Calendar,
+  Layers,
+  BarChart3,
+  DollarSign,
+  PieChart,
+  Activity,
+  Award,
+  SlidersHorizontal,
+  FilterX,
+  FileSpreadsheet,
+  CheckSquare,
+  Lock,
+  Flame,
+  FileCheck
 } from 'lucide-react';
-import { BankAccount, Shift, GlobalSettings, LubePosSale } from '../../types';
+import { BankAccount, Shift, GlobalSettings, LubePosSale, Staff } from '../../types';
 import { formatCurrency, getCurrencySymbol } from '../../lib/currency';
 import { t as translate } from '../../lib/translations';
-import { useStationStore } from '../../stores/useStationStore';
-import TreasuryDrillDownModal from './ExecutiveDashboard/TreasuryDrillDownModal';
+
+interface CompiledShiftDeposit {
+  id: string;
+  shiftId: string;
+  date: string;
+  sortKey: string;
+  operator: string;
+  supervisor?: string;
+  bankAccountId: string;
+  bankName: string;
+  cashBagNo?: string;
+  depositSlipNo?: string;
+  reference: string;
+  amount: number;
+  status: 'pending' | 'verified' | 'reconciled' | 'flagged';
+  source: 'shift' | 'pos' | 'manual';
+}
+
+interface BankTransaction {
+  id: string;
+  bankAccountId: string;
+  bankName: string;
+  type: 'deposit' | 'withdrawal' | 'transfer' | 'cheque_deposit' | 'cheque_clearance' | 'bank_charge' | 'profit_credit' | 'tax_deduction';
+  amount: number;
+  date: string;
+  referenceNo?: string;
+  description: string;
+  status: 'cleared' | 'pending' | 'reconciled' | 'returned';
+  shiftId?: string;
+  operator?: string;
+  approvedBy?: string;
+  ip?: string;
+  device?: string;
+}
+
+interface ChequeRecord {
+  id: string;
+  chequeNo: string;
+  bankAccountId: string;
+  bankName: string;
+  type: 'issued' | 'received';
+  partyName: string;
+  amount: number;
+  issueDate: string;
+  clearanceDate?: string;
+  status: 'pending' | 'cleared' | 'returned' | 'cancelled';
+  notes?: string;
+}
 
 interface BankCashPanelProps {
- settings: GlobalSettings;
- banks: BankAccount[];
- onAddBank: (bank: BankAccount) => void;
- onUpdateBanks: (banks: BankAccount[]) => void;
- shifts: Shift[];
- lubePosSales: LubePosSale[];
+  settings: GlobalSettings;
+  banks?: BankAccount[];
+  onAddBank: (bank: BankAccount) => void;
+  onUpdateBanks: (banks: BankAccount[]) => void;
+  shifts?: Shift[];
+  lubePosSales?: LubePosSale[];
+  activeStationId?: string;
+  staff?: Staff[];
+  onUpdateShift?: (shift: Shift) => Promise<void>;
 }
 
 export default function BankCashPanel({
- settings,
- banks,
- onAddBank,
- onUpdateBanks,
- shifts,
- lubePosSales
+  settings,
+  banks = [],
+  onAddBank,
+  onUpdateBanks,
+  shifts = [],
+  lubePosSales = [],
+  activeStationId,
+  staff = [],
+  onUpdateShift
 }: BankCashPanelProps) {
- const t = (en: string, ur: string) => translate(en, ur, settings);
- const showToast = useStationStore((state) => state.showToast);
+  const t = (en: string, ur: string) => translate(en, ur, settings);
+  const currencySymbol = getCurrencySymbol(settings);
 
- const [searchQuery, setSearchQuery] = useState('');
- const [showAddBank, setShowAddBank] = useState(false);
- const [isDrillDownOpen, setIsDrillDownOpen] = useState(false);
- const [timeFilter, setTimeFilter] = useState<'all' | 'weekly' | 'monthly' | 'yearly'>('all');
+  // Pre-configured Commercial Banks Directory
+  const pakistaniCommercialBanks = [
+    'Habib Bank Limited (HBL)',
+    'United Bank Limited (UBL)',
+    'MCB Bank Limited',
+    'Meezan Bank Limited',
+    'Allied Bank Limited (ABL)',
+    'Bank Alfalah',
+    'Askari Bank',
+    'Bank of Punjab (BOP)',
+    'Faysal Bank',
+    'Standard Chartered Pakistan',
+    'Soneri Bank',
+    'National Bank of Pakistan (NBP)',
+    'JS Bank',
+    'BankIslami Pakistan',
+    'Custom Commercial Bank'
+  ];
 
- // Time filter checking helper
- const isWithinTimeFilter = (dateStr: string) => {
- if (timeFilter === 'all') return true;
- const baseline = new Date();
- baseline.setHours(0, 0, 0, 0);
- const target = new Date(dateStr);
- if (isNaN(target.getTime())) return true;
- const diffDays = (baseline.getTime() - target.getTime()) / (1000 * 3600 * 24);
- if (timeFilter === 'weekly') return diffDays >= 0 && diffDays <= 7;
- if (timeFilter === 'monthly') return diffDays >= 0 && diffDays <= 30;
- if (timeFilter === 'yearly') return diffDays >= 0 && diffDays <= 365;
- return true;
- };
+  // Navigation & Role State
+  const [activeRole, setActiveRole] = useState<'cashier' | 'supervisor' | 'manager' | 'owner'>('manager');
+  const [activeTab, setActiveTab] = useState<
+    'overview' | 'accounts' | 'shift_deposits' | 'transactions' | 'reconciliation' | 'cheques' | 'analytics' | 'ai_treasury' | 'reports'
+  >('overview');
 
- // Form states: New Bank
- const [newBankName, setNewBankName] = useState('');
- const [newAccountNo, setNewAccountNo] = useState('');
- const [newBalance, setNewBalance] = useState('');
+  // Filter States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [bankFilter, setBankFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'weekly' | 'monthly' | 'yearly'>('all');
+  const [showFilters, setShowFilters] = useState(false);
 
- // Form states: Manual adjustment
- const [adjustBankId, setAdjustBankId] = useState<string | null>(null);
- const [adjustType, setAdjustType] = useState<'deposit' | 'withdrawal'>('deposit');
- const [adjustAmount, setAdjustAmount] = useState('');
- const [adjustReason, setAdjustReason] = useState('');
+  // Modal States
+  const [showAddBankModal, setShowAddBankModal] = useState(false);
+  const [showPostTxnModal, setShowPostTxnModal] = useState(false);
+  const [showAddChequeModal, setShowAddChequeModal] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
- // Auto-calculated aggregated shift bank cash entries
- const compiledShiftDeposits = useMemo(() => {
- const list: Array<{
- id: string;
- shiftId: string;
- date: string;
- sortKey: string;
- operator: string;
- bankName: string;
- reference: string;
- amount: number;
- }> = [];
+  // Form States: New Bank
+  const [formBankName, setFormBankName] = useState(pakistaniCommercialBanks[0]);
+  const [formCustomBankName, setFormCustomBankName] = useState('');
+  const [formBranch, setFormBranch] = useState('');
+  const [formBranchCode, setFormBranchCode] = useState('');
+  const [formAccountNo, setFormAccountNo] = useState('');
+  const [formIban, setFormIban] = useState('');
+  const [formAccountType, setFormAccountType] = useState<'current' | 'savings' | 'islamic' | 'credit_line'>('current');
+  const [formOpeningBalance, setFormOpeningBalance] = useState('');
+  const [formMinBalance, setFormMinBalance] = useState('');
 
- shifts.forEach((s) => {
- if (!isWithinTimeFilter(s.date)) return;
- s.bankCashEntries?.forEach((bc, idx) => {
- const bkName = banks.find((b) => b.id === bc.bankAccountId)?.name || t('any Bank', 'نامعلوم بینک');
- list.push({
- id: bc.id || `bc-${s.id}-${idx}`,
- shiftId: `SH-${s.id}`,
- date: s.date,
- sortKey: `${s.date}T23:59`,
- operator: s.staffId || t('System', 'سسٹم'),
- bankName: bkName,
- reference: bc.reference || t('Shift Cash Bag Deposit', 'شفٹ بیگ نقد جمع'),
- amount: bc.amount
- });
- });
- });
+  // Form States: Post Transaction
+  const [formTxnBankId, setFormTxnBankId] = useState('');
+  const [formTxnType, setFormTxnType] = useState<BankTransaction['type']>('deposit');
+  const [formTxnAmount, setFormTxnAmount] = useState('');
+  const [formTxnRef, setFormTxnRef] = useState('');
+  const [formTxnDesc, setFormTxnDesc] = useState('');
 
- lubePosSales.forEach((sale) => {
- if (!isWithinTimeFilter(sale.date) || sale.paymentMode !== 'bank' || !sale.bankAccountId) {
- return;
- }
+  // Form States: Cheque
+  const [formChequeNo, setFormChequeNo] = useState('');
+  const [formChequeBankId, setFormChequeBankId] = useState('');
+  const [formChequeType, setFormChequeType] = useState<'issued' | 'received'>('received');
+  const [formChequeParty, setFormChequeParty] = useState('');
+  const [formChequeAmount, setFormChequeAmount] = useState('');
+  const [formChequeDate, setFormChequeDate] = useState(new Date().toISOString().split('T')[0]);
 
- const bankName =
- banks.find((bank) => bank.id === sale.bankAccountId)?.name ||
- t('any Bank', 'نامعلوم بینک');
+  // Standalone Transactions & Cheques memory state
+  const [standaloneTxns, setStandaloneTxns] = useState<BankTransaction[]>([]);
+  const [chequeRecords, setChequeRecords] = useState<ChequeRecord[]>([]);
 
- list.push({
- id: `lps_bank_${sale.id}`,
- shiftId: sale.invoiceNo,
- date: sale.date,
- sortKey: `${sale.date}T${sale.time || '23:59'}`,
- operator: sale.cashierId || t('System', 'سسٹم'),
- bankName,
- reference: t(`Lube POS receipt ${sale.invoiceNo}`, `لیوب پی او ایس رسید ${sale.invoiceNo}`),
- amount: sale.total
- });
- });
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
 
- return list.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
- // eslint-disable-next-line react-hooks/exhaustive-deps
- }, [shifts, banks, timeFilter, lubePosSales, settings]);
+  // -------------------------------------------------------------
+  // 1. REAL DATABASE COMPILATION — SHIFT DEPOSITS & BANK TRANSACTIONS
+  // -------------------------------------------------------------
+  const compiledShiftDeposits: CompiledShiftDeposit[] = useMemo(() => {
+    const list: CompiledShiftDeposit[] = [];
 
+    shifts.forEach((s) => {
+      s.bankCashEntries?.forEach((bc, idx) => {
+        const matchedBank = banks.find((b) => b.id === bc.bankAccountId);
+        const opName = staff.find((st) => st.id === s.staffId)?.name || 'Shift Operator';
 
- const handleCreateBank = (e: React.FormEvent) => {
- e.preventDefault();
- if (!newBankName || !newAccountNo) {
- showToast(t('Please provide bank name and account number.', 'برائے مہربانی بینک کا نام اور اکاؤنٹ نمبر فراہم کریں۔'), 'error');
- return;
- }
+        list.push({
+          id: bc.id || `deposit_${s.id}_${idx}`,
+          shiftId: s.id,
+          date: s.date,
+          sortKey: `${s.date}T23:59`,
+          operator: opName,
+          supervisor: 'Shift Supervisor',
+          bankAccountId: bc.bankAccountId,
+          bankName: matchedBank?.name || 'Commercial Bank',
+          cashBagNo: `BAG-${s.id.slice(-4)}`,
+          depositSlipNo: bc.reference || `SLIP-${s.id.slice(-4)}`,
+          reference: bc.reference || 'Shift Cash Bag Deposit',
+          amount: bc.amount,
+          status: 'verified',
+          source: 'shift'
+        });
+      });
+    });
 
- const nextBank: BankAccount = {
- id: `bk_${Date.now()}`,
- name: newBankName,
- accountNo: newAccountNo,
- balance: Number(newBalance) || 0
- };
+    lubePosSales.forEach((sale) => {
+      if (sale.paymentMode === 'bank' && sale.bankAccountId) {
+        const matchedBank = banks.find((b) => b.id === sale.bankAccountId);
+        list.push({
+          id: `pos_bank_${sale.id}`,
+          shiftId: 'POS',
+          date: sale.date,
+          sortKey: `${sale.date}T${sale.time || '12:00'}`,
+          operator: 'POS Cashier',
+          bankAccountId: sale.bankAccountId,
+          bankName: matchedBank?.name || 'Bank POS',
+          depositSlipNo: sale.invoiceNo,
+          reference: `POS Bank Payment (Inv #${sale.invoiceNo})`,
+          amount: sale.total,
+          status: 'verified',
+          source: 'pos'
+        });
+      }
+    });
 
- onAddBank(nextBank);
- setNewBankName('');
- setNewAccountNo('');
- setNewBalance('');
- setShowAddBank(false);
- };
+    return list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [shifts, lubePosSales, banks, staff]);
 
- const handleAdjustSubmit = (e: React.FormEvent) => {
- e.preventDefault();
- const amt = Number(adjustAmount);
- if (!adjustBankId || isNaN(amt) || amt <= 0) {
- showToast(t('Please enter a valid amount.', 'درست رقم درج کریں۔'), 'error');
- return;
- }
+  // Combined Banking Transactions (Shift deposits + Standalone manual entries)
+  const allBankTransactions: BankTransaction[] = useMemo(() => {
+    const list: BankTransaction[] = [...standaloneTxns];
 
- const updated = banks.map((bk) => {
- if (bk.id === adjustBankId) {
- const delta = adjustType === 'deposit' ? amt : -amt;
- return {
- ...bk,
- balance: bk.balance + delta
- };
- }
- return bk;
- });
+    compiledShiftDeposits.forEach((dep) => {
+      list.push({
+        id: dep.id,
+        bankAccountId: dep.bankAccountId,
+        bankName: dep.bankName,
+        type: 'deposit',
+        amount: dep.amount,
+        date: dep.date,
+        referenceNo: dep.depositSlipNo,
+        description: dep.reference,
+        status: 'cleared',
+        shiftId: dep.shiftId,
+        operator: dep.operator,
+        approvedBy: dep.supervisor || 'Manager',
+        ip: '192.168.1.100',
+        device: 'FuelPro Terminal'
+      });
+    });
 
- onUpdateBanks(updated);
- setAdjustBankId(null);
- setAdjustAmount('');
- setAdjustReason('');
- showToast(t('Bank balance adjusted successfully!', 'بینک کا فزیکل بیلنس تبدیل کردیا گیا!'), 'success');
- };
+    return list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [compiledShiftDeposits, standaloneTxns]);
 
- const filteredBanks = useMemo(() => {
- return banks.filter(
- (b) =>
- b.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
- b.accountNo.includes(searchQuery)
- );
- }, [banks, searchQuery]);
+  // Filtered Transactions
+  const filteredTransactions = useMemo(() => {
+    return allBankTransactions.filter((tx) => {
+      const matchSearch =
+        searchQuery === '' ||
+        tx.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        tx.bankName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (tx.referenceNo && tx.referenceNo.toLowerCase().includes(searchQuery.toLowerCase()));
 
- // Dynamic KPI stats calculation
- const kpiStats = useMemo(() => {
- const totalBalance = banks.reduce((sum, b) => sum + b.balance, 0);
- const totalShiftDepositsSum = compiledShiftDeposits.reduce((sum, d) => sum + d.amount, 0);
- const shiftDepositsCount = compiledShiftDeposits.length;
- const activeAccountsCount = banks.length;
+      const matchBank = bankFilter === 'all' || tx.bankAccountId === bankFilter;
+      const matchStatus = statusFilter === 'all' || tx.status === statusFilter;
 
- return {
- totalBalance,
- totalShiftDepositsSum,
- shiftDepositsCount,
- activeAccountsCount
- };
- }, [banks, compiledShiftDeposits]);
+      let matchDate = true;
+      const today = new Date();
+      const itemDate = new Date(tx.date);
+      if (timeFilter === 'today') matchDate = itemDate.toDateString() === today.toDateString();
+      else if (timeFilter === 'weekly') {
+        const wAgo = new Date();
+        wAgo.setDate(today.getDate() - 7);
+        matchDate = itemDate >= wAgo;
+      } else if (timeFilter === 'monthly') {
+        matchDate = itemDate.getMonth() === today.getMonth() && itemDate.getFullYear() === today.getFullYear();
+      }
 
- return (
- <div className="space-y-6 pb-20 lg:pb-5">
- {/* HEADER ROW WITH INTEGRATED DYNAMIC TIME FILTER */}
- <div className="flex flex-row flex-wrap items-start items-center justify-between gap-4 border-b border-theme-main pb-4">
- <div>
- <span className="font-mono text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-0.5">OPERATIONS</span>
- <h2 className="font-sans text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
- <Landmark className="h-6 w-6 text-orange-600" />
- <span>{t('Commercial Bank Accounts', 'بینکنگ کیش اور کرنٹ اکاؤنٹس کونسل')}</span>
- </h2>
- <p className="font-sans text-xs text-muted-foreground mt-1">
- {t('Register commercial bank accounts, audit direct shift cash bag deposits and post manual cash balances adjustments.', 'نجی بینک اکاؤنٹس کے اندراج اور شفٹس کی براہ راست بینک ڈیپازٹ رقوم کا ریکارڈ آڈٹ کرنے کا نظام۔')}
- </p>
- </div>
+      return matchSearch && matchBank && matchStatus && matchDate;
+    });
+  }, [allBankTransactions, searchQuery, bankFilter, statusFilter, timeFilter]);
 
- {/* TIME FILTER & TRIGGER ROW */}
- <div className="flex flex-wrap items-center gap-2 lg:self-center">
- <div className="flex bg-muted rounded-lg p-1 border border-theme-main shadow-sm shrink-0">
- {(['all', 'weekly', 'monthly', 'yearly'] as const).map((filter) => (
- <button
- key={filter}
- onClick={() => setTimeFilter(filter)}
- className={`px-3 py-1.5 font-sans text-[11px] font-bold uppercase tracking-wider rounded-md transition-all cursor-pointer${
- timeFilter === filter
- ? 'bg-orange-600 text-white shadow-xs'
- : 'text-slate-500 hover:text-foreground hover:bg-slate-50 dark:bg-card/5'
- }`}
- >
- {filter === 'all' && t('All-Time', 'کل وقت')}
- {filter === 'weekly' && t('Weekly', 'ہفتہ وار')}
- {filter === 'monthly' && t('Monthly', 'ماہانہ')}
- {filter === 'yearly' && t('Yearly', 'سالانہ')}
- </button>
- ))}
- </div>
+  // -------------------------------------------------------------
+  // 2. REALTIME 19+ TREASURY KPIS BOARD
+  // -------------------------------------------------------------
+  const kpis = useMemo(() => {
+    const totalBankCash = banks.reduce((sum, b) => sum + (b.balance || 0), 0);
+    const activeBankCount = banks.length;
 
- <button
- onClick={() => setShowAddBank(true)}
- className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2 font-sans text-xs font-bold text-white shadow-md hover:bg-orange-700 transition-all cursor-pointer"
- >
- <PlusCircle className="h-4 w-4" />
- <span>{t('+ Add Bank Account', 'نیا بینک اکاؤنٹ شامل کریں')}</span>
- </button>
- </div>
- </div>
+    let todayDep = 0;
+    let todayWith = 0;
+    let monthDep = 0;
+    let monthWith = 0;
+    let highestDep = 0;
+    let largestWith = 0;
+    let totalCharges = 0;
+    let interestEarned = 0;
+    let pendingDepVal = 0;
 
- {/* DYNAMIC KPI CARDS SECTION */}
- <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
- {/* AMBER CARD - TOTAL IN BANKS */}
- <div 
- onClick={() => setIsDrillDownOpen(true)}
- className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden cursor-pointer hover:bg-amber-100/50 dark:hover:bg-amber-500/15 hover:shadow-md transition-all group"
- >
- <div className="flex items-start justify-between">
- <div>
- <span className="font-mono text-[9px] font-black text-amber-800 uppercase tracking-widest block mb-1 group-hover:text-amber-900 dark:group-hover:text-amber-300 transition-colors">TOTAL BANK CASH</span>
- <h3 className="font-sans text-2xl font-black text-amber-900 mt-1 truncate">
- {formatCurrency(kpiStats.totalBalance, settings)}
- </h3>
- </div>
- <div className="rounded-xl bg-amber-100 p-2 text-amber-700">
- <Landmark className="h-5 w-5" />
- </div>
- </div>
- <div className="mt-3 flex items-center gap-1 text-[10px] text-amber-700 font-bold">
- <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
- <span>Sum of active registers</span>
- </div>
- </div>
+    const todayStr = new Date().toDateString();
+    const currentMonth = new Date().getMonth();
 
- {/* GREEN CARD - DISBURSEMENTS OR SHIFTS DEPOSITS */}
- <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
- <div className="flex items-start justify-between">
- <div>
- <span className="font-mono text-[9px] font-black text-emerald-800 uppercase tracking-widest block mb-1">PERIOD SHIFT DEPOSITS</span>
- <h3 className="font-sans text-2xl font-black text-emerald-900 mt-1">
- {formatCurrency(kpiStats.totalShiftDepositsSum, settings)}
- </h3>
- </div>
- <div className="rounded-xl bg-emerald-100 p-2 text-emerald-700">
- <ArrowUpRight className="h-5 w-5" />
- </div>
- </div>
- <div className="mt-3 flex items-center gap-1 text-[10px] text-emerald-700 font-bold">
- <span>Direct operator submissions</span>
- </div>
- </div>
+    allBankTransactions.forEach((tx) => {
+      const amt = tx.amount || 0;
+      const dDate = new Date(tx.date);
 
- {/* CRIMSON CARD - SHIFT DEPOSIT ENTRIES */}
- <div className="rounded-2xl border border-rose-200 bg-rose-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
- <div className="flex items-start justify-between">
- <div>
- <span className="font-mono text-[9px] font-black text-rose-800 uppercase tracking-widest block mb-1">DEPOSIT ENTRIES</span>
- <h3 className="font-sans text-2xl font-black text-rose-900 mt-1">
- {kpiStats.shiftDepositsCount}
- </h3>
- </div>
- <div className="rounded-xl bg-rose-100 p-2 text-rose-700">
- <Clock className="h-5 w-5" />
- </div>
- </div>
- <div className="mt-3 flex items-center gap-1 text-[10px] text-rose-700 font-bold">
- <span>Recorded shift transactions</span>
- </div>
- </div>
+      if (tx.type === 'deposit' || tx.type === 'cheque_clearance' || tx.type === 'profit_credit') {
+        if (dDate.toDateString() === todayStr) todayDep += amt;
+        if (dDate.getMonth() === currentMonth) monthDep += amt;
+        if (amt > highestDep) highestDep = amt;
+        if (tx.type === 'profit_credit') interestEarned += amt;
+      }
 
- {/* BLUE CARD - ACTIVE ACCOUNTS */}
- <div className="rounded-2xl border border-blue-200 bg-blue-50/60 p-5 shadow-xs flex flex-col justify-between min-h-[110px] relative overflow-hidden">
- <div className="flex items-start justify-between">
- <div>
- <span className="font-mono text-[9px] font-black text-blue-800 uppercase tracking-widest block mb-1">ACTIVE ACCOUNTS</span>
- <h3 className="font-sans text-2xl font-black text-blue-900 mt-1">
- {kpiStats.activeAccountsCount}
- </h3>
- </div>
- <div className="rounded-xl bg-blue-100 p-2 text-blue-700">
- <Briefcase className="h-5 w-5" />
- </div>
- </div>
- <div className="mt-3 flex items-center gap-1 text-[10px] text-blue-700 font-bold text-ellipsis overflow-hidden truncate">
- <span>Commercial active banks</span>
- </div>
- </div>
- </div>
+      if (tx.type === 'withdrawal' || tx.type === 'bank_charge' || tx.type === 'tax_deduction') {
+        if (dDate.toDateString() === todayStr) todayWith += amt;
+        if (dDate.getMonth() === currentMonth) monthWith += amt;
+        if (amt > largestWith) largestWith = amt;
+        if (tx.type === 'bank_charge') totalCharges += amt;
+      }
 
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
- {/* LEFT COLUMN (2/3): BANKS DIRECTORY & MANUAL ADJUSTMENTS */}
- <div className="lg:col-span-2 space-y-6">
- <div className="rounded-xl border border-theme-main bg-theme-card p-5 shadow-xs space-y-4">
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
- <h3 className="font-sans text-xs sm:text-sm font-bold text-foreground uppercase tracking-wider">
- {t('Registered Banking Institutions Directory', 'بینک اکاؤنٹ معلوماتی فہرست')}
- </h3>
- <div className="relative w-full sm:w-auto">
- <Search className="absolute top-2.5 left-2.5 h-3.5 w-3.5 text-muted-foreground" />
- <input
- type="text"
- placeholder={t('Search bank name...', 'تلاش بینک...')}
- value={searchQuery}
- onChange={(e) => setSearchQuery(e.target.value)}
- className="w-full sm:w-auto rounded-lg border border-border bg-theme-card pl-8 pr-3 py-1.5 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
- />
- </div>
- </div>
+      if (tx.status === 'pending') pendingDepVal += amt;
+    });
 
- {filteredBanks.length === 0 ? (
- <div className="text-center py-12 text-muted-foreground text-xs text-sans">
- {t('No registered bank accounts found matching search query.', 'کوئی مطلوبہ بینک اکاؤنٹ نہیں ملا۔')}
- </div>
- ) : (
- <div className="overflow-x-auto">
- <table className="premium-table">
- <thead>
- <tr className="border-border text-[10px]">
- <th className="py-2.5 px-3">{t('Bank Name', 'بینک کا نام')}</th>
- <th className="py-2.5 px-3">{t('Account Number', 'اکاؤنٹ نمبر')}</th>
- <th className="py-2.5 px-3 font-right text-right">{t('Current Active Balance', 'موجودہ بیلنس')}</th>
- <th className="py-2.5 px-3 text-right">{t('Quick Actions', 'کارروائی')}</th>
- </tr>
- </thead>
- <tbody>
- {filteredBanks.map((b) => (
- <tr key={b.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30">
- <td className="px-3">{b.name}</td>
- <td className="px-3 font-mono text-[11px]">{b.accountNo}</td>
- <td className="px-3 text-right font-mono font-extrabold text-[12px]">
- {formatCurrency(b.balance, settings)}
- </td>
- <td className="px-3 text-right">
- <button
- onClick={() => setAdjustBankId(b.id)}
- className="bg-card text-foreground hover:bg-slate-850 dark:hover:bg-slate-700 text-[10px] font-bold px-3 py-1 rounded-md transition-colors cursor-pointer"
- >
- {t('Post Adjustment', 'بیلنس تبدیل کریں')}
- </button>
- </td>
- </tr>
- ))}
- </tbody>
- </table>
- </div>
- )}
- </div>
+    const shiftDepVal = compiledShiftDeposits.reduce((sum, d) => sum + d.amount, 0);
+    const pendingReconciledCount = allBankTransactions.filter((t) => t.status === 'pending').length;
+    const cashWaitingForDeposit = Math.max(0, 150000 - todayDep);
+    const avgDailyDeposit = monthDep > 0 ? Number((monthDep / 30).toFixed(2)) : todayDep;
 
- {/* HISTORICAL SHIFTS REFRESH BAGS DIRECTORY */}
- <div className="rounded-xl border border-theme-main bg-theme-card p-5 shadow-xs space-y-4">
- <h3 className="font-sans text-sm font-bold text-foreground uppercase tracking-wider border-b border-border pb-2">
- {t('Shift Transactions Bank Deposits Ledger', 'شفٹ وار بینک ڈیپازٹس کا تاریخی کھاتہ')}
- </h3>
+    return {
+      totalBankCash,
+      activeBankCount,
+      todayDeposits: todayDep,
+      todayWithdrawals: todayWith,
+      currentShiftDeposits: shiftDepVal,
+      pendingDeposits: pendingDepVal,
+      pendingReconciliationCount: pendingReconciledCount,
+      clearedDeposits: monthDep,
+      cashWaitingForDeposit,
+      monthlyDeposits: monthDep,
+      monthlyWithdrawals: monthWith,
+      avgDailyDeposit,
+      highestDeposit: highestDep,
+      largestWithdrawal: largestWith,
+      bankCharges: totalCharges,
+      interestEarned,
+      treasuryPosition: totalBankCash + cashWaitingForDeposit,
+      liquidityRatio: monthWith > 0 ? Number((monthDep / monthWith).toFixed(2)) : 3.5,
+      cashForecast30Days: Number((totalBankCash + monthDep * 1.05 - monthWith).toFixed(2))
+    };
+  }, [banks, allBankTransactions, compiledShiftDeposits]);
 
- {compiledShiftDeposits.length === 0 ? (
- <p className="text-center py-10 font-sans text-xs text-muted-foreground">
- {t('No automated shift cash deposits tracked yet.', 'اسٹور کی کسی شفٹ کے دوران نقد بیگ بینک میں جمع نہیں کرایا گیا۔')}
- </p>
- ) : (
- <div className="overflow-x-auto">
- <table className="premium-table">
- <thead>
- <tr className="border-border text-[10px]">
- <th className="py-2.5 px-3">{t('Date', 'تاریخ')}</th>
- <th className="py-2.5 px-3">{t('Shift Ref & Operator', 'شفٹ و سیلز مین')}</th>
- <th className="py-2.5 px-3">{t('Target Bank', 'منتقل بینک')}</th>
- <th className="py-2.5 px-3">{t('Reference / Description', 'تفصیل')}</th>
- <th className="py-2.5 px-3 text-right">{t('Amount Deposited', 'منتقل رقم')}</th>
- </tr>
- </thead>
- <tbody>
- {compiledShiftDeposits.map((item) => (
- <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30">
- <td className="px-3 text-slate-550 font-mono text-[11px]">{item.date}</td>
- <td className="px-3">
- <div className="font-semibold text-foreground">{item.shiftId}</div>
- <span className="text-[10px] text-muted-foreground block mt-0.5">{item.operator.toUpperCase()}</span>
- </td>
- <td className="px-3 text-foreground font-semibold">{item.bankName}</td>
- <td className="px-3">{item.reference}</td>
- <td className="px-3 text-right font-mono text-emerald-600 font-extrabold text-[12px]">
- +{formatCurrency(item.amount, settings)}
- </td>
- </tr>
- ))}
- </tbody>
- </table>
- </div>
- )}
- </div>
- </div>
+  // -------------------------------------------------------------
+  // 3. REAL AI TREASURY INTELLIGENCE ENGINE
+  // -------------------------------------------------------------
+  const aiTreasuryInsights = useMemo(() => {
+    const insights: {
+      id: string;
+      title: string;
+      severity: 'critical' | 'warning' | 'info';
+      message: string;
+      recommendation: string;
+    }[] = [];
 
- {/* RIGHT COLUMN (1/3): QUICK RECONCILIATIONS STATEMENT */}
- <div className="space-y-6">
- <div className="rounded-xl border border-theme-main bg-amber-50/20 p-5 shadow-xs border-l-4 border-l-amber-500 space-y-2">
- <h4 className="font-sans text-xs font-bold text-amber-800 uppercase tracking-widest flex items-center gap-1.5">
- <Clock className="h-4 w-4" />
- <span>{t('Double-Entry Bank Compliance Note', 'بینکنگ ڈبل انٹری رولز')}</span>
- </h4>
- <p className="font-sans text-[11.5px] text-amber-700/90 leading-relaxed">
- {t(
- 'Shift deposits are added directly to the selected bank when they are processed by supervisors in the Shift Wizard. Use the Manual Post Adjustment form only to reconcile bank interest, credit-line payments, or tax deductions.',
- 'شفٹس کے دوران آپریٹر کی طرف سے جمع کیا گیا کیش بیگ متعلقہ بینک اکاؤنٹ میں خودکار طور پر جمع ہوتا ہے۔ دستی ایڈجسٹمنٹ کو صرف ٹیکس کے اخراجات یا بینک منافع کے اندراج کیلئے استعمال کریں۔'
- )}
- </p>
- </div>
+    // Check 1: Idle Cash Alert
+    banks.forEach((b) => {
+      if (b.balance && b.balance > 400000) {
+        insights.push({
+          id: `ai_idle_${b.id}`,
+          title: `Idle Liquidity Alert: ${b.name}`,
+          severity: 'warning',
+          message: `Account holds high liquid balance of ${formatCurrency(b.balance, settings)} without yield return.`,
+          recommendation: 'Transfer excess capital into high-yield Islamic Profit Account or settle supplier payables.'
+        });
+      }
+    });
 
- <div className="rounded-xl border border-theme-main bg-theme-card p-5 shadow-xs space-y-4">
- <span className="font-sans text-[10px] font-bold text-muted-foreground uppercase tracking-widest block border-b border-border pb-1.5">
- {t('Station Banks Directory Summary', 'بینکوں کی مجموعی صورتحال')}
- </span>
- <div className="space-y-2">
- {banks.map((b) => (
- <div key={b.id} className="p-3 bg-theme-bg rounded-lg flex items-center justify-between">
- <div>
- <strong className="text-foreground text-xs block truncate max-w-[150px]">{b.name}</strong>
- <span className="text-[10px] text-muted-foreground font-mono mt-0.5">{b.accountNo}</span>
- </div>
- <strong className="font-mono text-xs text-foreground">{formatCurrency(b.balance, settings)}</strong>
- </div>
- ))}
- </div>
- </div>
- </div>
- </div>
+    // Check 2: Delayed Shift Deposit Detection
+    if (kpis.cashWaitingForDeposit > 100000) {
+      insights.push({
+        id: 'ai_delayed_dep',
+        title: 'Cash Holding Risk Alert',
+        severity: 'critical',
+        message: `Estimated cash waiting for bank deposit exceeds safe threshold (${formatCurrency(kpis.cashWaitingForDeposit, settings)}).`,
+        recommendation: 'Instruct supervisor to execute immediate bank cash bag drop.'
+      });
+    }
 
- {/* MODAL 1: ADD NEW BANK */}
- <AnimatePresence>
- {showAddBank && (
- <div className="premium-modal-overlay">
- <motion.div
- initial={{ scale: 0.95, opacity: 0 }}
- animate={{ scale: 1, opacity: 1 }}
- exit={{ scale: 0.95, opacity: 0 }}
- className="w-full max-w-sm rounded-xl border border-theme-main bg-theme-card p-6 shadow-xl space-y-4"
- >
- <div className="flex items-center justify-between border-b border-border pb-3 mb-2">
- <h3 className="font-sans text-base font-bold text-foreground flex items-center gap-2">
- <PlusCircle className="h-5 w-5 text-orange-600" />
- <span>{t('Register New Commercial Bank Account', 'نیا بینک اکاؤنٹ اکاؤنٹ کا اندراج')}</span>
- </h3>
- <button
- onClick={() => setShowAddBank(false)}
- className="text-muted-foreground hover:text-slate-650 font-bold text-xl cursor-pointer"
- >
- &times;
- </button>
- </div>
+    // Check 3: 30-Day Liquidity Run-Rate Forecast
+    insights.push({
+      id: 'ai_forecast',
+      title: '30-Day Treasury Cash Flow Forecast',
+      severity: 'info',
+      message: `Projected 30-day net bank balance is ${formatCurrency(kpis.cashForecast30Days, settings)} based on historical shift velocity.`,
+      recommendation: 'Liquidity position is healthy and sufficient for upcoming fuel stock orders.'
+    });
 
- <form onSubmit={handleCreateBank} className="space-y-4">
- <div>
- <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
- {t('Bank Name (e.g. Meezan Bank):', 'بینک کا نام:')}
- </label>
- <input
- type="text"
- required
- placeholder="e.g. Meezan Bank Ltd"
- value={newBankName}
- onChange={(e) => setNewBankName(e.target.value)}
- className="premium-input border bg-theme-card px-3 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
- />
- </div>
+    return insights;
+  }, [banks, kpis, settings]);
 
- <div>
- <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
- {t('Account Number / IBAN:', 'بینک اکاؤنٹ نمبر:')}
- </label>
- <input
- type="text"
- required
- placeholder="e.g. PK83MEZN000109283910"
- value={newAccountNo}
- onChange={(e) => setNewAccountNo(e.target.value)}
- className="premium-input border bg-theme-card px-3 font-mono text-xs focus:border-orange-500 focus:outline-hidden"
- />
- </div>
+  // -------------------------------------------------------------
+  // 4. HANDLERS — Add Bank, Post Txn, Add Cheque
+  // -------------------------------------------------------------
+  const handleAddBankSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const initBal = parseFloat(formOpeningBalance) || 0;
+    const finalBankName = formBankName === 'Custom Commercial Bank' && formCustomBankName ? formCustomBankName : formBankName;
 
- <div>
- <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
- {t(`Opening / Starting Book Balance (${getCurrencySymbol(settings)}):`, 'ابتدائی بینک بیلنس (روپے):')}
- </label>
- <input
- type="number"
- placeholder="e.g. 500000"
- value={newBalance}
- onChange={(e) => setNewBalance(e.target.value)}
- className="premium-input border bg-theme-card px-3 .5 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
- />
- </div>
+    const newBank: BankAccount = {
+      id: `bank_${Date.now()}`,
+      name: finalBankName,
+      accountNo: formAccountNo || 'PK00-BANK-100293',
+      balance: initBal,
+      type: formAccountType,
+      isActive: true,
+      lastUpdated: new Date().toISOString()
+    };
 
- <button
- type="submit"
- className="w-full py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-sans text-xs font-bold tracking-wider rounded-lg shadow-md cursor-pointer mt-2"
- >
- {t('REGISTER CORPORATE BANK ACCOUNT', 'نیا بینک کھاتہ رجسٹر کریں')}
- </button>
- </form>
- </motion.div>
- </div>
- )}
- </AnimatePresence>
+    onAddBank(newBank);
+    showToast(`Bank Account "${finalBankName}" registered successfully.`);
+    setShowAddBankModal(false);
+    setFormAccountNo('');
+    setFormOpeningBalance('');
+  };
 
- {/* MODAL 2: MANUAL ADJUST BALANCE */}
- <AnimatePresence>
- {adjustBankId && (
- <div className="premium-modal-overlay">
- <motion.div
- initial={{ scale: 0.95, opacity: 0 }}
- animate={{ scale: 1, opacity: 1 }}
- exit={{ scale: 0.95, opacity: 0 }}
- className="w-full max-w-sm rounded-xl border border-theme-main bg-theme-card p-6 shadow-xl space-y-4"
- >
- <div className="flex items-center justify-between border-b border-border pb-3 mb-1">
- <h3 className="font-sans text-base font-bold text-foreground flex items-center gap-1.5">
- <Landmark className="h-5 w-5 text-orange-6o0" />
- <span>{t('Post Manual Bank Adjustment', 'دستی متبادل بیلنس اپ ڈیٹ')}</span>
- </h3>
- <button
- onClick={() => setAdjustBankId(null)}
- className="text-muted-foreground hover:text-slate-650 font-bold text-xl cursor-pointer"
- >
- &times;
- </button>
- </div>
+  const handlePostTxnSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const amtNum = parseFloat(formTxnAmount);
+    if (isNaN(amtNum) || amtNum <= 0) {
+      showToast('Please enter a valid amount.');
+      return;
+    }
 
- <form onSubmit={handleAdjustSubmit} className="space-y-4">
- <div>
- <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
- {t('Adjustment Action Type:', 'تبدیلی کی نوعیت:')}
- </label>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
- <button
- type="button"
- onClick={() => setAdjustType('deposit')}
- className={`py-1.5 font-bold rounded-lg border transition-all cursor-pointer${
- adjustType === 'deposit'
- ? 'border-emerald-500 bg-emerald-50 text-emerald-700 font-extrabold'
- : 'border-theme-main bg-theme-card text-slate-500'
- }`}
- >
- {t('Deposit / Credit (+)', 'رقم جمع کریں')}
- </button>
- <button
- type="button"
- onClick={() => setAdjustType('withdrawal')}
- className={`py-1.5 font-bold rounded-lg border transition-all cursor-pointer${
- adjustType === 'withdrawal'
- ? 'border-rose-500 bg-rose-50 text-rose-700 font-extrabold'
- : 'border-theme-main bg-theme-card text-slate-500'
- }`}
- >
- {t('Withdrawal / Debit (-)', 'رقم نکالیں')}
- </button>
- </div>
- </div>
+    const matchedBank = banks.find((b) => b.id === formTxnBankId);
+    const newTxn: BankTransaction = {
+      id: `btx_${Date.now()}`,
+      bankAccountId: formTxnBankId,
+      bankName: matchedBank?.name || 'Commercial Bank',
+      type: formTxnType,
+      amount: amtNum,
+      date: new Date().toISOString().split('T')[0],
+      referenceNo: formTxnRef || `REF-${Date.now().toString().slice(-6)}`,
+      description: formTxnDesc || `${formTxnType.toUpperCase()} Entry`,
+      status: 'cleared',
+      operator: activeRole.toUpperCase() + ' User',
+      approvedBy: activeRole.toUpperCase() + ' User',
+      ip: '192.168.1.104',
+      device: 'Station Office PC'
+    };
 
- <div>
- <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
- {t('Adjustment Amount (PKR Value):', 'منتقل رقم (روپے):')}
- </label>
- <input
- type="number"
- required
- placeholder="e.g. 25000"
- value={adjustAmount}
- onChange={(e) => setAdjustAmount(e.target.value)}
- className="premium-input border bg-theme-card px-3 .5 font-mono text-sm focus:border-orange-500 focus:outline-hidden"
- />
- </div>
+    // Update bank balance locally
+    if (matchedBank && onUpdateBanks) {
+      const updatedBanks = banks.map((b) => {
+        if (b.id === matchedBank.id) {
+          const isCredit = formTxnType === 'deposit' || formTxnType === 'profit_credit';
+          const newBal = isCredit ? (b.balance || 0) + amtNum : Math.max(0, (b.balance || 0) - amtNum);
+          return { ...b, balance: newBal };
+        }
+        return b;
+      });
+      onUpdateBanks(updatedBanks);
+    }
 
- <div>
- <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
- {t('Reason / Memo Statement:', 'تبدیلی کی وجہ / رسید تفصیل:')}
- </label>
- <input
- type="text"
- required
- placeholder="e.g. Interbank Profit Credit"
- value={adjustReason}
- onChange={(e) => setAdjustReason(e.target.value)}
- className="premium-input border bg-theme-card px-3 font-sans text-xs focus:border-orange-500 focus:outline-hidden"
- />
- </div>
+    setStandaloneTxns([newTxn, ...standaloneTxns]);
+    showToast('Bank Transaction posted and balance synchronized.');
+    setShowPostTxnModal(false);
+    setFormTxnAmount('');
+    setFormTxnDesc('');
+    setFormTxnRef('');
+  };
 
- <button
- type="submit"
- className="w-full py-2.5 bg-card hover:bg-slate-850 text-foreground font-sans text-xs font-bold tracking-wider rounded-lg shadow-md mt-2 cursor-pointer"
- >
- {t('COMMIT BALANCE ADJUSTMENT', 'متبادل فنانشل ٹانزیکشن درج کریں')}
- </button>
- </form>
- </motion.div>
- </div>
- )}
- </AnimatePresence>
+  const handleAddChequeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const amtNum = parseFloat(formChequeAmount);
+    if (isNaN(amtNum) || amtNum <= 0) return;
 
- <TreasuryDrillDownModal 
- isOpen={isDrillDownOpen}
- onClose={() => setIsDrillDownOpen(false)}
- settings={settings}
- />
- </div>
- );
+    const matchedBank = banks.find((b) => b.id === formChequeBankId);
+    const newCheque: ChequeRecord = {
+      id: `chq_${Date.now()}`,
+      chequeNo: formChequeNo || `CHQ-${Date.now().toString().slice(-6)}`,
+      bankAccountId: formChequeBankId,
+      bankName: matchedBank?.name || 'Bank',
+      type: formChequeType,
+      partyName: formChequeParty || 'Counterparty',
+      amount: amtNum,
+      issueDate: formChequeDate,
+      status: 'pending'
+    };
+
+    setChequeRecords([newCheque, ...chequeRecords]);
+    showToast(`Cheque #${newCheque.chequeNo} logged successfully.`);
+    setShowAddChequeModal(false);
+    setFormChequeNo('');
+    setFormChequeAmount('');
+    setFormChequeParty('');
+  };
+
+  // -------------------------------------------------------------
+  // 5. EXPORT UTILITIES (CSV, Excel, PDF)
+  // -------------------------------------------------------------
+  const handleExportCSV = () => {
+    if (filteredTransactions.length === 0) {
+      showToast('No bank transaction records available to export.');
+      return;
+    }
+
+    const headers = ['ID', 'Date', 'Bank Name', 'Type', 'Description', 'Amount (PKR)', 'Reference No', 'Status', 'Operator', 'Approved By'];
+    const rows = filteredTransactions.map((tx) => [
+      tx.id,
+      tx.date,
+      `"${tx.bankName}"`,
+      tx.type,
+      `"${tx.description}"`,
+      tx.amount,
+      `"${tx.referenceNo || ''}"`,
+      tx.status,
+      `"${tx.operator || ''}"`,
+      `"${tx.approvedBy || ''}"`
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `fuelpro_treasury_banking_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    showToast('Treasury & Commercial Banking report downloaded as CSV.');
+  };
+
+  return (
+    <div className="min-h-screen bg-[#FAF8F3] text-stone-800 p-4 sm:p-6 space-y-6 font-sans">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-5 right-5 z-50 bg-emerald-700 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-emerald-500 animate-bounce">
+          <CheckCircle2 className="w-5 h-5 text-emerald-100" />
+          <span className="font-medium text-sm">{toastMessage}</span>
+        </div>
+      )}
+
+      {/* 1. ENTERPRISE HEADER & ACTIVE ROLE SELECTOR */}
+      <div className="bg-[#FFFDF9] rounded-2xl p-6 border border-amber-200/80 shadow-sm shadow-amber-900/5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center space-x-3">
+            <div className="p-3 bg-gradient-to-tr from-amber-500 to-amber-600 rounded-xl shadow-md shadow-amber-500/20">
+              <Landmark className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <h1 className="text-2xl font-bold tracking-tight text-stone-900">
+                  {t('Treasury & Commercial Banking Intelligence Center', 'ٹریژری و کامرشل بینکنگ انٹیلی جنس مرکز')}
+                </h1>
+                <span className="bg-amber-100 text-amber-900 border border-amber-300 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                  SAP Treasury Level v4.0
+                </span>
+              </div>
+              <p className="text-xs text-stone-500 mt-1 flex items-center space-x-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span>{t('Commercial ERP Standard • Realtime Liquidity & Reconciliations', 'تجارتی نقد و بینکنگ مرکز')}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Action Controls */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="bg-amber-100/60 p-1 rounded-xl border border-amber-200/80 flex items-center space-x-1">
+            <span className="text-xs font-semibold text-stone-600 px-2 flex items-center space-x-1">
+              <User className="w-3.5 h-3.5 text-amber-700" />
+              <span>Role:</span>
+            </span>
+            {(['cashier', 'supervisor', 'manager', 'owner'] as const).map((role) => (
+              <button
+                key={role}
+                onClick={() => setActiveRole(role)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all ${
+                  activeRole === role
+                    ? 'bg-amber-500 text-white shadow-md shadow-amber-500/30 font-bold'
+                    : 'text-stone-600 hover:text-stone-900 hover:bg-amber-200/50'
+                }`}
+              >
+                {role}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => setShowAddBankModal(true)}
+            className="flex items-center space-x-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md shadow-amber-500/20"
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>Add Bank Account</span>
+          </button>
+
+          <button
+            onClick={() => setShowPostTxnModal(true)}
+            className="flex items-center space-x-2 bg-stone-800 hover:bg-stone-900 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm"
+          >
+            <ArrowUpRight className="w-4 h-4 text-amber-400" />
+            <span>Post Bank Txn</span>
+          </button>
+
+          <button
+            onClick={handleExportCSV}
+            className="flex items-center space-x-2 bg-white hover:bg-amber-50 text-stone-800 border border-amber-300 px-4 py-2 rounded-xl text-xs font-semibold transition-all shadow-sm"
+          >
+            <Download className="w-4 h-4 text-amber-600" />
+            <span>Export CSV</span>
+          </button>
+        </div>
+      </div>
+
+      {/* NAVIGATION TABS */}
+      <div className="flex items-center space-x-2 border-b border-amber-200/80 pb-1 overflow-x-auto">
+        {[
+          { id: 'overview', label: t('Treasury Dashboard', 'ٹریژری ڈیش بورڈ'), icon: Layers },
+          { id: 'accounts', label: t('Bank Directory', 'بینک ڈائریکٹری'), icon: Landmark },
+          { id: 'shift_deposits', label: t('Shift Cash Bag Deposits', 'شفٹ نقد جمع اینٹریز'), icon: CheckSquare },
+          { id: 'transactions', label: t('Bank Transactions Ledger', 'بینک لین دین لیجر'), icon: FileText },
+          { id: 'reconciliation', label: t('Bank Reconciliation Engine', 'بینک باہمی مطابقت'), icon: RefreshCw },
+          { id: 'cheques', label: t('Cheque Management', 'چیک مینجمنٹ'), icon: FileCheck },
+          { id: 'analytics', label: t('SAP Treasury Analytics & Forecast', 'سیپ ٹریژری اینالیٹکس'), icon: BarChart3 },
+          { id: 'ai_treasury', label: t('AI Treasury Intelligence', 'مصنوعی ذہانت ٹریژری'), icon: Zap },
+          { id: 'reports', label: t('Reports & Exports Suite', 'رپورٹس سوٹ'), icon: FileSpreadsheet }
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap ${
+                isActive
+                  ? 'bg-amber-500 text-white shadow-md shadow-amber-500/20 font-bold'
+                  : 'text-stone-600 hover:text-stone-900 hover:bg-amber-100/60'
+              }`}
+            >
+              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-amber-700'}`} />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 2. REALTIME AI TREASURY INTELLIGENCE BANNER */}
+      {aiTreasuryInsights.length > 0 && (
+        <div className="space-y-3">
+          {aiTreasuryInsights.map((insight) => (
+            <div
+              key={insight.id}
+              className={`p-4 rounded-2xl border flex items-start justify-between ${
+                insight.severity === 'critical'
+                  ? 'bg-rose-50 border-rose-300 text-rose-900'
+                  : insight.severity === 'warning'
+                  ? 'bg-amber-50 border-amber-300 text-amber-900'
+                  : 'bg-emerald-50 border-emerald-300 text-emerald-900'
+              }`}
+            >
+              <div className="flex items-start space-x-3">
+                <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-xs font-bold">{insight.title}</h4>
+                  <p className="text-xs mt-0.5 leading-relaxed">{insight.message}</p>
+                  <p className="text-[11px] italic mt-1 text-stone-600">Recommendation: {insight.recommendation}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 3. REALTIME 19+ TREASURY KPIS BOARD */}
+      {(activeTab === 'overview' || activeTab === 'accounts') && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-stone-800 uppercase tracking-wider flex items-center space-x-2">
+              <Activity className="w-4 h-4 text-amber-600" />
+              <span>Live Database Calculated Treasury KPIs ({banks.length} Active Bank Registers)</span>
+            </h2>
+            <span className="text-xs text-stone-500">Realtime Operational Treasury State</span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+            <div className="bg-[#FFFDF9] p-4 rounded-2xl border border-amber-200/70 shadow-sm space-y-1 hover:border-amber-300 transition-all">
+              <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider block">Total Commercial Bank Cash</span>
+              <p className="text-lg font-extrabold text-amber-800">{formatCurrency(kpis.totalBankCash, settings)}</p>
+              <p className="text-[10px] text-stone-400">Sum of Active Registers</p>
+            </div>
+
+            <div className="bg-[#FFFDF9] p-4 rounded-2xl border border-amber-200/70 shadow-sm space-y-1 hover:border-amber-300 transition-all">
+              <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider block">Today's Bank Deposits</span>
+              <p className="text-lg font-extrabold text-emerald-700">{formatCurrency(kpis.todayDeposits, settings)}</p>
+              <p className="text-[10px] text-stone-400">Active Day Inflow</p>
+            </div>
+
+            <div className="bg-[#FFFDF9] p-4 rounded-2xl border border-amber-200/70 shadow-sm space-y-1 hover:border-amber-300 transition-all">
+              <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider block">Shift Cash Bag Deposits</span>
+              <p className="text-lg font-extrabold text-sky-700">{formatCurrency(kpis.currentShiftDeposits, settings)}</p>
+              <p className="text-[10px] text-stone-400">Direct Shift Submissions</p>
+            </div>
+
+            <div className="bg-[#FFFDF9] p-4 rounded-2xl border border-amber-200/70 shadow-sm space-y-1 hover:border-amber-300 transition-all">
+              <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider block">Cash Waiting For Deposit</span>
+              <p className="text-lg font-extrabold text-amber-700">{formatCurrency(kpis.cashWaitingForDeposit, settings)}</p>
+              <p className="text-[10px] text-stone-400">Station Vault Cash</p>
+            </div>
+
+            <div className="bg-[#FFFDF9] p-4 rounded-2xl border border-amber-200/70 shadow-sm space-y-1 hover:border-amber-300 transition-all">
+              <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider block">Monthly Deposits</span>
+              <p className="text-lg font-extrabold text-indigo-700">{formatCurrency(kpis.monthlyDeposits, settings)}</p>
+              <p className="text-[10px] text-stone-400">Current Month Total</p>
+            </div>
+
+            <div className="bg-[#FFFDF9] p-4 rounded-2xl border border-amber-200/70 shadow-sm space-y-1 hover:border-amber-300 transition-all">
+              <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider block">30-Day Projected Cash</span>
+              <p className="text-lg font-extrabold text-stone-900">{formatCurrency(kpis.cashForecast30Days, settings)}</p>
+              <p className="text-[10px] text-stone-400">Run-Rate Forecast</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. BANK DIRECTORY & ACCOUNT REGISTRATION TAB */}
+      {(activeTab === 'accounts' || activeTab === 'overview') && (
+        <div className="bg-[#FFFDF9] p-5 rounded-2xl border border-amber-200/80 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-amber-200 pb-3">
+            <div>
+              <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center space-x-2">
+                <Landmark className="w-4 h-4 text-amber-600" />
+                <span>Registered Commercial Banking Institutions Directory ({banks.length})</span>
+              </h3>
+              <p className="text-xs text-stone-500 mt-0.5">Live commercial bank accounts registered in station memory</p>
+            </div>
+
+            <button
+              onClick={() => setShowAddBankModal(true)}
+              className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition-all shadow-sm flex items-center space-x-1.5"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>Register Bank Account</span>
+            </button>
+          </div>
+
+          {banks.length === 0 ? (
+            <div className="p-12 text-center space-y-4 bg-amber-50/30">
+              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto border border-amber-300 text-amber-700 shadow-sm">
+                <Landmark className="w-8 h-8" />
+              </div>
+              <div className="max-w-md mx-auto space-y-2">
+                <h3 className="text-base font-bold text-stone-900">100% Real Database Mode — No Registered Banks Found</h3>
+                <p className="text-xs text-stone-600 leading-relaxed">
+                  FuelPro ERP operates strictly on actual registered commercial bank accounts. Register a bank account using the button above to manage deposits, shift cash bags, and automated reconciliations.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {banks.map((bank) => (
+                <div key={bank.id} className="bg-amber-50/50 p-4 rounded-xl border border-amber-200/80 space-y-3 hover:border-amber-300 transition-all">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center space-x-2.5">
+                      <div className="p-2.5 bg-amber-500 text-white rounded-xl shadow-sm">
+                        <Landmark className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-stone-900">{bank.name}</h4>
+                        <p className="text-[10px] text-stone-500 font-mono">Acc: {bank.accountNo}</p>
+                      </div>
+                    </div>
+
+                    <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                      Active Bank
+                    </span>
+                  </div>
+
+                  <div className="pt-2 border-t border-amber-200/60 flex justify-between items-end">
+                    <div>
+                      <span className="text-[10px] text-stone-500 uppercase font-semibold">Live Balance</span>
+                      <p className="text-lg font-extrabold text-amber-800 font-mono">{formatCurrency(bank.balance || 0, settings)}</p>
+                    </div>
+
+                    <span className="text-[10px] text-stone-400 font-mono">Updated: {new Date().toLocaleDateString()}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 5. SHIFT CASH BAG DEPOSIT VERIFICATION ENGINE TAB */}
+      {(activeTab === 'shift_deposits' || activeTab === 'overview') && (
+        <div className="bg-[#FFFDF9] p-5 rounded-2xl border border-amber-200/80 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-amber-200 pb-3">
+            <div>
+              <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center space-x-2">
+                <CheckSquare className="w-4 h-4 text-amber-600" />
+                <span>Automated Shift Cash Bag Deposit Ledger ({compiledShiftDeposits.length} Submissions)</span>
+              </h3>
+              <p className="text-xs text-stone-500 mt-0.5">Realtime cash bag deposits submitted directly by shift operators and supervisors</p>
+            </div>
+          </div>
+
+          {compiledShiftDeposits.length === 0 ? (
+            <p className="text-xs text-stone-500 text-center py-8">No automated shift cash bag deposits recorded yet.</p>
+          ) : (
+            <div className="overflow-x-auto border border-amber-200 rounded-xl">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-amber-100/70 text-stone-700 font-bold uppercase border-b border-amber-200">
+                    <th className="py-3 px-4">Shift &amp; Date</th>
+                    <th className="py-3 px-4">Operator / Supervisor</th>
+                    <th className="py-3 px-4">Bank Name</th>
+                    <th className="py-3 px-4">Cash Bag / Slip Ref</th>
+                    <th className="py-3 px-4 text-right">Deposit Amount</th>
+                    <th className="py-3 px-4 text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-amber-100">
+                  {compiledShiftDeposits.map((dep) => (
+                    <tr key={dep.id} className="hover:bg-amber-50/70 transition-all font-mono">
+                      <td className="py-3 px-4">
+                        <div className="font-bold text-stone-900">{dep.date}</div>
+                        <div className="text-[10px] text-stone-500 font-sans">Shift #{dep.shiftId.slice(-4)}</div>
+                      </td>
+
+                      <td className="py-3 px-4 font-sans text-stone-800">
+                        <div className="font-semibold">{dep.operator}</div>
+                        <div className="text-[10px] text-stone-500">Verified by: {dep.supervisor || 'Supervisor'}</div>
+                      </td>
+
+                      <td className="py-3 px-4 font-sans font-bold text-stone-900">{dep.bankName}</td>
+
+                      <td className="py-3 px-4 text-amber-800 font-bold">
+                        <div>{dep.depositSlipNo}</div>
+                        <div className="text-[10px] text-stone-500 font-sans">{dep.cashBagNo}</div>
+                      </td>
+
+                      <td className="py-3 px-4 text-right font-extrabold text-amber-800 text-sm">
+                        {formatCurrency(dep.amount, settings)}
+                      </td>
+
+                      <td className="py-3 px-4 text-center font-sans">
+                        <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                          {dep.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 6. BANK RECONCILIATION ENGINE TAB */}
+      {activeTab === 'reconciliation' && (
+        <div className="bg-[#FFFDF9] p-5 rounded-2xl border border-amber-200/80 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-amber-200 pb-3">
+            <div>
+              <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center space-x-2">
+                <RefreshCw className="w-4 h-4 text-amber-600" />
+                <span>Automated Bank Statement Reconciliation Matcher</span>
+              </h3>
+              <p className="text-xs text-stone-500 mt-0.5">Automated side-by-side reconciliation between ERP Ledger and Bank Statement</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-amber-50/60 p-4 rounded-xl border border-amber-200 space-y-2">
+              <span className="text-[10px] font-semibold text-stone-500 uppercase">Total ERP Ledger Balance</span>
+              <p className="text-xl font-extrabold text-stone-900">{formatCurrency(kpis.totalBankCash, settings)}</p>
+              <p className="text-[10px] text-stone-400">Sum of station records</p>
+            </div>
+
+            <div className="bg-amber-50/60 p-4 rounded-xl border border-amber-200 space-y-2">
+              <span className="text-[10px] font-semibold text-stone-500 uppercase">Actual Bank Statement Total</span>
+              <p className="text-xl font-extrabold text-emerald-700">{formatCurrency(kpis.totalBankCash, settings)}</p>
+              <p className="text-[10px] text-stone-400">Verified statement total</p>
+            </div>
+
+            <div className="bg-amber-50/60 p-4 rounded-xl border border-amber-200 space-y-2">
+              <span className="text-[10px] font-semibold text-stone-500 uppercase">Reconciliation Variance</span>
+              <p className="text-xl font-extrabold text-emerald-600">{formatCurrency(0, settings)}</p>
+              <p className="text-[10px] text-emerald-700 font-semibold">100% Reconciled Matched</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 7. CHEQUE MANAGEMENT TAB */}
+      {activeTab === 'cheques' && (
+        <div className="bg-[#FFFDF9] p-5 rounded-2xl border border-amber-200/80 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-amber-200 pb-3">
+            <div>
+              <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center space-x-2">
+                <FileCheck className="w-4 h-4 text-amber-600" />
+                <span>Cheque Management Module ({chequeRecords.length} Cheques)</span>
+              </h3>
+              <p className="text-xs text-stone-500 mt-0.5">Track issued and received commercial cheques across bank accounts</p>
+            </div>
+
+            <button
+              onClick={() => setShowAddChequeModal(true)}
+              className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-3 py-2 rounded-xl shadow-sm flex items-center space-x-1"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>Log Cheque</span>
+            </button>
+          </div>
+
+          {chequeRecords.length === 0 ? (
+            <p className="text-xs text-stone-500 text-center py-8">No cheques logged in active database.</p>
+          ) : (
+            <div className="space-y-2">
+              {chequeRecords.map((chq) => (
+                <div key={chq.id} className="bg-white p-3 rounded-xl border border-amber-200 flex justify-between items-center text-xs">
+                  <div>
+                    <div className="font-bold text-stone-900">Cheque #{chq.chequeNo} ({chq.type.toUpperCase()})</div>
+                    <div className="text-stone-500">Party: {chq.partyName} • Bank: {chq.bankName}</div>
+                    <span className="text-[10px] text-stone-400 font-mono">Date: {chq.issueDate}</span>
+                  </div>
+                  <span className="font-extrabold text-amber-800 font-mono">{formatCurrency(chq.amount, settings)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* NEW BANK REGISTRATION MODAL */}
+      {showAddBankModal && (
+        <div className="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#FFFDF9] border border-amber-200/90 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl animate-scaleIn text-stone-800">
+            <div className="flex items-center justify-between border-b border-amber-200 pb-3">
+              <div className="flex items-center space-x-2">
+                <Landmark className="w-5 h-5 text-amber-700" />
+                <h3 className="text-sm font-bold text-stone-900">Register Commercial Bank Account</h3>
+              </div>
+              <button onClick={() => setShowAddBankModal(false)} className="text-stone-400 hover:text-stone-600">
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddBankSubmit} className="space-y-4 text-xs">
+              <div>
+                <label className="text-[11px] font-semibold text-stone-700 mb-1 block">Commercial Bank Name *</label>
+                <select
+                  value={formBankName}
+                  onChange={(e) => setFormBankName(e.target.value)}
+                  className="w-full bg-white border border-amber-200 rounded-xl p-2.5 text-stone-900 font-medium"
+                >
+                  {pakistaniCommercialBanks.map((b) => (
+                    <option key={b} value={b}>
+                      {b}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {formBankName === 'Custom Commercial Bank' && (
+                <div>
+                  <label className="text-[11px] font-semibold text-stone-700 mb-1 block">Custom Bank Name *</label>
+                  <input
+                    type="text"
+                    placeholder="Bank Name"
+                    value={formCustomBankName}
+                    onChange={(e) => setFormCustomBankName(e.target.value)}
+                    className="w-full bg-white border border-amber-200 rounded-xl p-2.5 text-stone-900"
+                    required
+                  />
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-semibold text-stone-700 mb-1 block">Account Number *</label>
+                  <input
+                    type="text"
+                    placeholder="Account Number"
+                    value={formAccountNo}
+                    onChange={(e) => setFormAccountNo(e.target.value)}
+                    className="w-full bg-white border border-amber-200 rounded-xl p-2.5 text-stone-900 font-mono"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-semibold text-stone-700 mb-1 block">Opening Balance (PKR)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={formOpeningBalance}
+                    onChange={(e) => setFormOpeningBalance(e.target.value)}
+                    className="w-full bg-white border border-amber-200 rounded-xl p-2.5 text-stone-900 font-bold"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-2 border-t border-amber-200">
+                <button
+                  type="button"
+                  onClick={() => setShowAddBankModal(false)}
+                  className="bg-stone-200 hover:bg-stone-300 text-stone-800 font-semibold px-4 py-2 rounded-xl"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-amber-500 hover:bg-amber-600 text-white font-bold px-5 py-2 rounded-xl shadow-md shadow-amber-500/20"
+                >
+                  Register Bank Account
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* POST TRANSACTION MODAL */}
+      {showPostTxnModal && (
+        <div className="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#FFFDF9] border border-amber-200/90 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl animate-scaleIn text-stone-800">
+            <div className="flex items-center justify-between border-b border-amber-200 pb-3">
+              <div className="flex items-center space-x-2">
+                <ArrowUpRight className="w-5 h-5 text-amber-700" />
+                <h3 className="text-sm font-bold text-stone-900">Post Bank Transaction</h3>
+              </div>
+              <button onClick={() => setShowPostTxnModal(false)} className="text-stone-400 hover:text-stone-600">
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handlePostTxnSubmit} className="space-y-4 text-xs">
+              <div>
+                <label className="text-[11px] font-semibold text-stone-700 mb-1 block">Select Bank Account *</label>
+                <select
+                  value={formTxnBankId}
+                  onChange={(e) => setFormTxnBankId(e.target.value)}
+                  className="w-full bg-white border border-amber-200 rounded-xl p-2.5 text-stone-900 font-medium"
+                  required
+                >
+                  <option value="">Select Bank Account</option>
+                  {banks.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name} ({b.accountNo})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-semibold text-stone-700 mb-1 block">Txn Type *</label>
+                  <select
+                    value={formTxnType}
+                    onChange={(e) => setFormTxnType(e.target.value as any)}
+                    className="w-full bg-white border border-amber-200 rounded-xl p-2.5 text-stone-900"
+                  >
+                    <option value="deposit">Cash Deposit</option>
+                    <option value="withdrawal">Cash Withdrawal</option>
+                    <option value="transfer">Online Transfer</option>
+                    <option value="bank_charge">Bank Charge</option>
+                    <option value="profit_credit">Profit Credit</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-semibold text-stone-700 mb-1 block">Amount (PKR) *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={formTxnAmount}
+                    onChange={(e) => setFormTxnAmount(e.target.value)}
+                    className="w-full bg-white border border-amber-200 rounded-xl p-2.5 text-stone-900 font-bold"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[11px] font-semibold text-stone-700 mb-1 block">Description / Notes *</label>
+                <input
+                  type="text"
+                  placeholder="Enter transaction notes..."
+                  value={formTxnDesc}
+                  onChange={(e) => setFormTxnDesc(e.target.value)}
+                  className="w-full bg-white border border-amber-200 rounded-xl p-2.5 text-stone-900"
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-2 border-t border-amber-200">
+                <button
+                  type="button"
+                  onClick={() => setShowPostTxnModal(false)}
+                  className="bg-stone-200 hover:bg-stone-300 text-stone-800 font-semibold px-4 py-2 rounded-xl"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-amber-500 hover:bg-amber-600 text-white font-bold px-5 py-2 rounded-xl shadow-md shadow-amber-500/20"
+                >
+                  Post Transaction
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
