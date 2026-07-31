@@ -739,10 +739,10 @@ export default function AdvancedReportsHub({
  <button
  key={f.id}
  onClick={() => { setActiveFilter(f.id); setShowFavoritesOnly(false); }}
- className={`px-4 py-1.5 rounded-full text-[10px] font-bold transition-all border${activeFilter === f.id && !showFavoritesOnly
- ?"bg-card text-white border-slate-900 shadow-sm"
- :"bg-card text-slate-500 border-border hover:bg-slate-50 dark:hover:bg-card/5"
- }flex items-center gap-1.5 cursor-pointer`}
+ className={`px-4 py-1.5 rounded-full text-[10px] font-bold transition-all border ${activeFilter === f.id && !showFavoritesOnly
+ ? "bg-orange-600 text-white border-orange-600 shadow-sm"
+ : "bg-muted text-foreground border-border hover:bg-card"
+ } flex items-center gap-1.5 cursor-pointer`}
  >
  {f.icon && <f.icon className="w-3.5 h-3.5" />}
  {f.label}

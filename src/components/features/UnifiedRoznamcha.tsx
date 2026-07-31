@@ -152,13 +152,13 @@ export default function UnifiedRoznamcha({ settings }: UnifiedRoznamchaProps) {
  />
  </div>
  <div className="flex items-center gap-2">
- <button onClick={() => setShowFilters(f => !f)} className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border${showFilters ? 'border-orange-500 text-orange-600' : 'border-border text-slate-500'}`}>
- <Filter className="w-3.5 h-3.5" /> {t('Filters', 'فلٹرز')}
- </button>
- <div className="flex rounded-lg overflow-hidden border border-border">
- <button onClick={() => setViewMode('timeline')} className={`px-3 py-2 text-xs font-bold flex items-center gap-1${viewMode === 'timeline' ? 'bg-orange-500 text-white' : 'text-slate-500'}`}><Clock className="w-3.5 h-3.5" /> {t('Timeline', 'ٹائم لائن')}</button>
- <button onClick={() => setViewMode('list')} className={`px-3 py-2 text-xs font-bold flex items-center gap-1${viewMode === 'list' ? 'bg-orange-500 text-white' : 'text-slate-500'}`}><ListTree className="w-3.5 h-3.5" /> {t('List', 'لسٹ')}</button>
- </div>
+          <button onClick={() => setShowFilters(f => !f)} className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border ${showFilters ? 'border-orange-500 text-orange-600 bg-orange-50 dark:bg-orange-500/10' : 'border-border text-foreground hover:bg-card'}`}>
+            <Filter className="w-3.5 h-3.5" /> {t('Filters', 'فلٹرز')}
+          </button>
+          <div className="flex rounded-lg overflow-hidden border border-border">
+            <button onClick={() => setViewMode('timeline')} className={`px-3 py-2 text-xs font-bold flex items-center gap-1 transition-colors ${viewMode === 'timeline' ? 'bg-orange-600 text-white font-extrabold' : 'text-foreground hover:bg-card'}`}><Clock className="w-3.5 h-3.5" /> {t('Timeline', 'ٹائم لائن')}</button>
+            <button onClick={() => setViewMode('list')} className={`px-3 py-2 text-xs font-bold flex items-center gap-1 transition-colors ${viewMode === 'list' ? 'bg-orange-600 text-white font-extrabold' : 'text-foreground hover:bg-card'}`}><ListTree className="w-3.5 h-3.5" /> {t('List', 'لسٹ')}</button>
+          </div>
  </div>
  </div>
 

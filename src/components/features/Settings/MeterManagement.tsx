@@ -216,18 +216,18 @@ export default function MeterManagement({ settings, activeStationId }: { setting
  <div className="bg-card rounded-xl border border-border shadow-xs overflow-hidden">
  {/* Progress Steps */}
  <div className="flex items-center border-b border-border bg-subtle px-6 py-3">
- <div className={`flex items-center gap-2 text-sm font-bold${step >= 1 ? 'text-foreground' : 'text-slate-400'}`}>
- <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px]${step >= 1 ? 'bg-card text-white' : 'bg-slate-200'}`}>1</span>
+ <div className={`flex items-center gap-2 text-sm font-bold ${step >= 1 ? 'text-foreground' : 'text-muted-foreground'}`}>
+ <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step >= 1 ? 'bg-orange-600 text-white' : 'bg-muted text-muted-foreground'}`}>1</span>
  Setup
  </div>
- <div className="h-px w-8 bg-slate-300 mx-3 hidden sm:block"></div>
- <div className={`flex items-center gap-2 text-sm font-bold${step >= 2 ? 'text-rose-600' : 'text-slate-400'}ml-4 sm:ml-0`}>
- <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px]${step >= 2 ? 'bg-rose-600 text-white' : 'bg-slate-200'}`}>2</span>
+ <div className="h-px w-8 bg-border mx-3 hidden sm:block"></div>
+ <div className={`flex items-center gap-2 text-sm font-bold ${step >= 2 ? 'text-rose-600' : 'text-muted-foreground'} ml-4 sm:ml-0`}>
+ <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step >= 2 ? 'bg-rose-600 text-white' : 'bg-muted text-muted-foreground'}`}>2</span>
  Analysis
  </div>
- <div className="h-px w-8 bg-slate-300 mx-3 hidden sm:block"></div>
- <div className={`flex items-center gap-2 text-sm font-bold${step >= 3 ? 'text-foreground' : 'text-slate-400'}ml-4 sm:ml-0`}>
- <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px]${step >= 3 ? 'bg-card text-white' : 'bg-slate-200'}`}>3</span>
+ <div className="h-px w-8 bg-border mx-3 hidden sm:block"></div>
+ <div className={`flex items-center gap-2 text-sm font-bold ${step >= 3 ? 'text-foreground' : 'text-muted-foreground'} ml-4 sm:ml-0`}>
+ <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step >= 3 ? 'bg-orange-600 text-white' : 'bg-muted text-muted-foreground'}`}>3</span>
  Execute
  </div>
  </div>

@@ -121,11 +121,11 @@ export default function SecurityHub({ settings, user, onLogout }: SecurityHubPro
  <button
  key={tab.id}
  onClick={() => setActiveTab(tab.id as any)}
- className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-sans text-sm font-bold transition-all whitespace-nowrap${
- isActive 
- ? 'bg-card text-white shadow-md' 
- : 'bg-card text-slate-600 hover:bg-slate-50 dark:bg-card/5 border border-border'
- }`}
+ className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-sans text-sm font-bold transition-all whitespace-nowrap ${
+          isActive 
+            ? 'bg-orange-600 text-white shadow-md' 
+            : 'bg-muted text-foreground border border-border hover:bg-card'
+        }`}
  >
  <Icon className="h-4 w-4" />
  {t(tab.label, tab.urdu)}

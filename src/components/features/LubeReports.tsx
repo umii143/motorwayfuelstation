@@ -606,11 +606,11 @@ export default function LubeReports({
  <button
  key={rep.id}
  onClick={() => setSelectedReportId(rep.id)}
- className={`w-full text-left p-2 rounded-md font-sans text-[11px] font-semibold transition-all cursor-pointer block${
- isActive
- ? 'bg-card text-white font-extrabold'
- : 'text-[var(--text-muted)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-main)]'
- }`}
+ className={`w-full text-left p-2 rounded-md font-sans text-[11px] font-semibold transition-all cursor-pointer block ${
+    isActive
+      ? 'bg-orange-600 text-white font-extrabold shadow-sm'
+      : 'text-foreground hover:bg-card font-medium'
+  }`}
  >
  {isUrdu ? rep.urduName : rep.name}
  </button>

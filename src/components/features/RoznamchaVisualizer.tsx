@@ -128,10 +128,10 @@ export default function RoznamchaVisualizer({ settings }: RoznamchaVisualizerPro
  <button
  key={cat.id}
  onClick={() => setCategoryFilter(cat.id)}
- className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer${
- categoryFilter === cat.id
- ? 'bg-card text-white border-slate-900 dark:bg-card dark:text-foreground shadow-xs'
- : 'bg-card text-slate-550 border-border hover:bg-slate-100 dark:hover:bg-card/5'
+ className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+  categoryFilter === cat.id
+    ? 'bg-orange-600 text-white border-orange-600 shadow-sm'
+    : 'bg-muted text-foreground border-border hover:bg-card'
  }`}
  >
  {cat.label}

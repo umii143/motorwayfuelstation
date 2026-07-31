@@ -386,7 +386,7 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
  ))}
  </div>
  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
- <button onClick={() => { setSelectedPlan(p.id as any); setStep(2); haptic.light(); }} className={`w-full mt-8 py-3 rounded-xl font-bold transition-all${selectedPlan === p.id ? 'bg-orange-600 text-white' : 'bg-card dark:bg-card text-white dark:text-foreground'}`}>
+ <button onClick={() => { setSelectedPlan(p.id as any); setStep(2); haptic.light(); }} className={`w-full mt-8 py-3 rounded-xl font-bold transition-all ${selectedPlan === p.id ? 'bg-orange-600 text-white' : 'bg-muted text-foreground border border-border hover:bg-card'}`}>
  {t('Select Plan', 'منتخب کریں')}
  </button>
  </div>

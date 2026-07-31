@@ -248,12 +248,11 @@ export default function SupplierPayablesPanel({
  ].map(f => (
  <button
  key={f.id}
- 
  onClick={() => setFilterTier(f.id as any)}
- className={`px-3 py-1 rounded-full text-xs font-bold border transition-all${
+ className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
  filterTier === f.id
- ? 'bg-card text-white border-slate-800'
- : 'bg-theme-card text-slate-600 border-theme-main hover:border-border'
+   ? 'bg-orange-600 text-white border-orange-600 shadow-sm'
+   : 'bg-muted text-foreground border-border hover:bg-card'
  }`}
  >
  {f.label}

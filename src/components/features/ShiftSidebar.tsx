@@ -189,7 +189,7 @@ export function ShiftSidebar({
  <div className="mb-4">
  <button 
  onClick={() => setActiveModal('investigate')}
- className={`w-full py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm transition-all hover:scale-[1.02] active:scale-95${shiftHealth.overallSHI < 85 ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/20' : 'bg-card dark:bg-card text-white dark:text-foreground hover:bg-card dark:hover:bg-muted'}`}
+ className={`w-full py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm transition-all hover:scale-[1.02] active:scale-95 ${shiftHealth.overallSHI < 85 ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/20' : 'bg-slate-900 text-white hover:bg-slate-800 dark:bg-card dark:text-foreground dark:border dark:border-border'}`}
  >
  <Search className="w-5 h-5" />
  Open Deep Investigation
