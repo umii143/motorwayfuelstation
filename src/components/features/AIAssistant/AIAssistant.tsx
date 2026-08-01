@@ -7,6 +7,7 @@ import { useInventoryStore } from '../../../stores/useInventoryStore';
 import { useTreasuryStore } from '../../../stores/useTreasuryStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useStationStore } from '../../../stores/useStationStore';
+import { buildAIContext } from '../../../utils/aiContextBuilder';
 
 interface Message {
  id: string;
@@ -90,21 +91,15 @@ export default function AIAssistant({
  setIsLoading(true);
 
  try {
- const contextData = {
- settings,
- tanks: tanks.map(t => ({ name: t.name, currentVolume: t.currentStock, capacity: t.capacity })),
- recentShifts: shifts.slice(-5),
- products,
- customers: customers.length,
- rateHistory: rateHistory.slice(-10), // provide recent price history
- treasury: {
- cashBalances: cashAccounts.map(a => ({ name: a.name, type: a.type, balance: a.balance })),
- recentTransactions: treasuryTransactions.slice(-5),
- ownerDrawingsTotal: ownerDrawings.reduce((sum, d) => sum + d.amount, 0)
- }
- };
+      const contextData = buildAIContext({
+        products,
+        tanks,
+        shifts,
+        customers,
+        banks: cashAccounts.map(a => ({ id: a.id, name: a.name, balance: a.balance } as any)),
+      });
 
- const aiResponse = await aiAssistantService.askQuestion(text.trim(), contextData);
+      const aiResponse = await aiAssistantService.askQuestion(text.trim(), contextData);
 
  setMessages(prev =>
  prev.map(m =>
