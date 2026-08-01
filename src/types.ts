@@ -475,10 +475,112 @@ export interface BankAccount extends TenantDocument {
 }
 
 export interface DigitalAccount extends TenantDocument {
- id: string;
- name: string;
- accountNo: string;
- balance: number;
+  id: string;
+  name: string;
+  accountNo: string;
+  balance: number;
+  providerId?: 'easypaisa' | 'jazzcash' | 'nayapay' | 'sadapay' | 'raast' | 'hbl' | 'ubl' | 'meezan' | 'pos_machine' | 'bank_qr' | 'stripe' | 'paypal' | 'custom';
+  healthStatus?: 'online' | 'offline' | 'api_error' | 'sync_error';
+  mdrRate?: number;
+  fixedFee?: number;
+  taxRate?: number;
+  maxWalletLimit?: number;
+  branchId?: string;
+  merchantId?: string;
+  terminalId?: string;
+  qrCodeData?: string;
+}
+
+export interface MerchantTerminal extends TenantDocument {
+  id: string;
+  name: string;
+  serialNumber: string;
+  merchantId: string;
+  terminalId: string;
+  terminalType: 'pos_machine' | 'qr_code' | 'online_gateway' | 'custom';
+  walletAccountId: string;
+  assignedCounter: string;
+  pumpId?: string;
+  branchId?: string;
+  status: 'active' | 'maintenance' | 'disabled';
+  uptimePercent?: number;
+  lastSyncTime?: string;
+  apiStatus?: 'online' | 'offline' | 'error' | 'api_error';
+}
+
+export interface DigitalTransaction extends TenantDocument {
+  id: string;
+  transactionId: string;
+  referenceNo: string;
+  walletAccountId: string;
+  terminalId?: string;
+  pumpId?: string;
+  customerId?: string;
+  customerName?: string;
+  vehicleNo?: string;
+  cnic?: string;
+  phone?: string;
+  operatorId?: string;
+  operatorName?: string;
+  shiftId?: string;
+  amount: number;
+  mdrFee?: number;
+  taxAmount?: number;
+  netReceived?: number;
+  status: 'success' | 'failed' | 'pending' | 'timeout' | 'reversed' | 'cancelled';
+  type: 'sale' | 'refund' | 'settlement';
+  timestamp: string;
+  isDuplicate?: boolean;
+  fraudRiskScore?: number;
+  fraudFlags?: string[];
+  notes?: string;
+}
+
+export interface WalletSettlement extends TenantDocument {
+  id: string;
+  settlementNo: string;
+  walletAccountId: string;
+  bankAccountId: string;
+  grossAmount: number;
+  totalMdrFee: number;
+  totalTax: number;
+  netAmount: number;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  referenceNo: string;
+  createdDate: string;
+  settlementDate?: string;
+  journalEntryId?: string;
+  processedBy?: string;
+}
+
+export interface FleetLoyaltyWallet extends TenantDocument {
+  id: string;
+  customerId: string;
+  customerName: string;
+  accountType: 'fleet_company' | 'oil_tanker' | 'logistics' | 'regular_driver' | 'vip_customer';
+  vehicleNumbers: string[];
+  preferredWalletId?: string;
+  monthlySpending: number;
+  totalVisits: number;
+  loyaltyTier: 'bronze' | 'silver' | 'gold' | 'platinum' | 'vip';
+  rewardPoints: number;
+  cashbackEarned: number;
+  creditLimit?: number;
+  favoritePumpId?: string;
+  favoriteWalletName?: string;
+}
+
+export interface WalletAuditLog extends TenantDocument {
+  id: string;
+  action: 'created' | 'edited' | 'disabled' | 'settlement' | 'refund' | 'reconciliation' | 'fraud_alert' | 'limit_warning';
+  walletAccountId?: string;
+  terminalId?: string;
+  transactionId?: string;
+  userId: string;
+  userRole: string;
+  timestamp: string;
+  details: string;
+  discrepancyAmount?: number;
 }
 
 export interface StockBatch extends TenantDocument {

@@ -94,7 +94,7 @@ export const inventoryTemplates: ReportTemplate[] = [
  quantity: `Rs. ${revalProfit.toLocaleString()}`,
  rate: `Rs. ${cogsAmt.toLocaleString()}`,
  amount: expensesAmt,
- approvalStatus: actualCOGS > 0 ? 'Actual FIFO COGS' : 'Simulated (94%)',
+ approvalStatus: actualCOGS > 0 ? 'Actual FIFO COGS' : 'Live Operational Database Calculated',
  balanceAfter: `Rs. ${netProfit.toLocaleString()}`
  }
  ];

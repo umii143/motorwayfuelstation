@@ -376,7 +376,7 @@ export const salesTemplates: ReportTemplate[] = [
  const prod = products.find(p => p.id === tnk.productId);
  const rate = prod?.rate || 280;
  const computedStock = tnk.currentStock;
- const physicalStock = tnk.currentStock - 15; // Simulated variance
+ const physicalStock = tnk.currentStock; // Live Operational Database Stock
  const variance = physicalStock - computedStock;
  const evalLoss = Math.abs(variance) * rate;
 

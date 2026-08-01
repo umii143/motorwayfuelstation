@@ -118,7 +118,12 @@ import {
  TreasuryTransaction,
  OwnerDrawing,
  CashReconciliation,
- MeterResetEvent
+ MeterResetEvent,
+ MerchantTerminal,
+ DigitalTransaction,
+ WalletSettlement,
+ FleetLoyaltyWallet,
+ WalletAuditLog
 } from '../types';
 import { logger } from '../lib/logger';
 import {
@@ -152,45 +157,51 @@ const STORAGE_KEYS = {
  ATTENDANCE: 'fuelpro_attendance'
 };
 
-const SPECIAL_STORAGE_KEYS = {
- STANDALONE_EXPENSES: 'fuelpro_standalone_expenses',
- RECONCILED_SHIFTS: 'fuelpro_reconciled_shifts',
- REPORT_FAVORITES: 'fuelpro_report_favorites',
- REPORT_RECENTS: 'fuelpro_report_recents',
- SETTINGS_AUDIT_TRAIL: 'fuelpro_settings_audit_trail',
- LUBE_POS_SALES: 'fuelpro_lube_pos_sales',
- FLEET_ACCOUNTS: 'fuelpro_fleet_accounts',
- FLEET_VEHICLES: 'fuelpro_fleet_vehicles',
- FLEET_DRIVERS: 'fuelpro_fleet_drivers',
- FLEET_TRANSACTIONS: 'fuelpro_fleet_transactions',
- TANKER_SCHEDULES: 'fuelpro_tanker_schedules',
- TANKER_DELIVERIES: 'fuelpro_tanker_deliveries',
- VARIANCE_INCIDENTS: 'fuelpro_variance_incidents',
- ASSETS: 'fuelpro_assets',
- MAINTENANCE_RECORDS: 'fuelpro_maintenance_records',
- LOYALTY_MEMBERS: 'fuelpro_loyalty_members',
- REWARD_TRANSACTIONS: 'fuelpro_reward_transactions',
- INVENTORY_MOVEMENTS: 'fuelpro_inventory_movements',
- JOURNAL_ENTRIES: 'fuelpro_journal_entries',
- STOCK_BATCHES: 'fuelpro_stock_batches',
- COGS_RECORDS: 'fuelpro_cogs_records',
- DEALER_MARGIN_SETTINGS: 'fuelpro_dealer_margin_settings',
- SALARY_TRANSACTIONS: 'fuelpro_salary_transactions',
- STAFF_LOANS: 'fuelpro_staff_loans',
- SALARY_ADVANCES: 'fuelpro_salary_advances',
- INVENTORY_SNAPSHOTS: 'fuelpro_inventory_snapshots',
- CASH_ACCOUNTS: 'fuelpro_cash_accounts',
- TREASURY_TRANSACTIONS: 'fuelpro_treasury_transactions',
- OWNER_DRAWINGS: 'fuelpro_owner_drawings',
- CASH_RECONCILIATIONS: 'fuelpro_cash_reconciliations',
- METER_RESETS: 'fuelpro_meter_resets',
- // Enterprise Fuel Costing Engine (v2)
- FIFO_DEDUCTIONS: 'fuelpro_fifo_deductions',
- SUPPLIER_CLAIMS: 'fuelpro_supplier_claims',
- INVENTORY_REVALUATIONS: 'fuelpro_inventory_revaluations',
- SUPPLIER_PERFORMANCE: 'fuelpro_supplier_performance',
- ACTIVITY_REGISTER: 'fuelpro_activity_register',
- BUSINESS_EVENTS: 'fuelpro_business_events'
+export const SPECIAL_STORAGE_KEYS = {
+  STANDALONE_EXPENSES: 'fuelpro_standalone_expenses',
+  RECONCILED_SHIFTS: 'fuelpro_reconciled_shifts',
+  REPORT_FAVORITES: 'fuelpro_report_favorites',
+  REPORT_RECENTS: 'fuelpro_report_recents',
+  SETTINGS_AUDIT_TRAIL: 'fuelpro_settings_audit_trail',
+  LUBE_POS_SALES: 'fuelpro_lube_pos_sales',
+  FLEET_ACCOUNTS: 'fuelpro_fleet_accounts',
+  FLEET_VEHICLES: 'fuelpro_fleet_vehicles',
+  FLEET_DRIVERS: 'fuelpro_fleet_drivers',
+  FLEET_TRANSACTIONS: 'fuelpro_fleet_transactions',
+  TANKER_SCHEDULES: 'fuelpro_tanker_schedules',
+  TANKER_DELIVERIES: 'fuelpro_tanker_deliveries',
+  VARIANCE_INCIDENTS: 'fuelpro_variance_incidents',
+  ASSETS: 'fuelpro_assets',
+  MAINTENANCE_RECORDS: 'fuelpro_maintenance_records',
+  LOYALTY_MEMBERS: 'fuelpro_loyalty_members',
+  REWARD_TRANSACTIONS: 'fuelpro_reward_transactions',
+  INVENTORY_MOVEMENTS: 'fuelpro_inventory_movements',
+  JOURNAL_ENTRIES: 'fuelpro_journal_entries',
+  STOCK_BATCHES: 'fuelpro_stock_batches',
+  COGS_RECORDS: 'fuelpro_cogs_records',
+  DEALER_MARGIN_SETTINGS: 'fuelpro_dealer_margin_settings',
+  SALARY_TRANSACTIONS: 'fuelpro_salary_transactions',
+  STAFF_LOANS: 'fuelpro_staff_loans',
+  SALARY_ADVANCES: 'fuelpro_salary_advances',
+  INVENTORY_SNAPSHOTS: 'fuelpro_inventory_snapshots',
+  CASH_ACCOUNTS: 'fuelpro_cash_accounts',
+  TREASURY_TRANSACTIONS: 'fuelpro_treasury_transactions',
+  OWNER_DRAWINGS: 'fuelpro_owner_drawings',
+  CASH_RECONCILIATIONS: 'fuelpro_cash_reconciliations',
+  METER_RESETS: 'fuelpro_meter_resets',
+  // Enterprise Fuel Costing Engine (v2)
+  FIFO_DEDUCTIONS: 'fuelpro_fifo_deductions',
+  SUPPLIER_CLAIMS: 'fuelpro_supplier_claims',
+  INVENTORY_REVALUATIONS: 'fuelpro_inventory_revaluations',
+  SUPPLIER_PERFORMANCE: 'fuelpro_supplier_performance',
+  ACTIVITY_REGISTER: 'fuelpro_activity_register',
+  BUSINESS_EVENTS: 'fuelpro_business_events',
+  // Digital Payments Intelligence Center Keys
+  MERCHANT_TERMINALS: 'fuelpro_merchant_terminals',
+  DIGITAL_TRANSACTIONS: 'fuelpro_digital_transactions',
+  WALLET_SETTLEMENTS: 'fuelpro_wallet_settlements',
+  FLEET_LOYALTY_WALLETS: 'fuelpro_fleet_loyalty_wallets',
+  WALLET_AUDIT_LOGS: 'fuelpro_wallet_audit_logs'
 };
 
 
@@ -891,10 +902,30 @@ export const db = {
  return setting?.marginPerLiter ?? 8.64; // fallback to current OGRA rate
  },
 
- getMeterResets: (stationId: string): MeterResetEvent[] =>
- getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.METER_RESETS, [] as MeterResetEvent[]),
- saveMeterResets: (stationId: string, resets: MeterResetEvent[]) =>
- saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.METER_RESETS, resets),
+  getMeterResets: (stationId: string): MeterResetEvent[] =>
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.METER_RESETS, [] as MeterResetEvent[]),
+  saveMeterResets: (stationId: string, resets: MeterResetEvent[]) =>
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.METER_RESETS, resets),
+
+  getMerchantTerminals: (stationId: string): MerchantTerminal[] =>
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.MERCHANT_TERMINALS, []),
+  saveMerchantTerminals: (stationId: string, terminals: MerchantTerminal[]) =>
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.MERCHANT_TERMINALS, terminals),
+
+  getWalletSettlements: (stationId: string): WalletSettlement[] =>
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.WALLET_SETTLEMENTS, []),
+  saveWalletSettlements: (stationId: string, settlements: WalletSettlement[]) =>
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.WALLET_SETTLEMENTS, settlements),
+
+  getWalletAuditLogs: (stationId: string): WalletAuditLog[] =>
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.WALLET_AUDIT_LOGS, []),
+  saveWalletAuditLogs: (stationId: string, logs: WalletAuditLog[]) =>
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.WALLET_AUDIT_LOGS, logs),
+
+  getFleetLoyalties: (stationId: string): FleetLoyaltyWallet[] =>
+    getScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_LOYALTY_WALLETS, []),
+  saveFleetLoyalties: (stationId: string, loyalties: FleetLoyaltyWallet[]) =>
+    saveScopedStorageList(stationId, SPECIAL_STORAGE_KEYS.FLEET_LOYALTY_WALLETS, loyalties),
 
  clearSettingsAuditTrail: (stationId: string) => {
  const scopedKey = db.getStationStorageKey(stationId, SPECIAL_STORAGE_KEYS.SETTINGS_AUDIT_TRAIL);
