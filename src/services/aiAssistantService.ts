@@ -1,9 +1,19 @@
 import { logger } from '../lib/logger';
 
+export interface AIActionButton {
+  label: string;
+  route: string;
+  variant?: 'primary' | 'secondary' | 'warning' | 'danger';
+}
+
 export interface AIResponse {
   rawResponse: string;
   formattedReceipt: string;
   providerUsed: 'groq' | 'gemini' | 'local-engine';
+  modelName: string;
+  latencyMs: number;
+  tokensEstimate: number;
+  actionButtons?: AIActionButton[];
 }
 
 export interface AIBusinessInsight {
@@ -91,6 +101,12 @@ export class AIAssistantService {
     return this.activeProvider;
   }
 
+  public getModelName(): string {
+    if (this.activeProvider === 'groq') return 'Groq (llama-3.3-70b)';
+    if (this.activeProvider === 'gemini') return 'Gemini (2.0-flash)';
+    return 'Enterprise Offline Copilot';
+  }
+
   public saveApiKey(provider: 'groq' | 'gemini', key: string) {
     if (provider === 'groq') {
       localStorage.setItem('VITE_GROQ_API_KEY', key);
@@ -110,7 +126,7 @@ export class AIAssistantService {
   private getSystemPrompt(contextData?: any, mode: AIAssistantMode = 'chat'): string {
     const todayDate = contextData?.date || new Date().toISOString().split('T')[0];
     const dataContext = contextData
-      ? `\n\n=== SYSTEM DATA CONTEXT ===\n${JSON.stringify(contextData)}\n===========================\n`
+      ? `\n\n=== 360-DEGREE ENTERPRISE STATION CONTEXT ===\n${JSON.stringify(contextData, null, 2)}\n==============================================\n`
       : '';
 
     if (mode === 'analytics') {
@@ -130,38 +146,28 @@ The JSON object should have the following structure:
 ${dataContext}`;
     }
 
-    return `You are ShiftWizard AI, an expert Enterprise Assistant for a Fuel Station ERP built by Umar Ali.
+    return `You are ShiftWizard Enterprise AI Copilot for a Fuel Station ERP built by Umar Ali.
 
-YOUR CRITICAL INSTRUCTIONS:
-1. You MUST format your response strictly as a physical printed ASCII thermal receipt.
+YOUR MANDATORY INSTRUCTIONS:
+1. You MUST format your response strictly as a physical printed ASCII thermal receipt using ASCII box characters.
 2. TODAY'S DATE IS: ${todayDate}. NEVER leave the Date field blank! Always populate "Date: ${todayDate}".
 3. Always use 'PKR' or 'Rs' for currency and 'Liters' for fuel volume.
-4. Extract item names, stock quantities, rates, and operational statuses directly from the SYSTEM DATA CONTEXT provided below.
+4. If asked "Why" or for a stock breakdown, provide a multi-step financial & operational audit:
+   - Opening Level
+   - Sales Today
+   - Deliveries Received
+   - Remaining Level
+   - Runout Forecast (Days)
+   - Actionable Recommendation (e.g. Order X Liters)
 5. NEVER hallucinate or output 0 values if the SYSTEM DATA CONTEXT contains live products/tanks!
 6. Header MUST be "SHIFTWIZARD ERP".
 7. Footer MUST be "Powered by Umar Ali ⚡".
 
 ${dataContext}
-
-REQUIRED ASCII FORMAT:
-┌──────────────────────────────────┐
-│          SHIFTWIZARD ERP         │
-│          Fuel Station AI         │
-├──────────────────────────────────┤
-│ Date: ${todayDate}                 │
-│ Query: (Short Title)             │
-├──────────────────────────────────┤
-│ ITEM          QTY (Liters) RATE  │
-│ (Real Data From System Context)  │
-├──────────────────────────────────┤
-│ STATUS: (Real Live Status)       │
-├──────────────────────────────────┤
-│        Powered by Umar Ali ⚡    │
-└──────────────────────────────────┘
 `;
   }
 
-  private generateDeterministicReceipt(question: string, contextData?: any): string {
+  private generateDeterministicReceipt(question: string, contextData?: any): { text: string; buttons: AIActionButton[] } {
     const dateStr = contextData?.date || new Date().toISOString().split('T')[0];
     const qLower = question.toLowerCase();
 
@@ -180,11 +186,38 @@ REQUIRED ASCII FORMAT:
 
     let title = 'General Query';
     const lines: string[] = [];
+    const buttons: AIActionButton[] = [];
 
     const products: any[] = contextData?.products || [];
     const tanks: any[] = contextData?.tanks || [];
+    const activeShift = contextData?.activeShift;
+    const customers = contextData?.customers;
+    const suppliers = contextData?.suppliers;
+    const treasury = contextData?.treasury;
 
-    if (qLower.includes('stock') || qLower.includes('petrol') || qLower.includes('diesel') || qLower.includes('tank') || qLower.includes('inventory') || qLower.includes('lube') || qLower.includes('item')) {
+    const isWhyQuery = qLower.includes('why') || qLower.includes('reason') || qLower.includes('explain') || qLower.includes('because');
+
+    if (isWhyQuery && (qLower.includes('petrol') || qLower.includes('diesel') || qLower.includes('stock'))) {
+      title = 'Stock Audit & Reasoning';
+      const targetProd = products.find(p => qLower.includes(p.name.toLowerCase())) || products[0];
+      if (targetProd) {
+        lines.push(`PRODUCT: ${targetProd.name}`);
+        lines.push(`Current Level:   ${targetProd.currentStock.toLocaleString()} ${targetProd.unit}`);
+        lines.push(`Opening Level:   ${targetProd.openingStock.toLocaleString()} ${targetProd.unit}`);
+        lines.push(`Sales Today:     -${targetProd.salesToday.toLocaleString()} ${targetProd.unit}`);
+        lines.push(`Deliveries:      +0 ${targetProd.unit}`);
+        lines.push('--------------------------------');
+        lines.push(`Runout Forecast: ${targetProd.daysRemaining} Days`);
+        lines.push(`Status:          ${targetProd.isLowStock ? 'LOW STOCK WARNING' : 'HEALTHY'}`);
+        lines.push('--------------------------------');
+        lines.push(`RECOMMENDED ACTION:`);
+        lines.push(targetProd.isLowStock ? `Order ${targetProd.recommendedReorder.toLocaleString()} L from PSO` : 'Stock level is sufficient.');
+        
+        if (targetProd.isLowStock) {
+          buttons.push({ label: '📦 Create Purchase Order', route: '/inventory', variant: 'primary' });
+        }
+      }
+    } else if (qLower.includes('stock') || qLower.includes('petrol') || qLower.includes('diesel') || qLower.includes('tank') || qLower.includes('inventory') || qLower.includes('lube') || qLower.includes('item')) {
       title = 'Stock & Inventory';
 
       if (products.length > 0) {
@@ -194,6 +227,10 @@ REQUIRED ASCII FORMAT:
           const qtyStr = `${p.currentStock.toLocaleString()} ${p.unit || 'L'}`;
           const rateStr = p.rate > 0 ? `Rs ${p.rate}` : '-';
           lines.push(formatLine(p.name.padEnd(12).substring(0, 12), `${qtyStr.padEnd(10)} ${rateStr}`));
+
+          if (p.isLowStock) {
+            buttons.push({ label: `📦 Reorder ${p.name}`, route: '/inventory', variant: 'warning' });
+          }
         });
       } else if (tanks.length > 0) {
         lines.push('TANK/PRODUCT     STOCK (L)');
@@ -201,39 +238,48 @@ REQUIRED ASCII FORMAT:
         tanks.forEach(t => {
           lines.push(formatLine(`${t.name} (${t.productName})`, `${t.currentStock.toLocaleString()} L`));
         });
+        buttons.push({ label: '📐 Open Wet Stock Calculator', route: '/dip-calculator' });
       } else {
         lines.push('No stock records found in DB.');
       }
     } else if (qLower.includes('shift') || qLower.includes('sale') || qLower.includes('cash')) {
       title = 'Shift & Sales Status';
-      const activeShift = contextData?.activeShift;
       if (activeShift) {
         lines.push(`Active Shift: ${activeShift.id}`);
         lines.push(`Staff: ${activeShift.staffId}`);
         lines.push(`Submitted Cash: Rs ${activeShift.submittedCash.toLocaleString()}`);
         lines.push(`Status: ${activeShift.status.toUpperCase()}`);
+        buttons.push({ label: '🔍 Investigate Active Shift', route: '/shift-wizard' });
       } else {
         lines.push('No active shift currently open.');
+        buttons.push({ label: '🚀 Open Shift Wizard', route: '/shift-wizard', variant: 'primary' });
       }
     } else if (qLower.includes('credit') || qLower.includes('customer') || qLower.includes('udhar')) {
       title = 'Customer Credit Summary';
-      const cust = contextData?.customers;
-      lines.push(`Total Customers: ${cust?.totalCount || 0}`);
-      lines.push(`Total Credit Owed: Rs ${(cust?.totalCredit || 0).toLocaleString()}`);
+      lines.push(`Total Customers: ${customers?.totalCount || 0}`);
+      lines.push(`Total Credit Owed: Rs ${(customers?.totalCredit || 0).toLocaleString()}`);
+      if (customers?.highRiskOverdue && customers.highRiskOverdue.length > 0) {
+        lines.push('--------------------------------');
+        lines.push('HIGH RISK OVERDUE:');
+        customers.highRiskOverdue.forEach((c: any) => {
+          lines.push(formatLine(c.name, `Rs ${c.balance.toLocaleString()}`));
+        });
+      }
+      buttons.push({ label: '💳 Open Customer Credit Center', route: '/customers', variant: 'danger' });
     } else if (qLower.includes('supplier') || qLower.includes('payable') || qLower.includes('vendor')) {
       title = 'Supplier Payables';
-      const sup = contextData?.suppliers;
-      lines.push(`Total Suppliers: ${sup?.totalCount || 0}`);
-      lines.push(`Total Payable: Rs ${(sup?.totalPayable || 0).toLocaleString()}`);
+      lines.push(`Total Suppliers: ${suppliers?.totalCount || 0}`);
+      lines.push(`Total Payable: Rs ${(suppliers?.totalPayable || 0).toLocaleString()}`);
+      buttons.push({ label: '💰 Settle Supplier Payment', route: '/suppliers', variant: 'warning' });
     } else if (qLower.includes('bank') || qLower.includes('treasury') || qLower.includes('balance')) {
       title = 'Treasury & Bank';
-      const tr = contextData?.treasury;
-      lines.push(`Total Bank Bal: Rs ${(tr?.totalBankBalance || 0).toLocaleString()}`);
-      if (tr?.banks && tr.banks.length > 0) {
-        tr.banks.forEach((b: any) => {
+      lines.push(`Total Bank Bal: Rs ${(treasury?.totalBankBalance || 0).toLocaleString()}`);
+      if (treasury?.banks && treasury.banks.length > 0) {
+        treasury.banks.forEach((b: any) => {
           lines.push(formatLine(b.name, `Rs ${b.balance.toLocaleString()}`));
         });
       }
+      buttons.push({ label: '🏦 Open Treasury Hub', route: '/treasury' });
     } else {
       title = 'Station Status';
       if (products.length > 0) {
@@ -255,7 +301,7 @@ REQUIRED ASCII FORMAT:
     const header = [
       '┌──────────────────────────────────┐',
       '│          SHIFTWIZARD ERP         │',
-      '│          Fuel Station AI         │',
+      '│       Action Copilot v4.0        │',
       '├──────────────────────────────────┤',
       `│ Date: ${pad(dateStr, 26)} │`,
       `│ Query: ${pad(title, 25)} │`,
@@ -272,7 +318,10 @@ REQUIRED ASCII FORMAT:
       '└──────────────────────────────────┘',
     ];
 
-    return [...header, ...bodyLines, ...footer].join('\n');
+    return {
+      text: [...header, ...bodyLines, ...footer].join('\n'),
+      buttons,
+    };
   }
 
   public async askQuestion(
@@ -280,16 +329,19 @@ REQUIRED ASCII FORMAT:
     contextData?: any,
     mode: AIAssistantMode = 'chat'
   ): Promise<AIResponse> {
+    const startTime = performance.now();
     const todayDate = contextData?.date || new Date().toISOString().split('T')[0];
     if (contextData && !contextData.date) {
       contextData.date = todayDate;
     }
 
     const systemPrompt = this.getSystemPrompt(contextData, mode);
+    const tokensEstimate = Math.ceil((systemPrompt.length + question.length) / 4);
 
     try {
       let content = '';
       let providerUsed: 'groq' | 'gemini' | 'local-engine' = this.activeProvider;
+      let actionButtons: AIActionButton[] = [];
 
       if (this.activeProvider === 'groq' && this.groqApiKey) {
         const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -322,37 +374,51 @@ REQUIRED ASCII FORMAT:
           0.2
         );
       } else {
-        // LOCAL ENTERPRISE DETERMINISTIC ENGINE
         providerUsed = 'local-engine';
-        if (mode === 'analytics') {
-          content = JSON.stringify({
-            summary: `Live Station Context Analysis for "${question}"`,
-            insights: [
-              `Products tracked: ${contextData?.products?.length || 0}`,
-              `Tanks online: ${contextData?.tanks?.length || 0}`,
-            ],
-            metrics: {
-              totalSales: contextData?.activeShift?.submittedCash || 0,
-              inventoryAlerts: contextData?.products?.filter((p: any) => p.isLowStock)?.length || 0,
-            },
-          });
-        } else {
-          content = this.generateDeterministicReceipt(question, contextData);
-        }
+        const deterministicResult = this.generateDeterministicReceipt(question, contextData);
+        content = deterministicResult.text;
+        actionButtons = deterministicResult.buttons;
       }
+
+      const endTime = performance.now();
+      const latencyMs = Math.round(endTime - startTime);
 
       if (mode === 'chat' && !content.includes('Powered by Umar Ali')) {
         content += '\n\n Powered by Umar Ali ⚡';
       }
 
-      return { rawResponse: content, formattedReceipt: content, providerUsed };
-    } catch (error) {
-      logger.error('[AIAssistantService] Cloud API failed, falling back to Local Enterprise Engine:', error);
-      const fallbackContent = this.generateDeterministicReceipt(question, contextData);
+      // Auto-extract action buttons if not present
+      if (actionButtons.length === 0 && contextData?.activeAlerts) {
+        contextData.activeAlerts.slice(0, 2).forEach((alert: any) => {
+          actionButtons.push({
+            label: alert.actionLabel,
+            route: alert.actionRoute,
+            variant: alert.severity === 'high' ? 'danger' : 'warning',
+          });
+        });
+      }
+
       return {
-        rawResponse: fallbackContent,
-        formattedReceipt: fallbackContent,
+        rawResponse: content,
+        formattedReceipt: content,
+        providerUsed,
+        modelName: this.getModelName(),
+        latencyMs,
+        tokensEstimate,
+        actionButtons,
+      };
+    } catch (error) {
+      const endTime = performance.now();
+      logger.error('[AIAssistantService] Cloud API failed, falling back to Local Enterprise Engine:', error);
+      const deterministicResult = this.generateDeterministicReceipt(question, contextData);
+      return {
+        rawResponse: deterministicResult.text,
+        formattedReceipt: deterministicResult.text,
         providerUsed: 'local-engine',
+        modelName: 'Enterprise Offline Copilot (Fallback)',
+        latencyMs: Math.round(endTime - startTime),
+        tokensEstimate,
+        actionButtons: deterministicResult.buttons,
       };
     }
   }
@@ -398,7 +464,6 @@ ${JSON.stringify(contextData)}
       } else if (this.activeProvider === 'gemini' && this.geminiApiKey) {
         content = await callGeminiRest(this.geminiApiKey, prompt, 0.1);
       } else {
-        // LOCAL DETERMINISTIC INSIGHTS
         const lowStockCount = contextData?.products?.filter((p: any) => p.isLowStock)?.length || 0;
         const totalCredit = contextData?.customers?.totalCredit || 0;
         return [
