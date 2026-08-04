@@ -21,6 +21,7 @@ import { InventoryWorkspaceView } from '../components/workspaces/InventoryWorksp
 import { ExpensesWorkspaceView } from '../components/workspaces/ExpensesWorkspaceView';
 import { FinanceWorkspaceView } from '../components/workspaces/FinanceWorkspaceView';
 import { SuppliersWorkspaceView } from '../components/workspaces/SuppliersWorkspaceView';
+import { LedgersWorkspaceView } from '../components/workspaces/LedgersWorkspaceView';
 
 export type BusinessDomainType =
   | 'fuel_operations'
@@ -276,6 +277,8 @@ export const DomainWorkspaceEngine: React.FC<DomainWorkspaceEngineProps> = ({
       return <FinanceWorkspaceView {...commonProps} />;
     case 'suppliers':
       return <SuppliersWorkspaceView {...commonProps} />;
+    case 'ledgers':
+      return <LedgersWorkspaceView {...commonProps} />;
     default:
       break;
   }

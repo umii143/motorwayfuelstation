@@ -2,25 +2,48 @@
  * @license SPDX-License-Identifier: Apache-2.0
  *
  * FuelPro Enterprise Business Operating System v4.0
- * CustomersWorkspaceView — Dedicated Customer Directory & Credit Product Workspace
+ * CustomersWorkspaceView — Dedicated Customer Directory & AR Control Center
  *
- * Implements Enterprise Rules #130, #131, #132, #133, #134, #135, #136, #137, #138, #139, #140, #141 & #142
- * Pure Engine-Driven Render Pattern with TransactionEngine Double-Entry Settlement
+ * Implements Enterprise Rules #130, #131, #135, #140, #166 & #167
+ * 3-Layer Component & Data Isolation delegating to 10 modular sub-workspace tabs.
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { useReportExecution } from '../../../../../hooks/useReportExecution';
-import { EnterpriseRegisterTable } from '../EnterpriseRegisterTable';
 import { RightInspectorPanel } from '../RightInspectorPanel';
 import { QueryContext } from '../../../../../lib/reports-v2/engines/types';
 import { LedgerEngine, CustomerEnrichedRecord } from '../../../../../lib/reports-v2/engines/LedgerEngine';
 import { TransactionEngine } from '../../../../../lib/reports-v2/engines/TransactionEngine';
-import { DollarSign, Send, CheckCircle, X } from 'lucide-react';
+import { resolveWorkspaceRoute } from '../../../../../lib/reports-v2/config/WorkspaceRegistry';
+import { DollarSign, Send, CheckCircle, X, Plus, Users, PhoneCall } from 'lucide-react';
+
+import { CustomerOverviewTab } from './customers/CustomerOverviewTab';
+import { CustomerRegisterTab } from './customers/CustomerRegisterTab';
+import { CustomerLedgerTab } from './customers/CustomerLedgerTab';
+import { OutstandingReceivablesTab } from './customers/OutstandingReceivablesTab';
+import { RecoveryCenterTab } from './customers/RecoveryCenterTab';
+import { CustomerAgingAnalysisTab } from './customers/CustomerAgingAnalysisTab';
+import { CreditLimitsTab } from './customers/CreditLimitsTab';
+import { CustomerStatementsTab } from './customers/CustomerStatementsTab';
+import { CustomerSalesAnalyticsTab } from './customers/CustomerSalesAnalyticsTab';
+import { CustomerAuditTrailTab } from './customers/CustomerAuditTrailTab';
 
 function formatCurrency(v: number | string): string {
   const n = typeof v === 'number' ? v : Number(v) || 0;
   return `₨ ${n.toLocaleString('en-PK')}`;
 }
+
+export type CustomerTabId =
+  | 'overview'
+  | 'register'
+  | 'ledger'
+  | 'outstanding'
+  | 'recovery'
+  | 'aging'
+  | 'credit_limits'
+  | 'statements'
+  | 'analytics'
+  | 'audit';
 
 interface CustomersWorkspaceViewProps {
   reportId: string;
@@ -55,12 +78,17 @@ export const CustomersWorkspaceView: React.FC<CustomersWorkspaceViewProps> = ({
   const paymentsQuery = useReportExecution('PAYMENTS', queryContext);
 
   const [selectedRecord, setSelectedRecord] = useState<Record<string, any> | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'register' | 'ledger' | 'outstanding' | 'recovery' | 'aging'>(
-    reportId === 'CUS_OUTSTANDING' ? 'outstanding' :
-    reportId === 'CUS_RECOVERY' ? 'recovery' : 'overview'
-  );
 
-  const [search, setSearch] = useState('');
+  // Metadata-Driven Active Tab Resolution (Rule #162 & #165)
+  const resolvedRoute = useMemo(() => resolveWorkspaceRoute(reportId), [reportId]);
+  const [activeTab, setActiveTab] = useState<CustomerTabId>((resolvedRoute?.tabId as CustomerTabId) || 'overview');
+
+  useEffect(() => {
+    if (resolvedRoute?.tabId) {
+      setActiveTab(resolvedRoute.tabId as CustomerTabId);
+    }
+  }, [reportId, resolvedRoute]);
+
   const [paymentCustomer, setPaymentCustomer] = useState<CustomerEnrichedRecord | null>(null);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentMode, setPaymentMode] = useState<'cash' | 'bank' | 'easypaisa'>('cash');
@@ -71,7 +99,6 @@ export const CustomersWorkspaceView: React.FC<CustomersWorkspaceViewProps> = ({
   useEffect(() => {
     const unsubscribe = TransactionEngine.subscribe((result) => {
       if (result.success) {
-        // Trigger Engine State Refetch
         customerQuery.refetch?.();
       }
     });
@@ -82,7 +109,7 @@ export const CustomersWorkspaceView: React.FC<CustomersWorkspaceViewProps> = ({
   const salesRows: Record<string, any>[] = salesQuery.result?.register?.rows || [];
   const paymentRows: Record<string, any>[] = paymentsQuery.result?.register?.rows || [];
 
-  // SINGLE SOURCE OF TRUTH LEDGER ENGINE CALCULATION (RULE #140 & #141)
+  // Single Source of Truth Customer Ledger Calculation (Rule #140)
   const enrichedCustomers: CustomerEnrichedRecord[] = useMemo(() => {
     const base = LedgerEngine.calculateCustomerBalances(rawCustomerRows, salesRows, paymentRows);
     return base.map((c) => {
@@ -94,7 +121,7 @@ export const CustomersWorkspaceView: React.FC<CustomersWorkspaceViewProps> = ({
     });
   }, [rawCustomerRows, salesRows, paymentRows, localSettlements]);
 
-  // ENTERPRISE RULES #138 & #139: STRICT ZERO-BALANCE FILTERING FOR OUTSTANDING & RECOVERY
+  // Strict Balance > 0 Debtor Filtering
   const debtorCustomers = useMemo(() => {
     return enrichedCustomers.filter((c) => c.balance > 0);
   }, [enrichedCustomers]);
@@ -107,28 +134,11 @@ export const CustomersWorkspaceView: React.FC<CustomersWorkspaceViewProps> = ({
     return debtorCustomers.filter((c) => c.isOverdue).length;
   }, [debtorCustomers]);
 
-  const currentTabRows = useMemo(() => {
-    let rows = (activeTab === 'outstanding' || activeTab === 'recovery')
-      ? debtorCustomers
-      : enrichedCustomers;
-
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      rows = rows.filter((c) =>
-        c.name.toLowerCase().includes(q) ||
-        c.phone?.toLowerCase().includes(q) ||
-        c.cnic?.toLowerCase().includes(q)
-      );
-    }
-    return rows;
-  }, [activeTab, debtorCustomers, enrichedCustomers, search]);
-
-  // RULE #140: ATOMIC DOUBLE-ENTRY TRANSACTION PROCESSING
+  // Atomic Double-Entry Recovery Payment Settlement
   const handleSettlePayment = () => {
     if (!paymentCustomer || !paymentAmount || Number(paymentAmount) <= 0) return;
     const amt = Number(paymentAmount);
 
-    // Process via TransactionEngine (Double Entry: Credit Customer | Debit Cash/Bank)
     const result = TransactionEngine.processTransaction({
       transactionType: 'CUSTOMER_RECOVERY',
       referenceId: paymentCustomer.id,
@@ -161,25 +171,27 @@ export const CustomersWorkspaceView: React.FC<CustomersWorkspaceViewProps> = ({
   };
 
   return (
-    <div className={`space-y-4 font-sans ${lang === 'ur' ? 'rtl' : ''}`}>
-      {/* ── WORKSPACE HEADER & SUB-NAVIGATION TABS ── */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs">
+    <div className={`space-y-4 font-sans text-slate-800 pb-8 ${lang === 'ur' ? 'rtl' : ''}`}>
+      {/* ── 1. WORKSPACE HEADER & TOP CONTROLS ── */}
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-2xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#0B5C3D] flex items-center justify-center text-xl font-bold">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#0B5C3D] flex items-center justify-center text-xl font-bold shrink-0">
               👥
             </div>
             <div>
               <h1 className="text-lg font-black text-slate-900 tracking-tight leading-tight">
-                {isEn ? 'Customer Directory & Credit Workspace' : 'گاہک ڈائریکٹری و کریڈٹ ورک اسپیس'}
+                {isEn ? 'Customer Relationship & AR Command Center' : 'گاہک ریلیشن شپ و اے آر کنٹرول سینٹر'}
               </h1>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-black border border-emerald-200">
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-black border border-emerald-200">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  {isEn ? 'Single Source of Truth Ledger Engine (Rule #140)' : 'لائیو ڈبل اینٹری لیجر انجن'}
+                  {isEn ? 'Double-Entry AR Ledger Engine (Rule #166)' : 'ڈبل اینٹری اے آر لیجر انجن'}
                 </span>
                 <span className="text-[10px] font-extrabold text-slate-400">
-                  {isEn ? `${enrichedCustomers.length} Total Accounts | ${debtorCustomers.length} Debtor Dues` : `${enrichedCustomers.length} کل کھاتے | ${debtorCustomers.length} مقروض`}
+                  {isEn
+                    ? `SAP / NetSuite Standard • ${enrichedCustomers.length} Accounts | ${debtorCustomers.length} Active Debtors`
+                    : `${enrichedCustomers.length} کل کھاتے | ${debtorCustomers.length} مقروض`}
                 </span>
               </div>
             </div>
@@ -187,277 +199,215 @@ export const CustomersWorkspaceView: React.FC<CustomersWorkspaceViewProps> = ({
 
           <div className="flex items-center gap-2 flex-wrap">
             <button
-              onClick={() => onSelectReport?.('CUS_REGISTER')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0B5C3D] text-white hover:bg-emerald-800 rounded-xl text-xs font-black transition-all shadow-xs cursor-pointer"
+              onClick={() => setActiveTab('register')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#0B5C3D] hover:bg-emerald-800 text-white rounded-xl text-xs font-black transition-all shadow-2xs cursor-pointer"
             >
-              <span>👤</span>
+              <Plus size={14} />
               <span>{isEn ? '+ New Customer' : '+ نیا کسٹمر'}</span>
             </button>
+
             <button
               onClick={() => setActiveTab('recovery')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0B5C3D] text-white hover:bg-emerald-800 rounded-xl text-xs font-black transition-all shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#0B5C3D] hover:bg-emerald-800 text-white rounded-xl text-xs font-black transition-all shadow-2xs cursor-pointer"
             >
               <span>💵</span>
-              <span>{isEn ? 'Recovery Center' : 'وصولی سینٹر'}</span>
+              <span>{isEn ? 'Recovery Center 💰' : 'ریکوری سینٹر 💰'}</span>
             </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 pt-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+        {/* ── 2. SUB-HEADER TABS BAR (10 DEDICATED SUB-WORKSPACES) ── */}
+        <div className="flex items-center gap-1.5 pt-3 overflow-x-auto scrollbar-none">
           {[
-            { id: 'overview', label: 'Overview', labelUr: 'جائزہ' },
-            { id: 'register', label: 'Customer Register', labelUr: 'کسٹمر رجسٹر' },
-            { id: 'ledger', label: 'Customer Ledger', labelUr: 'کسٹمر کھاتہ' },
-            { id: 'outstanding', label: 'Outstanding Dues (Balance > 0)', labelUr: 'واجب الوصول بقایا' },
-            { id: 'recovery', label: 'Recovery Center 💰', labelUr: 'ریکوری سینٹر 💰' },
-            { id: 'aging', label: 'Aging Analysis', labelUr: 'ایجنگ تجزیہ' },
+            { id: 'overview', label: 'Overview' },
+            { id: 'register', label: 'Customer Register' },
+            { id: 'ledger', label: 'Customer Ledger' },
+            { id: 'outstanding', label: 'Outstanding Receivables' },
+            { id: 'recovery', label: 'Recovery Center 💰' },
+            { id: 'aging', label: 'Aging Analysis' },
+            { id: 'credit_limits', label: 'Credit Limits & Risk' },
+            { id: 'statements', label: 'Customer Statements' },
+            { id: 'analytics', label: 'Sales Analytics' },
+            { id: 'audit', label: 'Audit Trail' },
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
+              onClick={() => setActiveTab(tab.id as CustomerTabId)}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === tab.id
-                  ? 'bg-[#0B5C3D] text-white shadow-xs'
+                  ? 'bg-[#0B5C3D] text-white shadow-2xs'
                   : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
               }`}
             >
-              {isEn ? tab.label : tab.labelUr}
+              {tab.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* ── LIVE CUSTOMER KPIS (RULE #141 UNIFIED ENGINE OUTPUT) ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="bg-emerald-50/80 border border-emerald-200/90 rounded-2xl p-4 flex flex-col justify-between shadow-xs">
-          <div className="flex justify-between items-start mb-2">
-            <span className="text-xs font-black text-emerald-900">{isEn ? 'Total Customer Dues' : 'کل گاہک بقایا جات'}</span>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">ENGINE</span>
-          </div>
-          <div className="text-2xl font-black text-[#0B5C3D] tracking-tight">{formatCurrency(totalOutstanding)}</div>
-          <div className="text-[10px] font-extrabold text-emerald-700 mt-2">{isEn ? `${debtorCustomers.length} Active Debtors` : `${debtorCustomers.length} مقروض اکاؤنٹس`}</div>
-        </div>
+      {/* ── 3. DYNAMIC SUB-WORKSPACE RENDERER (RULE #165 & #166 ISOLATED COMPONENTS) ── */}
+      {activeTab === 'overview' && (
+        <CustomerOverviewTab
+          customers={enrichedCustomers}
+          debtorCustomers={debtorCustomers}
+          totalOutstanding={totalOutstanding}
+          overdueCount={overdueCount}
+          lang={lang}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+          onSelectTab={(t) => setActiveTab(t)}
+        />
+      )}
 
-        <div className="bg-blue-50/80 border border-blue-200/90 rounded-2xl p-4 flex flex-col justify-between shadow-xs">
-          <div className="flex justify-between items-start mb-2">
-            <span className="text-xs font-black text-blue-900">{isEn ? 'Total Registered Accounts' : 'کل ایکٹو کسٹمرز'}</span>
-            <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-extrabold">{enrichedCustomers.length} Total</span>
-          </div>
-          <div className="text-2xl font-black text-blue-900 tracking-tight">{enrichedCustomers.length} Accounts</div>
-          <div className="text-[10px] font-extrabold text-blue-700 mt-2">{isEn ? 'Master directory' : 'رجسٹرڈ کھاتے'}</div>
-        </div>
+      {activeTab === 'register' && (
+        <CustomerRegisterTab
+          customers={enrichedCustomers}
+          lang={lang}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+          onOpenNewCustomerModal={() => alert('New Customer Registration Modal')}
+        />
+      )}
 
-        <div className="bg-red-50/80 border border-red-200/90 rounded-2xl p-4 flex flex-col justify-between shadow-xs">
-          <div className="flex justify-between items-start mb-2">
-            <span className="text-xs font-black text-red-900">{isEn ? 'Overdue Debtors (>60d)' : 'پرانے مقروض (>60 دن)'}</span>
-            <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-800 text-[10px] font-extrabold">{overdueCount} Overdue</span>
-          </div>
-          <div className="text-2xl font-black text-red-700 tracking-tight">{overdueCount} Accounts</div>
-          <div className="text-[10px] font-extrabold text-red-600 mt-2">{isEn ? 'High collection priority' : 'وصولی کی اعلی ترجیح'}</div>
-        </div>
+      {activeTab === 'ledger' && (
+        <CustomerLedgerTab
+          customers={enrichedCustomers}
+          lang={lang}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+          onOpenPaymentModal={(c) => setPaymentCustomer(c)}
+        />
+      )}
 
-        <div className="bg-amber-50/80 border border-amber-200/90 rounded-2xl p-4 flex flex-col justify-between shadow-xs">
-          <div className="flex justify-between items-start mb-2">
-            <span className="text-xs font-black text-amber-900">{isEn ? 'Avg Outstanding / Debtor' : 'اوسط بقایا فی مقروض'}</span>
-            <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-extrabold">AVG</span>
-          </div>
-          <div className="text-2xl font-black text-amber-900 tracking-tight">
-            {formatCurrency(debtorCustomers.length > 0 ? totalOutstanding / debtorCustomers.length : 0)}
-          </div>
-          <div className="text-[10px] font-extrabold text-amber-700 mt-2">{isEn ? 'Per debtor balance' : 'اوسط ڈیو'}</div>
-        </div>
-      </div>
+      {activeTab === 'outstanding' && (
+        <OutstandingReceivablesTab
+          debtorCustomers={debtorCustomers}
+          lang={lang}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+          onOpenPaymentModal={(c) => setPaymentCustomer(c)}
+        />
+      )}
 
-      {/* ── WORKSPACE TABLE / RECOVERY CENTER ── */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider">
-              {activeTab === 'recovery'
-                ? (isEn ? '💰 Customer Recovery Collection Center' : '💰 کسٹمر وصولی کلیکشن سینٹر')
-                : activeTab === 'outstanding'
-                ? (isEn ? '📒 Outstanding Dues Register (Balance > 0 Only)' : '📒 واجب الوصول بقایا جات (صرف >0 بیلنس)')
-                : (isEn ? '📋 Customer Master Directory & Ledger' : '📋 گاہک رجسٹر و کریڈٹ لیجر')}
-            </h2>
-            {(activeTab === 'outstanding' || activeTab === 'recovery') && (
-              <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-800 text-[10px] font-black">
-                {isEn ? `${currentTabRows.length} Active Debtors` : `${currentTabRows.length} مقروض`}
-              </span>
-            )}
-          </div>
+      {activeTab === 'recovery' && (
+        <RecoveryCenterTab
+          debtorCustomers={debtorCustomers}
+          lang={lang}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+          onOpenPaymentModal={(c) => setPaymentCustomer(c)}
+        />
+      )}
 
-          <input
-            type="text"
-            placeholder={isEn ? '🔍 Search customer, phone, CNIC...' : '🔍 گاہک، فون یا شناخت تلاش کریں...'}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-900 shadow-xs focus:outline-none placeholder:text-slate-400 min-w-[240px]"
-          />
-        </div>
+      {activeTab === 'aging' && (
+        <CustomerAgingAnalysisTab
+          customers={enrichedCustomers}
+          lang={lang}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+        />
+      )}
 
-        {/* RECOVERY CENTER CUSTOM VIEW WITH ACTION BUTTONS */}
-        {activeTab === 'recovery' ? (
-          currentTabRows.length > 0 ? (
-            <div className="overflow-x-auto rounded-xl border border-slate-200">
-              <table className="w-full text-xs text-left">
-                <thead className="bg-slate-50 text-slate-700 uppercase font-black tracking-wider text-[11px] border-b border-slate-200">
-                  <tr>
-                    <th className="p-3">{isEn ? 'Customer Name' : 'گاہک کا نام'}</th>
-                    <th className="p-3">{isEn ? 'Phone' : 'فون'}</th>
-                    <th className="p-3">{isEn ? 'CNIC' : 'شناختی کارڈ'}</th>
-                    <th className="p-3 text-right">{isEn ? 'Outstanding Due' : 'بقایا رقم'}</th>
-                    <th className="p-3 text-center">{isEn ? 'Recovery Action' : 'وصولی ایکشن'}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 font-bold text-slate-800">
-                  {currentTabRows.map((c) => (
-                    <tr key={c.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="p-3 font-extrabold text-slate-900">{c.name}</td>
-                      <td className="p-3 text-slate-600">{c.phone}</td>
-                      <td className="p-3 text-slate-600">{c.cnic}</td>
-                      <td className="p-3 text-right font-black text-red-600 text-sm">
-                        {formatCurrency(c.balance)}
-                      </td>
-                      <td className="p-3 flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => setPaymentCustomer(c)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#0B5C3D] hover:bg-emerald-800 text-white text-xs font-black shadow-xs transition-all cursor-pointer"
-                        >
-                          <DollarSign size={13} />
-                          <span>{isEn ? 'Receive Payment' : 'وصولی کریں'}</span>
-                        </button>
-                        <a
-                          href={`https://wa.me/${c.phone}?text=${encodeURIComponent(
-                            `Salam ${c.name}, your outstanding fuel account balance is ${formatCurrency(
-                              c.balance
-                            )}. Please settle payment.`
-                          )}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-xs font-black transition-all"
-                        >
-                          <Send size={13} />
-                          <span>WhatsApp</span>
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-slate-200 bg-emerald-50/50 p-10 text-center shadow-xs my-4">
-              <div className="text-4xl mb-3">🎉</div>
-              <h3 className="text-base font-black text-emerald-900 mb-1">
-                {isEn ? 'Zero Outstanding Debtors in Recovery!' : 'وصولی کے لیے کوئی مقروض گاہک باقی نہیں!'}
-              </h3>
-              <p className="text-xs font-semibold text-emerald-700">
-                {isEn ? 'All customer accounts are 100% settled and paid up.' : 'تمام کسٹمر اکاؤنٹس مکمل طور پر کلیئر اور نل بیلنس ہیں۔'}
-              </p>
-            </div>
-          )
-        ) : (
-          currentTabRows.length > 0 ? (
-            <EnterpriseRegisterTable
-              columns={[
-                { id: 'name', header: 'Customer Name', headerUr: 'کسٹمر نام', accessor: 'name', sortable: true },
-                { id: 'phone', header: 'Phone', headerUr: 'فون', accessor: 'phone' },
-                { id: 'cnic', header: 'CNIC / NTN', headerUr: 'شناختی کارڈ', accessor: 'cnic' },
-                { id: 'balance', header: 'Outstanding Due (₨)', headerUr: 'بقایا رقم', accessor: 'balance', isCurrency: true, sortable: true },
-              ]}
-              data={currentTabRows}
-              language={lang}
-              onRowClick={(row) => setSelectedRecord(row)}
-            />
-          ) : (
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-10 text-center shadow-xs my-4">
-              <div className="text-4xl mb-3 opacity-60">👥</div>
-              <h3 className="text-base font-black text-slate-900 mb-1">
-                {isEn ? 'No Debtors Found for Selected Criteria' : 'کوئی مقروض گاہک نہیں ملا'}
-              </h3>
-              <p className="text-xs font-semibold text-slate-500 mb-6 max-w-md mx-auto">
-                {isEn ? 'All accounts are settled or no records match your filter criteria.' : 'منتخب کردہ فلٹر کے مطابق کوئی ریکارڈ نہیں مل سکا۔'}
-              </p>
-            </div>
-          )
-        )}
-      </div>
+      {activeTab === 'credit_limits' && (
+        <CreditLimitsTab
+          customers={enrichedCustomers}
+          lang={lang}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+        />
+      )}
 
-      {/* ── RECOVERY PAYMENT SETTLEMENT MODAL (TRANSACTION ENGINE DOUBLE-ENTRY) ── */}
+      {activeTab === 'statements' && (
+        <CustomerStatementsTab
+          customers={enrichedCustomers}
+          lang={lang}
+        />
+      )}
+
+      {activeTab === 'analytics' && (
+        <CustomerSalesAnalyticsTab
+          customers={enrichedCustomers}
+          lang={lang}
+        />
+      )}
+
+      {activeTab === 'audit' && (
+        <CustomerAuditTrailTab
+          customers={enrichedCustomers}
+          lang={lang}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+        />
+      )}
+
+      {/* ── DOUBLE-ENTRY PAYMENT SETTLEMENT MODAL (RULE #140) ── */}
       {paymentCustomer && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-4">
-            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-              <h3 className="text-base font-black text-slate-900">
-                💵 {isEn ? `Record Payment — ${paymentCustomer.name}` : `وصولی اندراج — ${paymentCustomer.name}`}
-              </h3>
-              <button onClick={() => setPaymentCustomer(null)} className="text-slate-400 hover:text-slate-600">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-2xs">
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-2xl max-w-md w-full font-sans animate-in fade-in zoom-in duration-150">
+            <div className="flex justify-between items-start pb-3 border-b border-slate-100">
+              <div>
+                <span className="text-[10px] font-black uppercase text-[#0B5C3D] tracking-wider">Double-Entry Settlement</span>
+                <h3 className="text-lg font-black text-slate-900 mt-0.5">{paymentCustomer.name}</h3>
+                <p className="text-xs font-bold text-slate-500">Current Due: {formatCurrency(paymentCustomer.balance)}</p>
+              </div>
+              <button
+                onClick={() => setPaymentCustomer(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer"
+              >
                 <X size={18} />
               </button>
             </div>
 
             {paymentSuccessMsg ? (
-              <div className="p-4 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-black flex items-center gap-2">
-                <CheckCircle size={18} className="text-emerald-600" />
-                <span>{paymentSuccessMsg}</span>
+              <div className="py-8 text-center space-y-2">
+                <CheckCircle size={40} className="mx-auto text-emerald-600" />
+                <p className="text-sm font-black text-slate-900">{paymentSuccessMsg}</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex justify-between text-xs font-bold">
-                  <span className="text-slate-500">{isEn ? 'Current Outstanding Balance:' : 'موجودہ بقایا جات:'}</span>
-                  <span className="font-black text-red-600 text-sm">{formatCurrency(paymentCustomer.balance)}</span>
-                </div>
-
+              <div className="space-y-4 pt-4">
                 <div>
-                  <label className="text-xs font-black text-slate-700 block mb-1">
-                    {isEn ? 'Payment Amount (₨)' : 'وصول شدہ رقم (رقم)'}
+                  <label className="block text-xs font-black text-slate-700 mb-1">
+                    {isEn ? 'Collection Amount (₨)' : 'وصولی کی رقم (روپے)'}
                   </label>
                   <input
                     type="number"
-                    placeholder="e.g. 25000"
                     value={paymentAmount}
                     onChange={(e) => setPaymentAmount(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder="e.g. 50000"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-black text-slate-900 focus:outline-none focus:border-[#0B5C3D]"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-black text-slate-700 block mb-1">
-                    {isEn ? 'Payment Mode (Double-Entry Debit Target)' : 'ادائیگی کا ذریعہ'}
+                  <label className="block text-xs font-black text-slate-700 mb-1">
+                    {isEn ? 'Payment Deposit Account' : 'ادائیگی کا ذریعہ'}
                   </label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
-                      { id: 'cash', label: '💵 Cash' },
-                      { id: 'bank', label: '🏦 HBL Bank' },
-                      { id: 'easypaisa', label: '📱 EasyPaisa' },
-                    ].map((mode) => (
+                      { id: 'cash', label: 'Cash Drawer' },
+                      { id: 'bank', label: 'HBL Bank' },
+                      { id: 'easypaisa', label: 'Digital Wallet' },
+                    ].map((m) => (
                       <button
-                        key={mode.id}
-                        onClick={() => setPaymentMode(mode.id as any)}
-                        className={`py-2 rounded-xl text-xs font-black border transition-all cursor-pointer ${
-                          paymentMode === mode.id
+                        key={m.id}
+                        onClick={() => setPaymentMode(m.id as any)}
+                        className={`py-2 px-1 rounded-xl text-xs font-black border transition-all cursor-pointer ${
+                          paymentMode === m.id
                             ? 'bg-[#0B5C3D] text-white border-[#0B5C3D]'
-                            : 'bg-slate-50 text-slate-700 border-slate-200'
+                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                         }`}
                       >
-                        {mode.label}
+                        {m.label}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                <div className="pt-2 flex justify-end gap-2">
+                <div className="pt-2 flex gap-2">
                   <button
                     onClick={() => setPaymentCustomer(null)}
-                    className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold hover:bg-slate-200"
+                    className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black rounded-xl cursor-pointer"
                   >
-                    {isEn ? 'Cancel' : 'منسوخ'}
+                    Cancel
                   </button>
                   <button
                     onClick={handleSettlePayment}
-                    className="px-4 py-2 rounded-xl bg-[#0B5C3D] text-white text-xs font-black hover:bg-emerald-800 transition-all shadow-xs"
+                    className="flex-1 py-2.5 bg-[#0B5C3D] hover:bg-emerald-800 text-white text-xs font-black rounded-xl shadow-2xs cursor-pointer flex items-center justify-center gap-1.5"
                   >
-                    ✓ {isEn ? 'Confirm & Post Transaction' : 'ادائیگی کی تصدیق کریں'}
+                    <Send size={14} />
+                    <span>Post Settlement</span>
                   </button>
                 </div>
               </div>

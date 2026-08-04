@@ -14,8 +14,12 @@
 export interface CustomerEnrichedRecord {
   id: string;
   name: string;
+  code?: string;
   phone?: string;
   cnic?: string;
+  ntn?: string;
+  businessType?: string;
+  salesman?: string;
   creditLimit?: number;
   balance: number; // Single Source of Truth Balance
   isOverdue?: boolean;
@@ -75,9 +79,13 @@ export class LedgerEngine {
       return {
         id: cId || cName,
         name: c.name || c.customerName || 'Customer Account',
+        code: c.code || `CUS-${(cId || cName).substring(0, 4)}`,
         phone: c.phone || '—',
-        cnic: c.cnic || c.ntn || '—',
-        creditLimit: Number(c.creditLimit) || 0,
+        cnic: c.cnic || '—',
+        ntn: c.ntn || '—',
+        businessType: c.businessType || c.category || 'Fleet Operator',
+        salesman: c.salesman || c.officer || 'Zahid Manager',
+        creditLimit: Number(c.creditLimit) || 1000000,
         balance: finalBalance,
         isOverdue: finalBalance > 50000,
         daysOverdue: finalBalance > 50000 ? 65 : 15,

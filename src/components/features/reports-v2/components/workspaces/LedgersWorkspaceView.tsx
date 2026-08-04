@@ -2,31 +2,30 @@
  * @license SPDX-License-Identifier: Apache-2.0
  *
  * FuelPro Enterprise Business Operating System v4.0
- * FinanceWorkspaceView — Finance & Treasury Domain Workspace Router
+ * LedgersWorkspaceView — General Accounting Ledgers Workspace Router
  *
- * Implements Enterprise Rules #130, #131, #135, #162, #163 & #168
- * Clean domain router delegating to modular, isolated sub-workspace components.
+ * Implements Enterprise Rules #130, #131, #135, #162, #163, #168 & #169
+ * Lightweight domain router delegating to modular, isolated sub-workspace components.
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { WorkspaceDateFilterMenu, DateFilterState } from '../WorkspaceDateFilterMenu';
 import { RightInspectorPanel } from '../RightInspectorPanel';
 import { resolveWorkspaceRoute } from '../../../../../lib/reports-v2/config/WorkspaceRegistry';
-import { Settings } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
-import { FinanceOverviewTab } from './finance/FinanceOverviewTab';
-import { CashBookTab } from './finance/CashBookTab';
-import { BankAccountsTab } from './finance/BankAccountsTab';
-import { DigitalWalletsTab } from './finance/DigitalWalletsTab';
-import { CashTransfersTab } from './finance/CashTransfersTab';
-import { IncomeRegisterTab } from './finance/IncomeRegisterTab';
-import { ExpenseRegisterTab } from './finance/ExpenseRegisterTab';
-import { JournalEntriesTab } from './finance/JournalEntriesTab';
-import { ProfitLossTab } from './finance/ProfitLossTab';
-import { CashFlowTab } from './finance/CashFlowTab';
-import { FinancialReportsTab } from './finance/FinancialReportsTab';
+import { OverviewTab } from './ledgers/OverviewTab';
+import { ChartOfAccountsTab } from './ledgers/ChartOfAccountsTab';
+import { GeneralLedgerTab } from './ledgers/GeneralLedgerTab';
+import { CustomerLedgersTab } from './ledgers/CustomerLedgersTab';
+import { SupplierLedgersTab } from './ledgers/SupplierLedgersTab';
+import { CashBookLedgerTab } from './ledgers/CashBookLedgerTab';
+import { BankLedgersTab } from './ledgers/BankLedgersTab';
+import { ExpenseLedgersTab } from './ledgers/ExpenseLedgersTab';
+import { JournalEntriesTab } from './ledgers/JournalEntriesTab';
+import { TrialBalanceTab } from './ledgers/TrialBalanceTab';
 
-interface FinanceWorkspaceViewProps {
+interface LedgersWorkspaceViewProps {
   reportId: string;
   stationId: string;
   orgId: string;
@@ -37,7 +36,7 @@ interface FinanceWorkspaceViewProps {
   onDrilldown?: (nextReportId: string, filterContext?: Record<string, any>) => void;
 }
 
-export const FinanceWorkspaceView: React.FC<FinanceWorkspaceViewProps> = ({
+export const LedgersWorkspaceView: React.FC<LedgersWorkspaceViewProps> = ({
   reportId,
   stationId,
   orgId,
@@ -55,11 +54,16 @@ export const FinanceWorkspaceView: React.FC<FinanceWorkspaceViewProps> = ({
     label: 'May 15, 2025',
   });
 
-  const [selectedAccountFilter, setSelectedAccountFilter] = useState<string>('all');
   const [selectedRecord, setSelectedRecord] = useState<Record<string, any> | null>(null);
 
   const resolvedRoute = useMemo(() => resolveWorkspaceRoute(reportId), [reportId]);
   const [activeTab, setActiveTab] = useState<string>(resolvedRoute?.tabId || 'overview');
+
+  useEffect(() => {
+    if (resolvedRoute?.tabId) {
+      setActiveTab(resolvedRoute.tabId);
+    }
+  }, [reportId, resolvedRoute]);
 
   return (
     <div className={`space-y-4 font-sans text-slate-800 pb-8 ${lang === 'ur' ? 'rtl' : ''}`}>
@@ -67,16 +71,16 @@ export const FinanceWorkspaceView: React.FC<FinanceWorkspaceViewProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-xs">
         <div>
           <h1 className="text-xl font-black text-slate-900 tracking-tight leading-tight flex items-center gap-2">
-            <span>💰</span>
-            <span>Finance & Treasury Workspace</span>
+            <span>📒</span>
+            <span>General Accounting Ledgers & Chart of Accounts</span>
           </h1>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-black border border-emerald-200">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Live Sync 🟢
+              Double-Entry Accounting Engine 🟢
             </span>
             <span className="text-xs font-bold text-slate-500">
-              Complete financial control & treasury management
+              SAP & NetSuite Standard GL Master
             </span>
           </div>
         </div>
@@ -84,44 +88,30 @@ export const FinanceWorkspaceView: React.FC<FinanceWorkspaceViewProps> = ({
         {/* Right Top Controls */}
         <div className="flex items-center gap-2 flex-wrap">
           <WorkspaceDateFilterMenu value={dateFilter} onChange={setDateFilter} lang={lang} />
-          
-          <select
-            value={selectedAccountFilter}
-            onChange={(e) => setSelectedAccountFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:border-[#0B5C3D]"
-          >
-            <option value="all">All Accounts ▾</option>
-            <option value="cash">Cash In Hand</option>
-            <option value="hbl">HBL Operating Account</option>
-            <option value="mcb">MCB Bank</option>
-            <option value="ubl">UBL Account</option>
-            <option value="easypaisa">EasyPaisa Wallet</option>
-          </select>
 
           <button
-            onClick={() => setActiveTab('overview')}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black rounded-xl border border-slate-200 cursor-pointer"
+            onClick={() => setActiveTab('journals')}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#0B5C3D] hover:bg-emerald-800 text-white text-xs font-black rounded-xl shadow-xs transition-all cursor-pointer"
           >
-            <Settings size={15} />
-            <span>⚙ Customize Dashboard</span>
+            <Plus size={15} />
+            <span>+ New Journal Entry</span>
           </button>
         </div>
       </div>
 
-      {/* ── 2. SUB-HEADER TABS BAR (11 DEDICATED TABS) ── */}
+      {/* ── 2. SUB-HEADER TABS BAR (10 DEDICATED SUB-WORKSPACES) ── */}
       <div className="bg-white rounded-2xl border border-slate-200/90 p-2 shadow-xs flex items-center gap-1 overflow-x-auto scrollbar-none">
         {[
           { id: 'overview', label: 'Overview' },
+          { id: 'coa', label: 'Chart of Accounts (COA)' },
+          { id: 'general', label: 'General Ledger' },
+          { id: 'customers', label: 'Customer Ledgers' },
+          { id: 'suppliers', label: 'Supplier Ledgers' },
           { id: 'cash', label: 'Cash Book' },
-          { id: 'banks', label: 'Bank Accounts' },
-          { id: 'wallets', label: 'Digital Wallets' },
-          { id: 'transfers', label: 'Cash Transfers' },
-          { id: 'income', label: 'Income Register' },
-          { id: 'expenses', label: 'Expense Register' },
+          { id: 'bank', label: 'Bank Ledgers' },
+          { id: 'expenses', label: 'Expense Ledgers' },
           { id: 'journals', label: 'Journal Entries' },
-          { id: 'pnl', label: 'Profit & Loss' },
-          { id: 'cashflow', label: 'Cash Flow' },
-          { id: 'reports', label: 'Financial Reports' },
+          { id: 'trial_balance', label: 'Trial Balance' },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -137,52 +127,58 @@ export const FinanceWorkspaceView: React.FC<FinanceWorkspaceViewProps> = ({
         ))}
       </div>
 
-      {/* ── 3. DYNAMIC SUB-WORKSPACE RENDERER ── */}
+      {/* ── 3. DYNAMIC SUB-WORKSPACE RENDERER (RULE #169 ISOLATED COMPONENTS) ── */}
       {activeTab === 'overview' && (
-        <FinanceOverviewTab
+        <OverviewTab
           lang={lang}
-          onSelectTab={(tab) => setActiveTab(tab)}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+        />
+      )}
+
+      {activeTab === 'coa' && (
+        <ChartOfAccountsTab
+          lang={lang}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+        />
+      )}
+
+      {activeTab === 'general' && (
+        <GeneralLedgerTab
+          lang={lang}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+        />
+      )}
+
+      {activeTab === 'customers' && (
+        <CustomerLedgersTab
+          lang={lang}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+        />
+      )}
+
+      {activeTab === 'suppliers' && (
+        <SupplierLedgersTab
+          lang={lang}
           onOpenInspector={(rec) => setSelectedRecord(rec)}
         />
       )}
 
       {activeTab === 'cash' && (
-        <CashBookTab
+        <CashBookLedgerTab
           lang={lang}
           onOpenInspector={(rec) => setSelectedRecord(rec)}
         />
       )}
 
-      {activeTab === 'banks' && (
-        <BankAccountsTab
-          lang={lang}
-          onOpenInspector={(rec) => setSelectedRecord(rec)}
-        />
-      )}
-
-      {activeTab === 'wallets' && (
-        <DigitalWalletsTab
-          lang={lang}
-          onOpenInspector={(rec) => setSelectedRecord(rec)}
-        />
-      )}
-
-      {activeTab === 'transfers' && (
-        <CashTransfersTab
-          lang={lang}
-          onOpenInspector={(rec) => setSelectedRecord(rec)}
-        />
-      )}
-
-      {activeTab === 'income' && (
-        <IncomeRegisterTab
+      {activeTab === 'bank' && (
+        <BankLedgersTab
           lang={lang}
           onOpenInspector={(rec) => setSelectedRecord(rec)}
         />
       )}
 
       {activeTab === 'expenses' && (
-        <ExpenseRegisterTab
+        <ExpenseLedgersTab
           lang={lang}
           onOpenInspector={(rec) => setSelectedRecord(rec)}
         />
@@ -195,16 +191,11 @@ export const FinanceWorkspaceView: React.FC<FinanceWorkspaceViewProps> = ({
         />
       )}
 
-      {activeTab === 'pnl' && (
-        <ProfitLossTab lang={lang} />
-      )}
-
-      {activeTab === 'cashflow' && (
-        <CashFlowTab lang={lang} />
-      )}
-
-      {activeTab === 'reports' && (
-        <FinancialReportsTab lang={lang} />
+      {activeTab === 'trial_balance' && (
+        <TrialBalanceTab
+          lang={lang}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+        />
       )}
 
       {/* ── 7-TAB RIGHT INSPECTOR DRAWER ── */}

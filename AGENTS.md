@@ -1057,3 +1057,93 @@ This ensures a purchase visible in the Purchase Workspace also reflects outstand
 ## Non-Negotiable Architecture Statement
 > *One Transaction -> One Authoritative Source -> All Dependent Modules Synced. No duplicate business state.*
 
+# 139. ENTERPRISE RULE #139 — SINGLE LEDGER ENGINE ⭐⭐⭐⭐⭐
+
+> **No financial balance may ever be calculated inside a React component. Every balance (Customer Outstanding, Supplier Payable, Cash, Bank, Digital Wallet, Profit, Loss) MUST originate exclusively from one central Ledger Engine / Finance Engine.**
+
+Rule #138 establishes that there is a single source of truth, but does not state where that source lives. Rule #139 makes it explicit: the authoritative source for ALL financial state is the centralized Ledger Engine, never ad-hoc arithmetic in UI code.
+
+## Core Principle
+
+- A workspace may only *read* a balance from the Ledger Engine.
+- A workspace may never *compute* a balance locally (e.g. summing transactions inside a component to derive an outstanding amount).
+- The Ledger Engine is the single writer that produces balances consumed by every workspace.
+
+## Why This Rule Exists
+
+Without it, balances drift between screens—exactly the defect where a Supplier showed Rs 0 outstanding in one workspace while a Purchase in another workspace clearly carried an amount. Centralizing balance computation in the Ledger Engine guarantees every workspace reads the identical, authoritative figure.
+
+## STRICTLY PROHIBITED ❌
+- Calculating Customer Outstanding, Supplier Payable, Cash, Bank, Wallet, Profit, or Loss inside a React component
+- Maintaining a second, local copy of a balance for display purposes
+- Inline increment/decrement of balances (e.g. `balance += amount`) outside the Ledger Engine
+
+## MANDATORY ✅
+- All financial balances flow through the central Ledger Engine / Finance Engine
+- Balances are derived from immutable journal entries, never from component-local aggregation
+- Every workspace renders balances sourced from the same engine, ensuring cross-workspace consistency
+
+## Non-Negotiable Architecture Statement
+> *One Balance -> One Ledger Engine -> Every Workspace reads the same figure. Financial state is never computed in the UI.*
+
+# 163. ENTERPRISE RULE #163 — WORKSPACE REGISTRY IS THE ONLY NAVIGATION AUTHORITY ⭐⭐⭐⭐⭐
+
+> **`WorkspaceRegistry.ts` is the single authority for all navigation across the ERP. Hardcoded route strings or duplicated navigation maps in components, sidebars, headers, search, command palette, favorites, or deep links are strictly prohibited.**
+
+Every navigation trigger (Sidebar Launcher, Favorites, Recents, Global Search, Command Palette `Ctrl+K`, Notifications, AI Assistant, Deep Links, Inspector) MUST resolve its route exclusively via `WorkspaceRegistry.ts`.
+
+---
+
+# 164. ENTERPRISE RULE #164 — WORKSPACE LAZY LOADING ⭐⭐⭐⭐⭐
+
+> **Business Domain Workspaces MUST load asynchronously on-demand (`React.lazy` / dynamic imports). Non-active workspace modules must never clutter initial page load bundle.**
+
+When a user opens Fuel Operations, only the Fuel Operations bundle loads. Inventory, Finance, Customers, Suppliers, and Purchases remain unloaded until explicitly navigated to by the user.
+
+---
+
+# 165. ENTERPRISE RULE #165 — WORKSPACE STATE PERSISTENCE ⭐⭐⭐⭐⭐
+
+> **Navigating between business domain workspaces MUST preserve and restore workspace user state (active sub-tab, search text, active filters, scroll position, selected inspector record).**
+
+When a user switches from Inventory to Finance and back to Inventory, their active sub-tab (e.g. `Dip Readings`), selected date filter, search query, and open inspector drawer MUST automatically restore to their exact prior state.
+
+---
+
+# 166. ENTERPRISE RULE #166 — WORKSPACE CONTEXT MEMORY ⭐⭐⭐⭐⭐
+
+> **Drilldown context and selected object state MUST be preserved across domain workspace transitions.**
+
+If a user inspects a customer recovery item, navigates to Customer Ledger, and returns to Recovery, the selected customer context remains active.
+
+---
+
+# 167. ENTERPRISE RULE #167 — WORKSPACE PERMISSION MATRIX ⭐⭐⭐⭐⭐
+
+> **Every workspace route MUST enforce explicit role-based permission checks (`permission: 'VIEW_FUEL' | 'VIEW_INV' | 'VIEW_CUS' | 'VIEW_SUP' | 'VIEW_FIN'`). Global un-scoped permissions are strictly prohibited.**
+
+---
+
+# 168. ENTERPRISE RULE #168 — METADATA-RICH ROUTE REGISTRY ⭐⭐⭐⭐⭐
+
+> **Every route entry in `WorkspaceRegistry.ts` MUST contain rich operational metadata (`reportId`, `workspaceId`, `tabId`, `route`, `permission`, `label`, `labelUr`, `searchPlaceholder`, `exportEnabled`, `allowFavorites`, `allowRecent`).**
+
+Adding a new business domain (e.g. Fleet, LPG, Mart, Lubricants, Tyre Shop, EV Charging) requires ONLY registering a new metadata entry in `WorkspaceRegistry.ts`. The platform automatically generates the workspace UI, header tabs, search, favorites, export, permissions, and routing without modifying core platform code.
+
+---
+
+# 164. ENTERPRISE RULE #164 — PROCUREMENT DOMAIN ISOLATION ⭐⭐⭐⭐⭐
+
+> **Purchases Workspace is responsible ONLY for the complete Procurement Lifecycle (Requisitions, Approval Workflow, Purchase Orders, Supplier Quotations, Rate Comparison, Bowser Deliveries, GRN, 3-Way Invoice Matching, Supplier Performance, Procurement Analytics, Documents, Audit Trail). Purchases Workspace MUST NEVER contain Customer Management, Cash Book, Ledger Accounting, Fuel Sales, Tank Operations, or Inventory Valuation.**
+
+Inventory is responsible for stock after successful GRN posting. Finance is responsible for supplier payments after invoice approval. Suppliers Workspace is responsible for supplier master records and accounts payable. All financial postings MUST be executed through the TransactionEngine and LedgerEngine.
+
+---
+
+# 169. ENTERPRISE RULE #169 — DEDICATED LEDGER TAB COMPONENT ISOLATION ⭐⭐⭐⭐⭐
+
+> **Every Ledger Tab MUST have its own dedicated component, data schema, KPI cards, filters, action bar, inspector panel, export engine, and transaction provider. Shared fallback tables or reused generic schemas are strictly prohibited. `LedgersWorkspaceView.tsx` shall act only as a lightweight domain router and state coordinator.**
+
+
+
+

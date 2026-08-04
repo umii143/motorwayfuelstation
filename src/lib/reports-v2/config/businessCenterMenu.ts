@@ -136,9 +136,9 @@ export const BUSINESS_CENTER_MENU: readonly BusinessMenuGroup[] = [
     homeReportId: 'DOMAIN_CUS_HOME',
     items: [
       { reportId: 'CUS_REGISTER', label: 'Customer Register', labelUr: 'گاہک رجسٹر' },
-      { reportId: 'CUS_OUTSTANDING', label: 'Outstanding', labelUr: 'بقایا' },
-      { reportId: 'CUS_RECOVERY', label: 'Recovery', labelUr: 'وصولی' },
-      { reportId: 'CUS_AGING', label: 'Aging Report', labelUr: 'ایجنگ رپورٹ' },
+      { reportId: 'CUS_OUTSTANDING', label: 'Outstanding Receivables', labelUr: 'واجب الوصول بقایا' },
+      { reportId: 'CUS_RECOVERY', label: 'Recovery Center 💰', labelUr: 'ریکوری سینٹر 💰' },
+      { reportId: 'CUS_AGING', label: 'Aging Analysis', labelUr: 'ایجنگ تجزیہ' },
     ],
   },
   {
@@ -150,8 +150,8 @@ export const BUSINESS_CENTER_MENU: readonly BusinessMenuGroup[] = [
     homeReportId: 'DOMAIN_SUP_HOME',
     items: [
       { reportId: 'SUP_REGISTER', label: 'Supplier Register', labelUr: 'سپلائر رجسٹر' },
-      { reportId: 'SUP_OUTSTANDING', label: 'Outstanding', labelUr: 'بقایا' },
-      { reportId: 'SUP_PAYMENTS', label: 'Payments', labelUr: 'ادائیگیاں' },
+      { reportId: 'SUP_OUTSTANDING', label: 'Outstanding Payables', labelUr: 'واجب الادا بقایا' },
+      { reportId: 'SUP_PAYMENTS', label: 'Supplier Payment Center 💰', labelUr: 'سپلائر ادائیگی سینٹر 💰' },
       { reportId: 'SUP_HISTORY', label: 'Purchase History', labelUr: 'خریداری کی تاریخ' },
     ],
   },
@@ -213,6 +213,7 @@ export function findMenuItem(reportId: string): (BusinessMenuItem & { groupId: s
 export function getAvailableReportIds(): string[] {
   const ids: string[] = [];
   for (const group of BUSINESS_CENTER_MENU) {
+    if (group.homeReportId) ids.push(group.homeReportId);
     for (const item of group.items) {
       if (!item.comingSoon) ids.push(item.reportId);
     }

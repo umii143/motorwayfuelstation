@@ -4,18 +4,14 @@
  * FuelPro Enterprise Business Operating System v4.0
  * BusinessCenterRouter — Enterprise Process Router & Domain Resolver
  *
- * Implements Enterprise Rule #130, #131, #132, #133, #135 & #136
- *
- * Maps any active report/process ID (e.g., 'FS_REGISTER', 'L1', 'FIN_CASHBOOK', 'I', 'P1')
- * to its parent Business Domain (fuel_operations, inventory, purchases, finance, ledgers,
- * customers, suppliers, staff, pricing, analytics, fleet, lpg, lubricants, tyre, mart, payroll, compliance).
- *
- * Delegates rendering to the unified DomainWorkspaceEngine.
+ * Implements Enterprise Rule #130, #131, #132, #135, #136, #162 & #163
+ * Metadata-Driven Routing via WorkspaceRegistry.ts
  */
 
 import React, { useMemo } from 'react';
 import { DomainWorkspaceEngine, BusinessDomainType } from './DomainWorkspaceEngine';
 import { ReportConfigLoader } from '../../../../lib/reports-v2/engines/ReportConfigLoader';
+import { resolveWorkspaceRoute } from '../../../../lib/reports-v2/config/WorkspaceRegistry';
 
 interface BusinessCenterRouterProps {
   reportId: string;
@@ -29,11 +25,15 @@ interface BusinessCenterRouterProps {
 }
 
 /**
- * Maps process/report IDs to their primary Business Domain
+ * Maps process/report IDs to their primary Business Domain via WorkspaceRegistry.ts
  */
 export function resolveBusinessDomain(reportId: string): BusinessDomainType {
-  const upper = reportId.toUpperCase();
+  const route = resolveWorkspaceRoute(reportId);
+  if (route?.workspaceId) {
+    return route.workspaceId as BusinessDomainType;
+  }
 
+  const upper = reportId.toUpperCase();
   if (upper.startsWith('DOMAIN_FUEL') || upper.startsWith('FS_') || upper === 'A' || upper === 'C2') {
     return 'fuel_operations';
   }
@@ -49,10 +49,13 @@ export function resolveBusinessDomain(reportId: string): BusinessDomainType {
   if (upper.startsWith('DOMAIN_FIN') || upper.startsWith('FIN_') || upper === 'C1' || upper === 'B') {
     return 'finance';
   }
-  if (upper.startsWith('DOMAIN_CUS') || upper.startsWith('CUS_') || upper === 'L1') {
+  if (upper.startsWith('DOMAIN_LEDGER') || upper.startsWith('LED_') || upper === 'L1') {
+    return 'ledgers';
+  }
+  if (upper.startsWith('DOMAIN_CUS') || upper.startsWith('CUS_')) {
     return 'customers';
   }
-  if (upper.startsWith('DOMAIN_SUP') || upper.startsWith('SUP_') || upper === 'LED_SUPPLIER') {
+  if (upper.startsWith('DOMAIN_SUP') || upper.startsWith('SUP_')) {
     return 'suppliers';
   }
   if (upper.startsWith('DOMAIN_STF') || upper.startsWith('STF_') || upper === 'SHIFT') {
@@ -64,10 +67,6 @@ export function resolveBusinessDomain(reportId: string): BusinessDomainType {
   if (upper.startsWith('DOMAIN_ANL') || upper.startsWith('ANL_') || upper === 'P1') {
     return 'analytics';
   }
-  if (upper.startsWith('FLEET_')) return 'fleet';
-  if (upper.startsWith('LPG_')) return 'lpg';
-  if (upper.startsWith('LUBE_')) return 'lubricants';
-  if (upper.startsWith('MART_')) return 'mart';
 
   return 'fuel_operations';
 }
