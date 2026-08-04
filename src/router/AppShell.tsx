@@ -29,8 +29,7 @@ const SmartSuggestions = React.lazy(() => import('../components/shared/SmartSugg
 const AIAssistant = React.lazy(() => import('../components/features/AIAssistant/AIAssistant'));
 
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
-import { useAppLock } from '../hooks/useAppLock';
-import ScreenLock from '../components/ui/ScreenLock';
+import IdleScreenLock from '../components/shared/IdleScreenLock';
 import { RefreshCw, AlertTriangle, CheckCircle2, XCircle, Info } from 'lucide-react';
 import { PoweredByUmarAli } from '../components/shared/PoweredByUmarAli';
 import { dbFS } from '../lib/firebase';
@@ -54,7 +53,6 @@ export const AppShell = () => {
  handleSwitchStation, setSettings, setTanks, setNozzles, setProducts, setStaff, setPumps
  } = props;
 
- const { isAppLocked, unlockApp } = useAppLock(settings);
  const { isRefreshing, handleTouchStart, handleTouchMove, handleTouchEnd } = usePullToRefresh(async () => {
  await new Promise(resolve => setTimeout(resolve, 800));
  window.location.reload();
@@ -145,6 +143,7 @@ export const AppShell = () => {
  return (
  <div className={`h-[100dvh] w-full overflow-hidden flex flex-col bg-[var(--bg-app)] text-[var(--text-main)] selection:bg-[var(--color-accent)]/20 selection:text-[var(--color-accent)] transition-colors duration-500`}>
  <EOCEventSubscriber />
+ <IdleScreenLock />
  <OfflineIndicator />
  <AutoUpdatePrompt />
  <LocalStorageMigrationWizard />

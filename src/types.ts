@@ -67,9 +67,10 @@ export interface Product extends TenantDocument {
  dealerMarginPerUnit?: number;
  currentDealerMargin?: number;
 
- // Backward compatibility / UI requirements
- purchaseRate?: number;
- currentRate?: number;
+  // Backward compatibility / UI requirements
+  purchaseRate?: number;
+  currentRate?: number;
+  costPrice?: number; // Unit cost price (reporting/inventory valuation)
 }
 
 export interface Nozzle extends TenantDocument {
@@ -183,6 +184,7 @@ export interface ExpenseEntry extends TenantDocument {
   gps?: string;
   device?: string;
   ip?: string;
+  recordedBy?: string; // User who recorded the expense (reporting)
   auditTrail?: DiscountAuditLog[];
 }
 
@@ -232,10 +234,11 @@ export interface LubePosSale extends TenantDocument {
  changeGiven: number;
  notes?: string;
  items: LubePosSaleLine[];
- isRecovery?: boolean;
- isAdjustment?: boolean;
- isReturn?: boolean;
- returnedSaleId?: string;
+  isRecovery?: boolean;
+  isAdjustment?: boolean;
+  isReturn?: boolean;
+  returnedSaleId?: string;
+  totalQuantity?: number; // Aggregate quantity across line items (reporting)
 }
 
 export interface SupplierPayment extends TenantDocument {
@@ -425,11 +428,14 @@ export interface Shift extends TenantDocument {
  overage: number;
  cashVariance?: number;
 
- // Backward compatibility / UI requirements
- cashierName?: string;
- totalSales?: number;
- time?: string;
- pumpReadings?: any;
+  // Backward compatibility / UI requirements
+  cashierName?: string;
+  shiftName?: string; // Display shift name (reporting)
+  operatorId?: string; // Operator/staff id (reporting)
+  operatorName?: string; // Operator/staff display name (reporting)
+  totalSales?: number;
+  time?: string;
+  pumpReadings?: any;
 }
 
 export interface ReceiptLine {
@@ -489,6 +495,7 @@ export interface DigitalAccount extends TenantDocument {
   merchantId?: string;
   terminalId?: string;
   qrCodeData?: string;
+  method?: string; // Payment method label (reporting)
 }
 
 export interface MerchantTerminal extends TenantDocument {
@@ -798,26 +805,39 @@ export interface SupplierPerformanceScore extends TenantDocument {
 }
 
 export interface StockTransaction extends TenantDocument {
- id: string;
- itemId: string;
- type: 'receipt' | 'sale' | 'adjustment';
- quantity: number;
- by: string;
- date: string;
- amount?: number;
- purchasePrice?: number;
- sellingPrice?: number;
- fuelType?: string;
- supplierId?: string;
- carriageCost?: number;
- tankId?: string;
- // Purchase Financials
- paymentMode?: 'cash' | 'credit' | 'bank' | 'digital';
- amountPaid?: number;
- bankAccountId?: string;
- dueDate?: string;
- invoiceNo?: string;
- notes?: string;
+  id: string;
+  itemId: string;
+  productId?: string; // Fuel/lube product id (reporting)
+  productName?: string; // Product display name (reporting)
+  invoiceNumber?: string; // Supplier invoice number (reporting)
+  receivedBy?: string; // Person who received the delivery (reporting)
+  type: 'receipt' | 'sale' | 'adjustment' | 'dispense';
+  quantity: number;
+  by: string;
+  date: string;
+  amount?: number;
+  totalAmount?: number; // Total line amount (reporting)
+  rate?: number; // Unit rate (reporting)
+  purchasePrice?: number;
+  sellingPrice?: number;
+  fuelType?: string;
+  supplierId?: string;
+  supplierName?: string; // Supplier display name (reporting)
+  challanNo?: string; // Delivery challan reference (reporting)
+  densityObserved?: number; // Observed density (petroleum reporting)
+  vehicleNo?: string; // Delivery vehicle number (reporting)
+  carriageCost?: number;
+  tankId?: string;
+  shiftId?: string; // Linked shift (fuel dispense reporting)
+  pumpId?: string; // Linked pump (fuel dispense reporting)
+  nozzleId?: string; // Linked nozzle (fuel dispense reporting)
+  // Purchase Financials
+  paymentMode?: 'cash' | 'credit' | 'bank' | 'digital';
+  amountPaid?: number;
+  bankAccountId?: string;
+  dueDate?: string;
+  invoiceNo?: string;
+  notes?: string;
 }
 
 export interface Station extends TenantDocument {
@@ -929,11 +949,14 @@ export interface Tank extends TenantDocument {
  capacity: number;
  safeLevel: number;
  criticalLevel: number;
- currentStock: number;
- openingStock: number;
- physicalLabel?: string;
- calibrationDue?: string;
- dipChart: { cm: number; liters: number }[];
+  currentStock: number;
+  currentVolume?: number; // Realtime pumpable volume (reporting fallback)
+  currentDip?: number; // Latest hydrostatic dip reading (reporting)
+  fuelType?: string; // Fuel grade/category (reporting)
+  openingStock: number;
+  physicalLabel?: string;
+  calibrationDue?: string;
+  dipChart: { cm: number; liters: number }[];
 }
 
 export interface Attachment {

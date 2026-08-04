@@ -127,7 +127,7 @@ export default function FuelPurchaseHistoryReport({
     }
 
     const totalLitersPurchased = receipts.reduce((s, r) => s + r.quantity, 0);
-    const totalPurchaseCost = receipts.reduce((s, r) => s + (r.totalAmount || (r.quantity * r.rate)), 0);
+    const totalPurchaseCost = receipts.reduce((s, r) => s + (r.totalAmount || (r.quantity * (r.rate ?? 0))), 0);
     const avgCostPerLtr = totalLitersPurchased > 0 ? (totalPurchaseCost / totalLitersPurchased) : 0;
     const avgDeliverySize = receipts.length > 0 ? Math.round(totalLitersPurchased / receipts.length) : 0;
 
@@ -137,7 +137,7 @@ export default function FuelPurchaseHistoryReport({
       const supName = r.supplierName || 'Primary OMC Supplier';
       const existing = supplierMap.get(supName) || { name: supName, liters: 0, totalCost: 0, count: 0, lastDate: r.date };
       existing.liters += r.quantity;
-      existing.totalCost += (r.totalAmount || (r.quantity * r.rate));
+      existing.totalCost += (r.totalAmount || (r.quantity * (r.rate ?? 0)));
       existing.count += 1;
       supplierMap.set(supName, existing);
     });

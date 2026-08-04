@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { fetchWithAuth } from '../lib/api';
 import { jarvisFunctionDeclarations, executeJarvisFunction } from '../lib/AIFunctionRegistry';
 import { logger } from '../lib/logger';
+import { aiAssistantService } from '../services/aiAssistantService';
 
 interface Message {
  role: 'user' | 'model' | 'function';
@@ -187,12 +188,19 @@ export function useJarvis() {
  speak(data.reply);
  }
 
- } catch (err) {
- logger.error('Jarvis Error:', err);
- speak("Sorry Sir, I encountered a network error connecting to the backend gateway.");
- } finally {
- setIsProcessing(false);
- }
+  } catch (err) {
+  logger.error('Jarvis Backend Error, using local AI fallback:', err);
+  try {
+    const fallbackRes = await aiAssistantService.askQuestion(finalTranscript);
+    const replyText = fallbackRes.rawResponse || "I am online and operational, Sir.";
+    setChatHistory(prev => [...prev, { role: 'model', parts: [{ text: replyText }] }]);
+    speak(replyText);
+  } catch (fallbackErr) {
+    speak("Sorry Sir, I encountered an issue processing your query.");
+  }
+  } finally {
+  setIsProcessing(false);
+  }
  }, [chatHistory]);
 
  useEffect(() => {

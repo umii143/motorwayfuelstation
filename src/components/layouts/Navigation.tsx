@@ -69,6 +69,7 @@ import { useShiftStore } from '../../stores/useShiftStore';
 import { useFinancialStore } from '../../stores/useFinancialStore';
 import { useSupplierStore } from '../../stores/useSupplierStore';
 import { fetchWithAuth } from '../../lib/api';
+import { aiAssistantService } from '../../services/aiAssistantService';
 import { motion } from 'framer-motion';
 import { haptic } from '../../utils/haptics';
 import { BottomSheet } from '../shared/BottomSheet';
@@ -173,7 +174,7 @@ const Navigation = React.memo(function Navigation({
  { id: 'expenses', section: 'operations', icon: TrendingDown, label: 'Expenses', urdu: 'اخراجات', showInLube: true },
  { id: 'staff', section: 'operations', icon: Users2, label: 'Staff & Payroll', urdu: 'اسٹاف اور تنخواہ', showInLube: true },
  // ANALYTICS
- { id: 'reports', section: 'analytics', icon: FileBarChart, label: isLube ? 'Lube Reports' : 'Advanced Reports (104)', urdu: isLube ? 'لیوب رپورٹس' : 'ایڈوانسڈ رپورٹس', showInLube: true },
+ { id: 'reports', section: 'analytics', icon: FileBarChart, label: isLube ? 'Lube Reports' : 'Business Center', urdu: isLube ? 'لیوب رپورٹس' : 'بزنس سینٹر', showInLube: true },
  { id: 'dip_calculator', section: 'analytics', icon: Droplets, label: 'Dip Chart Calculator', urdu: 'دپ چارٹ کیلکولیٹر', showInLube: false },
 
  { id: 'ai_analytics', section: 'analytics', icon: Sparkles, label: 'AI Analytics Hub', urdu: 'اے آئی اینالٹکس', showInLube: true },
@@ -286,9 +287,7 @@ const Navigation = React.memo(function Navigation({
  setAiSearchResult(null);
  setGlobalSearch('');
 
- try {
  // Prepare compact data context to avoid overwhelming the payload size
- // Take only the most relevant fields or a subset for extremely large arrays.
  const aiContext = {
  customers: customers.map(c => ({ name: c.name, balance: c.balance, limit: c.creditLimit })),
  suppliers: suppliers.map(s => ({ name: s.name, balance: s.balance })),
@@ -300,6 +299,7 @@ const Navigation = React.memo(function Navigation({
  recentExpenses: standaloneExpenses.slice(0, 15).map(e => ({ category: e.category, amount: e.amount, date: e.date }))
  };
 
+ try {
  const response = await fetchWithAuth('/api/ai-assistant', {
  method: 'POST',
  headers: { 'Content-Type': 'application/json' },
@@ -315,8 +315,13 @@ const Navigation = React.memo(function Navigation({
  const data = await response.json();
  setAiSearchResult(data.reply);
  } catch (error) {
- logger.error(String(error));
- setAiSearchResult("⚠️ Failed to reach AI services or data context too large.");
+  logger.error(String(error));
+  try {
+    const fallback = await aiAssistantService.askQuestion(globalSearch, aiContext);
+    setAiSearchResult(fallback.rawResponse || "No response generated.");
+  } catch (fallbackError) {
+    setAiSearchResult("⚠️ Failed to reach AI services. Please check network connection.");
+  }
  } finally {
  setIsAiSearching(false);
  }

@@ -64,6 +64,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
     // OPERATIONS
     { id: 'dashboard', section: 'operations', icon: LayoutDashboard, label: 'Dashboard', urdu: 'ڈیش بورڈ', showInLube: true },
     { id: isLubeBusiness ? 'lube_pos' : 'shift_wizard', section: 'operations', icon: RefreshCw, label: isLubeBusiness ? 'Lube POS Terminal' : 'Shift Wizard', urdu: isLubeBusiness ? 'لیوب پی او ایس' : 'شفٹ وزرڈ', showInLube: true, badge: activeShift ? 'LIVE' : undefined, badgeColor: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30' },
+    { id: 'fuel_sales', section: 'operations', icon: Fuel, label: 'Fuel Sales Module', urdu: 'فیول سیلز', showInLube: false },
     { id: 'shift_logs', section: 'operations', icon: History, label: 'Shift Logs & Audit', urdu: 'شفٹ لاگز', showInLube: false },
     { id: 'price_management', section: 'operations', icon: DollarSign, label: 'Price Management', urdu: 'قیمتیں اور نرخ', showInLube: false },
     { id: 'discounts', section: 'operations', icon: Tag, label: 'Discounts', urdu: 'ڈسکاؤنٹس', showInLube: true },
@@ -78,10 +79,11 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
     // INVENTORY & DEPOT
     { id: 'suppliers', section: 'inventory', icon: Factory, label: isLubeBusiness ? 'Suppliers' : 'Suppliers Depot', urdu: isLubeBusiness ? 'سپلائرز' : 'سپلائرز ڈپو', showInLube: true },
     { id: 'inventory', section: 'inventory', icon: isLubeBusiness ? Wrench : Fuel, label: isLubeBusiness ? 'Product & Parts Stock' : 'Fuel Stock', urdu: isLubeBusiness ? 'پروڈکٹ اسٹاک' : 'فیول اسٹاک', showInLube: true, badge: lowStockTanksCount > 0 ? `${lowStockTanksCount} Low` : undefined, badgeColor: 'bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/30' },
+    { id: 'wet_stock_intelligence', section: 'inventory', icon: Fuel, label: 'Wet Stock Intelligence', urdu: 'ویٹ اسٹاک انٹیلی جنس', showInLube: false, badge: 'Phase 5', badgeColor: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
     { id: 'dip_calculator', section: 'inventory', icon: Droplets, label: 'Dip Chart Calculator', urdu: 'دپ چارٹ کیلکولیٹر', showInLube: false },
 
     // REPORTS & INTELLIGENCE
-    { id: 'reports', section: 'reports', icon: FileBarChart, label: isLubeBusiness ? 'Lube Reports' : 'Advanced Reports', urdu: isLubeBusiness ? 'لیوب رپورٹس' : 'ایڈوانسڈ رپورٹس', showInLube: true },
+    { id: 'reports', section: 'reports', icon: FileBarChart, label: isLubeBusiness ? 'Lube Reports' : 'Business Center', urdu: isLubeBusiness ? 'لیوب رپورٹس' : 'بزنس سینٹر', showInLube: true },
     { id: 'ai_analytics', section: 'reports', icon: Sparkles, label: 'AI Analytics Hub', urdu: 'اے آئی اینالٹکس', showInLube: false },
     { 
       id: 'enterprise_hub', 
@@ -140,7 +142,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
     operations: { en: 'Operations', ur: 'آپریشنز' },
     financials: { en: 'Financials & Khata', ur: 'مالیات اور کھاتہ' },
     inventory: { en: 'Stock & Depot', ur: 'اسٹاک اور ڈیوپ' },
-    reports: { en: 'Reports & Intelligence', ur: 'رپورٹس اور ذکاء' },
+    reports: { en: 'Business Center', ur: 'بزنس سینٹر' },
     system: { en: 'Administration & System', ur: 'ایڈمنسٹریشن اور سسٹم' }
   };
 

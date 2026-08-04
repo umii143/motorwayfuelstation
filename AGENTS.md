@@ -55,6 +55,10 @@ The system enforces strict role-based permissions across three roles: `Admin` (o
 - When creating or updating a module, explicitly verify which Role can perform the action.
 - Ensure that `activeStationId` (or equivalent) is passed to ALL data fetch and storage operations to prevent data overlap between Fuel and Lube.
 - Never hardcode English strings without providing the Urdu equivalent mapping using the `translate` or `t()` functions.
+- **Enterprise AI Rule #123:** *The Large Language Model is never the system of record. Operational truth exists only within verified Firebase operational data processed through the Enterprise Decision Engine. AI may analyze, summarize, explain, forecast, and recommend, but it must never invent operational facts, override verified business records, directly modify the operational database, or bypass business rules, RBAC, approval workflows, or audit logging.*
+- **Enterprise AI Rule #124:** *Every AI-generated operational recommendation must be traceable to verified operational records, business rules, and execution context. If traceability cannot be established, the AI must explicitly state that the recommendation cannot be verified rather than presenting it as fact.*
+- **Enterprise AI Rule #125:** *Every AI response must be reproducible, explainable, auditable, and tenant-isolated. No AI recommendation may depend on hidden state, unverifiable assumptions, cross-tenant data, or non-deterministic operational facts. Every recommendation must be traceable to a specific context snapshot, business rule version, formula version, and immutable audit record.*
+- **Enterprise Rule #126 (Business-First Progressive Disclosure):** *FuelPro Reports Platform must look and behave like a real fuel station control room—not a software engineering console. Every screen must prioritize operational decisions first, accounting details second, audit third, and developer diagnostics last. Developer metadata (Manifest, Registry, JSON, Engine, Formula Version, Component IDs, SHA-256, Query Time) must never appear in the default user interface and must be accessible only through a secured Developer Mode.*
 
 ---
 
@@ -438,6 +442,9 @@ Preferred Architecture: Firebase Authentication → Firestore → Realtime Liste
 Never delete financial records. Archive instead. Maintain history forever.
 
 ---
+
+# 126. FINAL GOLDEN RULE (BUSINESS-FIRST PROGRESSIVE DISCLOSURE) ⭐⭐⭐⭐⭐
+> **FuelPro Reports Platform must look and behave like a real fuel station control room—not a software engineering console. Every screen must prioritize operational decisions first, accounting details second, audit third, and developer diagnostics last. Developer metadata (Manifest, Registry, JSON, Engine, Formula Version, Component IDs) must never appear in the default user interface and must be accessible only through a secured Developer Mode.**
 
 # 31. MODULE CONSISTENCY
 Every module must contain where applicable: Executive Dashboard, Live KPIs, Search, Filters, Analytics, Charts, Audit Trail, Export, Role Security, Settings, Empty State, Realtime Status.
@@ -829,10 +836,224 @@ Before generating or modifying ANY module, ALWAYS:
 
 
 
+---
 
-
+# 121. MASTER ENTERPRISE RULE (EIDE) ⭐⭐⭐⭐⭐
+> **No report may access Firebase directly from the UI layer. All report execution, query planning, business rules, formula evaluation, AI analysis, lineage tracing, caching, exports, scheduling, and certification MUST flow exclusively through the Enterprise Intelligence & Decision Engine (EIDE). The UI is strictly a presentation layer.**
 
 ---
 
-# 121. MASTER ENTERPRISE RULE (EIDE) ?????
-> **No report may access Firebase directly from the UI layer. All report execution, query planning, business rules, formula evaluation, AI analysis, lineage tracing, caching, exports, scheduling, and certification MUST flow exclusively through the Enterprise Intelligence & Decision Engine (EIDE). The UI is strictly a presentation layer.**
+# 125. GOLDEN RULE (ENTERPRISE NAVIGATION) ⭐⭐⭐⭐⭐
+> **FuelPro Reports Platform is not merely a collection of reports. It is a complete Enterprise Operational Intelligence System. Every operational process must be discoverable through A–Z navigation, Daily Operations navigation, Business Process navigation, and Role-Based navigation. Every KPI must terminate in a live register, and every register must terminate in the original Google Firebase document with full auditability, explainability, and drill-down.**
+
+---
+
+# 127. ENTERPRISE RULE #127 — ZERO MOCK DATA, LIVE BUSINESS DATA ONLY ⭐⭐⭐⭐⭐
+> **The Business Center, Reports Module, Dashboard, Registers, KPI Cards, Charts, Analytics, AI Insights, Exports, and every Enterprise screen MUST NEVER generate, inject, estimate or display mock/demo/sample/fake/random placeholder business data. If real data does not exist, the UI must clearly communicate that state instead of inventing values.**
+
+### DATA SOURCE HIERARCHY
+1. **Priority 1**: Realtime Firestore Documents
+2. **Priority 2**: Firestore Cached Snapshot
+3. **Priority 3**: Offline Synced Database
+4. **Priority 4**: Historical Snapshot
+
+### EMPTY STATES MUST BE ACTIONABLE
+- No customer found: `[ + Add Customer ]`
+- No supplier found: `[ + Add Supplier ]`
+- No shift exists: `[ + Open New Shift ]`
+- No purchase found: `[ + Record Purchase ]`
+- No expense found: `[ + Add Expense ]`
+- No bank account: `[ + Add Bank Account ]`
+
+---
+
+# 128. ENTERPRISE RULE #128 — LIVE BUSINESS INTEGRITY & TRACEABILITY ⭐⭐⭐⭐⭐
+> **Every number visible inside FuelPro must be completely traceable:**
+> **KPI ➔ Register ➔ Voucher ➔ Transaction ➔ Firestore Document**
+> **If a number cannot be traced to verified operational Firestore records, it MUST NEVER BE DISPLAYED.**
+
+---
+
+# 129. THE 4 MANDATORY PILLARS OF FUELPRO ENTERPRISE ⭐⭐⭐⭐⭐
+1. ✅ **Business First UI** (Clean, uncluttered, role-tailored control room interface)
+2. ✅ **Zero Mock Data** (100% verified Firestore operational data or actionable empty state)
+3. ✅ **Every KPI Clickable** (KPI ➔ Register ➔ Transaction drilldown)
+4. ✅ **Every Number Traceable** (Complete audit trail to originating Firestore document)
+
+---
+
+# 130. ENTERPRISE RULE #129 — CONTEXT-AWARE BUSINESS CENTER ⭐⭐⭐⭐⭐
+
+> **The Business Center must never use a universal layout. Every report defines its own context through ReportConfig metadata. The UI framework (shell) is shared, but business content must adapt to the active report.**
+
+## Implementation Law
+
+Every `ReportConfig` MUST define:
+
+| Field | Purpose |
+|---|---|
+| `searchConfig.placeholder` | Context-aware search input placeholder |
+| `searchConfig.placeholderUr` | Urdu equivalent |
+| `searchConfig.searchFields` | Which register columns to search |
+| `filterGroups[]` | Context-aware filter groups shown in AdvancedFiltersPanel |
+| `quickActions[]` | Context-aware action buttons rendered in Quick Actions bar |
+| `defaultSavedViews[]` | Pre-defined filter presets persisted in localStorage |
+
+## UI Architecture (MANDATORY)
+
+```
+EnterpriseHeader (shell — always the same)
+  ├── DateSearchBar
+  │   ├── Today / Week / Month pills
+  │   ├── ⚙ More Filters button → opens AdvancedFiltersPanel
+  │   └── Search input (placeholder from config.searchConfig)
+  ├── SavedViewsBar (★ views from config.defaultSavedViews)
+  ├── AdvancedFiltersPanel (portal)
+  │   ├── Desktop: Right Drawer (slide-in from right)
+  │   ├── Mobile/Tablet (<768px): Bottom Sheet (slide-up)
+  │   ├── Advanced date ranges
+  │   └── config.filterGroups[] rendered dynamically
+  └── QuickActions (from config.quickActions[])
+```
+
+## STRICTLY PROHIBITED ❌
+- Hardcoded universal KPIs across all reports
+- Universal filter set applied to every report regardless of context
+- Universal search placeholder text
+- Universal Quick Actions for all reports
+- FilterChips displayed on the main screen (must be inside AdvancedFiltersPanel)
+- Blue pill-style DrilldownBreadcrumb (must be text breadcrumb: `A › B › C`)
+
+## MANDATORY ✅
+- `searchConfig.placeholder` per report → context-aware search
+- `filterGroups[]` per report → filters inside Drawer/Bottom Sheet only
+- `quickActions[]` per report → context-aware action buttons
+- `defaultSavedViews[]` per report → saved to localStorage under `fuelpro_saved_views_{reportId}`
+- **Fuel Sales** has completely different filters than **Customer Ledger** than **Inventory**
+
+## Responsiveness Rule
+- ≥768px (Desktop/Laptop): AdvancedFiltersPanel = **Right Drawer**
+- <768px (Mobile/Tablet): AdvancedFiltersPanel = **Bottom Sheet**
+
+## Non-Negotiable Architecture Statement
+> *The framework shell is shared. The business content — KPIs, search, filters, quick actions, saved views, register columns — is ALWAYS report-driven through ReportConfig metadata. Any violation of this rule requires immediate remediation.*
+
+# 137. ENTERPRISE RULE #137 — ONE WORKSPACE = ONE BUSINESS PROCESS ⭐⭐⭐⭐⭐
+
+**Core Principle**
+
+> Every Sidebar Menu represents exactly one Business Process and must render its own dedicated Business Workspace. Changing a menu must change the complete business surface—not merely the page title.
+
+## Workspace Ownership
+
+Every Workspace MUST own its own:
+- Enterprise Header
+- Context Breadcrumb
+- Domain KPIs
+- Search
+- Smart Filters
+- Quick Actions
+- Register/Table
+- Charts & Analytics
+- AI Insights
+- Right Inspector Panel
+- Drilldowns
+- Empty States
+- Firebase Queries
+- RBAC Permissions
+- Export Templates
+- Saved Views
+- Business Rules
+
+No other workspace may own or render these.
+
+## Shared Components Only
+
+Only UI components may be shared:
+- Card
+- Table
+- Chart
+- Badge
+- Button
+- Tabs
+- Drawer
+- Dialog
+- SearchBox
+- FilterChip
+- Inspector Layout
+
+Business logic MUST NEVER be shared.
+
+## Example
+
+### Wrong
+```text
+Purchase History -> Generic Dashboard -> Only Header Changed
+```
+
+### Correct
+```text
+Purchase History -> Purchase Workspace -> Purchase KPIs -> Purchase Register -> Purchase Charts -> Purchase Filters -> Purchase Inspector -> Purchase Firebase Queries
+```
+
+### Another Example
+```text
+Customer Register -> Customer Workspace -> Customer KPIs -> Customer Ledger -> Customer Recovery -> Customer Statements -> Customer Aging
+```
+
+## Metadata Rule
+
+Every Workspace must be completely generated from its own metadata:
+```text
+WorkspaceMetadata -> Workspace Layout -> KPIs -> Filters -> Queries -> Registers -> Charts -> Actions
+```
+Adding a new module such as Fleet, LPG, Mart, Lubricants, Tyre Shop, EV Charging must require only a new metadata registration.
+
+## Zero Mock Data Rule
+
+A Workspace must never display fake KPIs, fake charts, fake totals, or fake analytics. If no Firebase records exist:
+```text
+No Purchase Records Found
+[ + Record Purchase ]
+```
+instead of invented numbers.
+
+## Definition of Done (DoD)
+
+A Workspace is considered complete only if it includes: Dedicated Header, Dedicated KPIs, Dedicated Search, Dedicated Filters, Dedicated Quick Actions, Dedicated Register, Dedicated Charts, Dedicated Inspector, Dedicated Firebase Queries, Dedicated Drilldowns, Dedicated Export, Dedicated Permissions. Otherwise, the Workspace is Incomplete.
+
+## Non-Negotiable Architecture Statement
+> *One Workspace = One Business Process. The shell and design tokens are shared; the business surface is never. Any violation of this rule requires immediate remediation.*
+
+# 138. ENTERPRISE RULE #138 — SINGLE SOURCE OF BUSINESS TRUTH ⭐⭐⭐⭐⭐
+
+> **Every business transaction must update all dependent modules from one authoritative source. No workspace may maintain duplicate business state.**
+
+Example:
+```text
+Purchase Invoice Saved
+  -> Purchase Register
+  -> Supplier Ledger
+  -> Inventory Stock
+  -> Tank Stock
+  -> Finance Payables
+  -> Cash/Bank (if paid)
+  -> Profit Calculation
+  -> Audit Log
+```
+
+This ensures a purchase visible in the Purchase Workspace also reflects outstanding payables in the Supplier Workspace—all workspaces stay synchronized from the same live transaction. A workspace must never show a supplier while another shows outstanding Rs 0 for the same transaction.
+
+## STRICTLY PROHIBITED ❌
+- Duplicate business state maintained independently by separate workspaces
+- One module updating its own copy of a record without propagating to dependent modules
+- Inconsistent totals across workspaces for the same underlying transaction
+
+## MANDATORY ✅
+- A single authoritative write path per business transaction
+- Automatic propagation to all dependent registers/ledgers from that source
+- Cross-module consistency verifiable from one source of truth
+
+## Non-Negotiable Architecture Statement
+> *One Transaction -> One Authoritative Source -> All Dependent Modules Synced. No duplicate business state.*
+

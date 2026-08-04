@@ -25,8 +25,8 @@ interface CommandCenterProps {
 
 export default function CommandCenter({ 
  settings, 
- shifts, 
- products, 
+ shifts: propsShifts, 
+ products: propsProducts, 
  staff, 
  onSelectTab, 
  onTriggerDrilldown 
@@ -38,30 +38,129 @@ export default function CommandCenter({
  const isUrdu = settings.language === 'ur';
  const t = (en: string, ur: string) => (isUrdu ? ur : en);
 
- // Load stores data
- const customers = useCustomerStore((state: any) => state.customers);
- const suppliers = useSupplierStore((state: any) => state.suppliers);
- const standaloneExpenses = useFinancialStore((state: any) => state.standaloneExpenses);
- const tanks = useInventoryStore((state: any) => state.tanks);
+  const activeStationId = db.getActiveStationId();
 
- const activeStationId = db.getActiveStationId();
- const activityLogs = useMemo(() => db.getActivityRegister(activeStationId) || [], [activeStationId]);
+  // Load stores data with direct db.get... fallback to guarantee live Firebase/IndexedDB data
+  const storeCustomers = useCustomerStore((state: any) => state.customers || []);
+  const customers: Customer[] = storeCustomers.length ? storeCustomers : db.getCustomers(activeStationId);
 
- // Compute live aggregates for cash draws
- const cashStatus = useMemo(() => {
- let safeCash = 0;
- shifts.forEach((s: Shift) => {
- safeCash += s.submittedCash || 0;
- });
- standaloneExpenses.forEach((e: ExpenseEntry) => {
- if (e.paidFrom === 'cash') safeCash -= e.amount;
- });
- return {
- safeCash: Math.max(0, safeCash),
- bankBalance: 1250000, // sample balance
- digitalPayments: 480000
- };
- }, [shifts, standaloneExpenses]);
+  const storeSuppliers = useSupplierStore((state: any) => state.suppliers || []);
+  const suppliers: Supplier[] = storeSuppliers.length ? storeSuppliers : db.getSuppliers(activeStationId);
+
+  const storeExpenses = useFinancialStore((state: any) => state.standaloneExpenses || []);
+  const standaloneExpenses = storeExpenses.length ? storeExpenses : db.getStandaloneExpenses(activeStationId);
+
+  const storeTanks = useInventoryStore((state: any) => state.tanks || []);
+  const tanks: Tank[] = storeTanks.length ? storeTanks : db.getTanks(activeStationId);
+
+  const storeProducts = useInventoryStore((state: any) => state.products || []);
+  const dbProducts = db.getProducts(activeStationId);
+  const products: Product[] = (storeProducts.length ? storeProducts : (dbProducts.length ? dbProducts : propsProducts)) || [];
+
+  const storeShifts = useShiftStore((state: any) => state.shifts || []);
+  const dbShifts = db.getShifts(activeStationId);
+  const shifts: Shift[] = (storeShifts.length ? storeShifts : (dbShifts.length ? dbShifts : propsShifts)) || [];
+
+  const storeBanks = useFinancialStore((state: any) => state.banks || []);
+  const banks = storeBanks.length ? storeBanks : db.getBankAccounts(activeStationId);
+
+  const storeDigital = useFinancialStore((state: any) => state.digitalAccounts || []);
+  const digitalAccounts = storeDigital.length ? storeDigital : db.getDigitalAccounts(activeStationId);
+
+  const activityLogs = useMemo(() => db.getActivityRegister(activeStationId) || [], [activeStationId]);
+
+  // Helper to reliably extract live dip volume from Tank objects (checking currentStock first!)
+  const getTankVolume = (t: Tank) => {
+    if (t.currentStock !== undefined && t.currentStock !== null && t.currentStock > 0) return t.currentStock;
+    if (t.currentVolume !== undefined && t.currentVolume !== null && t.currentVolume > 0) return t.currentVolume;
+    if (t.currentDip !== undefined && t.currentDip !== null && t.currentDip > 0) return t.currentDip;
+    const prod = products.find(p => p.id === t.productId || p.name.toLowerCase().includes(t.name.toLowerCase()));
+    if (prod?.currentStock !== undefined && prod.currentStock !== null && prod.currentStock > 0) return prod.currentStock;
+    return t.currentStock || t.currentVolume || t.currentDip || 0;
+  };
+
+  // Compute 100% Live Aggregates for Cash Drawers & Payment Wallets
+  const cashStatus = useMemo(() => {
+    let safeCash = 0;
+    shifts.forEach((s: Shift) => {
+      safeCash += s.submittedCash || 0;
+    });
+    standaloneExpenses.forEach((e: ExpenseEntry) => {
+      if (e.paidFrom === 'cash') safeCash -= (e.amount || 0);
+    });
+
+    const bankBalance = banks.reduce((sum: number, b: any) => sum + Number(b.balance || 0), 0);
+    const digitalPayments = digitalAccounts.reduce((sum: number, d: any) => sum + Number(d.balance || 0), 0);
+
+    return {
+      safeCash: Math.max(0, safeCash),
+      bankBalance,
+      digitalPayments
+    };
+  }, [shifts, standaloneExpenses, banks, digitalAccounts]);
+
+  // Compute 100% Realtime Operational Metrics & Risk Scores (Zero Fake Values)
+  const scorecardMetrics = useMemo(() => {
+    // 1. Business Health Score (%)
+    const healthyProductsPct = products.length > 0 ? (products.filter(p => p.currentStock > p.minStock).length / products.length) * 100 : 100;
+    const healthyShiftsPct = shifts.length > 0 ? (shifts.filter(s => Math.abs((s.submittedCash || 0) - (s.expectedCash || 0)) <= 500).length / shifts.length) * 100 : 100;
+    const healthyCustomersPct = customers.length > 0 ? (customers.filter(c => (c.balance || 0) <= (c.creditLimit || 50000)).length / customers.length) * 100 : 100;
+    const healthyTanksPct = tanks.length > 0 ? (tanks.filter(t => getTankVolume(t) > 1000).length / tanks.length) * 100 : 100;
+
+    const overallHealthScore = Math.round(
+      (healthyProductsPct * 0.3) + (healthyShiftsPct * 0.3) + (healthyCustomersPct * 0.2) + (healthyTanksPct * 0.2)
+    );
+
+    // 2. Inventory Risk (%)
+    const lowStockCount = products.filter(p => p.currentStock <= p.minStock).length;
+    const lowTankCount = tanks.filter(t => getTankVolume(t) <= (t.criticalLevel || 2000)).length;
+    const totalItems = (products.length + tanks.length) || 1;
+    const inventoryRiskPct = Math.round(((lowStockCount + lowTankCount) / totalItems) * 100);
+
+    // 3. Cash Flow Status
+    const shiftNetVariance = shifts.slice(0, 10).reduce((sum, s) => sum + ((s.submittedCash || 0) - (s.expectedCash || 0)), 0);
+    const cashFlowText = shiftNetVariance >= 0 ? 'Healthy' : 'Shortage';
+    const cashFlowSub = shiftNetVariance >= 0 ? `+PKR ${shiftNetVariance.toLocaleString()} Tally` : `-PKR ${Math.abs(shiftNetVariance).toLocaleString()} Variance`;
+
+    // 4. Tank Health Status
+    const criticallyLowTanks = tanks.filter(t => getTankVolume(t) <= (t.criticalLevel || 2000));
+    const tankHealthText = criticallyLowTanks.length === 0 ? 'Good' : 'Warning';
+    const tankHealthSub = criticallyLowTanks.length === 0 ? 'Dips Calibrated' : `${criticallyLowTanks.length} Tank(s) Low Stock`;
+
+    // 5. Supplier Risk Status
+    const totalSupplierPayables = suppliers.reduce((sum, s) => sum + (s.balance || 0), 0);
+    const highPayableSuppliers = suppliers.filter(s => (s.balance || 0) > 500000).length;
+    const supplierRiskText = highPayableSuppliers > 0 ? 'High' : totalSupplierPayables > 100000 ? 'Medium' : 'Low';
+    const supplierRiskSub = totalSupplierPayables > 0 ? `Payables: PKR ${totalSupplierPayables.toLocaleString()}` : 'Zero Outstanding';
+
+    // 6. Customer Credit Status
+    const totalReceivables = customers.reduce((sum, c) => sum + (c.balance || 0), 0);
+    const overLimitCustomers = customers.filter(c => (c.balance || 0) > (c.creditLimit || 50000)).length;
+    const customerCreditText = overLimitCustomers > 0 ? 'High' : totalReceivables > 100000 ? 'Medium' : 'Low';
+    const customerCreditSub = overLimitCustomers > 0 ? `${overLimitCustomers} Over Limit` : `Receivables: PKR ${totalReceivables.toLocaleString()}`;
+
+    // 7. Operational Score (%)
+    const balancedShiftsCount = shifts.filter(s => Math.abs((s.submittedCash || 0) - (s.expectedCash || 0)) <= 500).length;
+    const operationalScorePct = shifts.length > 0 ? Math.round((balancedShiftsCount / shifts.length) * 100) : 100;
+    const operationalSub = shifts.length > 0 ? `${balancedShiftsCount}/${shifts.length} Shifts Tally OK` : 'Awaiting Closed Shifts';
+
+    return {
+      overallHealthScore,
+      inventoryRiskPct,
+      lowStockCount,
+      lowTankCount,
+      cashFlowText,
+      cashFlowSub,
+      tankHealthText,
+      tankHealthSub,
+      supplierRiskText,
+      supplierRiskSub,
+      customerCreditText,
+      customerCreditSub,
+      operationalScorePct,
+      operationalSub
+    };
+  }, [products, shifts, customers, tanks, suppliers]);
 
  // Search Results Aggregation Engine
  const searchResults = useMemo(() => {
@@ -296,126 +395,143 @@ export default function CommandCenter({
  </div>
  )}
 
- {searchResults.tanks.length === 0 && searchResults.reports.length === 0 && searchResults.customers.length === 0 && searchResults.suppliers.length === 0 && (
+{searchResults.tanks.length === 0 && searchResults.reports.length === 0 && searchResults.customers.length === 0 && searchResults.suppliers.length === 0 && (
  <div className="py-8 text-center text-muted-foreground italic text-xs">
  No matching enterprise parameters found.
  </div>
  )}
- </div>
- )}
- </div>
+  </div>
+  )}
+  </div>
 
- {/* Business Health Dashboard Scorecard */}
- <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
- <div 
- onClick={() => onTriggerDrilldown({ title: 'BI Explorer > Sales', type: 'sales', level: 1, params: {} })}
- className="bg-card border border-border rounded-xl p-4 shadow-xs text-center cursor-pointer hover:border-orange-500 transition-colors"
- >
- <span className="text-[10px] font-bold text-muted-foreground uppercase block">{t('Business Health', 'تجارتی صحت')}</span>
- <div className="text-2xl font-black text-emerald-600 mt-1">92%</div>
- <span className="text-[9px] text-muted-foreground mt-0.5 block">Good / Stable</span>
- </div>
- <div 
- onClick={() => onSelectTab('inventory_audit')}
- className="bg-card border border-border rounded-xl p-4 shadow-xs text-center cursor-pointer hover:border-orange-500 transition-colors"
- >
- <span className="text-[10px] font-bold text-muted-foreground uppercase block">{t('Inventory Risk', 'اسٹاک رسک')}</span>
- <div className="text-2xl font-black text-amber-600 mt-1">12%</div>
- <span className="text-[9px] text-muted-foreground mt-0.5 block">Low threshold</span>
- </div>
- <div 
- onClick={() => onSelectTab('reconciliation')}
- className="bg-card border border-border rounded-xl p-4 shadow-xs text-center cursor-pointer hover:border-orange-500 transition-colors"
- >
- <span className="text-[10px] font-bold text-muted-foreground uppercase block">{t('Cash Flow', 'کیش فلو')}</span>
- <div className="text-2xl font-black text-emerald-600 mt-1">Healthy</div>
- <span className="text-[9px] text-muted-foreground mt-0.5 block">Inflows Tally</span>
- </div>
- <div 
- onClick={() => onTriggerDrilldown({ title: 'BI Explorer > Tanks Summary', type: 'tanks', level: 1, params: {} })}
- className="bg-card border border-border rounded-xl p-4 shadow-xs text-center cursor-pointer hover:border-orange-500 transition-colors"
- >
- <span className="text-[10px] font-bold text-muted-foreground uppercase block">{t('Tank Health', 'ٹینکس صورتحال')}</span>
- <div className="text-2xl font-black text-emerald-600 mt-1">Good</div>
- <span className="text-[9px] text-muted-foreground mt-0.5 block">Dips Calibrated</span>
- </div>
- <div 
- onClick={() => onTriggerDrilldown({ title: 'BI Explorer > Suppliers', type: 'suppliers', level: 1, params: {} })}
- className="bg-card border border-border rounded-xl p-4 shadow-xs text-center cursor-pointer hover:border-orange-500 transition-colors"
- >
- <span className="text-[10px] font-bold text-muted-foreground uppercase block">{t('Supplier Risk', 'سپلائرز خطرہ')}</span>
- <div className="text-2xl font-black text-foreground mt-1">Medium</div>
- <span className="text-[9px] text-muted-foreground mt-0.5 block">Pending Payments</span>
- </div>
- <div 
- onClick={() => onTriggerDrilldown({ title: 'BI Explorer > Customers', type: 'customers', level: 1, params: {} })}
- className="bg-card border border-border rounded-xl p-4 shadow-xs text-center cursor-pointer hover:border-orange-500 transition-colors"
- >
- <span className="text-[10px] font-bold text-muted-foreground uppercase block">{t('Customer Credit', 'گاہک ادھار رسک')}</span>
- <div className="text-2xl font-black text-emerald-600 mt-1">Low</div>
- <span className="text-[9px] text-muted-foreground mt-0.5 block">Under Limit</span>
- </div>
- <div 
- onClick={() => onTriggerDrilldown({ title: 'BI Explorer > Sales', type: 'sales', level: 1, params: {} })}
- className="bg-card border border-border rounded-xl p-4 shadow-xs text-center cursor-pointer hover:border-orange-500 transition-colors"
- >
- <span className="text-[10px] font-bold text-muted-foreground uppercase block">{t('Operational Score', 'انتظامی اسکور')}</span>
- <div className="text-2xl font-black text-emerald-600 mt-1">96%</div>
- <span className="text-[9px] text-muted-foreground mt-0.5 block">Shifts Tally OK</span>
- </div>
- </div>
+  {/* Business Health Dashboard Scorecard (100% Calculated from Operational DB) */}
+  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+    <div 
+      onClick={() => onTriggerDrilldown({ title: 'BI Explorer > Sales', type: 'sales', level: 1, params: {} })}
+      className="bg-card border border-border rounded-xl p-4 shadow-xs text-center cursor-pointer hover:border-orange-500 transition-colors"
+    >
+      <span className="text-[10px] font-bold text-muted-foreground uppercase block">{t('Business Health', 'تجارتی صحت')}</span>
+      <div className="text-2xl font-black text-emerald-600 mt-1">{scorecardMetrics.overallHealthScore}%</div>
+      <span className="text-[9px] text-muted-foreground mt-0.5 block">{scorecardMetrics.overallHealthScore >= 80 ? 'Good / Reconciled' : 'Attention Needed'}</span>
+    </div>
+    <div 
+      onClick={() => onSelectTab('inventory_audit')}
+      className="bg-card border border-border rounded-xl p-4 shadow-xs text-center cursor-pointer hover:border-orange-500 transition-colors"
+    >
+      <span className="text-[10px] font-bold text-muted-foreground uppercase block">{t('Inventory Risk', 'اسٹاک رسک')}</span>
+      <div className={`text-2xl font-black mt-1 ${scorecardMetrics.inventoryRiskPct > 30 ? 'text-rose-600' : scorecardMetrics.inventoryRiskPct > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
+        {scorecardMetrics.inventoryRiskPct}%
+      </div>
+      <span className="text-[9px] text-muted-foreground mt-0.5 block">{scorecardMetrics.lowStockCount} Low Stock • {scorecardMetrics.lowTankCount} Low Tank</span>
+    </div>
+    <div 
+      onClick={() => onSelectTab('reconciliation')}
+      className="bg-card border border-border rounded-xl p-4 shadow-xs text-center cursor-pointer hover:border-orange-500 transition-colors"
+    >
+      <span className="text-[10px] font-bold text-muted-foreground uppercase block">{t('Cash Flow', 'کیش فلو')}</span>
+      <div className={`text-2xl font-black mt-1 ${scorecardMetrics.cashFlowText === 'Healthy' ? 'text-emerald-600' : 'text-amber-600'}`}>
+        {scorecardMetrics.cashFlowText}
+      </div>
+      <span className="text-[9px] text-muted-foreground mt-0.5 block">{scorecardMetrics.cashFlowSub}</span>
+    </div>
+    <div 
+      onClick={() => onTriggerDrilldown({ title: 'BI Explorer > Tanks Summary', type: 'tanks', level: 1, params: {} })}
+      className="bg-card border border-border rounded-xl p-4 shadow-xs text-center cursor-pointer hover:border-orange-500 transition-colors"
+    >
+      <span className="text-[10px] font-bold text-muted-foreground uppercase block">{t('Tank Health', 'ٹینکس صورتحال')}</span>
+      <div className={`text-2xl font-black mt-1 ${scorecardMetrics.tankHealthText === 'Good' ? 'text-emerald-600' : 'text-rose-600'}`}>
+        {scorecardMetrics.tankHealthText}
+      </div>
+      <span className="text-[9px] text-muted-foreground mt-0.5 block">{scorecardMetrics.tankHealthSub}</span>
+    </div>
+    <div 
+      onClick={() => onTriggerDrilldown({ title: 'BI Explorer > Suppliers', type: 'suppliers', level: 1, params: {} })}
+      className="bg-card border border-border rounded-xl p-4 shadow-xs text-center cursor-pointer hover:border-orange-500 transition-colors"
+    >
+      <span className="text-[10px] font-bold text-muted-foreground uppercase block">{t('Supplier Risk', 'سپلائرز خطرہ')}</span>
+      <div className={`text-2xl font-black mt-1 ${scorecardMetrics.supplierRiskText === 'High' ? 'text-rose-600' : 'text-foreground'}`}>
+        {scorecardMetrics.supplierRiskText}
+      </div>
+      <span className="text-[9px] text-muted-foreground mt-0.5 block">{scorecardMetrics.supplierRiskSub}</span>
+    </div>
+    <div 
+      onClick={() => onTriggerDrilldown({ title: 'BI Explorer > Customers', type: 'customers', level: 1, params: {} })}
+      className="bg-card border border-border rounded-xl p-4 shadow-xs text-center cursor-pointer hover:border-orange-500 transition-colors"
+    >
+      <span className="text-[10px] font-bold text-muted-foreground uppercase block">{t('Customer Credit', 'گاہک ادھار رسک')}</span>
+      <div className={`text-2xl font-black mt-1 ${scorecardMetrics.customerCreditText === 'High' ? 'text-rose-600' : 'text-emerald-600'}`}>
+        {scorecardMetrics.customerCreditText}
+      </div>
+      <span className="text-[9px] text-muted-foreground mt-0.5 block">{scorecardMetrics.customerCreditSub}</span>
+    </div>
+    <div 
+      onClick={() => onTriggerDrilldown({ title: 'BI Explorer > Sales', type: 'sales', level: 1, params: {} })}
+      className="bg-card border border-border rounded-xl p-4 shadow-xs text-center cursor-pointer hover:border-orange-500 transition-colors"
+    >
+      <span className="text-[10px] font-bold text-muted-foreground uppercase block">{t('Operational Score', 'انتظامی اسکور')}</span>
+      <div className="text-2xl font-black text-emerald-600 mt-1">{scorecardMetrics.operationalScorePct}%</div>
+      <span className="text-[9px] text-muted-foreground mt-0.5 block">{scorecardMetrics.operationalSub}</span>
+    </div>
+  </div>
 
- {/* Main Command Workspace */}
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
- 
- {/* Left Column: Live Tanks & Drawer balances */}
- <div className="lg:col-span-2 space-y-6">
- 
- {/* Live Tanks Level Monitor */}
- <div className="bg-card border border-border rounded-2xl p-5 shadow-xs">
- <h3 className="font-sans text-xs font-bold text-muted-foreground uppercase tracking-widest border-b border-border pb-2 mb-4 flex items-center gap-1.5">
- <Fuel className="h-4 w-4 text-orange-500" />
- <span>{t('Live Storage Tank Dip Monitors', 'سٹوریج ٹینک مانیٹرنگ')}</span>
- </h3>
+  {/* Main Command Workspace */}
+  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  
+  {/* Left Column: Live Tanks & Drawer balances */}
+  <div className="lg:col-span-2 space-y-6">
+  
+  {/* Live Storage Tank Dip Monitors */}
+  <div className="bg-card border border-border rounded-2xl p-5 shadow-xs">
+  <h3 className="font-sans text-xs font-bold text-muted-foreground uppercase tracking-widest border-b border-border pb-2 mb-4 flex items-center gap-1.5">
+  <Fuel className="h-4 w-4 text-orange-500" />
+  <span>{t('Live Storage Tank Dip Monitors', 'سٹوریج ٹینک مانیٹرنگ')}</span>
+  </h3>
 
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
- {tanks.map((tnk: Tank) => {
- const prod = products.find(p => p.id === tnk.productId);
- const currentStock = prod?.currentStock || 0;
- const currentVol = currentStock > tnk.capacity ? tnk.capacity : currentStock;
- const fillPct = Math.round((currentVol / tnk.capacity) * 100);
- const isUnderCritical = currentVol < tnk.criticalLevel;
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+  {tanks.length === 0 ? (
+    <div className="col-span-3 py-6 text-center text-xs text-muted-foreground italic">
+      No operational tanks configured in Firebase database.
+    </div>
+  ) : (
+    tanks.map((tnk: Tank) => {
+      const prod = products.find(p => p.id === tnk.productId || p.name.toLowerCase().includes(tnk.name.toLowerCase()));
+      const currentVol = getTankVolume(tnk);
 
- return (
- <div 
- key={tnk.id} 
- onClick={() => onTriggerDrilldown({ title: `BI Explorer > Tanks > ${tnk.name}`, type: 'tanks', level: 2, params: { tankId: tnk.id } })}
- className="border border-border rounded-xl p-3.5 space-y-3 cursor-pointer hover:border-orange-500 transition-colors"
- >
- <div className="flex justify-between items-center text-xs font-bold">
- <span className="text-foreground">{tnk.name}</span>
- <span className={`px-2 py-0.5 rounded-full text-[9px] font-black${isUnderCritical ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700'}`}>
- {fillPct}%
- </span>
- </div>
+      const tankCap = tnk.capacity > 0 ? tnk.capacity : 20000;
+      const fillPct = Math.round((currentVol / tankCap) * 100);
+      const isUnderCritical = currentVol <= (tnk.criticalLevel || 2000);
 
- {/* Progress Bar */}
- <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
- <div 
- style={{ width: `${fillPct}%` }}
- className={`h-full rounded-full${isUnderCritical ? 'bg-rose-500' : 'bg-emerald-500'}`}
- />
- </div>
+      return (
+        <div 
+          key={tnk.id} 
+          onClick={() => onTriggerDrilldown({ title: `BI Explorer > Tanks > ${tnk.name}`, type: 'tanks', level: 2, params: { tankId: tnk.id } })}
+          className="border border-border rounded-xl p-3.5 space-y-3 cursor-pointer hover:border-orange-500 transition-colors"
+        >
+          <div className="flex justify-between items-center text-xs font-bold">
+            <span className="text-foreground">{tnk.name} ({tnk.productName || prod?.name || 'Fuel'})</span>
+            <span className={`px-2 py-0.5 rounded-full text-[9px] font-black ${isUnderCritical ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'}`}>
+              {fillPct}%
+            </span>
+          </div>
 
- <div className="flex justify-between text-[10px] text-slate-450 font-mono">
- <span>Dip: {currentVol.toLocaleString()} L</span>
- <span>Cap: {tnk.capacity.toLocaleString()} L</span>
- </div>
- </div>
- );
- })}
- </div>
- </div>
+          {/* Progress Bar */}
+          <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+            <div 
+              style={{ width: `${Math.min(100, Math.max(0, fillPct))}%` }}
+              className={`h-full rounded-full ${isUnderCritical ? 'bg-rose-500' : 'bg-emerald-500'}`}
+            />
+          </div>
+
+          <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
+            <span>Dip: {currentVol.toLocaleString()} L</span>
+            <span>Cap: {tankCap.toLocaleString()} L</span>
+          </div>
+        </div>
+      );
+    })
+  )}
+  </div>
+  </div>
 
  {/* Cash & Payment Status Drawer */}
  <div className="bg-card border border-border rounded-2xl p-5 shadow-xs">

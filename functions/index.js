@@ -103,3 +103,10 @@ exports.verifyEmailOTP = functions.https.onCall(async (data, context) => {
   const customToken = await admin.auth().createCustomToken(userRecord.uid);
   return { success: true, token: customToken };
 });
+
+// ──────────────────────────────────────────────
+// Report Platform Cloud Functions (Phase 9 v2.1)
+// Registries + Event Bus + Snapshot Computation
+// ──────────────────────────────────────────────
+const reportFunctions = require('./reports');
+Object.assign(exports, reportFunctions);

@@ -14,8 +14,10 @@ const Ledger = React.lazy(() => import('../components/features/Ledger'));
 const Inventory = React.lazy(() => import('../components/features/Inventory'));
 const Expenses = React.lazy(() => import('../components/features/Expenses'));
 const LubePOS = React.lazy(() => import('../components/features/LubePOS'));
-const Reports = React.lazy(() => import('../components/features/Reports'));
+// Legacy Reports module DEPRECATED — Architecture Reset Phase 1
+// const Reports = React.lazy(() => import('../components/features/Reports'));
 const LubeReports = React.lazy(() => import('../components/features/LubeReports'));
+const EnterpriseReportsWorkspace = React.lazy(() => import('../components/features/reports-v2/EnterpriseReportsWorkspace'));
 const DiscountsHub = React.lazy(() => import('../components/features/DiscountsHub'));
 const StaffPanel = React.lazy(() => import('../components/features/Staff'));
 const SettingsPanel = React.lazy(() => import('../components/features/Settings'));
@@ -38,6 +40,8 @@ const SyncCenter = React.lazy(() => import('../components/features/SyncCenter/Sy
 const AIAssistant = React.lazy(() => import('../components/features/AIAssistant/AIAssistant'));
 const AboutMe = React.lazy(() => import('../components/features/AboutMe/AboutMe'));
 const AIAnalyticsHub = React.lazy(() => import('../components/features/AIAnalyticsHub/AIAnalyticsHub'));
+const WetStockIntelligenceHub = React.lazy(() => import('../components/features/WetStockIntelligence/WetStockIntelligenceHub').then(m => ({ default: m.WetStockIntelligenceHub })));
+const FuelSalesModule = React.lazy(() => import('../components/features/FuelSales/FuelSalesModule').then(m => ({ default: m.FuelSalesModule })));
 
 import { useAuth } from '../contexts/AuthContext';
 // Type alias for the context injected by AppShell
@@ -168,11 +172,20 @@ const ExpensesRoute = () => {
 
 const ReportsRoute = () => {
  const props = useProps();
+ const { user } = useAuth();
  const isLubeBusiness = props.stations.find(s => s.id === props.activeStationId)?.businessType === 'lube';
  if (isLubeBusiness) {
  return <LubeReports settings={props.settings} lubePosSales={props.lubePosSales} products={props.products} customers={props.customers} suppliers={props.suppliers} staff={props.staff} standaloneExpenses={props.standaloneExpenses} />;
  }
- return <Reports activeStationId={props.activeStationId} settings={props.settings} shifts={props.shifts} products={props.products} customers={props.customers} suppliers={props.suppliers} standaloneExpenses={props.standaloneExpenses} tanks={props.tanks} rateHistory={props.rateHistory} staffFinance={props.staffFinance} attendance={props.attendance} staff={props.staff} nozzles={props.nozzles} banks={props.banks} digitalAccounts={props.digitalAccounts} />;
+ // Enterprise Reports Platform v2.0 — real tenant context wired from auth
+ return <EnterpriseReportsWorkspace
+   settings={props.settings}
+   activeStationId={props.activeStationId}
+   orgId={user?.orgId}
+   userRole={user?.role}
+   userId={user?.uid}
+   userName={user?.email}
+ />;
 };
 
 const DiscountsRoute = () => {
@@ -257,8 +270,17 @@ const LicenseManagerRoute = () => {
 };
 
 const AIAnalyticsHubRoute = () => {
- const props = useProps();
- return <AIAnalyticsHub settings={props.settings} dataContext={props} />;
+  const props = useProps();
+  return <AIAnalyticsHub settings={props.settings} dataContext={props} />;
+};
+
+const WetStockIntelligenceRoute = () => {
+  const navigate = useNavigate();
+  return <WetStockIntelligenceHub onNavigate={(view, ctx) => {
+    let cleanPath = `/${view.replace(/_/g, '-')}`;
+    if (view === 'dashboard') cleanPath = '/';
+    navigate(cleanPath, { state: ctx });
+  }} />;
 };
 
 // Map routes
@@ -268,9 +290,10 @@ export const router = createBrowserRouter([
  element: <AppShell />,
  children: [
  { path: '/', element: <Navigate to="/dashboard" replace /> },
- { path: 'dashboard', element: <DashboardRoute /> },
- { path: 'shift-wizard', element: <ShiftWizardRoute /> },
- { path: 'shift-logs', element: <ShiftLogsRoute /> },
+  { path: 'dashboard', element: <DashboardRoute /> },
+  { path: 'shift-wizard', element: <ShiftWizardRoute /> },
+  { path: 'fuel-sales', element: <FuelSalesModule /> },
+  { path: 'shift-logs', element: <ShiftLogsRoute /> },
  { path: 'lube-pos', element: <LubePOSRoute /> },
  { path: 'customers', element: <CustomersRoute /> },
  { path: 'suppliers', element: <SuppliersRoute /> },
@@ -278,6 +301,8 @@ export const router = createBrowserRouter([
  { path: 'bank-cash', element: <BankCashRoute /> },
  { path: 'digital-cash', element: <DigitalCashRoute /> },
  { path: 'inventory', element: <InventoryRoute /> },
+ { path: 'wet-stock', element: <WetStockIntelligenceRoute /> },
+ { path: 'wet-stock-intelligence', element: <WetStockIntelligenceRoute /> },
  { path: 'expenses', element: <ExpensesRoute /> },
  { path: 'reports', element: <ReportsRoute /> },
  { path: 'discounts', element: <DiscountsRoute /> },

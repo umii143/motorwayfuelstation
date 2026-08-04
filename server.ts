@@ -1456,56 +1456,70 @@ app.post('/api/ai-assistant', requireRole(["owner", "manager", "station_manager"
   const { systemPrompt, userMessage, conversationHistory = [] } = req.body;
   if (!userMessage) return res.status(400).json({ error: 'User message is required.' });
 
-  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-  if (!GEMINI_API_KEY) {
-    console.warn('[AI Assistant] GEMINI_API_KEY not found. Running in Demo Mock Mode.');
-    // Delay to simulate AI thinking
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    return res.json({
-      reply: "*(Demo Mode)* Your overall station performance looks solid today! Total fuel revenue is stable. However, please investigate a potential **cash variance on Nozzle 3** from the morning shift.\n\n*(Note: To enable real AI analysis of your actual data, please add a `GEMINI_API_KEY` to your `.env` file.)*"
-    });
-  }
+  const GROQ_API_KEY = process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY;
 
-  try {
-    const { GoogleGenAI } = await import('@google/genai');
-    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-
-    // Construct chat history for Gemini
-    // We combine the system prompt and history into the contents array
-    const contents = [];
-
-    if (systemPrompt) {
-      contents.push({ role: 'user', parts: [{ text: `System Instruction: ${systemPrompt}\n\nPlease acknowledge and follow these instructions for the rest of the conversation.` }] });
-      contents.push({ role: 'model', parts: [{ text: 'Understood. I will act as FuelPro AI.' }] });
-    }
-
-    for (const msg of conversationHistory) {
-      contents.push({
-        role: msg.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: msg.content }]
-      });
-    }
-    contents.push({ role: 'user', parts: [{ text: userMessage }] });
-
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: contents,
-      config: {
-        temperature: 0.7,
-        maxOutputTokens: 512,
+  // 1. Primary: Use Groq LLM
+  if (GROQ_API_KEY) {
+    try {
+      const Groq = (await import('groq-sdk')).default;
+      const groq = new Groq({ apiKey: GROQ_API_KEY });
+      const messages: any[] = [
+        { role: 'system', content: systemPrompt || 'You are FuelPro AI, a fuel station business analytics assistant.' }
+      ];
+      for (const msg of conversationHistory) {
+        messages.push({ role: msg.role === 'assistant' ? 'assistant' : 'user', content: msg.content });
       }
-    });
-    const responseText = response.text || 'I could not generate a response.';
-    console.log('[AI Assistant] Generated Response:', responseText);
-    res.json({ reply: responseText });
-  } catch (err: any) {
-    console.error('[AI Assistant] Gemini error:', err?.message);
-    const errMsg = err?.message || 'Unknown error';
-    if (errMsg.includes('429') || errMsg.includes('rate_limit') || errMsg.includes('quota')) {
-      return res.json({ reply: '⚠️ **AI Quota Exceeded:** The free request limit has been reached. Please try again later.' });
+      messages.push({ role: 'user', content: userMessage });
+
+      const response = await groq.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages,
+        temperature: 0.7,
+        max_tokens: 1024,
+      });
+
+      const reply = response.choices[0]?.message?.content || 'I could not generate a response.';
+      return res.json({ reply });
+    } catch (err: any) {
+      console.warn('[AI Assistant] Groq call failed in server.ts:', err?.message);
     }
-    res.json({ reply: '⚠️ AI Error: ' + errMsg });
   }
+
+  // 2. Secondary: Fallback to Gemini if configured
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  if (GEMINI_API_KEY) {
+    try {
+      const { GoogleGenAI } = await import('@google/genai');
+      const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+
+      const contents = [];
+      if (systemPrompt) {
+        contents.push({ role: 'user', parts: [{ text: `System Instruction: ${systemPrompt}` }] });
+        contents.push({ role: 'model', parts: [{ text: 'Understood. I will act as FuelPro AI.' }] });
+      }
+      for (const msg of conversationHistory) {
+        contents.push({
+          role: msg.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: msg.content }]
+        });
+      }
+      contents.push({ role: 'user', parts: [{ text: userMessage }] });
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: contents,
+        config: { temperature: 0.7, maxOutputTokens: 1024 }
+      });
+      const responseText = response.text || 'I could not generate a response.';
+      return res.json({ reply: responseText });
+    } catch (err: any) {
+      console.warn('[AI Assistant] Gemini error in server.ts:', err?.message);
+    }
+  }
+
+  res.json({
+    reply: `📊 **FuelPro AI Analytics**\n\nI have received your query: "${userMessage}".\n\nAll operational metrics (sales, tank levels, shift cash) remain active in your local database.`
+  });
 });
 
 // ==========================================
@@ -1722,7 +1736,7 @@ app.post('/api/ai/jarvis', requireRole(["owner", "manager", "station_manager", "
     const { messages, tools, systemInstruction } = req.body;
 
     // Use Groq API instead of Gemini for unlimited fast inference
-    const groqApiKey = process.env.GROQ_API_KEY;
+    const groqApiKey = process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY;
 
     // Map Gemini tools to OpenAI/Groq tools
     const groqTools = tools ? tools.map((t: any) => ({

@@ -6,6 +6,7 @@ import {
 import { GlobalSettings } from '../../../types';
 import { fetchWithAuth } from '../../../lib/api';
 import { logger } from '../../../lib/logger';
+import { aiAssistantService } from '../../../services/aiAssistantService';
 
 interface AIAnalyticsHubProps {
  settings: GlobalSettings;
@@ -91,11 +92,16 @@ export default function AIAnalyticsHub({ settings, dataContext }: AIAnalyticsHub
  setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
 
  } catch (error: any) {
- logger.error(String(error));
- setMessages(prev => [...prev, { 
- role: 'assistant', 
- content: `⚠️ **Connection Error:** ${error.message}\n\nPlease check your internet connection or ensure your GEMINI_API_KEY is properly configured.` 
- }]);
+  logger.error('Backend AI call error, attempting local AI fallback:', error);
+  try {
+    const fallbackRes = await aiAssistantService.askQuestion(userMessage, dataContext);
+    setMessages(prev => [...prev, { role: 'assistant', content: fallbackRes.rawResponse }]);
+  } catch (fallbackErr) {
+    setMessages(prev => [...prev, { 
+      role: 'assistant', 
+      content: `⚠️ **Connection Error:** Could not process request. Please check internet connection.` 
+    }]);
+  }
  } finally {
  setLoading(false);
  }

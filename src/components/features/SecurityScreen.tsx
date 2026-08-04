@@ -1,198 +1,502 @@
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { Lock, Fingerprint, KeyRound, LogOut, MapPin, ShieldCheck } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import {
+  Lock,
+  Fingerprint,
+  LogOut,
+  MapPin,
+  Delete,
+  ShieldAlert,
+  CheckCircle2,
+} from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 import { useNativeAuth } from '../../contexts/NativeAuthContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { BiometricService } from '../../services/security/BiometricService';
 import { NativeHaptics } from '../../services/hardware/Haptics';
+import { useStationStore } from '../../stores/useStationStore';
+
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_SECONDS = 30;
+const DEFAULT_PIN_LENGTH = 6;
+
+interface KeyButtonProps {
+  label: string;
+  onClick: () => void;
+}
+
+const KeyButton: React.FC<KeyButtonProps> = ({ label, onClick }) => (
+  <motion.button
+    whileTap={{ scale: 0.92 }}
+    onClick={onClick}
+    aria-label={`Key ${label}`}
+    className="h-14 sm:h-16 rounded-2xl bg-white/5 hover:bg-white/15 border border-white/10 hover:border-orange-500/40 text-xl sm:text-2xl font-bold text-white transition-colors active:bg-white/20"
+  >
+    {label}
+  </motion.button>
+);
 
 export const SecurityScreen: React.FC = () => {
- 
- // eslint-disable-next-line @typescript-eslint/no-unused-vars
- const { unlock, forceUnlock, lockApp } = useNativeAuth();
- const { logout } = useAuth();
- const [pin, setPin] = useState('');
- const [error, setError] = useState('');
- const [showPin, setShowPin] = useState(false);
+  const { forceUnlock } = useNativeAuth();
+  const { logout } = useAuth();
+  const settings = useStationStore((s) => s.settings);
 
- return (
- <div className="fixed inset-0 z-[10000] bg-card flex flex-col items-center justify-between overflow-y-auto overflow-x-hidden font-sans">
- {/* Cinematic Background with Rain/Reflections Effect */}
- <div 
- className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-25 mix-blend-screen"
- style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2000&auto=format&fit=crop)' }}
- />
- <div className="absolute inset-0 z-0 bg-gradient-to-t from-[#02050A] via-[#050B14]/80 to-[#02050A]/90" />
- 
- {/* Dot Grid Pattern Overlay */}
- <div 
- className="absolute inset-0 z-0 opacity-[0.03] mix-blend-overlay"
- style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}
- />
+  const [view, setView] = useState<'biometric' | 'pin'>(() => {
+    const biometricReady = Boolean(settings?.security?.biometricEnabled) && Capacitor.isNativePlatform();
+    return biometricReady ? 'biometric' : 'pin';
+  });
+  const [pin, setPin] = useState('');
+  const [error, setError] = useState('');
+  const [attempts, setAttempts] = useState(0);
+  const [lockoutRemaining, setLockoutRemaining] = useState(0);
+  const [lockoutTotal, setLockoutTotal] = useState(LOCKOUT_SECONDS);
+  const [isUnlocking, setIsUnlocking] = useState(false);
+  const [unlocked, setUnlocked] = useState(false);
+  const [shakeKey, setShakeKey] = useState(0);
+  const [now, setNow] = useState(() => new Date());
 
- {/* Main Content */}
- <div className="relative z-10 w-full flex-1 flex flex-col items-center justify-center pt-16 pb-8">
- 
- {/* Animated Glowing Shield */}
- <div className="relative flex items-center justify-center mb-10">
- <div className="absolute w-[600px] h-[600px] bg-[radial-gradient(circle_at_center,rgba(255,100,0,0.1),transparent_50%)] pointer-events-none mix-blend-screen" />
- 
- <motion.div animate={{ scale: [1, 1.4], opacity: [0.6, 0] }} transition={{ repeat: Infinity, duration: 2.5, ease:"linear" }} className="absolute w-28 h-28 border border-orange-500/40 rounded-full" />
- <motion.div animate={{ scale: [1, 1.8], opacity: [0.3, 0] }} transition={{ repeat: Infinity, duration: 2.5, ease:"linear", delay: 0.8 }} className="absolute w-28 h-28 border border-orange-500/20 rounded-full" />
- <motion.div animate={{ scale: [1, 2.2], opacity: [0.1, 0] }} transition={{ repeat: Infinity, duration: 2.5, ease:"linear", delay: 1.6 }} className="absolute w-28 h-28 border border-orange-500/10 rounded-full" />
- 
- <div className="relative z-10 p-5 rounded-full border-2 border-orange-500 bg-card backdrop-blur-md shadow-[0_0_40px_rgba(255,100,0,0.3)]">
- <Lock className="w-10 h-10 text-orange-500" strokeWidth={1.5} />
- </div>
- </div>
+  const stationName = settings?.stationName || 'Motorway Petroleum';
+  const stationUrduName = settings?.stationUrduName || 'موٹروے پیٹرولیم';
+  const stationAddress = settings?.address || 'Mardan, Khyber Pakhtunkhwa';
+  const biometricAvailable = Boolean(settings?.security?.biometricEnabled) && Capacitor.isNativePlatform();
 
- {/* Brand Title */}
- <div className="text-center mb-10">
- <h1 className="text-5xl font-black text-white tracking-tight flex items-center justify-center gap-4 drop-shadow-2xl">
- FuelPro <span className="text-orange-500 font-light text-4xl opacity-50">|</span> <span className="font-[Noto_Nastaliq_Urdu] text-4xl font-normal leading-relaxed mt-2 drop-shadow-lg">فیول پرو</span>
- </h1>
- <div className="flex items-center justify-center gap-4 mt-3">
- <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-orange-500/80" />
- <span className="text-orange-400 font-[Noto_Nastaliq_Urdu] text-xl drop-shadow-md">آپ کا اپنا فیول اسٹیشن</span>
- <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-orange-500/80" />
- </div>
- </div>
+  // ─── Live clock ───────────────────────────────────────────────
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
 
- {/* Lock Notification Card */}
- <motion.div 
- initial={{ y: 20, opacity: 0 }}
- animate={{ y: 0, opacity: 1 }}
- className="bg-card backdrop-blur-2xl border border-border rounded-3xl p-6 w-[90%] max-w-sm shadow-[0_20px_50px_rgba(0,0,0,0.5)] mb-8 flex items-start gap-4"
- >
- <div className="shrink-0 mt-0.5">
- <Lock className="w-8 h-8 text-orange-500 drop-shadow-[0_0_10px_rgba(255,100,0,0.8)]" />
- </div>
- <div>
- <h3 className="text-white font-bold text-lg mb-1 tracking-wide">Application Locked</h3>
- <p className="text-muted-foreground text-[13px] leading-relaxed font-medium">
- {showPin ?"Enter your 6-digit PIN to resume your session securely." :"For your security, the application has been locked due to inactivity. Please authenticate to continue."}
- </p>
- </div>
- </motion.div>
+  // ─── Lockout cooldown countdown ──────────────────────────────
+  // The interval callback holds the latest value because the effect re-subscribes
+  // on every tick; when the cooldown completes it clears the transient error.
+  useEffect(() => {
+    if (lockoutRemaining <= 0) return;
+    const t = setInterval(() => {
+      setLockoutRemaining((r) => Math.max(0, r - 1));
+      if (lockoutRemaining <= 1) {
+        setAttempts(0);
+        setError('');
+      }
+    }, 1000);
+    return () => clearInterval(t);
+  }, [lockoutRemaining]);
 
- {error && (
- <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-[90%] max-w-sm bg-red-500/10 border border-red-500/20 py-3 px-4 rounded-xl mb-6 flex items-center gap-3">
- <ShieldCheck className="w-5 h-5 text-red-500 shrink-0" />
- <p className="text-red-400 text-sm font-medium">{error}</p>
- </motion.div>
- )}
+  // ─── Valid PIN sources (settings-first, device fallback) ──────
+  const getValidPins = useCallback((): Set<string> => {
+    const pins = new Set<string>();
+    const sec = settings?.security;
+    if (sec?.screenLockPin?.trim()) pins.add(sec.screenLockPin.trim());
+    if (sec?.masterPin?.trim()) pins.add(sec.masterPin.trim());
+    const devicePin = localStorage.getItem('fuelpro_device_pin');
+    if (devicePin?.trim()) pins.add(devicePin.trim());
+    // Last-resort default only when nothing is configured, to avoid deadlocks
+    if (pins.size === 0) pins.add('123456');
+    return pins;
+  }, [settings]);
 
- {/* Interactive Authentication Area */}
- <div className="w-[90%] max-w-sm space-y-6">
- {!showPin ? (
- <button
- onClick={async () => {
- try {
- const success = await BiometricService.authenticate('Unlock FuelPro');
- if (success) {
- NativeHaptics.success();
- forceUnlock();
- } else {
- NativeHaptics.error();
- setShowPin(true);
- 
- }
- // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
- } catch (err: any) {
- NativeHaptics.error();
- setShowPin(true);
- }
- }}
- className="relative w-full rounded-2xl transition-all active:scale-[0.98] group overflow-hidden"
- >
- <div className="absolute inset-0 bg-gradient-to-r from-orange-400 via-orange-600 to-orange-400 opacity-100 group-hover:scale-105 transition-transform duration-700" />
- <div className="absolute inset-[1px] bg-gradient-to-b from-orange-500 to-[#d04500] rounded-[15px]" />
- <div className="relative py-4 px-6 flex items-center justify-center gap-4 shadow-[0_0_40px_rgba(255,100,0,0.5)]">
- <div className="p-1 rounded-full bg-card/20 backdrop-blur-sm">
- <Fingerprint className="w-7 h-7 text-white" />
- </div>
- <span className="text-white font-bold text-lg tracking-wide drop-shadow-md">Tap to Unlock</span>
- </div>
- </button>
- ) : (
- <div className="space-y-4">
- <input 
- type="password" 
- maxLength={6}
- value={pin}
- onChange={(e) => {
- const val = e.target.value.replace(/\D/g, '');
- if (val.length > pin.length) NativeHaptics.lightClick();
- setPin(val);
- }}
- placeholder="Enter PIN"
- className="w-full bg-card backdrop-blur-xl border border-orange-500/30 rounded-2xl p-4 text-center text-white text-3xl tracking-[0.5em] focus:outline-none focus:border-orange-500 shadow-[inset_0_2px_20px_rgba(0,0,0,0.5)] transition-colors"
- />
- <button 
- onClick={() => {
- const savedPin = localStorage.getItem('fuelpro_device_pin') || '123456';
- if (pin === savedPin) { 
- NativeHaptics.success();
- forceUnlock();
- setPin('');
- setError('');
- } else {
- NativeHaptics.heavyClick();
- NativeHaptics.error();
- NativeHaptics.vibrate(500);
- setError('Invalid PIN. Please try again.');
- setPin('');
- }
- }}
- disabled={pin.length < 6}
- className="relative w-full rounded-2xl transition-all active:scale-[0.98] group overflow-hidden disabled:opacity-50 disabled:active:scale-100"
- >
- <div className="absolute inset-0 bg-gradient-to-r from-orange-400 via-orange-600 to-orange-400 opacity-100" />
- <div className="absolute inset-[1px] bg-gradient-to-b from-orange-500 to-[#d04500] rounded-[15px]" />
- <div className="relative py-4 px-6 flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(255,100,0,0.4)]">
- <KeyRound className="w-6 h-6 text-white" />
- <span className="text-white font-bold text-lg tracking-wide drop-shadow-md">Unlock App</span>
- </div>
- </button>
- </div>
- )}
+  // Display length: longest configured PIN, or the default 6. Submission is
+  // length-agnostic: any configured PIN is accepted the moment it is fully typed.
+  const pinLength = useMemo(() => {
+    const pins = [...getValidPins()];
+    const lengths = pins.map((p) => p.length).filter((l) => l >= 4);
+    return lengths.length ? Math.max(...lengths) : DEFAULT_PIN_LENGTH;
+  }, [getValidPins]);
 
- {/* Divider */}
- <div className="flex items-center gap-4 py-2">
- <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent to-white/10" />
- <span className="text-orange-500 text-[11px] font-black tracking-widest">OR</span>
- <div className="flex-1 h-[1px] bg-gradient-to-l from-transparent to-white/10" />
- </div>
+  // ─── Unlock flow ──────────────────────────────────────────────
+  const unlockTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    return () => {
+      if (unlockTimeoutRef.current) clearTimeout(unlockTimeoutRef.current);
+    };
+  }, []);
 
- {/* Sign Out Button */}
- <button 
- onClick={async () => {
- await logout();
- window.location.reload();
- }}
- className="w-full bg-card backdrop-blur-md border border-border hover:border-orange-500/30 hover:bg-[#0A1120]/80 text-muted-foreground font-medium py-3.5 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-[0.98]"
- >
- <LogOut className="w-5 h-5 text-orange-500/70" />
- <span className="tracking-wide">Sign Out Instead</span>
- </button>
- </div>
- </div>
+  const completeUnlock = useCallback(() => {
+    if (isUnlocking || unlocked) return;
+    setError('');
+    setIsUnlocking(true);
+    setUnlocked(true);
+    NativeHaptics.success();
+    unlockTimeoutRef.current = setTimeout(() => forceUnlock(), 900);
+  }, [isUnlocking, unlocked, forceUnlock]);
 
- {/* Footer Branding */}
- <div className="relative z-10 w-full pb-8 flex flex-col items-center mt-auto">
- <div className="flex items-center gap-3 mb-2 opacity-80">
- <div className="w-8 h-[1px] bg-orange-500" />
- <span className="text-[10px] font-bold text-orange-500 tracking-[0.25em] uppercase">Powered By</span>
- <div className="w-8 h-[1px] bg-orange-500" />
- </div>
- <h2 className="text-white font-black text-xl tracking-[0.35em] mb-2 uppercase drop-shadow-lg">Umar Ali</h2>
- <p className="text-orange-500 text-xs font-bold tracking-[0.15em] mb-4 uppercase drop-shadow-md">Motorway Petroleum, Mardan</p>
- <div className="flex items-center gap-1.5 text-muted-foreground">
- <MapPin className="w-4 h-4 text-orange-600" />
- <span className="text-[11px] font-medium tracking-wide">Mardan, Khyber Pakhtunkhwa</span>
- </div>
- </div>
+  const handleWrongPin = () => {
+    const next = attempts + 1;
+    setAttempts(next);
+    setPin('');
+    setShakeKey((k) => k + 1);
+    NativeHaptics.heavyClick();
+    NativeHaptics.error();
+    NativeHaptics.vibrate(400);
 
- </div>
- );
+    if (next >= MAX_ATTEMPTS) {
+      setLockoutTotal(LOCKOUT_SECONDS);
+      setLockoutRemaining(LOCKOUT_SECONDS);
+      setError(`Too many failed attempts. Locked for ${LOCKOUT_SECONDS} seconds.`);
+    } else {
+      const remaining = MAX_ATTEMPTS - next;
+      setError(`Invalid PIN. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`);
+    }
+  };
+
+  const verifyPin = (entered: string) => {
+    if (lockoutRemaining > 0 || isUnlocking || unlocked) return;
+    if (getValidPins().has(entered)) {
+      completeUnlock();
+    } else {
+      handleWrongPin();
+    }
+  };
+
+  const handleKeyPress = (key: string) => {
+    if (lockoutRemaining > 0 || isUnlocking || unlocked) return;
+
+    if (key === 'del') {
+      setPin((p) => p.slice(0, -1));
+      setError('');
+      return;
+    }
+    if (!/^\d$/.test(key)) return;
+    if (pin.length >= pinLength) return;
+
+    setError('');
+    NativeHaptics.lightClick();
+    const next = pin + key;
+    setPin(next);
+    if (getValidPins().has(next) || next.length >= pinLength) {
+      verifyPin(next);
+    }
+  };
+
+  // ─── Physical keyboard support (bound once, always reads fresh state) ─
+  const keyHandlerRef = useRef<(e: KeyboardEvent) => void>(() => {});
+
+  useEffect(() => {
+    keyHandlerRef.current = (e: KeyboardEvent) => {
+      if (e.key >= '0' && e.key <= '9') handleKeyPress(e.key);
+      else if (e.key === 'Backspace') handleKeyPress('del');
+      else if (e.key === 'Enter' && pin.length === pinLength) verifyPin(pin);
+      else if (e.key === 'Escape') {
+        setPin('');
+        setError('');
+      }
+    };
+  });
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => keyHandlerRef.current(e);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  // ─── Biometric flow ───────────────────────────────────────────
+  const handleBiometric = async () => {
+    if (lockoutRemaining > 0 || isUnlocking) return;
+    NativeHaptics.lightClick();
+    // BiometricService already resolves to false on failure/cancel — no throw path
+    const success = await BiometricService.authenticate('Unlock FuelPro Enterprise');
+    if (success) {
+      completeUnlock();
+    } else {
+      NativeHaptics.error();
+      setView('pin');
+    }
+  };
+
+  // ─── Sign out ─────────────────────────────────────────────────
+  const handleSignOut = async () => {
+    NativeHaptics.heavyClick();
+    await logout();
+    window.location.reload();
+  };
+
+  return (
+    <div className="fixed inset-0 z-[10000] overflow-y-auto overflow-x-hidden font-sans bg-[#02050A]">
+      {/* Cinematic CSS-only background (offline-safe, no external assets) */}
+      <div className="fixed inset-0 bg-gradient-to-b from-[#030812] via-[#050B14] to-[#02050A]" />
+      <div className="fixed inset-0 bg-[radial-gradient(circle_at_50%_-10%,rgba(255,120,20,0.16),transparent_55%)] pointer-events-none" />
+      <div className="fixed inset-0 bg-[radial-gradient(circle_at_85%_110%,rgba(255,100,0,0.10),transparent_50%)] pointer-events-none" />
+      <div
+        className="fixed inset-0 opacity-[0.04] mix-blend-overlay pointer-events-none"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+          backgroundSize: '24px 24px',
+        }}
+      />
+
+      <div className="relative z-10 min-h-full flex flex-col items-center justify-between gap-6 px-4 py-8">
+        {/* ─── Top: Live clock + station badge ─────────────────── */}
+        <header className="w-full max-w-md flex flex-col items-center pt-2">
+          <motion.time
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-6xl sm:text-7xl font-black text-white tracking-tighter drop-shadow-lg tabular-nums"
+          >
+            {now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </motion.time>
+          <p className="text-white/60 font-semibold mt-1.5 tracking-wide">
+            {now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
+          </p>
+          <div className="flex items-center gap-2 mt-4 bg-white/5 border border-white/10 rounded-full px-4 py-1.5">
+            <MapPin className="w-3.5 h-3.5 text-orange-400" />
+            <span className="text-xs font-bold text-white/80">{stationName}</span>
+            <span className="text-white/30">•</span>
+            <span className="text-xs font-semibold text-white/50">{stationUrduName}</span>
+          </div>
+        </header>
+
+        {/* ─── Center: Auth card ───────────────────────────────── */}
+        <div className="w-full flex flex-col items-center">
+          <motion.div
+            key={shakeKey}
+            animate={shakeKey > 0 ? { x: [0, -12, 12, -9, 9, -5, 5, 0] } : { x: 0 }}
+            transition={{ duration: 0.45 }}
+            className="w-[92%] max-w-sm bg-[#0B1424]/90 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 sm:p-7 shadow-[0_20px_60px_rgba(0,0,0,0.55)] flex flex-col items-center text-center"
+          >
+            {/* Glowing shield */}
+            <div className="relative flex items-center justify-center mb-5">
+              <motion.div
+                animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
+                transition={{ repeat: Infinity, duration: 2.2, ease: 'linear' }}
+                className="absolute w-16 h-16 border border-orange-500/40 rounded-full"
+              />
+              <motion.div
+                animate={{ scale: [1, 1.9], opacity: [0.25, 0] }}
+                transition={{ repeat: Infinity, duration: 2.2, ease: 'linear', delay: 0.7 }}
+                className="absolute w-16 h-16 border border-orange-500/20 rounded-full"
+              />
+              <div
+                className={`relative z-10 p-4 rounded-2xl border-2 bg-[#0B1424] shadow-[0_0_30px_rgba(255,100,0,0.3)] transition-colors duration-500 ${
+                  unlocked ? 'border-emerald-400' : error ? 'border-rose-500' : 'border-orange-500'
+                }`}
+              >
+                {unlocked ? (
+                  <CheckCircle2 className="w-7 h-7 text-emerald-400" />
+                ) : (
+                  <Lock className="w-7 h-7 text-orange-500" strokeWidth={1.5} />
+                )}
+              </div>
+            </div>
+
+            <h1 className="text-2xl font-black text-white tracking-tight">
+              {unlocked ? 'Session Resumed' : 'Application Locked'}
+            </h1>
+            <p className="text-orange-400 font-[Noto_Nastaliq_Urdu] text-base mt-1">
+              {unlocked ? 'سیشن دوبارہ شروع ہو گیا' : 'ایپلیکیشن لاک ہے'}
+            </p>
+            <p className="text-white/50 text-xs font-medium mt-2 max-w-[260px]">
+              {lockoutRemaining > 0
+                ? 'Too many attempts detected. Please wait for the security cooldown to finish.'
+                : view === 'biometric'
+                  ? 'Authenticate with your fingerprint to resume your secured session.'
+                  : `Enter your ${pinLength}-digit PIN to resume your session securely.`}
+            </p>
+
+            {/* Screen-reader status announcement */}
+            <span className="sr-only" aria-live="polite">
+              {unlocked
+                ? 'Unlocked'
+                : lockoutRemaining > 0
+                  ? `Locked for ${lockoutRemaining} seconds`
+                  : view === 'pin'
+                    ? error || `${pin.length} of ${pinLength} digits entered`
+                    : 'Biometric authentication available'}
+            </span>
+
+            {/* Error banner */}
+            <AnimatePresence>
+              {error && !unlocked && (
+                <motion.p
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="text-rose-400 text-sm font-bold mt-4"
+                >
+                  {error}
+                </motion.p>
+              )}
+            </AnimatePresence>
+
+            {/* ─── Lockout panel ─────────────────────────────── */}
+            {lockoutRemaining > 0 ? (
+              <div className="w-full flex flex-col items-center py-8">
+                <ShieldAlert className="w-10 h-10 text-rose-500 mb-3" />
+                <p className="text-white font-bold">Vault Temporarily Locked</p>
+                <p className="text-rose-400 text-sm font-semibold mt-1">
+                  Try again in {lockoutRemaining}s
+                </p>
+                <div className="w-48 h-1.5 bg-white/10 rounded-full mt-5 overflow-hidden">
+                  <div
+                    className="h-full bg-rose-500 rounded-full transition-all duration-1000"
+                    style={{ width: `${(lockoutRemaining / lockoutTotal) * 100}%` }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* ─── Biometric hero ──────────────────────────── */}
+                {view === 'biometric' && (
+                  <div className="w-full mt-6 space-y-3">
+                    <button
+                      onClick={handleBiometric}
+                      className="relative w-full rounded-2xl transition-all active:scale-[0.98] group overflow-hidden cursor-pointer"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-orange-400 via-orange-600 to-orange-400 opacity-100 group-hover:scale-105 transition-transform duration-700" />
+                      <div className="absolute inset-[1px] bg-gradient-to-b from-orange-500 to-[#d04500] rounded-[15px]" />
+                      <div className="relative py-4 px-6 flex items-center justify-center gap-4 shadow-[0_0_40px_rgba(255,100,0,0.5)]">
+                        <div className="p-1.5 rounded-full bg-white/15 backdrop-blur-sm">
+                          <Fingerprint className="w-7 h-7 text-white" />
+                        </div>
+                        <span className="text-white font-bold text-lg tracking-wide drop-shadow-md">
+                          Tap to Unlock
+                        </span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => setView('pin')}
+                      className="w-full text-center text-sm text-white/60 hover:text-white font-semibold transition-colors py-1 cursor-pointer"
+                    >
+                      Use PIN instead
+                    </button>
+                  </div>
+                )}
+
+                {/* ─── PIN keypad ─────────────────────────────── */}
+                {view === 'pin' && (
+                  <div className="w-full mt-6 space-y-5">
+                    {/* PIN dots */}
+                    <div className="flex items-center justify-center gap-3" aria-live="polite">
+                      {Array.from({ length: pinLength }).map((_, i) => (
+                        <motion.div
+                          key={i}
+                          animate={{
+                            scale: i < pin.length ? [1, 1.35, 1] : 1,
+                            y: i < pin.length ? [0, -6, 0] : 0,
+                          }}
+                          transition={{ duration: 0.25 }}
+                          className={`w-3.5 h-3.5 rounded-full transition-colors duration-200 ${
+                            i < pin.length
+                              ? unlocked
+                                ? 'bg-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.8)]'
+                                : 'bg-orange-500 shadow-[0_0_12px_rgba(255,140,20,0.8)]'
+                              : error
+                                ? 'bg-rose-500/70'
+                                : 'bg-white/15 border border-white/20'
+                          }`}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Keypad */}
+                    <div className="grid grid-cols-3 gap-3 w-full">
+                      {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((k) => (
+                        <KeyButton key={k} label={k} onClick={() => handleKeyPress(k)} />
+                      ))}
+                      {biometricAvailable ? (
+                        <motion.button
+                          whileTap={{ scale: 0.92 }}
+                          onClick={() => setView('biometric')}
+                          aria-label="Use biometrics"
+                          className="h-14 sm:h-16 rounded-2xl bg-orange-500/15 hover:bg-orange-500/25 border border-orange-500/30 text-orange-400 flex items-center justify-center transition-colors cursor-pointer"
+                        >
+                          <Fingerprint className="w-6 h-6" />
+                        </motion.button>
+                      ) : (
+                        <div />
+                      )}
+                      <KeyButton label="0" onClick={() => handleKeyPress('0')} />
+                      <motion.button
+                        whileTap={{ scale: 0.92 }}
+                        onClick={() => handleKeyPress('del')}
+                        aria-label="Delete"
+                        className="h-14 sm:h-16 rounded-2xl bg-white/5 hover:bg-white/15 border border-white/10 text-white/60 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                      >
+                        <Delete className="w-6 h-6" />
+                      </motion.button>
+                    </div>
+
+                    {pin.length > 0 && (
+                      <button
+                        onClick={() => {
+                          setPin('');
+                          setError('');
+                        }}
+                        className="w-full text-center text-xs text-white/40 hover:text-white/80 font-semibold transition-colors cursor-pointer"
+                      >
+                        Clear PIN
+                      </button>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </motion.div>
+
+          {/* Sign out */}
+          <button
+            onClick={handleSignOut}
+            className="w-[92%] max-w-sm mt-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-orange-500/40 hover:bg-white/10 text-white/70 hover:text-white font-semibold py-3.5 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-[0.98] cursor-pointer"
+          >
+            <LogOut className="w-5 h-5 text-orange-500/70" />
+            <span>Sign Out Instead</span>
+          </button>
+        </div>
+
+        {/* ─── Footer branding ─────────────────────────────────── */}
+        <footer className="w-full max-w-md flex flex-col items-center pt-2 pb-1">
+          <div className="flex items-center gap-3 mb-2 opacity-70">
+            <div className="w-8 h-px bg-orange-500" />
+            <span className="text-[10px] font-bold text-orange-500 tracking-[0.25em] uppercase">
+              Powered By
+            </span>
+            <div className="w-8 h-px bg-orange-500" />
+          </div>
+          <h2 className="text-white font-black text-lg tracking-[0.3em] uppercase mb-1.5">
+            Umar Ali
+          </h2>
+          <p className="text-orange-500 text-xs font-bold tracking-[0.12em] uppercase">{stationName}</p>
+          <p className="text-white/40 text-[11px] font-medium mt-1.5 flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5 text-orange-600" />
+            {stationAddress}
+          </p>
+        </footer>
+      </div>
+
+      {/* ─── Success overlay ───────────────────────────────────── */}
+      <AnimatePresence>
+        {unlocked && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[10001] bg-[#02050A]/90 backdrop-blur-xl flex flex-col items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.6, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+              className="w-24 h-24 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-[0_0_60px_rgba(16,185,129,0.5)]"
+            >
+              <CheckCircle2 className="w-12 h-12 text-white" />
+            </motion.div>
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="mt-6 text-white text-xl font-bold tracking-wide"
+            >
+              Welcome Back
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.35 }}
+              className="text-orange-400 font-[Noto_Nastaliq_Urdu] text-lg mt-1"
+            >
+              خوش آمدید
+            </motion.p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 };

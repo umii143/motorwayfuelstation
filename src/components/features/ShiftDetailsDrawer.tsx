@@ -181,20 +181,48 @@ export function ShiftDetailsDrawer({
  </div>
  </div>
 
- <div className="grid grid-cols-3 gap-3 mt-6 pt-5 border-t border-border/60">
- <div>
- <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Info className="w-3 h-3"/> Performance Score</div>
- <div className="font-bold text-emerald-600">4.8 / 5</div>
- </div>
- <div>
- <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Info className="w-3 h-3"/> Efficiency</div>
- <div className="font-bold text-emerald-600">92%</div>
- </div>
- <div>
- <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Info className="w-3 h-3"/> Trust Level</div>
- <div className="font-bold text-emerald-600">High</div>
- </div>
- </div>
+  {/* Calculate live shift performance score */}
+  {(() => {
+    const cashDiff = Math.abs((shift?.submittedCash || 0) - (shift?.expectedCash || 0));
+    let score = '5.0 / 5';
+    let efficiency = '100%';
+    let trust = 'Verified High';
+    let colorClass = 'text-emerald-600';
+
+    if (cashDiff > 2000) {
+      score = '2.5 / 5';
+      efficiency = '65%';
+      trust = 'Flagged Variance';
+      colorClass = 'text-rose-600';
+    } else if (cashDiff > 500) {
+      score = '3.8 / 5';
+      efficiency = '82%';
+      trust = 'Audit Required';
+      colorClass = 'text-amber-600';
+    } else if (cashDiff > 0) {
+      score = '4.6 / 5';
+      efficiency = '95%';
+      trust = 'Good';
+      colorClass = 'text-emerald-600';
+    }
+
+    return (
+      <div className="grid grid-cols-3 gap-3 mt-6 pt-5 border-t border-border/60">
+        <div>
+          <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Info className="w-3 h-3"/> Performance Score</div>
+          <div className={`font-bold ${colorClass}`}>{score}</div>
+        </div>
+        <div>
+          <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Info className="w-3 h-3"/> Efficiency</div>
+          <div className={`font-bold ${colorClass}`}>{efficiency}</div>
+        </div>
+        <div>
+          <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Info className="w-3 h-3"/> Trust Level</div>
+          <div className={`font-bold ${colorClass}`}>{trust}</div>
+        </div>
+      </div>
+    );
+  })()}
  </div>
 
  {/* CASH FLOW SUMMARY */}

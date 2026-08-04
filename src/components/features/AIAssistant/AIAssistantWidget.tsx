@@ -69,6 +69,7 @@ export const AIAssistantWidget: React.FC = () => {
       provider: aiResponse.providerUsed,
       model: aiResponse.modelName,
       latencyMs: aiResponse.latencyMs,
+      tokensEstimate: aiResponse.tokensEstimate,
       tokens: aiResponse.tokensEstimate,
     };
     setLastMeta(meta);
