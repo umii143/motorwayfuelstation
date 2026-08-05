@@ -82,7 +82,7 @@ export default function UniversalFilterFramework() {
       gap: 12
     }}>
       {/* Top Row: Date Range (real, clickable) + Context Chip */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, overflowX: 'auto' }} className="no-scrollbar">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, overflowX: 'auto' }} className="custom-horizontal-scrollbar pb-1" data-horizontal-scroll="true">
         {/* Date Range Presets */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
           <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>
@@ -140,7 +140,7 @@ export default function UniversalFilterFramework() {
       </div>
 
       {/* Active Filters Row — truthfully reflects workspace filter state */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflowX: 'auto', flexWrap: 'wrap' }} className="no-scrollbar">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflowX: 'auto', flexWrap: 'wrap' }} className="custom-horizontal-scrollbar pb-1" data-horizontal-scroll="true">
         {activeFilters.length === 0 ? (
           <span style={{ fontSize: 12, color: 'var(--text-muted)', opacity: 0.7 }}>
             {isEn ? 'No active filters — showing all records. Open a report and use its filter bar to narrow down.' : 'کوئی فلٹر فعال نہیں — تمام ریکارڈز دکھائے جا رہے ہیں۔'}

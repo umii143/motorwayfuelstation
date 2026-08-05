@@ -4,33 +4,72 @@
  * FuelPro Enterprise Business Operating System v4.0
  * CashReconciliationTab — Dedicated Shift Cash Reconciliation & Settlement Sub-Workspace
  *
- * Implements Enterprise Rule #137 & Rule #144
+ * 100% Google Firebase Realtime Database Driven — Zero Dummy Records.
+ * Implements Enterprise Rule #1, #137 & Rule #144
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { EnterpriseRegisterTable } from '../../EnterpriseRegisterTable';
-import { DollarSign, CheckCircle2, ShieldCheck, ArrowRight } from 'lucide-react';
+import { DollarSign, ShieldCheck } from 'lucide-react';
+import { WorkspaceEmptyState } from '../../common/WorkspaceEmptyState';
+import { WorkspaceLoadingSkeleton } from '../../common/WorkspaceLoadingSkeleton';
+import { useWorkspaceFirebaseData } from '../../../hooks/useWorkspaceFirebaseData';
 
 interface CashReconciliationTabProps {
+  salesRows?: Record<string, any>[];
   lang: 'en' | 'ur';
+  orgId?: string;
+  stationId?: string;
   onSelectRecord?: (record: Record<string, any>) => void;
 }
 
 export const CashReconciliationTab: React.FC<CashReconciliationTabProps> = ({
+  salesRows = [],
   lang,
+  orgId,
+  stationId,
   onSelectRecord,
 }) => {
   const isEn = lang === 'en';
-  const [actualCashInput, setActualCashInput] = useState('320000');
 
-  const expectedCash = 320000;
+  // Fetch cash ledger records from Firebase
+  const { data: cashLedgerData, loading, isEmpty, refetch } = useWorkspaceFirebaseData('CASH_LEDGER', {
+    orgId,
+    stationId,
+  });
+
+  // Compute expected cash from sales rows (cash payment type only)
+  const expectedCash = useMemo(() => {
+    return salesRows
+      .filter(r => {
+        const method = (r.paymentMethod || r.paymentMode || '').toLowerCase();
+        return method.includes('cash') || method === '';
+      })
+      .reduce((sum, r) => sum + (Number(r.totalAmount || r.amount) || 0), 0);
+  }, [salesRows]);
+
+  const [actualCashInput, setActualCashInput] = useState('');
   const actualCash = Number(actualCashInput) || 0;
-  const cashDifference = actualCash - expectedCash;
+  const cashDifference = actualCashInput ? actualCash - expectedCash : 0;
 
-  const reconciliationLogs = [
-    { shiftId: 'SHIFT-2025-0515-M', date: 'May 15, 2025', cashier: 'Ali Raza', expectedCash: 'Rs 320,000', physicalCash: 'Rs 320,000', difference: 'Rs 0', status: 'VERIFIED_BALANCED' },
-    { shiftId: 'SHIFT-2025-0514-N', date: 'May 14, 2025', cashier: 'Umer Farooq', expectedCash: 'Rs 280,000', physicalCash: 'Rs 280,000', difference: 'Rs 0', status: 'VERIFIED_BALANCED' },
-  ];
+  // Build reconciliation log from cash ledger data
+  const reconciliationLogs = useMemo(() => {
+    return cashLedgerData
+      .filter(r => r.type === 'RECONCILIATION' || r.type === 'SHIFT_CLOSE' || r.reconciliationStatus)
+      .map(r => ({
+        shiftId: r.shiftId || r._id,
+        date: r.date || r.timestamp || r.createdAt || '—',
+        cashier: r.cashier || r.operatorName || r.createdBy || '—',
+        expectedCash: `Rs ${(Number(r.expectedCash || r.expected) || 0).toLocaleString()}`,
+        physicalCash: `Rs ${(Number(r.physicalCash || r.actual) || 0).toLocaleString()}`,
+        difference: `Rs ${(Number(r.difference || r.variance) || 0).toLocaleString()}`,
+        status: r.status || r.reconciliationStatus || 'PENDING',
+      }));
+  }, [cashLedgerData]);
+
+  if (loading) {
+    return <WorkspaceLoadingSkeleton kpiCount={4} rowCount={3} />;
+  }
 
   return (
     <div className="space-y-4">
@@ -44,8 +83,12 @@ export const CashReconciliationTab: React.FC<CashReconciliationTabProps> = ({
             </h2>
             <p className="text-xs font-bold text-slate-400">Reconcile physical cash drawer balance against expected system sales</p>
           </div>
-          <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black border border-emerald-300">
-            ✓ BALANCED MATCH
+          <span className={`px-3 py-1 rounded-full text-xs font-black border ${
+            !actualCashInput ? 'bg-slate-100 text-slate-600 border-slate-300' :
+            cashDifference === 0 ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
+            'bg-red-100 text-red-800 border-red-300'
+          }`}>
+            {!actualCashInput ? 'AWAITING COUNT' : cashDifference === 0 ? '✓ BALANCED MATCH' : '⚠ DISCREPANCY'}
           </span>
         </div>
 
@@ -61,14 +104,15 @@ export const CashReconciliationTab: React.FC<CashReconciliationTabProps> = ({
               type="number"
               value={actualCashInput}
               onChange={(e) => setActualCashInput(e.target.value)}
+              placeholder="Enter physical count..."
               className="w-full px-3 py-1.5 rounded-lg border border-emerald-300 bg-white text-sm font-black text-slate-900 focus:outline-none"
             />
           </div>
 
           <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
             <span className="text-slate-500 block text-[11px]">Cash Difference</span>
-            <span className={`text-lg font-black mt-1 block ${cashDifference === 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-              Rs {cashDifference.toLocaleString()}
+            <span className={`text-lg font-black mt-1 block ${!actualCashInput ? 'text-slate-400' : cashDifference === 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+              {actualCashInput ? `Rs ${cashDifference.toLocaleString()}` : '—'}
             </span>
           </div>
 
@@ -87,20 +131,28 @@ export const CashReconciliationTab: React.FC<CashReconciliationTabProps> = ({
           Shift Cash Reconciliation Audit Ledger
         </h3>
 
-        <EnterpriseRegisterTable
-          columns={[
-            { id: 'shiftId', header: 'Shift Session ID', headerUr: 'شفٹ سیشن', accessor: 'shiftId', sortable: true },
-            { id: 'date', header: 'Date', headerUr: 'تاریخ', accessor: 'date' },
-            { id: 'cashier', header: 'Cashier / Operator', headerUr: 'کیشیئر', accessor: 'cashier' },
-            { id: 'expectedCash', header: 'Expected Cash', headerUr: 'ایکسپیکٹڈ کیش', accessor: 'expectedCash' },
-            { id: 'physicalCash', header: 'Physical Cash', headerUr: 'فزیکل کیش', accessor: 'physicalCash' },
-            { id: 'difference', header: 'Difference', headerUr: 'فرق', accessor: 'difference' },
-            { id: 'status', header: 'Audit Status', headerUr: 'اسٹیٹس', accessor: 'status' },
-          ]}
-          data={reconciliationLogs}
-          language={lang}
-          onRowClick={(row) => onSelectRecord?.(row)}
-        />
+        {reconciliationLogs.length === 0 ? (
+          <WorkspaceEmptyState
+            title="No Reconciliation Records"
+            description="Past shift cash reconciliation records will appear here once shifts are closed and cash is verified."
+            onRefresh={refetch}
+          />
+        ) : (
+          <EnterpriseRegisterTable
+            columns={[
+              { id: 'shiftId', header: 'Shift Session ID', headerUr: 'شفٹ سیشن', accessor: 'shiftId', sortable: true },
+              { id: 'date', header: 'Date', headerUr: 'تاریخ', accessor: 'date' },
+              { id: 'cashier', header: 'Cashier / Operator', headerUr: 'کیشیئر', accessor: 'cashier' },
+              { id: 'expectedCash', header: 'Expected Cash', headerUr: 'ایکسپیکٹڈ کیش', accessor: 'expectedCash' },
+              { id: 'physicalCash', header: 'Physical Cash', headerUr: 'فزیکل کیش', accessor: 'physicalCash' },
+              { id: 'difference', header: 'Difference', headerUr: 'فرق', accessor: 'difference' },
+              { id: 'status', header: 'Audit Status', headerUr: 'اسٹیٹس', accessor: 'status' },
+            ]}
+            data={reconciliationLogs}
+            language={lang}
+            onRowClick={(row) => onSelectRecord?.(row)}
+          />
+        )}
       </div>
     </div>
   );

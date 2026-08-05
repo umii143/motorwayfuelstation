@@ -364,7 +364,7 @@ export default function Reports({
  </div>
 
  {/* TABS SELECTOR */}
- <div className="flex overflow-x-auto gap-2 border-b border-border pb-1.5 whitespace-nowrap scrollbar-none">
+ <div className="flex overflow-x-auto gap-2 border-b border-border pb-2 whitespace-nowrap custom-horizontal-scrollbar" data-horizontal-scroll="true">
  {[
  { id: 'command_center', label: '🛡️ Operations Command Center', urdu: '🛡️ آپریشنز کمانڈ سینٹر' },
  { id: 'corporate_audit', label: '📊 Corporate Audits (50+ Reports)', urdu: '📊 کارپوریٹ آڈٹ لسٹ (50+ رپورٹیں)' },

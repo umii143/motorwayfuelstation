@@ -4,12 +4,14 @@
  * FuelPro Enterprise Business Operating System v4.0
  * FuelSalesRegisterTab — Dedicated Fuel Dispense Register Sub-Workspace
  *
- * Implements Enterprise Rule #137 & Rule #144
+ * 100% Google Firebase Realtime Database Driven — Zero Dummy Records.
+ * Implements Enterprise Rule #1, #137 & Rule #144
  */
 
 import React, { useState, useMemo } from 'react';
 import { EnterpriseRegisterTable } from '../../EnterpriseRegisterTable';
 import { SlidersHorizontal, Download } from 'lucide-react';
+import { WorkspaceEmptyState } from '../../common/WorkspaceEmptyState';
 
 interface FuelSalesRegisterTabProps {
   salesRows: Record<string, any>[];
@@ -25,22 +27,22 @@ export const FuelSalesRegisterTab: React.FC<FuelSalesRegisterTabProps> = ({
   const isEn = lang === 'en';
   const [search, setSearch] = useState('');
 
-  const defaultSales = [
-    { invoiceNo: 'INV-2025-001', productName: 'Super Petrol', quantity: 25.0, rate: 285.00, totalAmount: 7125, paymentMode: 'Cash', operator: 'Ali Raza', time: '11:24:31 AM' },
-    { invoiceNo: 'INV-2025-002', productName: 'High Speed Diesel', quantity: 150.0, rate: 275.00, totalAmount: 41250, paymentMode: 'HBL Bank', operator: 'Umer Farooq', time: '11:20:15 AM' },
-    { invoiceNo: 'INV-2025-003', productName: 'Super Petrol', quantity: 10.0, rate: 285.00, totalAmount: 2850, paymentMode: 'EasyPaisa', operator: 'Ali Raza', time: '11:15:00 AM' },
-    { invoiceNo: 'INV-2025-004', productName: 'High Speed Diesel', quantity: 80.0, rate: 275.00, totalAmount: 22000, paymentMode: 'JazzCash', operator: 'Bilal Ahmed', time: '11:05:45 AM' },
-  ];
-
-  const displayRows = salesRows.length > 0 ? salesRows : defaultSales;
-
   const filteredRows = useMemo(() => {
-    if (!search.trim()) return displayRows;
+    if (!search.trim()) return salesRows;
     const q = search.toLowerCase();
-    return displayRows.filter((r) =>
+    return salesRows.filter((r) =>
       Object.values(r).some((v) => String(v ?? '').toLowerCase().includes(q))
     );
-  }, [displayRows, search]);
+  }, [salesRows, search]);
+
+  if (salesRows.length === 0) {
+    return (
+      <WorkspaceEmptyState
+        title="No Fuel Sales Records Found"
+        description="Fuel sales dispense records will automatically populate here once transactions are recorded through POS or shift operations."
+      />
+    );
+  }
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-3">

@@ -217,7 +217,7 @@ export const CustomersWorkspaceView: React.FC<CustomersWorkspaceViewProps> = ({
         </div>
 
         {/* ── 2. SUB-HEADER TABS BAR (10 DEDICATED SUB-WORKSPACES) ── */}
-        <div className="flex items-center gap-1.5 pt-3 overflow-x-auto scrollbar-none">
+        <div className="flex items-center gap-1.5 pt-3 overflow-x-auto custom-horizontal-scrollbar pb-1.5" data-horizontal-scroll="true">
           {[
             { id: 'overview', label: 'Overview' },
             { id: 'register', label: 'Customer Register' },

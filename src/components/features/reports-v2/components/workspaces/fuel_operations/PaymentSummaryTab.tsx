@@ -4,58 +4,118 @@
  * FuelPro Enterprise Business Operating System v4.0
  * PaymentSummaryTab — Dedicated Payment Analytics & Collections Sub-Workspace
  *
- * Implements Enterprise Rule #137 & Rule #144
+ * 100% Google Firebase Realtime Database Driven — Zero Dummy Records.
+ * Implements Enterprise Rule #1, #137 & Rule #144
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { EnterpriseRegisterTable } from '../../EnterpriseRegisterTable';
-import { CreditCard, DollarSign, Smartphone } from 'lucide-react';
+import { CreditCard } from 'lucide-react';
+import { WorkspaceEmptyState } from '../../common/WorkspaceEmptyState';
+import { WorkspaceLoadingSkeleton } from '../../common/WorkspaceLoadingSkeleton';
+import { useWorkspaceFirebaseData } from '../../../hooks/useWorkspaceFirebaseData';
+
+function formatCurrency(v: number): string {
+  return `Rs ${v.toLocaleString('en-PK')}`;
+}
 
 interface PaymentSummaryTabProps {
+  salesRows?: Record<string, any>[];
   lang: 'en' | 'ur';
+  orgId?: string;
+  stationId?: string;
   onSelectRecord?: (record: Record<string, any>) => void;
 }
 
 export const PaymentSummaryTab: React.FC<PaymentSummaryTabProps> = ({
+  salesRows = [],
   lang,
+  orgId,
+  stationId,
   onSelectRecord,
 }) => {
   const isEn = lang === 'en';
 
-  const paymentMethods = [
-    { method: '🛍️ Cash Collections', txns: 210, amount: 'Rs 320,000', percentage: '56.1%', status: 'VERIFIED_IN_HAND' },
-    { method: '💳 Card Payments (POS Terminal)', txns: 78, amount: 'Rs 120,000', percentage: '21.1%', status: 'SETTLED_HBL' },
-    { method: '📱 EasyPaisa Mobile Wallet', txns: 42, amount: 'Rs 80,000', percentage: '14.0%', status: 'CONFIRMED' },
-    { method: '📱 JazzCash Mobile Wallet', txns: 16, amount: 'Rs 30,000', percentage: '5.3%', status: 'CONFIRMED' },
-    { method: '🌐 HBL Bank Direct Transfer', txns: 10, amount: 'Rs 20,000', percentage: '3.5%', status: 'POSTED_GL' },
-  ];
+  // Use payments collection from Firebase for detailed payment data
+  const { data: paymentData, loading, isEmpty } = useWorkspaceFirebaseData('PAYMENTS', {
+    orgId,
+    stationId,
+  });
+
+  // Compute payment method breakdown from live sales + payment data
+  const paymentMethods = useMemo(() => {
+    const source = paymentData.length > 0 ? paymentData : salesRows;
+    if (source.length === 0) return [];
+
+    const grouped: Record<string, { txns: number; amount: number }> = {};
+
+    source.forEach((row) => {
+      const method = row.paymentMethod || row.paymentMode || row.payment || row.mode || 'Unknown';
+      if (!grouped[method]) {
+        grouped[method] = { txns: 0, amount: 0 };
+      }
+      grouped[method].txns += 1;
+      grouped[method].amount += Number(row.totalAmount || row.amount) || 0;
+    });
+
+    const totalAmount = Object.values(grouped).reduce((s, g) => s + g.amount, 0);
+
+    return Object.entries(grouped).map(([method, g]) => ({
+      method,
+      txns: g.txns,
+      amount: formatCurrency(g.amount),
+      amountNum: g.amount,
+      percentage: totalAmount > 0 ? `${((g.amount / totalAmount) * 100).toFixed(1)}%` : '0%',
+      percentageNum: totalAmount > 0 ? (g.amount / totalAmount) * 100 : 0,
+      status: 'VERIFIED',
+    })).sort((a, b) => b.amountNum - a.amountNum);
+  }, [paymentData, salesRows]);
+
+  // Compute KPIs from live data
+  const totalCollections = useMemo(() => paymentMethods.reduce((s, p) => s + p.amountNum, 0), [paymentMethods]);
+  const cashCollections = useMemo(() => paymentMethods.filter(p => p.method.toLowerCase().includes('cash')).reduce((s, p) => s + p.amountNum, 0), [paymentMethods]);
+  const cardCollections = useMemo(() => paymentMethods.filter(p => p.method.toLowerCase().includes('card') || p.method.toLowerCase().includes('pos')).reduce((s, p) => s + p.amountNum, 0), [paymentMethods]);
+  const digitalCollections = useMemo(() => paymentMethods.filter(p => p.method.toLowerCase().includes('easypaisa') || p.method.toLowerCase().includes('jazzcash') || p.method.toLowerCase().includes('wallet')).reduce((s, p) => s + p.amountNum, 0), [paymentMethods]);
+
+  if (loading) {
+    return <WorkspaceLoadingSkeleton kpiCount={4} rowCount={5} />;
+  }
+
+  if (paymentMethods.length === 0) {
+    return (
+      <WorkspaceEmptyState
+        title="No Payment Records Found"
+        description="Payment collections breakdown will automatically populate here once sales transactions with payment methods are recorded in the system."
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">
-      {/* COLLECTIONS KPIS */}
+      {/* COLLECTIONS KPIS — computed from live data */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="bg-emerald-50/80 border border-emerald-200/90 rounded-2xl p-4 flex flex-col justify-between shadow-xs">
           <span className="text-xs font-black text-emerald-900">Total Shift Collections</span>
-          <div className="text-2xl font-black text-[#0B5C3D] tracking-tight">Rs 570,000</div>
+          <div className="text-2xl font-black text-[#0B5C3D] tracking-tight">{formatCurrency(totalCollections)}</div>
           <span className="text-[10px] font-extrabold text-emerald-700 mt-1">100% Shift Total</span>
         </div>
 
         <div className="bg-[#0B5C3D] text-white rounded-2xl p-4 flex flex-col justify-between shadow-xs">
           <span className="text-xs font-black text-emerald-200">Physical Cash In Hand</span>
-          <div className="text-2xl font-black text-white tracking-tight">Rs 320,000</div>
-          <span className="text-[10px] font-extrabold text-emerald-300 mt-1">56.1% Cash Ratio</span>
+          <div className="text-2xl font-black text-white tracking-tight">{formatCurrency(cashCollections)}</div>
+          <span className="text-[10px] font-extrabold text-emerald-300 mt-1">{totalCollections > 0 ? `${((cashCollections / totalCollections) * 100).toFixed(1)}%` : '0%'} Cash Ratio</span>
         </div>
 
         <div className="bg-blue-50/80 border border-blue-200/90 rounded-2xl p-4 flex flex-col justify-between shadow-xs">
           <span className="text-xs font-black text-blue-900">Bank Card POS</span>
-          <div className="text-2xl font-black text-blue-900 tracking-tight">Rs 120,000</div>
-          <span className="text-[10px] font-extrabold text-blue-700 mt-1">21.1% Card Ratio</span>
+          <div className="text-2xl font-black text-blue-900 tracking-tight">{formatCurrency(cardCollections)}</div>
+          <span className="text-[10px] font-extrabold text-blue-700 mt-1">{totalCollections > 0 ? `${((cardCollections / totalCollections) * 100).toFixed(1)}%` : '0%'} Card Ratio</span>
         </div>
 
         <div className="bg-purple-50/80 border border-purple-200/90 rounded-2xl p-4 flex flex-col justify-between shadow-xs">
           <span className="text-xs font-black text-purple-900">Digital Wallets</span>
-          <div className="text-2xl font-black text-purple-900 tracking-tight">Rs 110,000</div>
-          <span className="text-[10px] font-extrabold text-purple-700 mt-1">19.3% EasyPaisa/JazzCash</span>
+          <div className="text-2xl font-black text-purple-900 tracking-tight">{formatCurrency(digitalCollections)}</div>
+          <span className="text-[10px] font-extrabold text-purple-700 mt-1">{totalCollections > 0 ? `${((digitalCollections / totalCollections) * 100).toFixed(1)}%` : '0%'} EasyPaisa/JazzCash</span>
         </div>
       </div>
 

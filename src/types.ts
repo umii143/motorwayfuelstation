@@ -3,56 +3,63 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+export * from './types/workforce.types';
+
 export interface TenantDocument {
- orgId?: string;
- businessId?: string;
- businessType?: 'fuel_station' | 'cng' | 'lube';
- stationId?: string;
- ownerId?: string;
- createdBy?: string;
- updatedBy?: string;
- createdAt?: number;
- updatedAt?: number;
- isDeleted?: boolean;
- deletedAt?: number;
- deletedBy?: string;
+  orgId?: string;
+  businessId?: string;
+  businessType?: 'fuel_station' | 'cng' | 'lube';
+  stationId?: string;
+  ownerId?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  createdAt?: number;
+  updatedAt?: number;
+  isDeleted?: boolean;
+  deletedAt?: number;
+  deletedBy?: string;
 }
 
-
 export interface Staff extends TenantDocument {
- id: string;
- name: string;
- urduName: string;
- role: 'owner' | 'manager' | 'cashier' | 'salesman' | string;
- salary: number;
- advances: number;
- active: boolean; // Legacy active flag
- status?: 'active' | 'suspended' | 'blocked' | 'pending_verification' | 'trial_expired';
- permissions?: string[];
- allowedBusinessIds?: string[];
- pin: string;
- phone?: string;
- cnic?: string;
- advanceBalance?: number;
- salaryBalance?: number;
- loanBalance?: number;
+  id: string;
+  name: string;
+  urduName: string;
+  role: 'owner' | 'manager' | 'cashier' | 'salesman' | string;
+  salary: number;
+  advances: number;
+  active: boolean; // Legacy active flag
+  status?: 'active' | 'suspended' | 'blocked' | 'pending_verification' | 'trial_expired';
+  dutyStatus?: 'on_duty' | 'off_duty' | 'break' | 'leave' | 'late';
+  currentAssignment?: string;
+  clockInTime?: string;
+  permissions?: string[];
+  allowedBusinessIds?: string[];
+  pin: string;
+  phone?: string;
+  cnic?: string;
+  advanceBalance?: number;
+  salaryBalance?: number;
+  loanBalance?: number;
+  photoUrl?: string;
+  joiningDate?: string;
+  designation?: string;
 }
 
 export interface DealerMarginSetting {
- id: string;
- productType: 'petrol' | 'diesel' | 'kerosene' | 'ldo' | string;
- marginPerLiter: number; // e.g. 8.64
- effectiveFrom: string; // ISO date:"2024-01-01"
- effectiveTo: string | null; // null = currently active
- setBy: string; // userId
- notes: string; //"OGRA notification ref XYZ"
- createdAt: string;
+  id: string;
+  productType: 'petrol' | 'diesel' | 'kerosene' | 'ldo' | string;
+  marginPerLiter: number; // e.g. 8.64
+  effectiveFrom: string; // ISO date:"2024-01-01"
+  effectiveTo: string | null; // null = currently active
+  setBy: string; // userId
+  notes: string; //"OGRA notification ref XYZ"
+  createdAt: string;
 }
 
 export type ProductType = 'fuel' | 'lube' | 'other';
 
 export interface Product extends TenantDocument {
- id: string;
+  id: string;
  name: string;
  urduName: string;
  rate: number;

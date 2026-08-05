@@ -2,25 +2,49 @@
  * @license SPDX-License-Identifier: Apache-2.0
  *
  * FuelPro Enterprise Business Operating System v4.0
- * SuppliersWorkspaceView — Dedicated Accounts Payable (AP) & Supplier Product Workspace
+ * SuppliersWorkspaceView — Dedicated Accounts Payable (AP) & Vendor Command Center
  *
- * Implements Enterprise Rules #130, #131, #132, #133, #134, #135, #136, #137, #138, #139, #140, #141, #142, #143, #144, #145 & #146
- * Accounts Payable (AP) Open Item Settlement Engine with TransactionEngine Double Entry
+ * Implements Enterprise Rules #130, #131, #135, #140, #143, #168 & #169
+ * 3-Layer Component & Data Isolation delegating to 10 modular sub-workspace tabs.
+ * Distinct Deep Navy & Amber AP Logistics Theme.
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { useReportExecution } from '../../../../../hooks/useReportExecution';
-import { EnterpriseRegisterTable } from '../EnterpriseRegisterTable';
 import { RightInspectorPanel } from '../RightInspectorPanel';
 import { QueryContext } from '../../../../../lib/reports-v2/engines/types';
 import { LedgerEngine, SupplierEnrichedRecord } from '../../../../../lib/reports-v2/engines/LedgerEngine';
 import { TransactionEngine } from '../../../../../lib/reports-v2/engines/TransactionEngine';
-import { DollarSign, CheckCircle, X, CreditCard } from 'lucide-react';
+import { resolveWorkspaceRoute } from '../../../../../lib/reports-v2/config/WorkspaceRegistry';
+import { DollarSign, CheckCircle, X, CreditCard, Plus, Truck, Building2, Send } from 'lucide-react';
+
+import { SupplierOverviewTab } from './suppliers/SupplierOverviewTab';
+import { SupplierRegisterTab } from './suppliers/SupplierRegisterTab';
+import { SupplierLedgerTab } from './suppliers/SupplierLedgerTab';
+import { OutstandingPayablesTab } from './suppliers/OutstandingPayablesTab';
+import { SupplierPaymentCenterTab } from './suppliers/SupplierPaymentCenterTab';
+import { SupplierPurchaseHistoryTab } from './suppliers/SupplierPurchaseHistoryTab';
+import { SupplierPerformanceTab } from './suppliers/SupplierPerformanceTab';
+import { SupplierContractsTab } from './suppliers/SupplierContractsTab';
+import { SupplierDocumentsTab } from './suppliers/SupplierDocumentsTab';
+import { SupplierAuditTrailTab } from './suppliers/SupplierAuditTrailTab';
 
 function formatCurrency(v: number | string): string {
   const n = typeof v === 'number' ? v : Number(v) || 0;
   return `₨ ${n.toLocaleString('en-PK')}`;
 }
+
+export type SupplierTabId =
+  | 'overview'
+  | 'register'
+  | 'ledger'
+  | 'outstanding'
+  | 'payments'
+  | 'history'
+  | 'performance'
+  | 'contracts'
+  | 'documents'
+  | 'audit';
 
 interface SuppliersWorkspaceViewProps {
   reportId: string;
@@ -55,15 +79,20 @@ export const SuppliersWorkspaceView: React.FC<SuppliersWorkspaceViewProps> = ({
   const paymentsQuery = useReportExecution('PAYMENTS', queryContext);
 
   const [selectedRecord, setSelectedRecord] = useState<Record<string, any> | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'register' | 'ledger' | 'payables' | 'payments'>(
-    reportId === 'SUP_OUTSTANDING' ? 'payables' :
-    reportId === 'SUP_PAYMENTS' ? 'payments' : 'overview'
-  );
 
-  const [search, setSearch] = useState('');
+  // Metadata-Driven Active Tab Resolution (Rule #162 & #165)
+  const resolvedRoute = useMemo(() => resolveWorkspaceRoute(reportId), [reportId]);
+  const [activeTab, setActiveTab] = useState<SupplierTabId>((resolvedRoute?.tabId as SupplierTabId) || 'overview');
+
+  useEffect(() => {
+    if (resolvedRoute?.tabId) {
+      setActiveTab(resolvedRoute.tabId as SupplierTabId);
+    }
+  }, [reportId, resolvedRoute]);
+
   const [paymentSupplier, setPaymentSupplier] = useState<SupplierEnrichedRecord | null>(null);
   const [paymentAmount, setPaymentAmount] = useState('');
-  const [paymentMode, setPaymentMode] = useState<'cash' | 'bank' | 'easypaisa'>('cash');
+  const [paymentMode, setPaymentMode] = useState<'cash' | 'bank' | 'easypaisa'>('bank');
   const [paymentSuccessMsg, setPaymentSuccessMsg] = useState('');
   const [localSettlements, setLocalSettlements] = useState<Record<string, number>>({});
 
@@ -81,7 +110,7 @@ export const SuppliersWorkspaceView: React.FC<SuppliersWorkspaceViewProps> = ({
   const purchaseRows: Record<string, any>[] = purchasesQuery.result?.register?.rows || [];
   const paymentRows: Record<string, any>[] = paymentsQuery.result?.register?.rows || [];
 
-  // SINGLE SOURCE OF TRUTH LEDGER ENGINE CALCULATION (RULES #140 & #141)
+  // Single Source of Truth Supplier Balance Calculation (Rule #140 & #143)
   const enrichedSuppliers: SupplierEnrichedRecord[] = useMemo(() => {
     const base = LedgerEngine.calculateSupplierBalances(rawSupplierRows, purchaseRows, paymentRows);
     return base.map((s) => {
@@ -93,33 +122,21 @@ export const SuppliersWorkspaceView: React.FC<SuppliersWorkspaceViewProps> = ({
     });
   }, [rawSupplierRows, purchaseRows, paymentRows, localSettlements]);
 
-  // ENTERPRISE RULES #138, #139 & #143: STRICT ZERO-BALANCE FILTERING FOR PAYABLES & PAYMENT CENTER
+  // Strict Balance > 0 Payable Filtering
   const payableSuppliers = useMemo(() => {
     return enrichedSuppliers.filter((s) => s.balance > 0);
   }, [enrichedSuppliers]);
 
-  const totalPayables = useMemo(() => {
+  const totalPayable = useMemo(() => {
     return payableSuppliers.reduce((sum, s) => sum + s.balance, 0);
   }, [payableSuppliers]);
 
-  const currentTabRows = useMemo(() => {
-    let rows = (activeTab === 'payables' || activeTab === 'payments')
-      ? payableSuppliers
-      : enrichedSuppliers;
+  const overdueCount = useMemo(() => {
+    return payableSuppliers.filter((s) => s.isOverdue).length;
+  }, [payableSuppliers]);
 
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      rows = rows.filter((s) =>
-        s.name.toLowerCase().includes(q) ||
-        s.phone?.toLowerCase().includes(q) ||
-        s.contactPerson?.toLowerCase().includes(q)
-      );
-    }
-    return rows;
-  }, [activeTab, payableSuppliers, enrichedSuppliers, search]);
-
-  // RULE #145: ATOMIC DOUBLE-ENTRY SETTLEMENT VIA TRANSACTION ENGINE
-  const handleSettleSupplierPayment = () => {
+  // Atomic Double-Entry Supplier Payment Settlement (Rule #140 & #143)
+  const handleSettlePayment = () => {
     if (!paymentSupplier || !paymentAmount || Number(paymentAmount) <= 0) return;
     const amt = Number(paymentAmount);
 
@@ -131,7 +148,7 @@ export const SuppliersWorkspaceView: React.FC<SuppliersWorkspaceViewProps> = ({
       partyId: paymentSupplier.id,
       partyName: paymentSupplier.name,
       operatorId: userId,
-      notes: `Supplier AP settlement paid to ${paymentSupplier.name} via ${paymentMode}`,
+      notes: `Supplier payment settlement disbursed via ${paymentMode}`,
     });
 
     if (result.success) {
@@ -142,8 +159,8 @@ export const SuppliersWorkspaceView: React.FC<SuppliersWorkspaceViewProps> = ({
 
       setPaymentSuccessMsg(
         isEn
-          ? `Double-Entry AP Txn ${result.transactionId} posted! ₨ ${amt.toLocaleString()} paid to ${paymentSupplier.name}.`
-          : `ڈبل اینٹری اے پی ٹرانزیکشن ${result.transactionId} لاگ ہو گئی۔`
+          ? `Double-Entry Txn ${result.transactionId} posted! ₨ ${amt.toLocaleString()} debited to ${paymentSupplier.name}.`
+          : `ڈبل اینٹری ٹرانزیکشن ${result.transactionId} لاگ ہو گئی! ₨ ${amt.toLocaleString()} درج ہو گئی۔`
       );
 
       setTimeout(() => {
@@ -155,25 +172,27 @@ export const SuppliersWorkspaceView: React.FC<SuppliersWorkspaceViewProps> = ({
   };
 
   return (
-    <div className={`space-y-4 font-sans ${lang === 'ur' ? 'rtl' : ''}`}>
-      {/* ── WORKSPACE HEADER & SUB-NAVIGATION TABS ── */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+    <div className={`space-y-4 font-sans text-slate-800 pb-8 ${lang === 'ur' ? 'rtl' : ''}`}>
+      {/* ── 1. WORKSPACE HEADER & TOP CONTROLS (DEEP NAVY & AMBER AP LOGISTICS THEME) ── */}
+      <div className="bg-[#0F172A] text-white rounded-2xl border border-slate-800 p-4 sm:p-5 shadow-md">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center text-xl font-bold">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl font-bold border border-amber-500/30 shrink-0">
               🚛
             </div>
             <div>
-              <h1 className="text-lg font-black text-slate-900 tracking-tight leading-tight">
-                {isEn ? 'Accounts Payable (AP) & Supplier Workspace' : 'سپلائر ڈائریکٹری و واجبات (AP) ورک اسپیس'}
+              <h1 className="text-lg font-black text-white tracking-tight leading-tight flex items-center gap-2">
+                <span>Accounts Payable (AP) & Vendor Control Center</span>
               </h1>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-800 text-[10px] font-black border border-indigo-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
-                  {isEn ? 'Single Source AP Ledger Engine (Rule #143)' : 'لائیو اے پی لیجر سنک'}
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-black border border-amber-400/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                  {isEn ? 'Double-Entry AP Settlement Engine (Rule #168)' : 'ڈبل اینٹری اے پی لیجر انجن'}
                 </span>
                 <span className="text-[10px] font-extrabold text-slate-400">
-                  {isEn ? `${enrichedSuppliers.length} OMC Vendors | ${payableSuppliers.length} Open Payables` : `${enrichedSuppliers.length} تیل کمپنیاں | ${payableSuppliers.length} واجب الادا`}
+                  {isEn
+                    ? `SAP / NetSuite Standard • ${enrichedSuppliers.length} Vendors | ${payableSuppliers.length} Open Payables`
+                    : `${enrichedSuppliers.length} کل سپلائرز | ${payableSuppliers.length} واجب الادا`}
                 </span>
               </div>
             </div>
@@ -181,226 +200,231 @@ export const SuppliersWorkspaceView: React.FC<SuppliersWorkspaceViewProps> = ({
 
           <div className="flex items-center gap-2 flex-wrap">
             <button
-              onClick={() => setActiveTab('payments')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0B5C3D] text-white hover:bg-emerald-800 rounded-xl text-xs font-black transition-all shadow-xs cursor-pointer"
+              onClick={() => setActiveTab('register')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-black transition-all shadow-2xs cursor-pointer"
             >
-              <span>💰</span>
-              <span>{isEn ? 'Supplier Payment Center' : 'ادائیگی سینٹر'}</span>
+              <Plus size={14} />
+              <span>{isEn ? '+ New Supplier' : '+ نیا سپلائر'}</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('payments')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#1E293B] hover:bg-slate-800 text-amber-400 border border-amber-500/40 rounded-xl text-xs font-black transition-all shadow-2xs cursor-pointer"
+            >
+              <CreditCard size={14} />
+              <span>{isEn ? 'Payment Center 💰' : 'ادائیگی سینٹر 💰'}</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('history')}
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-xl text-xs font-extrabold transition-all cursor-pointer"
+            >
+              <Truck size={14} />
+              <span>{isEn ? 'Record Purchase' : 'خرید درج کریں'}</span>
+            </button>
+
+            <button
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 text-slate-200 border border-white/20 rounded-xl text-xs font-extrabold transition-all cursor-pointer"
+            >
+              <span>{isEn ? 'Print Statement' : 'پرنٹ رپورٹ'}</span>
             </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 pt-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+        {/* ── 2. SUB-HEADER TABS BAR (10 DEDICATED SUB-WORKSPACES) ── */}
+        <div className="flex items-center gap-1.5 pt-3 overflow-x-auto custom-horizontal-scrollbar pb-1.5" data-horizontal-scroll="true">
           {[
-            { id: 'overview', label: 'Overview', labelUr: 'جائزہ' },
-            { id: 'register', label: 'Supplier Register', labelUr: 'سپلائر رجسٹر' },
-            { id: 'ledger', label: 'Supplier Ledger', labelUr: 'سپلائر کھاتہ' },
-            { id: 'payables', label: 'Outstanding Payables (AP > 0)', labelUr: 'واجب الادا بقایا جات' },
-            { id: 'payments', label: 'Supplier Payment Center 💰', labelUr: 'ادائیگی سینٹر 💰' },
+            { id: 'overview', label: 'Overview' },
+            { id: 'register', label: 'Supplier Register' },
+            { id: 'ledger', label: 'Supplier Ledger' },
+            { id: 'outstanding', label: 'Outstanding Payables' },
+            { id: 'payments', label: 'Payment Center 💰' },
+            { id: 'history', label: 'Purchase History' },
+            { id: 'performance', label: 'Supplier Performance' },
+            { id: 'contracts', label: 'Contract & Pricing' },
+            { id: 'documents', label: 'Documents' },
+            { id: 'audit', label: 'Audit Trail' },
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
+              onClick={() => setActiveTab(tab.id as SupplierTabId)}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === tab.id
-                  ? 'bg-[#0B5C3D] text-white shadow-xs'
-                  : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  ? 'bg-amber-500 text-slate-950 font-black shadow-2xs'
+                  : 'bg-slate-800/80 text-slate-300 hover:bg-slate-800 hover:text-white'
               }`}
             >
-              {isEn ? tab.label : tab.labelUr}
+              {tab.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* ── LIVE SUPPLIER KPIS ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="bg-indigo-50/80 border border-indigo-200/90 rounded-2xl p-4 flex flex-col justify-between shadow-xs">
-          <div className="flex justify-between items-start mb-2">
-            <span className="text-xs font-black text-indigo-900">{isEn ? 'Total Accounts Payable (AP)' : 'کل سپلائرز واجب الادا'}</span>
-            <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-[10px] font-extrabold">LIVE AP</span>
-          </div>
-          <div className="text-2xl font-black text-indigo-900 tracking-tight">{formatCurrency(totalPayables)}</div>
-          <div className="text-[10px] font-extrabold text-indigo-700 mt-2">{isEn ? `${payableSuppliers.length} Open Supplier Bills` : `${payableSuppliers.length} کھلے پرچیز بلز`}</div>
-        </div>
+      {/* ── 3. DYNAMIC SUB-WORKSPACE RENDERER (RULE #165 & #168 ISOLATED COMPONENTS) ── */}
+      {activeTab === 'overview' && (
+        <SupplierOverviewTab
+          suppliers={enrichedSuppliers}
+          payableSuppliers={payableSuppliers}
+          totalPayable={totalPayable}
+          overdueCount={overdueCount}
+          lang={lang}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+          onSelectTab={(t) => setActiveTab(t)}
+        />
+      )}
 
-        <div className="bg-blue-50/80 border border-blue-200/90 rounded-2xl p-4 flex flex-col justify-between shadow-xs">
-          <div className="flex justify-between items-start mb-2">
-            <span className="text-xs font-black text-blue-900">{isEn ? 'Active OMC Vendors' : 'ایکٹو سپلائرز'}</span>
-            <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-extrabold">{enrichedSuppliers.length} Vendors</span>
-          </div>
-          <div className="text-2xl font-black text-blue-900 tracking-tight">{enrichedSuppliers.length} Registered</div>
-          <div className="text-[10px] font-extrabold text-blue-700 mt-2">{isEn ? 'PSO / Shell / Total / Attock' : 'تیل کمپنیاں'}</div>
-        </div>
-      </div>
+      {activeTab === 'register' && (
+        <SupplierRegisterTab
+          suppliers={enrichedSuppliers}
+          lang={lang}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+          onOpenNewSupplierModal={() => alert('New Supplier Account Registration Modal')}
+        />
+      )}
 
-      {/* ── REGISTER TABLE / PAYMENT CENTER ── */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider">
-              {activeTab === 'payments'
-                ? (isEn ? '💰 Supplier Payment & Settlement Center' : '💰 سپلائر ادائیگی و سیٹلمنٹ سینٹر')
-                : activeTab === 'payables'
-                ? (isEn ? '📋 Outstanding Payables (AP Balance > 0 Only)' : '📋 واجب الادا بقایا جات (صرف >0 بیلنس)')
-                : (isEn ? '📋 Supplier Master Directory & AP Ledger' : '📋 سپلائرز ڈائریکٹری و ای پی لیجر')}
-            </h2>
-          </div>
+      {activeTab === 'ledger' && (
+        <SupplierLedgerTab
+          suppliers={enrichedSuppliers}
+          lang={lang}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+          onOpenPaymentModal={(s) => setPaymentSupplier(s)}
+        />
+      )}
 
-          <input
-            type="text"
-            placeholder={isEn ? '🔍 Search supplier, phone...' : '🔍 سپلائر یا فون تلاش کریں...'}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-900 shadow-xs focus:outline-none placeholder:text-slate-400 min-w-[200px]"
-          />
-        </div>
+      {activeTab === 'outstanding' && (
+        <OutstandingPayablesTab
+          payableSuppliers={payableSuppliers}
+          lang={lang}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+          onOpenPaymentModal={(s) => setPaymentSupplier(s)}
+        />
+      )}
 
-        {/* SUPPLIER PAYMENT CENTER OPERATIONAL VIEW */}
-        {activeTab === 'payments' ? (
-          currentTabRows.length > 0 ? (
-            <div className="overflow-x-auto rounded-xl border border-slate-200">
-              <table className="w-full text-xs text-left">
-                <thead className="bg-slate-50 text-slate-700 uppercase font-black tracking-wider text-[11px] border-b border-slate-200">
-                  <tr>
-                    <th className="p-3">{isEn ? 'Supplier Vendor' : 'سپلائر کا نام'}</th>
-                    <th className="p-3">{isEn ? 'Contact Person' : 'رابطہ شخص'}</th>
-                    <th className="p-3 text-right">{isEn ? 'Payable Balance (AP)' : 'واجب الادا رقم'}</th>
-                    <th className="p-3 text-center">{isEn ? 'Settlement Action' : 'سیٹلمنٹ ایکشن'}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 font-bold text-slate-800">
-                  {currentTabRows.map((s) => (
-                    <tr key={s.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="p-3 font-extrabold text-slate-900">{s.name}</td>
-                      <td className="p-3 text-slate-600">{s.contactPerson}</td>
-                      <td className="p-3 text-right font-black text-indigo-700 text-sm">
-                        {formatCurrency(s.balance)}
-                      </td>
-                      <td className="p-3 flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => setPaymentSupplier(s)}
-                          className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-[#0B5C3D] hover:bg-emerald-800 text-white text-xs font-black shadow-xs transition-all cursor-pointer"
-                        >
-                          <CreditCard size={13} />
-                          <span>{isEn ? 'Pay Supplier' : 'ادائیگی کریں'}</span>
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-slate-200 bg-emerald-50/50 p-10 text-center shadow-xs my-4">
-              <div className="text-4xl mb-3">🎉</div>
-              <h3 className="text-base font-black text-emerald-900 mb-1">
-                {isEn ? 'Zero Outstanding Supplier Payables!' : 'تمام سپلائر واجبات 100% کلیئر ہیں!'}
-              </h3>
-              <p className="text-xs font-semibold text-emerald-700">
-                {isEn ? 'All OMC fuel bowser invoices are 100% paid and settled.' : 'تمام پرچیز بلز مکمل طور پر ادا شدہ ہیں۔'}
-              </p>
-            </div>
-          )
-        ) : (
-          currentTabRows.length > 0 ? (
-            <EnterpriseRegisterTable
-              columns={[
-                { id: 'name', header: 'Supplier Name', headerUr: 'سپلائر نام', accessor: 'name', sortable: true },
-                { id: 'contactPerson', header: 'Contact Person', headerUr: 'رابطہ شخص', accessor: 'contactPerson' },
-                { id: 'phone', header: 'Phone', headerUr: 'فون', accessor: 'phone' },
-                { id: 'balance', header: 'Payable Balance (₨)', headerUr: 'واجب الادا رقم', accessor: 'balance', isCurrency: true, sortable: true },
-              ]}
-              data={currentTabRows}
-              language={lang}
-              onRowClick={(row) => setSelectedRecord(row)}
-            />
-          ) : (
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-10 text-center shadow-xs my-4">
-              <div className="text-4xl mb-3 opacity-60">🏢</div>
-              <h3 className="text-base font-black text-slate-900 mb-1">
-                {isEn ? 'No Supplier Payables Found' : 'کوئی سپلائر واجبات نہیں ملے'}
-              </h3>
-            </div>
-          )
-        )}
-      </div>
+      {activeTab === 'payments' && (
+        <SupplierPaymentCenterTab
+          payableSuppliers={payableSuppliers}
+          lang={lang}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+          onOpenPaymentModal={(s) => setPaymentSupplier(s)}
+        />
+      )}
 
-      {/* ── SUPPLIER PAYMENT SETTLEMENT MODAL (TRANSACTION ENGINE AP DEBIT/CREDIT) ── */}
+      {activeTab === 'history' && (
+        <SupplierPurchaseHistoryTab
+          suppliers={enrichedSuppliers}
+          lang={lang}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+        />
+      )}
+
+      {activeTab === 'performance' && (
+        <SupplierPerformanceTab
+          suppliers={enrichedSuppliers}
+          lang={lang}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+        />
+      )}
+
+      {activeTab === 'contracts' && (
+        <SupplierContractsTab
+          suppliers={enrichedSuppliers}
+          lang={lang}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+        />
+      )}
+
+      {activeTab === 'documents' && (
+        <SupplierDocumentsTab
+          suppliers={enrichedSuppliers}
+          lang={lang}
+        />
+      )}
+
+      {activeTab === 'audit' && (
+        <SupplierAuditTrailTab
+          suppliers={enrichedSuppliers}
+          lang={lang}
+          onOpenInspector={(rec) => setSelectedRecord(rec)}
+        />
+      )}
+
+      {/* ── DOUBLE-ENTRY VENDOR PAYMENT SETTLEMENT MODAL (RULE #140 & #143) ── */}
       {paymentSupplier && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-4">
-            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-              <h3 className="text-base font-black text-slate-900">
-                💰 {isEn ? `Settle Supplier Bill — ${paymentSupplier.name}` : `سپلائر بل ادائیگی — ${paymentSupplier.name}`}
-              </h3>
-              <button onClick={() => setPaymentSupplier(null)} className="text-slate-400 hover:text-slate-600">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-2xs">
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-2xl max-w-md w-full font-sans animate-in fade-in zoom-in duration-150">
+            <div className="flex justify-between items-start pb-3 border-b border-slate-100">
+              <div>
+                <span className="text-[10px] font-black uppercase text-amber-700 tracking-wider">AP Vendor Settlement</span>
+                <h3 className="text-lg font-black text-slate-900 mt-0.5">{paymentSupplier.name}</h3>
+                <p className="text-xs font-bold text-slate-500">Outstanding Payable: {formatCurrency(paymentSupplier.balance)}</p>
+              </div>
+              <button
+                onClick={() => setPaymentSupplier(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer"
+              >
                 <X size={18} />
               </button>
             </div>
 
             {paymentSuccessMsg ? (
-              <div className="p-4 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-black flex items-center gap-2">
-                <CheckCircle size={18} className="text-emerald-600" />
-                <span>{paymentSuccessMsg}</span>
+              <div className="py-8 text-center space-y-2">
+                <CheckCircle size={40} className="mx-auto text-emerald-600" />
+                <p className="text-sm font-black text-slate-900">{paymentSuccessMsg}</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex justify-between text-xs font-bold">
-                  <span className="text-slate-500">{isEn ? 'Current Payable Balance (AP):' : 'موجودہ واجب الادا رقم:'}</span>
-                  <span className="font-black text-indigo-700 text-sm">{formatCurrency(paymentSupplier.balance)}</span>
-                </div>
-
+              <div className="space-y-4 pt-4">
                 <div>
-                  <label className="text-xs font-black text-slate-700 block mb-1">
-                    {isEn ? 'Settlement Amount (₨)' : 'ادائیگی کی رقم (رقم)'}
+                  <label className="block text-xs font-black text-slate-700 mb-1">
+                    {isEn ? 'Disbursement Amount (₨)' : 'ادائیگی کی رقم (روپے)'}
                   </label>
                   <input
                     type="number"
-                    placeholder="e.g. 500000"
                     value={paymentAmount}
                     onChange={(e) => setPaymentAmount(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder="e.g. 1500000"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-black text-slate-900 focus:outline-none focus:border-amber-600"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-black text-slate-700 block mb-1">
-                    {isEn ? 'Payment Source (Credit Target)' : 'ادائیگی کا ذریعہ'}
+                  <label className="block text-xs font-black text-slate-700 mb-1">
+                    {isEn ? 'Paying Account' : 'ادائیگی کا ذریعہ'}
                   </label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
-                      { id: 'cash', label: '💵 Cash Book' },
-                      { id: 'bank', label: '🏦 HBL Bank' },
-                      { id: 'easypaisa', label: '📱 EasyPaisa' },
-                    ].map((mode) => (
+                      { id: 'bank', label: 'HBL Operating' },
+                      { id: 'cash', label: 'Cash Drawer' },
+                      { id: 'easypaisa', label: 'Digital Account' },
+                    ].map((m) => (
                       <button
-                        key={mode.id}
-                        onClick={() => setPaymentMode(mode.id as any)}
-                        className={`py-2 rounded-xl text-xs font-black border transition-all cursor-pointer ${
-                          paymentMode === mode.id
-                            ? 'bg-[#0B5C3D] text-white border-[#0B5C3D]'
-                            : 'bg-slate-50 text-slate-700 border-slate-200'
+                        key={m.id}
+                        onClick={() => setPaymentMode(m.id as any)}
+                        className={`py-2 px-1 rounded-xl text-xs font-black border transition-all cursor-pointer ${
+                          paymentMode === m.id
+                            ? 'bg-[#0F172A] text-amber-400 border-[#0F172A]'
+                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                         }`}
                       >
-                        {mode.label}
+                        {m.label}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                <div className="pt-2 flex justify-end gap-2">
+                <div className="pt-2 flex gap-2">
                   <button
                     onClick={() => setPaymentSupplier(null)}
-                    className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold hover:bg-slate-200"
+                    className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black rounded-xl cursor-pointer"
                   >
-                    {isEn ? 'Cancel' : 'منسوخ'}
+                    Cancel
                   </button>
                   <button
-                    onClick={handleSettleSupplierPayment}
-                    className="px-4 py-2 rounded-xl bg-[#0B5C3D] text-white text-xs font-black hover:bg-emerald-800 transition-all shadow-xs"
+                    onClick={handleSettlePayment}
+                    className="flex-1 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl shadow-2xs cursor-pointer flex items-center justify-center gap-1.5"
                   >
-                    ✓ {isEn ? 'Post AP Settlement' : 'ادائیگی کی تصدیق کریں'}
+                    <Send size={14} />
+                    <span>Post Disbursement</span>
                   </button>
                 </div>
               </div>

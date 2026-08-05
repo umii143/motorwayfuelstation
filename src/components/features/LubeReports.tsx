@@ -458,12 +458,12 @@ export default function LubeReports({
  </div>
 
  {/* TAB SELECTOR */}
- <div className="flex flex-wrap gap-1 border-b border-[var(--border-main)] pb-0">
+ <div className="flex overflow-x-auto gap-1 border-b border-[var(--border-main)] pb-0 whitespace-nowrap custom-horizontal-scrollbar" data-horizontal-scroll="true">
  {TABS.map(tab => (
  <button
  key={tab.id}
  onClick={() => setActiveTab(tab.id as TabId)}
- className={`px-4 py-2.5 font-sans text-xs font-bold transition-all border-b-2 cursor-pointer${
+ className={`px-4 py-2.5 font-sans text-xs font-bold transition-all border-b-2 cursor-pointer shrink-0${
  activeTab === tab.id
  ? 'border-violet-600 text-violet-600 font-extrabold'
  : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-main)]'

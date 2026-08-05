@@ -100,20 +100,12 @@ export const FuelOperationsWorkspaceView: React.FC<FuelOperationsWorkspaceViewPr
   }, [salesRows, selectedShift]);
 
   const totalRevenue = useMemo(() => {
-    const sum = filteredSalesRows.reduce((acc: number, r: Record<string, any>) => acc + (Number(r.totalAmount || r.amount) || 0), 0);
-    if (sum > 0) return sum;
-    if (dateFilter.preset === 'yesterday') return 512000;
-    if (dateFilter.preset === 'this_week') return 3450000;
-    return 570000;
-  }, [filteredSalesRows, dateFilter.preset]);
+    return filteredSalesRows.reduce((acc: number, r: Record<string, any>) => acc + (Number(r.totalAmount || r.amount) || 0), 0);
+  }, [filteredSalesRows]);
 
   const totalLiters = useMemo(() => {
-    const sum = filteredSalesRows.reduce((acc: number, r: Record<string, any>) => acc + (Number(r.quantity || r.liters) || 0), 0);
-    if (sum > 0) return sum;
-    if (dateFilter.preset === 'yesterday') return 4210.50;
-    if (dateFilter.preset === 'this_week') return 28450.00;
-    return 4750.25;
-  }, [filteredSalesRows, dateFilter.preset]);
+    return filteredSalesRows.reduce((acc: number, r: Record<string, any>) => acc + (Number(r.quantity || r.liters) || 0), 0);
+  }, [filteredSalesRows]);
 
   return (
     <div className={`space-y-4 font-sans text-slate-800 pb-8 ${lang === 'ur' ? 'rtl' : ''}`}>
@@ -168,7 +160,7 @@ export const FuelOperationsWorkspaceView: React.FC<FuelOperationsWorkspaceViewPr
       </div>
 
       {/* ── 2. SUB-NAVIGATION TABS (8 TABS — MODULAR COMPONENT ROUTER) ── */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-2 shadow-xs flex items-center gap-1 overflow-x-auto scrollbar-none">
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-2 shadow-xs flex items-center gap-1 overflow-x-auto custom-horizontal-scrollbar" data-horizontal-scroll="true">
         {[
           { id: 'overview', label: 'Overview' },
           { id: 'sales', label: 'Fuel Sales Register' },

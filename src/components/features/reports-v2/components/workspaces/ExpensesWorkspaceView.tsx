@@ -112,7 +112,7 @@ export const ExpensesWorkspaceView: React.FC<ExpensesWorkspaceViewProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 pt-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+        <div className="flex items-center gap-1.5 pt-3 overflow-x-auto custom-horizontal-scrollbar pb-1.5" data-horizontal-scroll="true">
           {[
             { id: 'overview', label: 'Overview', labelUr: 'جائزہ' },
             { id: 'vouchers', label: 'Expense Vouchers', labelUr: 'واؤچرز رجسٹر' },

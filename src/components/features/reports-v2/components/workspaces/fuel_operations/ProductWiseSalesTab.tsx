@@ -4,57 +4,88 @@
  * FuelPro Enterprise Business Operating System v4.0
  * ProductWiseSalesTab — Dedicated Product Share Breakdown Sub-Workspace
  *
- * Implements Enterprise Rule #137 & Rule #144
+ * 100% Google Firebase Realtime Database Driven — Zero Dummy Records.
+ * Implements Enterprise Rule #1, #137 & Rule #144
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { EnterpriseRegisterTable } from '../../EnterpriseRegisterTable';
+import { WorkspaceEmptyState } from '../../common/WorkspaceEmptyState';
+
+function formatCurrency(v: number): string {
+  return `Rs ${v.toLocaleString('en-PK')}`;
+}
 
 interface ProductWiseSalesTabProps {
+  salesRows?: Record<string, any>[];
   lang: 'en' | 'ur';
   onSelectRecord?: (record: Record<string, any>) => void;
 }
 
 export const ProductWiseSalesTab: React.FC<ProductWiseSalesTabProps> = ({
+  salesRows = [],
   lang,
   onSelectRecord,
 }) => {
   const isEn = lang === 'en';
 
-  const productRows = [
-    { id: 'p-01', productName: 'Super Petrol', liters: '2,250.65 L', percentage: '47.4%', revenue: 'Rs 641,435', avgRate: 'Rs 285.00/L', txns: 185 },
-    { id: 'p-02', productName: 'High Speed Diesel', liters: '2,150.30 L', percentage: '45.3%', revenue: 'Rs 591,332', avgRate: 'Rs 275.00/L', txns: 120 },
-    { id: 'p-03', productName: 'Kerosene Oil', liters: '189.30 L', percentage: '4.0%', revenue: 'Rs 45,432', avgRate: 'Rs 240.00/L', txns: 32 },
-    { id: 'p-04', productName: 'Lubricants & Engine Oil', liters: '160.00 L', percentage: '3.3%', revenue: 'Rs 128,000', avgRate: 'Rs 800.00/L', txns: 19 },
-  ];
+  // Compute product-wise breakdown from live sales data
+  const productRows = useMemo(() => {
+    if (salesRows.length === 0) return [];
+
+    const grouped: Record<string, { liters: number; revenue: number; txns: number; rates: number[] }> = {};
+
+    salesRows.forEach((row) => {
+      const product = row.productName || row.product || row.fuelType || 'Unknown';
+      if (!grouped[product]) {
+        grouped[product] = { liters: 0, revenue: 0, txns: 0, rates: [] };
+      }
+      grouped[product].liters += Number(row.quantity || row.liters) || 0;
+      grouped[product].revenue += Number(row.totalAmount || row.amount) || 0;
+      grouped[product].txns += 1;
+      const rate = Number(row.rate || row.unitPrice) || 0;
+      if (rate > 0) grouped[product].rates.push(rate);
+    });
+
+    const totalLiters = Object.values(grouped).reduce((s, g) => s + g.liters, 0);
+
+    return Object.entries(grouped).map(([productName, g]) => ({
+      id: productName,
+      productName,
+      liters: `${g.liters.toLocaleString('en-PK', { maximumFractionDigits: 2 })} L`,
+      percentage: totalLiters > 0 ? `${((g.liters / totalLiters) * 100).toFixed(1)}%` : '0%',
+      percentageNum: totalLiters > 0 ? (g.liters / totalLiters) * 100 : 0,
+      revenue: formatCurrency(g.revenue),
+      avgRate: g.rates.length > 0 ? `Rs ${(g.rates.reduce((a, b) => a + b, 0) / g.rates.length).toFixed(2)}/L` : '—',
+      txns: g.txns,
+    })).sort((a, b) => b.percentageNum - a.percentageNum);
+  }, [salesRows]);
+
+  const productColors = ['blue', 'emerald', 'amber', 'purple', 'rose', 'sky'];
+
+  if (productRows.length === 0) {
+    return (
+      <WorkspaceEmptyState
+        title="No Product Sales Data Available"
+        description="Product-wise breakdown will automatically populate once fuel sales transactions are recorded in the system."
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">
-      {/* Product Share KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="bg-blue-50/80 border border-blue-200/90 rounded-2xl p-4 flex flex-col justify-between shadow-xs">
-          <span className="text-xs font-black text-blue-900">Super Petrol Share</span>
-          <div className="text-2xl font-black text-blue-900 tracking-tight">47.4%</div>
-          <span className="text-[10px] font-extrabold text-blue-700 mt-1">2,250.65 L Dispensed</span>
-        </div>
-
-        <div className="bg-emerald-50/80 border border-emerald-200/90 rounded-2xl p-4 flex flex-col justify-between shadow-xs">
-          <span className="text-xs font-black text-emerald-900">High Speed Diesel Share</span>
-          <div className="text-2xl font-black text-[#0B5C3D] tracking-tight">45.3%</div>
-          <span className="text-[10px] font-extrabold text-emerald-700 mt-1">2,150.30 L Dispensed</span>
-        </div>
-
-        <div className="bg-amber-50/80 border border-amber-200/90 rounded-2xl p-4 flex flex-col justify-between shadow-xs">
-          <span className="text-xs font-black text-amber-900">Kerosene Share</span>
-          <div className="text-2xl font-black text-amber-900 tracking-tight">4.0%</div>
-          <span className="text-[10px] font-extrabold text-amber-700 mt-1">189.30 L Dispensed</span>
-        </div>
-
-        <div className="bg-purple-50/80 border border-purple-200/90 rounded-2xl p-4 flex flex-col justify-between shadow-xs">
-          <span className="text-xs font-black text-purple-900">Lubricants Share</span>
-          <div className="text-2xl font-black text-purple-900 tracking-tight">3.3%</div>
-          <span className="text-[10px] font-extrabold text-purple-700 mt-1">160.00 L Dispensed</span>
-        </div>
+      {/* Product Share KPIs — computed from live data */}
+      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${Math.min(productRows.length, 4)} gap-3`}>
+        {productRows.slice(0, 4).map((p, idx) => {
+          const color = productColors[idx % productColors.length];
+          return (
+            <div key={p.id} className={`bg-${color}-50/80 border border-${color}-200/90 rounded-2xl p-4 flex flex-col justify-between shadow-xs`}>
+              <span className={`text-xs font-black text-${color}-900`}>{p.productName} Share</span>
+              <div className={`text-2xl font-black text-${color}-900 tracking-tight`}>{p.percentage}</div>
+              <span className={`text-[10px] font-extrabold text-${color}-700 mt-1`}>{p.liters} Dispensed</span>
+            </div>
+          );
+        })}
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-3">

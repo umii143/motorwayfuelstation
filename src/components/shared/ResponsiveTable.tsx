@@ -56,7 +56,7 @@ function ResponsiveTableInner<T>({
  return (
  <div className="w-full">
  {/* DESKTOP TABLE VIEW */}
- <div className="hidden md:block overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
+ <div className="hidden md:block overflow-x-auto custom-scrollbar rounded-xl border border-border bg-card shadow-sm" data-horizontal-scroll="true">
  <table className="w-full text-left text-sm whitespace-nowrap">
  <thead className="bg-subtle border-b border-border text-muted-foreground font-semibold">
  <tr>

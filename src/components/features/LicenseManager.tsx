@@ -42,8 +42,8 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
  
  const [pricingConfig, setPricingConfig] = useState<GlobalPricingConfig | null>(null);
  const [pricingForm, setPricingForm] = useState<GlobalPricingConfig>({
- saleActive: false,
- saleEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+ saleActive: true,
+ saleEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
  offers: {
  starter: { originalPrice: 5000, salePrice: 2000 },
  professional: { originalPrice: 8000, salePrice: 3000 },
@@ -446,17 +446,18 @@ export default function LicenseManager({ settings }: LicenseManagerProps) {
  expired: organizations.filter(o => o.subscriptionStatus === 'expired').length,
  }), [organizations]);
 
- const handleSavePricing = async () => {
- setSavingPricing(true);
- try {
- await setDoc(doc(dbFS, 'systemSettings', 'pricingConfig'), pricingForm);
- // alert('Pricing configuration saved successfully!');
- } catch (e) {
- logger.error('Error saving pricing config', e);
- } finally {
- setSavingPricing(false);
- }
- };
+  const handleSavePricing = async () => {
+    setSavingPricing(true);
+    try {
+      await setDoc(doc(dbFS, 'systemSettings', 'pricingConfig'), pricingForm, { merge: true });
+      alert('Subscription Pricing & Offer Sale Prices saved successfully to Firebase!');
+    } catch (e) {
+      logger.error('Error saving pricing config', e);
+      alert('Failed to save pricing configuration.');
+    } finally {
+      setSavingPricing(false);
+    }
+  };
 
  return (
  <div className="space-y-4 md:space-y-6 pb-4 lg:pb-12 h-[calc(100dvh-135px)] lg:h-[calc(100vh-100px)] flex flex-col relative">

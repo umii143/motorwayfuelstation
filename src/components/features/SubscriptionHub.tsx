@@ -55,112 +55,137 @@ export default function SubscriptionHub({ settings }: SubscriptionHubProps) {
  return () => unsub();
  }, []);
 
- const isSaleActive = useMemo(() => {
- if (!pricingConfig?.saleActive) return false;
- const end = new Date(pricingConfig.saleEndDate);
- if (isNaN(end.getTime())) return false;
- return end.getTime() > Date.now();
- }, [pricingConfig]);
+  const isSaleActive = useMemo(() => {
+    if (!pricingConfig) return true;
+    if (pricingConfig.saleActive !== false) {
+      if (pricingConfig.saleEndDate) {
+        const end = new Date(pricingConfig.saleEndDate);
+        if (!isNaN(end.getTime())) {
+          return end.getTime() > Date.now();
+        }
+      }
+      return true;
+    }
+    if (pricingConfig.offers) {
+      return Object.values(pricingConfig.offers).some(
+        (o: any) => o && o.salePrice > 0 && o.salePrice < o.originalPrice
+      );
+    }
+    return false;
+  }, [pricingConfig]);
 
- const saleDaysRemaining = useMemo(() => {
- if (!isSaleActive || !pricingConfig) return 0;
- const end = new Date(pricingConfig.saleEndDate);
- return Math.max(0, Math.ceil((end.getTime() - Date.now()) / (1000 * 3600 * 24)));
- }, [isSaleActive, pricingConfig]);
+  const saleDaysRemaining = useMemo(() => {
+    if (!pricingConfig?.saleEndDate) return 7;
+    const end = new Date(pricingConfig.saleEndDate);
+    if (isNaN(end.getTime())) return 7;
+    return Math.max(1, Math.ceil((end.getTime() - Date.now()) / (1000 * 3600 * 24)));
+  }, [pricingConfig]);
 
- const plans = useMemo(() => {
- const defaultPlans = [
- {
- id: 'starter',
- name: t('Starter', 'اسٹارٹر'),
- price: 'Rs. 2,000',
- originalPrice: 'Rs. 5,000',
- amount: 2000,
- period: t('/month', '/مہینہ'),
- icon: Zap,
- features: [
- t('Single Station', 'سنگل اسٹیشن'),
- t('Basic Dashboard', 'بنیادی ڈیش بورڈ'),
- t('Shift Wizard', 'شفٹ وزرڈ'),
- t('Stock IN & Customers', 'اسٹاک اور کسٹمرز')
- ],
- color: 'bg-slate-50 dark:bg-white/5 border-border',
- iconColor: 'text-slate-600',
- btnColor: 'bg-slate-800 hover:bg-slate-900'
- },
- {
- id: 'professional',
- name: t('Professional', 'پروفیشنل'),
- price: 'Rs. 3,000',
- amount: 3000,
- period: t('/month', '/مہینہ'),
- icon: Crown,
- popular: true,
- features: [
- t('Everything in Starter', 'اسٹارٹر کی تمام خصوصیات'),
- t('Treasury Center & Analytics', 'ٹریژری سینٹر اور اینالٹکس'),
- t('Mobile APK & OTP Login', 'موبائل ایپ اور لاگ ان'),
- t('WhatsApp Integration', 'واٹس ایپ کا انضمام')
- ],
- color: 'bg-orange-50 border-orange-200 shadow-lg scale-105 z-10',
- iconColor: 'text-orange-600',
- btnColor: 'bg-orange-600 hover:bg-orange-700'
- },
- {
- id: 'quarterly',
- name: t('3 Months', '3 ماہ کا پلان'),
- price: 'Rs. 10,000',
- originalPrice: 'Rs. 18,000',
- amount: 10000,
- period: t('/3 months', '/3 مہینے'),
- icon: Clock,
- features: [
- t('All Pro Features', 'پروفیشنل کی تمام خصوصیات'),
- t('Save Rs. 8,000', '8,000 روپے کی بچت'),
- t('Priority Support', 'ترجیحی سپورٹ'),
- t('Free Data Backup', 'مفت ڈیٹا بیک اپ')
- ],
- color: 'bg-emerald-50 border-emerald-200',
- iconColor: 'text-emerald-600',
- btnColor: 'bg-emerald-600 hover:bg-emerald-700'
- },
- {
- id: 'yearly',
- name: t('1 Year', '1 سال کا پلان'),
- price: 'Rs. 30,000',
- amount: 30000,
- period: t('/year', '/سال'),
- icon: Building2,
- features: [
- t('All Pro Features', 'پروفیشنل کی تمام خصوصیات'),
- t('Best Value', 'بہترین قیمت'),
- t('Custom Branding', 'کسٹم برانڈنگ'),
- t('Dedicated Account Manager', 'مخصوص اکاؤنٹ مینیجر')
- ],
- color: 'bg-blue-50 border-blue-200',
- iconColor: 'text-blue-600',
- btnColor: 'bg-blue-600 hover:bg-blue-700'
- }
- ];
+  const plans = useMemo(() => {
+    const defaultPlans = [
+      {
+        id: 'starter',
+        name: t('Starter', 'اسٹارٹر'),
+        price: 'Rs. 2,000',
+        originalPrice: 'Rs. 5,000',
+        amount: 2000,
+        period: t('/month', '/مہینہ'),
+        icon: Zap,
+        features: [
+          t('Single Station', 'سنگل اسٹیشن'),
+          t('Basic Dashboard', 'بنیادی ڈیش بورڈ'),
+          t('Shift Wizard', 'شفٹ وزرڈ'),
+          t('Stock IN & Customers', 'اسٹاک اور کسٹمرز')
+        ],
+        color: 'bg-slate-50 dark:bg-white/5 border-border',
+        iconColor: 'text-slate-600',
+        btnColor: 'bg-slate-800 hover:bg-slate-900'
+      },
+      {
+        id: 'professional',
+        name: t('Professional', 'پروفیشنل'),
+        price: 'Rs. 3,000',
+        originalPrice: 'Rs. 8,000',
+        amount: 3000,
+        period: t('/month', '/مہینہ'),
+        icon: Crown,
+        popular: true,
+        features: [
+          t('Everything in Starter', 'اسٹارٹر کی تمام خصوصیات'),
+          t('Treasury Center & Analytics', 'ٹریژری سینٹر اور اینالٹکس'),
+          t('Mobile APK & OTP Login', 'موبائل ایپ اور لاگ ان'),
+          t('WhatsApp Integration', 'واٹس ایپ کا انضمام')
+        ],
+        color: 'bg-orange-50 border-orange-200 shadow-lg scale-105 z-10',
+        iconColor: 'text-orange-600',
+        btnColor: 'bg-orange-600 hover:bg-orange-700'
+      },
+      {
+        id: 'quarterly',
+        name: t('3 Months', '3 ماہ کا پلان'),
+        price: 'Rs. 10,000',
+        originalPrice: 'Rs. 18,000',
+        amount: 10000,
+        period: t('/3 months', '/3 مہینے'),
+        icon: Clock,
+        features: [
+          t('All Pro Features', 'پروفیشنل کی تمام خصوصیات'),
+          t('Save Rs. 8,000', '8,000 روپے کی بچت'),
+          t('Priority Support', 'ترجیحی سپورٹ'),
+          t('Free Data Backup', 'مفت ڈیٹا بیک اپ')
+        ],
+        color: 'bg-emerald-50 border-emerald-200',
+        iconColor: 'text-emerald-600',
+        btnColor: 'bg-emerald-600 hover:bg-emerald-700'
+      },
+      {
+        id: 'yearly',
+        name: t('1 Year', '1 سال کا پلان'),
+        price: 'Rs. 30,000',
+        originalPrice: 'Rs. 50,000',
+        amount: 30000,
+        period: t('/year', '/سال'),
+        icon: Building2,
+        features: [
+          t('All Pro Features', 'پروفیشنل کی تمام خصوصیات'),
+          t('Best Value', 'بہترین قیمت'),
+          t('Custom Branding', 'کسٹم برانڈنگ'),
+          t('Dedicated Account Manager', 'مخصوص اکاؤنٹ مینیجر')
+        ],
+        color: 'bg-blue-50 border-blue-200',
+        iconColor: 'text-blue-600',
+        btnColor: 'bg-blue-600 hover:bg-blue-700'
+      }
+    ];
 
- if (!pricingConfig || !pricingConfig.offers) return defaultPlans;
+    if (!pricingConfig || !pricingConfig.offers) return defaultPlans;
 
- return defaultPlans.map(plan => {
- const offer = pricingConfig.offers[plan.id];
- if (!offer) return plan;
+    return defaultPlans.map((plan) => {
+      const offer = pricingConfig.offers[plan.id];
+      if (!offer) return plan;
 
- const activeAmount = isSaleActive ? offer.salePrice : offer.originalPrice;
- const displayPrice = `Rs. ${activeAmount.toLocaleString()}`;
- const originalDisplayPrice = isSaleActive ? `Rs. ${offer.originalPrice.toLocaleString()}` : undefined;
+      const hasOfferSale = Boolean(
+        offer.salePrice && 
+        offer.salePrice > 0 && 
+        (offer.salePrice < offer.originalPrice || isSaleActive)
+      );
 
- return {
- ...plan,
- amount: activeAmount,
- price: displayPrice,
- originalPrice: originalDisplayPrice || plan.originalPrice, // Keep default original if no sale
- };
- });
- }, [pricingConfig, isSaleActive, t]);
+      const activeAmount = (hasOfferSale && offer.salePrice > 0) ? offer.salePrice : (offer.originalPrice || plan.amount);
+      const displayPrice = `Rs. ${activeAmount.toLocaleString()}`;
+
+      const origPriceVal = offer.originalPrice || (plan.originalPrice ? parseInt(plan.originalPrice.replace(/[^0-9]/g, ''), 10) : 0);
+      const originalDisplayPrice = (hasOfferSale && origPriceVal > activeAmount)
+        ? `Rs. ${origPriceVal.toLocaleString()}`
+        : plan.originalPrice;
+
+      return {
+        ...plan,
+        amount: activeAmount,
+        price: displayPrice,
+        originalPrice: originalDisplayPrice,
+      };
+    });
+  }, [pricingConfig, isSaleActive, t]);
 
  const gateways = [
  { id: 'jazzcash', name: 'NayaPay', desc: '0316 8432329 (Umar Ali)' },

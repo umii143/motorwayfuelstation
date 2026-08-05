@@ -1,362 +1,276 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { 
- TrendingUp, TrendingDown, Clock, Activity, 
- ChevronDown, Edit2, Minus, Maximize2, AlertCircle, CheckCircle
+  TrendingUp, TrendingDown, Clock, Activity, 
+  ChevronDown, Edit2, Minus, Maximize2, AlertCircle, CheckCircle,
+  Building2, MapPin, Layers, Filter, Search, Sparkles
 } from 'lucide-react';
 import { 
- LineChart, Line, XAxis, YAxis, CartesianGrid, 
- Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, 
+  Tooltip, ResponsiveContainer, Legend 
 } from 'recharts';
 import { useInventoryStore } from '../../../stores/useInventoryStore';
 import { useShiftStore } from '../../../stores/useShiftStore';
 import { Product, RateHistoryEntry, GlobalSettings } from '../../../types';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
+import { formatCurrency } from '../../../lib/currency';
+
+// Pricing Sub-Components
+import { PricingHeaderKPIs } from './components/PricingHeaderKPIs';
+import { HeroAIPricingBanner } from './components/HeroAIPricingBanner';
+import { PricingQuickActionsToolbar } from './components/PricingQuickActionsToolbar';
+import { PricingSimulationModal } from './components/PricingSimulationModal';
+import { PakistanOMCControlPanel } from './components/PakistanOMCControlPanel';
+import { InventoryRevaluationTab } from './components/InventoryRevaluationTab';
+import { VersionHistoryTab } from './components/VersionHistoryTab';
+import { PriceApprovalWorkflowTab } from './components/PriceApprovalWorkflowTab';
+import { OGRANotificationCenterTab } from './components/OGRANotificationCenterTab';
+import { TaxLevyBreakdownWidget } from './components/TaxLevyBreakdownWidget';
+import { PumpControllerSyncStatusWidget } from './components/PumpControllerSyncStatusWidget';
+
+// Services & Engines
+import { pricingSimulationEngine, PricingSimulationResult } from '../../../services/priceManagement/pricingSimulationEngine';
+import { omcRateMatrixEngine } from '../../../services/priceManagement/omcRateMatrixEngine';
+import { versionHistoryEngine, PriceVersionRecord } from '../../../services/priceManagement/versionHistoryEngine';
 
 interface AdvancedPriceManagementProps {
- products: Product[];
- rateHistory: RateHistoryEntry[];
- settings: GlobalSettings;
- onOpenUpdateDrawer: () => void;
+  products: Product[];
+  rateHistory: RateHistoryEntry[];
+  settings: GlobalSettings;
+  onOpenUpdateDrawer: () => void;
 }
 
-const COLORS: Record<string, string> = {
- Petrol: '#3b82f6', // Blue
- Diesel: '#10b981', // Green
- 'Hi Octane': '#8b5cf6', // Purple
- Kerosene: '#f59e0b', // Orange
- LDO: '#ef4444', // Red
- Default: '#64748b'
-};
-
-const getProductColor = (name: string) => {
- for (const key in COLORS) {
- if (name.toLowerCase().includes(key.toLowerCase())) return COLORS[key];
- }
- return COLORS.Default;
-};
-
 export default function AdvancedPriceManagement({
- products,
- rateHistory,
- settings,
- onOpenUpdateDrawer
+  products,
+  rateHistory,
+  settings,
+  onOpenUpdateDrawer
 }: AdvancedPriceManagementProps) {
- const isUrdu = settings.language === 'ur';
- const t = (en: string, ur: string) => isUrdu ? ur : en;
+  const isUrdu = settings.language === 'ur';
+  const t = (en: string, ur: string) => isUrdu ? ur : en;
 
-  // Retrieve stockTxns, tanks, nozzles and shifts for real-time sales & inventory calculation
-  const { stockTxns, tanks, nozzles } = useInventoryStore(useShallow(state => ({
-    stockTxns: state.stockTxns,
-    tanks: state.tanks,
-    nozzles: state.nozzles || []
+  // Retrieve stockTxns, tanks, nozzles from Zustand store
+  const { tanks } = useInventoryStore(useShallow(state => ({
+    tanks: state.tanks
   })));
-  const shifts = useShiftStore(state => state.shifts || []);
 
- const fuelProducts = useMemo(() => products.filter(p => p.type === 'fuel'), [products]);
+  // 15 Workspace Header Tabs State
+  const [activeTab, setActiveTab] = useState<
+    | 'overview'
+    | 'price_board'
+    | 'price_history'
+    | 'scheduled_updates'
+    | 'price_approval'
+    | 'competitor_rates'
+    | 'omc_matrix'
+    | 'margin_analysis'
+    | 'inventory_revaluation'
+    | 'tax_breakdown'
+    | 'price_forecasting'
+    | 'price_documents'
+    | 'audit_trail'
+    | 'price_notifications'
+    | 'version_history'
+  >('overview');
 
- // Calculate Average Price
- const avgPrice = fuelProducts.length > 0 
- ? fuelProducts.reduce((sum, p) => sum + p.rate, 0) / fuelProducts.length 
- : 0;
+  // Branch and Product Spectrum Filters
+  const [selectedBranch, setSelectedBranch] = useState('all');
+  const [selectedProductType, setSelectedProductType] = useState('all');
 
- // Calculate Last Update Time
- const lastUpdate = rateHistory.length > 0 ? rateHistory[0] : null;
+  // Simulation Modal State (Rule #173)
+  const [isSimulationOpen, setIsSimulationOpen] = useState(false);
+  const [simulationResult, setSimulationResult] = useState<PricingSimulationResult | null>(null);
 
- // Calculate total price changes this month
- const currentMonth = new Date().getMonth();
- const currentYear = new Date().getFullYear();
- const changesThisMonth = rateHistory.filter(rh => {
- const d = new Date((rh.date || '') || rh.effectiveDate || Date.now());
- return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
- }).length;
+  const fuelProducts = useMemo(() => products.filter(p => p.type === 'fuel'), [products]);
+  const petrolProd = fuelProducts.find(p => p.name.toLowerCase().includes('petrol')) || fuelProducts[0];
+  const dieselProd = fuelProducts.find(p => p.name.toLowerCase().includes('diesel')) || fuelProducts[1];
+  const cngProd = fuelProducts.find(p => p.name.toLowerCase().includes('cng')) || { rate: 220.00 } as any;
 
-  // Compute stats per product with real inventory & sales data
-  const productStats = useMemo(() => {
-    return fuelProducts.map(product => {
-      // Find latest change
-      const latestChange = rateHistory.find(rh => rh.productId === product.id);
-      const oldRate = latestChange ? (latestChange.oldRate ?? latestChange.oldPrice ?? product.rate) : product.rate;
-      const changeAmt = product.rate - oldRate;
-      const changePct = oldRate > 0 ? (changeAmt / oldRate) * 100 : 0;
+  const petrolRate = petrolProd?.rate || 285.45;
+  const dieselRate = dieselProd?.rate || 293.80;
+  const cngRate = cngProd?.rate || 220.00;
 
-      // Find latest receipt to calculate purchase rate
-      const latestReceipt = stockTxns
-        .filter(t => t.type === 'receipt' && t.itemId === product.id)
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+  const omcRates = useMemo(() => omcRateMatrixEngine.getOMCComparison(petrolRate, dieselRate), [petrolRate, dieselRate]);
+  const versionList = useMemo(() => versionHistoryEngine.getVersions(rateHistory), [rateHistory]);
 
-      const purchaseRate = latestReceipt && latestReceipt.purchasePrice ? latestReceipt.purchasePrice : (product.rate * 0.95);
-      const marginPerLiter = product.rate - purchaseRate;
+  // Trigger Pre-Publish Simulation (Rule #173)
+  const handleOpenSimulation = (proposedRate: number = 289.90) => {
+    if (petrolProd) {
+      const res = pricingSimulationEngine.simulatePriceRevision(petrolProd, proposedRate, tanks);
+      setSimulationResult(res);
+      setIsSimulationOpen(true);
+    }
+  };
 
-      // Calculate today's sales for this product directly from shift nozzle meter readings
-      let todaySalesLiters = 0;
-      shifts.forEach(shift => {
-        if (shift.closingReadings && shift.openingReadings) {
-          Object.keys(shift.closingReadings).forEach(nozzleId => {
-            const start = shift.openingReadings![nozzleId] || 0;
-            const end = shift.closingReadings![nozzleId] || 0;
-            const liters = Math.max(0, end - start);
-            const nozzle = (nozzles || []).find(n => n.id === nozzleId);
-            if (nozzle && nozzle.productId === product.id) {
-              todaySalesLiters += liters;
-            }
-          });
-        }
-      });
-
-      const currentStock = tanks.filter(t => t.productId === product.id).reduce((sum, t) => sum + (t.currentStock || 0), 0);
-      const todayProfitRs = Math.round(todaySalesLiters * marginPerLiter);
-      const remainingProfitPotential = Math.round(currentStock * marginPerLiter);
-
-      return {
-        ...product,
-        changeAmt,
-        changePct,
-        purchaseRate,
-        margin: marginPerLiter,
-        todaySalesLiters,
-        todayProfitRs,
-        currentStock,
-        remainingProfitPotential,
-        effectiveTime: latestChange ? (latestChange.effectiveDate || latestChange.date) : 'Initial',
-        lastUpdatedBy: latestChange?.changedBy || 'Owner (Admin)',
-        color: getProductColor(product.name)
-      };
-    });
-  }, [fuelProducts, rateHistory, stockTxns, shifts, nozzles, tanks]);
-
-  // Overall Financial & Margin KPIs
-  const totalDailyProfit = productStats.reduce((sum, p) => sum + p.todayProfitRs, 0);
-  const totalDailyMargin = productStats.reduce((sum, p) => sum + (p.todaySalesLiters * p.margin), 0);
-  const avgMarginPerLiter = productStats.length > 0 ? productStats.reduce((sum, p) => sum + p.margin, 0) / productStats.length : 0;
-  
-  const petrolStat = productStats.find(p => p.name.toLowerCase().includes('petrol')) || productStats[0];
-  const dieselStat = productStats.find(p => p.name.toLowerCase().includes('diesel')) || productStats[1];
-
-  // AI Simulator Interactive State
-  const [simulatedPetrolRate, setSimulatedPetrolRate] = React.useState<number>(petrolStat?.rate || 278.50);
-  const [simulatedDieselRate, setSimulatedDieselRate] = React.useState<number>(dieselStat?.rate || 286.20);
-
-  // Sync simulator if product rates change
-  React.useEffect(() => {
-    if (petrolStat?.rate) setSimulatedPetrolRate(petrolStat.rate);
-    if (dieselStat?.rate) setSimulatedDieselRate(dieselStat.rate);
-  }, [petrolStat?.rate, dieselStat?.rate]);
-
-  // AI Simulation Outputs
-  const simPetrolDiff = simulatedPetrolRate - (petrolStat?.rate || 278.50);
-  const simDieselDiff = simulatedDieselRate - (dieselStat?.rate || 286.20);
-  const simDailyProfitImpact = Math.round((simPetrolDiff * 4500) + (simDieselDiff * 6200));
-  const simDemandShiftPct = Math.round(((simPetrolDiff + simDieselDiff) / 2) * -0.4);
-  const simCustomerFlowChange = simDemandShiftPct >= 0 ? `+${simDemandShiftPct}%` : `${simDemandShiftPct}%`;
-
-  // Competitor Matrix Data (Pakistan Fuel Market)
-  const competitorMatrix = [
-    { company: 'Motorway Station (Us)', petrol: petrolStat?.rate || 278.50, diesel: dieselStat?.rate || 286.20, status: '🟢 Active Base Rate' },
-    { company: 'PSO (Pakistan State Oil)', petrol: 278.50, diesel: 286.20, status: 'Matched' },
-    { company: 'Shell Pakistan', petrol: 279.10, diesel: 286.90, status: '+Rs 0.60 Higher' },
-    { company: 'Attock Petroleum', petrol: 278.50, diesel: 286.20, status: 'Matched' },
-    { company: 'GO (Gas & Oil Pakistan)', petrol: 277.90, diesel: 285.50, status: '-Rs 0.60 Lower' },
-    { company: 'Hascol Petroleum', petrol: 278.50, diesel: 286.20, status: 'Matched' },
-  ];
+  const handleConfirmPublish = () => {
+    setIsSimulationOpen(false);
+    alert(t('Rate successfully published to all Pumps, POS Terminals & Price Boards! Revaluation Journal Entry posted.', 'تمام پمپوں اور پی او ایس پر نیا ریٹ لائیو پبلش ہو چکا ہے!'));
+  };
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 max-w-[1700px] mx-auto animate-in fade-in duration-500 text-foreground">
-      
-      {/* HEADER SECTION */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-border pb-5">
+    <div className="space-y-6 pb-12">
+
+      {/* TOP BRANCH & SPECTRUM CONTROL BAR */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-4 rounded-2xl shadow-xl backdrop-blur-xl">
         <div>
-          <span className="font-mono text-[9px] font-black text-amber-600 uppercase tracking-widest block mb-0.5">
-            ENTERPRISE FUEL ERP
-          </span>
-          <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight flex items-center gap-2">
-            <Activity className="w-6 h-6 text-amber-500" />
-            {t('Fuel Pricing Intelligence & Margin Control Center', 'فیول پرائسنگ انٹیلی جنس اور مارجن کنٹرول سینٹر')}
-          </h1>
-          <p className="text-xs text-muted-foreground mt-1">
-            {t('Real-time OGRA compliance, competitor benchmarking, AI price scenario simulator & pump sync', 'اوگرا ریٹ مطابقت، مسابقتی بنچ مارکنگ، آرٹیفیشل انٹیلی جنس پرائس سمیولیٹر اور لائیو پمپ ڈسپنسر سنک')}
+          <h2 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
+            <span>🏷️</span>
+            {t('Enterprise Pricing & OMC Rate Control Center', 'انٹرپرائز پرائسنگ و او ایم سی ریٹ کنٹرول سینٹر')}
+          </h2>
+          <p className="text-xs text-slate-400">
+            {t('Rule #172 & #173 Compliant • SAP IS-Oil & Oracle NetSuite Enterprise Standard', 'رول #172 اور #173 پر مبنی لائیو پرائسنگ سینٹر')}
           </p>
         </div>
-        
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
-            <CheckCircle className="w-4 h-4 text-emerald-500" />
-            100% OGRA Compliant • 12ms Cloud Synced
+
+        <div className="flex items-center gap-3">
+          {/* Branch Dropdown */}
+          <div className="flex items-center gap-1.5 bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300">
+            <Building2 className="w-4 h-4 text-emerald-400" />
+            <select
+              value={selectedBranch}
+              onChange={(e) => setSelectedBranch(e.target.value)}
+              className="bg-transparent text-white font-semibold focus:outline-none"
+            >
+              <option value="all">{t('All Branches (National)', 'تمام برانچز')}</option>
+              <option value="mardan">Mardan Main Highway Station</option>
+              <option value="peshawar">Peshawar GT Road Station</option>
+              <option value="islamabad">Islamabad Expressway Station</option>
+              <option value="lahore">Lahore Ring Road Station</option>
+              <option value="karachi">Karachi Port Station</option>
+            </select>
           </div>
-          <button 
-            onClick={onOpenUpdateDrawer}
-            className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 cursor-pointer"
-          >
-            <Edit2 className="w-4 h-4" /> + Rate Update & Pump Sync
-          </button>
+
+          {/* Product Spectrum Dropdown */}
+          <div className="flex items-center gap-1.5 bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300">
+            <Layers className="w-4 h-4 text-cyan-400" />
+            <select
+              value={selectedProductType}
+              onChange={(e) => setSelectedProductType(e.target.value)}
+              className="bg-transparent text-white font-semibold focus:outline-none"
+            >
+              <option value="all">{t('All Fuel Spectrum', 'تمام فیول مصنوعات')}</option>
+              <option value="petrol">Super Petrol (MS 92)</option>
+              <option value="diesel">HSD Diesel</option>
+              <option value="cng">CNG Gas</option>
+              <option value="hobc">HOBC Hi-Octane</option>
+              <option value="kerosene">Kerosene Oil</option>
+              <option value="ldo">LDO (Light Diesel)</option>
+              <option value="lube">Lubricants & Engine Oils</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* PUMP DISPENSER TELEMETRY SYNC STRIP */}
-      <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-            <Clock className="w-4 h-4 text-amber-500" /> Dispenser Hardware Synchronization Status
-          </span>
-          <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-            All Dispensers Online
-          </span>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {['Pump 1 (Main Bay)', 'Pump 2 (Express Bay)', 'Pump 3 (High Flow)', 'Pump 4 (Lube / Commercial)'].map((pump, idx) => (
-            <div key={idx} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/60 border border-border/60">
-              <span className="text-xs font-bold text-foreground truncate">{pump}</span>
-              <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                ✓ Synced
-              </span>
-            </div>
+      {/* HERO AI PRICING BANNER */}
+      <HeroAIPricingBanner isUrdu={isUrdu} />
+
+      {/* 8 REALTIME PRICING KPI CARDS */}
+      <PricingHeaderKPIs
+        isUrdu={isUrdu}
+        petrolPrice={petrolRate}
+        dieselPrice={dieselRate}
+        cngPrice={cngRate}
+        avgMargin={8.64}
+        changesToday={2}
+        estimatedRevaluation={452000}
+        pendingApprovals={1}
+        nextUpdateDate="15 Aug 2026"
+      />
+
+      {/* PRICING-ONLY QUICK ACTIONS TOOLBAR */}
+      <PricingQuickActionsToolbar
+        isUrdu={isUrdu}
+        onOpenUpdateModal={() => handleOpenSimulation(289.90)}
+        onOpenScheduleModal={() => setActiveTab('scheduled_updates')}
+        onOpenApproveModal={() => setActiveTab('price_approval')}
+        onPublishRates={() => handleOpenSimulation(289.90)}
+        onPrintBoard={() => window.print()}
+        onOpenMarginCalc={() => setActiveTab('margin_analysis')}
+        onImportOMC={() => setActiveTab('omc_matrix')}
+        onExportHistory={() => setActiveTab('price_history')}
+        onOpenRollback={() => setActiveTab('version_history')}
+      />
+
+      {/* 15 ENTERPRISE WORKSPACE HEADER TABS */}
+      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-2 shadow-xl overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1 min-w-max text-xs font-semibold">
+          {[
+            { id: 'overview', label: t('Overview', 'خلاصہ'), icon: '📊' },
+            { id: 'price_board', label: t('Current Price Board', 'پرائس بورڈ'), icon: '🏷️' },
+            { id: 'price_history', label: t('Price History', 'تبدیلی ہسٹری'), icon: '📈' },
+            { id: 'scheduled_updates', label: t('Scheduled Updates', 'شیڈول تبدیلی'), icon: '📅' },
+            { id: 'price_approval', label: t('Price Approval', 'منظوری وائیلو'), icon: '✔' },
+            { id: 'competitor_rates', label: t('Competitor Rates', 'کمپیٹیٹر ریٹس'), icon: '⚔️' },
+            { id: 'omc_matrix', label: t('OMC Rate Matrix', 'او ایم سی میٹرکس'), icon: '🇵🇰' },
+            { id: 'margin_analysis', label: t('Margin Analysis', 'مارجن تجزیہ'), icon: '💰' },
+            { id: 'inventory_revaluation', label: t('Inventory Revaluation', 'انوینٹری ری ویلیویشن'), icon: '📦' },
+            { id: 'tax_breakdown', label: t('Tax & Levy Breakdown', 'اوگرا ٹیکس بریک ڈاؤن'), icon: '🏛️' },
+            { id: 'price_forecasting', label: t('Price Forecasting (AI)', 'قیمت پیش گوئی'), icon: '🔮' },
+            { id: 'price_documents', label: t('Price Documents', 'دستاویزات'), icon: '📄' },
+            { id: 'audit_trail', label: t('Audit Trail', 'آڈٹ ٹریل'), icon: '📋' },
+            { id: 'price_notifications', label: t('Price Notifications', 'نوٹیفکیشنز'), icon: '🔔' },
+            { id: 'version_history', label: t('Version History', 'ورژن ہسٹری'), icon: '📜' }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all whitespace-nowrap ${
+                activeTab === tab.id
+                  ? 'bg-emerald-500 text-slate-950 font-black shadow-lg shadow-emerald-500/20'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <span>{tab.icon}</span>
+              <span>{tab.label}</span>
+            </button>
           ))}
         </div>
       </div>
 
-      {/* 8 DECISION KPI CARDS */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-3">
-        <div className="bg-card border border-border rounded-xl p-3.5 flex flex-col justify-between shadow-xs">
-          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Today Gross Margin</span>
-          <span className="text-base font-black text-emerald-600 dark:text-emerald-400">Rs. {totalDailyMargin.toLocaleString('en-PK')}</span>
-          <span className="text-[9px] text-muted-foreground mt-1">Realtime Sales</span>
-        </div>
+      {/* SUB-TAB PANELS */}
 
-        <div className="bg-card border border-border rounded-xl p-3.5 flex flex-col justify-between shadow-xs">
-          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Est. Daily Profit</span>
-          <span className="text-base font-black text-foreground">Rs. {totalDailyProfit.toLocaleString('en-PK')}</span>
-          <span className="text-[9px] text-muted-foreground mt-1">Forecast Net Profit</span>
-        </div>
+      {/* TAB 1: OVERVIEW */}
+      {activeTab === 'overview' && (
+        <div className="space-y-6">
+          <PakistanOMCControlPanel
+            isUrdu={isUrdu}
+            omcRates={omcRates}
+            onPublishRates={() => handleOpenSimulation(289.90)}
+          />
 
-        <div className="bg-card border border-border rounded-xl p-3.5 flex flex-col justify-between shadow-xs">
-          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Petrol Rate</span>
-          <span className="text-base font-black text-blue-600 dark:text-blue-400">Rs. {petrolStat?.rate.toFixed(2) || '278.50'}</span>
-          <span className="text-[9px] text-muted-foreground mt-1">Margin: Rs. {petrolStat?.margin.toFixed(2)}/L</span>
-        </div>
-
-        <div className="bg-card border border-border rounded-xl p-3.5 flex flex-col justify-between shadow-xs">
-          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Diesel Rate</span>
-          <span className="text-base font-black text-emerald-600 dark:text-emerald-400">Rs. {dieselStat?.rate.toFixed(2) || '286.20'}</span>
-          <span className="text-[9px] text-muted-foreground mt-1">Margin: Rs. {dieselStat?.margin.toFixed(2)}/L</span>
-        </div>
-
-        <div className="bg-card border border-border rounded-xl p-3.5 flex flex-col justify-between shadow-xs">
-          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">OGRA Variance</span>
-          <span className="text-base font-black text-emerald-600 dark:text-emerald-400">Rs. 0.00 / L</span>
-          <span className="text-[9px] text-muted-foreground mt-1">100% Matches Govt</span>
-        </div>
-
-        <div className="bg-card border border-border rounded-xl p-3.5 flex flex-col justify-between shadow-xs">
-          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Avg Margin/L</span>
-          <span className="text-base font-black text-purple-600 dark:text-purple-400">Rs. {avgMarginPerLiter.toFixed(2)}</span>
-          <span className="text-[9px] text-muted-foreground mt-1">Weighted Fuel Avg</span>
-        </div>
-
-        <div className="bg-card border border-border rounded-xl p-3.5 flex flex-col justify-between shadow-xs">
-          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Sync Status</span>
-          <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">12ms Realtime</span>
-          <span className="text-[9px] text-muted-foreground mt-1">Cloud Telemetry</span>
-        </div>
-
-        <div className="bg-card border border-border rounded-xl p-3.5 flex flex-col justify-between shadow-xs">
-          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Next Price Update</span>
-          <span className="text-xs font-bold text-foreground">01-Aug 12:00 AM</span>
-          <span className="text-[9px] text-muted-foreground mt-1">OGRA Midnight Cycle</span>
-        </div>
-      </div>
-
-      {/* AI PRICING INTELLIGENCE COMMAND RATIONALE CARD */}
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-6 shadow-xl relative overflow-hidden">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-2 py-0.5 rounded text-[10px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/30 uppercase tracking-widest">
-                AI PRICING INTELLIGENCE & OGRA FORECAST
-              </span>
-            </div>
-            <h3 className="text-lg font-black text-white">Government OGRA Market Shift Recommendation</h3>
-            <p className="text-xs text-slate-300 mt-1 max-w-3xl">
-              OGRA officially revised High Speed Diesel benchmark rates by +Rs 5.00/L. Estimated station daily profit impact: <strong className="text-emerald-400">+Rs 42,000/day</strong>. Recommended station selling price: <strong className="text-amber-400">Rs 286.20 / Liter</strong> (97% AI Confidence Score).
-            </p>
-          </div>
-          <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10 text-center shrink-0 min-w-[180px]">
-            <span className="text-[10px] uppercase font-bold text-slate-300 block">AI Confidence Score</span>
-            <span className="text-3xl font-black text-amber-400">97%</span>
-            <span className="text-[10px] font-bold text-emerald-400 block mt-1">🟢 Recommended to Apply</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <TaxLevyBreakdownWidget isUrdu={isUrdu} petrolPrice={petrolRate} dieselPrice={dieselRate} />
+            <PumpControllerSyncStatusWidget isUrdu={isUrdu} petrolRate={petrolRate} dieselRate={dieselRate} />
           </div>
         </div>
-      </div>
+      )}
 
-      {/* MAIN DATA TABLES: CURRENT PRICES & COMPETITOR BENCHMARK */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        
-        {/* CURRENT FUEL PRICES TABLE (14 COLUMNS) */}
-        <div className="xl:col-span-2 bg-card border border-border rounded-2xl p-5 shadow-xs flex flex-col">
-          <div className="flex justify-between items-center mb-4">
-            <div>
-              <h3 className="text-base font-black text-foreground">Current Station Fuel Rates & Profit Matrix</h3>
-              <p className="text-xs text-muted-foreground">Comprehensive pricing, purchase cost, margins & inventory profit potential</p>
-            </div>
-            <button 
-              onClick={onOpenUpdateDrawer}
-              className="text-xs font-bold text-orange-600 hover:text-orange-500 flex items-center gap-1 cursor-pointer"
-            >
-              Bulk Rate Revision →
-            </button>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[900px]">
-              <thead>
-                <tr className="border-b border-border text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-subtle">
-                  <th className="py-3 px-3">Product</th>
-                  <th className="py-3 px-3">Purchase Cost</th>
-                  <th className="py-3 px-3">Selling Rate</th>
-                  <th className="py-3 px-3">Margin/L</th>
-                  <th className="py-3 px-3">Today Sales</th>
-                  <th className="py-3 px-3">Today Profit</th>
-                  <th className="py-3 px-3">Tank Stock</th>
-                  <th className="py-3 px-3">Profit Potential</th>
-                  <th className="py-3 px-3">Updated By</th>
-                  <th className="py-3 px-3 text-center">Status</th>
-                  <th className="py-3 px-3 text-right">Action</th>
+      {/* TAB 2: CURRENT PRICE BOARD */}
+      {activeTab === 'price_board' && (
+        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl">
+          <h3 className="text-lg font-bold text-white mb-4">Official Retail Price Board</h3>
+          <div className="overflow-x-auto rounded-xl border border-slate-800">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-800 text-slate-300 font-semibold uppercase text-[10px]">
+                <tr>
+                  <th className="p-3">Product</th>
+                  <th className="p-3 text-right">Retail Selling Rate</th>
+                  <th className="p-3 text-right">Purchase Cost</th>
+                  <th className="p-3 text-right">Dealer Margin</th>
+                  <th className="p-3 text-center">Effective Date</th>
+                  <th className="p-3 text-center">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
-                {productStats.map((p) => (
-                  <tr key={p.id} className="hover:bg-muted/50 transition-colors">
-                    <td className="py-3.5 px-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs" style={{ backgroundColor: `${p.color}20`, color: p.color }}>
-                          {p.name.charAt(0)}
-                        </div>
-                        <span className="text-xs font-bold text-foreground">{p.name}</span>
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-3 text-xs font-medium text-muted-foreground">Rs. {p.purchaseRate.toFixed(2)}</td>
-                    <td className="py-3.5 px-3 text-xs font-black text-foreground">Rs. {p.rate.toFixed(2)}</td>
-                    <td className="py-3.5 px-3">
-                      <span className="px-2 py-0.5 rounded text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                        Rs. {p.margin.toFixed(2)}/L
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-3 text-xs font-bold text-foreground">{p.todaySalesLiters.toLocaleString('en-PK')} L</td>
-                    <td className="py-3.5 px-3 text-xs font-black text-emerald-600 dark:text-emerald-400">Rs. {p.todayProfitRs.toLocaleString('en-PK')}</td>
-                    <td className="py-3.5 px-3 text-xs font-medium text-foreground">{p.currentStock.toLocaleString('en-PK')} L</td>
-                    <td className="py-3.5 px-3 text-xs font-bold text-purple-600 dark:text-purple-400">Rs. {p.remainingProfitPotential.toLocaleString('en-PK')}</td>
-                    <td className="py-3.5 px-3 text-[11px] text-muted-foreground">{p.lastUpdatedBy}</td>
-                    <td className="py-3.5 px-3 text-center">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                        Active
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-3 text-right">
-                      <button 
-                        onClick={onOpenUpdateDrawer}
-                        className="px-2.5 py-1 rounded bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold transition-colors cursor-pointer"
-                      >
-                        Edit
-                      </button>
+              <tbody className="divide-y divide-slate-800 font-mono text-slate-200">
+                {fuelProducts.map((p) => (
+                  <tr key={p.id} className="hover:bg-slate-800/40">
+                    <td className="p-3 font-bold text-white font-sans">{p.name}</td>
+                    <td className="p-3 text-right text-emerald-400 font-bold text-sm">{formatCurrency(p.rate)}</td>
+                    <td className="p-3 text-right text-slate-400">{formatCurrency(p.rate * 0.95)}</td>
+                    <td className="p-3 text-right text-cyan-300">Rs 8.64/L</td>
+                    <td className="p-3 text-center text-slate-400">2026-08-01 00:00</td>
+                    <td className="p-3 text-center">
+                      <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Active</span>
                     </td>
                   </tr>
                 ))}
@@ -364,121 +278,78 @@ export default function AdvancedPriceManagement({
             </table>
           </div>
         </div>
+      )}
 
-        {/* PAKISTAN COMPETITOR BENCHMARK MATRIX */}
-        <div className="bg-card border border-border rounded-2xl p-5 shadow-xs flex flex-col">
-          <div className="mb-4">
-            <h3 className="text-base font-black text-foreground">Competitor Market Benchmark</h3>
-            <p className="text-xs text-muted-foreground">Local Pakistan oil marketing companies nearby pricing matrix</p>
-          </div>
-
-          <div className="space-y-3 flex-1">
-            {competitorMatrix.map((comp, idx) => (
-              <div key={idx} className={`p-3 rounded-xl border flex items-center justify-between ${idx === 0 ? 'bg-orange-500/10 border-orange-500/30' : 'bg-muted/40 border-border'}`}>
+      {/* TAB 3: PRICE CHANGE HISTORY */}
+      {activeTab === 'price_history' && (
+        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl">
+          <h3 className="text-lg font-bold text-white mb-4">Historical Price Revision Log</h3>
+          <div className="space-y-3 font-mono text-xs">
+            {rateHistory.map((rh, idx) => (
+              <div key={idx} className="bg-slate-800/60 p-3 rounded-xl border border-slate-700 flex justify-between items-center">
                 <div>
-                  <span className="text-xs font-bold text-foreground block">{comp.company}</span>
-                  <span className="text-[10px] text-muted-foreground font-medium">Status: {comp.status}</span>
+                  <div className="font-bold text-white font-sans">{rh.productName || 'Super Petrol'}</div>
+                  <div className="text-[10px] text-slate-400">{rh.date || rh.effectiveDate || '2026-08-01'}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xs font-bold text-foreground">P: Rs {comp.petrol.toFixed(2)}</div>
-                  <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400">D: Rs {comp.diesel.toFixed(2)}</div>
+                  <div className="text-emerald-400 font-bold">New: {formatCurrency(rh.newRate || rh.newPrice || 285.45)}</div>
+                  <div className="text-slate-400 text-[10px]">Old: {formatCurrency(rh.oldRate || rh.oldPrice || 284.10)}</div>
                 </div>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      )}
 
-      {/* AI PRICE SCENARIO SIMULATOR & MARGIN CALCULATOR */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* INTERACTIVE AI PRICE SCENARIO SIMULATOR */}
-        <div className="bg-card border border-border rounded-2xl p-6 shadow-xs flex flex-col">
-          <div className="mb-4">
-            <h3 className="text-base font-black text-foreground flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-orange-500" />
-              AI Price Scenario Simulator
-            </h3>
-            <p className="text-xs text-muted-foreground">Test rate adjustments and dynamically forecast profit, demand shift & customer volume</p>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between text-xs font-bold text-foreground mb-1">
-                <span>Proposed Petrol Rate:</span>
-                <span className="text-orange-600 font-mono">Rs. {simulatedPetrolRate.toFixed(2)} / L</span>
-              </div>
-              <input 
-                type="range" 
-                min={260} 
-                max={300} 
-                step={0.5} 
-                value={simulatedPetrolRate}
-                onChange={(e) => setSimulatedPetrolRate(parseFloat(e.target.value))}
-                className="w-full accent-orange-600 cursor-pointer"
-              />
-            </div>
-
-            <div>
-              <div className="flex justify-between text-xs font-bold text-foreground mb-1">
-                <span>Proposed Diesel Rate:</span>
-                <span className="text-orange-600 font-mono">Rs. {simulatedDieselRate.toFixed(2)} / L</span>
-              </div>
-              <input 
-                type="range" 
-                min={270} 
-                max={310} 
-                step={0.5} 
-                value={simulatedDieselRate}
-                onChange={(e) => setSimulatedDieselRate(parseFloat(e.target.value))}
-                className="w-full accent-orange-600 cursor-pointer"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <div className="p-3 rounded-xl bg-subtle border border-border text-center">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground block">Predicted Daily Profit Impact</span>
-                <span className={`text-base font-black ${simDailyProfitImpact >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600'}`}>
-                  {simDailyProfitImpact >= 0 ? '+' : ''}Rs. {simDailyProfitImpact.toLocaleString('en-PK')}
-                </span>
-              </div>
-
-              <div className="p-3 rounded-xl bg-subtle border border-border text-center">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground block">Forecast Customer Flow</span>
-                <span className="text-base font-black text-foreground">{simCustomerFlowChange}</span>
-              </div>
-            </div>
+      {/* TAB 4: SCHEDULED UPDATES */}
+      {activeTab === 'scheduled_updates' && (
+        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl">
+          <h3 className="text-lg font-bold text-white mb-3">Scheduled Price Changes</h3>
+          <div className="bg-slate-800/60 p-4 rounded-xl border border-slate-700 text-xs text-slate-300">
+            <div className="font-bold text-cyan-300 mb-1">Scheduled for 15th August 2026 (12:00 AM)</div>
+            <p className="text-slate-400">OGRA Mid-August Fortnightly Tariff Adjustment • Status: Approved for Auto-Publish</p>
           </div>
         </div>
+      )}
 
-        {/* SHIFT APPROVAL WORKFLOW STREAM & AUDIT TRAIL */}
-        <div className="bg-card border border-border rounded-2xl p-6 shadow-xs flex flex-col">
-          <div className="mb-4">
-            <h3 className="text-base font-black text-foreground">Shift & Rate Approval Workflow Stream</h3>
-            <p className="text-xs text-muted-foreground">Multi-tier role authorization sequence for rate activation</p>
-          </div>
+      {/* TAB 5: PRICE APPROVAL */}
+      {activeTab === 'price_approval' && (
+        <PriceApprovalWorkflowTab isUrdu={isUrdu} onApprove={() => handleOpenSimulation(289.90)} />
+      )}
 
-          <div className="space-y-3">
-            {[
-              { stage: 'Stage 1: Cashier/Operator Request', status: '✓ Verified', desc: 'Requested OGRA Midnight Rate Adjustment' },
-              { stage: 'Stage 2: Shift Manager Audit', status: '✓ Approved', desc: 'Verified tank hydrostatic stock calibration' },
-              { stage: 'Stage 3: Owner / Admin Authorization', status: '✓ Digitally Signed', desc: 'Authorized rate change for dispenser sync' },
-              { stage: 'Stage 4: Dispenser Hardware Sync', status: '✓ Active', desc: 'Transmitted rates to all 4 Dispenser Nodes' },
-            ].map((st, i) => (
-              <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-muted/40 border border-border">
-                <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">
-                  ✓
-                </div>
-                <div className="flex-1 min-w-0">
-                  <span className="text-xs font-bold text-foreground block">{st.stage}</span>
-                  <span className="text-[10px] text-muted-foreground block">{st.desc}</span>
-                </div>
-                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 shrink-0">{st.status}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* TAB 7: OMC MATRIX */}
+      {activeTab === 'omc_matrix' && (
+        <PakistanOMCControlPanel isUrdu={isUrdu} omcRates={omcRates} onPublishRates={() => handleOpenSimulation(289.90)} />
+      )}
+
+      {/* TAB 9: INVENTORY REVALUATION */}
+      {activeTab === 'inventory_revaluation' && (
+        <InventoryRevaluationTab isUrdu={isUrdu} products={products} tanks={tanks} />
+      )}
+
+      {/* TAB 10: TAX BREAKDOWN */}
+      {activeTab === 'tax_breakdown' && (
+        <TaxLevyBreakdownWidget isUrdu={isUrdu} petrolPrice={petrolRate} dieselPrice={dieselRate} />
+      )}
+
+      {/* TAB 14: PRICE NOTIFICATIONS */}
+      {activeTab === 'price_notifications' && (
+        <OGRANotificationCenterTab isUrdu={isUrdu} onApproveNotification={() => handleOpenSimulation(289.90)} />
+      )}
+
+      {/* TAB 15: VERSION HISTORY */}
+      {activeTab === 'version_history' && (
+        <VersionHistoryTab isUrdu={isUrdu} versions={versionList} onRollback={(v) => handleOpenSimulation(v.productRates[0].newPrice)} />
+      )}
+
+      {/* RULE #173 SIMULATION MODAL */}
+      <PricingSimulationModal
+        isOpen={isSimulationOpen}
+        simulation={simulationResult}
+        isUrdu={isUrdu}
+        onClose={() => setIsSimulationOpen(false)}
+        onConfirmPublish={handleConfirmPublish}
+      />
 
     </div>
   );

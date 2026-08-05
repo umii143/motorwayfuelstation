@@ -28,6 +28,17 @@ import { useStaffStore } from '../../stores/useStaffStore';
 import { useFinancialStore } from '../../stores/useFinancialStore';
 import { SalaryEngine } from '../../services/salaryEngine';
 import RoleGuard from '../ui/RoleGuard';
+import { useWorkforceStore } from '../../stores/useWorkforceStore';
+import { LiveKPIBar } from './workforce/LiveKPIBar';
+import { WorkforceMapWidget } from './workforce/WorkforceMapWidget';
+import { ShiftProgressWidget } from './workforce/ShiftProgressWidget';
+import { PayrollEngineTab } from './workforce/PayrollEngineTab';
+import { LeaveEngineTab } from './workforce/LeaveEngineTab';
+import { PerformanceLeaderboardTab } from './workforce/PerformanceLeaderboardTab';
+import { ActivityFeedDrawer } from './workforce/ActivityFeedDrawer';
+import { AIWorkforceInsightsWidget } from './workforce/AIWorkforceInsightsWidget';
+import { EmployeeProfileDrawer } from './workforce/EmployeeProfileDrawer';
+import { WorkforceControlRoomDashboard } from './workforce/WorkforceControlRoomDashboard';
 
 interface StaffProps {
  settings: GlobalSettings;
@@ -75,8 +86,21 @@ export default function StaffPanel({
  const isUrdu = settings.language === 'ur';
  const t = (en: string, ur: string) => (isUrdu ? ur : en);
 
+ // Workforce Realtime Engine Store
+ const activeStationId = useStationStore((state) => state.activeStationId) || 'st_default';
+ const activeOrgId = 'org_main';
+ const workforceStore = useWorkforceStore();
+
+ React.useEffect(() => {
+   const unsub = workforceStore.initRealtimeListeners(activeOrgId, activeStationId);
+   return () => unsub();
+ }, [activeStationId]);
+
+ const kpis = workforceStore.getKPIs();
+ const [selectedDrawerEmployee, setSelectedDrawerEmployee] = useState<Staff | null>(null);
+
  // Active section tab
- const [activeTab, setActiveTab] = useState<'crew' | 'finance' | 'legacy_finance' | 'attendance' | 'performance' | 'attendance_reports'>('crew');
+ const [activeTab, setActiveTab] = useState<'control_center' | 'crew' | 'payroll_engine' | 'leave_engine' | 'performance_leaderboard' | 'activity_feed' | 'ai_insights' | 'legacy_finance' | 'attendance' | 'finance' | 'performance' | 'attendance_reports'>('control_center');
 
  // Query and reporting states for Performance and Attendance tabs
  const [selectedPerfStaffId, setSelectedPerfStaffId] = useState<string>('all');
@@ -304,149 +328,187 @@ export default function StaffPanel({
  ), 'success');
  };
 
- return (
- <div className="space-y-6 pb-20 lg:pb-5">
+  return (
+    <div className="space-y-6 pb-20 lg:pb-5">
 
- {/* COMPACT BILINGUAL HEADER */}
- <div className="flex flex-col gap-4 sm:flex-row items-center sm:justify-between border-b border-border pb-4">
- <div>
- <h2 className="font-sans text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
- <Users className="h-6 w-6 text-orange-600" />
- <span>{t('Staff, Attendance & Salaried Registers', 'عملے کا حاضری اور تنخواہ رجسٹر')}</span>
- </h2>
- <p className="font-sans text-xs text-muted-foreground mt-1">
- {t(
- 'Audit daily operator attendance clocks, record advance credits and issue monthly payroll allocations securely.',
- 'کیشیئرز، مینیجرز اور نوزل مین کی روزانہ ڈیوٹی حاضری شیٹ، ایڈوانس کھاتہ اور تنخواہ کارروائی یہاں سے کریں۔'
- )}
- </p>
- </div>
+      {/* ENTERPRISE REALTIME WORKFORCE HEADER */}
+      <div className="flex flex-col gap-4 sm:flex-row items-center sm:justify-between border-b border-border pb-4">
+        <div>
+          <h2 className="font-sans text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <Users className="h-7 w-7 text-emerald-500" />
+            <span>{t('Realtime Workforce Engine', 'ریئل ٹائم ورک فورس انجن')}</span>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 animate-pulse">
+              🟢 Firestore Live
+            </span>
+          </h2>
+          <p className="font-sans text-xs text-muted-foreground mt-1">
+            {t(
+              'SAP / Oracle HCM style live attendance, shift roster, payroll, performance and audit stream.',
+              'لائیو حاضری، شفٹ، پے رول، کارکردگی اور آڈٹ ہسٹری ڈیش بورڈ۔'
+            )}
+          </p>
+        </div>
 
- <button
- onClick={() => setShowAddStaff(true)}
- className="flex items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-4 py-2.5 font-sans text-xs font-bold text-white shadow-md hover:bg-orange-700 transition-all cursor-pointer self-start sm:self-center"
- >
- <PlusCircle className="h-4 w-4" />
- <span>{t('Register New Crew', 'نیا پمپ ملازم شامل کریں')}</span>
- </button>
- </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowAddStaff(true)}
+            className="flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2.5 font-sans text-xs font-bold text-white shadow-lg hover:from-emerald-500 hover:to-teal-500 transition-all cursor-pointer"
+          >
+            <PlusCircle className="h-4 w-4" />
+            <span>{t('Register New Crew', 'نیا پمپ ملازم شامل کریں')}</span>
+          </button>
+        </div>
+      </div>
 
- {/* UNIVERSAL MODULE SEARCH BAR */}
- <ModuleSearchBar
- moduleName={t('Staff', 'عملہ')}
- placeholder={t('Search staff members...', 'عملہ تلاش کریں...')}
- onSearch={setSearchQuery}
- onExport={() => showToast(t('Export coming soon', 'ایکسپورٹ جلد آرہا ہے'), 'info')}
- />
+      {/* RULE #171 — LIVE 10 COMPUTED KPI CARDS BAR */}
+      <LiveKPIBar kpis={kpis} isUrdu={isUrdu} />
 
- {/* CORE HIGHLIGHT CARDS ROW */}
- <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 min-h-[90px] gap-3 sm:gap-4 sm:grid-cols-2">
- {/* Payroll burden */}
- <div className="rounded-xl border border-border bg-card p-4 shadow-sm relative overflow-hidden">
- <div className="absolute top-0 bottom-0 left-0 w-1 bg-red-500"></div>
- <span className="font-sans text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
- {t('Est. Monthly Payroll Allocation', 'ماہانہ تنخواہ کا مجموعی بوجھ')}
- </span>
- <strong className="font-mono text-xl font-bold text-foreground tracking-tight mt-1.5 block">
- {formatCurrency(totalMonthlyPayrollExpect, settings)}
- </strong>
- </div>
+      {/* UNIVERSAL MODULE SEARCH BAR */}
+      <ModuleSearchBar
+        moduleName={t('Staff', 'عملہ')}
+        placeholder={t('Search staff members...', 'عملہ تلاش کریں...')}
+        onSearch={setSearchQuery}
+        onExport={() => showToast(t('Export coming soon', 'ایکسپورٹ جلد آرہا ہے'), 'info')}
+      />
 
- {/* Advances outstanding */}
- <div className="rounded-xl border border-border bg-card p-4 shadow-sm relative overflow-hidden">
- <div className="absolute top-0 bottom-0 left-0 w-1 bg-orange-500"></div>
- <span className="font-sans text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
- {t('Total Outstanding Advances Lent', 'مجموعی واجب الاصول ایڈوانس رقم')}
- </span>
- <strong className="font-mono text-xl font-bold text-orange-600 tracking-tight mt-1.5 block">
- {formatCurrency(totalAdvancesSum, settings)}
- </strong>
- </div>
+      {/* INTERACTIVE NAVIGATION SUBTABS */}
+      <div className="flex items-center gap-1 sm:gap-2 border-b border-border pb-0.5 overflow-x-auto whitespace-nowrap no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+        <button
+          onClick={() => setActiveTab('control_center')}
+          className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap ${
+            activeTab === 'control_center'
+              ? 'border-emerald-500 text-emerald-400 font-black'
+              : 'border-transparent text-slate-400 hover:text-foreground'
+          }`}
+        >
+          {t('🟢 Live Workforce Map & Status', '🟢 لائیو ورک فورس میپ')}
+        </button>
 
- {/* Attendance widget */}
- <div className="rounded-xl border border-border bg-card p-4 shadow-sm relative overflow-hidden">
- <div className="absolute top-0 bottom-0 left-0 w-1 bg-teal-500"></div>
- <span className="font-sans text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
- {t('Today Attendance Roster', 'آج کے روزانہ ملازمین حاضری')}
- </span>
- <strong className="font-sans text-sm font-bold text-foreground tracking-tight mt-1.5 block">
- {todayAttendanceSummary.present} Present / {todayAttendanceSummary.absent} Absent
- </strong>
- </div>
- </div>
+        <button
+          onClick={() => setActiveTab('payroll_engine')}
+          className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap ${
+            activeTab === 'payroll_engine'
+              ? 'border-emerald-500 text-emerald-400 font-black'
+              : 'border-transparent text-slate-400 hover:text-foreground'
+          }`}
+        >
+          {t('💵 Payroll Engine', '💵 پے رول انجن')}
+        </button>
 
- {/* INTERACTIVE NAVIGATION SUBTABS */}
- <div className="flex items-center gap-1 sm:gap-2 border-b border-border pb-0.5 overflow-x-auto whitespace-nowrap no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
- <button
- onClick={() => setActiveTab('crew')}
- className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap${
- activeTab === 'crew'
- ? 'border-orange-600 text-orange-600 font-extrabold'
- : 'border-transparent text-slate-500 hover:text-foreground'
- }`}
- >
- {t('👥 Active Operators Roster', '👥 ملازمین کی بنیادی لسٹ')}
- </button>
+        <button
+          onClick={() => setActiveTab('leave_engine')}
+          className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap ${
+            activeTab === 'leave_engine'
+              ? 'border-emerald-500 text-emerald-400 font-black'
+              : 'border-transparent text-slate-400 hover:text-foreground'
+          }`}
+        >
+          {t('📅 Leave Management', '📅 چھٹیوں کا نظم و ضبط')}
+        </button>
 
- <button
- onClick={() => setActiveTab('attendance')}
- className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap${
- activeTab === 'attendance'
- ? 'border-orange-600 text-orange-600 font-extrabold'
- : 'border-transparent text-slate-500 hover:text-foreground'
- }`}
- >
- {t('📝 Daily Attendance Registers Sheet', '📝 روزانہ ڈیوٹی حاضری شیٹ')}
- </button>
+        <button
+          onClick={() => setActiveTab('performance_leaderboard')}
+          className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap ${
+            activeTab === 'performance_leaderboard'
+              ? 'border-emerald-500 text-emerald-400 font-black'
+              : 'border-transparent text-slate-400 hover:text-foreground'
+          }`}
+        >
+          {t('🏆 Performance Leaderboard', '🏆 کارکردگی درجہ بندی')}
+        </button>
 
- <button
- onClick={() => setActiveTab('finance')}
- className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap${
- activeTab === 'finance'
- ? 'border-orange-600 text-orange-600 font-extrabold'
- : 'border-transparent text-slate-500 hover:text-foreground'
- }`}
- >
- {t('💵 Salary & Advances Ledger', '💵 تنخواہ اور ایڈوانس لاگز')}
- </button>
+        <button
+          onClick={() => setActiveTab('activity_feed')}
+          className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap ${
+            activeTab === 'activity_feed'
+              ? 'border-emerald-500 text-emerald-400 font-black'
+              : 'border-transparent text-slate-400 hover:text-foreground'
+          }`}
+        >
+          {t('⚡ Live Activity Stream', '⚡ لائیو ایکٹیوٹی سٹریم')}
+        </button>
 
- <button
- onClick={() => setActiveTab('legacy_finance')}
- className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap${
- activeTab === 'legacy_finance'
- ? 'border-orange-600 text-orange-600 font-extrabold'
- : 'border-transparent text-slate-500 hover:text-foreground'
- }`}
- >
- {t('📜 Legacy Salary History', '📜 پرانی تنخواہ کا ریکارڈ (صرف پڑھنے کے لیے)')}
- </button>
+        <button
+          onClick={() => setActiveTab('ai_insights')}
+          className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap ${
+            activeTab === 'ai_insights'
+              ? 'border-emerald-500 text-emerald-400 font-black'
+              : 'border-transparent text-slate-400 hover:text-foreground'
+          }`}
+        >
+          {t('🧠 AI Insights & Smart Alerts', '🧠 AI الرٹس اور تجاویز')}
+        </button>
 
- <button
- onClick={() => setActiveTab('performance')}
- className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap${
- activeTab === 'performance'
- ? 'border-orange-600 text-orange-600 font-extrabold'
- : 'border-transparent text-slate-500 hover:text-foreground'
- }`}
- >
- {t('📊 Performance & Metrics History', '📊 کارکردگی اور ملازمین رپورٹ')}
- </button>
+        <button
+          onClick={() => setActiveTab('crew')}
+          className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap ${
+            activeTab === 'crew'
+              ? 'border-emerald-500 text-emerald-400 font-black'
+              : 'border-transparent text-slate-400 hover:text-foreground'
+          }`}
+        >
+          {t('👥 Crew Register', '👥 عملہ لسٹ')}
+        </button>
+      </div>
 
- <button
- onClick={() => setActiveTab('attendance_reports')}
- className={`px-3 sm:px-4 py-2.5 font-sans text-xs font-bold border-b-2 transition-all shrink-0 whitespace-nowrap${
- activeTab === 'attendance_reports'
- ? 'border-orange-600 text-orange-600 font-extrabold'
- : 'border-transparent text-slate-500 hover:text-foreground'
- }`}
- >
- {t('📅 Duty Attendance Ledger Reports', '📅 حاضری کی تفصیلی رپورٹس')}
- </button>
- </div>
+      {/* SUB-PANELS WORKSPACE */}
+      <div className="grid grid-cols-1 gap-6">
+        {/* CONTROL CENTER TAB */}
+        {activeTab === 'control_center' && (
+          <WorkforceControlRoomDashboard
+            kpis={kpis}
+            staffList={filteredStaff}
+            attendance={workforceStore.attendance}
+            isUrdu={isUrdu}
+            onSelectEmployee={(emp) => setSelectedDrawerEmployee(emp)}
+            onClockIn={(id, name) => workforceStore.clockIn(id, name)}
+            onClockOut={(id, name) => workforceStore.clockOut(id, name)}
+          />
+        )}
 
- {/* SUB-PANELS WORKSPACE */}
- <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
- <div className="lg:col-span-3 space-y-6 w-full max-w-full">
+        {/* PAYROLL ENGINE TAB */}
+        {activeTab === 'payroll_engine' && (
+          <PayrollEngineTab
+            payrollRecords={workforceStore.payroll}
+            staffList={staff}
+            isUrdu={isUrdu}
+            onGeneratePayroll={(m) => workforceStore.generatePayrollForMonth(m)}
+            onPaySalary={(id, mode) => workforceStore.payEmployeeSalary(id, mode)}
+          />
+        )}
+
+        {/* LEAVE ENGINE TAB */}
+        {activeTab === 'leave_engine' && (
+          <LeaveEngineTab
+            leaveRequests={workforceStore.leaveRequests}
+            staffList={staff}
+            isUrdu={isUrdu}
+            onApproveLeave={(id, app) => workforceStore.approveLeaveRequest(id, app)}
+            onRejectLeave={(id, app, r) => workforceStore.rejectLeaveRequest(id, app, r)}
+            onSubmitLeave={(req) => workforceStore.submitLeaveRequest(req)}
+          />
+        )}
+
+        {/* PERFORMANCE LEADERBOARD TAB */}
+        {activeTab === 'performance_leaderboard' && (
+          <PerformanceLeaderboardTab
+            staffList={staff}
+            performanceRecords={workforceStore.performance}
+            isUrdu={isUrdu}
+          />
+        )}
+
+        {/* ACTIVITY FEED TAB */}
+        {activeTab === 'activity_feed' && (
+          <ActivityFeedDrawer auditLogs={workforceStore.auditLogs} isUrdu={isUrdu} />
+        )}
+
+        {/* AI INSIGHTS TAB */}
+        {activeTab === 'ai_insights' && (
+          <AIWorkforceInsightsWidget kpis={kpis} staffList={staff} isUrdu={isUrdu} />
+        )}
+
+        <div className="space-y-6 w-full max-w-full">
 
  {/* ==========================================
  TAB 1: STAFF CREW LIST (ROSTER)
@@ -1818,6 +1880,17 @@ export default function StaffPanel({
  </motion.div>
  )}
  </AnimatePresence>
+
+ {/* EMPLOYEE PROFILE SLIDE-OVER DRAWER */}
+ <EmployeeProfileDrawer
+   employee={selectedDrawerEmployee}
+   attendance={workforceStore.attendance}
+   payroll={workforceStore.payroll}
+   leaveRequests={workforceStore.leaveRequests}
+   auditLogs={workforceStore.auditLogs}
+   isUrdu={isUrdu}
+   onClose={() => setSelectedDrawerEmployee(null)}
+ />
  </div>
  );
 }

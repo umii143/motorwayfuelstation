@@ -109,7 +109,7 @@ export const FinanceWorkspaceView: React.FC<FinanceWorkspaceViewProps> = ({
       </div>
 
       {/* ── 2. SUB-HEADER TABS BAR (11 DEDICATED TABS) ── */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-2 shadow-xs flex items-center gap-1 overflow-x-auto scrollbar-none">
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-2 shadow-xs flex items-center gap-1 overflow-x-auto custom-horizontal-scrollbar" data-horizontal-scroll="true">
         {[
           { id: 'overview', label: 'Overview' },
           { id: 'cash', label: 'Cash Book' },

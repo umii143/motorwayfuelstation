@@ -15,6 +15,7 @@ import { LanguageSelect } from './components/features/Onboarding/LanguageSelect'
 import { WelcomeCarousel } from './components/features/Onboarding/WelcomeCarousel';
 import LoadingScreen from './components/ui/LoadingScreen';
 import { SecurityScreen } from './components/features/SecurityScreen';
+import { useHorizontalScroll } from './lib/useHorizontalScroll';
 
 const SecureApp = ({ children }: { children: React.ReactNode }) => {
  const { isLocked } = useNativeAuth();
@@ -29,7 +30,9 @@ const SecureApp = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default function App() {
+ useHorizontalScroll();
  const [dbReady, setDbReady] = useState(false);
+
  const [splashDone, setSplashDone] = useState(true); // SKIPPED: was false by default, keeping existing state
  const [languageSelected, setLanguageSelected] = useState(() => {
  return !!localStorage.getItem('fuelpro_language');

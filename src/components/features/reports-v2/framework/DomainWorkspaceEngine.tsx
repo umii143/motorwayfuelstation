@@ -22,6 +22,8 @@ import { ExpensesWorkspaceView } from '../components/workspaces/ExpensesWorkspac
 import { FinanceWorkspaceView } from '../components/workspaces/FinanceWorkspaceView';
 import { SuppliersWorkspaceView } from '../components/workspaces/SuppliersWorkspaceView';
 import { LedgersWorkspaceView } from '../components/workspaces/LedgersWorkspaceView';
+import { StaffWorkspaceView } from '../components/workspaces/StaffWorkspaceView';
+import { PricingWorkspaceView } from '../components/workspaces/PricingWorkspaceView';
 
 export type BusinessDomainType =
   | 'fuel_operations'
@@ -193,16 +195,29 @@ const DOMAIN_METADATA: Record<BusinessDomainType, DomainMeta> = {
     quickCreates: [],
   },
   staff: {
-    title: 'Staff & Shift Performance Workspace',
-    titleUr: 'اسٹاف و شفٹ ورک اسپیس',
-    icon: '👤',
+    title: 'Staff & Workforce Management Workspace',
+    titleUr: 'اسٹاف اور ورک فورس مینیجمنٹ ورک اسپیس',
+    icon: '👥',
     color: 'teal',
     localTabs: [
       { id: 'overview', label: 'Overview', labelUr: 'جائزہ', reportId: 'DOMAIN_STF_HOME' },
-      { id: 'shifts', label: 'Shift History', labelUr: 'شفٹ ہسٹری', reportId: 'SHIFT' },
       { id: 'employees', label: 'Employees Register', labelUr: 'ملازمین رجسٹر', reportId: 'STF_REGISTER' },
+      { id: 'attendance', label: 'Attendance', labelUr: 'حاضری', reportId: 'STF_ATTENDANCE' },
+      { id: 'shifts', label: 'Shift Management', labelUr: 'شفٹ مینیجمنٹ', reportId: 'SHIFT' },
+      { id: 'performance', label: 'Performance', labelUr: 'کارکردگی', reportId: 'STF_PERFORMANCE' },
+      { id: 'payroll', label: 'Payroll', labelUr: 'پے رول', reportId: 'STF_PAYROLL' },
+      { id: 'leaves', label: 'Leave Management', labelUr: 'رخصت مینیجمنٹ', reportId: 'STF_LEAVE' },
+      { id: 'overtime', label: 'Overtime', labelUr: 'اور ٹائم', reportId: 'STF_OVERTIME' },
+      { id: 'incentives', label: 'Incentives', labelUr: 'انعامات و کمیشن', reportId: 'STF_INCENTIVE' },
+      { id: 'training', label: 'Training & Certs', labelUr: 'تربیت و سرٹیفکیٹس', reportId: 'STF_TRAINING' },
+      { id: 'documents', label: 'Documents', labelUr: 'دستاویزات', reportId: 'STF_DOCS' },
+      { id: 'audit', label: 'Audit Trail', labelUr: 'آڈٹ ٹریل', reportId: 'STF_AUDIT' },
     ],
-    quickCreates: [],
+    quickCreates: [
+      { id: 'add_emp', label: '+ Add Employee', labelUr: '+ نیا ملازم', icon: '👤', targetId: 'STF_REGISTER' },
+      { id: 'attendance', label: 'Mark Attendance', labelUr: 'حاضری', icon: '🕒', targetId: 'STF_ATTENDANCE' },
+      { id: 'payroll', label: 'Process Payroll', labelUr: 'پے رول', icon: '💰', targetId: 'STF_PAYROLL' },
+    ],
   },
   pricing: {
     title: 'Pricing & Fuel Rates Workspace',
@@ -211,9 +226,14 @@ const DOMAIN_METADATA: Record<BusinessDomainType, DomainMeta> = {
     color: 'rose',
     localTabs: [
       { id: 'overview', label: 'Overview', labelUr: 'جائزہ', reportId: 'DOMAIN_PRC_HOME' },
-      { id: 'price_changes', label: 'Price Change History', labelUr: 'قیمتوں میں تبدیلی', reportId: 'PRC_HISTORY' },
+      { id: 'price_board', label: 'Current Price Board', labelUr: 'پرائس بورڈ', reportId: 'PRC_RATES' },
+      { id: 'price_changes', label: 'Price Change History', labelUr: 'قیمت کی تاریخ', reportId: 'PRC_HISTORY' },
     ],
-    quickCreates: [],
+    quickCreates: [
+      { id: 'update_price', label: '+ Update Fuel Price', labelUr: '+ قیمت تبدیل کریں', icon: '🏷️', targetId: 'DOMAIN_PRC_HOME' },
+      { id: 'schedule_price', label: 'Schedule Revision', labelUr: 'شیڈول تبدیلی', icon: '📅', targetId: 'DOMAIN_PRC_HOME' },
+      { id: 'publish_rates', label: 'Publish Rates', labelUr: 'ریٹس پبلش', icon: '📤', targetId: 'DOMAIN_PRC_HOME' },
+    ],
   },
   analytics: {
     title: 'Executive Analytics Workspace',
@@ -279,6 +299,10 @@ export const DomainWorkspaceEngine: React.FC<DomainWorkspaceEngineProps> = ({
       return <SuppliersWorkspaceView {...commonProps} />;
     case 'ledgers':
       return <LedgersWorkspaceView {...commonProps} />;
+    case 'staff':
+      return <StaffWorkspaceView {...commonProps} />;
+    case 'pricing':
+      return <PricingWorkspaceView {...commonProps} />;
     default:
       break;
   }
@@ -329,7 +353,7 @@ export const DomainWorkspaceEngine: React.FC<DomainWorkspaceEngineProps> = ({
 
         {/* Local Domain Sub-Navigation Tabs */}
         {meta.localTabs.length > 0 && (
-          <div className="flex items-center gap-1.5 pt-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+          <div className="flex items-center gap-1.5 pt-3 overflow-x-auto custom-horizontal-scrollbar pb-1.5" data-horizontal-scroll="true">
             {meta.localTabs.map((tab) => {
               const isActive = reportId === tab.reportId || activeTabReportId === tab.reportId;
               return (

@@ -65,7 +65,7 @@ export const InventoryWorkspaceView: React.FC<InventoryWorkspaceViewProps> = ({
   return (
     <div className={`space-y-4 font-sans text-slate-800 pb-8 ${lang === 'ur' ? 'rtl' : ''}`}>
       {/* ── MODULAR SUB-NAVIGATION TAB ROUTER (RULE #144) ── */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-2 shadow-xs flex items-center gap-1 overflow-x-auto scrollbar-none">
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-2 shadow-xs flex items-center gap-1 overflow-x-auto custom-horizontal-scrollbar" data-horizontal-scroll="true">
         {[
           { id: 'overview', label: 'Overview' },
           { id: 'register', label: '30+ Col Tank Register' },

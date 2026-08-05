@@ -1174,3 +1174,49 @@ input, textarea {
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
+/* --- Enterprise Custom Horizontal & Vertical Scrollbars --- */
+.custom-scrollbar,
+.custom-horizontal-scrollbar,
+[data-horizontal-scroll="true"] {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent !important;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+}
+
+.custom-scrollbar::-webkit-scrollbar,
+.custom-horizontal-scrollbar::-webkit-scrollbar,
+[data-horizontal-scroll="true"]::-webkit-scrollbar {
+  height: 6px !important;
+  width: 6px !important;
+  display: block !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track,
+.custom-horizontal-scrollbar::-webkit-scrollbar-track,
+[data-horizontal-scroll="true"]::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.05);
+  border-radius: 99px;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-track,
+.dark .custom-horizontal-scrollbar::-webkit-scrollbar-track,
+.dark [data-horizontal-scroll="true"]::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb,
+.custom-horizontal-scrollbar::-webkit-scrollbar-thumb,
+[data-horizontal-scroll="true"]::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.5);
+  border-radius: 99px;
+  transition: background 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover,
+.custom-horizontal-scrollbar::-webkit-scrollbar-thumb:hover,
+[data-horizontal-scroll="true"]::-webkit-scrollbar-thumb:hover {
+  background: #f97316 !important;
+}
+
+

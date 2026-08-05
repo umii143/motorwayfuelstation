@@ -566,7 +566,7 @@ function SavedViewsBar({
   if (views.length === 0) return null;
 
   return (
-    <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
+    <div className="flex items-center gap-1.5 overflow-x-auto custom-horizontal-scrollbar pb-1" data-horizontal-scroll="true">
       <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider shrink-0 flex items-center gap-1 px-1">★</span>
       {views.map(view => (
         <button key={view.id} onClick={() => { setActiveId(view.id); onApplyView(view); }}
