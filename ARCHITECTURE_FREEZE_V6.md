@@ -1,7 +1,9 @@
-# 🔒 FuelPro Enterprise Architecture Freeze Specification (v6.0 Final)
+# 🔒 FuelPro Enterprise Architecture Freeze Specification (v6.0 Final Locked)
 
-> **Official Directive:** FuelPro Architecture is officially **FROZEN**. All future engineering work transitions from PRD design phase to **Execution Phase**.
-> **UI-Sidebar Alignment:** The 10 Core Sidebar Workspaces ARE the 10 Core Reporting Domains. No separate top-level domains or duplicate workspaces will be created.
+> **Official Directive:** FuelPro Architecture & Contract Specification is officially **100% LOCKED & FROZEN**. No new PRDs, Master Architecture redesigns, or top-level domain changes will be created. All future engineering work is strictly focused on **Production Execution & Verification**.
+> **UI-Sidebar Alignment:** The 10 Core Sidebar Workspaces ARE the 10 Core Reporting Domains.
+> **Database Standard:** Google Firestore is the Primary Operational Database. PostgreSQL/MySQL/Oracle are abstracted pluggable adapters via the Repository Layer.
+> **Operational Source of Truth:** Manual Tank Dip and Manual Mechanical Meter Reading are the Immutable Primary System of Record. ATG sensors, pulse encoders, and IoT are Optional Telemetry Verification Adapters.
 
 ---
 
@@ -23,39 +25,60 @@ The sidebar domains and navigation layout are permanently frozen:
 └── 10. 📊 Analytics (Read-Only Executive Cockpit, Executive Dashboard, Board Deck, AI Forecasts)
 ```
 
-> 🛑 **Rule:** Adding separate top-level domains (e.g. "Executive Dashboard" or "POS Sales") or duplicate workspaces (e.g. "Finance Plus", "Smart Inventory") is strictly prohibited. Executive Dashboard is embedded inside Analytics; Nozzle Sales Register is embedded inside Fuel Operations.
-
 ---
 
-## ⚙️ 2. Core Architectural Principles Adopted
+## ⚙️ 2. Core Production Architecture Stack
 
-### 1. Manual Meter & Manual Tank Dip are Primary Systems of Record
-- **Mechanical Meter Reading Primary:** `Previous Meter` $\rightarrow$ `Current Meter` $\rightarrow$ `Volume Sold` $\rightarrow$ `Gross Revenue` $\rightarrow$ `COGS` $\rightarrow$ `General Ledger`.
-- **Manual Tank Dip Primary:** Physical dip measurement is the primary inventory drop baseline.
-- **ATG / IoT Adapter:** ATG tank sensors and pulse encoders serve as an **automated verification adapter/plugin**, comparing sensor telemetry against manual meter & dip readings.
+```
+   ┌────────────────────────────────────────────────────────┐
+   │                   React UI Components                  │
+   └───────────────────────────┬────────────────────────────┘
+                               │
+                               ▼
+   ┌────────────────────────────────────────────────────────┐
+   │              Zustand Domain State Stores               │
+   └───────────────────────────┬────────────────────────────┘
+                               │
+                               ▼
+   ┌────────────────────────────────────────────────────────┐
+   │                Universal Compute Engine                │
+   │      (Formula Registry + Engine Calculation Cache)     │
+   └───────────────────────────┬────────────────────────────┘
+                               │
+                               ▼
+   ┌────────────────────────────────────────────────────────┐
+   │               Domain Repository Layer                  │
+   │  (InventoryRepo, CustomerRepo, LedgerRepo, StaffRepo)   │
+   └───────────────────────────┬────────────────────────────┘
+                               │
+            ┌──────────────────┴──────────────────┐
+            ▼                                     ▼
+┌──────────────────────┐              ┌──────────────────────┐
+│  Primary Database    │              │  Offline Queue &     │
+│  (Google Firestore)  │              │  Sync Engine         │
+└──────────────────────┘              └──────────────────────┘
+            │                                     │
+            └──────────────────┬──────────────────┘
+                               ▼
+            ┌────────────────────────────────────┐
+            │    Pluggable Database Adapters     │
+            │  (PostgreSQL / MySQL / SQL Server) │
+            └────────────────────────────────────┘
+```
 
-### 2. Enterprise Hybrid Data Architecture
-- **PostgreSQL / NestJS / Redis**: Primary enterprise database, transactional system of record, double-entry financial ledger, and heavy analytics engine.
-- **Google Firebase**: Supporting infrastructure for Authentication, Realtime UI Sync (`onSnapshot`), Storage, FCM Notifications, and Presence.
-
-### 3. Centralized Deterministic Business Engine Layer
-- All calculations, formulas, KPIs, and risk alerts MUST be processed deterministically through central Engine hooks & services (`useAnalyticsComputeEngine`, `TransactionEngine`, `LedgerEngine`). No UI component may calculate inline business metrics.
-
-### 4. Pure Read-Only Executive Analytics Layer
-- The Executive Analytics domain is strictly a **read-only decision support system (DSS)**. It consumes computed metrics from all operational domains and provides executive intelligence, AI forecasts, and board deck generator capabilities with **ZERO operational CRUD**.
-
-### 5. Domain Isolation & Self-Containment
-- Each domain operates independently with its own:
-  - Dedicated Sub-Workspace Views & Sub-Tabs
-  - Dedicated Realtime Store Hooks (`onSnapshot`)
-  - Dedicated Engine Calculation Wrappers
-  - Dedicated Reports & Audit Logs
+### Key Architectural Standards:
+1. **Repository Abstraction Layer**: React components NEVER query Firestore or SQL directly. All data access passes through domain repositories (`InventoryRepository`, `CustomerRepository`, `LedgerRepository`, `SupplierRepository`).
+2. **Manual Tank Dip Primary**: Physical manual dip measurement is the primary inventory drop baseline. ATG sensors serve as an automated verification plugin.
+3. **Universal Offline Queue**: Changes made while offline are saved to an offline queue, automatically syncing upon network reconnect with conflict resolution.
+4. **Universal Notification Engine**: Multi-channel dispatch for system events (`SMS`, `Email`, `FCM Push`, `WhatsApp`, `Audit Vault`).
+5. **Scheduler Engine**: Automated background cron runner for nightly backups, payroll processing, monthly closing, and OGRA tariff alerts.
+6. **Plugin Architecture**: Core business platform with pluggable domain modules (`Lubes`, `EV Charging`, `Fleet Cards`, `LPG`, `Mart POS`, `Restaurant POS`, `Tyre Shop`).
 
 ---
 
 ## 🔄 3. Domain Execution Phase Protocol
 
-Every business domain progresses sequentially through the **5-Step Execution Cycle**:
+Every business domain progresses sequentially through the **5-Step Production Execution Cycle**:
 
 ```
  ┌────────────────┐
@@ -65,8 +88,8 @@ Every business domain progresses sequentially through the **5-Step Execution Cyc
          │
          ▼
  ┌────────────────┐
- │ 2. REALTIME    │  Connect domain views directly to live store hooks
- │    ENGINE      │  (`useShiftStore`, `useInventoryStore`, `useCustomerStore`, etc.)
+ │ 2. REPOSITORY &│  Connect domain views directly to Domain Repositories & Engine Hooks
+ │    REALTIME    │  (`InventoryRepository`, `CustomerRepository`, `LedgerRepository`)
  └───────┬────────┘
          │
          ▼
@@ -83,24 +106,7 @@ Every business domain progresses sequentially through the **5-Step Execution Cyc
          │
          ▼
  ┌────────────────┐
- │ 5. DOMAIN      │  Domain status set to COMPLETED & FROZEN
+ │ 5. DOMAIN      │  Domain status set to PRODUCTION READY & FROZEN
  │    FREEZE      │
  └────────────────┘
 ```
-
----
-
-## 📅 Domain Execution Readiness Checklist
-
-| Domain | Router Component | Engine & Stores | Realtime Data | Reports & Exporter | Status |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **01. Fuel Operations** | `FuelOperationsWorkspaceView.tsx` | `useShiftStore` | Connected | Live | ✅ **FREEZE** |
-| **02. Inventory** | `InventoryWorkspaceView.tsx` | `useInventoryStore` | Connected | Live | ✅ **FREEZE** |
-| **03. Purchases** | `PurchasesWorkspaceView.tsx` | `useSupplierStore` | Connected | Live | ✅ **FREEZE** |
-| **04. Finance** | `FinanceWorkspaceView.tsx` | `useFinancialStore` | Connected | Live | ✅ **FREEZE** |
-| **05. Ledgers** | `LedgersWorkspaceView.tsx` | `LedgerEngine` | Connected | Live | ✅ **FREEZE** |
-| **06. Customers (AR)** | `CustomersWorkspaceView.tsx` | `useCustomerStore` | Connected | Live | ✅ **FREEZE** |
-| **07. Suppliers (AP)** | `SuppliersWorkspaceView.tsx` | `useSupplierStore` | Connected | Live | ✅ **FREEZE** |
-| **08. Staff & HR** | `StaffWorkspaceView.tsx` | `useStaffStore` | Connected | Live | ✅ **FREEZE** |
-| **09. Pricing** | `PricingWorkspaceView.tsx` | `usePricingStore` | Connected | Live | ✅ **FREEZE** |
-| **10. Analytics** | `AnalyticsWorkspaceView.tsx` | `useAnalyticsComputeEngine` | Connected | Live | ✅ **FREEZE** |

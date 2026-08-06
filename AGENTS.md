@@ -1191,6 +1191,19 @@ Inventory is responsible for stock after successful GRN posting. Finance is resp
 - Every displayed KPI card MUST declare a standardized **Formula ID** (e.g. `FIN-001`, `INV-002`, `AR-003`).
 - Every KPI card MUST be clickable, executing the **Traceability Chain**: `KPI Widget` → `Formula ID` → `Engine Service` → `Repository` → `Realtime Stream` → `Target Operational Register`.
 
+---
+
+# 180. ENTERPRISE RULE #180 — PRODUCTION EXECUTION PROTOCOL & REPOSITORY ABSTRACTION ⭐⭐⭐⭐⭐
+
+> **PRD & SPECIFICATION SPECIFICATION PHASE IS OFFICIALLY 100% COMPLETE & FROZEN. ALL FUTURE EFFORT IS STRICTLY DEDICATED TO PRODUCTION IMPLEMENTATION: REMOVING DUMMY DATA, CONNECTING REALTIME REPOSITORIES, BINDING ACTION BUTTONS, AND VERIFYING LEDGER INTEGRITY.**
+
+### Production Implementation Laws:
+1. **Repository Abstraction**: React components NEVER query database drivers directly. Data requests MUST pass through domain repositories (`InventoryRepository`, `CustomerRepository`, `LedgerRepository`, `SupplierRepository`, `StaffRepository`).
+2. **Primary Operational Database**: Google Firestore is the primary operational database for active application state. Relational SQL databases (PostgreSQL/MySQL) are pluggable adapters via the Repository Layer.
+3. **Manual Tank Dip Primary**: Physical manual tank dip measurement and mechanical meter delta are the immutable primary systems of record. ATG/IoT telemetry serves as an optional validation adapter.
+4. **Zero Placeholder Policy**: Removing 100% hardcoded arrays, mock objects, and static strings across all workspace views is mandatory.
+5. **Universal Notification & Offline Sync**: All system events dispatch multi-channel notifications (`SMS`, `Email`, `FCM Push`, `Audit Vault`). Offline queue manages reconnection and conflict resolution.
+
 
 
 
