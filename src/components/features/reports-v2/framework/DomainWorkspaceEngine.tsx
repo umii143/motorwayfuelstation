@@ -24,10 +24,12 @@ import { SuppliersWorkspaceView } from '../components/workspaces/SuppliersWorksp
 import { LedgersWorkspaceView } from '../components/workspaces/LedgersWorkspaceView';
 import { StaffWorkspaceView } from '../components/workspaces/StaffWorkspaceView';
 import { PricingWorkspaceView } from '../components/workspaces/PricingWorkspaceView';
+import { AnalyticsWorkspaceView } from '../components/workspaces/AnalyticsWorkspaceView';
 
 export type BusinessDomainType =
   | 'fuel_operations'
   | 'inventory'
+  | 'sales'
   | 'purchases'
   | 'finance'
   | 'expenses'
@@ -103,6 +105,22 @@ const DOMAIN_METADATA: Record<BusinessDomainType, DomainMeta> = {
     quickCreates: [
       { id: 'new_shift', label: '+ Open Shift', labelUr: '+ نئی شفٹ', icon: '⏱️', targetId: 'C2' },
       { id: 'new_sale', label: '+ Record Sale', labelUr: '+ سیلز اندراج', icon: '⛽', targetId: 'FS_REGISTER' },
+    ],
+  },
+  sales: {
+    title: 'Retail POS & Sales Workspace',
+    titleUr: 'سیلز رجسٹر و نوزل ورک اسپیس',
+    icon: '💳',
+    color: 'emerald',
+    localTabs: [
+      { id: 'overview', label: 'Overview', labelUr: 'جائزہ', reportId: 'FS_REGISTER' },
+      { id: 'master_sales', label: 'Sales Register', labelUr: 'سیلز رجسٹر', reportId: 'FS_REGISTER' },
+      { id: 'hourly_sales', label: 'Hourly Demand', labelUr: 'گھنٹہ وار سیلز', reportId: 'C2' },
+      { id: 'nozzle_sales', label: 'Nozzle Analytics', labelUr: 'نوزل اینالیٹکس', reportId: 'FS_NOZZLE' },
+      { id: 'credit_sales', label: 'Credit Sales', labelUr: 'کریڈٹ سیلز', reportId: 'CUS_OUTSTANDING' },
+    ],
+    quickCreates: [
+      { id: 'new_sale', label: '+ Record Sale', labelUr: '+ نئی سیل', icon: '💳', targetId: 'FS_REGISTER' },
     ],
   },
   inventory: {
@@ -284,6 +302,7 @@ export const DomainWorkspaceEngine: React.FC<DomainWorkspaceEngineProps> = ({
 
   switch (domain) {
     case 'fuel_operations':
+    case 'sales':
       return <FuelOperationsWorkspaceView {...commonProps} />;
     case 'purchases':
       return <PurchasesWorkspaceView {...commonProps} />;
@@ -303,6 +322,8 @@ export const DomainWorkspaceEngine: React.FC<DomainWorkspaceEngineProps> = ({
       return <StaffWorkspaceView {...commonProps} />;
     case 'pricing':
       return <PricingWorkspaceView {...commonProps} />;
+    case 'analytics':
+      return <AnalyticsWorkspaceView {...commonProps} />;
     default:
       break;
   }

@@ -1,18 +1,13 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { 
   TrendingUp, TrendingDown, Clock, Activity, 
   ChevronDown, Edit2, Minus, Maximize2, AlertCircle, CheckCircle,
   Building2, MapPin, Layers, Filter, Search, Sparkles
 } from 'lucide-react';
-import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, 
-  Tooltip, ResponsiveContainer, Legend 
-} from 'recharts';
 import { useInventoryStore } from '../../../stores/useInventoryStore';
-import { useShiftStore } from '../../../stores/useShiftStore';
 import { Product, RateHistoryEntry, GlobalSettings } from '../../../types';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { formatCurrency } from '../../../lib/currency';
 
 // Pricing Sub-Components
@@ -28,10 +23,15 @@ import { OGRANotificationCenterTab } from './components/OGRANotificationCenterTa
 import { TaxLevyBreakdownWidget } from './components/TaxLevyBreakdownWidget';
 import { PumpControllerSyncStatusWidget } from './components/PumpControllerSyncStatusWidget';
 
-// Services & Engines
+// Modals
+import { UpdatePriceModal } from './modals/UpdatePriceModal';
+
+// Stores & Engines
+import { usePricingStore } from '../../../stores/usePricingStore';
 import { pricingSimulationEngine, PricingSimulationResult } from '../../../services/priceManagement/pricingSimulationEngine';
 import { omcRateMatrixEngine } from '../../../services/priceManagement/omcRateMatrixEngine';
 import { versionHistoryEngine, PriceVersionRecord } from '../../../services/priceManagement/versionHistoryEngine';
+import { FuelPriceMasterRecord } from '../../../services/priceManagement/pricingEngine';
 
 interface AdvancedPriceManagementProps {
   products: Product[];
@@ -49,10 +49,20 @@ export default function AdvancedPriceManagement({
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => isUrdu ? ur : en;
 
-  // Retrieve stockTxns, tanks, nozzles from Zustand store
+  // Retrieve tanks from Zustand store
   const { tanks } = useInventoryStore(useShallow(state => ({
     tanks: state.tanks
   })));
+
+  // Pricing Reactive Store
+  const pricingStore = usePricingStore();
+  const activeOrgId = 'org_main';
+  const activeStationId = 'st_default';
+
+  useEffect(() => {
+    const unsub = pricingStore.initRealtimeListeners(activeOrgId, activeStationId);
+    return () => unsub();
+  }, [activeStationId]);
 
   // 15 Workspace Header Tabs State
   const [activeTab, setActiveTab] = useState<
@@ -77,9 +87,11 @@ export default function AdvancedPriceManagement({
   const [selectedBranch, setSelectedBranch] = useState('all');
   const [selectedProductType, setSelectedProductType] = useState('all');
 
-  // Simulation Modal State (Rule #173)
+  // Modal Toggles
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isSimulationOpen, setIsSimulationOpen] = useState(false);
   const [simulationResult, setSimulationResult] = useState<PricingSimulationResult | null>(null);
+  const [activeProposalId, setActiveProposalId] = useState<string | null>(null);
 
   const fuelProducts = useMemo(() => products.filter(p => p.type === 'fuel'), [products]);
   const petrolProd = fuelProducts.find(p => p.name.toLowerCase().includes('petrol')) || fuelProducts[0];
@@ -93,69 +105,102 @@ export default function AdvancedPriceManagement({
   const omcRates = useMemo(() => omcRateMatrixEngine.getOMCComparison(petrolRate, dieselRate), [petrolRate, dieselRate]);
   const versionList = useMemo(() => versionHistoryEngine.getVersions(rateHistory), [rateHistory]);
 
+  // Open Update Proposal Modal
+  const handleOpenUpdateModal = () => {
+    setIsUpdateModalOpen(true);
+  };
+
+  // Submit Proposal Handler
+  const handleSubmitProposal = async (
+    productId: string,
+    productName: string,
+    oldPrice: number,
+    newPrice: number,
+    effectiveDate: string,
+    effectiveTime: string,
+    reason: string
+  ) => {
+    await pricingStore.createDraftProposal(
+      productId,
+      productName,
+      oldPrice,
+      newPrice,
+      effectiveDate,
+      effectiveTime,
+      reason,
+      'Zahid Manager'
+    );
+    alert(t('Price proposal submitted for approval successfully!', 'قیمت کی تجویز کامیابی سے جمع کر دی گئی ہے!'));
+    setActiveTab('price_approval');
+  };
+
   // Trigger Pre-Publish Simulation (Rule #173)
-  const handleOpenSimulation = (proposedRate: number = 289.90) => {
+  const handleOpenSimulation = (proposedRate: number = 289.90, priceId?: string) => {
     if (petrolProd) {
       const res = pricingSimulationEngine.simulatePriceRevision(petrolProd, proposedRate, tanks);
       setSimulationResult(res);
+      setActiveProposalId(priceId || null);
       setIsSimulationOpen(true);
     }
   };
 
-  const handleConfirmPublish = () => {
+  const handleConfirmPublish = async () => {
     setIsSimulationOpen(false);
-    alert(t('Rate successfully published to all Pumps, POS Terminals & Price Boards! Revaluation Journal Entry posted.', 'تمام پمپوں اور پی او ایس پر نیا ریٹ لائیو پبلش ہو چکا ہے!'));
+    if (activeProposalId) {
+      await pricingStore.publishRevision(activeProposalId, 'Station Owner');
+    }
+    alert(t('Rate published live to all Pumps, POS Terminals & Price Boards! Revaluation Journal Entry posted.', 'نیا ریٹ تمام پمپوں پر لائیو پبلش ہو چکا ہے!'));
   };
 
   return (
     <div className="space-y-6 pb-12">
 
       {/* TOP BRANCH & SPECTRUM CONTROL BAR */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-4 rounded-2xl shadow-xl backdrop-blur-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--bg-card)] border border-[var(--border-main)] p-4 rounded-2xl shadow-md">
         <div>
-          <h2 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
+          <h2 className="text-xl font-black text-[var(--text-main)] tracking-tight flex items-center gap-2">
             <span>🏷️</span>
             {t('Enterprise Pricing & OMC Rate Control Center', 'انٹرپرائز پرائسنگ و او ایم سی ریٹ کنٹرول سینٹر')}
           </h2>
-          <p className="text-xs text-slate-400">
-            {t('Rule #172 & #173 Compliant • SAP IS-Oil & Oracle NetSuite Enterprise Standard', 'رول #172 اور #173 پر مبنی لائیو پرائسنگ سینٹر')}
+          <p className="text-xs text-[var(--text-muted)]">
+            {t('Rule #172 & #173 & #174 Compliant • SAP IS-Oil & Oracle NetSuite Standard', 'رول #174 پر مبنی لائیو فائرسٹور ریئل ٹائم پرائسنگ انجن')}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           {/* Branch Dropdown */}
-          <div className="flex items-center gap-1.5 bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300">
-            <Building2 className="w-4 h-4 text-emerald-400" />
+          <div className="flex items-center gap-1.5 bg-[var(--bg-subtle)] border border-[var(--border-main)] rounded-xl px-3 py-1.5 text-xs text-[var(--text-main)]">
+            <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <select
               value={selectedBranch}
               onChange={(e) => setSelectedBranch(e.target.value)}
-              className="bg-transparent text-white font-semibold focus:outline-none"
+              className="bg-transparent text-[var(--text-main)] font-semibold focus:outline-none"
             >
-              <option value="all">{t('All Branches (National)', 'تمام برانچز')}</option>
-              <option value="mardan">Mardan Main Highway Station</option>
-              <option value="peshawar">Peshawar GT Road Station</option>
-              <option value="islamabad">Islamabad Expressway Station</option>
-              <option value="lahore">Lahore Ring Road Station</option>
-              <option value="karachi">Karachi Port Station</option>
+              <option value="all" className="bg-[var(--bg-card)] text-[var(--text-main)]">{t('All Branches (National)', 'تمام برانچز')}</option>
+              <option value="mardan" className="bg-[var(--bg-card)] text-[var(--text-main)]">Mardan Main Highway Station</option>
+              <option value="peshawar" className="bg-[var(--bg-card)] text-[var(--text-main)]">Peshawar GT Road Station</option>
+              <option value="islamabad" className="bg-[var(--bg-card)] text-[var(--text-main)]">Islamabad Expressway Station</option>
+              <option value="lahore" className="bg-[var(--bg-card)] text-[var(--text-main)]">Lahore Ring Road Station</option>
+              <option value="karachi" className="bg-[var(--bg-card)] text-[var(--text-main)]">Karachi Port Station</option>
             </select>
           </div>
 
           {/* Product Spectrum Dropdown */}
-          <div className="flex items-center gap-1.5 bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300">
-            <Layers className="w-4 h-4 text-cyan-400" />
+          <div className="flex items-center gap-1.5 bg-[var(--bg-subtle)] border border-[var(--border-main)] rounded-xl px-3 py-1.5 text-xs text-[var(--text-main)]">
+            <Layers className="w-4 h-4 text-amber-600 dark:text-cyan-400" />
             <select
               value={selectedProductType}
               onChange={(e) => setSelectedProductType(e.target.value)}
-              className="bg-transparent text-white font-semibold focus:outline-none"
+              className="bg-transparent text-[var(--text-main)] font-semibold focus:outline-none"
             >
-              <option value="all">{t('All Fuel Spectrum', 'تمام فیول مصنوعات')}</option>
-              <option value="petrol">Super Petrol (MS 92)</option>
-              <option value="diesel">HSD Diesel</option>
-              <option value="cng">CNG Gas</option>
-              <option value="hobc">HOBC Hi-Octane</option>
-              <option value="kerosene">Kerosene Oil</option>
-              <option value="ldo">LDO (Light Diesel)</option>
-              <option value="lube">Lubricants & Engine Oils</option>
+              <option value="all" className="bg-[var(--bg-card)] text-[var(--text-main)]">{t('All Fuel Spectrum', 'تمام فیول مصنوعات')}</option>
+              <option value="petrol" className="bg-[var(--bg-card)] text-[var(--text-main)]">Super Petrol (MS 92)</option>
+              <option value="diesel" className="bg-[var(--bg-card)] text-[var(--text-main)]">HSD Diesel</option>
+              <option value="cng" className="bg-[var(--bg-card)] text-[var(--text-main)]">CNG Gas</option>
+              <option value="hobc" className="bg-[var(--bg-card)] text-[var(--text-main)]">HOBC Hi-Octane</option>
+              <option value="kerosene" className="bg-[var(--bg-card)] text-[var(--text-main)]">Kerosene Oil</option>
+              <option value="ldo" className="bg-[var(--bg-card)] text-[var(--text-main)]">LDO (Light Diesel)</option>
+              <option value="lube" className="bg-[var(--bg-card)] text-[var(--text-main)]">Lubricants & Engine Oils</option>
             </select>
           </div>
         </div>
@@ -171,16 +216,16 @@ export default function AdvancedPriceManagement({
         dieselPrice={dieselRate}
         cngPrice={cngRate}
         avgMargin={8.64}
-        changesToday={2}
+        changesToday={pricingStore.fuelPrices.length || 2}
         estimatedRevaluation={452000}
-        pendingApprovals={1}
+        pendingApprovals={pricingStore.fuelPrices.filter(p => p.status === 'waiting').length || 1}
         nextUpdateDate="15 Aug 2026"
       />
 
       {/* PRICING-ONLY QUICK ACTIONS TOOLBAR */}
       <PricingQuickActionsToolbar
         isUrdu={isUrdu}
-        onOpenUpdateModal={() => handleOpenSimulation(289.90)}
+        onOpenUpdateModal={handleOpenUpdateModal}
         onOpenScheduleModal={() => setActiveTab('scheduled_updates')}
         onOpenApproveModal={() => setActiveTab('price_approval')}
         onPublishRates={() => handleOpenSimulation(289.90)}
@@ -192,7 +237,7 @@ export default function AdvancedPriceManagement({
       />
 
       {/* 15 ENTERPRISE WORKSPACE HEADER TABS */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-2 shadow-xl overflow-x-auto no-scrollbar">
+      <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-2 shadow-md overflow-x-auto no-scrollbar">
         <div className="flex items-center gap-1 min-w-max text-xs font-semibold">
           {[
             { id: 'overview', label: t('Overview', 'خلاصہ'), icon: '📊' },
@@ -216,8 +261,8 @@ export default function AdvancedPriceManagement({
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all whitespace-nowrap ${
                 activeTab === tab.id
-                  ? 'bg-emerald-500 text-slate-950 font-black shadow-lg shadow-emerald-500/20'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  ? 'bg-gradient-to-r from-amber-600 to-amber-700 dark:from-emerald-500 dark:to-teal-500 text-white font-black shadow-md'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]'
               }`}
             >
               <span>{tab.icon}</span>
@@ -247,11 +292,11 @@ export default function AdvancedPriceManagement({
 
       {/* TAB 2: CURRENT PRICE BOARD */}
       {activeTab === 'price_board' && (
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl">
-          <h3 className="text-lg font-bold text-white mb-4">Official Retail Price Board</h3>
-          <div className="overflow-x-auto rounded-xl border border-slate-800">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-5 shadow-md">
+          <h3 className="text-lg font-bold text-[var(--text-main)] mb-4">Official Retail Price Board</h3>
+          <div className="overflow-x-auto rounded-xl border border-[var(--border-main)]">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-800 text-slate-300 font-semibold uppercase text-[10px]">
+              <thead className="bg-[var(--bg-subtle)] text-[var(--text-muted)] font-semibold uppercase text-[10px]">
                 <tr>
                   <th className="p-3">Product</th>
                   <th className="p-3 text-right">Retail Selling Rate</th>
@@ -261,16 +306,16 @@ export default function AdvancedPriceManagement({
                   <th className="p-3 text-center">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 font-mono text-slate-200">
+              <tbody className="divide-y divide-[var(--border-muted)] font-mono text-[var(--text-main)]">
                 {fuelProducts.map((p) => (
-                  <tr key={p.id} className="hover:bg-slate-800/40">
-                    <td className="p-3 font-bold text-white font-sans">{p.name}</td>
-                    <td className="p-3 text-right text-emerald-400 font-bold text-sm">{formatCurrency(p.rate)}</td>
-                    <td className="p-3 text-right text-slate-400">{formatCurrency(p.rate * 0.95)}</td>
-                    <td className="p-3 text-right text-cyan-300">Rs 8.64/L</td>
-                    <td className="p-3 text-center text-slate-400">2026-08-01 00:00</td>
+                  <tr key={p.id} className="hover:bg-[var(--bg-hover)] transition-colors">
+                    <td className="p-3 font-bold text-[var(--text-main)] font-sans">{p.name}</td>
+                    <td className="p-3 text-right text-emerald-700 dark:text-emerald-400 font-bold text-sm">{formatCurrency(p.rate || 285.45)}</td>
+                    <td className="p-3 text-right text-[var(--text-muted)]">{formatCurrency((p.rate || 285.45) * 0.95)}</td>
+                    <td className="p-3 text-right text-amber-700 dark:text-cyan-300 font-bold">Rs 8.64/L</td>
+                    <td className="p-3 text-center text-[var(--text-muted)]">2026-08-01 00:00</td>
                     <td className="p-3 text-center">
-                      <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Active</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">Active</span>
                     </td>
                   </tr>
                 ))}
@@ -282,18 +327,18 @@ export default function AdvancedPriceManagement({
 
       {/* TAB 3: PRICE CHANGE HISTORY */}
       {activeTab === 'price_history' && (
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl">
-          <h3 className="text-lg font-bold text-white mb-4">Historical Price Revision Log</h3>
+        <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-5 shadow-md">
+          <h3 className="text-lg font-bold text-[var(--text-main)] mb-4">Historical Price Revision Log</h3>
           <div className="space-y-3 font-mono text-xs">
-            {rateHistory.map((rh, idx) => (
-              <div key={idx} className="bg-slate-800/60 p-3 rounded-xl border border-slate-700 flex justify-between items-center">
+            {(pricingStore.fuelPrices.length > 0 ? pricingStore.fuelPrices : (rateHistory as any)).map((rh: any, idx: number) => (
+              <div key={rh.id || idx} className="bg-[var(--bg-subtle)] p-3 rounded-xl border border-[var(--border-main)] flex justify-between items-center">
                 <div>
-                  <div className="font-bold text-white font-sans">{rh.productName || 'Super Petrol'}</div>
-                  <div className="text-[10px] text-slate-400">{rh.date || rh.effectiveDate || '2026-08-01'}</div>
+                  <div className="font-bold text-[var(--text-main)] font-sans">{rh.productName || 'Super Petrol'}</div>
+                  <div className="text-[10px] text-[var(--text-muted)]">{rh.effectiveDate || rh.date || '2026-08-01'}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-emerald-400 font-bold">New: {formatCurrency(rh.newRate || rh.newPrice || 285.45)}</div>
-                  <div className="text-slate-400 text-[10px]">Old: {formatCurrency(rh.oldRate || rh.oldPrice || 284.10)}</div>
+                  <div className="text-emerald-700 dark:text-emerald-400 font-bold">New: {formatCurrency(rh.newPrice || rh.newRate || 285.45)}</div>
+                  <div className="text-[var(--text-muted)] text-[10px]">Old: {formatCurrency(rh.oldPrice || rh.oldRate || 284.10)}</div>
                 </div>
               </div>
             ))}
@@ -303,18 +348,21 @@ export default function AdvancedPriceManagement({
 
       {/* TAB 4: SCHEDULED UPDATES */}
       {activeTab === 'scheduled_updates' && (
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl">
-          <h3 className="text-lg font-bold text-white mb-3">Scheduled Price Changes</h3>
-          <div className="bg-slate-800/60 p-4 rounded-xl border border-slate-700 text-xs text-slate-300">
-            <div className="font-bold text-cyan-300 mb-1">Scheduled for 15th August 2026 (12:00 AM)</div>
-            <p className="text-slate-400">OGRA Mid-August Fortnightly Tariff Adjustment • Status: Approved for Auto-Publish</p>
+        <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-5 shadow-md">
+          <h3 className="text-lg font-bold text-[var(--text-main)] mb-3">Scheduled Price Changes</h3>
+          <div className="bg-[var(--bg-subtle)] p-4 rounded-xl border border-[var(--border-main)] text-xs text-[var(--text-main)]">
+            <div className="font-bold text-amber-700 dark:text-cyan-300 mb-1">Scheduled for 15th August 2026 (12:00 AM)</div>
+            <p className="text-[var(--text-muted)]">OGRA Mid-August Fortnightly Tariff Adjustment • Status: Approved for Auto-Publish</p>
           </div>
         </div>
       )}
 
       {/* TAB 5: PRICE APPROVAL */}
       {activeTab === 'price_approval' && (
-        <PriceApprovalWorkflowTab isUrdu={isUrdu} onApprove={() => handleOpenSimulation(289.90)} />
+        <PriceApprovalWorkflowTab
+          isUrdu={isUrdu}
+          onApprove={() => handleOpenSimulation(289.90)}
+        />
       )}
 
       {/* TAB 7: OMC MATRIX */}
@@ -332,6 +380,25 @@ export default function AdvancedPriceManagement({
         <TaxLevyBreakdownWidget isUrdu={isUrdu} petrolPrice={petrolRate} dieselPrice={dieselRate} />
       )}
 
+      {/* TAB 13: AUDIT TRAIL */}
+      {activeTab === 'audit_trail' && (
+        <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-5 shadow-md">
+          <h3 className="text-lg font-bold text-[var(--text-main)] mb-4">Immutable Pricing Audit Feed</h3>
+          <div className="space-y-3 font-mono text-xs">
+            {pricingStore.auditLogs.map((log) => (
+              <div key={log.id} className="bg-[var(--bg-subtle)] p-3 rounded-xl border border-[var(--border-main)]">
+                <div className="flex justify-between text-[10px] text-[var(--text-muted)] mb-1">
+                  <span className="font-bold text-amber-700 dark:text-cyan-300">{log.actionType}</span>
+                  <span>{new Date(log.timestamp).toLocaleString()}</span>
+                </div>
+                <p className="text-[var(--text-main)]">{log.details}</p>
+                <div className="text-[10px] text-[var(--text-muted)] mt-1">User: {log.userName} ({log.userRole})</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* TAB 14: PRICE NOTIFICATIONS */}
       {activeTab === 'price_notifications' && (
         <OGRANotificationCenterTab isUrdu={isUrdu} onApproveNotification={() => handleOpenSimulation(289.90)} />
@@ -339,8 +406,37 @@ export default function AdvancedPriceManagement({
 
       {/* TAB 15: VERSION HISTORY */}
       {activeTab === 'version_history' && (
-        <VersionHistoryTab isUrdu={isUrdu} versions={versionList} onRollback={(v) => handleOpenSimulation(v.productRates[0].newPrice)} />
+        <VersionHistoryTab
+          isUrdu={isUrdu}
+          versions={versionList}
+          onRollback={(v) => {
+            const mockRecord: FuelPriceMasterRecord = {
+              id: 'rollback_target',
+              productId: 'p_petrol',
+              productName: v.productRates[0].productName,
+              currentPrice: petrolRate,
+              oldPrice: v.productRates[0].oldPrice,
+              newPrice: v.productRates[0].newPrice,
+              effectiveDate: '2026-08-01',
+              effectiveTime: '00:00',
+              status: 'published',
+              version: v.versionNumber,
+              dealerMargin: 8.64
+            };
+            pricingStore.rollbackVersion(mockRecord, 'Station Owner');
+            alert(t(`Rolled back to Version ${v.versionNumber} successfully!`, 'ورژن باکامیابی بحال ہو گیا ہے!'));
+          }}
+        />
       )}
+
+      {/* UPDATE PRICE PROPOSAL MODAL */}
+      <UpdatePriceModal
+        isOpen={isUpdateModalOpen}
+        isUrdu={isUrdu}
+        products={products}
+        onClose={() => setIsUpdateModalOpen(false)}
+        onSubmitProposal={handleSubmitProposal}
+      />
 
       {/* RULE #173 SIMULATION MODAL */}
       <PricingSimulationModal

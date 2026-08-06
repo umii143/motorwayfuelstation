@@ -1144,6 +1144,31 @@ Inventory is responsible for stock after successful GRN posting. Finance is resp
 
 > **Every Ledger Tab MUST have its own dedicated component, data schema, KPI cards, filters, action bar, inspector panel, export engine, and transaction provider. Shared fallback tables or reused generic schemas are strictly prohibited. `LedgersWorkspaceView.tsx` shall act only as a lightweight domain router and state coordinator.**
 
+---
+
+# 178. ENTERPRISE RULE #178 — ARCHITECTURE FREEZE V6.0 & EXECUTION PHASE PROTOCOL ⭐⭐⭐⭐⭐
+
+> **FUELPRO ARCHITECTURE IS OFFICIALLY FROZEN (v6.0). NO NEW DOMAINS MAY BE CREATED. ALL FUTURE DEVELOPMENT MUST FOCUS STRICTLY ON REFINING EXISTING DOMAINS THROUGH THE DETERMINISTIC EXECUTION CYCLE (`Domain` → `Engine` → `Realtime` → `Reports` → `Testing` → `Done`).**
+
+### Mandatory Freeze Rules:
+1. **100% UI-Sidebar Alignment**: The 10 core sidebar workspaces ARE the 10 core reporting domains:
+   1. ⛽ **Fuel Operations** (Shifts, Meters, Nozzles, Dispensers)
+   2. 📦 **Inventory** (Fuel Tanks, Manual Dip Primary, ATG Adapter, Lubes)
+   3. 🛒 **Purchases** (OMC Bulk Procurement, PO, GRN, Lead Time)
+   4. 💰 **Finance** (Treasury, Vault Cash, Bank Accounts, Digital Wallets, OpEx)
+   5. 📒 **Ledgers** (Double-Entry CoA, General Ledger, Customer/Supplier Ledgers, P&L)
+   6. 👥 **Customers (AR)** (Accounts Receivable, Fleet Credit, Aging, Recovery)
+   7. 🚛 **Suppliers (AP)** (Accounts Payable, OMC Liabilities, Payables Aging)
+   8. 👨‍💼 **Staff & HR** (Shift Rosters, Attendance, Payroll, Cash Shortages)
+   9. 🏷️ **Pricing** (OGRA Tariffs, Dealer Margins, Rate Revaluation)
+   10. 📊 **Analytics** (CEO Cockpit, Executive Dashboard, Board Deck, AI Forecasts)
+2. **Embedded Sub-Modules (No Top-Level Domain Sprawl)**: Executive Dashboard is embedded inside Analytics; POS / Sales Register is embedded inside Fuel Operations. Creating extra top-level domains or duplicate workspaces (e.g. "Finance Plus", "Smart Inventory") is strictly prohibited.
+3. **Manual Meter & Manual Tank Dip Primary**: Mechanical meter delta (`startMeter` → `endMeter` → `volumeSold` → `grossSales` → `COGS` → `Ledger`) and physical tank dip measurement are the verified systems of record. ATG/IoT sensors serve as an automated telemetry verification adapter.
+4. **Enterprise Hybrid Database Strategy**: PostgreSQL / NestJS / Redis serves as the primary enterprise database and double-entry financial system of record. Firebase handles supporting services: Auth, Realtime Events (`onSnapshot`), Storage, FCM Notifications, and Presence.
+5. **Central Engine Layer**: All calculations, formulas, KPIs, and business rules must be processed deterministically through central Engine services (`useAnalyticsComputeEngine`, `TransactionEngine`, `LedgerEngine`).
+6. **Read-Only Executive Analytics**: Analytics domain operates as a 100% read-only executive intelligence layer with ZERO operational CRUD actions.
+7. **Execution Cycle Protocol**: Every domain must progress through the Execution Cycle: `Dummy Code Removal` → `Realtime Compute Engine` → `Functional Reports` → `Verification & Testing` → `Domain Completion`.
+
 
 
 
