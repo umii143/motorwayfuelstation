@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { 
   Database, Scale, Clock, Layers, Zap, Receipt, BarChart3, 
   Search, Download, Printer, ChevronRight, X, ChevronDown, Sparkles,
-  ArrowRight, ShieldCheck, FileText, Calendar
+  ArrowRight, ShieldCheck, FileText, Calendar, CheckCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
