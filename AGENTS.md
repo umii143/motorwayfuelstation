@@ -1204,6 +1204,31 @@ Inventory is responsible for stock after successful GRN posting. Finance is resp
 4. **Zero Placeholder Policy**: Removing 100% hardcoded arrays, mock objects, and static strings across all workspace views is mandatory.
 5. **Universal Notification & Offline Sync**: All system events dispatch multi-channel notifications (`SMS`, `Email`, `FCM Push`, `Audit Vault`). Offline queue manages reconnection and conflict resolution.
 
+---
 
+# 181. ENTERPRISE RULE #181 — PRD v6.1 ADDENDUM ENGINEERING MANDATES ⭐⭐⭐⭐⭐
 
+> **Canonical Reference:** `assets/FuelPro_Reporting_Analytics_PRD_v6.1_Addendum.md`, read together with `assets/FuelPro_Reporting_Analytics_PRD_v6.0.md`. This addendum is the final Wiring Addendum per Principle P8 — no further architecture documents permitted.
+
+### 10 Hard-Blocked Engineering Mandates:
+
+1. **Formula Versioning (A.1)**: Formulas and Rules in the Registry are NEVER edited in place. Every change creates a new version (`TRUE_PROFIT_V1` → `TRUE_PROFIT_V2`) with `effective_from`/`effective_to` dates. Historical reports always recompute using the formula version active at the report's `as_of_date`. No PR modifying formula logic is mergeable unless it creates a new version row.
+
+2. **Formula Dependency Tree (A.2)**: A directed graph tracks which formulas depend on which upstream data/formulas. When an upstream formula version changes, only the dependent downstream reports are flagged for recalculation — no blind full-system cache flush.
+
+3. **Widget Fault Isolation (A.3)**: Every KPI card, chart, and table widget is wrapped in its own error boundary. A single widget failure renders "Data unavailable — retry" with its `report_id` for diagnostics. Other widgets on the same screen MUST continue rendering normally. Widget crashes never blank the whole screen.
+
+4. **Engine Health Dashboard (A.4)**: Report ID `ANL-05`, lives in Analytics workspace. Every Engine emits a heartbeat every 30s. Status thresholds: 🟢 Healthy (<0.5% error, <150ms), 🟡 Degraded (0.5–5% error or 150–500ms latency), 🔴 Down (>5% error or no heartbeat in 90s → auto-alert Owner).
+
+5. **Data Quality Dashboard (A.5)**: Report ID `ANL-06`, lives in Analytics workspace. Daily batch job surfaces broken data entry (missing readings, duplicate JVs, orphan references, negative stock, broken formula references, unregistered sub-tabs). Every row is clickable to the offending record via Drilldown Engine.
+
+6. **Repository Abstraction & DB Migration (A.6)**: No engine or UI code may EVER import a Firestore or Postgres SDK directly. Only `FirestoreAdapter` and `PostgresAdapter` implementations may import database SDKs. Migration is module-by-module (Ledgers first), with dual-write verification windows. Firestore retained permanently only as Tier 1 realtime read-mirror/cache.
+
+7. **API Contract Freeze (A.7)**: REST endpoints are versioned via URL prefix (`/v1/register/...`) from day one. Paths: `GET /register/{report_id}`, `GET /formula/{formula_id}?as_of={date}`, `POST /register/{report_id}/action`, `GET /health/engines`, `GET /health/data-quality`, `GET /export/{report_id}?format=pdf|xlsx|csv`. Never break v1 silently.
+
+8. **Observability Slots Reserved (A.8)**: Every Engine built from Phase 2 onward MUST emit a heartbeat event and accept a correlation ID on every call. Reserved integration points: Sentry (error tracking), centralized structured logs, OpenTelemetry tracing, Prometheus metrics, PagerDuty alerting.
+
+9. **Report Registry Extended (A.9)**: Every report row declares `parent_workspace`, `health_monitored`, `data_quality_checks[]`, and `api_version`. Two new Analytics rows: `ANL-05` (Engine Health) and `ANL-06` (Data Quality). Sidebar structure remains frozen at 10 workspaces.
+
+10. **Final Document Lock (A.10)**: PRD v6.0 + Addendum v6.1 together constitute the complete and final Execution Contract. Any future gap is logged as a numbered addendum item (A.11, A.12, ...) appended to the v6.1 file — NEVER as a new competing document.
 
