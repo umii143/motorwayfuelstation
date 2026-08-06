@@ -1169,6 +1169,28 @@ Inventory is responsible for stock after successful GRN posting. Finance is resp
 6. **Read-Only Executive Analytics**: Analytics domain operates as a 100% read-only executive intelligence layer with ZERO operational CRUD actions.
 7. **Execution Cycle Protocol**: Every domain must progress through the Execution Cycle: `Dummy Code Removal` → `Realtime Compute Engine` → `Functional Reports` → `Verification & Testing` → `Domain Completion`.
 
+---
+
+# 179. ENTERPRISE RULE #179 — UNIVERSAL 10-LAYER DOMAIN ARCHITECTURE & FORMULA REGISTRY (10/10 LEVEL) ⭐⭐⭐⭐⭐
+
+> **EVERY FUELPRO DOMAIN WORKSPACE MUST STRICTLY IMPLEMENT THE UNIVERSAL 10-LAYER DOMAIN ARCHITECTURE. NO DOMAIN MAY OMIT DOCUMENTS VAULT, MANDATORY AUDIT TRAIL, DOMAIN AI ADVISOR, WORKFLOW LIFECYCLE, OR KPI DRILLDOWNS.**
+
+### 10 Mandatory Domain Layers:
+1. **Layer 01: Overview Dashboard** (Always Tab #1 — Domain Control Room)
+2. **Layer 02: Realtime KPI Cards** (With Formula ID + Live Status + Confidence)
+3. **Layer 03: Operational Registers** (Search, Filter, Sort, Pagination & Details)
+4. **Layer 04: Domain Analytics** (Charts, Heatmaps, Performance Curves)
+5. **Layer 05: Domain-Specific AI Advisor** (Context-Aware AI Insights & Recommendations)
+6. **Layer 06: Documents Vault** (PDF Receipts, GRN Seals, Bank Statements, Lab Reports)
+7. **Layer 07: Workflow Lifecycle Engine** (Draft → Pending → Approved → Settled)
+8. **Layer 08: Mandatory Audit Trail** (Immutable Who, When, What, Old/New Value Log)
+9. **Layer 09: Reports, Export & Print** (PDF Briefings, Excel Matrix, Print Deck)
+10. **Layer 10: Role-Based Settings** (Configurable Limits, Margins & RBAC)
+
+### KPI Formula Registry & Traceability Chain:
+- Every displayed KPI card MUST declare a standardized **Formula ID** (e.g. `FIN-001`, `INV-002`, `AR-003`).
+- Every KPI card MUST be clickable, executing the **Traceability Chain**: `KPI Widget` → `Formula ID` → `Engine Service` → `Repository` → `Realtime Stream` → `Target Operational Register`.
+
 
 
 
