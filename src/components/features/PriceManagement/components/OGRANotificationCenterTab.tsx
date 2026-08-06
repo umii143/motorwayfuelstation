@@ -1,5 +1,6 @@
 import React from 'react';
 import { FileText, Download, CheckCircle2, AlertCircle, Bell, ExternalLink } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface OGRANotificationCenterTabProps {
   isUrdu: boolean;
@@ -75,7 +76,7 @@ export const OGRANotificationCenterTab: React.FC<OGRANotificationCenterTabProps>
 
             <div className="flex items-center gap-3">
               <button
-                onClick={() => alert('Downloading official OGRA PDF circular...')}
+                onClick={() => toast.success('Downloading official OGRA PDF circular...')}
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[var(--bg-card)] hover:bg-[var(--bg-hover)] text-[var(--text-main)] border border-[var(--border-main)] text-xs font-semibold transition-colors"
               >
                 <Download className="w-4 h-4 text-rose-600 dark:text-rose-400" />
@@ -83,7 +84,7 @@ export const OGRANotificationCenterTab: React.FC<OGRANotificationCenterTabProps>
               </button>
 
               {n.status === 'active_published' ? (
-                <span className="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                <span className="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-800 dark:emerald-400 border border-emerald-500/20 flex items-center gap-1">
                   <CheckCircle2 className="w-4 h-4" />
                   Published
                 </span>

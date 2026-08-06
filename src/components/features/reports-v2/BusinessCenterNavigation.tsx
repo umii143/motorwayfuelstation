@@ -6,15 +6,19 @@
  * ENTERPRISE RULE #130 & RULE #162 — Metadata-Driven Workspace Navigation Launcher.
  * Clean, high-level Sidebar displaying Enterprise Business Domain Workspaces.
  * Sub-item navigation occurs exclusively through Workspace Header Tabs.
+ *
+ * Warm Cream Enterprise Theme (AGENTS.md Rules #2/#3/#14): all colors flow from
+ * the active theme tokens — amber brand accent, warm cream surfaces, warm
+ * borders — while remaining readable under every theme.
  */
 
 import React, { useState } from 'react';
 import {
   Fuel, Package, ShoppingCart, DollarSign, BookOpen, Users, Truck,
-  UserCog, Tag, TrendingUp, Star, Clock, ChevronDown, LayoutDashboard, Search, Settings, Flame, Layers, CircleDot
+  UserCog, Tag, TrendingUp, Star, Clock, LayoutDashboard, Search, Settings, Flame, Layers, CircleDot
 } from 'lucide-react';
 import { BUSINESS_CENTER_MENU, findMenuItem } from '../../../lib/reports-v2/config/businessCenterMenu';
-import { WORKSPACE_REGISTRY, resolveWorkspaceRoute } from '../../../lib/reports-v2/config/WorkspaceRegistry';
+import { resolveWorkspaceRoute } from '../../../lib/reports-v2/config/WorkspaceRegistry';
 
 const ICONS: Record<string, React.ElementType> = {
   Fuel, Package, ShoppingCart, DollarSign, BookOpen, Users, Truck, UserCog, Tag, TrendingUp, Settings, Flame, Layers, CircleDot
@@ -53,6 +57,8 @@ interface Props {
   onCloseMobile?: () => void;
 }
 
+const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40';
+
 export default function BusinessCenterNavigation({
   selectedReportId, onSelectReport, favorites, recents, onToggleFavorite, lang,
   isMobileOpen = false, onCloseMobile,
@@ -75,20 +81,23 @@ export default function BusinessCenterNavigation({
     return (
       <div
         key={reportId}
-        className={`group flex items-center gap-2 pl-7 pr-2 py-1.5 rounded-lg cursor-pointer transition-all ${
-          isActive ? 'bg-emerald-50 text-[#0B5C3D]' : 'text-slate-600 hover:bg-slate-50'
-        }`}
+        role="button"
+        tabIndex={0}
         onClick={() => handleSelect(reportId)}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSelect(reportId); } }}
+        className={`group flex items-center gap-2 pl-7 pr-2 py-1.5 rounded-lg cursor-pointer transition-all ${FOCUS_RING} ${
+          isActive ? 'bg-primary/10 text-primary-hover shadow-2xs' : 'text-muted-foreground hover:bg-muted'
+        }`}
       >
-        <span className={`flex-1 text-[12px] font-semibold truncate ${isActive ? 'text-[#0B5C3D]' : ''}`}>
+        <span className={`flex-1 text-[12px] font-semibold truncate ${isActive ? 'text-primary-hover' : ''}`}>
           {isEn ? label : labelUr}
         </span>
         <button
           onClick={(e) => { e.stopPropagation(); onToggleFavorite(reportId); }}
           title={isEn ? 'Favorite' : 'پسندیدہ'}
-          className={`shrink-0 transition-opacity ${isFav ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+          className={`shrink-0 transition-opacity cursor-pointer ${isFav ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
         >
-          <Star size={13} className={isFav ? 'fill-amber-400 text-amber-400' : 'text-slate-300 hover:text-amber-400'} />
+          <Star size={13} className={isFav ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground hover:text-amber-400'} />
         </button>
       </div>
     );
@@ -96,28 +105,28 @@ export default function BusinessCenterNavigation({
 
   return (
     <div
-      className={`fixed md:relative inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200/90 shadow-xs flex flex-col font-sans transition-transform duration-300 ${
+      className={`fixed md:relative inset-y-0 left-0 z-40 w-64 bg-card border-r border-border shadow-xs flex flex-col font-sans transition-transform duration-300 ${
         isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
       }`}
     >
       {/* Sidebar Header */}
       <div className="px-4 pt-4 pb-3 shrink-0">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-8 h-8 rounded-xl bg-[#0B5C3D] text-white flex items-center justify-center shadow-xs">
+          <div className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center shadow-xs">
             <LayoutDashboard size={17} />
           </div>
           <div className="leading-tight">
-            <div className="text-[13px] font-black text-slate-900">{isEn ? 'Business Center' : 'بزنس سینٹر'}</div>
-            <div className="text-[9px] font-bold text-slate-400">{isEn ? 'Reports & Registers' : 'رپورٹس اور رجسٹرز'}</div>
+            <div className="text-[13px] font-black text-foreground">{isEn ? 'Business Center' : 'بزنس سینٹر'}</div>
+            <div className="text-[9px] font-bold text-muted-foreground">{isEn ? 'Reports & Registers' : 'رپورٹس اور رجسٹرز'}</div>
           </div>
         </div>
         <div className="relative">
-          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={isEn ? 'Search workspaces...' : 'تلاش کریں...'}
-            className="w-full pl-8 pr-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-[11.5px] font-semibold text-slate-800 focus:outline-none placeholder:text-slate-400"
+            className="w-full pl-8 pr-2 py-1.5 rounded-xl bg-muted border border-border text-[11.5px] font-semibold text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/25 transition-all placeholder:text-muted-foreground"
           />
         </div>
       </div>
@@ -127,8 +136,8 @@ export default function BusinessCenterNavigation({
         {/* Executive Dashboard */}
         <button
           onClick={() => handleSelect('A')}
-          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left transition-all cursor-pointer ${
-            selectedReportId === 'A' ? 'bg-[#0B5C3D] text-white shadow-xs font-black' : 'text-slate-700 hover:bg-slate-50 font-bold'
+          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left transition-all cursor-pointer ${FOCUS_RING} ${
+            selectedReportId === 'A' ? 'bg-primary-hover text-white shadow-xs font-black' : 'text-foreground hover:bg-muted font-bold'
           }`}
         >
           <LayoutDashboard size={16} />
@@ -137,7 +146,7 @@ export default function BusinessCenterNavigation({
 
         {/* Favorites */}
         {favorites.length > 0 && !q && (
-          <div className="my-2 pt-1 border-t border-slate-100">
+          <div className="my-2 pt-1 border-t border-border">
             <div className="flex items-center gap-1.5 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-amber-600">
               <Star size={11} className="fill-amber-400 text-amber-400" /> {isEn ? 'Favorites' : 'پسندیدہ'}
             </div>
@@ -151,8 +160,8 @@ export default function BusinessCenterNavigation({
 
         {/* Recent */}
         {recents.length > 0 && !q && (
-          <div className="my-2 pt-1 border-t border-slate-100">
-            <div className="flex items-center gap-1.5 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
+          <div className="my-2 pt-1 border-t border-border">
+            <div className="flex items-center gap-1.5 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
               <Clock size={11} /> {isEn ? 'Recent' : 'حالیہ'}
             </div>
             {recents.map((rid) => {
@@ -163,8 +172,8 @@ export default function BusinessCenterNavigation({
           </div>
         )}
 
-        <div className="pt-2 border-t border-slate-100">
-          <div className="px-3 py-1 text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">
+        <div className="pt-2 border-t border-border">
+          <div className="px-3 py-1 text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-1">
             {isEn ? 'WORKSPACES' : 'ورک اسپیسز'}
           </div>
 
@@ -180,15 +189,15 @@ export default function BusinessCenterNavigation({
               <button
                 key={group.id}
                 onClick={() => handleSelect(group.homeReportId)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left transition-all cursor-pointer mb-0.5 ${
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left transition-all cursor-pointer mb-0.5 ${FOCUS_RING} ${
                   isGroupActive
-                    ? 'bg-emerald-50 text-[#0B5C3D] border border-emerald-200/80 font-black shadow-2xs'
-                    : 'text-slate-700 hover:bg-slate-50 font-bold'
+                    ? 'bg-primary/10 text-primary-hover border border-primary/25 font-black shadow-2xs'
+                    : 'text-foreground hover:bg-muted font-bold'
                 }`}
               >
-                <Icon size={16} className={isGroupActive ? 'text-[#0B5C3D]' : 'text-slate-400'} />
+                <Icon size={16} className={isGroupActive ? 'text-primary-hover' : 'text-muted-foreground'} />
                 <span className="flex-1 text-[12.5px] truncate">{isEn ? group.label : group.labelUr}</span>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
+                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${isGroupActive ? 'bg-primary-hover text-white' : 'bg-muted text-muted-foreground'}`}>
                   {group.items.length}
                 </span>
               </button>

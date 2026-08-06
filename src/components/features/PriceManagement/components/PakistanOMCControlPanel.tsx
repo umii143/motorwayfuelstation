@@ -40,7 +40,7 @@ export const PakistanOMCControlPanel: React.FC<PakistanOMCControlPanelProps> = (
           <div className="bg-[var(--bg-subtle)] px-3 py-1.5 rounded-xl border border-[var(--border-main)] font-mono text-xs flex items-center gap-2">
             <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-400 animate-pulse" />
             <span className="text-[var(--text-muted)]">{t('Next Govt Revision:', 'اگلی اوگرا تبدیلی:')}</span>
-            <span className="text-emerald-700 dark:text-emerald-400 font-bold">15 Aug 2026 (09d 04h)</span>
+            <span className="text-emerald-700 dark:text-emerald-400 font-bold">Awaiting Circular</span>
           </div>
 
           <button

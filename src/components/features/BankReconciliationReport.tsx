@@ -145,11 +145,11 @@ export default function BankReconciliationReport({
       {/* ===== LIVE FIREBASE DATABASE STATUS BADGE ===== */}
       <div className="no-print bg-card border border-border rounded-2xl p-4 shadow-sm flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Database className="w-4 h-4 text-emerald-600 animate-pulse" />
+          <Database className="w-4 h-4 text-primary animate-pulse" />
           <span className="text-xs font-black text-foreground uppercase tracking-wider">
             {t('Live Firebase Database Binding Active', 'لائیو فائر بیس ڈیٹا بیس فعال ہے')}
           </span>
-          <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-[10px] font-black">
+          <span className="px-2 py-0.5 rounded bg-primary/10 border border-primary/30 text-primary text-[10px] font-black">
             100% Real Operational Data
           </span>
         </div>
@@ -171,7 +171,7 @@ export default function BankReconciliationReport({
           <strong className="font-mono text-xl font-black text-blue-600 block">
             {formatCurrency(liveData.totalBankBalance, settings)}
           </strong>
-          <span className="text-[10px] text-emerald-600 font-bold block">
+          <span className="text-[10px] text-primary font-bold block">
             {liveData.bankList.length} Firebase Registered Bank Accounts
           </span>
         </div>
@@ -212,14 +212,14 @@ export default function BankReconciliationReport({
         <div className="rounded-2xl border border-border bg-card p-4 shadow-sm space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Reconciliation Status</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center border border-emerald-500/30">
+            <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/30">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
-          <strong className="font-mono text-xl font-black text-emerald-600 block">
+          <strong className="font-mono text-xl font-black text-primary block">
             100% RECONCILED
           </strong>
-          <span className="text-[10px] text-emerald-600 font-bold block">
+          <span className="text-[10px] text-primary font-bold block">
             Double-Entry Ledger Verified
           </span>
         </div>
@@ -259,11 +259,11 @@ export default function BankReconciliationReport({
                     <td className="p-3 text-muted-foreground font-bold">
                       {bd.bank.accountNo || 'N/A'}
                     </td>
-                    <td className="p-3 text-right text-emerald-600 font-bold">+{formatCurrency(bd.deposits, settings)}</td>
+                    <td className="p-3 text-right text-primary font-bold">+{formatCurrency(bd.deposits, settings)}</td>
                     <td className="p-3 text-right text-rose-600 font-bold">-{formatCurrency(bd.withdrawals, settings)}</td>
                     <td className="p-3 text-right font-extrabold text-blue-600">{formatCurrency(bd.balance, settings)}</td>
                     <td className="p-3 text-center">
-                      <span className="px-2.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-[10px] font-black">
+                      <span className="px-2.5 py-0.5 rounded bg-primary/10 border border-primary/30 text-primary text-[10px] font-black">
                         🟢 RECONCILED (100%)
                       </span>
                     </td>
@@ -307,7 +307,7 @@ export default function BankReconciliationReport({
                     <td className="p-3 text-muted-foreground font-bold">{d.method || 'Digital'}</td>
                     <td className="p-3 text-right font-extrabold text-violet-600">{formatCurrency(d.balance || 0, settings)}</td>
                     <td className="p-3 text-center">
-                      <span className="px-2.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-[10px] font-black">
+                      <span className="px-2.5 py-0.5 rounded bg-primary/10 border border-primary/30 text-primary text-[10px] font-black">
                         🟢 SETTLED & VERIFIED
                       </span>
                     </td>

@@ -365,7 +365,7 @@ export default function ShiftIntelligenceReport({
   ];
 
   const colorMap: Record<string, string> = {
-    emerald: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400',
+    emerald: 'bg-success/10 border-success/30 text-success dark:text-success',
     sky: 'bg-sky-500/10 border-sky-500/30 text-sky-600 dark:text-sky-400',
     amber: 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400',
     blue: 'bg-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400',
@@ -374,7 +374,7 @@ export default function ShiftIntelligenceReport({
     teal: 'bg-teal-500/10 border-teal-500/30 text-teal-600 dark:text-teal-400',
     rose: 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400',
     orange: 'bg-orange-500/10 border-orange-500/30 text-orange-600 dark:text-orange-400',
-    green: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400',
+    green: 'bg-primary/10 border-primary/30 text-primary dark:text-primary',
     slate: 'bg-slate-500/10 border-slate-500/30 text-slate-600 dark:text-slate-400',
     cyan: 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400',
     red: 'bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400'
@@ -460,7 +460,7 @@ export default function ShiftIntelligenceReport({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-black text-foreground uppercase tracking-wide">{settings.stationName}</h2>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                <span className="px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/30 text-primary dark:text-primary text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3" /> Live DB Synced
                 </span>
               </div>
@@ -475,12 +475,12 @@ export default function ShiftIntelligenceReport({
           <div className="flex flex-wrap items-center gap-3">
             <div className="text-right">
               <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground block">{t('Certification Status', 'سرٹیفیکیشن کیفیات')}</span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-black">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-primary/10 border border-primary/30 text-primary dark:text-primary text-xs font-black">
                 <ShieldCheck className="w-4 h-4" /> SHIFT CERTIFIED (100%)
               </span>
             </div>
             <span className={`px-3 py-1 rounded-xl text-xs font-black uppercase tracking-wider border ${
-              shift.isLocked ? 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30' :
+              shift.isLocked ? 'bg-primary/15 text-primary border-primary/30' :
               shift.status === 'closed' ? 'bg-amber-500/15 text-amber-600 border-amber-500/30' : 'bg-sky-500/15 text-sky-600 border-sky-500/30'
             }`}>
               {statusLabel()}
@@ -509,19 +509,19 @@ export default function ShiftIntelligenceReport({
                 <h3 className="font-black text-sm uppercase tracking-wider text-foreground">{t('Executive Decision Panel (SAP Standard)', 'ایگزیکٹو فیصلہ پینل')}</h3>
               </div>
               <span className={`px-3 py-0.5 rounded-full text-xs font-black uppercase tracking-widest ${
-                m.cashVariance === 0 && m.tankVariance === 0 ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400'
+                m.cashVariance === 0 && m.tankVariance === 0 ? 'bg-primary/10 border border-primary/30 text-primary dark:text-primary' : 'bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400'
               }`}>
                 RISK LEVEL: {m.cashVariance === 0 && m.tankVariance === 0 ? 'LOW' : 'MEDIUM / ACTION REQUIRED'}
               </span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-              <DecisionBadge label="Shift Status" status={shift.status === 'closed' ? 'Healthy' : 'Pending'} icon={<CheckCircle2 className="w-4 h-4 text-emerald-500" />} />
-              <DecisionBadge label="Cash Reconciliation" status={m.cashVariance === 0 ? 'Reconciled (100%)' : `Variance ${formatCurrency(m.cashVariance, settings)}`} icon={m.cashVariance === 0 ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <AlertTriangle className="w-4 h-4 text-rose-500" />} />
-              <DecisionBadge label="Wet Stock Tank Integrity" status={m.tankVariance === 0 ? 'Verified OK' : `Variance ${m.tankVariance} Ltr`} icon={m.tankVariance === 0 ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <AlertTriangle className="w-4 h-4 text-amber-500" />} />
-              <DecisionBadge label="Profitability" status={m.profit > 0 ? 'Positive Margin' : 'Negative'} icon={<TrendingUp className="w-4 h-4 text-emerald-500" />} />
-              <DecisionBadge label="Audit Lineage" status="100% Traceable" icon={<ShieldCheck className="w-4 h-4 text-emerald-500" />} />
-              <DecisionBadge label="Fraud Indicators" status="Zero Detected" icon={<ShieldCheck className="w-4 h-4 text-emerald-500" />} />
+              <DecisionBadge label="Shift Status" status={shift.status === 'closed' ? 'Healthy' : 'Pending'} icon={<CheckCircle2 className="w-4 h-4 text-primary" />} />
+              <DecisionBadge label="Cash Reconciliation" status={m.cashVariance === 0 ? 'Reconciled (100%)' : `Variance ${formatCurrency(m.cashVariance, settings)}`} icon={m.cashVariance === 0 ? <CheckCircle2 className="w-4 h-4 text-primary" /> : <AlertTriangle className="w-4 h-4 text-rose-500" />} />
+              <DecisionBadge label="Wet Stock Tank Integrity" status={m.tankVariance === 0 ? 'Verified OK' : `Variance ${m.tankVariance} Ltr`} icon={m.tankVariance === 0 ? <CheckCircle2 className="w-4 h-4 text-primary" /> : <AlertTriangle className="w-4 h-4 text-amber-500" />} />
+              <DecisionBadge label="Profitability" status={m.profit > 0 ? 'Positive Margin' : 'Negative'} icon={<TrendingUp className="w-4 h-4 text-primary" />} />
+              <DecisionBadge label="Audit Lineage" status="100% Traceable" icon={<ShieldCheck className="w-4 h-4 text-primary" />} />
+              <DecisionBadge label="Fraud Indicators" status="Zero Detected" icon={<ShieldCheck className="w-4 h-4 text-primary" />} />
             </div>
 
             <div className="rounded-xl bg-subtle p-3.5 border border-border text-xs font-medium text-foreground">
@@ -548,7 +548,7 @@ export default function ShiftIntelligenceReport({
           <div className="flex items-center justify-center my-2">
             <div className="relative w-28 h-28 rounded-full border-8 border-orange-500/20 flex flex-col items-center justify-center text-center">
               <span className="font-mono text-2xl font-black text-foreground">{m.overallCompositeScore}%</span>
-              <span className="text-[9px] font-black uppercase text-emerald-600 dark:text-emerald-400">EXCELLENT</span>
+              <span className="text-[9px] font-black uppercase text-primary dark:text-primary">EXCELLENT</span>
             </div>
           </div>
 
@@ -734,7 +734,7 @@ export default function ShiftIntelligenceReport({
                     </div>
                     <div className="flex justify-between text-muted-foreground">
                       <span>+ Fuel Receipts:</span>
-                      <span className="font-mono text-emerald-600 font-bold">+{ts.deliveries.toLocaleString()} Ltr</span>
+                      <span className="font-mono text-primary font-bold">+{ts.deliveries.toLocaleString()} Ltr</span>
                     </div>
                     <div className="flex justify-between text-muted-foreground">
                       <span>- Meter Sales:</span>
@@ -746,7 +746,7 @@ export default function ShiftIntelligenceReport({
                     </div>
                     <div className="flex justify-between text-[11px] pt-1 font-bold">
                       <span className="text-muted-foreground">Variance:</span>
-                      <span className={`font-mono ${ts.varianceLtr === 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      <span className={`font-mono ${ts.varianceLtr === 0 ? 'text-primary' : 'text-rose-600'}`}>
                         {ts.varianceLtr.toFixed(1)} Ltr ({ts.variancePct.toFixed(2)}%)
                       </span>
                     </div>
@@ -811,7 +811,7 @@ export default function ShiftIntelligenceReport({
       {activeTab === 'certification' && (
         <div className="space-y-6">
           <div className="rounded-2xl border border-border bg-card p-6 shadow-md text-center max-w-2xl mx-auto space-y-4">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
+            <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/30 text-primary dark:text-primary flex items-center justify-center mx-auto">
               <Award className="w-8 h-8" />
             </div>
 
@@ -834,7 +834,7 @@ export default function ShiftIntelligenceReport({
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Ledger Sync:</span>
-                <span className="text-emerald-600 font-bold">Firebase Realtime Verified</span>
+                <span className="text-primary font-bold">Firebase Realtime Verified</span>
               </div>
             </div>
 
@@ -1028,7 +1028,7 @@ function ComplianceRow({ title, desc, status }: { title: string; desc: string; s
         <strong className="font-bold text-foreground block">{title}</strong>
         <span className="text-muted-foreground text-[10px]">{desc}</span>
       </div>
-      <span className="px-2.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 font-mono text-[10px] font-black">
+      <span className="px-2.5 py-0.5 rounded bg-primary/10 border border-primary/30 text-primary font-mono text-[10px] font-black">
         {status}
       </span>
     </div>
@@ -1042,7 +1042,7 @@ function FraudRuleRow({ title, desc, status }: { title: string; desc: string; st
         <strong className="font-bold text-foreground block">{title}</strong>
         <span className="text-muted-foreground text-[10px]">{desc}</span>
       </div>
-      <span className="px-2.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 font-mono text-[10px] font-black">
+      <span className="px-2.5 py-0.5 rounded bg-primary/10 border border-primary/30 text-primary font-mono text-[10px] font-black">
         {status}
       </span>
     </div>

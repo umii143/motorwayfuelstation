@@ -12,6 +12,9 @@
  */
 
 import React, { useState, useMemo } from 'react';
+import toast from 'react-hot-toast';
+import { AlertTriangle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { ReportConfig } from '../../../../lib/reports-v2/engines/types';
 import { ReportViewer } from '../ReportViewer';
 import { FuelOperationsWorkspaceView } from '../components/workspaces/FuelOperationsWorkspaceView';
@@ -85,8 +88,8 @@ const DOMAIN_METADATA: Record<BusinessDomainType, DomainMeta> = {
       { id: 'aging', label: 'Aging Analysis', labelUr: 'ایپنگ تجزیہ', reportId: 'CUS_AGING' },
     ],
     quickCreates: [
-      { id: 'new_customer', label: '+ New Customer', labelUr: '+ نیا کسٹمر', icon: '👤', targetId: 'CUS_REGISTER' },
-      { id: 'customer_payment', label: '+ Record Payment', labelUr: '+ وصولی اندراج', icon: '💵', targetId: 'CUS_RECOVERY' },
+      { id: 'new_customer', label: 'Open Customer Module', labelUr: 'کسٹمر ماڈیول کھولیں', icon: '👤', targetId: '/customers' },
+      { id: 'customer_payment', label: 'Open Recovery Module', labelUr: 'ریکوری ماڈیول کھولیں', icon: '💵', targetId: '/customers' },
     ],
   },
   fuel_operations: {
@@ -103,8 +106,8 @@ const DOMAIN_METADATA: Record<BusinessDomainType, DomainMeta> = {
       { id: 'products', label: 'Product Sales', labelUr: 'پروڈکٹ سیلز', reportId: 'FS_PRODUCT' },
     ],
     quickCreates: [
-      { id: 'new_shift', label: '+ Open Shift', labelUr: '+ نئی شفٹ', icon: '⏱️', targetId: 'C2' },
-      { id: 'new_sale', label: '+ Record Sale', labelUr: '+ سیلز اندراج', icon: '⛽', targetId: 'FS_REGISTER' },
+      { id: 'new_shift', label: 'Open Shift Wizard', labelUr: 'شفٹ وزرڈ کھولیں', icon: '⏱️', targetId: '/shift-wizard' },
+      { id: 'new_sale', label: 'Open POS Module', labelUr: 'پوائنٹ آف سیل', icon: '⛽', targetId: '/fuel-sales' },
     ],
   },
   sales: {
@@ -120,7 +123,7 @@ const DOMAIN_METADATA: Record<BusinessDomainType, DomainMeta> = {
       { id: 'credit_sales', label: 'Credit Sales', labelUr: 'کریڈٹ سیلز', reportId: 'CUS_OUTSTANDING' },
     ],
     quickCreates: [
-      { id: 'new_sale', label: '+ Record Sale', labelUr: '+ نئی سیل', icon: '💳', targetId: 'FS_REGISTER' },
+      { id: 'new_sale', label: 'Open POS Module', labelUr: 'پوائنٹ آف سیل', icon: '💳', targetId: '/fuel-sales' },
     ],
   },
   inventory: {
@@ -136,8 +139,8 @@ const DOMAIN_METADATA: Record<BusinessDomainType, DomainMeta> = {
       { id: 'reconciliation', label: 'Stock Reconciliation', labelUr: 'اسٹاک پڑتال', reportId: 'INV_RECON' },
     ],
     quickCreates: [
-      { id: 'record_dip', label: '+ Record Dip', labelUr: '+ ڈیپ اندراج', icon: '📏', targetId: 'INV_DIP' },
-      { id: 'stock_adj', label: '+ Stock Adjustment', labelUr: '+ اسٹاک ایڈجسٹمنٹ', icon: '⚖️', targetId: 'INV_RECON' },
+      { id: 'record_dip', label: 'Open Dip Calculator', labelUr: 'ڈیپ کیلکولیٹر کھولیں', icon: '📏', targetId: '/dip-calculator' },
+      { id: 'stock_adj', label: 'Open Inventory Module', labelUr: 'انوینٹری ماڈیول کھولیں', icon: '⚖️', targetId: '/inventory' },
     ],
   },
   purchases: {
@@ -152,7 +155,7 @@ const DOMAIN_METADATA: Record<BusinessDomainType, DomainMeta> = {
       { id: 'register', label: 'Purchase Register', labelUr: 'پرچیز رجسٹر', reportId: 'PUR_REGISTER' },
     ],
     quickCreates: [
-      { id: 'new_purchase', label: '+ Record Purchase', labelUr: '+ خریداری اندراج', icon: '🧾', targetId: 'PUR_REGISTER' },
+      { id: 'new_purchase', label: 'Open Supplier Module', labelUr: 'سپلائر ماڈیول کھولیں', icon: '🧾', targetId: '/suppliers' },
     ],
   },
   finance: {
@@ -168,8 +171,8 @@ const DOMAIN_METADATA: Record<BusinessDomainType, DomainMeta> = {
       { id: 'pnl', label: 'Profit & Loss', labelUr: 'نفع و نقصان', reportId: 'FIN_PNL' },
     ],
     quickCreates: [
-      { id: 'new_voucher', label: '+ Expense Voucher', labelUr: '+ اخراجات واؤچر', icon: '💸', targetId: 'FIN_EXPENSE' },
-      { id: 'bank_deposit', label: '+ Bank Deposit', labelUr: '+ بینک ڈیپازٹ', icon: '🏦', targetId: 'B' },
+      { id: 'new_voucher', label: 'Open Expense Module', labelUr: 'ایکسپینس ماڈیول کھولیں', icon: '💸', targetId: '/expenses' },
+      { id: 'bank_deposit', label: 'Open Bank & Cash', labelUr: 'بینک و کیش ماڈیول', icon: '🏦', targetId: '/bank-cash' },
     ],
   },
   expenses: {
@@ -182,7 +185,7 @@ const DOMAIN_METADATA: Record<BusinessDomainType, DomainMeta> = {
       { id: 'vouchers', label: 'Expense Vouchers', labelUr: 'واؤچرز رجسٹر', reportId: 'FIN_EXPENSE' },
     ],
     quickCreates: [
-      { id: 'new_expense', label: '+ Expense Voucher', labelUr: '+ اخراجات واؤچر', icon: '💸', targetId: 'FIN_EXPENSE' },
+      { id: 'new_expense', label: 'Open Expense Module', labelUr: 'ایکسپینس ماڈیول کھولیں', icon: '💸', targetId: '/expenses' },
     ],
   },
   suppliers: {
@@ -197,7 +200,7 @@ const DOMAIN_METADATA: Record<BusinessDomainType, DomainMeta> = {
       { id: 'outstanding', label: 'Outstanding Payables', labelUr: 'واجب الادا بقایا', reportId: 'SUP_OUTSTANDING' },
     ],
     quickCreates: [
-      { id: 'pay_supplier', label: '+ Settle Payment', labelUr: '+ ادائیگی کریں', icon: '💵', targetId: 'SUP_PAYMENTS' },
+      { id: 'pay_supplier', label: 'Open Supplier Module', labelUr: 'سپلائر ماڈیول کھولیں', icon: '💵', targetId: '/suppliers' },
     ],
   },
   ledgers: {
@@ -232,9 +235,9 @@ const DOMAIN_METADATA: Record<BusinessDomainType, DomainMeta> = {
       { id: 'audit', label: 'Audit Trail', labelUr: 'آڈٹ ٹریل', reportId: 'STF_AUDIT' },
     ],
     quickCreates: [
-      { id: 'add_emp', label: '+ Add Employee', labelUr: '+ نیا ملازم', icon: '👤', targetId: 'STF_REGISTER' },
-      { id: 'attendance', label: 'Mark Attendance', labelUr: 'حاضری', icon: '🕒', targetId: 'STF_ATTENDANCE' },
-      { id: 'payroll', label: 'Process Payroll', labelUr: 'پے رول', icon: '💰', targetId: 'STF_PAYROLL' },
+      { id: 'add_emp', label: 'Open Staff Module', labelUr: 'اسٹاف ماڈیول کھولیں', icon: '👤', targetId: '/staff' },
+      { id: 'attendance', label: 'Open Staff Module', labelUr: 'اسٹاف ماڈیول کھولیں', icon: '🕒', targetId: '/staff' },
+      { id: 'payroll', label: 'Open Staff Module', labelUr: 'اسٹاف ماڈیول کھولیں', icon: '💰', targetId: '/staff' },
     ],
   },
   pricing: {
@@ -248,9 +251,9 @@ const DOMAIN_METADATA: Record<BusinessDomainType, DomainMeta> = {
       { id: 'price_changes', label: 'Price Change History', labelUr: 'قیمت کی تاریخ', reportId: 'PRC_HISTORY' },
     ],
     quickCreates: [
-      { id: 'update_price', label: '+ Update Fuel Price', labelUr: '+ قیمت تبدیل کریں', icon: '🏷️', targetId: 'DOMAIN_PRC_HOME' },
-      { id: 'schedule_price', label: 'Schedule Revision', labelUr: 'شیڈول تبدیلی', icon: '📅', targetId: 'DOMAIN_PRC_HOME' },
-      { id: 'publish_rates', label: 'Publish Rates', labelUr: 'ریٹس پبلش', icon: '📤', targetId: 'DOMAIN_PRC_HOME' },
+      { id: 'update_price', label: 'Open Pricing Module', labelUr: 'پرائسنگ ماڈیول کھولیں', icon: '🏷️', targetId: '/price-management' },
+      { id: 'schedule_price', label: 'Open Pricing Module', labelUr: 'پرائسنگ ماڈیول کھولیں', icon: '📅', targetId: '/price-management' },
+      { id: 'publish_rates', label: 'Open Pricing Module', labelUr: 'پرائسنگ ماڈیول کھولیں', icon: '📤', targetId: '/price-management' },
     ],
   },
   analytics: {
@@ -288,6 +291,43 @@ export const DomainWorkspaceEngine: React.FC<DomainWorkspaceEngineProps> = ({
 }) => {
   const meta = DOMAIN_METADATA[domain] || DOMAIN_METADATA.custom;
   const isEn = lang === 'en';
+
+  const navigate = useNavigate();
+
+  const handleQuickCreateClick = (moduleName: string, path: string) => {
+    toast.custom((t) => (
+      <div className="bg-card border border-border p-4 rounded-xl shadow-2xl flex flex-col gap-3 animate-in fade-in zoom-in w-80">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+          <div>
+            <h4 className="text-sm font-black text-foreground">Permission Dialog</h4>
+            <p className="text-xs font-bold text-muted-foreground mt-1">
+              {isEn 
+                ? 'This action is managed from the operational module. Reporting workspaces are strictly read-only.' 
+                : 'یہ کام آپریشنل ماڈیول سے منجمد ہے۔ رپورٹس صرف دیکھنے کے لیے ہیں۔'}
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-2 justify-end mt-2">
+          <button 
+            onClick={() => toast.dismiss(t.id)} 
+            className="px-3 py-1.5 rounded-lg text-xs font-bold text-muted-foreground hover:bg-muted cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button 
+            onClick={() => {
+              toast.dismiss(t.id);
+              navigate(path);
+            }} 
+            className="px-4 py-1.5 rounded-lg text-xs font-black bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs cursor-pointer"
+          >
+            {moduleName}
+          </button>
+        </div>
+      </div>
+    ), { duration: 5000, position: 'bottom-right' });
+  };
 
   const commonProps = {
     reportId,
@@ -339,17 +379,17 @@ export const DomainWorkspaceEngine: React.FC<DomainWorkspaceEngineProps> = ({
   return (
     <div className={`space-y-4 font-sans ${lang === 'ur' ? 'rtl' : ''}`}>
       {/* ── ENTERPRISE DOMAIN WORKSPACE HEADER & LOCAL SUB-NAVIGATION ── */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+      <div className="bg-card rounded-2xl border border-border p-4 sm:p-5 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#0B5C3D]/10 text-[#0B5C3D] flex items-center justify-center text-xl font-bold">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary-hover flex items-center justify-center text-xl font-bold shadow-2xs">
               {meta.icon}
             </div>
             <div>
-              <h1 className="text-lg font-black text-slate-900 tracking-tight leading-tight">
+              <h1 className="text-lg font-black text-foreground tracking-tight leading-tight">
                 {isEn ? meta.title : meta.titleUr}
               </h1>
-              <span className="text-[11px] font-bold text-slate-400">
+              <span className="text-[11px] font-bold text-muted-foreground">
                 {isEn ? `Domain: ${domain.toUpperCase()} • Live Firestore Realtime Engine` : `ڈومین: ${domain} • لائیو فائر بیس اسٹریم`}
               </span>
             </div>
@@ -361,8 +401,8 @@ export const DomainWorkspaceEngine: React.FC<DomainWorkspaceEngineProps> = ({
               {meta.quickCreates.map((qc) => (
                 <button
                   key={qc.id}
-                  onClick={() => onSelectReport?.(qc.targetId)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0B5C3D] text-white hover:bg-emerald-800 rounded-xl text-xs font-black transition-all shadow-xs cursor-pointer active:scale-95"
+                  onClick={() => handleQuickCreateClick(isEn ? qc.label : qc.labelUr, qc.targetId)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white hover:bg-primary-hover rounded-xl text-xs font-black transition-all shadow-xs cursor-pointer active:scale-95"
                 >
                   <span>{qc.icon}</span>
                   <span>{isEn ? qc.label : qc.labelUr}</span>
@@ -383,8 +423,8 @@ export const DomainWorkspaceEngine: React.FC<DomainWorkspaceEngineProps> = ({
                   onClick={() => handleTabClick(tab.reportId)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
                     isActive
-                      ? 'bg-[#0B5C3D] text-white shadow-xs'
-                      : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-primary-hover text-white shadow-xs'
+                      : 'bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary'
                   }`}
                 >
                   {isEn ? tab.label : tab.labelUr}

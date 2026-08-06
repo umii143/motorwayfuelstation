@@ -188,7 +188,7 @@ export default function FuelPurchaseHistoryReport({
           <strong className="font-mono text-xl font-black text-orange-600 block">
             {formatCurrency(procurementData.totalPurchaseCost, settings)}
           </strong>
-          <span className="text-[10px] text-emerald-600 font-bold block">
+          <span className="text-[10px] text-primary font-bold block">
             {procurementData.receipts.length} Tanker Deliveries Verified
           </span>
         </div>
@@ -229,14 +229,14 @@ export default function FuelPurchaseHistoryReport({
         <div className="rounded-2xl border border-border bg-card p-4 shadow-sm space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Active OMC Suppliers</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center border border-emerald-500/30">
+            <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/30">
               <Building2 className="w-4 h-4" />
             </div>
           </div>
-          <strong className="font-mono text-xl font-black text-emerald-600 block">
+          <strong className="font-mono text-xl font-black text-primary block">
             {procurementData.supplierSummaries.length} Suppliers
           </strong>
-          <span className="text-[10px] text-emerald-600 font-bold block">
+          <span className="text-[10px] text-primary font-bold block">
             100% Quality & Density Certified
           </span>
         </div>
@@ -265,7 +265,7 @@ export default function FuelPurchaseHistoryReport({
             <div key={idx} className="p-4 rounded-2xl border border-border bg-subtle space-y-2">
               <div className="flex items-center justify-between border-b border-border pb-2">
                 <span className="font-black text-xs text-foreground uppercase">{sup.name}</span>
-                <span className="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-600 text-[9px] font-black uppercase">
+                <span className="px-2 py-0.5 rounded bg-primary/15 text-primary text-[9px] font-black uppercase">
                   {sup.count} Deliveries
                 </span>
               </div>
@@ -280,7 +280,7 @@ export default function FuelPurchaseHistoryReport({
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <span>Avg Rate / Ltr:</span>
-                  <span className="font-bold text-emerald-600">Rs. {(sup.liters > 0 ? sup.totalCost / sup.liters : 0).toFixed(2)}/L</span>
+                  <span className="font-bold text-primary">Rs. {(sup.liters > 0 ? sup.totalCost / sup.liters : 0).toFixed(2)}/L</span>
                 </div>
               </div>
             </div>
@@ -324,10 +324,10 @@ export default function FuelPurchaseHistoryReport({
                     <td className="p-3 text-muted-foreground font-bold">{r.challanNo || `INV-${idx + 101}`}</td>
                     <td className="p-3 font-bold text-foreground">{prodName}</td>
                     <td className="p-3 text-right font-extrabold text-foreground">{r.quantity.toLocaleString()} Ltr</td>
-                    <td className="p-3 text-right font-bold text-emerald-600">Rs. {costRate.toFixed(2)}</td>
+                    <td className="p-3 text-right font-bold text-primary">Rs. {costRate.toFixed(2)}</td>
                     <td className="p-3 text-right font-black text-orange-600">{formatCurrency(totalAmt, settings)}</td>
                     <td className="p-3 text-center">
-                      <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 font-bold border border-emerald-500/30 text-[10px]">
+                      <span className="px-2 py-0.5 rounded bg-primary/10 text-primary font-bold border border-primary/30 text-[10px]">
                         {r.densityObserved || '0.745'} g/cm³
                       </span>
                     </td>

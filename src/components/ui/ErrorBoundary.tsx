@@ -1,4 +1,3 @@
-
 import React, { ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { logger } from '../../lib/logger';
@@ -7,6 +6,7 @@ interface Props {
  children: ReactNode;
  fallbackTitle?: string;
  fallbackMessage?: string;
+ reportId?: string; // Addendum A.3 Fault Isolation support
 }
 
 interface State {
@@ -43,6 +43,11 @@ export class ErrorBoundary extends React.Component<Props, State> {
  <p className="font-sans text-sm text-rose-700 max-w-md mb-6 leading-relaxed">
  {this.props.fallbackMessage ||
  'This section encountered an error. Your data is safe. Try refreshing or click below to retry.'}
+ {this.props.reportId && (
+ <span className="block mt-2 font-mono text-xs opacity-75">
+ Report ID: {this.props.reportId}
+ </span>
+ )}
  </p>
  {this.state.error && (
  <p className="font-mono text-xs text-rose-400 bg-rose-100 rounded-lg px-3 py-2 mb-6 max-w-sm truncate">

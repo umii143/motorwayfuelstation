@@ -46,7 +46,7 @@ export const WorkspaceEmptyState: React.FC<WorkspaceEmptyStateProps> = ({
 
       {/* Firebase Live Status */}
       <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 border border-slate-200 mb-4">
-        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+        <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
         <span className="text-[10px] font-black text-slate-600 uppercase tracking-wider">
           Connected to Google Firebase • Awaiting Records
         </span>
@@ -65,7 +65,7 @@ export const WorkspaceEmptyState: React.FC<WorkspaceEmptyStateProps> = ({
         {actionLabel && onAction && (
           <button
             onClick={onAction}
-            className="px-4 py-2 rounded-xl bg-[#0B5C3D] text-white text-xs font-black hover:bg-emerald-800 transition-all cursor-pointer flex items-center gap-1.5"
+            className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-black hover:bg-primary-hover transition-all cursor-pointer flex items-center gap-1.5"
           >
             <span>{actionLabel}</span>
             <ArrowRight size={13} />

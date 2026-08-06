@@ -40,7 +40,7 @@ export const SupplierContractsTab: React.FC<SupplierContractsTabProps> = ({
       <div className="flex justify-between items-center bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs">
         <div>
           <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
-            <FileText size={18} className="text-[#0B5C3D]" />
+            <FileText size={18} className="text-primary" />
             <span>OMC Supply Agreements & Commercial Contracts</span>
           </h2>
           <p className="text-xs font-bold text-slate-500 mt-0.5">

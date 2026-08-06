@@ -262,6 +262,12 @@ export interface EnterpriseReportManifest {
   readonly formulaIds: string[];
   readonly requiredPermissions: RBACRole[];
 
+  // Architectural Metadata (PRD v6.1 A.9)
+  readonly parentWorkspace?: string;
+  readonly healthMonitored?: boolean;
+  readonly dataQualityChecks?: string[];
+  readonly apiVersion?: string;
+
   // UI Definitions
   readonly kpis: KPIDefinition[];
   readonly charts: ChartDefinition[];

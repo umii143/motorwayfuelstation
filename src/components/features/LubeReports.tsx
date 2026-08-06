@@ -442,10 +442,10 @@ export default function LubeReports({
  {[
  { label: t('Total Revenue', 'کل آمدنی'), value: formatCurrency(kpis.totalRevenue, settings), icon: DollarSign, color: 'text-violet-600' },
  { label: t('Invoices Issued', 'انوائسز'), value: String(kpis.totalInvoices), icon: Receipt, color: 'text-sky-600' },
- { label: t('Avg Invoice', 'اوسط انوائس'), value: formatCurrency(kpis.avgInvoice, settings), icon: BarChart2, color: 'text-emerald-600' },
+ { label: t('Avg Invoice', 'اوسط انوائس'), value: formatCurrency(kpis.avgInvoice, settings), icon: BarChart2, color: 'text-primary' },
  { label: t('Discounts Given', 'چھوٹ دی'), value: formatCurrency(kpis.totalDiscount, settings), icon: Percent, color: 'text-amber-600' },
  { label: t('Top Seller', 'سب سے زیادہ'), value: kpis.topProd?.name || '—', icon: Star, color: 'text-pink-600' },
- { label: t('Net Profit Est.', 'تخمینہ بچت'), value: formatCurrency(kpis.netProfit, settings), icon: TrendingUp, color: kpis.netProfit >= 0 ? 'text-emerald-600' : 'text-rose-600' },
+ { label: t('Net Profit Est.', 'تخمینہ بچت'), value: formatCurrency(kpis.netProfit, settings), icon: TrendingUp, color: kpis.netProfit >= 0 ? 'text-primary' : 'text-rose-600' },
  ].map((kpi, i) => (
  <div key={i} className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] p-3.5 shadow-sm flex flex-col gap-2">
  <div className="flex items-center justify-between">
@@ -544,7 +544,7 @@ export default function LubeReports({
  { }
  <div className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] p-5 shadow-sm space-y-4">
  <h3 className="font-sans text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-1.5 border-b border-[var(--border-main)] pb-2 mb-3">
- <CreditCard className="h-4 w-4 text-emerald-500" />
+ <CreditCard className="h-4 w-4 text-primary" />
  <span>{t('Revenue by Payment Channel', 'ادائیگی چینل وائز آمدنی')}</span>
  </h3>
  {paymentModeData.length === 0 ? (
@@ -831,7 +831,7 @@ export default function LubeReports({
  accessor: (item) => {
  const isLowStock = item.product && item.product.currentStock <= item.product.minStock;
  return item.product ? (
- <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold${isLowStock ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700'}`}>
+ <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold${isLowStock ? 'bg-rose-50 text-rose-700' : 'bg-success/10 text-success'}`}>
  {isLowStock ? '⚠ Low Stock' : '✓ In Stock'} ({item.product.currentStock} {item.product.unit})
  </span>
  ) : '—';
@@ -898,7 +898,7 @@ export default function LubeReports({
  <div className="flex flex-col items-center gap-1">
  <span className="text-[10px] font-bold text-[var(--text-muted)]">{utilPct.toFixed(0)}%</span>
  <div className="h-1.5 w-16 bg-[var(--bg-secondary)] rounded-full overflow-hidden">
- <div className={`h-full rounded-full${risk === 'HIGH' ? 'bg-rose-500' : risk === 'MEDIUM' ? 'bg-amber-500' : 'bg-emerald-500'}`}
+ <div className={`h-full rounded-full${risk === 'HIGH' ? 'bg-rose-500' : risk === 'MEDIUM' ? 'bg-amber-500' : 'bg-success'}`}
  style={{ width: `${Math.min(100, utilPct)}%` }} />
  </div>
  </div>
@@ -911,7 +911,7 @@ export default function LubeReports({
  accessor: (cust) => {
  const utilPct = cust.creditLimit > 0 ? (cust.balance / cust.creditLimit) * 100 : 100;
  const risk = utilPct >= 90 ? 'HIGH' : utilPct >= 60 ? 'MEDIUM' : 'LOW';
- const riskColor = risk === 'HIGH' ? 'bg-rose-50 text-rose-700' : risk === 'MEDIUM' ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700';
+ const riskColor = risk === 'HIGH' ? 'bg-rose-50 text-rose-700' : risk === 'MEDIUM' ? 'bg-amber-50 text-amber-700' : 'bg-success/10 text-success';
  return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold${riskColor}`}>{risk}</span>;
  }
  }
@@ -937,7 +937,7 @@ export default function LubeReports({
  { label: t('Product Returns', 'واپسی'), value: -financialPeriod.totalReturns, color: 'text-rose-600', bg: 'bg-rose-50' },
  { label: t('Net Revenue', 'خالص آمدنی'), value: financialPeriod.netRevenue, color: 'text-sky-600', bg: 'bg-sky-50' },
  { label: t('Total Expenses', 'کل اخراجات'), value: -financialPeriod.expenses, color: 'text-amber-600', bg: 'bg-amber-50' },
- { label: t('Net Profit', 'خالص منافع'), value: financialPeriod.netProfit, color: financialPeriod.netProfit >= 0 ? 'text-emerald-600' : 'text-rose-600', bg: financialPeriod.netProfit >= 0 ? 'bg-emerald-50' : 'bg-rose-50' },
+ { label: t('Net Profit', 'خالص منافع'), value: financialPeriod.netProfit, color: financialPeriod.netProfit >= 0 ? 'text-success' : 'text-rose-600', bg: financialPeriod.netProfit >= 0 ? 'bg-success/10' : 'bg-rose-50' },
  ].map((item, i) => (
  <div key={i} className={`rounded-xl border border-[var(--border-main)] p-4 shadow-sm flex flex-col gap-1.5${item.bg}`}>
  <span className="font-sans text-[9.5px] font-bold text-[var(--text-muted)] uppercase tracking-widest">{item.label}</span>

@@ -56,7 +56,7 @@ export const CustomerRegisterTab: React.FC<CustomerRegisterTabProps> = ({
       <div className="flex justify-between items-center bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs">
         <div>
           <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
-            <Users size={18} className="text-[#0B5C3D]" />
+            <Users size={18} className="text-primary" />
             <span>Master Customer Directory & Credit Register</span>
           </h2>
           <p className="text-xs font-bold text-slate-500 mt-0.5">
@@ -66,7 +66,7 @@ export const CustomerRegisterTab: React.FC<CustomerRegisterTabProps> = ({
 
         <button
           onClick={onOpenNewCustomerModal}
-          className="px-4 py-2 bg-[#0B5C3D] hover:bg-emerald-800 text-white text-xs font-black rounded-xl shadow-2xs flex items-center gap-1.5 cursor-pointer"
+          className="px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-black rounded-xl shadow-2xs flex items-center gap-1.5 cursor-pointer"
         >
           <Plus size={15} />
           <span>+ Create Customer Account</span>

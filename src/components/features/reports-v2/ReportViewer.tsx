@@ -73,7 +73,7 @@ function getDateRange(preset: DateRangePreset): { dateFrom: Date; dateTo: Date }
 // ──────────────────────────────────────────────
 
 const STATUS_COLORS: Record<string, { bg: string; border: string; text: string; bar: string; icon: string }> = {
-  SUCCESS: { bg: 'bg-emerald-50 dark:bg-emerald-950/20', border: 'border-emerald-500', text: 'text-emerald-700 dark:text-emerald-400', bar: 'bg-emerald-500', icon: '✓' },
+  SUCCESS: { bg: 'bg-success/10 dark:bg-success/20', border: 'border-success', text: 'text-success dark:text-success', bar: 'bg-success', icon: '✓' },
   WARNING: { bg: 'bg-amber-50 dark:bg-amber-950/20', border: 'border-amber-500', text: 'text-amber-700 dark:text-amber-400', bar: 'bg-amber-500', icon: '⚠' },
   DANGER: { bg: 'bg-red-50 dark:bg-red-950/20', border: 'border-red-500', text: 'text-red-700 dark:text-red-400', bar: 'bg-red-500', icon: '✕' },
   NEUTRAL: { bg: 'bg-slate-50 dark:bg-slate-800/40', border: 'border-slate-400', text: 'text-slate-600 dark:text-slate-400', bar: 'bg-slate-400', icon: '•' },
@@ -97,12 +97,14 @@ function FillBar({ percent, label }: { percent: number; label?: string }) {
   const clamped = Math.max(0, Math.min(100, percent));
   const filled = Math.round(clamped / 10);
   const empty = 10 - filled;
-  const color = clamped > 30 ? 'bg-emerald-500' : clamped > 15 ? 'bg-amber-500' : 'bg-red-500';
-  const textColor = clamped > 30 ? 'text-emerald-600 dark:text-emerald-400' : clamped > 15 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400';
+  const color = clamped > 30 ? 'bg-primary' : clamped > 15 ? 'bg-amber-500' : 'bg-red-500';
+  const textColor = clamped > 30 ? 'text-primary dark:text-primary' : clamped > 15 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400';
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex gap-0.5">
+    <div className="flex items-center gap-2 min-w-0">
+      {/* 10-block gauge: hidden below sm so product KPI cards (2-col grid on mobile)
+          don't overflow — the percentage + label remain the primary signal there. */}
+      <div className="flex gap-0.5 max-sm:hidden">
         {Array.from({ length: filled }).map((_, i) => (
           <div key={i} className={`w-3 h-5 rounded-sm ${color}`} />
         ))}
@@ -110,8 +112,8 @@ function FillBar({ percent, label }: { percent: number; label?: string }) {
           <div key={i} className="w-3 h-5 rounded-sm bg-slate-200 dark:bg-slate-700" />
         ))}
       </div>
-      <span className={`text-sm font-bold ${textColor}`}>{clamped.toFixed(0)}%</span>
-      {label && <span className="text-xs text-slate-400">{label}</span>}
+      <span className={`text-sm font-bold shrink-0 ${textColor}`}>{clamped.toFixed(0)}%</span>
+      {label && <span className="text-xs text-slate-400 truncate min-w-0">{label}</span>}
     </div>
   );
 }
@@ -160,7 +162,7 @@ function ProductKPICard({
           </div>
         </div>
         {onClick && (
-          <span className="text-xs text-blue-600 font-extrabold flex items-center gap-0.5">
+          <span className="text-xs text-primary font-extrabold flex items-center gap-0.5">
             {lang === 'ur' ? 'تفصیلات →' : 'Details →'}
           </span>
         )}
@@ -198,12 +200,12 @@ function SimpleKPICard({ kpi, lang, onClick }: { kpi: KPIResult; lang: 'en' | 'u
   const numVal = Number(kpi.value) || 0;
   
   // Decide base colors based on type
-  const bgClass = isExpense ? 'bg-orange-50/80' : isCritical ? 'bg-red-50/80' : 'bg-emerald-50/80';
-  const borderClass = isExpense ? 'border-orange-200' : isCritical ? 'border-red-200' : 'border-emerald-200';
-  const iconBg = isExpense ? 'bg-orange-100 text-orange-700' : isCritical ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700';
-  const textValClass = isExpense ? 'text-[#9A4210]' : isCritical ? 'text-red-700' : 'text-[#0B5C3D]';
-  const labelClass = isExpense ? 'text-orange-900/90' : isCritical ? 'text-red-900/90' : 'text-emerald-900/90';
-  const tapClass = isExpense ? 'text-orange-700 hover:text-orange-800' : isCritical ? 'text-red-700 hover:text-red-800' : 'text-emerald-700 hover:text-emerald-800';
+  const bgClass = isExpense ? 'bg-orange-50/80' : isCritical ? 'bg-red-50/80' : 'bg-primary/10';
+  const borderClass = isExpense ? 'border-orange-200' : isCritical ? 'border-red-200' : 'border-primary/25';
+  const iconBg = isExpense ? 'bg-orange-100 text-orange-700' : isCritical ? 'bg-red-100 text-red-700' : 'bg-primary/10 text-primary';
+  const textValClass = isExpense ? 'text-[#9A4210]' : isCritical ? 'text-red-700' : 'text-primary';
+  const labelClass = isExpense ? 'text-orange-900/90' : isCritical ? 'text-red-900/90' : 'text-primary/90';
+  const tapClass = isExpense ? 'text-orange-700 hover:text-orange-800' : isCritical ? 'text-red-700 hover:text-red-800' : 'text-primary hover:text-primary';
 
   const absVal = Math.abs(numVal);
   const isNeg = numVal < 0;
@@ -220,7 +222,7 @@ function SimpleKPICard({ kpi, lang, onClick }: { kpi: KPIResult; lang: 'en' | 'u
   return (
     <div
       onClick={onClick}
-      className={`rounded-2xl border ${borderClass} ${bgClass} p-4 flex flex-col justify-between relative overflow-hidden transition-all duration-200 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-emerald-400 cursor-pointer active:scale-[0.98] min-h-[140px] group`}
+      className={`rounded-2xl border ${borderClass} ${bgClass} p-4 flex flex-col justify-between relative overflow-hidden transition-all duration-200 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-primary cursor-pointer active:scale-[0.98] min-h-[140px] group`}
     >
       <div className="flex justify-between items-start mb-2 relative z-10">
         <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center shadow-sm text-lg font-bold group-hover:scale-110 transition-transform`}>
@@ -322,11 +324,11 @@ function EnterpriseHeader({
       {/* TOP NAV BAR */}
       <div className="flex items-center justify-between bg-white rounded-2xl border border-slate-200 px-4 py-2.5 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#0B5C3D] text-white flex items-center justify-center font-black text-xs shadow-sm">FP</div>
+          <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-black text-xs shadow-sm">FP</div>
           <div className="leading-tight">
             <div className="font-extrabold text-slate-900 text-[13px] tracking-tight">{lang === 'ur' ? 'فیول پرو انٹرپرائز' : 'FuelPro Enterprise'}</div>
             <div className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
               {lang === 'ur' ? 'لائیو · ہر 4 سیکنڈ اپ ڈیٹ' : 'LIVE · Updates every 4s'}
             </div>
           </div>
@@ -335,7 +337,7 @@ function EnterpriseHeader({
         <div className="flex items-center gap-1.5 flex-wrap">
           {/* Date Pill Button — cycles Today/Week/Month on click */}
           <button
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-[11px] font-bold text-slate-700 shadow-sm hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-800 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-[11px] font-bold text-slate-700 shadow-sm hover:border-primary hover:bg-primary/10 hover:text-primary transition-all cursor-pointer"
             onClick={() => {
               const cycle: DateRangePreset[] = ['today', 'thisWeek', 'thisMonth'];
               const idx = cycle.indexOf(datePreset);
@@ -352,29 +354,29 @@ function EnterpriseHeader({
           </select>
 
           {/* Role */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-[11px] font-extrabold text-emerald-800">
-            <span className="w-4 h-4 rounded-full bg-[#0B5C3D] text-white text-[9px] flex items-center justify-center font-black">{lang === 'ur' ? 'م' : 'O'}</span>
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 border border-primary/25 text-[11px] font-extrabold text-primary">
+            <span className="w-4 h-4 rounded-full bg-primary text-white text-[9px] flex items-center justify-center font-black">{lang === 'ur' ? 'م' : 'O'}</span>
             <span>{lang === 'ur' ? 'مالک' : 'Owner'}</span>
           </div>
 
           {/* Last Sync indicator */}
           <div className="hidden sm:flex items-center gap-1 px-2 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-[10px] font-bold">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-emerald-700 font-extrabold">{timeAgo}</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+            <span className="text-primary font-extrabold">{timeAgo}</span>
           </div>
 
           <div className="h-5 w-px bg-slate-200"></div>
 
           {/* Language */}
           <div className="flex items-center rounded-lg border border-slate-200 bg-slate-100 p-0.5 shadow-sm">
-            <button onClick={() => onLangChange('en')} className={`px-2 py-1 rounded-md text-[10px] font-black transition-all cursor-pointer ${lang === 'en' ? 'bg-[#0B5C3D] text-white' : 'text-slate-600 hover:text-slate-900'}`}>EN</button>
-            <button onClick={() => onLangChange('ur')} className={`px-2 py-1 rounded-md text-[10px] font-black transition-all cursor-pointer ${lang === 'ur' ? 'bg-[#0B5C3D] text-white' : 'text-slate-600 hover:text-slate-900'}`}>اردو</button>
+            <button onClick={() => onLangChange('en')} className={`px-2 py-1 rounded-md text-[10px] font-black transition-all cursor-pointer ${lang === 'en' ? 'bg-primary text-white' : 'text-slate-600 hover:text-slate-900'}`}>EN</button>
+            <button onClick={() => onLangChange('ur')} className={`px-2 py-1 rounded-md text-[10px] font-black transition-all cursor-pointer ${lang === 'ur' ? 'bg-primary text-white' : 'text-slate-600 hover:text-slate-900'}`}>اردو</button>
           </div>
 
-          <button onClick={onRefresh} className={`p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 transition-all shadow-sm cursor-pointer ${loading ? 'animate-spin' : ''}`}>
+          <button onClick={onRefresh} className={`p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-primary hover:bg-primary/10 transition-all shadow-sm cursor-pointer ${loading ? 'animate-spin' : ''}`}>
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
           </button>
-          <button onClick={onExport} className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-blue-700 hover:bg-blue-50 transition-all shadow-sm cursor-pointer">
+          <button onClick={onExport} className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-primary hover:bg-primary/10 transition-all shadow-sm cursor-pointer">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
           </button>
           <button onClick={onPrint} className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-all shadow-sm cursor-pointer">
@@ -390,13 +392,13 @@ function EnterpriseHeader({
               <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl border border-slate-200 shadow-lg z-50 overflow-hidden">
                 <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                   <span className="text-xs font-extrabold text-slate-900">{lang === 'ur' ? 'اطلاعات' : 'Notifications'}</span>
-                  <button className="text-[10px] font-bold text-emerald-700 cursor-pointer">{lang === 'ur' ? 'سب پڑھی' : 'Mark all read'}</button>
+                  <button className="text-[10px] font-bold text-primary cursor-pointer">{lang === 'ur' ? 'سب پڑھی' : 'Mark all read'}</button>
                 </div>
                 <div className="divide-y divide-slate-100 max-h-60 overflow-y-auto">
                   {notifications.map(n => (
                     <div key={n.id} className="px-4 py-3 hover:bg-slate-50 cursor-pointer">
                       <div className="flex items-start gap-2.5">
-                        <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${n.type === 'warning' ? 'bg-amber-500' : n.type === 'success' ? 'bg-emerald-500' : n.type === 'danger' ? 'bg-red-500' : 'bg-blue-500'}`}></div>
+                        <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${n.type === 'warning' ? 'bg-amber-500' : n.type === 'success' ? 'bg-primary' : n.type === 'danger' ? 'bg-red-500' : 'bg-blue-500'}`}></div>
                         <div><p className="text-xs font-bold text-slate-800">{n.text}</p><span className="text-[10px] text-slate-400">{n.time}</span></div>
                       </div>
                     </div>
@@ -408,23 +410,23 @@ function EnterpriseHeader({
         </div>
       </div>
 
-      {/* HERO BANNER */}
-      <div className="bg-[#0B5C3D] rounded-2xl px-5 py-4 flex items-center justify-between shadow-md relative overflow-hidden">
-        <div className="absolute right-0 top-0 w-48 h-full bg-white opacity-[0.04] transform skew-x-12 translate-x-8"></div>
-        <div className="relative z-10">
-          <div className="text-[9px] font-bold tracking-[0.2em] text-emerald-200/70 uppercase flex items-center gap-1.5">
+      {/* HERO BANNER — stacks on mobile, truncates long report titles instead of squeezing */}
+      <div className="bg-primary-hover rounded-2xl px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 shadow-md relative overflow-hidden">
+        <div className="absolute right-0 top-0 w-48 h-full bg-white opacity-[0.04] transform skew-x-12 translate-x-8 pointer-events-none"></div>
+        <div className="relative z-10 min-w-0">
+          <div className="text-[9px] font-bold tracking-[0.2em] text-amber-100/90 uppercase flex items-center gap-1.5">
             <span>{lang === 'ur' ? 'مالک ڈیش بورڈ' : 'OWNER DASHBOARD'}</span>
-            <span className="w-1 h-1 rounded-full bg-emerald-400"></span>
+            <span className="w-1 h-1 rounded-full bg-white/80"></span>
             <span>{lang === 'ur' ? 'تمام برانچیں' : 'ALL BRANCHES'}</span>
           </div>
-          <h1 className="text-xl font-extrabold text-white tracking-tight mt-0.5">{lang === 'ur' ? titleUr : title}</h1>
-          <h2 className="text-xs font-medium text-emerald-200/80 mt-0.5">{lang === 'ur' ? 'روزانہ آپریشنل اور مالیاتی کنٹرول روم' : 'Daily Operational Control & Financial Center'}</h2>
+          <h1 className="text-lg sm:text-xl font-extrabold text-white tracking-tight mt-0.5 truncate" title={lang === 'ur' ? titleUr : title}>{lang === 'ur' ? titleUr : title}</h1>
+          <h2 className="text-xs font-medium text-white/80 mt-0.5 hidden sm:block">{lang === 'ur' ? 'روزانہ آپریشنل اور مالیاتی کنٹرول روم' : 'Daily Operational Control & Financial Center'}</h2>
         </div>
-        <div className="text-right relative z-10 flex flex-col items-end gap-1">
-          <div className="text-[10px] font-medium text-emerald-200/70">{lang === 'ur' ? 'آخری تازہ کاری' : 'Last updated'}</div>
+        <div className="text-left sm:text-right relative z-10 flex flex-row sm:flex-col items-center sm:items-end gap-2 sm:gap-1 shrink-0">
+          <div className="hidden sm:block text-[10px] font-medium text-amber-100/90">{lang === 'ur' ? 'آخری تازہ کاری' : 'Last updated'}</div>
           <div className="text-sm font-extrabold text-white">{timeAgo}</div>
-          <div className="mt-0.5 bg-orange-500 text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded flex items-center gap-1 shadow-md">
-            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span> {lang === 'ur' ? 'لائیو' : 'LIVE'}
+          <div className="bg-white text-primary-hover text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded flex items-center gap-1 shadow-md">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> {lang === 'ur' ? 'لائیو' : 'LIVE'}
           </div>
         </div>
       </div>
@@ -432,7 +434,7 @@ function EnterpriseHeader({
       {/* SUMMARY HEADLINE */}
       <div className="flex items-end justify-between px-1">
         <div>
-          <div className="text-[10px] font-bold tracking-widest text-emerald-900 uppercase mb-1">{lang === 'ur' ? 'آج کا خلاصہ' : "TODAY'S SUMMARY"}</div>
+          <div className="text-[10px] font-bold tracking-widest text-primary uppercase mb-1">{lang === 'ur' ? 'آج کا خلاصہ' : "TODAY'S SUMMARY"}</div>
           <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">{lang === 'ur' ? 'آج کا کاروبار کیسا جا رہا ہے؟' : 'How is today going, right now?'}</h2>
         </div>
       </div>
@@ -479,7 +481,7 @@ function AdvancedFiltersPanel({
         <div className="flex items-center gap-2">
           <span>⚙</span>
           <span className="font-extrabold text-slate-900 text-sm">{lang === 'ur' ? 'تفصیلی فلٹرز' : 'More Filters'}</span>
-          {activeCount > 0 && <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-emerald-600 text-white">{activeCount}</span>}
+          {activeCount > 0 && <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-primary text-white">{activeCount}</span>}
         </div>
         <button onClick={onClose} className="w-7 h-7 rounded-lg bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-600 font-bold cursor-pointer">✕</button>
       </div>
@@ -490,7 +492,7 @@ function AdvancedFiltersPanel({
           <div className="flex flex-wrap gap-2">
             {advancedDates.map(p => (
               <button key={p.id} onClick={() => onDateChange(p.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${datePreset === p.id ? 'bg-[#0B5C3D] text-white border-[#0B5C3D]' : 'bg-white text-slate-700 border-slate-200 hover:bg-emerald-50 hover:border-emerald-300'}`}>
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${datePreset === p.id ? 'bg-primary text-white border-primary' : 'bg-white text-slate-700 border-slate-200 hover:bg-primary/10 hover:border-primary/35'}`}>
                 {lang === 'ur' ? p.labelUr : p.label}
               </button>
             ))}
@@ -503,12 +505,12 @@ function AdvancedFiltersPanel({
             <div className="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2.5">{lang === 'ur' ? group.labelUr : group.label}</div>
             <div className="flex flex-wrap gap-2">
               <button onClick={() => onFilterChange(group.id, '')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${!activeFilters[group.id] ? 'bg-[#0B5C3D] text-white border-[#0B5C3D]' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}>
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${!activeFilters[group.id] ? 'bg-primary text-white border-primary' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}>
                 {lang === 'ur' ? 'تمام' : 'All'}
               </button>
               {group.options.map(opt => (
                 <button key={opt.value} onClick={() => onFilterChange(group.id, activeFilters[group.id] === opt.value ? '' : opt.value)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1.5 ${activeFilters[group.id] === opt.value ? 'bg-[#0B5C3D] text-white border-[#0B5C3D]' : 'bg-white text-slate-700 border-slate-200 hover:bg-emerald-50 hover:border-emerald-300'}`}>
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1.5 ${activeFilters[group.id] === opt.value ? 'bg-primary text-white border-primary' : 'bg-white text-slate-700 border-slate-200 hover:bg-primary/10 hover:border-primary/35'}`}>
                   {opt.icon && <span>{opt.icon}</span>}
                   <span>{lang === 'ur' ? opt.labelUr : opt.label}</span>
                 </button>
@@ -519,7 +521,7 @@ function AdvancedFiltersPanel({
       </div>
       <div className="shrink-0 px-5 py-4 border-t border-slate-200 bg-white flex gap-3">
         <button onClick={handleReset} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer">{lang === 'ur' ? 'فلٹرز صاف' : 'Reset All'}</button>
-        <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl bg-[#0B5C3D] text-white text-xs font-extrabold hover:bg-emerald-800 cursor-pointer">{lang === 'ur' ? 'لاگو کریں' : 'Apply Filters'}</button>
+        <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-white text-xs font-extrabold hover:bg-primary-hover cursor-pointer">{lang === 'ur' ? 'لاگو کریں' : 'Apply Filters'}</button>
       </div>
     </div>
   );
@@ -575,7 +577,7 @@ function SavedViewsBar({
           <span>{lang === 'ur' ? view.labelUr : view.label}</span>
         </button>
       ))}
-      <button className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border border-dashed border-slate-300 text-slate-400 hover:border-emerald-400 hover:text-emerald-700 hover:bg-emerald-50 transition-all cursor-pointer" title={lang === 'ur' ? 'نیا ویو محفوظ کریں' : 'Save current view'}>+</button>
+      <button className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border border-dashed border-slate-300 text-slate-400 hover:border-primary hover:text-primary hover:bg-primary/10 transition-all cursor-pointer" title={lang === 'ur' ? 'نیا ویو محفوظ کریں' : 'Save current view'}>+</button>
     </div>
   );
 }
@@ -607,20 +609,20 @@ function DateSearchBar({
       <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-xs">
         {presets.map(p => (
           <button key={p.id} onClick={() => onDateChange(p.id)}
-            className={`px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${datePreset === p.id ? 'bg-[#0B5C3D] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'}`}>
+            className={`px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${datePreset === p.id ? 'bg-primary text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'}`}>
             {lang === 'ur' ? p.labelUr : p.label}
           </button>
         ))}
         <button onClick={onToggleFilters}
-          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${filtersOpen ? 'bg-emerald-100 text-emerald-900' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}>
+          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${filtersOpen ? 'bg-primary/10 text-primary' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}>
           <span>⚙</span>
           <span className="hidden sm:inline">{lang === 'ur' ? 'مزید فلٹرز' : 'More Filters'}</span>
-          {activeFilterCount > 0 && <span className="text-[9px] font-black px-1 py-0.5 rounded-full bg-emerald-600 text-white leading-none">{activeFilterCount}</span>}
+          {activeFilterCount > 0 && <span className="text-[9px] font-black px-1 py-0.5 rounded-full bg-primary text-white leading-none">{activeFilterCount}</span>}
         </button>
       </div>
       <div className="flex-1 min-w-[240px]">
         <input type="text" placeholder={placeholder} value={search} onChange={e => onSearchChange(e.target.value)}
-          className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-xs transition-all placeholder:text-slate-400" />
+          className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary shadow-xs transition-all placeholder:text-slate-400" />
       </div>
     </div>
   );
@@ -647,10 +649,10 @@ function FilterChips({
           return (
             <div key={f.id} className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
               <span className="text-xs font-bold text-slate-700 px-2">{filterTitle}</span>
-              <button onClick={() => onFilterChange(f.id, '')} className={`px-3 py-1 text-xs font-extrabold rounded-lg cursor-pointer ${!activeFilters[f.id] ? 'bg-[#0B5C3D] text-white' : 'text-slate-600 hover:bg-white'}`}>{lang === 'ur' ? 'تمام' : 'All'}</button>
+              <button onClick={() => onFilterChange(f.id, '')} className={`px-3 py-1 text-xs font-extrabold rounded-lg cursor-pointer ${!activeFilters[f.id] ? 'bg-primary text-white' : 'text-slate-600 hover:bg-white'}`}>{lang === 'ur' ? 'تمام' : 'All'}</button>
               {f.options.map(opt => (
                 <button key={opt} onClick={() => onFilterChange(f.id, opt)}
-                  className={`px-3 py-1 text-xs font-bold rounded-lg cursor-pointer ${activeFilters[f.id] === opt ? 'bg-[#0B5C3D] text-white' : 'text-slate-600 hover:bg-white'}`}>
+                  className={`px-3 py-1 text-xs font-bold rounded-lg cursor-pointer ${activeFilters[f.id] === opt ? 'bg-primary text-white' : 'text-slate-600 hover:bg-white'}`}>
                   {opt}
                 </button>
               ))}
@@ -745,7 +747,7 @@ function OperationalRegister({
                 <th
                   key={col.id}
                   onClick={() => handleSort(col)}
-                  className={`px-4 py-2.5 text-left font-bold text-slate-700 whitespace-nowrap ${col.sortable ? 'cursor-pointer hover:bg-slate-100' : ''} ${sortColumn === col.accessor ? 'text-[#0B5C3D]' : ''}`}
+                  className={`px-4 py-2.5 text-left font-bold text-slate-700 whitespace-nowrap ${col.sortable ? 'cursor-pointer hover:bg-slate-100' : ''} ${sortColumn === col.accessor ? 'text-primary' : ''}`}
                 >
                   <div className="flex items-center gap-1">
                     <span>{lang === 'ur' ? (col.headerUr || col.header) : col.header}</span>
@@ -760,7 +762,7 @@ function OperationalRegister({
               <tr
                 key={row._id || idx}
                 onClick={() => onRowClick?.(row)}
-                className={`border-b border-slate-100 transition-colors ${onRowClick ? 'cursor-pointer hover:bg-emerald-50/50' : 'hover:bg-slate-50'} ${idx % 2 === 1 ? 'bg-slate-50/40' : ''}`}
+                className={`border-b border-slate-100 transition-colors ${onRowClick ? 'cursor-pointer hover:bg-primary/10' : 'hover:bg-slate-50'} ${idx % 2 === 1 ? 'bg-slate-50/40' : ''}`}
               >
                 {register.columns.map(col => {
                   const value = row[col.accessor];
@@ -770,7 +772,7 @@ function OperationalRegister({
                   if (col.isStatus) return (
                     <td key={col.id} className="px-4 py-2.5 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black ${
-                        String(value).toLowerCase() === 'submitted' || String(value).toLowerCase() === 'active' ? 'bg-emerald-100 text-emerald-800'
+                        String(value).toLowerCase() === 'submitted' || String(value).toLowerCase() === 'active' ? 'bg-primary/10 text-primary'
                         : String(value).toLowerCase() === 'pending' || String(value).toLowerCase() === 'flagged' ? 'bg-amber-100 text-amber-800'
                         : 'bg-slate-100 text-slate-700'
                       }`}>{String(value || '—')}</span>
@@ -787,8 +789,8 @@ function OperationalRegister({
                 {register.columns.map(col => {
                   const sv = register.summaryRow?.[col.accessor];
                   if (sv === undefined) return <td key={col.id} className="px-4 py-3 text-slate-400">—</td>;
-                  if (col.isCurrency) return <td key={col.id} className="px-4 py-3 font-mono text-blue-700">{formatCurrency(sv)}</td>;
-                  if (col.isNumeric) return <td key={col.id} className="px-4 py-3 font-mono text-blue-700">{Number(sv).toLocaleString('en-PK')}</td>;
+                  if (col.isCurrency) return <td key={col.id} className="px-4 py-3 font-mono text-primary">{formatCurrency(sv)}</td>;
+                  if (col.isNumeric) return <td key={col.id} className="px-4 py-3 font-mono text-primary">{Number(sv).toLocaleString('en-PK')}</td>;
                   return <td key={col.id} className="px-4 py-3 text-slate-700">{String(sv)}</td>;
                 })}
               </tr>
@@ -801,7 +803,7 @@ function OperationalRegister({
           {lang === 'ur' ? `${sortedRows.length} ریکارڈز` : `${sortedRows.length} ${sortedRows.length === 1 ? 'record' : 'records'}`}
         </span>
         {onRowClick && (
-          <span className="text-blue-600 font-bold">
+          <span className="text-primary font-bold">
             {lang === 'ur' ? 'تفصیلات کے لیے سطر پر کلک کریں' : 'Click row for details'}
           </span>
         )}
@@ -832,7 +834,7 @@ function SubViewHeader({
       <div className="flex items-center gap-3">
         <button
           onClick={() => onSelectReport?.('A')}
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-50 text-[#0B5C3D] hover:bg-emerald-100 border border-emerald-200 font-extrabold text-xs transition-all shadow-2xs cursor-pointer group"
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/15 border border-primary/25 font-extrabold text-xs transition-all shadow-2xs cursor-pointer group"
         >
           <span className="text-sm transform group-hover:-translate-x-0.5 transition-transform">{lang === 'ur' ? '→' : '←'}</span>
           <span>{lang === 'ur' ? 'ڈیش بورڈ پر واپس جائیں' : 'Back to Dashboard'}</span>
@@ -892,7 +894,7 @@ function DrilldownBreadcrumb({
               className={`transition-colors cursor-pointer rounded px-0.5 ${
                 isActive
                   ? 'font-extrabold text-slate-900 cursor-default'
-                  : 'font-semibold text-slate-400 hover:text-emerald-700'
+                  : 'font-semibold text-slate-400 hover:text-primary'
               }`}
             >
               {label}
@@ -936,7 +938,7 @@ function CustomerLedgerView({
         numericAmount: bal,
         aging: r.aging || (bal > 100000 ? 'Overdue >60d' : '<30 days'),
         agingUr: r.agingUr || (bal > 100000 ? '60 دن سے زیادہ پرانا' : '30 دن سے کم'),
-        agingColor: bal > 100000 ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800',
+        agingColor: bal > 100000 ? 'bg-red-100 text-red-800' : 'bg-primary/10 text-primary',
       };
     });
   }, [rawRows]);
@@ -1082,7 +1084,7 @@ function CustomerLedgerView({
           placeholder={lang === 'ur' ? '🔍 گاہک کا نام یا فون نمبر تلاش کریں...' : '🔍 Search customer name or phone...'}
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm transition-all"
+          className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary shadow-sm transition-all"
         />
       </div>
 
@@ -1185,7 +1187,7 @@ function MeterReadingsView({
     return (
       <div className={`space-y-4 max-w-5xl mx-auto font-sans pb-12 ${lang === 'ur' ? 'rtl' : ''}`}>
         <div className="flex items-center gap-2 text-xs font-bold text-slate-500 pt-1">
-          <button onClick={() => setSelectedNozzle(null)} className="hover:text-emerald-700 flex items-center gap-1 cursor-pointer">
+          <button onClick={() => setSelectedNozzle(null)} className="hover:text-primary flex items-center gap-1 cursor-pointer">
             <span>{lang === 'ur' ? '→' : '‹'}</span> {lang === 'ur' ? 'میٹر ریڈنگز' : 'Meter Readings'}
           </button>
           <span>›</span>
@@ -1209,7 +1211,7 @@ function MeterReadingsView({
           </div>
           <div className="divide-y divide-slate-100 p-3.5 space-y-3">
             {readingHistory.map((item: any, idx: number) => (
-              <div key={idx} className="p-4 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-emerald-300 transition-all">
+              <div key={idx} className="p-4 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-primary/35 transition-all">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span className="font-extrabold text-slate-900 text-sm">{item.shift}</span>
@@ -1263,11 +1265,11 @@ function MeterReadingsView({
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 flex flex-col justify-between shadow-sm min-h-[120px]">
-          <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs mb-2 font-bold">⏱️</div>
+        <div className="rounded-xl border border-primary/25 bg-primary/10 p-4 flex flex-col justify-between shadow-sm min-h-[120px]">
+          <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs mb-2 font-bold">⏱️</div>
           <div>
-            <div className="text-2xl font-extrabold text-[#0B5C3D] tracking-tight">{nozzles.reduce((sum: number, n: any) => sum + n.readings, 0)}</div>
-            <div className="text-[11px] font-bold text-emerald-900/80 mt-1">
+            <div className="text-2xl font-extrabold text-primary tracking-tight">{nozzles.reduce((sum: number, n: any) => sum + n.readings, 0)}</div>
+            <div className="text-[11px] font-bold text-primary/80 mt-1">
               {lang === 'ur' ? 'کل ریڈنگز کی تعداد' : 'Total Readings'}
             </div>
           </div>
@@ -1283,11 +1285,11 @@ function MeterReadingsView({
           </div>
         </div>
 
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 flex flex-col justify-between shadow-sm min-h-[120px]">
-          <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs mb-2 font-bold">🔄</div>
+        <div className="rounded-xl border border-primary/25 bg-primary/10 p-4 flex flex-col justify-between shadow-sm min-h-[120px]">
+          <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs mb-2 font-bold">🔄</div>
           <div>
-            <div className="text-2xl font-extrabold text-[#0B5C3D] tracking-tight">0</div>
-            <div className="text-[11px] font-bold text-emerald-900/80 mt-1">
+            <div className="text-2xl font-extrabold text-primary tracking-tight">0</div>
+            <div className="text-[11px] font-bold text-primary/80 mt-1">
               {lang === 'ur' ? 'میٹر تبدیلی' : 'Meter Reset Count'}
             </div>
           </div>
@@ -1417,7 +1419,7 @@ function ShiftDetailView({
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
             {lang === 'ur' ? 'شفٹ آپریشنل تفصیلات' : 'Shift Operational Detail'}
           </h1>
-          <span className="px-2.5 py-0.5 rounded-md bg-blue-100 text-blue-700 text-xs font-black">
+          <span className="px-2.5 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-black">
             {lang === 'ur' ? 'جاری ہے' : 'In Progress'}
           </span>
         </div>
@@ -1427,7 +1429,7 @@ function ShiftDetailView({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="rounded-xl border-l-[3px] border-l-blue-500 border border-blue-200 bg-blue-50/80 px-4 py-3 shadow-sm">
           <div className="flex items-start gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold shrink-0">ℹ️</div>
+            <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">ℹ️</div>
             <div>
               <div className="text-[9px] font-black tracking-wider text-blue-800 uppercase mb-0.5">
                 {lang === 'ur' ? 'ای آئی بصیرت' : '✨ AI INSIGHT'}
@@ -1506,7 +1508,7 @@ function ShiftDetailView({
         <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm my-3">
           <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-emerald-700 font-bold text-sm">⏱️</span>
+              <span className="text-primary font-bold text-sm">⏱️</span>
               <h3 className="font-extrabold text-slate-900 text-xs">
                 {lang === 'ur' ? 'شفٹ نوزل میٹر ریڈنگز' : 'Shift Nozzle Meter Readings'}
               </h3>
@@ -1623,21 +1625,21 @@ function BankCashLedgerView({
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 flex flex-col justify-between shadow-sm min-h-[120px]">
-          <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs mb-2 font-bold">🏛️</div>
+        <div className="rounded-xl border border-primary/25 bg-primary/10 p-4 flex flex-col justify-between shadow-sm min-h-[120px]">
+          <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs mb-2 font-bold">🏛️</div>
           <div>
-            <div className="text-xl font-extrabold text-[#0B5C3D] tracking-tight">{formatCurrency(totalBankBalance)}</div>
-            <div className="text-[11px] font-bold text-emerald-900/80 mt-1">
+            <div className="text-xl font-extrabold text-primary tracking-tight">{formatCurrency(totalBankBalance)}</div>
+            <div className="text-[11px] font-bold text-primary/80 mt-1">
               {lang === 'ur' ? 'کل بینک بیلنس' : 'Total Bank Balance'}
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 flex flex-col justify-between shadow-sm min-h-[120px]">
-          <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs mb-2 font-bold">📉</div>
+        <div className="rounded-xl border border-primary/25 bg-primary/10 p-4 flex flex-col justify-between shadow-sm min-h-[120px]">
+          <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs mb-2 font-bold">📉</div>
           <div>
-            <div className="text-xl font-extrabold text-[#0B5C3D] tracking-tight">{accounts.length}</div>
-            <div className="text-[11px] font-bold text-emerald-900/80 mt-1">
+            <div className="text-xl font-extrabold text-primary tracking-tight">{accounts.length}</div>
+            <div className="text-[11px] font-bold text-primary/80 mt-1">
               {lang === 'ur' ? 'فعال بینک اکاؤنٹس' : 'Active Accounts'}
             </div>
           </div>
@@ -1683,7 +1685,7 @@ function BankCashLedgerView({
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-extrabold text-emerald-800">
+                  <span className="text-sm font-extrabold text-primary">
                     {acc.balance}
                   </span>
                   <span className="text-slate-300 font-bold text-xs">{lang === 'ur' ? '❮' : '❯'}</span>
@@ -1804,7 +1806,7 @@ export function ReportViewer({ reportId, orgId, stationId, userId, role, onDrill
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="inline-block w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-3" />
+          <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-3" />
           <p className="text-slate-500 text-sm font-bold">
             {lang === 'ur' ? 'لوڈ ہو رہا ہے...' : 'Loading operational data...'}
           </p>
@@ -1843,7 +1845,7 @@ export function ReportViewer({ reportId, orgId, stationId, userId, role, onDrill
 
   // ── PRODUCT CONTEXT BADGE ──
   const productBadge = productContext ? (
-    <button onClick={() => setProductContext(null)} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold">
+    <button onClick={() => setProductContext(null)} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
       {productContext} ✕
     </button>
   ) : null;
@@ -1967,9 +1969,9 @@ export function ReportViewer({ reportId, orgId, stationId, userId, role, onDrill
         { id: 'tankDip', label: '+ Tank Dip', labelUr: '+ ٹینک ڈیپ', icon: '📏', targetReportId: 'M', color: 'teal' as const },
       ]).map(action => {
         const colorMap: Record<string, string> = {
-          emerald: 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100',
+          emerald: 'bg-primary/10 text-primary border-primary/25 hover:bg-primary/15',
           orange: 'bg-orange-50 text-orange-800 border-orange-200 hover:bg-orange-100',
-          blue: 'bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100',
+          blue: 'bg-primary/10 text-primary border-primary/25 hover:bg-primary/15',
           purple: 'bg-purple-50 text-purple-800 border-purple-200 hover:bg-purple-100',
           teal: 'bg-teal-50 text-teal-800 border-teal-200 hover:bg-teal-100',
           red: 'bg-red-50 text-red-800 border-red-200 hover:bg-red-100',
@@ -1991,9 +1993,9 @@ export function ReportViewer({ reportId, orgId, stationId, userId, role, onDrill
             { id: 'tankDip', label: '+ Tank Dip', labelUr: '+ ٹینک ڈیپ', icon: '📏', targetReportId: 'M', color: 'teal' as const },
           ]).map(action => {
             const colorMap: Record<string, string> = {
-              emerald: 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100',
+              emerald: 'bg-primary/10 text-primary border-primary/25 hover:bg-primary/15',
               orange: 'bg-orange-50 text-orange-800 border-orange-200 hover:bg-orange-100',
-              blue: 'bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100',
+              blue: 'bg-primary/10 text-primary border-primary/25 hover:bg-primary/15',
               purple: 'bg-purple-50 text-purple-800 border-purple-200 hover:bg-purple-100',
               teal: 'bg-teal-50 text-teal-800 border-teal-200 hover:bg-teal-100',
               red: 'bg-red-50 text-red-800 border-red-200 hover:bg-red-100',
@@ -2015,21 +2017,21 @@ export function ReportViewer({ reportId, orgId, stationId, userId, role, onDrill
       )}
 
       {/* ── COMPRESSED SINGLE TODAY'S INSIGHT BANNER ── */}
-      <div className="rounded-2xl border-l-4 border-l-emerald-600 border border-emerald-200 bg-emerald-50/90 p-3.5 shadow-xs flex items-center justify-between my-2">
+      <div className="rounded-2xl border-l-4 border-l-primary border border-primary/25 bg-primary/10 p-3.5 shadow-xs flex items-center justify-between my-2">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-lg font-black shrink-0 shadow-xs">
+          <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-lg font-black shrink-0 shadow-xs">
             ✨
           </div>
           <div>
-            <div className="text-[10px] font-black tracking-widest text-emerald-800 uppercase mb-0.5">
+            <div className="text-[10px] font-black tracking-widest text-primary uppercase mb-0.5">
               {lang === 'ur' ? 'آج کی ڈیش بورڈ بصیرت' : "TODAY'S INSIGHT"}
             </div>
-            <p className="text-xs font-extrabold text-emerald-950 leading-snug">
+            <p className="text-xs font-extrabold text-primary leading-snug">
               {insight1Text}
             </p>
           </div>
         </div>
-        <span className="hidden sm:inline-block text-[9px] font-black px-2.5 py-1 bg-[#0B5C3D] text-white rounded-lg uppercase tracking-wider shadow-xs">
+        <span className="hidden sm:inline-block text-[9px] font-black px-2.5 py-1 bg-primary text-white rounded-lg uppercase tracking-wider shadow-xs">
           {lang === 'ur' ? 'تصدیق شدہ لائیو' : 'VERIFIED LIVE'}
         </span>
       </div>
@@ -2045,24 +2047,24 @@ export function ReportViewer({ reportId, orgId, stationId, userId, role, onDrill
 
       {/* ── TRUE PROFIT BANNER (Role Scoped: Owner & Manager Only) ── */}
       {!(role === 'staff' || role === 'cashier' || role === 'operator') && (
-        <div onClick={() => handleSelectReport('P1')} className="rounded-xl border-l-[3px] border-l-emerald-600 border border-emerald-200 bg-emerald-50/80 px-4 py-3 flex items-center justify-between shadow-sm hover:shadow-md transition-all cursor-pointer group my-3">
+        <div onClick={() => handleSelectReport('P1')} className="rounded-xl border-l-[3px] border-l-primary border border-primary/25 bg-primary/10 px-4 py-3 flex items-center justify-between shadow-sm hover:shadow-md transition-all cursor-pointer group my-3">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center text-base font-bold">
+            <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-base font-bold">
               📈
             </div>
             <div>
-              <div className="text-[9px] font-black tracking-widest text-emerald-700 uppercase mb-0.5">
+              <div className="text-[9px] font-black tracking-widest text-primary uppercase mb-0.5">
                 {lang === 'ur' ? 'ماہانہ اصل خالص منافع' : 'TRUE PROFIT (MONTH)'}
               </div>
-              <div className="text-2xl font-extrabold text-[#0B5C3D] tracking-tight">
+              <div className="text-2xl font-extrabold text-primary tracking-tight">
                 {formatCurrency(totalSalesVal - expensesVal > 0 ? totalSalesVal - expensesVal : 0)}
               </div>
-              <div className="text-[10px] font-semibold text-emerald-800/70 mt-0.5">
+              <div className="text-[10px] font-semibold text-primary/70 mt-0.5">
                 {lang === 'ur' ? 'مکمل بریک ڈاؤن دیکھنے کے لیے کلک کریں ←' : 'Tap to see the full waterfall breakdown →'}
               </div>
             </div>
           </div>
-          <div className="text-slate-400 group-hover:text-emerald-700 transition-colors text-lg font-bold pr-1">
+          <div className="text-slate-400 group-hover:text-primary transition-colors text-lg font-bold pr-1">
             {lang === 'ur' ? '❮' : '❯'}
           </div>
         </div>
@@ -2078,7 +2080,7 @@ export function ReportViewer({ reportId, orgId, stationId, userId, role, onDrill
                 {lang === 'ur' ? 'فروخت کا رجحان (14 دن)' : 'Sales Trend (14 days)'}
               </h3>
             </div>
-            <button className="text-[10px] font-bold text-emerald-700 hover:text-emerald-800 px-2 py-1 rounded-md hover:bg-emerald-50 transition-colors">
+            <button className="text-[10px] font-bold text-primary hover:text-primary px-2 py-1 rounded-md hover:bg-primary/10 transition-colors">
               {lang === 'ur' ? 'تفصیلات ←' : 'Details →'}
             </button>
           </div>
@@ -2087,12 +2089,12 @@ export function ReportViewer({ reportId, orgId, stationId, userId, role, onDrill
             <svg viewBox="0 0 300 100" preserveAspectRatio="none" className="w-full h-full">
               <defs>
                 <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#0B5C3D" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#0B5C3D" stopOpacity="0.0" />
+                  <stop offset="0%" stopColor="var(--primary-accent)" stopOpacity="0.25" />
+                  <stop offset="100%" stopColor="var(--primary-accent)" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
               <path d="M0,60 Q30,20 60,40 T120,30 T180,50 T240,10 T300,45 L300,100 L0,100 Z" fill="url(#salesGrad)" />
-              <path d="M0,60 Q30,20 60,40 T120,30 T180,50 T240,10 T300,45" fill="none" stroke="#0B5C3D" strokeWidth="2.5" />
+              <path d="M0,60 Q30,20 60,40 T120,30 T180,50 T240,10 T300,45" fill="none" stroke="var(--primary-accent)" strokeWidth="2.5" />
             </svg>
             <div className="flex justify-between text-[9px] font-bold text-slate-400 mt-1.5">
               <span>22 Jul</span>
@@ -2114,20 +2116,20 @@ export function ReportViewer({ reportId, orgId, stationId, userId, role, onDrill
                 {lang === 'ur' ? 'تیل کی تقسیم (پیریڈ)' : 'Fuel Mix (Period)'}
               </h3>
             </div>
-            <button className="text-[10px] font-bold text-emerald-700 hover:text-emerald-800 px-2 py-1 rounded-md hover:bg-emerald-50 transition-colors">
+            <button className="text-[10px] font-bold text-primary hover:text-primary px-2 py-1 rounded-md hover:bg-primary/10 transition-colors">
               {lang === 'ur' ? 'تفصیلات ←' : 'Details →'}
             </button>
           </div>
           <div className="flex flex-col items-center justify-center py-1">
             <div className="w-32 h-32 relative">
               <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">
-                <circle cx="18" cy="18" r="14" fill="none" stroke="#0B5C3D" strokeWidth="6" strokeDasharray="55 100" />
+                <circle cx="18" cy="18" r="14" fill="none" stroke="var(--primary-accent)" strokeWidth="6" strokeDasharray="55 100" />
                 <circle cx="18" cy="18" r="14" fill="none" stroke="#1D4ED8" strokeWidth="6" strokeDasharray="20 100" strokeDashoffset="-55" />
                 <circle cx="18" cy="18" r="14" fill="none" stroke="#6B3A2A" strokeWidth="6" strokeDasharray="25 100" strokeDashoffset="-75" />
               </svg>
             </div>
             <div className="flex items-center gap-3 text-[10px] font-bold text-slate-700 mt-3">
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#0B5C3D]"></span> {lang === 'ur' ? 'پٹرول' : 'Petrol'}</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary"></span> {lang === 'ur' ? 'پٹرول' : 'Petrol'}</span>
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#6B3A2A]"></span> {lang === 'ur' ? 'ڈیزل' : 'Diesel'}</span>
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#1D4ED8]"></span> {lang === 'ur' ? 'سی این جی' : 'CNG'}</span>
             </div>
@@ -2143,7 +2145,7 @@ export function ReportViewer({ reportId, orgId, stationId, userId, role, onDrill
               {lang === 'ur' ? 'اخراجات کی تفصیل (پیریڈ)' : 'Expense Breakdown (Period)'}
             </h3>
           </div>
-          <button className="text-[10px] font-bold text-emerald-700 hover:text-emerald-800 px-2 py-1 rounded-md hover:bg-emerald-50 transition-colors">
+          <button className="text-[10px] font-bold text-primary hover:text-primary px-2 py-1 rounded-md hover:bg-primary/10 transition-colors">
             {lang === 'ur' ? 'تفصیلات ←' : 'Details →'}
           </button>
         </div>
@@ -2173,7 +2175,7 @@ export function ReportViewer({ reportId, orgId, stationId, userId, role, onDrill
               {lang === 'ur' ? 'آج کی شفٹس' : "Today's Shifts"}
             </h3>
           </div>
-          <button className="text-[10px] font-bold text-emerald-700 hover:text-emerald-800 px-2 py-1 rounded-md hover:bg-emerald-50 transition-colors">
+          <button className="text-[10px] font-bold text-primary hover:text-primary px-2 py-1 rounded-md hover:bg-primary/10 transition-colors">
             {lang === 'ur' ? 'تمام شفٹس ←' : 'All shifts →'}
           </button>
         </div>
@@ -2195,7 +2197,7 @@ export function ReportViewer({ reportId, orgId, stationId, userId, role, onDrill
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-extrabold text-slate-900 text-xs">Shift #358</span>
-                <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 text-[9px] font-extrabold">
+                <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[9px] font-extrabold">
                   {lang === 'ur' ? 'لائیو' : 'LIVE'}
                 </span>
                 <span className="text-[10px] font-bold text-slate-400">Rawalpindi Saddar</span>
@@ -2210,7 +2212,7 @@ export function ReportViewer({ reportId, orgId, stationId, userId, role, onDrill
       {/* ── LIVE ACTIVITY FEED ── */}
       <div className="my-3">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-emerald-700 font-bold text-sm">📈</span>
+          <span className="text-primary font-bold text-sm">📈</span>
           <div>
             <h3 className="font-extrabold text-slate-900 text-[13px]">
               {lang === 'ur' ? 'تازہ ترین سرگرمی' : 'Live Activity Feed'}
@@ -2248,7 +2250,7 @@ export function ReportViewer({ reportId, orgId, stationId, userId, role, onDrill
           </div>
           <div className="px-3.5 py-2.5 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-[10px]">⛽</div>
+              <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px]">⛽</div>
               <div>
                 <div className="text-[11px] font-bold text-slate-900">
                   {lang === 'ur' ? 'نقد فروخت — شفٹ #358' : 'Cash sale — Shift #358'}
@@ -2258,11 +2260,11 @@ export function ReportViewer({ reportId, orgId, stationId, userId, role, onDrill
                 </div>
               </div>
             </div>
-            <span className="text-[11px] font-bold text-emerald-700">+Rs1.36M</span>
+            <span className="text-[11px] font-bold text-primary">+Rs1.36M</span>
           </div>
           <div className="px-3.5 py-2.5 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-[10px]">🏦</div>
+              <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px]">🏦</div>
               <div>
                 <div className="text-[11px] font-bold text-slate-900">
                   {lang === 'ur' ? 'بینک ڈیپازٹ — ایچ بی ایل کرنٹ' : 'Bank deposit — HBL Current'}
@@ -2272,11 +2274,11 @@ export function ReportViewer({ reportId, orgId, stationId, userId, role, onDrill
                 </div>
               </div>
             </div>
-            <span className="text-[11px] font-bold text-emerald-700">+Rs39.6K</span>
+            <span className="text-[11px] font-bold text-primary">+Rs39.6K</span>
           </div>
           <div className="px-3.5 py-2.5 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-[10px]">📱</div>
+              <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px]">📱</div>
               <div>
                 <div className="text-[11px] font-bold text-slate-900">
                   {lang === 'ur' ? 'ڈیجیٹل وصولی — ایزی پیسہ' : 'Digital collection — EasyPaisa'}
@@ -2286,11 +2288,11 @@ export function ReportViewer({ reportId, orgId, stationId, userId, role, onDrill
                 </div>
               </div>
             </div>
-            <span className="text-[11px] font-bold text-emerald-700">+Rs22.0K</span>
+            <span className="text-[11px] font-bold text-primary">+Rs22.0K</span>
           </div>
           <div className="px-3.5 py-2.5 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-[10px]">👥</div>
+              <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px]">👥</div>
               <div>
                 <div className="text-[11px] font-bold text-slate-900">
                   {lang === 'ur' ? 'ادھار دی گئی رقم — آفتاب ٹریڈرز' : 'Credit given — Aftab Traders'}
@@ -2300,7 +2302,7 @@ export function ReportViewer({ reportId, orgId, stationId, userId, role, onDrill
                 </div>
               </div>
             </div>
-            <span className="text-[11px] font-bold text-emerald-700">+Rs22.0K</span>
+            <span className="text-[11px] font-bold text-primary">+Rs22.0K</span>
           </div>
         </div>
       </div>
@@ -2313,25 +2315,25 @@ export function ReportViewer({ reportId, orgId, stationId, userId, role, onDrill
           </h3>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          <div onClick={() => handleSelectReport('C1')} className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-center hover:border-emerald-400 hover:shadow-md transition-all cursor-pointer shadow-sm group">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 mx-auto flex items-center justify-center text-sm mb-1.5 font-bold group-hover:bg-emerald-100 transition-colors">💵</div>
+          <div onClick={() => handleSelectReport('C1')} className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-center hover:border-primary hover:shadow-md transition-all cursor-pointer shadow-sm group">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary mx-auto flex items-center justify-center text-sm mb-1.5 font-bold group-hover:bg-primary/15 transition-colors">💵</div>
             <span className="text-[11px] font-extrabold text-slate-900 block">
               {lang === 'ur' ? 'بینک کیش' : 'Bank Cash'}
             </span>
           </div>
-          <div onClick={() => handleSelectReport('L1')} className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-center hover:border-emerald-400 hover:shadow-md transition-all cursor-pointer shadow-sm group">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 mx-auto flex items-center justify-center text-sm mb-1.5 font-bold group-hover:bg-blue-100 transition-colors">👥</div>
+          <div onClick={() => handleSelectReport('L1')} className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-center hover:border-primary hover:shadow-md transition-all cursor-pointer shadow-sm group">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary mx-auto flex items-center justify-center text-sm mb-1.5 font-bold group-hover:bg-primary/15 transition-colors">👥</div>
             <span className="text-[11px] font-extrabold text-slate-900 block">
               {lang === 'ur' ? 'گاہک کا کھاتہ' : 'Customer Ledger'}
             </span>
           </div>
-          <div onClick={() => handleSelectReport('M')} className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-center hover:border-emerald-400 hover:shadow-md transition-all cursor-pointer shadow-sm group">
+          <div onClick={() => handleSelectReport('M')} className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-center hover:border-primary hover:shadow-md transition-all cursor-pointer shadow-sm group">
             <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 mx-auto flex items-center justify-center text-sm mb-1.5 font-bold group-hover:bg-amber-100 transition-colors">📈</div>
             <span className="text-[11px] font-extrabold text-slate-900 block">
               {lang === 'ur' ? 'میٹر ریڈنگز' : 'Meter Readings'}
             </span>
           </div>
-          <div onClick={() => handleSelectReport('Z')} className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-center hover:border-emerald-400 hover:shadow-md transition-all cursor-pointer shadow-sm group">
+          <div onClick={() => handleSelectReport('Z')} className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-center hover:border-primary hover:shadow-md transition-all cursor-pointer shadow-sm group">
             <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 mx-auto flex items-center justify-center text-sm mb-1.5 font-bold group-hover:bg-purple-100 transition-colors">🕒</div>
             <span className="text-[11px] font-extrabold text-slate-900 block">
               {lang === 'ur' ? 'زیڈ رپورٹ' : 'Z-Report'}
@@ -2344,7 +2346,7 @@ export function ReportViewer({ reportId, orgId, stationId, userId, role, onDrill
       {result.aiSummary && (
         <div className="flex items-start gap-2.5 px-3.5 py-3 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 shadow-sm">
           <span className="text-base">✨</span>
-          <p className="text-[11px] font-bold text-blue-900 pt-0.5 leading-snug">{result.aiSummary}</p>
+          <p className="text-[11px] font-bold text-foreground pt-0.5 leading-snug">{result.aiSummary}</p>
         </div>
       )}
 
@@ -2363,7 +2365,7 @@ export function ReportViewer({ reportId, orgId, stationId, userId, role, onDrill
           <p className="text-[11px] text-slate-500 mb-5">
             {lang === 'ur' ? 'تجز تجزیات تیار کرنے کے لیے ڈیٹا کا اندراج شروع کریں۔' : 'Start creating transactions to generate realtime analytics.'}
           </p>
-          <button className="inline-flex items-center gap-2 px-5 py-2 bg-[#0B5C3D] text-white hover:bg-emerald-800 rounded-lg font-bold text-xs transition-colors shadow-sm cursor-pointer">
+          <button className="inline-flex items-center gap-2 px-5 py-2 bg-primary text-white hover:bg-primary-hover rounded-lg font-bold text-xs transition-colors shadow-sm cursor-pointer">
             <span>+</span> {lang === 'ur' ? 'نیا انداراج کریں' : 'Create First Entry'}
           </button>
         </div>
@@ -2403,13 +2405,13 @@ export function ReportMenu({ role, onSelect, lang = 'en' }: { role: string; onSe
         placeholder={lang === 'ur' ? '🔍 کونسی رپورٹ چاہیے؟...' : '🔍 Search reports...'}
         value={search}
         onChange={e => setSearch(e.target.value)}
-        className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
+        className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {filtered.map(config => (
-          <button key={config.reportId} onClick={() => onSelect(config.reportId)} className="text-left p-4 rounded-xl border border-slate-200 bg-white hover:border-emerald-500 hover:shadow-md transition-all cursor-pointer">
+          <button key={config.reportId} onClick={() => onSelect(config.reportId)} className="text-left p-4 rounded-xl border border-slate-200 bg-white hover:border-primary hover:shadow-md transition-all cursor-pointer">
             <div className="flex items-center gap-2 mb-1">
-              <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 text-sm font-extrabold">{config.reportId}</span>
+              <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary text-sm font-extrabold">{config.reportId}</span>
               <div>
                 <div className="text-sm font-extrabold text-slate-900">
                   {lang === 'ur' ? config.titleUr : config.title}
@@ -2417,7 +2419,7 @@ export function ReportMenu({ role, onSelect, lang = 'en' }: { role: string; onSe
               </div>
             </div>
             <div className="flex items-center gap-2 mt-2">
-              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${config.cacheTier === 'realtime' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}`}>
+              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${config.cacheTier === 'realtime' ? 'bg-primary/10 text-primary' : 'bg-primary/10 text-primary'}`}>
                 {config.cacheTier === 'realtime' ? (lang === 'ur' ? 'براہِ راست' : 'Realtime') : (lang === 'ur' ? 'کیشڈ' : 'Cached')}
               </span>
               <span className="text-xs font-bold text-slate-400">{config.rendererProfile}</span>

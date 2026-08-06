@@ -11,6 +11,7 @@
  */
 
 import React, { useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
 
 export interface EnterpriseColumnDef {
   id: string;
@@ -120,8 +121,12 @@ export const EnterpriseRegisterTable: React.FC<EnterpriseRegisterTableProps> = (
   const handleCopyRows = () => {
     try {
       navigator.clipboard.writeText(JSON.stringify(rows, null, 2));
-      alert(isEn ? 'Register data copied to clipboard!' : 'رجسٹر کا ڈیٹا کاپی ہو گیا!');
-    } catch { /* noop */ }
+      // Toast instead of native alert — native dialogs block the UI thread and
+      // are inconsistently announced by screen readers (Responsiveness/A11y Audit).
+      toast.success(isEn ? 'Register data copied to clipboard!' : 'رجسٹر کا ڈیٹا کاپی ہو گیا!');
+    } catch {
+      toast.error(isEn ? 'Failed to copy register data.' : 'ڈیٹا کاپی نہیں ہو سکا۔');
+    }
   };
 
   return (
@@ -183,9 +188,9 @@ export const EnterpriseRegisterTable: React.FC<EnterpriseRegisterTableProps> = (
         </div>
       )}
 
-      <div style={{ overflowX: 'auto' }}>
+      <div style={{ overflowX: 'auto', maxHeight: 'min(72vh, 720px)' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead style={{ backgroundColor: 'var(--bg-app)' }}>
+          <thead style={{ backgroundColor: 'var(--bg-app)', position: 'sticky', top: 0, zIndex: 5 }}>
             <tr>
               {activeColumns.map(col => {
                 const clickable = !!(col.sortable || col.isNumeric || col.isCurrency || col.isDate);
@@ -211,20 +216,31 @@ export const EnterpriseRegisterTable: React.FC<EnterpriseRegisterTableProps> = (
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={activeColumns.length} style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)' }}>Loading Register Data...</td></tr>
+              <tr><td colSpan={activeColumns.length} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                <div className="animate-pulse" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 22 }}>⏳</span>
+                  <span style={{ fontSize: 12, fontWeight: 600 }}>{isEn ? 'Loading register data…' : 'رجسٹر ڈیٹا لوڈ ہو رہا ہے…'}</span>
+                </div>
+              </td></tr>
             ) : rows.length === 0 ? (
-              <tr><td colSpan={activeColumns.length} style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)' }}>
-                {isEn ? 'No records found for the selected criteria.' : 'منتخب معیار کے مطابق کوئی ریکارڈ نہیں ملا۔'}
+              <tr><td colSpan={activeColumns.length} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 24, opacity: 0.6 }}>📭</span>
+                  <span style={{ fontSize: 12, fontWeight: 600 }}>{isEn ? 'No records found for the selected criteria.' : 'منتخب معیار کے مطابق کوئی ریکارڈ نہیں ملا۔'}</span>
+                </div>
               </td></tr>
             ) : (
               rows.map((row, idx) => (
                 <tr
                   key={row._id || idx}
                   onClick={() => onRowClick?.(row)}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = onRowClick ? 'color-mix(in srgb, var(--primary-accent) 7%, transparent)' : e.currentTarget.style.backgroundColor; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = idx % 2 === 1 ? 'rgba(0,0,0,0.015)' : 'transparent'; }}
                   style={{
                     borderBottom: '1px solid var(--border-subtle)',
                     backgroundColor: idx % 2 === 1 ? 'rgba(0,0,0,0.015)' : 'transparent',
-                    cursor: onRowClick ? 'pointer' : 'default'
+                    cursor: onRowClick ? 'pointer' : 'default',
+                    transition: 'background-color 0.15s ease'
                   }}
                 >
                   {activeColumns.map(col => {

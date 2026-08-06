@@ -41,7 +41,7 @@ import InventoryAgingDashboard from './InventoryAgingDashboard';
 import SupplierScorecard from './SupplierCommandCenter/SupplierScorecard';
 import SupplierPayablesPanel from './SupplierCommandCenter/SupplierPayablesPanel';
 import SupplierClaimsPanel from './SupplierCommandCenter/SupplierClaimsPanel';
-import AdvancedFuelStock from './FuelStock/AdvancedFuelStock';
+import { InventoryWorkspaceView } from './reports-v2/components/workspaces/InventoryWorkspaceView';
 import { isLubeBusinessStation } from '../../lib/businessScope';
 import { logger } from '../../lib/logger';
 
@@ -808,10 +808,10 @@ export default function Inventory({
  )}
  </div>
 
- {/* ADVANCED FUEL STOCK DASHBOARD */}
- {activeTab === 'advanced_dashboard' && !isLube && (
- <AdvancedFuelStock />
- )}
+  {/* ADVANCED ENTERPRISE INVENTORY WORKSPACE */}
+  {activeTab === 'advanced_dashboard' && !isLube && (
+    <InventoryWorkspaceView lang={settings.language === 'ur' ? 'ur' : 'en'} stationId={activeStationId} />
+  )}
 
  {/* CORE ACTIVE WORKSPACE MODULES */}
  {activeTab === 'inventory' && (

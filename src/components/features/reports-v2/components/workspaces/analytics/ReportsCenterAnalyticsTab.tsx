@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { FileText, Download, Printer, Send, FileSpreadsheet } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface TabProps {
   lang?: 'en' | 'ur';
@@ -39,7 +40,7 @@ export const ReportsCenterAnalyticsTab: React.FC<TabProps> = ({ lang = 'en' }) =
               </div>
               <div className="pt-2 flex justify-between items-center border-t border-[var(--border-muted)]">
                 <span className="px-2 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-800 font-bold">{rep.format}</span>
-                <button onClick={() => alert(`Exporting ${rep.title}...`)} className="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-[10px] transition-colors">
+                <button onClick={() => toast.success(`Exporting ${rep.title}...`)} className="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-[10px] transition-colors">
                   {t('Export Now', 'ایکسپورٹ کریں')}
                 </button>
               </div>

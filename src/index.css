@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 @theme {
+  --breakpoint-xs: 480px;
+
   --color-background: var(--bg-app);
   --color-foreground: var(--text-main);
   --color-card: var(--bg-card);
@@ -11,6 +13,9 @@
   --color-primary: var(--primary-accent);
   --color-primary-hover: var(--primary-hover);
   --color-accent: var(--color-accent);
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-error: var(--color-error);
   --font-sans: 'Inter', 'Noto Nastaliq Urdu', system-ui, sans-serif;
 }
 
@@ -30,15 +35,21 @@ html, body {
   touch-action: manipulation;
 }
 
-/* Ensure minimum touch targets for all interactive elements on mobile */
-button, 
-[role="button"],
-a,
-input[type="checkbox"],
-input[type="radio"],
-select {
-  min-height: 48px;
-  min-width: 48px;
+/* Touch targets: enforce comfortable minimum tap targets on touch-capable devices only.
+   IMPORTANT (Responsiveness Audit): the previous rule applied 48x48px minimums to
+   every button/select/link at ALL breakpoints, which inflated compact desktop icon
+   buttons (32px), tab pills, and filter chips — causing header overflow and broken
+   density on desktop. Scoped below to `(pointer: coarse)` (phones, tablets, touch
+   hybrids — including wide iPad Pro viewports) with the WCAG 2.5.5 / Android standard
+   44px minimum-height. Width is left to the component so dense bars like the top
+   header still fit on 360px screens. */
+@media (pointer: coarse) {
+  button,
+  [role="button"],
+  a,
+  select {
+    min-height: 44px;
+  }
 }
 
 /* Allow text selection in inputs and textareas and prevent mobile auto-zoom */

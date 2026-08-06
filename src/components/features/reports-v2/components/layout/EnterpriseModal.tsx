@@ -23,7 +23,10 @@ EnterpriseComponentRegistry.getInstance().register({
 });
 
 export function EnterpriseModal({ title, size = 'MEDIUM', children, onClose }: any) {
-  const width = size === 'LARGE' ? 800 : size === 'SMALL' ? 400 : size === 'FULLSCREEN' ? '100vw' : 600;
+  // FULLSCREEN uses 100% (overlay is already fixed inset-0) instead of 100vw to
+  // avoid desktop scrollbar-induced horizontal overflow, and 100dvh to avoid the
+  // mobile browser chrome clipping the modal bottom.
+  const width = size === 'LARGE' ? 800 : size === 'SMALL' ? 400 : size === 'FULLSCREEN' ? '100%' : 600;
 
   return (
     <div style={{
@@ -33,8 +36,10 @@ export function EnterpriseModal({ title, size = 'MEDIUM', children, onClose }: a
     }}>
       <div style={{
         width, 
-        height: size === 'FULLSCREEN' ? '100vh' : 'auto',
-        maxHeight: '90vh',
+        height: size === 'FULLSCREEN' ? '100dvh' : 'auto',
+        // maxHeight must be conditional — an unconditional 90vh cap previously
+        // overrode the FULLSCREEN height (100dvh) and made the modal 90vh regardless.
+        maxHeight: size === 'FULLSCREEN' ? '100dvh' : '90vh',
         backgroundColor: 'var(--bg-app)',
         borderRadius: size === 'FULLSCREEN' ? 0 : 12,
         display: 'flex', flexDirection: 'column',

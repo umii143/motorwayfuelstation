@@ -59,39 +59,46 @@ export const EnterpriseKPICard: React.FC<EnterpriseKPICardProps> = ({
   isEmpty,
   isError
 }) => {
+  const isUr = lang === 'ur';
+
   if (isLoading) {
     return (
-      <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-main)', borderRadius: 16, minHeight: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-        <div className="spinner" />
+      <div className="animate-pulse" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-main)', borderRadius: 16, minHeight: 150, padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ width: '45%', height: 12, borderRadius: 6, backgroundColor: 'var(--bg-subtle)' }} />
+        <div style={{ width: '75%', height: 26, borderRadius: 8, backgroundColor: 'var(--bg-subtle)' }} />
+        <div style={{ width: '55%', height: 10, borderRadius: 6, backgroundColor: 'var(--bg-subtle)' }} />
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 16, minHeight: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, color: 'var(--color-danger)', fontSize: 13, fontWeight: 600 }}>
-        ⚠️ Error loading KPI
+      <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 16, minHeight: 150, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 20, color: 'var(--color-danger)', fontSize: 13, fontWeight: 600 }}>
+        <span style={{ fontSize: 22 }}>⚠️</span>
+        <span>{isUr ? 'KPI لوڈ کرنے میں خرابی' : 'Error loading KPI'}</span>
       </div>
     );
   }
 
   if (isEmpty) {
     return (
-      <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-main)', borderRadius: 16, minHeight: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, color: 'var(--text-muted)', fontSize: 13 }}>
-        No Data
+      <div style={{ backgroundColor: 'var(--bg-card)', border: '1px dashed var(--border-main)', borderRadius: 16, minHeight: 150, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 20, color: 'var(--text-muted)' }}>
+        <span style={{ fontSize: 22, opacity: 0.7 }}>📭</span>
+        <span style={{ fontSize: 12, fontWeight: 600 }}>{isUr ? 'کوئی آپریشنل ریکارڈ نہیں' : 'No operational records yet'}</span>
       </div>
     );
   }
 
   const style = STATUS_STYLE[status] || STATUS_STYLE.NEUTRAL;
   const clickable = !!onDrilldown;
-  const isUr = lang === 'ur';
 
   return (
     <div
       onClick={onDrilldown}
       role={clickable ? 'button' : undefined}
       tabIndex={clickable ? 0 : undefined}
+      className={clickable ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50' : undefined}
+      onKeyDown={clickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onDrilldown?.(); } } : undefined}
       style={{
         backgroundColor: 'var(--bg-card)',
         border: `1px solid ${style.accent}33`,

@@ -3,6 +3,7 @@ import { Product, Tank } from '../../../../types';
 import { BarChart3, CheckCircle2, DollarSign, Send, ArrowUpRight } from 'lucide-react';
 import { formatCurrency } from '../../../../lib/currency';
 import { usePricingStore } from '../../../../stores/usePricingStore';
+import toast from 'react-hot-toast';
 
 interface InventoryRevaluationTabProps {
   isUrdu: boolean;
@@ -57,7 +58,7 @@ export const InventoryRevaluationTab: React.FC<InventoryRevaluationTabProps> = (
   const handlePostJournal = async (row: typeof revaluationData[0], productId: string) => {
     await pricingStore.postRevaluationJournal(row.productName, row.gainLoss, row.stockQty, row.oldRate, row.newRate);
     setPostedMap((prev) => ({ ...prev, [productId]: true }));
-    alert(t(`Balanced Journal Entry posted for ${row.productName}! (Amount: Rs. ${Math.abs(row.gainLoss).toLocaleString()})`, 'جرنل انٹری کامیابی سے پوسٹ ہو گئی ہے!'));
+    toast.success(t(`Balanced Journal Entry posted for ${row.productName}! (Amount: Rs. ${Math.abs(row.gainLoss).toLocaleString()})`, 'جرنل انٹری کامیابی سے پوسٹ ہو گئی ہے!'));
   };
 
   return (

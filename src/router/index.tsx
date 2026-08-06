@@ -11,7 +11,7 @@ const ShiftLogs = React.lazy(() => import('../components/features/ShiftLogs'));
 const CustomerIntelligenceCenter = React.lazy(() => import('../components/features/CustomerIntelligenceCenter/CustomerIntelligenceCenter'));
 const SupplierCommandCenter = React.lazy(() => import('../components/features/SupplierCommandCenter/SupplierCommandCenter'));
 const Ledger = React.lazy(() => import('../components/features/Ledger'));
-const Inventory = React.lazy(() => import('../components/features/Inventory'));
+const InventoryHub = React.lazy(() => import('../components/features/inventory-v2/InventoryHub').then(m => ({ default: m.InventoryHub })));
 const Expenses = React.lazy(() => import('../components/features/Expenses'));
 const LubePOS = React.lazy(() => import('../components/features/LubePOS'));
 // Legacy Reports module DEPRECATED — Architecture Reset Phase 1
@@ -147,7 +147,7 @@ const DigitalCashRoute = () => {
 
 const InventoryRoute = () => {
  const props = useProps();
- return <Inventory settings={props.settings} activeStationId={props.activeStationId} products={props.products} suppliers={props.suppliers} stockTransactions={props.stockTxns} onAddStockTransaction={props.handleAddStockReceipt} onUpdateProductStock={props.handleUpdateProductStock} onUpdateProduct={props.handleUpdateProduct} onDeleteProduct={props.handleDeleteProduct} onAddProduct={props.handleAddProduct} tanks={props.tanks} rateHistory={props.rateHistory} />;
+ return <InventoryHub settings={props.settings} activeStationId={props.activeStationId} products={props.products} suppliers={props.suppliers} stockTransactions={props.stockTxns} onAddStockTransaction={props.handleAddStockReceipt} onUpdateProductStock={props.handleUpdateProductStock} onUpdateProduct={props.handleUpdateProduct} onDeleteProduct={props.handleDeleteProduct} onAddProduct={props.handleAddProduct} tanks={props.tanks} rateHistory={props.rateHistory} />;
 };
 
 const ExpensesRoute = () => {

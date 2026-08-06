@@ -18,6 +18,7 @@
  */
 
 import React, { useState, useRef } from 'react';
+import toast from 'react-hot-toast';
 import {
   X, Info, History, CreditCard, FileText, ShieldCheck, Sparkles, Link as LinkIcon,
   ChevronLeft, ChevronRight, Copy, ArrowUpRight
@@ -63,9 +64,10 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
   const handleCopyRecord = () => {
     try {
       navigator.clipboard.writeText(JSON.stringify(record, null, 2));
-      alert(isEn ? 'Record copied to clipboard!' : 'ریکارڈ کاپی ہو گیا!');
+      // Toast instead of native alert (Responsiveness/A11y Audit).
+      toast.success(isEn ? 'Record copied to clipboard!' : 'ریکارڈ کاپی ہو گیا!');
     } catch {
-      /* noop */
+      toast.error(isEn ? 'Failed to copy record.' : 'ریکارڈ کاپی نہیں ہو سکا۔');
     }
   };
 
@@ -89,7 +91,7 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
         {/* Header */}
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/80">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-[#0B5C3D] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm">
               {recordTitle.charAt(0).toUpperCase()}
             </div>
             <div className="truncate">
@@ -143,7 +145,7 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-white dark:bg-slate-900 text-[#0B5C3D] dark:text-emerald-400 shadow-xs border border-slate-200/80 dark:border-slate-700'
+                      ? 'bg-white dark:bg-slate-900 text-primary dark:text-primary shadow-xs border border-slate-200/80 dark:border-slate-700'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
@@ -168,11 +170,11 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
           {/* TAB 1: OVERVIEW */}
           {activeTab === 'overview' && (
             <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40">
-                <div className="text-[11px] font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-400 mb-1">
+              <div className="p-4 rounded-2xl bg-primary/10 dark:bg-primary-hover/20 border border-primary/25 dark:border-primary/30">
+                <div className="text-[11px] font-black uppercase tracking-wider text-primary dark:text-primary mb-1">
                   {isEn ? 'Primary Account Status' : 'کھاتے کی حالت'}
                 </div>
-                <div className="text-2xl font-black text-[#0B5C3D] dark:text-emerald-300">
+                <div className="text-2xl font-black text-primary dark:text-primary">
                   {record.balance !== undefined
                     ? `₨ ${Number(record.balance).toLocaleString('en-PK')}`
                     : record.totalAmount !== undefined
@@ -190,9 +192,10 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
                     .filter(([k]) => !k.startsWith('_') && typeof record[k] !== 'object')
                     .slice(0, 8)
                     .map(([key, val]) => (
-                      <div key={key} className="py-2 flex justify-between items-center">
-                        <span className="text-slate-500 dark:text-slate-400 capitalize">{key}</span>
-                        <span className="font-extrabold text-slate-900 dark:text-slate-100">{String(val)}</span>
+                      <div key={key} className="py-2 flex justify-between items-center gap-3">
+                        {/* Truncate long keys/values so inspector rows never overflow on mobile */}
+                        <span className="text-slate-500 dark:text-slate-400 capitalize truncate shrink-0 max-w-[45%]">{key}</span>
+                        <span className="font-extrabold text-slate-900 dark:text-slate-100 text-right truncate min-w-0" title={String(val)}>{String(val)}</span>
                       </div>
                     ))}
                 </div>
@@ -232,7 +235,7 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
               </h4>
               <textarea
                 placeholder={isEn ? 'Type notes about this record...' : 'اس ریکارڈ کے بارے میں نوٹس لکھیں...'}
-                className="w-full h-32 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full h-32 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
           )}
@@ -250,7 +253,7 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Audit Status:</span>
-                  <span className="font-extrabold text-emerald-700 dark:text-emerald-400">IMMUTABLE_LOGGED</span>
+                  <span className="font-extrabold text-primary dark:text-primary">IMMUTABLE_LOGGED</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Tenant Org:</span>
@@ -280,14 +283,14 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
               </h4>
               <button
                 onClick={() => onNavigateRelated?.('CUS_RECOVERY')}
-                className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 text-xs font-extrabold text-slate-800 dark:text-slate-200 transition-all"
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 hover:border-primary text-xs font-extrabold text-slate-800 dark:text-slate-200 transition-all"
               >
                 <span>{isEn ? 'View Recovery Receipts' : 'وصولی رسیدات'}</span>
                 <ArrowUpRight size={14} className="text-slate-400" />
               </button>
               <button
                 onClick={() => onNavigateRelated?.('FS_REGISTER')}
-                className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 text-xs font-extrabold text-slate-800 dark:text-slate-200 transition-all"
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 hover:border-primary text-xs font-extrabold text-slate-800 dark:text-slate-200 transition-all"
               >
                 <span>{isEn ? 'View Sales Invoices' : 'سیلز انوائسز'}</span>
                 <ArrowUpRight size={14} className="text-slate-400" />
@@ -300,7 +303,7 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
         <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/80">
           <button
             onClick={onClose}
-            className="w-full py-2.5 rounded-xl bg-[#0B5C3D] hover:bg-emerald-800 text-white text-xs font-black transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5 active:scale-98"
+            className="w-full py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-black transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5 active:scale-98"
           >
             <X size={15} />
             <span>{isEn ? 'Close Panel' : 'پینل بند کریں'}</span>

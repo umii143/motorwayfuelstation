@@ -380,8 +380,7 @@ export default function UnifiedRoznamcha({ settings }: UnifiedRoznamchaProps) {
  )}
  {selectedEvent && (
  <div className="fixed inset-0 z-[110] flex items-center justify-end">
- <div className="absolute inset-0 bg-card backdrop-blur-sm" onClick={() => setSelectedEvent(null)} />
- <div className="relative w-full max-w-md h-screen flex flex-col bg-card border-l border-border shadow-2xl">
+ <div className="absolute inset-0 bg-card backdrop-blur-sm" onClick={() => setSelectedEvent(null)} />  <div className="relative w-full max-w-md h-dvh flex flex-col bg-card border-l border-border shadow-2xl">
  <div className="h-16 border-b border-border flex items-center justify-between px-5 bg-subtle">
  <div className="flex items-center gap-2">
  <span className="text-2xl">{ICON[selectedEvent.eventType] || '📌'}</span>

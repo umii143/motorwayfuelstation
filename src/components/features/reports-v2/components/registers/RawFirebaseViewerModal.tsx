@@ -1,4 +1,5 @@
 import React from 'react';
+import toast from 'react-hot-toast';
 
 export interface RawFirebaseViewerModalProps {
   isOpen: boolean;
@@ -54,7 +55,7 @@ export const RawFirebaseViewerModal: React.FC<RawFirebaseViewerModalProps> = ({
           </span>
           <button onClick={() => {
             navigator.clipboard.writeText(JSON.stringify(rawJson, null, 2));
-            alert('Copied to clipboard!');
+            toast.success('Copied to clipboard!');
           }} style={{ background: 'var(--bg-app)', border: '1px solid var(--border-main)', color: 'var(--text-main)', padding: '6px 12px', borderRadius: 4, cursor: 'pointer' }}>
             📋 Copy JSON
           </button>

@@ -24,6 +24,17 @@ function formatLiters(v: number | string): string {
   return `${n.toLocaleString('en-PK', { maximumFractionDigits: 2 })} L`;
 }
 
+// Static Tailwind class map for product color chips/bars (module scope — dynamic
+// `bg-${color}-500` strings never compile under Tailwind JIT, leaving dots/bars invisible).
+const PRODUCT_COLOR_CLASSES: Record<string, string> = {
+  blue: 'bg-blue-500',
+  emerald: 'bg-emerald-500',
+  amber: 'bg-amber-500',
+  purple: 'bg-purple-500',
+  rose: 'bg-rose-500',
+};
+const colorClassFor = (color: string) => PRODUCT_COLOR_CLASSES[color] || 'bg-slate-400';
+
 interface ShiftOverviewTabProps {
   salesRows: Record<string, any>[];
   totalRevenue: number;
@@ -119,6 +130,8 @@ export const ShiftOverviewTab: React.FC<ShiftOverviewTabProps> = ({
         name,
         liters,
         percentage: total > 0 ? ((liters / total) * 100).toFixed(1) : '0',
+        // Static key → the resolved class is looked up below (dynamic `bg-${color}-500`
+        // never compiles under Tailwind JIT, leaving dots/bars invisible).
         color: colors[idx % colors.length],
       }))
       .sort((a, b) => b.liters - a.liters);
@@ -149,7 +162,7 @@ export const ShiftOverviewTab: React.FC<ShiftOverviewTabProps> = ({
         <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
           <div className="flex justify-between items-start mb-2">
             <span className="text-xs font-bold text-slate-500">Today's Shift Revenue</span>
-            <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs">💰</div>
+            <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">💰</div>
           </div>
           <div>
             <div className="text-2xl font-black text-slate-900 tracking-tight">{formatCurrency(totalRevenue)}</div>
@@ -215,7 +228,7 @@ export const ShiftOverviewTab: React.FC<ShiftOverviewTabProps> = ({
           <div>
             <div className="flex justify-between items-center pb-2 border-b border-slate-100 mb-2">
               <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider">LIVE NOZZLE STATUS</h3>
-              <button onClick={() => onNavigateTab?.('nozzles')} className="text-[11px] font-extrabold text-emerald-700 hover:underline cursor-pointer">View All</button>
+              <button onClick={() => onNavigateTab?.('nozzles')} className="text-[11px] font-extrabold text-primary hover:underline cursor-pointer">View All</button>
             </div>
 
             {nozzleStatusList.length === 0 ? (
@@ -239,7 +252,7 @@ export const ShiftOverviewTab: React.FC<ShiftOverviewTabProps> = ({
                         <td className="py-2">
                           <span className={`px-2 py-0.5 rounded-full text-[9px] font-black ${
                             n.status === 'IN_USE' || n.status === 'ACTIVE'
-                              ? 'bg-emerald-100 text-emerald-800'
+                              ? 'bg-primary/10 text-primary'
                               : n.status === 'IDLE'
                               ? 'bg-amber-100 text-amber-800'
                               : 'bg-red-100 text-red-800'
@@ -261,7 +274,7 @@ export const ShiftOverviewTab: React.FC<ShiftOverviewTabProps> = ({
           <div className="pt-2 border-t border-slate-100 text-right">
             <button
               onClick={() => onNavigateTab?.('nozzles')}
-              className="text-xs font-black text-emerald-700 hover:underline inline-flex items-center gap-1 cursor-pointer"
+              className="text-xs font-black text-primary hover:underline inline-flex items-center gap-1 cursor-pointer"
             >
               <span>View Nozzle Performance</span>
               <ChevronRight size={14} />
@@ -278,7 +291,7 @@ export const ShiftOverviewTab: React.FC<ShiftOverviewTabProps> = ({
           <div className="relative w-36 h-36 flex items-center justify-center">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
               <path className="text-slate-100 stroke-current" strokeWidth="3.5" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-              <path className="text-[#0B5C3D] stroke-current" strokeDasharray={`${shiftProgress}, 100`} strokeWidth="3.5" strokeLinecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path className="text-primary stroke-current" strokeDasharray={`${shiftProgress}, 100`} strokeWidth="3.5" strokeLinecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
             </svg>
             <div className="absolute flex flex-col items-center justify-center">
               <span className="text-3xl font-black text-slate-900">{activeShift ? `${shiftProgress}%` : '—'}</span>
@@ -288,7 +301,7 @@ export const ShiftOverviewTab: React.FC<ShiftOverviewTabProps> = ({
           <div>
             <h4 className="text-sm font-black text-slate-900">{activeShift?.name || activeShift?.shiftName || 'No Active Shift'}</h4>
             <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black inline-block mt-1 ${
-              activeShift ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'
+              activeShift ? 'bg-primary/10 text-primary' : 'bg-slate-100 text-slate-600'
             }`}>
               {activeShift ? 'In Progress' : 'No Active Shift'}
             </span>
@@ -306,7 +319,7 @@ export const ShiftOverviewTab: React.FC<ShiftOverviewTabProps> = ({
         <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between space-y-4">
           <div className="flex justify-between items-center pb-2 border-b border-slate-100">
             <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider">FUEL SALES SUMMARY (THIS SHIFT)</h3>
-            <button onClick={() => onNavigateTab?.('products')} className="text-[11px] font-extrabold text-emerald-700 hover:underline cursor-pointer">View Details</button>
+            <button onClick={() => onNavigateTab?.('products')} className="text-[11px] font-extrabold text-primary hover:underline cursor-pointer">View Details</button>
           </div>
 
           {productBreakdown.length === 0 ? (
@@ -315,17 +328,17 @@ export const ShiftOverviewTab: React.FC<ShiftOverviewTabProps> = ({
             <div className="space-y-3.5">
               {productBreakdown.map((p) => (
                 <div key={p.name} className="space-y-1">
-                  <div className="flex justify-between text-xs font-bold">
-                    <span className="flex items-center gap-1.5">
-                      <span className={`w-2.5 h-2.5 rounded-full bg-${p.color}-500`} />
-                      {p.name}
+                  <div className="flex justify-between text-xs font-bold gap-2">
+                    <span className="flex items-center gap-1.5 min-w-0">
+                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${colorClassFor(p.color)}`} />
+                      <span className="truncate">{p.name}</span>
                     </span>
-                    <span className="font-black text-slate-900">
+                    <span className="font-black text-slate-900 shrink-0">
                       {formatLiters(p.liters)} <span className="text-slate-400 text-[11px] font-semibold">({p.percentage}%)</span>
                     </span>
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                    <div className={`bg-${p.color}-500 h-full rounded-full`} style={{ width: `${p.percentage}%` }} />
+                    <div className={`${colorClassFor(p.color)} h-full rounded-full`} style={{ width: `${p.percentage}%` }} />
                   </div>
                 </div>
               ))}

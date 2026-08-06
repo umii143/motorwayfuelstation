@@ -113,16 +113,16 @@ export const VarianceAnalysisTab: React.FC<VarianceAnalysisTabProps> = ({
     <div className="space-y-4">
       {/* AUDIT SUMMARY KPIS — computed from live data */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        <div className={`${cashVariance === 0 ? 'bg-emerald-50/80 border-emerald-200/90' : 'bg-red-50/80 border-red-200/90'} border rounded-2xl p-4 flex flex-col justify-between shadow-xs`}>
-          <span className={`text-xs font-black ${cashVariance === 0 ? 'text-emerald-900' : 'text-red-900'}`}>Total Cash Variance</span>
-          <div className={`text-2xl font-black ${cashVariance === 0 ? 'text-[#0B5C3D]' : 'text-red-600'} tracking-tight`}>{formatCurrency(cashVariance)}</div>
-          <span className={`text-[10px] font-extrabold ${cashVariance === 0 ? 'text-emerald-700' : 'text-red-700'} mt-1`}>{cashVariance === 0 ? '100% Cash Matched' : 'Discrepancy Detected'}</span>
+        <div className={`${cashVariance === 0 ? 'bg-primary/10 border-primary/25' : 'bg-red-50/80 border-red-200/90'} border rounded-2xl p-4 flex flex-col justify-between shadow-xs`}>
+          <span className={`text-xs font-black ${cashVariance === 0 ? 'text-primary' : 'text-red-900'}`}>Total Cash Variance</span>
+          <div className={`text-2xl font-black ${cashVariance === 0 ? 'text-primary' : 'text-red-600'} tracking-tight`}>{formatCurrency(cashVariance)}</div>
+          <span className={`text-[10px] font-extrabold ${cashVariance === 0 ? 'text-primary' : 'text-red-700'} mt-1`}>{cashVariance === 0 ? '100% Cash Matched' : 'Discrepancy Detected'}</span>
         </div>
 
-        <div className={`${stockVariance === 0 ? 'bg-emerald-50/80 border-emerald-200/90' : 'bg-amber-50/80 border-amber-200/90'} border rounded-2xl p-4 flex flex-col justify-between shadow-xs`}>
-          <span className={`text-xs font-black ${stockVariance === 0 ? 'text-emerald-900' : 'text-amber-900'}`}>Total Stock Variance</span>
-          <div className={`text-2xl font-black ${stockVariance === 0 ? 'text-[#0B5C3D]' : 'text-amber-800'} tracking-tight`}>{stockVariance.toFixed(2)} L</div>
-          <span className={`text-[10px] font-extrabold ${stockVariance === 0 ? 'text-emerald-700' : 'text-amber-700'} mt-1`}>{stockVariance === 0 ? '100% Stock Matched' : 'Variance Flagged'}</span>
+        <div className={`${stockVariance === 0 ? 'bg-primary/10 border-primary/25' : 'bg-amber-50/80 border-amber-200/90'} border rounded-2xl p-4 flex flex-col justify-between shadow-xs`}>
+          <span className={`text-xs font-black ${stockVariance === 0 ? 'text-primary' : 'text-amber-900'}`}>Total Stock Variance</span>
+          <div className={`text-2xl font-black ${stockVariance === 0 ? 'text-primary' : 'text-amber-800'} tracking-tight`}>{stockVariance.toFixed(2)} L</div>
+          <span className={`text-[10px] font-extrabold ${stockVariance === 0 ? 'text-primary' : 'text-amber-700'} mt-1`}>{stockVariance === 0 ? '100% Stock Matched' : 'Variance Flagged'}</span>
         </div>
 
         <div className="bg-blue-50/80 border border-blue-200/90 rounded-2xl p-4 flex flex-col justify-between shadow-xs">
@@ -134,7 +134,7 @@ export const VarianceAnalysisTab: React.FC<VarianceAnalysisTabProps> = ({
 
       <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-3">
         <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-          <ShieldCheck size={16} className="text-emerald-700" />
+          <ShieldCheck size={16} className="text-primary" />
           <span>Operational Cash & Stock Discrepancy Audit Log</span>
         </h2>
 

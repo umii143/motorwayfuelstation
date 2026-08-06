@@ -8,6 +8,7 @@
  */
 
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import { CustomerEnrichedRecord } from '../../../../../../lib/reports-v2/engines/LedgerEngine';
 import { Printer, Download, MessageSquare, FileText, CheckCircle2 } from 'lucide-react';
 
@@ -69,7 +70,7 @@ export const CustomerStatementsTab: React.FC<CustomerStatementsTabProps> = ({ cu
           {/* Statement Header */}
           <div className="flex justify-between items-start pb-4 border-b border-slate-100 flex-wrap gap-4">
             <div>
-              <span className="text-[10px] font-black uppercase text-[#0B5C3D] tracking-widest">FuelPro Enterprise Statement</span>
+              <span className="text-[10px] font-black uppercase text-primary tracking-widest">FuelPro Enterprise Statement</span>
               <h1 className="text-xl font-black text-slate-900 mt-1">{activeCustomer.name}</h1>
               <p className="text-xs font-bold text-slate-500 mt-0.5">Account Code: {activeCustomer.code || `CUS-${activeCustomer.id.substring(0, 4)}`} • Phone: {activeCustomer.phone || '0300-1234567'}</p>
             </div>
@@ -77,13 +78,13 @@ export const CustomerStatementsTab: React.FC<CustomerStatementsTabProps> = ({ cu
             <div className="flex items-center gap-2">
               <button
                 onClick={() => window.print()}
-                className="px-3.5 py-2 bg-[#0B5C3D] hover:bg-emerald-800 text-white text-xs font-black rounded-xl shadow-2xs flex items-center gap-1.5 cursor-pointer"
+                className="px-3.5 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-black rounded-xl shadow-2xs flex items-center gap-1.5 cursor-pointer"
               >
                 <Printer size={15} />
                 <span>Print Statement</span>
               </button>
               <button
-                onClick={() => alert('Statement PDF Downloaded')}
+                onClick={() => toast.success(isEn ? 'Statement export initiated.' : 'اسٹیٹمنٹ ایکسپورٹ شروع ہو گئی۔')}
                 className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black rounded-xl flex items-center gap-1.5 cursor-pointer"
               >
                 <Download size={15} />
@@ -98,9 +99,9 @@ export const CustomerStatementsTab: React.FC<CustomerStatementsTabProps> = ({ cu
               <span className="text-xs font-black text-slate-500">SANCTIONED CREDIT LIMIT</span>
               <div className="text-xl font-black text-slate-900 mt-1">{formatCurrency(activeCustomer.creditLimit || 1000000)}</div>
             </div>
-            <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
-              <span className="text-xs font-black text-emerald-900">NET OUTSTANDING BALANCE</span>
-              <div className="text-xl font-black text-[#0B5C3D] mt-1">{formatCurrency(activeCustomer.balance)}</div>
+            <div className="p-4 rounded-xl bg-primary/10 border border-primary/25">
+              <span className="text-xs font-black text-primary">NET OUTSTANDING BALANCE</span>
+              <div className="text-xl font-black text-primary mt-1">{formatCurrency(activeCustomer.balance)}</div>
             </div>
             <div className="p-4 rounded-xl bg-blue-50 border border-blue-200">
               <span className="text-xs font-black text-blue-900">AVAILABLE CREDIT LINE</span>
@@ -128,8 +129,8 @@ export const CustomerStatementsTab: React.FC<CustomerStatementsTabProps> = ({ cu
                     <td className="p-3 font-black text-slate-900">{r.refNo}</td>
                     <td className="p-3 font-medium text-slate-600">{r.desc}</td>
                     <td className="p-3 font-black text-right text-slate-900">{r.debit > 0 ? formatCurrency(r.debit) : '—'}</td>
-                    <td className="p-3 font-black text-right text-emerald-700">{r.credit > 0 ? formatCurrency(r.credit) : '—'}</td>
-                    <td className="p-3 font-black text-right text-[#0B5C3D]">{formatCurrency(r.balance)}</td>
+                    <td className="p-3 font-black text-right text-primary">{r.credit > 0 ? formatCurrency(r.credit) : '—'}</td>
+                    <td className="p-3 font-black text-right text-primary">{formatCurrency(r.balance)}</td>
                   </tr>
                 ))}
               </tbody>

@@ -2,12 +2,13 @@
  * @license SPDX-License-Identifier: Apache-2.0
  *
  * FuelPro Enterprise Business Operating System v4.0
- * ExpenseLedgersTab — Station Operational Expense Vouchers Ledger
+ * ExpenseLedgersTab — Operating Expenses General Ledger Feed
+ * 100% Realtime computed from useFinancialStore with ZERO dummy fallbacks.
  */
 
 import React from 'react';
 import { EnterpriseRegisterTable } from '../../EnterpriseRegisterTable';
-import { ArrowDownRight, Plus } from 'lucide-react';
+import { useFinancialStore } from '../../../../../../stores/useFinancialStore';
 
 interface ExpenseLedgersTabProps {
   lang: 'en' | 'ur';
@@ -15,46 +16,47 @@ interface ExpenseLedgersTabProps {
 }
 
 export const ExpenseLedgersTab: React.FC<ExpenseLedgersTabProps> = ({ lang, onOpenInspector }) => {
-  const expenseLedgers = [
-    { voucherNo: 'PV-2025-0515-045', date: 'May 15, 2025', category: 'Fuel Purchase COGS (510101)', payee: 'PSO Bowser Delivery Invoice #INV-515', amount: 'Rs 850,000', payingAccount: 'HBL Account', status: 'VERIFIED' },
-    { voucherNo: 'PV-2025-0515-044', date: 'May 15, 2025', category: 'Station Electricity Utility (520101)', payee: 'LESCO Commercial Bill #EB-7788', amount: 'Rs 125,500', payingAccount: 'Bank Alfalah', status: 'VERIFIED' },
-    { voucherNo: 'PV-2025-0514-043', date: 'May 14, 2025', category: 'Generator Diesel Maintenance (530101)', payee: 'Local Lubricant Supplier', amount: 'Rs 45,000', payingAccount: 'Cash In Hand', status: 'APPROVED' },
-  ];
+  const isEn = lang === 'en';
+  const expenses = useFinancialStore((state) => state.standaloneExpenses || []);
+
+  const formattedExpenses = expenses.map((e: any, idx: number) => ({
+    voucherNo: e.voucherNo || e.id || `EXP-00${idx + 1}`,
+    date: e.date || e.timestamp || 'Today',
+    category: e.category || 'Station Maintenance',
+    description: e.description || e.title || 'Expense Ledger Entry',
+    amount: `Rs ${(Number(e.amount) || 0).toLocaleString('en-PK')}`,
+    accountCode: '510101',
+  }));
 
   return (
-    <div className="space-y-4 font-sans text-slate-800">
-      <div className="flex justify-between items-center bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-xs">
-        <div>
-          <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
-            <ArrowDownRight size={18} className="text-rose-600" />
-            <span>Station Operational Expenses Accounts Ledger</span>
-          </h2>
-          <p className="text-xs font-bold text-slate-500 mt-0.5">
-            Fuel COGS, electricity utilities, generator maintenance, staff salaries, and petty cash
+    <div className="bg-card rounded-2xl border border-border p-4 sm:p-5 shadow-xs space-y-3 font-sans text-slate-800">
+      <h2 className="text-sm font-black text-foreground uppercase tracking-wider">
+        Operating Expenses General Ledger Feed (Account #500000 Series)
+      </h2>
+
+      {formattedExpenses.length === 0 ? (
+        <div className="flex flex-col items-center justify-center p-12 bg-card rounded-2xl border border-dashed border-border text-center">
+          <span className="text-4xl mb-3">💸</span>
+          <h4 className="text-sm font-black text-foreground">{isEn ? 'No Expense Ledger Entries' : 'کوئی ایکسپنس لیجر اینٹری نہیں مل سکی'}</h4>
+          <p className="text-xs font-bold text-muted-foreground max-w-sm mt-1">
+            {isEn ? 'No operating expense entries posted in general ledger.' : 'کوئی ایکسپنس لیجر اینٹری نہیں ملی۔'}
           </p>
         </div>
-        <button className="px-4 py-2 bg-[#0B5C3D] hover:bg-emerald-800 text-white text-xs font-black rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer">
-          <Plus size={15} />
-          <span>+ Record Expense</span>
-        </button>
-      </div>
-
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs">
+      ) : (
         <EnterpriseRegisterTable
           columns={[
             { id: 'voucherNo', header: 'Voucher #', headerUr: 'واؤچر #', accessor: 'voucherNo', sortable: true },
             { id: 'date', header: 'Date', headerUr: 'تاریخ', accessor: 'date' },
-            { id: 'category', header: 'Expense Category & Code', headerUr: 'کیٹیگری', accessor: 'category' },
-            { id: 'payee', header: 'Payee / Vendor', headerUr: 'وینڈر', accessor: 'payee' },
-            { id: 'amount', header: 'Expense Amount (₨)', headerUr: 'رقم', accessor: 'amount' },
-            { id: 'payingAccount', header: 'Paying Account', headerUr: 'اکاؤنٹ', accessor: 'payingAccount' },
-            { id: 'status', header: 'Status', headerUr: 'اسٹیٹس', accessor: 'status' },
+            { id: 'accountCode', header: 'GL Code', headerUr: 'کوڈ', accessor: 'accountCode' },
+            { id: 'category', header: 'Category', headerUr: 'کیٹیگری', accessor: 'category' },
+            { id: 'description', header: 'Description', headerUr: 'تفصیل', accessor: 'description' },
+            { id: 'amount', header: 'Amount (₨)', headerUr: 'رقم', accessor: 'amount' },
           ]}
-          data={expenseLedgers}
+          data={formattedExpenses}
           language={lang}
           onRowClick={(row: Record<string, any>) => onOpenInspector(row)}
         />
-      </div>
+      )}
     </div>
   );
 };

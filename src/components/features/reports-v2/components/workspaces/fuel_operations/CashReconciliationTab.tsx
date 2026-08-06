@@ -78,14 +78,14 @@ export const CashReconciliationTab: React.FC<CashReconciliationTabProps> = ({
         <div className="flex justify-between items-center pb-3 border-b border-slate-100">
           <div>
             <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
-              <DollarSign size={18} className="text-emerald-700" />
+              <DollarSign size={18} className="text-primary" />
               <span>Shift Cash Reconciliation & Physical Cash Count</span>
             </h2>
             <p className="text-xs font-bold text-slate-400">Reconcile physical cash drawer balance against expected system sales</p>
           </div>
           <span className={`px-3 py-1 rounded-full text-xs font-black border ${
             !actualCashInput ? 'bg-slate-100 text-slate-600 border-slate-300' :
-            cashDifference === 0 ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
+            cashDifference === 0 ? 'bg-primary/10 text-primary border-primary/35' :
             'bg-red-100 text-red-800 border-red-300'
           }`}>
             {!actualCashInput ? 'AWAITING COUNT' : cashDifference === 0 ? '✓ BALANCED MATCH' : '⚠ DISCREPANCY'}
@@ -98,26 +98,26 @@ export const CashReconciliationTab: React.FC<CashReconciliationTabProps> = ({
             <span className="text-lg font-black text-slate-900 mt-1 block">Rs {expectedCash.toLocaleString()}</span>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200">
-            <label className="text-emerald-800 block text-[11px] font-black mb-1">Physical Cash Count (₨)</label>
+          <div className="p-3.5 rounded-xl bg-primary/10 border border-primary/25">
+            <label className="text-primary block text-[11px] font-black mb-1">Physical Cash Count (₨)</label>
             <input
               type="number"
               value={actualCashInput}
               onChange={(e) => setActualCashInput(e.target.value)}
               placeholder="Enter physical count..."
-              className="w-full px-3 py-1.5 rounded-lg border border-emerald-300 bg-white text-sm font-black text-slate-900 focus:outline-none"
+              className="w-full px-3 py-1.5 rounded-lg border border-primary/35 bg-white text-sm font-black text-slate-900 focus:outline-none"
             />
           </div>
 
           <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
             <span className="text-slate-500 block text-[11px]">Cash Difference</span>
-            <span className={`text-lg font-black mt-1 block ${!actualCashInput ? 'text-slate-400' : cashDifference === 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+            <span className={`text-lg font-black mt-1 block ${!actualCashInput ? 'text-slate-400' : cashDifference === 0 ? 'text-primary' : 'text-red-600'}`}>
               {actualCashInput ? `Rs ${cashDifference.toLocaleString()}` : '—'}
             </span>
           </div>
 
           <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center">
-            <button className="w-full py-2.5 bg-[#0B5C3D] hover:bg-emerald-800 text-white text-xs font-black rounded-xl shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5">
+            <button className="w-full py-2.5 bg-primary hover:bg-primary-hover text-white text-xs font-black rounded-xl shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5">
               <ShieldCheck size={16} />
               <span>Verify & Settle Shift Cash</span>
             </button>

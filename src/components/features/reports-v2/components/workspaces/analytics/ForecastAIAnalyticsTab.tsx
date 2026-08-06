@@ -47,7 +47,7 @@ export const ForecastAIAnalyticsTab: React.FC<TabProps> = ({ metrics, resolveAiQ
                 <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-800 font-bold">{m.conf} Confidence</span>
               </div>
               <div className="flex justify-between items-baseline pt-1">
-                <span className="font-bold text-emerald-700 dark:text-emerald-400 text-sm">{m.rev}</span>
+                <span className="font-bold text-primary dark:text-primary text-sm">{m.rev}</span>
                 <span className="text-[11px] text-[var(--text-muted)]">{m.val}</span>
               </div>
             </div>

@@ -104,7 +104,7 @@ export const ExpensesWorkspaceView: React.FC<ExpensesWorkspaceViewProps> = ({
           <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => onSelectReport?.('FIN_EXPENSE')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0B5C3D] text-white hover:bg-emerald-800 rounded-xl text-xs font-black transition-all shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white hover:bg-primary-hover rounded-xl text-xs font-black transition-all shadow-xs cursor-pointer"
             >
               <span>💸</span>
               <span>{isEn ? '+ Expense Voucher' : '+ اخراجات واؤچر'}</span>
@@ -123,7 +123,7 @@ export const ExpensesWorkspaceView: React.FC<ExpensesWorkspaceViewProps> = ({
               onClick={() => setActiveTab(tab.id as any)}
               className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === tab.id
-                  ? 'bg-[#0B5C3D] text-white shadow-xs'
+                  ? 'bg-primary text-white shadow-xs'
                   : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
               }`}
             >
@@ -242,7 +242,7 @@ export const ExpensesWorkspaceView: React.FC<ExpensesWorkspaceViewProps> = ({
             </p>
             <button
               onClick={() => onSelectReport?.('FIN_EXPENSE')}
-              className="px-4 py-2 rounded-xl bg-[#0B5C3D] text-white text-xs font-black hover:bg-emerald-800 transition-all cursor-pointer shadow-xs"
+              className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-black hover:bg-primary-hover transition-all cursor-pointer shadow-xs"
             >
               💸 {isEn ? 'Create First Expense Voucher' : 'نیا اخراجات واؤچر کا اندراج کریں'}
             </button>

@@ -110,10 +110,10 @@ export const ShiftPerformanceTab: React.FC<ShiftPerformanceTabProps> = ({
           <span className="text-[10px] font-extrabold text-blue-700 mt-1">From live database</span>
         </div>
 
-        <div className="bg-emerald-50/80 border border-emerald-200/90 rounded-2xl p-4 flex flex-col justify-between shadow-xs">
-          <span className="text-xs font-black text-emerald-900">Top Performing Operator</span>
-          <div className="text-xl font-black text-[#0B5C3D] tracking-tight">{topOperator?.name || '—'}</div>
-          <span className="text-[10px] font-extrabold text-emerald-700 mt-1">{topOperator?.liters || '—'} Dispensed</span>
+        <div className="bg-primary/10 border border-primary/25 rounded-2xl p-4 flex flex-col justify-between shadow-xs">
+          <span className="text-xs font-black text-primary">Top Performing Operator</span>
+          <div className="text-xl font-black text-primary tracking-tight">{topOperator?.name || '—'}</div>
+          <span className="text-[10px] font-extrabold text-primary mt-1">{topOperator?.liters || '—'} Dispensed</span>
         </div>
       </div>
 

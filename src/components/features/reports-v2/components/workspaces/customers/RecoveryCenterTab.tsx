@@ -54,7 +54,7 @@ export const RecoveryCenterTab: React.FC<RecoveryCenterTabProps> = ({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-black border border-emerald-200">
+          <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-black border border-primary/25">
             {debtorCustomers.length} Active Recovery Priority Accounts
           </span>
         </div>
@@ -63,7 +63,7 @@ export const RecoveryCenterTab: React.FC<RecoveryCenterTabProps> = ({
       <div className="space-y-3">
         {debtorCustomers.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
-            <CheckCircle2 size={36} className="mx-auto text-emerald-500 mb-2" />
+            <CheckCircle2 size={36} className="mx-auto text-primary mb-2" />
             <h3 className="text-base font-black text-slate-900">Zero Overdue Dues!</h3>
             <p className="text-xs font-extrabold text-slate-500 mt-1">All trade debtor accounts are paid and clear.</p>
           </div>
@@ -71,7 +71,7 @@ export const RecoveryCenterTab: React.FC<RecoveryCenterTabProps> = ({
           debtorCustomers.map((customer) => (
             <div
               key={customer.id}
-              className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-emerald-300 transition-all"
+              className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-primary/35 transition-all"
             >
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
@@ -95,13 +95,13 @@ export const RecoveryCenterTab: React.FC<RecoveryCenterTabProps> = ({
               <div className="flex items-center gap-3 shrink-0">
                 <div className="text-right">
                   <span className="text-[10px] font-black text-slate-400 uppercase">Outstanding Due</span>
-                  <div className="text-lg font-black text-[#0B5C3D]">{formatCurrency(customer.balance)}</div>
+                  <div className="text-lg font-black text-primary">{formatCurrency(customer.balance)}</div>
                 </div>
 
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => onOpenPaymentModal(customer)}
-                    className="px-3.5 py-2 bg-[#0B5C3D] hover:bg-emerald-800 text-white text-xs font-black rounded-xl shadow-2xs flex items-center gap-1.5 cursor-pointer"
+                    className="px-3.5 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-black rounded-xl shadow-2xs flex items-center gap-1.5 cursor-pointer"
                   >
                     <DollarSign size={14} />
                     <span>Receive Payment</span>
@@ -109,7 +109,7 @@ export const RecoveryCenterTab: React.FC<RecoveryCenterTabProps> = ({
 
                   <button
                     onClick={() => sendWhatsAppReminder(customer)}
-                    className="p-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl transition-all cursor-pointer"
+                    className="p-2 bg-primary/10 hover:bg-primary/15 text-primary border border-primary/25 rounded-xl transition-all cursor-pointer"
                     title="Send WhatsApp Reminder"
                   >
                     <MessageSquare size={16} />

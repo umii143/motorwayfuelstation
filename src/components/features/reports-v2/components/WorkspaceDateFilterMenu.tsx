@@ -112,11 +112,13 @@ export const WorkspaceDateFilterMenu: React.FC<WorkspaceDateFilterMenuProps> = (
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3.5 py-2 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 text-xs font-black text-slate-800 shadow-2xs transition-all cursor-pointer"
+        className="flex items-center gap-2 px-3.5 py-2 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 text-xs font-black text-slate-800 shadow-2xs transition-all cursor-pointer max-w-full"
       >
-        <Calendar size={14} className="text-emerald-700" />
-        <span>{value.label}</span>
-        <ChevronDown size={14} className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <Calendar size={14} className="text-primary shrink-0" />
+        {/* Long preset labels (e.g. "May 11 – May 15, 2025 (This Week)") truncate on
+            narrow screens so the toolbar never overflows or forces wrap thrash */}
+        <span className="max-w-[130px] sm:max-w-none truncate">{value.label}</span>
+        <ChevronDown size={14} className={`text-slate-400 transition-transform shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {/* Popover Menu */}
@@ -133,12 +135,12 @@ export const WorkspaceDateFilterMenu: React.FC<WorkspaceDateFilterMenuProps> = (
                 onClick={() => handleSelectPreset(p.key)}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-bold transition-all text-left cursor-pointer ${
                   value.preset === p.key
-                    ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
+                    ? 'bg-primary/10 text-primary border border-primary/25'
                     : 'text-slate-700 hover:bg-slate-50'
                 }`}
               >
                 <span>{isEn ? p.labelEn : p.labelUr}</span>
-                {value.preset === p.key && <Check size={14} className="text-emerald-700" />}
+                {value.preset === p.key && <Check size={14} className="text-primary" />}
               </button>
             ))}
           </div>
@@ -168,7 +170,7 @@ export const WorkspaceDateFilterMenu: React.FC<WorkspaceDateFilterMenuProps> = (
               </div>
               <button
                 onClick={handleApplyCustom}
-                className="w-full py-2 bg-[#0B5C3D] hover:bg-emerald-800 text-white font-black text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+                className="w-full py-2 bg-primary hover:bg-primary-hover text-white font-black text-xs rounded-xl shadow-xs transition-all cursor-pointer"
               >
                 Apply Custom Range
               </button>

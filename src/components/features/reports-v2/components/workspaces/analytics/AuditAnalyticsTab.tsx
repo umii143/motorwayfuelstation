@@ -22,27 +22,27 @@ export const AuditAnalyticsTab: React.FC<TabProps> = ({ auditLogs, lang = 'en' }
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-4 shadow-sm">
           <div className="text-[10px] uppercase font-bold text-[var(--text-muted)]">Double-Entry Journal Vault</div>
-          <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400 font-mono mt-1">100% Balanced</div>
-          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-bold mt-1">Zero Debit/Credit Discrepancy</div>
+          <div className="text-2xl font-black text-primary dark:text-primary font-mono mt-1">100% Balanced</div>
+          <div className="text-xs text-primary dark:text-primary font-bold mt-1">Zero Debit/Credit Discrepancy</div>
         </div>
 
         <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-4 shadow-sm">
           <div className="text-[10px] uppercase font-bold text-[var(--text-muted)]">FBR & PRA Tax Compliance</div>
-          <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400 font-mono mt-1">100% Compliant</div>
-          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-bold mt-1">Realtime FBR POS Synced</div>
+          <div className="text-2xl font-black text-primary dark:text-primary font-mono mt-1">100% Compliant</div>
+          <div className="text-xs text-primary dark:text-primary font-bold mt-1">Realtime FBR POS Synced</div>
         </div>
 
         <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-4 shadow-sm">
           <div className="text-[10px] uppercase font-bold text-[var(--text-muted)]">OGRA Price Margin Compliance</div>
-          <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400 font-mono mt-1">100% Certified</div>
-          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-bold mt-1">Government Circular Audited</div>
+          <div className="text-2xl font-black text-primary dark:text-primary font-mono mt-1">100% Certified</div>
+          <div className="text-xs text-primary dark:text-primary font-bold mt-1">Government Circular Audited</div>
         </div>
       </div>
 
       {/* 2. REALTIME IMMUTABLE AUDIT LOG VAULT */}
       <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-5 shadow-md space-y-4">
         <h3 className="text-sm font-bold text-[var(--text-main)] flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-emerald-600" />
+          <ShieldCheck className="w-4 h-4 text-primary" />
           {t('Realtime Firestore Immutable Audit Trail Vault', 'آڈٹ ٹریل فائرسٹور والٹ')}
         </h3>
 
@@ -55,7 +55,7 @@ export const AuditAnalyticsTab: React.FC<TabProps> = ({ auditLogs, lang = 'en' }
             <div key={log.id} className="p-3.5 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-main)] flex justify-between items-center">
               <div>
                 <div className="flex items-center gap-2 font-sans font-bold text-[var(--text-main)]">
-                  <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-800">{log.action}</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] bg-primary/10 text-primary">{log.action}</span>
                   <span>{log.id}</span>
                 </div>
                 <p className="text-[10px] text-[var(--text-muted)] font-sans mt-1">{log.details}</p>

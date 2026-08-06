@@ -12,6 +12,10 @@
 // ENGINE TYPES — What kind of report is this?
 // ──────────────────────────────────────────────
 
+export interface IObservableEngine {
+  getMetrics(): Record<string, number>;
+}
+
 export type ReportEngineType =
   | 'BusinessDashboard'    // Executive overview (KPIs + Charts + Register)
   | 'SalesRegister'        // Sales-focused register with sales KPIs

@@ -145,7 +145,7 @@ export default function PetroleumInventoryReport({
                 <h2 className="text-lg font-black text-foreground uppercase tracking-wide">
                   {t('Enterprise Petroleum Inventory Intelligence Platform', 'پیٹرولیم انوینٹری انٹیلی جنس رپورٹ')}
                 </h2>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                <span className="px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/30 text-primary dark:text-primary text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3" /> Single Source Engine Verified
                 </span>
               </div>
@@ -172,7 +172,7 @@ export default function PetroleumInventoryReport({
               <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground block">{t('Total Inventory Net Profit', 'کل نیٹ منافع')}</span>
               <strong
                 onClick={() => setShowFormulaModal(true)}
-                className="font-mono text-base font-black text-emerald-600 dark:text-emerald-400 block cursor-pointer hover:underline"
+                className="font-mono text-base font-black text-primary dark:text-primary block cursor-pointer hover:underline"
               >
                 {formatCurrency(snapshot.grandTotalNetProfit, settings)} 🔍
               </strong>
@@ -196,7 +196,7 @@ export default function PetroleumInventoryReport({
                 <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
                   cat.healthBadge === 'CRITICAL REFILL' ? 'bg-rose-500/15 text-rose-600 border border-rose-500/30' :
                   cat.healthBadge === 'MEDIUM RISK' ? 'bg-amber-500/15 text-amber-600 border border-amber-500/30' :
-                  'bg-emerald-500/15 text-emerald-600 border border-emerald-500/30'
+                  'bg-primary/15 text-primary border border-primary/30'
                 }`}>
                   {cat.healthBadge}
                 </span>
@@ -221,7 +221,7 @@ export default function PetroleumInventoryReport({
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <span>Margin:</span>
-                  <span className="font-bold text-emerald-600">Rs {cat.marginPerLtr.toFixed(2)}/L</span>
+                  <span className="font-bold text-primary">Rs {cat.marginPerLtr.toFixed(2)}/L</span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <span>Valuation:</span>
@@ -234,7 +234,7 @@ export default function PetroleumInventoryReport({
                 <div className="h-1.5 w-full bg-card rounded-full overflow-hidden border border-border">
                   <div
                     className={`h-full rounded-full ${
-                      cat.status === 'low' ? 'bg-rose-500' : cat.status === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'
+                      cat.status === 'low' ? 'bg-rose-500' : cat.status === 'medium' ? 'bg-amber-500' : 'bg-primary'
                     }`}
                     style={{ width: `${Math.min(100, cat.fillPct)}%` }}
                   />
@@ -327,14 +327,14 @@ export default function PetroleumInventoryReport({
                     {cat.categoryName}
                   </td>
                   <td className="p-3 text-right font-bold">{cat.totalOpeningStock.toLocaleString()} Ltr</td>
-                  <td className="p-3 text-right text-emerald-600 font-bold">+{cat.totalPurchasesLtr.toLocaleString()} Ltr</td>
+                  <td className="p-3 text-right text-primary font-bold">+{cat.totalPurchasesLtr.toLocaleString()} Ltr</td>
                   <td className="p-3 text-right text-rose-600 font-bold">-{cat.totalSalesLtr.toLocaleString()} Ltr</td>
                   <td className="p-3 text-right font-extrabold text-foreground">{cat.totalCurrentStock.toLocaleString()} Ltr</td>
                   <td className="p-3 text-right font-bold">{formatCurrency(cat.sellingRate, settings)}</td>
                   <td className="p-3 text-right font-bold text-muted-foreground">{formatCurrency(cat.inventoryCostValuation, settings)}</td>
                   <td className="p-3 text-right font-bold text-blue-600">{formatCurrency(cat.inventoryMarketValuation, settings)}</td>
-                  <td className="p-3 text-right text-emerald-600 font-bold">Rs {cat.marginPerLtr.toFixed(2)}/L</td>
-                  <td className="p-3 text-right font-extrabold text-emerald-600">{formatCurrency(cat.netProfit, settings)}</td>
+                  <td className="p-3 text-right text-primary font-bold">Rs {cat.marginPerLtr.toFixed(2)}/L</td>
+                  <td className="p-3 text-right font-extrabold text-primary">{formatCurrency(cat.netProfit, settings)}</td>
                   <td className="p-3 text-center">
                     <button
                       onClick={() => setActiveLineageProduct(cat)}
@@ -365,7 +365,7 @@ export default function PetroleumInventoryReport({
               <div key={tank.id} className="rounded-2xl border border-border bg-subtle p-4 space-y-3">
                 <div className="flex items-center justify-between border-b border-border pb-2">
                   <span className="font-black text-xs text-foreground uppercase">{tank.name}</span>
-                  <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-600">
+                  <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-primary/15 text-primary">
                     ONLINE
                   </span>
                 </div>
@@ -385,7 +385,7 @@ export default function PetroleumInventoryReport({
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>Available Space (Ullage):</span>
-                    <span className="font-mono text-emerald-600 font-bold">{availableSpace.toLocaleString()} Ltr</span>
+                    <span className="font-mono text-primary font-bold">{availableSpace.toLocaleString()} Ltr</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>Dead Stock (Unpumpable):</span>
@@ -393,7 +393,7 @@ export default function PetroleumInventoryReport({
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>Pumpable Stock:</span>
-                    <span className="font-mono text-emerald-600 font-bold">{pumpableStock.toLocaleString()} Ltr</span>
+                    <span className="font-mono text-primary font-bold">{pumpableStock.toLocaleString()} Ltr</span>
                   </div>
                 </div>
               </div>
@@ -430,7 +430,7 @@ export default function PetroleumInventoryReport({
                   <span>Expected Market Valuation (Selling Price):</span>
                   <span>{formatCurrency(snapshot.grandTotalMarketValuation, settings)}</span>
                 </div>
-                <div className="flex justify-between text-emerald-600 font-bold border-t border-border pt-2">
+                <div className="flex justify-between text-primary font-bold border-t border-border pt-2">
                   <span>Gross Dealer Margin Profit:</span>
                   <span>{formatCurrency(snapshot.grandTotalGrossProfit, settings)}</span>
                 </div>
@@ -438,7 +438,7 @@ export default function PetroleumInventoryReport({
                   <span>- Station Allocation Expense (5%):</span>
                   <span>-{formatCurrency(snapshot.grandTotalGrossProfit * 0.05, settings)}</span>
                 </div>
-                <div className="flex justify-between text-emerald-600 font-black border-t border-border pt-2 text-sm">
+                <div className="flex justify-between text-primary font-black border-t border-border pt-2 text-sm">
                   <span>= Net Inventory Profit:</span>
                   <span>{formatCurrency(snapshot.grandTotalNetProfit, settings)}</span>
                 </div>
@@ -475,7 +475,7 @@ export default function PetroleumInventoryReport({
                   <span>Opening Baseline Stock:</span>
                   <span className="font-bold text-foreground">{activeLineageProduct.totalOpeningStock.toLocaleString()} Ltr</span>
                 </div>
-                <div className="flex justify-between text-emerald-600">
+                <div className="flex justify-between text-primary">
                   <span>+ Tanker Purchases Received:</span>
                   <span className="font-bold">+{activeLineageProduct.totalPurchasesLtr.toLocaleString()} Ltr</span>
                 </div>

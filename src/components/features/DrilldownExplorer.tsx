@@ -826,8 +826,7 @@ export default function DrilldownExplorer({ settings, initialView, onClose }: Dr
 
  {/* Detail side drawer for terminal transaction view */}
  {selectedTxDetail && (
- <div className="fixed inset-0 bg-card backdrop-blur-sm z-50 flex items-center justify-end animate-fade-in">
- <div className="bg-card w-full max-w-lg h-screen flex flex-col border-l border-border animate-slide-in">
+ <div className="fixed inset-0 bg-card backdrop-blur-sm z-50 flex items-center justify-end animate-fade-in">  <div className="bg-card w-full max-w-lg h-dvh flex flex-col border-l border-border animate-slide-in">
  {/* Header */}
  <div className="h-16 border-b border-border flex items-center justify-between px-6 bg-subtle">
  <h3 className="font-black text-sm text-foreground capitalize">

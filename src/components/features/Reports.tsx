@@ -447,7 +447,7 @@ export default function Reports({
  className="rounded-xl border border-border bg-card p-4 shadow-sm flex flex-col justify-between cursor-pointer hover:border-orange-500 hover:shadow-md transition-all"
  >
  <span className="font-sans text-[10px] font-bold text-muted-foreground uppercase tracking-widest block leading-snug">{t('Estimated Gross Margin', 'تخمینہ منافع مارجن')}</span>
- <strong className="font-mono text-base font-bold text-emerald-600 tracking-tight mt-1.5 block">
+ <strong className="font-mono text-base font-bold text-primary tracking-tight mt-1.5 block">
  {formatCurrency(summaryTotals.totalProfit, settings)}
  </strong>
  </div>
@@ -477,7 +477,7 @@ export default function Reports({
  className="rounded-xl border border-border bg-card p-4 shadow-sm flex flex-col justify-between cursor-pointer hover:border-orange-500 hover:shadow-md transition-all"
  >
  <span className="font-sans text-[10px] font-bold text-muted-foreground uppercase tracking-widest block leading-snug">{t('Net Earnings', 'خالص آمدنی')}</span>
- <strong className={`font-mono text-base font-extrabold tracking-tight mt-1.5 block${summaryTotals.netEarning >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
+ <strong className={`font-mono text-base font-extrabold tracking-tight mt-1.5 block${summaryTotals.netEarning >= 0 ? 'text-primary' : 'text-rose-600'}`}>
  {formatCurrency(summaryTotals.netEarning, settings)}
  </strong>
  </div>
@@ -604,7 +604,7 @@ export default function Reports({
  className: 'text-right',
  accessor: (cust) => {
  const isOwed = cust.balance > 0;
- return <span className={`font-mono font-extrabold${isOwed ? 'text-red-650' : 'text-emerald-705'}`}>{formatCurrency(cust.balance, settings)}</span>;
+ return <span className={`font-mono font-extrabold${isOwed ? 'text-red-650' : 'text-primary'}`}>{formatCurrency(cust.balance, settings)}</span>;
  }
  }
  ]}
@@ -667,7 +667,7 @@ export default function Reports({
  {
  header: t('Unit rate (PKR)', 'موجودہ ریٹ فی لیٹر'),
  className: 'text-right',
- accessor: (prod) => <span className="font-mono font-bold text-emerald-700">{formatCurrency(prod.rate, settings)}</span>
+ accessor: (prod) => <span className="font-mono font-bold text-primary">{formatCurrency(prod.rate, settings)}</span>
  }
  ]}
  keyExtractor={(prod) => prod.id}
@@ -804,7 +804,7 @@ export default function Reports({
  <div className="text-right">
  <span className="block">Start: <span className="font-semibold">{activeShiftToReceipt.startTime}</span></span>
  <span className="block mt-1">End: <span className="font-semibold">{activeShiftToReceipt.endTime}</span></span>
- <span className="block mt-1">Status: <span className="font-bold text-emerald-600 uppercase">{activeShiftToReceipt.status.toUpperCase()}</span></span>
+ <span className="block mt-1">Status: <span className="font-bold text-primary uppercase">{activeShiftToReceipt.status.toUpperCase()}</span></span>
  </div>
  </div>
 
@@ -831,7 +831,7 @@ export default function Reports({
  <span>⚠️ {t(`Operator Shortage Detected: ${formatCurrency(activeShiftToReceipt.shortage, settings)}`, `کیش میں کمی (شارٹیج): ${formatCurrency(activeShiftToReceipt.shortage, settings)}`)}</span>
  </div>
  ) : activeShiftToReceipt.overage > 0 ? (
- <div className="rounded-lg p-3 bg-emerald-50 border border-emerald-100 font-sans text-xs text-emerald-700 font-bold flex items-center gap-2">
+ <div className="rounded-lg p-3 bg-primary/10 border border-primary/20 font-sans text-xs text-primary font-bold flex items-center gap-2">
  <span>✅ {t(`Excess Overage Collected: ${formatCurrency(activeShiftToReceipt.overage, settings)}`, `کیش میں زیادتی (فالتو): ${formatCurrency(activeShiftToReceipt.overage, settings)}`)}</span>
  </div>
  ) : (
@@ -917,7 +917,7 @@ export default function Reports({
  </div>
  <div className="bg-card p-4 rounded-xl border border-border">
  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block leading-snug">{t('Reconciled & Settle (✓)', 'تصفیہ شدہ شفٹس')}</span>
- <strong className="font-mono text-lg font-bold text-emerald-600 block mt-1">{reconciledShiftIds.length}</strong>
+ <strong className="font-mono text-lg font-bold text-primary block mt-1">{reconciledShiftIds.length}</strong>
  </div>
  <div className="bg-card p-4 rounded-xl border border-border">
  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block leading-snug">{t('Unreconciled Audits (✕)', 'زیر التوا آڈٹس')}</span>
@@ -1002,7 +1002,7 @@ export default function Reports({
  const variance = totalDigital - totalBank;
  const isReconciled = reconciledShiftIds.includes(s.id);
  return isReconciled ? (
- <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700 leading-none">
+ <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-[10px] font-bold text-primary leading-none">
  ✓ {t('Reconciled', 'تصفیہ مکمل')}
  </span>
  ) : variance === 0 ? (

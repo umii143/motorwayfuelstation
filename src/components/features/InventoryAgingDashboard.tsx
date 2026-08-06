@@ -37,8 +37,8 @@ interface AgingTierConfig {
 const AGING_TIERS: AgingTierConfig[] = [
  {
  tier: 'fresh', label: 'Fresh', range: '0–30 Days',
- color: 'text-emerald-600', bgCard: 'bg-emerald-50', borderCard: 'border-emerald-200',
- badgeBg: 'bg-emerald-100', badgeText: 'text-emerald-700',
+ color: 'text-primary', bgCard: 'bg-primary/10', borderCard: 'border-primary/25',
+ badgeBg: 'bg-primary/10', badgeText: 'text-primary',
  icon: CheckCircle, pulse: false, action: 'Normal operations',
  },
  {
@@ -182,9 +182,9 @@ export default function InventoryAgingDashboard({
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
  {[
  { label: t('Current Stock Value', 'موجودہ اسٹاک قیمت'), value: `Rs.${(exposure.totalStockValue / 1000000).toFixed(2)}M`, sub: 'Landed Cost × Qty Remaining', color: 'text-blue-300' },
- { label: t('Potential Revenue', 'ممکنہ آمدنی'), value: `Rs.${(exposure.totalPotentialRevenue / 1000000).toFixed(2)}M`, sub: 'OGRA Price × Qty Remaining', color: 'text-emerald-300' },
+ { label: t('Potential Revenue', 'ممکنہ آمدنی'), value: `Rs.${(exposure.totalPotentialRevenue / 1000000).toFixed(2)}M`, sub: 'OGRA Price × Qty Remaining', color: 'text-primary' },
  { label: t('Expected Margin', 'متوقع منافع'), value: `Rs.${(exposure.expectedMargin / 1000).toFixed(0)}K`, sub: 'Revenue − Landed Cost', color: 'text-yellow-300' },
- { label: t('Inventory At Risk', 'خطرے میں اسٹاک'), value: `Rs.${(exposure.inventoryAtRisk / 1000).toFixed(0)}K`, sub: `${exposure.atRiskCount} batches 60+ days`, color: exposure.inventoryAtRisk > 0 ? 'text-red-300' : 'text-emerald-300' },
+ { label: t('Inventory At Risk', 'خطرے میں اسٹاک'), value: `Rs.${(exposure.inventoryAtRisk / 1000).toFixed(0)}K`, sub: `${exposure.atRiskCount} batches 60+ days`, color: exposure.inventoryAtRisk > 0 ? 'text-red-300' : 'text-primary' },
  ].map((s, i) => (
  <div key={i} className="bg-card/10 rounded-lg p-2 backdrop-blur-xs">
  <p className="text-muted-foreground text-[9px] font-semibold uppercase tracking-wide">{s.label}</p>
@@ -247,7 +247,7 @@ export default function InventoryAgingDashboard({
  </div>
  <div className="h-1.5 bg-theme-main rounded-full overflow-hidden">
  <div
- className={`h-full rounded-full${tier.tier === 'fresh' ? 'bg-emerald-500' : tier.tier === 'watch' ? 'bg-amber-400' : tier.tier === 'critical' ? 'bg-orange-500' : 'bg-red-600'}`}
+ className={`h-full rounded-full${tier.tier === 'fresh' ? 'bg-primary' : tier.tier === 'watch' ? 'bg-amber-400' : tier.tier === 'critical' ? 'bg-orange-500' : 'bg-red-600'}`}
  style={{ width: `${Math.min(100, (maxDays / 120) * 100)}%` }}
  />
  </div>
@@ -350,7 +350,7 @@ export default function InventoryAgingDashboard({
  { label: 'Exposure', value: `Rs.${(b.exposureValue / 1000).toFixed(1)}K`, highlight: b.tier.tier === 'emergency' ? 'red' : b.tier.tier === 'critical' ? 'orange' : '' },
  ].map((item, i) => (
  <div key={i} className={`rounded p-1.5 border${
- item.highlight === 'emerald' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' :
+ item.highlight === 'emerald' ? 'bg-primary/10 border-primary/20 text-primary' :
  item.highlight === 'red' ? 'bg-red-500/10 border-red-500/20 text-red-600' :
  item.highlight === 'orange' ? 'bg-orange-500/10 border-orange-500/20 text-orange-600' :
  'bg-slate-50 dark:bg-card/5/50 /50 border-theme-main text-muted-foreground'

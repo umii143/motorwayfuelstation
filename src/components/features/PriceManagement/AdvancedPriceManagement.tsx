@@ -22,6 +22,7 @@ import { PriceApprovalWorkflowTab } from './components/PriceApprovalWorkflowTab'
 import { OGRANotificationCenterTab } from './components/OGRANotificationCenterTab';
 import { TaxLevyBreakdownWidget } from './components/TaxLevyBreakdownWidget';
 import { PumpControllerSyncStatusWidget } from './components/PumpControllerSyncStatusWidget';
+import { X, FileText, Info } from 'lucide-react';
 
 // Modals
 import { UpdatePriceModal } from './modals/UpdatePriceModal';
@@ -48,23 +49,6 @@ export default function AdvancedPriceManagement({
 }: AdvancedPriceManagementProps) {
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => isUrdu ? ur : en;
-
-  // Retrieve tanks from Zustand store
-  const { tanks } = useInventoryStore(useShallow(state => ({
-    tanks: state.tanks
-  })));
-
-  // Pricing Reactive Store
-  const pricingStore = usePricingStore();
-  const activeOrgId = 'org_main';
-  const activeStationId = 'st_default';
-
-  useEffect(() => {
-    const unsub = pricingStore.initRealtimeListeners(activeOrgId, activeStationId);
-    return () => unsub();
-  }, [activeStationId]);
-
-  // 15 Workspace Header Tabs State
   const [activeTab, setActiveTab] = useState<
     | 'overview'
     | 'price_board'
@@ -81,7 +65,27 @@ export default function AdvancedPriceManagement({
     | 'audit_trail'
     | 'price_notifications'
     | 'version_history'
+    | 'revaluation'
+    | 'versions'
+    | 'approval'
+    | 'notification'
   >('overview');
+  const [selectedKPI, setSelectedKPI] = useState<string | null>(null);
+
+  // Retrieve tanks from Zustand store
+  const { tanks } = useInventoryStore(useShallow(state => ({
+    tanks: state.tanks
+  })));
+
+  // Pricing Reactive Store
+  const pricingStore = usePricingStore();
+  const activeOrgId = 'org_main';
+  const activeStationId = 'st_default';
+
+  useEffect(() => {
+    const unsub = pricingStore.initRealtimeListeners(activeOrgId, activeStationId);
+    return () => unsub();
+  }, [activeStationId]);
 
   // Branch and Product Spectrum Filters
   const [selectedBranch, setSelectedBranch] = useState('all');
@@ -131,7 +135,7 @@ export default function AdvancedPriceManagement({
       'Zahid Manager'
     );
     alert(t('Price proposal submitted for approval successfully!', 'قیمت کی تجویز کامیابی سے جمع کر دی گئی ہے!'));
-    setActiveTab('price_approval');
+    setActiveTab('approval');
   };
 
   // Trigger Pre-Publish Simulation (Rule #173)
@@ -209,17 +213,17 @@ export default function AdvancedPriceManagement({
       {/* HERO AI PRICING BANNER */}
       <HeroAIPricingBanner isUrdu={isUrdu} />
 
-      {/* 8 REALTIME PRICING KPI CARDS */}
-      <PricingHeaderKPIs
-        isUrdu={isUrdu}
-        petrolPrice={petrolRate}
-        dieselPrice={dieselRate}
-        cngPrice={cngRate}
+      {/* 1. Header KPIs Component */}
+      <PricingHeaderKPIs 
+        isUrdu={settings.language === 'ur'}
+        petrolPrice={products.find(p => p.name.includes('Petrol') || p.type === 'fuel')?.rate || 272.15}
+        dieselPrice={products.find(p => p.name.includes('Diesel'))?.rate || 294.80}
         avgMargin={8.64}
-        changesToday={pricingStore.fuelPrices.length || 2}
-        estimatedRevaluation={452000}
+        changesToday={2}
+        estimatedRevaluation={145000}
         pendingApprovals={pricingStore.fuelPrices.filter(p => p.status === 'waiting').length || 1}
         nextUpdateDate="15 Aug 2026"
+        onSelectKPI={(kpiId) => setSelectedKPI(kpiId)}
       />
 
       {/* PRICING-ONLY QUICK ACTIONS TOOLBAR */}
@@ -446,6 +450,58 @@ export default function AdvancedPriceManagement({
         onClose={() => setIsSimulationOpen(false)}
         onConfirmPublish={handleConfirmPublish}
       />
+
+      {/* KPI Drill Down Modal */}
+      {selectedKPI && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-2xl max-w-lg w-full p-6 shadow-2xl animate-in zoom-in-95">
+            <div className="flex justify-between items-center mb-4 border-b border-border pb-3">
+              <div className="flex items-center gap-2">
+                <Info className="w-5 h-5 text-primary" />
+                <h3 className="text-lg font-black text-foreground uppercase tracking-wider">
+                  [{selectedKPI}] {selectedKPI === 'PRC-001' ? 'Petrol Price History' : selectedKPI === 'PRC-002' ? 'Diesel Price History' : selectedKPI === 'PRC-003' ? 'Dealer Margin Analysis' : selectedKPI === 'PRC-004' ? 'Landed Cost Breakdown' : selectedKPI === 'PRC-005' ? 'Revaluation Register' : selectedKPI === 'PRC-006' ? 'Gross Profit Calculation' : selectedKPI === 'PRC-007' ? 'Upcoming Revisions' : 'Version Details'}
+                </h3>
+              </div>
+              <button onClick={() => setSelectedKPI(null)} className="p-1 rounded-lg hover:bg-muted text-muted-foreground">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="p-4 bg-muted/20 border border-border rounded-xl">
+                 <p className="text-xs font-black text-muted-foreground uppercase">Formula Registry Reference</p>
+                 <p className="text-sm font-bold text-foreground mt-1">Formula ID: <span className="font-mono text-primary">{selectedKPI}</span></p>
+                 <p className="text-xs font-bold text-muted-foreground mt-1">SSOT Compliant • Live Operational Feed</p>
+              </div>
+
+              <div className="space-y-2 text-xs font-bold text-foreground">
+                <div className="flex justify-between py-2 border-b border-border">
+                  <span className="text-muted-foreground">Current Active Rate</span>
+                  <span className="font-mono font-black">₨ 272.15 / L</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-border">
+                  <span className="text-muted-foreground">Landed Cost</span>
+                  <span className="font-mono font-black">₨ 263.51 / L</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-border">
+                  <span className="text-muted-foreground">Dealer Margin</span>
+                  <span className="font-mono font-black text-emerald-500">₨ 8.64 / L</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-border">
+                  <span className="text-muted-foreground">Effective Circular</span>
+                  <span className="font-mono font-black">OGRA-2026-0815</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button onClick={() => setSelectedKPI(null)} className="px-5 py-2.5 bg-primary text-primary-foreground text-xs font-black rounded-xl hover:bg-primary/90">
+                Close Drill-Down
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

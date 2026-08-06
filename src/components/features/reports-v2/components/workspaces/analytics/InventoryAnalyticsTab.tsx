@@ -28,8 +28,8 @@ export const InventoryAnalyticsTab: React.FC<TabProps> = ({ tankTelemetry, abcAn
           <p className="text-xs text-[var(--text-muted)] mt-0.5">Realtime ATG sensor telemetry & double-entry stock valuation</p>
         </div>
         <div className="text-right font-mono">
-          <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400">{formatCurrency(metrics.inventoryValue)}</div>
-          <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">100% Stock Verified</span>
+          <div className="text-2xl font-black text-primary dark:text-primary">{formatCurrency(metrics.inventoryValue)}</div>
+          <span className="text-[10px] text-success dark:text-success font-bold">100% Stock Verified</span>
         </div>
       </div>
 
@@ -45,7 +45,7 @@ export const InventoryAnalyticsTab: React.FC<TabProps> = ({ tankTelemetry, abcAn
             <div key={t.id} className={`p-4 rounded-xl border ${t.isReorderRisk ? 'bg-rose-500/10 border-rose-500/30' : 'bg-[var(--bg-subtle)] border-[var(--border-main)]'} space-y-2`}>
               <div className="flex justify-between items-center">
                 <span className="font-bold text-[var(--text-main)] font-sans text-sm">{t.name} ({t.productName})</span>
-                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${t.isReorderRisk ? 'bg-rose-500/20 text-rose-800' : 'bg-emerald-500/10 text-emerald-800'}`}>
+                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${t.isReorderRisk ? 'bg-rose-500/20 text-rose-800' : 'bg-primary/10 text-primary'}`}>
                   {t.isReorderRisk ? '🔴 REORDER ALERT' : '🟢 STOCK HEALTHY'}
                 </span>
               </div>
@@ -53,7 +53,7 @@ export const InventoryAnalyticsTab: React.FC<TabProps> = ({ tankTelemetry, abcAn
                 <div>Current Stock: <strong className="text-[var(--text-main)]">{t.currentStock.toLocaleString()} L ({t.stockPct}%)</strong></div>
                 <div>Water Level: <strong className="text-[var(--text-main)]">{t.waterDepthMm} mm</strong></div>
                 <div>Temperature: <strong className="text-[var(--text-main)]">{t.temperatureC} °C</strong></div>
-                <div className="text-right">Days Left: <strong className="text-emerald-700 dark:text-emerald-400">{t.daysRemaining} Days</strong></div>
+                <div className="text-right">Days Left: <strong className="text-primary dark:text-primary">{t.daysRemaining} Days</strong></div>
               </div>
             </div>
           ))}
@@ -72,7 +72,7 @@ export const InventoryAnalyticsTab: React.FC<TabProps> = ({ tankTelemetry, abcAn
             <div key={item.productName} className="p-3.5 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-main)] flex justify-between items-center">
               <div>
                 <div className="flex items-center gap-2 font-sans font-bold text-[var(--text-main)]">
-                  <span className={`px-2 py-0.5 rounded text-[10px] ${item.category === 'A' ? 'bg-emerald-500 text-white' : item.category === 'B' ? 'bg-amber-500 text-white' : 'bg-slate-500 text-white'}`}>
+                  <span className={`px-2 py-0.5 rounded text-[10px] ${item.category === 'A' ? 'bg-primary text-white' : item.category === 'B' ? 'bg-amber-500 text-white' : 'bg-slate-500 text-white'}`}>
                     Category {item.category}
                   </span>
                   <span>{item.productName}</span>
@@ -81,7 +81,7 @@ export const InventoryAnalyticsTab: React.FC<TabProps> = ({ tankTelemetry, abcAn
               </div>
               <div className="text-right">
                 <span className="font-bold text-[var(--text-main)] block">Turnover Ratio: {item.turnoverRatio}x</span>
-                <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">Revenue Share: {item.revenueSharePct}%</span>
+                <span className="text-[10px] text-success dark:text-success font-bold">Revenue Share: {item.revenueSharePct}%</span>
               </div>
             </div>
           ))}

@@ -187,7 +187,7 @@ export default function SingleProductDrillDownModal({
  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-1">
  {t('Profit Margin', 'منافع مارجن')}
  </span>
- <h3 className="text-2xl font-black text-emerald-600">+{metrics.profitMargin.toFixed(1)}%</h3>
+ <h3 className="text-2xl font-black text-primary">+{metrics.profitMargin.toFixed(1)}%</h3>
  <div className="mt-2 flex items-center justify-between text-xs font-bold text-muted-foreground border-t pt-2">
  <span>{t('Purchase Price:', 'خرید قیمت:')}</span>
  <span>Rs. {metrics.purchasePrice.toLocaleString()}</span>
@@ -198,7 +198,7 @@ export default function SingleProductDrillDownModal({
  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-1">
  {t('Profit Per Unit', 'فی یونٹ منافع')}
  </span>
- <h3 className="text-2xl font-black text-emerald-400">+ Rs. {metrics.profitPerUnit.toLocaleString()}</h3>
+ <h3 className="text-2xl font-black text-primary">+ Rs. {metrics.profitPerUnit.toLocaleString()}</h3>
  <div className="mt-2 flex items-center justify-between text-xs font-bold text-muted-foreground border-t border-border pt-2">
  <span>{t('Unit type:', 'یونٹ:')}</span>
  <span className="uppercase">{product.unit}</span>
@@ -232,7 +232,7 @@ export default function SingleProductDrillDownModal({
 
  {/* Sale details */}
  <div className="flex items-center gap-3 p-3 bg-subtle rounded-xl border border-border">
- <div className="h-10 w-10 shrink-0 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
+ <div className="h-10 w-10 shrink-0 bg-primary/10 text-primary rounded-full flex items-center justify-center">
  <ShoppingCart className="h-5 w-5" />
  </div>
  <div className="flex-1">
@@ -280,7 +280,7 @@ export default function SingleProductDrillDownModal({
  
  {/* Bar */}
  <div 
- className={`w-full max-w-[2rem] rounded-t-sm transition-all duration-500${isReceipt ? 'bg-blue-400 hover:bg-blue-500' : 'bg-emerald-400 hover:bg-emerald-500'}`}
+ className={`w-full max-w-[2rem] rounded-t-sm transition-all duration-500${isReceipt ? 'bg-blue-400 hover:bg-blue-500' : 'bg-primary hover:bg-primary-hover'}`}
  style={{ height: `${Math.max(10, heightPct)}%` }}
  ></div>
  
@@ -296,7 +296,7 @@ export default function SingleProductDrillDownModal({
  
  <div className="mt-4 flex items-center justify-center gap-4 text-[10px] font-bold text-muted-foreground uppercase">
  <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-400"></span> Stock IN (Receipts)</div>
- <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400"></span> Stock OUT (Sales)</div>
+ <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-primary"></span> Stock OUT (Sales)</div>
  </div>
  </div>
 

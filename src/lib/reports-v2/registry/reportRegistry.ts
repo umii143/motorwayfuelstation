@@ -116,6 +116,71 @@ class ReportRegistryImpl {
   getReportsByCertification(status: string): EnterpriseReportManifest[] {
     return ManifestRegistry.getAll().filter(m => m.certificationStatus === status);
   }
+
+  /**
+   * Seed infrastructure reports (PRD v6.1 A.9)
+   */
+  seedReports(): void {
+    this.registerReport({
+      id: 'ANL-05',
+      layer: 'audit',
+      simpleNameEn: 'Engine Health',
+      simpleNameUr: 'انجن ہیلتھ',
+      enterpriseNameEn: 'Engine Health Dashboard',
+      enterpriseNameUr: 'انجن ہیلتھ ڈیش بورڈ',
+      descriptionEn: 'Real-time observability and health monitoring for all reporting engines.',
+      descriptionUr: 'رپورٹنگ انجن کی ہیلتھ اور کارکردگی کی نگرانی',
+      collections: [],
+      formulaIds: [],
+      requiredPermissions: ['owner', 'admin'],
+      kpis: [],
+      charts: [],
+      registerColumns: [],
+      exports: [],
+      drilldownPath: [],
+      aiCapabilities: [],
+      isRealtime: true,
+      version: '1.0.0',
+      certificationStatus: 'PRODUCTION',
+      readinessScore: 100,
+      displayMode: 'advanced',
+      tags: ['system', 'health', 'observability'],
+      relatedReports: ['ANL-06'],
+      parentWorkspace: 'Analytics',
+      healthMonitored: true,
+      apiVersion: 'v1'
+    });
+
+    this.registerReport({
+      id: 'ANL-06',
+      layer: 'audit',
+      simpleNameEn: 'Data Quality',
+      simpleNameUr: 'ڈیٹا کوالٹی',
+      enterpriseNameEn: 'Data Quality Dashboard',
+      enterpriseNameUr: 'ڈیٹا کوالٹی ڈیش بورڈ',
+      descriptionEn: 'Automated data integrity checks and anomaly detection.',
+      descriptionUr: 'ڈیٹا کی درستگی کی خودکار جانچ',
+      collections: [],
+      formulaIds: [],
+      requiredPermissions: ['owner', 'admin'],
+      kpis: [],
+      charts: [],
+      registerColumns: [],
+      exports: [],
+      drilldownPath: [],
+      aiCapabilities: [],
+      isRealtime: false,
+      version: '1.0.0',
+      certificationStatus: 'PRODUCTION',
+      readinessScore: 100,
+      displayMode: 'advanced',
+      tags: ['system', 'data', 'integrity'],
+      relatedReports: ['ANL-05'],
+      parentWorkspace: 'Analytics',
+      dataQualityChecks: ['DQ_MISSING_READING', 'DQ_NEGATIVE_STOCK', 'DQ_ORPHAN_FORMULA'],
+      apiVersion: 'v1'
+    });
+  }
 }
 
 /**

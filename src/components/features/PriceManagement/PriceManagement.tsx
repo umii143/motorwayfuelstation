@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Product, Tank, RateHistoryEntry, GlobalSettings } from '../../../types';
 import AdvancedPriceManagement from './AdvancedPriceManagement';
-import RateWizard from '../Settings/RateWizard';
+import { OGRAPriceWizard } from './modals/OGRAPriceWizard';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 
@@ -61,16 +61,15 @@ export default function PriceManagement(props: PriceManagementProps) {
  </button>
  </div>
 
- <div className="p-6">
- <RateWizard
+ <div className="p-0 h-full">
+ <OGRAPriceWizard
  products={props.products}
- tanks={props.tanks}
- rateHistory={props.rateHistory}
- language={props.language}
  settings={props.settings}
- onUpdateProductRate={props.onUpdateProductRate}
- onLogAudit={props.onLogAudit}
- onUpdateProducts={props.onUpdateProducts}
+ onUpdateProductRate={(id, rate, reason) => {
+   props.onUpdateProductRate(id, rate, reason);
+   props.onLogAudit('Pricing', 'OGRA Price Revision', `Rate updated for product ${id}`);
+ }}
+ onClose={() => setIsUpdateDrawerOpen(false)}
  />
  </div>
  </motion.div>

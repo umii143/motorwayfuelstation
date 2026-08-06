@@ -31,13 +31,13 @@ export const OverviewAnalyticsTab: React.FC<TabProps> = ({ metrics, alerts, lang
       {/* 1. TOP HEALTH STRIP */}
       <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-4 shadow-md flex flex-wrap items-center justify-between gap-3 text-xs font-mono font-bold">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+          <span className="w-2 h-2 rounded-full bg-primary animate-ping"></span>
           <span className="font-sans text-[var(--text-muted)] font-black uppercase">{t('System Overview Health:', 'سسٹم اوورویو ہیلتھ:')}</span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20">🟢 Sales {metrics.revenueAchievePct}% Target</span>
-          <span className="px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20">🟢 Tanks Telemetry Verified</span>
-          <span className="px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20">🟢 Cash Position {formatCurrency(metrics.cashPosition)}</span>
+          <span className="px-2.5 py-1 rounded-xl bg-success/10 text-success dark:text-success border border-success/20">🟢 Sales {metrics.revenueAchievePct}% Target</span>
+          <span className="px-2.5 py-1 rounded-xl bg-success/10 text-success dark:text-success border border-success/20">🟢 Tanks Telemetry Verified</span>
+          <span className="px-2.5 py-1 rounded-xl bg-success/10 text-success dark:text-success border border-success/20">🟢 Cash Position {formatCurrency(metrics.cashPosition)}</span>
           {alerts.length > 0 && (
             <span className="px-2.5 py-1 rounded-xl bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/20">🟡 {alerts.length} Active Alert(s)</span>
           )}
@@ -48,7 +48,7 @@ export const OverviewAnalyticsTab: React.FC<TabProps> = ({ metrics, alerts, lang
       </div>
 
       {/* 2. AI EXECUTIVE BRIEFING BANNER */}
-      <div className="bg-gradient-to-r from-amber-100/70 via-[var(--bg-card)] to-amber-50/80 dark:from-emerald-950 dark:via-slate-900 border border-amber-300/60 dark:border-emerald-500/30 rounded-2xl p-5 shadow-md">
+      <div className="bg-gradient-to-r from-amber-100/70 via-[var(--bg-card)] to-amber-50/80 dark:from-primary-hover dark:via-primary-hover border border-amber-300/60 dark:border-primary/30 rounded-2xl p-5 shadow-md">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center font-black">
@@ -64,8 +64,8 @@ export const OverviewAnalyticsTab: React.FC<TabProps> = ({ metrics, alerts, lang
             </div>
           </div>
           <div className="flex items-center gap-2 font-mono text-xs font-bold">
-            <span className="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20">Revenue: {formatCurrency(metrics.grossRevenue)}</span>
-            <span className="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20">Net Profit: {formatCurrency(metrics.netProfit)}</span>
+            <span className="px-3 py-1.5 rounded-xl bg-success/10 text-success dark:text-success border border-success/20">Revenue: {formatCurrency(metrics.grossRevenue)}</span>
+            <span className="px-3 py-1.5 rounded-xl bg-success/10 text-success dark:text-success border border-success/20">Net Profit: {formatCurrency(metrics.netProfit)}</span>
           </div>
         </div>
       </div>
@@ -75,19 +75,19 @@ export const OverviewAnalyticsTab: React.FC<TabProps> = ({ metrics, alerts, lang
         <div onClick={() => onDrilldown && onDrilldown('FS_REGISTER')} className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-4 shadow-sm hover:border-amber-500 transition-all cursor-pointer">
           <div className="flex justify-between items-center text-xs">
             <span className="text-[10px] uppercase font-bold text-[var(--text-muted)]">Gross Sales Revenue</span>
-            <DollarSign className="w-4 h-4 text-emerald-600" />
+            <DollarSign className="w-4 h-4 text-primary" />
           </div>
           <div className="text-2xl font-black font-mono text-[var(--text-main)] mt-1">{formatCurrency(metrics.grossRevenue)}</div>
-          <div className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold mt-1">↑ 109% of daily target ({formatCurrency(metrics.targetRevenue)})</div>
+          <div className="text-[10px] text-primary dark:text-primary font-bold mt-1">↑ 109% of daily target ({formatCurrency(metrics.targetRevenue)})</div>
         </div>
 
         <div onClick={() => onDrilldown && onDrilldown('P1')} className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-4 shadow-sm hover:border-amber-500 transition-all cursor-pointer">
           <div className="flex justify-between items-center text-xs">
             <span className="text-[10px] uppercase font-bold text-[var(--text-muted)]">Net Operational Profit</span>
-            <TrendingUp className="w-4 h-4 text-emerald-600" />
+            <TrendingUp className="w-4 h-4 text-primary" />
           </div>
-          <div className="text-2xl font-black font-mono text-emerald-700 dark:text-emerald-400 mt-1">{formatCurrency(metrics.netProfit)}</div>
-          <div className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold mt-1">Target: {formatCurrency(metrics.targetNetProfit)} (+5.2% MTD)</div>
+          <div className="text-2xl font-black font-mono text-primary dark:text-primary mt-1">{formatCurrency(metrics.netProfit)}</div>
+          <div className="text-[10px] text-primary dark:text-primary font-bold mt-1">Target: {formatCurrency(metrics.targetNetProfit)} (+5.2% MTD)</div>
         </div>
 
         <div onClick={() => onDrilldown && onDrilldown('FS_NOZZLE')} className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-4 shadow-sm hover:border-amber-500 transition-all cursor-pointer">
@@ -96,7 +96,7 @@ export const OverviewAnalyticsTab: React.FC<TabProps> = ({ metrics, alerts, lang
             <Fuel className="w-4 h-4 text-amber-600" />
           </div>
           <div className="text-2xl font-black font-mono text-[var(--text-main)] mt-1">{metrics.fuelVolume.toLocaleString()} L</div>
-          <div className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold mt-1">Avg Margin: Rs {metrics.avgMargin.toFixed(2)} / L</div>
+          <div className="text-[10px] text-primary dark:text-primary font-bold mt-1">Avg Margin: Rs {metrics.avgMargin.toFixed(2)} / L</div>
         </div>
 
         <div onClick={() => onDrilldown && onDrilldown('FS_TANK')} className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-4 shadow-sm hover:border-amber-500 transition-all cursor-pointer">

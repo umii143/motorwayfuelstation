@@ -25,19 +25,19 @@ export const SalesAnalyticsTab: React.FC<TabProps> = ({ metrics, pumps, lang = '
         <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-4 shadow-sm">
           <div className="text-[10px] uppercase font-bold text-[var(--text-muted)]">Total Sales Revenue</div>
           <div className="text-2xl font-black text-[var(--text-main)] font-mono mt-1">{formatCurrency(metrics.grossRevenue)}</div>
-          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-bold mt-1">↑ +8.3% vs yesterday</div>
+          <div className="text-xs text-success dark:text-success font-bold mt-1">↑ +8.3% vs yesterday</div>
         </div>
 
         <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-4 shadow-sm">
           <div className="text-[10px] uppercase font-bold text-[var(--text-muted)]">Total Fuel Dispensed</div>
-          <div className="text-2xl font-black text-amber-700 dark:text-amber-400 font-mono mt-1">{metrics.fuelVolume.toLocaleString()} L</div>
-          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-bold mt-1">104.5% Volume Target</div>
+          <div className="text-2xl font-black text-[var(--text-main)] mt-2">{metrics.fuelVolume.toLocaleString()} Liters</div>
+          <div className="text-xs text-success dark:text-success font-bold mt-1">{(metrics.fuelVolume / (metrics.targetFuelVolume || 10000) * 100).toFixed(1)}% Volume Target</div>
         </div>
 
         <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-4 shadow-sm">
           <div className="text-[10px] uppercase font-bold text-[var(--text-muted)]">Net Revenue (Excl Tax & Discount)</div>
-          <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400 font-mono mt-1">{formatCurrency(metrics.netRevenue)}</div>
-          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-bold mt-1">Verified Realtime</div>
+          <div className="text-2xl font-black text-primary dark:text-primary font-mono mt-1">{formatCurrency(metrics.netRevenue)}</div>
+          <div className="text-xs text-success dark:text-success font-bold mt-1">Verified Realtime</div>
         </div>
       </div>
 
@@ -61,7 +61,7 @@ export const SalesAnalyticsTab: React.FC<TabProps> = ({ metrics, pumps, lang = '
                 <span className="text-[10px] text-[var(--text-muted)] block">Volume: {item.volume}</span>
               </div>
               <div className="text-right">
-                <span className="font-bold text-emerald-700 dark:text-emerald-400">{item.amount}</span>
+                <span className="font-bold text-primary dark:text-primary">{item.amount}</span>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-800 block mt-0.5">{item.share}</span>
               </div>
             </div>

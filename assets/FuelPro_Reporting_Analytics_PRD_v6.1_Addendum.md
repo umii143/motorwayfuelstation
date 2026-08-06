@@ -229,4 +229,129 @@ From here, all effort goes to:
 Any future gap discovered during build is logged as a numbered addendum item (A.11, A.12, ...) appended to *this* file — never as a new competing document.
 
 ---
+
+## A.11 Engine Registry Naming Reconciliation
+
+### A.11.1 Ruling: No New Engine Services
+
+The 10 "engines" named in the submitted spec (`AnalyticsComputeEngine`, `FuelOperationsEngine`, `InventoryComputeEngine`, `ProcurementEngine`, `TreasuryFinanceEngine`, `DoubleEntryLedgerEngine`, `CustomerCreditArEngine`, `SupplierPayableApEngine`, `StaffPayrollEngine`, `OGRAPricingEngine`) **must not be built as separate service classes.**
+
+They are implemented instead as **domain-tagged entries inside the existing generic Formula Engine and Rule Engine** (PRD v6.0 Section 4). Add a `domain` column to `formula_registry` and `rule_registry`:
+
+```sql
+ALTER TABLE formula_registry ADD COLUMN domain VARCHAR(30) NOT NULL;
+ALTER TABLE rule_registry ADD COLUMN domain VARCHAR(30) NOT NULL;
+-- domain values: fuel_ops | inventory | procurement | finance | ledgers | ar | ap | staff | pricing | analytics
+```
+
+The submitted spec's "Processing Engine" column becomes the `domain` tag on each formula row, not a new class. E.g. `nozzleMeterDelta` → a formula row with `domain = 'fuel_ops'`, executed by the one shared Formula Engine — same engine that runs `TRUE_PROFIT_V1`.
+
+**Why this matters:** this is the exact anti-pattern the earlier architecture review (9.9/10) flagged and asked to be consolidated. Building 10 real engine services here would silently reverse that fix.
+
+---
+
+### A.11.2 Report ID Reconciliation Table
+
+The submitted spec's IDs are **not valid** — they must be remapped to the canonical Report Registry (`report_id` values from PRD v6.0 Section 5/6) before any widget is wired up.
+
+| Submitted ID | Submitted Widget | Canonical `report_id` | Notes |
+|---|---|---|---|
+| `FIN-001` | Gross Sales Revenue | `FO-01` / `ANL-02` | Sub-metric of Fuel Ops Overview + rolled into Executive Dashboard |
+| `PUMP-001` | Active Nozzles | `FO-01` | Sub-metric of Overview cockpit |
+| `INV-001` | Tank Stock Valuation | `INV-01` | Overview & Valuation |
+| `INV-003` | Reorder Alarm | `INV-08` | ABC Velocity & Reorder Forecast |
+| `PUR-001` | Total Procurement Spend | `PUR-01` | Procurement Overview |
+| `AP-001` | AP Liability | `SUP-02` | Accounts Payable Aging |
+| `FIN-003` | Vault Cash Balance | `FIN-01` / `FIN-02` | Treasury Overview / Cash Book |
+| `FIN-004` | Bank Position | `FIN-01` / `FIN-03` | Treasury Overview / Bank Accounts |
+| `FIN-002` | Net Retained Operating Profit | `LED-05` / `ANL-02` | Financial Statements / Executive Dashboard |
+| `ACC-002` | Asset Value | `LED-05` | Balance Sheet section |
+| `AR-001` | Total AR Outstanding | `CUS-02` | AR Aging |
+| `AR-003` | Overdue >30d | `CUS-02` | Sub-bucket of AR Aging |
+| `AP-003` | 7-Day Upcoming AP | `SUP-02` | Already backed by existing rule `AP_UPCOMING_7D` — no new logic needed |
+| `HR-001` | Active Staff Count | `STF-01` | Employee Directory |
+| `HR-002` | Shortage Accuracy | `STF-04` | Already backed by existing formula `CASH_ACCURACY_V1` — no new logic needed |
+| `PRC-001` | Super Petrol Rate | `PRC-01` | Price Board |
+| `PRC-003` | Revaluation Gain/Loss | `PRC-03` | Inventory Revaluation Ledger |
+
+**Rule:** any widget already coded against a submitted ID must be re-pointed to its canonical `report_id` before merge. No new `report_registry` rows should be created for the submitted IDs — they already exist under different names.
+
+---
+
+### A.11.3 Dependency Graph — Adopted
+
+The submitted Section 3 Cross-Module Dependency Graph (Meter Reading → Shift Close → Sales → Tank Dip / Shift Cash → Inventory Revaluation / Vault Deposit → Journal Entry → GL & Trial Balance → Executive Analytics) is **accepted as-is** and merges into the Formula Dependency Graph (Addendum A.2) as its top-level chain. No changes needed to A.2's schema — populate `formula_dependency_graph` rows to match this exact flow.
+
+---
+
+### A.11.4 Process Note
+
+This is the **second time** a parallel spec has arrived with a different engine/ID naming scheme (see PRD v6.0 Section 7.6 — Gap: parallel AI tools generating competing specs). Recommend: before any future AI-generated architecture doc is acted on, run it through this reconciliation pattern (ruling + ID mapping table) rather than adopting or rejecting wholesale — most of the disagreement so far has been *naming*, not substance, which is a good sign the underlying design is converging.
+
+---
+
+## A.12 Universal Workspace UI & Advanced Features (10-Layer UX)
+
+**Ruling:** The 10 Sidebar Workspaces (`Fuel Operations`, `Inventory`, `Purchases`, `Finance`, `Ledgers`, `Customers`, `Suppliers`, `Staff`, `Pricing`, `Analytics`) are permanently frozen. No new top-level sidebar menus will be added. All new enterprise value will be delivered as **depth within these 10 workspaces**.
+
+### A.12.1 The 10-Layer Workspace Architecture
+
+Every workspace must internally implement this standard sequence of sub-tabs/sections (The 10-Layer UX):
+1. **Overview** (Executive Dashboard)
+2. **Realtime KPIs** (Metrics & Trends)
+3. **Operational Register** (The core data tables)
+4. **Analytics** (Charts, Breakdowns)
+5. **AI Advisor** (Contextual insights)
+6. **Documents** (Attachments, Seal Photos, Receipts)
+7. **Workflow** (Approvals, Pending Actions)
+8. **Audit** (Action trails, modifications)
+9. **Reports** (Printable formats, PDFs)
+10. **Settings** (Module-specific configurations)
+
+### A.12.2 Universal Enterprise Toolbar
+
+Every workspace must feature a consistent top-level toolbar containing:
+- **Filters:** 🔍 Search | 📅 Date Filter | 🏢 Branch | ⛽ Product | 👤 Staff | ⚙ More Filters
+- **Exports:** 📄 Export PDF | 📊 Excel | 🖨 Print
+- **Actions:** 🔔 Alerts | ⭐ Favorite | 📌 Pin | ↗ Fullscreen
+
+### A.12.3 Advanced Enterprise Features (Roadmap Focus)
+
+Instead of expanding horizontal modules, engineering focus shifts to deep vertical capabilities:
+- **⭐ Favorite Reports:** Pinning frequently used reports.
+- **📌 Saved Views:** Configurable filter presets (e.g., *Today*, *Last 7 Days*, *Branch Wise*, *Owner View*).
+- **🎛 Dashboard Builder:** Drag & Drop widgets for custom cockpit creation.
+- **🔔 Report Subscriptions:** Automated scheduling (e.g., 8 AM Sales Report Email, Monday Inventory, Monthly P&L PDF).
+- **📊 Custom Report Builder:** User-selectable columns, grouping, and dynamic sorting.
+- **🔍 Universal Drilldown:** Every KPI clicks through strictly via `DrilldownEngine`: KPI → Register → Voucher → Journal Entry → Source Document.
+- **🤖 AI Report Assistant:** Natural language querying bounded strictly to verified operational data (e.g., *"Why did Diesel profit drop in the last 30 days?"*).
+
+---
+
+## A.13 The 20-Phase Enterprise QA Audit (Definition of Done)
+
+**Ruling:** No workspace is considered "Complete" until it passes all 20 phases of this Enterprise QA Audit. The developer mandate is not "build a report module", it is "execute this audit until zero decorative elements remain."
+
+1. **Dummy Data Audit (Critical):** Zero dummy content, fake numbers, lorem ipsum, demo transactions, or placeholder KPIs.
+2. **Realtime Audit:** Every widget flows strictly: `Firestore → Engine → Formula → UI`.
+3. **Formula Audit:** Every KPI must have an assigned Formula ID, query the correct collection, be realtime, and have Drilldown enabled.
+4. **Register Audit:** Every register table must support fully functional: Search, Sort, Filter, Pagination, Export, Print, Empty State, Loading State, Error State.
+5. **Button Audit:** Every button (Export, Print, Refresh, Approve, Save) must be: Visible, Clickable, Permission-checked, Actionable, trigger a Toast, write an Audit Log, and instantly reflect changes. No `console.log()` or `TODO` buttons.
+6. **Popup Audit:** Every Modal/Drawer must open, close (via Escape/Outside click), validate, save, and update realtime data flawlessly.
+7. **Navigation Audit:** Header tabs must render distinct components and queries, not just show/hide DOM elements under the same engine state.
+8. **Language Audit:** Strict separation — 100% English OR 100% Urdu. No mixed strings inside a single component. Check Labels, Buttons, Tooltips, Errors, Toasts, Tables, and PDF Exports.
+9. **Translation Audit:** Every string must map to an i18n key. Remove all hardcoded english text.
+10. **Theme Audit:** All surfaces (Cards, Buttons, Inputs, Tables) must inherit the active Warm Cream Theme CSS tokens.
+11. **Responsive Audit:** No overflow, no cut text, no broken grids, no horizontal scroll across Desktop, Laptop, Tablet, and Mobile.
+12. **Permission Audit:** Enforce role-based access (Owner, Manager, Cashier, Auditor). Hide, disable, or render readonly based on role.
+13. **Performance Audit:** No unnecessary rerenders. Mandate Memoization, Virtual Tables, Lazy Loading for charts, and Skeleton loaders.
+14. **Realtime Update Audit:** Firestore Create/Update/Delete must instantly reflect on the UI without requiring a manual refresh button.
+15. **Report/Export Audit:** Previews, PDF, Excel, CSV, Print, and Schedule capabilities must output actual ledger data.
+16. **Chart Audit:** Realtime series, accurate formulas, clean legends/tooltips, and download capability.
+17. **AI Audit:** AI must trace predictions back to the Formula Registry + Realtime History. E.g., *"Revenue increased 8.4% because Diesel sales +11%"*. Zero hallucinated text.
+18. **Empty State Audit:** If no data exists, display a professional empty state with an actionable next step ("Import Data", "Create First Sale"), never a blank screen or fake rows.
+19. **Audit Log:** Every CUD (Create/Update/Delete) action logs: Who, When, Old Value, New Value, IP, Device, and Reason.
+20. **Final Enterprise Release Gate:** `Complete` = 100% Formula Registry, 100% Engine Registry, 100% Event Registry, 100% Realtime, Zero Fake Data, Zero Dead Buttons.
+
+---
 *End of Addendum v6.1. Read together with PRD v6.0 — this file does not stand alone.*

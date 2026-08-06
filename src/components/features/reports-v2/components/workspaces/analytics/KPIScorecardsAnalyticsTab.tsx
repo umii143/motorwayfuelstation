@@ -31,18 +31,18 @@ export const KPIScorecardsAnalyticsTab: React.FC<TabProps> = ({ metrics, lang = 
             { domain: 'Sales Revenue Target', actual: formatCurrency(metrics.grossRevenue), target: formatCurrency(metrics.targetRevenue), achieve: `${metrics.revenueAchievePct}%`, status: 'Exceeding' },
             { domain: 'Gross Profit Target', actual: formatCurrency(metrics.grossProfit), target: formatCurrency(metrics.targetGrossProfit), achieve: `${metrics.grossProfitAchievePct}%`, status: 'Exceeding' },
             { domain: 'Net Profit Target', actual: formatCurrency(metrics.netProfit), target: formatCurrency(metrics.targetNetProfit), achieve: `${metrics.netProfitAchievePct}%`, status: 'Exceeding' },
-            { domain: 'Fuel Dispensed Volume', actual: `${metrics.fuelVolume.toLocaleString()} L`, target: '10,000 L', achieve: '104.5%', status: 'Optimal' },
-            { domain: 'Credit Recovery Target', actual: '95.9%', target: '100%', achieve: '95.9%', status: 'Warning' },
-            { domain: 'Audit & Compliance Score', actual: '99.8%', target: '100%', achieve: '99.8%', status: 'Verified' }
+            { domain: 'Fuel Volume Target', actual: `${metrics.fuelVolume.toLocaleString()} L`, target: '10,000 L', achieve: `${((metrics.fuelVolume / 10000) * 100).toFixed(1)}%`, status: 'Optimal' },
+            { domain: 'Cash Position', actual: formatCurrency(metrics.cashPosition), target: '-', achieve: '100%', status: 'Verified' },
+            { domain: 'Bank Position', actual: formatCurrency(metrics.bankPosition), target: '-', achieve: '100%', status: 'Verified' }
           ].map((sc) => (
             <div key={sc.domain} className="p-4 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-main)] space-y-2">
               <div className="flex justify-between items-center font-sans font-bold text-[var(--text-main)] text-xs">
                 <span>{sc.domain}</span>
-                <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-800">{sc.status}</span>
+                <span className="px-2 py-0.5 rounded text-[10px] bg-primary/10 text-primary">{sc.status}</span>
               </div>
               <div className="flex justify-between items-baseline font-bold">
                 <span className="text-lg text-[var(--text-main)]">{sc.actual}</span>
-                <span className="text-xs text-emerald-700 dark:text-emerald-400">{sc.achieve}</span>
+                <span className="text-xs text-primary dark:text-primary">{sc.achieve}</span>
               </div>
               <div className="text-[10px] text-[var(--text-muted)] pt-1 border-t border-[var(--border-muted)]">Target: {sc.target}</div>
             </div>

@@ -33,7 +33,7 @@ export const CustomerSalesAnalyticsTab: React.FC<CustomerSalesAnalyticsTabProps>
       <div className="flex justify-between items-center bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs">
         <div>
           <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
-            <TrendingUp size={18} className="text-[#0B5C3D]" />
+            <TrendingUp size={18} className="text-primary" />
             <span>Customer Sales Analytics & Lifetime Value (LTV)</span>
           </h2>
           <p className="text-xs font-bold text-slate-500 mt-0.5">
@@ -54,7 +54,7 @@ export const CustomerSalesAnalyticsTab: React.FC<CustomerSalesAnalyticsTabProps>
             {topCustomers.map((c, i) => (
               <div key={c.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
                 <div className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-full bg-[#0B5C3D] text-white flex items-center justify-center text-xs font-black">
+                  <span className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-black">
                     {i + 1}
                   </span>
                   <div>
@@ -64,7 +64,7 @@ export const CustomerSalesAnalyticsTab: React.FC<CustomerSalesAnalyticsTabProps>
                 </div>
 
                 <div className="text-right">
-                  <span className="text-xs font-black text-[#0B5C3D]">{formatCurrency(c.balance * 3 + 500000)}</span>
+                  <span className="text-xs font-black text-primary">{formatCurrency(c.balance * 3 + 500000)}</span>
                   <div className="text-[10px] font-bold text-slate-400">Lifetime Revenue</div>
                 </div>
               </div>
@@ -83,10 +83,10 @@ export const CustomerSalesAnalyticsTab: React.FC<CustomerSalesAnalyticsTabProps>
             <div>
               <div className="flex justify-between text-xs font-black mb-1">
                 <span>High Speed Diesel (HSD) — Fleet Heavy Duty</span>
-                <span className="text-emerald-700">68%</span>
+                <span className="text-primary">68%</span>
               </div>
               <div className="w-full h-3 rounded-full bg-slate-100 overflow-hidden">
-                <div className="h-full bg-[#0B5C3D] rounded-full" style={{ width: '68%' }}></div>
+                <div className="h-full bg-primary rounded-full" style={{ width: '68%' }}></div>
               </div>
             </div>
 

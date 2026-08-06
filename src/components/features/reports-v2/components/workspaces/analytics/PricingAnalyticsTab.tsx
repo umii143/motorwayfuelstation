@@ -23,14 +23,14 @@ export const PricingAnalyticsTab: React.FC<TabProps> = ({ metrics, lang = 'en' }
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-4 shadow-sm">
           <div className="text-[10px] uppercase font-bold text-[var(--text-muted)]">Average Dealer Margin / L</div>
-          <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400 font-mono mt-1">Rs {metrics.avgMargin.toFixed(2)} / L</div>
-          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-bold mt-1">OGRA Margin Approved</div>
+          <div className="text-2xl font-black text-primary dark:text-primary font-mono mt-1">Rs {metrics.avgMargin.toFixed(2)} / L</div>
+          <div className="text-xs text-success dark:text-success font-bold mt-1">OGRA Margin Approved</div>
         </div>
 
         <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-4 shadow-sm">
           <div className="text-[10px] uppercase font-bold text-[var(--text-muted)]">OGRA Circular Compliance</div>
           <div className="text-2xl font-black text-[var(--text-main)] font-mono mt-1">100% Synced</div>
-          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-bold mt-1">Government Feed Verified</div>
+          <div className="text-xs text-success dark:text-success font-bold mt-1">Government Feed Verified</div>
         </div>
 
         <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-4 shadow-sm">
@@ -43,7 +43,7 @@ export const PricingAnalyticsTab: React.FC<TabProps> = ({ metrics, lang = 'en' }
       {/* 2. CURRENT ACTIVE FUEL RATES TABLE */}
       <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-5 shadow-md space-y-4">
         <h3 className="text-sm font-bold text-[var(--text-main)] flex items-center gap-2">
-          <DollarSign className="w-4 h-4 text-emerald-600" />
+          <DollarSign className="w-4 h-4 text-primary" />
           {t('Current Active Fuel Retail Price Board', 'موجودہ فیول پرائس بورڈ')}
         </h3>
 
@@ -59,7 +59,7 @@ export const PricingAnalyticsTab: React.FC<TabProps> = ({ metrics, lang = 'en' }
                 <span className="text-[10px] text-[var(--text-muted)]">Cost Price: {r.cost}</span>
               </div>
               <div className="text-right">
-                <span className="font-bold text-emerald-700 dark:text-emerald-400 block text-sm">{r.rate}</span>
+                <span className="font-bold text-primary dark:text-primary block text-sm">{r.rate}</span>
                 <span className="text-[10px] text-purple-700 dark:text-purple-300 font-bold">Margin: {r.margin}</span>
               </div>
             </div>

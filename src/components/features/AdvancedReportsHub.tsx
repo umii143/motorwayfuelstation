@@ -536,7 +536,7 @@ export default function AdvancedReportsHub({
             Active Reports: <strong className="text-cyan-600 dark:text-cyan-400 font-black">{REPORT_MODULES.reduce((sum, m) => sum + m.reports.length, 0)} Reports</strong>
           </span>
           <span className="bg-[var(--bg-subtle)] px-3 py-1 rounded-xl border border-[var(--border-main)] text-[var(--text-main)]">
-            Engine Mode: <strong className="text-emerald-600 dark:text-emerald-400 font-black">Live Operational DB</strong>
+            Engine Mode: <strong className="text-primary dark:text-primary font-black">Live Operational DB</strong>
           </span>
           <span className="bg-[var(--bg-subtle)] px-3 py-1 rounded-xl border border-[var(--border-main)] text-[var(--text-main)]">
             Formula Registry: <strong className="text-purple-600 dark:text-purple-400 font-black">Rule #84 Enforced</strong>
@@ -623,7 +623,7 @@ export default function AdvancedReportsHub({
       <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-4 text-xs font-bold text-[var(--text-muted)]">
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" /> Operational Health: 100%
+            <span className="w-2 h-2 rounded-full bg-primary" /> Operational Health: 100%
           </span>
           <span className="h-4 w-px bg-[var(--border-main)]" />
           <span>Last Sync: Just Now</span>
@@ -675,8 +675,8 @@ export default function AdvancedReportsHub({
                         {report.id}
                       </div>
 
-                      <div className="flex items-center gap-1.5 text-[9px] font-mono font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <div className="flex items-center gap-1.5 text-[9px] font-mono font-extrabold text-primary dark:text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                         Firebase DB
                       </div>
                     </div>
@@ -698,7 +698,7 @@ export default function AdvancedReportsHub({
                       <div className="flex flex-wrap gap-1">
                         {report.tags.map(tag => (
                           <span key={tag} className={`px-1.5 py-0.5 rounded-md text-[9px] font-extrabold uppercase font-mono tracking-wider ${
-                            tag === 'rt' ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30' :
+                            tag === 'rt' ? 'bg-primary/15 text-primary dark:text-primary border border-primary/30' :
                             tag === 'kpi' ? 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30' :
                             tag === 'alert' ? 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30' :
                             'bg-[var(--bg-subtle)] text-[var(--text-muted)] border border-[var(--border-main)]'
@@ -710,14 +710,14 @@ export default function AdvancedReportsHub({
                     {report.manifest && (
                       <div className="flex items-center justify-between text-[9px] font-extrabold font-mono pt-0.5">
                         <span className={`px-2 py-0.5 rounded-md border ${
-                          report.manifest.certificationStatus === 'Production' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400' :
+                          report.manifest.certificationStatus === 'Production' ? 'bg-primary/10 border-primary/30 text-primary dark:text-primary' :
                           report.manifest.certificationStatus === 'Certified' ? 'bg-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400' :
                           'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400'
                         }`}>
                           ✓ {report.manifest.certificationStatus}
                         </span>
                         <span className="text-[var(--text-muted)]">
-                          Score: <strong className={report.manifest.readinessScore === 100 ? 'text-emerald-600 dark:text-emerald-400 font-black' : 'text-amber-600 dark:text-amber-400 font-black'}>{report.manifest.readinessScore}%</strong>
+                          Score: <strong className={report.manifest.readinessScore === 100 ? 'text-primary dark:text-primary font-black' : 'text-amber-600 dark:text-amber-400 font-black'}>{report.manifest.readinessScore}%</strong>
                         </span>
                       </div>
                     )}
@@ -748,7 +748,7 @@ export default function AdvancedReportsHub({
                     {viewMode === 'advanced' && (
                       <>
                         <span>•</span>
-                        <span className="text-emerald-600 font-black truncate hidden sm:inline">Live Operational DB 🟢</span>
+                        <span className="text-primary font-black truncate hidden sm:inline">Live Operational DB 🟢</span>
                       </>
                     )}
                   </div>
@@ -766,7 +766,7 @@ export default function AdvancedReportsHub({
                 </button>
                 <button
                   onClick={handleExportCSV}
-                  className="px-2.5 sm:px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 transition cursor-pointer flex items-center gap-1 shadow-sm"
+                  className="px-2.5 sm:px-3.5 py-1.5 rounded-xl bg-primary text-white font-bold text-xs hover:bg-primary-hover transition cursor-pointer flex items-center gap-1 shadow-sm"
                   title="Audit Export CSV"
                 >
                   <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Audit Export</span>
@@ -860,10 +860,10 @@ export default function AdvancedReportsHub({
                 <div className={`p-3 rounded-2xl border flex items-center justify-between text-xs font-mono transition-colors ${
                   executiveKPIs.recordCount === 0 
                     ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700/50 text-amber-900 dark:text-amber-200'
-                    : 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700/50 text-emerald-900 dark:text-emerald-200'
+                    : 'bg-primary/10 dark:bg-primary-hover/40 border-primary/35 dark:border-primary/50 text-primary dark:text-primary/70'
                 }`}>
                   <div className="flex items-center gap-2 font-bold">
-                    <CheckCircle2 className={`w-4 h-4 ${executiveKPIs.recordCount === 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`} />
+                    <CheckCircle2 className={`w-4 h-4 ${executiveKPIs.recordCount === 0 ? 'text-amber-600 dark:text-amber-400' : 'text-primary dark:text-primary'}`} />
                     <span>Report Health Score: <strong>{executiveKPIs.healthAudit.healthScore}%</strong></span>
                     <span>•</span>
                     <span>Ledger Match: <strong>{executiveKPIs.healthAudit.ledgerMatchPercent}% Reconciled</strong></span>
@@ -871,7 +871,7 @@ export default function AdvancedReportsHub({
                   <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
                     executiveKPIs.recordCount === 0 
                       ? 'bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100'
-                      : 'bg-emerald-200 dark:bg-emerald-800 text-emerald-900 dark:text-emerald-100'
+                      : 'bg-primary/15 dark:bg-primary text-primary dark:text-primary/70'
                   }`}>
                     {executiveKPIs.recordCount === 0 ? 'AWAITING OPERATIONAL DATA' : 'REALTIME SYNC: OK'}
                   </span>
@@ -888,10 +888,10 @@ export default function AdvancedReportsHub({
                         <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
                           <div>
                             <span className="text-slate-500 text-[10px] font-bold uppercase block">Total Physical Stock</span>
-                            <div className="text-xl font-black text-emerald-600 mt-1">
+                            <div className="text-xl font-black text-primary mt-1">
                               {snap.grandTotalCurrentStock.toLocaleString()} Ltr
                             </div>
-                            <span className="text-[10px] text-emerald-600 font-bold block mt-1">
+                            <span className="text-[10px] text-primary font-bold block mt-1">
                               {snap.categories.map(c => `${c.categoryName.split(' ')[1] || c.categoryName}: ${c.totalCurrentStock.toLocaleString()}L`).join(' • ')}
                             </span>
                           </div>
@@ -934,7 +934,7 @@ export default function AdvancedReportsHub({
                             <div className="text-xl font-black text-cyan-600 mt-1">
                               {snap.tanks.length}/{snap.tanks.length} Tanks Online
                             </div>
-                            <span className="text-[10px] text-emerald-600 font-bold block mt-1">100% Central Engine Sync OK</span>
+                            <span className="text-[10px] text-primary font-bold block mt-1">100% Central Engine Sync OK</span>
                           </div>
                           <div className="mt-3 pt-2 border-t border-slate-200/60 dark:border-slate-800/60 text-[9px] font-mono text-slate-500 flex justify-between">
                             <span>📂 Source: inventory</span>
@@ -952,7 +952,7 @@ export default function AdvancedReportsHub({
                         <div className="text-xl font-black text-blue-600 mt-1">
                           {formatCurrency(db.getBankAccounts(db.getActiveStationId()).reduce((s, b) => s + Number(b.balance || 0), 0))}
                         </div>
-                        <span className="text-[10px] text-emerald-600 font-bold block mt-1">{db.getBankAccounts(db.getActiveStationId()).length} Verified Firebase Bank Accounts</span>
+                        <span className="text-[10px] text-primary font-bold block mt-1">{db.getBankAccounts(db.getActiveStationId()).length} Verified Firebase Bank Accounts</span>
                       </div>
                       <div className="mt-3 pt-2 border-t border-slate-200/60 dark:border-slate-800/60 text-[9px] font-mono text-slate-500 flex justify-between">
                         <span>📂 Source: banks</span>
@@ -988,10 +988,10 @@ export default function AdvancedReportsHub({
                     <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
                       <div>
                         <span className="text-slate-500 text-[10px] font-bold uppercase block">Reconciliation Status</span>
-                        <div className="text-xl font-black text-emerald-600 mt-1">
+                        <div className="text-xl font-black text-primary mt-1">
                           {executiveKPIs.recordCount > 0 ? '100% RECONCILED' : 'AWAITING RECONCILIATION'}
                         </div>
-                        <span className="text-[10px] text-emerald-600 font-bold block mt-1">Live Double-Entry Tally</span>
+                        <span className="text-[10px] text-primary font-bold block mt-1">Live Double-Entry Tally</span>
                       </div>
                       <div className="mt-3 pt-2 border-t border-slate-200/60 dark:border-slate-800/60 text-[9px] font-mono text-slate-500 flex justify-between">
                         <span>📂 Source: ledger</span>
@@ -1014,7 +1014,7 @@ export default function AdvancedReportsHub({
                           {formatCurrency(executiveKPIs.totalAmount)}
                         </div>
                         <div className="flex items-center gap-1.5 mt-1">
-                          <span className="text-[10px] text-emerald-600 font-black">↑ 18% vs Last Period</span>
+                          <span className="text-[10px] text-primary font-black">↑ 18% vs Last Period</span>
                           <span className="text-[9px] text-cyan-600 font-bold block">Lineage 🔍</span>
                         </div>
                       </div>
@@ -1058,7 +1058,7 @@ export default function AdvancedReportsHub({
                         <div className="text-xl font-black text-purple-600 mt-1">
                           {executiveKPIs.recordCount} Rows
                         </div>
-                        <span className="text-[10px] text-emerald-600 font-bold block mt-1">{executiveKPIs.recordCount > 0 ? '100% Reconciled Tally' : '0 Verified Records'}</span>
+                        <span className="text-[10px] text-primary font-bold block mt-1">{executiveKPIs.recordCount > 0 ? '100% Reconciled Tally' : '0 Verified Records'}</span>
                       </div>
                       {/* USER PROPOSED METADATA BAR ⭐ */}
                       <div className="mt-3 pt-2 border-t border-slate-200/60 dark:border-slate-800/60 text-[9px] font-mono text-slate-500 flex items-center justify-between">
@@ -1076,10 +1076,10 @@ export default function AdvancedReportsHub({
                           <span className="text-slate-500 text-[10px] font-bold uppercase block">Gross Margin / Profit</span>
                           <HelpCircle className="w-3.5 h-3.5 text-slate-400 group-hover:text-cyan-600" />
                         </div>
-                        <div className="text-xl font-black text-emerald-600 mt-1">
+                        <div className="text-xl font-black text-primary mt-1">
                           {formatCurrency(executiveKPIs.grossProfit)}
                         </div>
-                        <span className="text-[10px] text-emerald-600 font-bold block mt-1">Centralized Formula Registry</span>
+                        <span className="text-[10px] text-primary font-bold block mt-1">Centralized Formula Registry</span>
                       </div>
                       {/* USER PROPOSED METADATA BAR ⭐ */}
                       <div className="mt-3 pt-2 border-t border-slate-200/60 dark:border-slate-800/60 text-[9px] font-mono text-slate-500 flex items-center justify-between">
@@ -1100,11 +1100,11 @@ export default function AdvancedReportsHub({
                 <div className="px-4 pb-4 pt-2 text-xs font-mono text-slate-700 dark:text-slate-300 space-y-1 border-t border-slate-200 dark:border-slate-800">
                   <div className="flex justify-between"><span>Revenue = Sum(All Shift Invoices)</span><span className="font-bold text-cyan-600">{formatCurrency(executiveKPIs.totalAmount)}</span></div>
                   <div className="flex justify-between"><span>− COGS = Sum(FIFO Purchase Cost)</span><span className="font-bold text-rose-600">−{formatCurrency(executiveKPIs.totalAmount * 0.915)}</span></div>
-                  <div className="flex justify-between"><span>= Gross Profit</span><span className="font-black text-emerald-600">{formatCurrency(executiveKPIs.grossProfit)}</span></div>
+                  <div className="flex justify-between"><span>= Gross Profit</span><span className="font-black text-primary">{formatCurrency(executiveKPIs.grossProfit)}</span></div>
                   <div className="border-t border-dashed border-slate-300 dark:border-slate-700 pt-2 mt-2 flex flex-col gap-1 text-[10px] text-slate-500">
                     <span className="font-bold uppercase text-slate-400">Rule #84 (Registry Driven):</span>
                     {reportDetails && (reportDetails as ReportDefinition).manifest?.formulaRegistry.length > 0 ? (
-                      <span className="text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded w-fit">
+                      <span className="text-primary dark:text-primary font-bold bg-primary/10 dark:bg-primary-hover/30 px-2 py-1 rounded w-fit">
                         Formulas Injected: {(reportDetails as ReportDefinition).manifest.formulaRegistry.join(', ')}
                       </span>
                     ) : (
@@ -1242,11 +1242,11 @@ export default function AdvancedReportsHub({
                   <Lock className="w-4 h-4 text-cyan-600" />
                   <span>Records: <strong className="text-slate-900 dark:text-white">{sortedRows.length}</strong></span>
                   <span>•</span>
-                  <span>Integrity: <strong className="text-emerald-600 font-bold">{executiveKPIs.healthAudit.healthScore}% Verified</strong></span>
+                  <span>Integrity: <strong className="text-primary font-bold">{executiveKPIs.healthAudit.healthScore}% Verified</strong></span>
                   <span>•</span>
                   <span>Hash: <strong className="text-purple-600 font-bold">SHA256-{Array.from(`${activeReport}-${sortedRows.length}-${executiveKPIs.totalAmount}`).reduce((h, c) => ((h << 5) - h + c.charCodeAt(0)) | 0, 0).toString(16).replace('-', 'a').slice(0, 16)}</strong></span>
                 </div>
-                <div className="text-emerald-600 font-bold flex items-center gap-1">
+                <div className="text-primary font-bold flex items-center gap-1">
                   <CheckCircle2 className="w-4 h-4" /> Certified Immutable Report
                 </div>
               </div>

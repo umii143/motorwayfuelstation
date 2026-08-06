@@ -29,14 +29,14 @@ export const PurchaseAnalyticsTab: React.FC<TabProps> = ({ metrics, lang = 'en' 
 
         <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-4 shadow-sm">
           <div className="text-[10px] uppercase font-bold text-[var(--text-muted)]">OMC On-Time Delivery Rate</div>
-          <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400 font-mono mt-1">98.4%</div>
-          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-bold mt-1">PSO & Shell Verified</div>
+          <div className="text-2xl font-black text-primary dark:text-primary font-mono mt-1">98.4%</div>
+          <div className="text-xs text-success dark:text-success font-bold mt-1">PSO & Shell Verified</div>
         </div>
 
         <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-4 shadow-sm">
           <div className="text-[10px] uppercase font-bold text-[var(--text-muted)]">Avg Order Lead Time</div>
           <div className="text-2xl font-black text-[var(--text-main)] font-mono mt-1">4.2 Hours</div>
-          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-bold mt-1">Bowser Dispatch Verified</div>
+          <div className="text-xs text-success dark:text-success font-bold mt-1">Bowser Dispatch Verified</div>
         </div>
       </div>
 
@@ -63,7 +63,7 @@ export const PurchaseAnalyticsTab: React.FC<TabProps> = ({ metrics, lang = 'en' 
               </div>
               <div className="text-right">
                 <span className="font-bold text-[var(--text-main)] block">{pur.amount}</span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-800">{pur.status}</span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary">{pur.status}</span>
               </div>
             </div>
           ))}

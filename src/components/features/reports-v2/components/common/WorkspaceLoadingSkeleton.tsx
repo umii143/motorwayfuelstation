@@ -19,15 +19,29 @@ interface WorkspaceLoadingSkeletonProps {
   showChart?: boolean;
 }
 
+// Static class map — Tailwind JIT cannot generate `lg:grid-cols-N` from template strings.
+// (Previously `lg:grid-cols-${Math.min(kpiCount, 5)}` never compiled, so desktop
+// skeletons fell back to 2 columns regardless of kpiCount.)
+const KPI_GRID_CLASSES: Record<number, string> = {
+  1: 'lg:grid-cols-1',
+  2: 'lg:grid-cols-2',
+  3: 'lg:grid-cols-3',
+  4: 'lg:grid-cols-4',
+  5: 'lg:grid-cols-5',
+};
+
 export const WorkspaceLoadingSkeleton: React.FC<WorkspaceLoadingSkeletonProps> = ({
   kpiCount = 4,
   rowCount = 5,
   showChart = false,
 }) => {
+  // kpiCount is clamped to 1–5 and every key is covered, so the lookup is total.
+  const lgGridCols = KPI_GRID_CLASSES[Math.min(Math.max(kpiCount, 1), 5)];
+
   return (
     <div className="space-y-4 animate-pulse">
       {/* KPI Card Skeletons */}
-      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${Math.min(kpiCount, 5)} gap-3`}>
+      <div className={`grid grid-cols-1 sm:grid-cols-2 ${lgGridCols} gap-3`}>
         {Array.from({ length: kpiCount }).map((_, i) => (
           <div key={i} className="bg-white rounded-2xl border border-slate-200/60 p-4 shadow-xs">
             <div className="flex justify-between items-start mb-3">

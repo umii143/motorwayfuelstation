@@ -43,7 +43,7 @@ export function FuelVarianceHeatmap({ tanks, shifts, nozzles }: FuelVarianceHeat
 
  const getStatusColor = (status: string) => {
  switch (status) {
- case 'normal': return 'bg-emerald-500/20 border-emerald-500/30 text-emerald-600 dark:text-emerald-400';
+ case 'normal': return 'bg-primary/20 border-primary/30 text-primary dark:text-primary';
  case 'watch': return 'bg-amber-500/20 border-amber-500/30 text-amber-600 dark:text-amber-400';
  case 'investigate': return 'bg-rose-500/20 border-rose-500/30 text-rose-600 dark:text-rose-400';
  default: return 'bg-slate-50 dark:bg-white/50/20 border-slate-500/30 text-muted-foreground';
@@ -64,14 +64,14 @@ export function FuelVarianceHeatmap({ tanks, shifts, nozzles }: FuelVarianceHeat
  </div>
  </div>
  <div className="flex items-center gap-4 text-xs font-bold text-muted-foreground">
- <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-sm bg-emerald-500/20 border border-emerald-500/30"></div> Normal</div>
+ <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-sm bg-primary/20 border border-primary/30"></div> Normal</div>
  <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-sm bg-amber-500/20 border border-amber-500/30"></div> Watch</div>
  <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-sm bg-rose-500/20 border border-rose-500/30"></div> Investigate</div>
  </div>
  </div>
 
  {/* CONFIDENCE BAR */}
- <div className={`px-5 py-2 border-b text-xs font-bold flex items-center gap-2${dataConfidence < 100 ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'}`}>
+ <div className={`px-5 py-2 border-b text-xs font-bold flex items-center gap-2${dataConfidence < 100 ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' : 'bg-primary/10 border-primary/20 text-primary'}`}>
  {dataConfidence < 100 ? <AlertTriangle className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
  <span>Data Confidence: {dataConfidence}%</span>
  <span className="text-muted-foreground font-normal">({last7Shifts.length} of 7 shifts available)</span>

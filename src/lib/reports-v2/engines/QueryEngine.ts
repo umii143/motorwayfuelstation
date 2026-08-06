@@ -14,11 +14,10 @@
  * Realtime Database path was removed to enforce a single data backend.
  */
 
-import { collection, getDocs, onSnapshot, query } from 'firebase/firestore';
-import { dbFS } from '../../firebase';
 import { logger } from '../../logger';
 import { HistoricalArchive } from '../archival/HistoricalArchive';
-import { QueryContext, RawDataResult } from './types';
+import { QueryContext, RawDataResult, IObservableEngine } from './types';
+import { FirestoreAdapter } from '../../../repositories/adapters/FirestoreAdapter';
 
 // ──────────────────────────────────────────────
 // INTERNAL RESOLVER MAP
@@ -139,7 +138,7 @@ function applyContextFilters(
 // QUERY ENGINE
 // ──────────────────────────────────────────────
 
-export class QueryEngine {
+export class QueryEngine implements IObservableEngine {
   private static instance: QueryEngine;
 
   private constructor() {}
@@ -165,9 +164,9 @@ export class QueryEngine {
    */
   async query(domain: string, context: QueryContext, useArchive = false): Promise<RawDataResult> {
     const startTime = performance.now();
-    const collectionName = COLLECTION_RESOLVER[domain];
+    const fsCollection = COLLECTION_RESOLVER[domain];
 
-    if (!collectionName) {
+    if (!fsCollection) {
       console.warn(`[QueryEngine] Unknown domain: ${domain}. Returning empty.`);
       return {
         collection: domain,
@@ -182,7 +181,7 @@ export class QueryEngine {
     if (!context.orgId || !context.stationId) {
       console.warn('[QueryEngine] Missing orgId/stationId in context. Returning empty.');
       return {
-        collection: collectionName,
+        collection: fsCollection,
         documents: [],
         count: 0,
         fetchedAt: new Date(),
@@ -191,14 +190,15 @@ export class QueryEngine {
     }
 
     const archive = HistoricalArchive.getInstance();
-    const cacheKey = HistoricalArchive.key(context.orgId, context.stationId, domain, collectionName, context.dateFrom, context.dateTo);
+    const cacheKey = HistoricalArchive.key(context.orgId, context.stationId, domain, fsCollection, context.dateFrom, context.dateTo);
 
     // Archive read-through (Rule #92) — only for explicit archive-mode calls
     if (useArchive) {
       const cached = archive.getWindow(cacheKey);
       if (cached) {
+        this.metrics.cacheHits++;
         return {
-          collection: collectionName,
+          collection: fsCollection,
           documents: cached,
           count: cached.length,
           fetchedAt: new Date(),
@@ -209,52 +209,56 @@ export class QueryEngine {
     }
 
     try {
-      const colRef = collection(dbFS, 'organizations', context.orgId, 'stations', context.stationId, collectionName);
-      const snapshot = await getDocs(query(colRef));
+      const adapterContext = {
+        stationId: context.stationId,
+        orgId: context.orgId,
+        dateFrom: context.dateFrom,
+        dateTo: context.dateTo,
+        filters: context.filters
+      };
 
-      const documents: Record<string, any>[] = snapshot.docs.map(doc => ({
-        _id: doc.id,
-        ...doc.data()
-      }));
-
-      // Apply date filtering if context provides a date range
-      let filtered = documents;
-      if (context.dateFrom || context.dateTo) {
-        const from = context.dateFrom?.getTime() ?? -Infinity;
-        const to = context.dateTo?.getTime() ?? Infinity;
-        filtered = documents.filter(doc => {
-          const t = docTimestamp(doc);
-          if (t === null) return true; // no date field — keep, filters are best-effort
-          return t >= from && t <= to;
-        });
-      }
-
-      // Apply workspace filters (product / tank / pump / operator / status / branch)
-      filtered = applyContextFilters(filtered, context.filters);
+      const result = await FirestoreAdapter.fetchDocuments(fsCollection, adapterContext);
 
       const executionTimeMs = Math.round(performance.now() - startTime);
+      this.metrics.cacheMisses++;
+      this.metrics.totalQueries++;
 
-      // Write-through to the archive (Rule #94) — verified data only
-      archive.putWindow(cacheKey, filtered, useArchive ? ARCHIVE_TTL_MS : SESSION_TTL_MS);
+      // Archive write-through (Rule #92) — verified data only
+      archive.putWindow(cacheKey, result.documents, useArchive ? ARCHIVE_TTL_MS : SESSION_TTL_MS);
 
       return {
-        collection: collectionName,
-        documents: filtered,
-        count: filtered.length,
+        collection: fsCollection,
+        documents: result.documents,
+        count: result.count,
         fetchedAt: new Date(),
         executionTimeMs,
         fromCache: false
       };
     } catch (error: any) {
       console.error(`[QueryEngine] Firestore query failed for ${domain}:`, error);
+      this.metrics.errors++;
       return {
-        collection: collectionName,
+        collection: fsCollection,
         documents: [],
         count: 0,
         fetchedAt: new Date(),
         executionTimeMs: Math.round(performance.now() - startTime)
       };
     }
+  }
+
+  private metrics = {
+    totalQueries: 0,
+    cacheHits: 0,
+    cacheMisses: 0,
+    errors: 0
+  };
+
+  /**
+   * Get observability metrics (PRD v6.1 A.8)
+   */
+  getMetrics(): Record<string, number> {
+    return { ...this.metrics };
   }
 
   /**
@@ -292,39 +296,31 @@ export class QueryEngine {
       return () => {};
     }
 
-    const colRef = collection(dbFS, 'organizations', context.orgId, 'stations', context.stationId, collectionName);
-
-    const buildResult = (docs: Record<string, any>[]): RawDataResult => ({
-      collection: collectionName,
-      documents: docs,
-      count: docs.length,
-      fetchedAt: new Date(),
-      executionTimeMs: 0
-    });
-
-    const applyDateFilter = (documents: Record<string, any>[]): Record<string, any>[] => {
-      if (!context.dateFrom && !context.dateTo) return documents;
-      const from = context.dateFrom?.getTime() ?? -Infinity;
-      const to = context.dateTo?.getTime() ?? Infinity;
-      return documents.filter(doc => {
-        const t = docTimestamp(doc);
-        if (t === null) return true;
-        return t >= from && t <= to;
-      });
+    const adapterContext = {
+      stationId: context.stationId,
+      orgId: context.orgId,
+      dateFrom: context.dateFrom,
+      dateTo: context.dateTo,
+      filters: context.filters
     };
 
-    const unsubscribe = onSnapshot(
-      query(colRef),
-      (snapshot) => {
-        const docs = snapshot.docs.map(doc => ({ _id: doc.id, ...doc.data() }));
-        onChange(buildResult(applyContextFilters(applyDateFilter(docs), context.filters)));
+    return FirestoreAdapter.subscribeToDocuments(
+      collectionName,
+      adapterContext,
+      (result) => {
+        onChange({
+          collection: collectionName,
+          documents: result.documents,
+          count: result.count,
+          fetchedAt: result.fetchedAt,
+          executionTimeMs: result.executionTimeMs,
+          fromCache: false
+        });
       },
-      (error: any) => {
-        logger.warn(`[QueryEngine] Realtime subscription failed for ${collectionName}:`, error?.message);
+      (error) => {
+        logger.error(`[QueryEngine] Realtime listener error on ${collectionName}:`, error);
       }
     );
-
-    return unsubscribe;
   }
 
   /**

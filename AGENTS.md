@@ -59,6 +59,7 @@ The system enforces strict role-based permissions across three roles: `Admin` (o
 - **Enterprise AI Rule #124:** *Every AI-generated operational recommendation must be traceable to verified operational records, business rules, and execution context. If traceability cannot be established, the AI must explicitly state that the recommendation cannot be verified rather than presenting it as fact.*
 - **Enterprise AI Rule #125:** *Every AI response must be reproducible, explainable, auditable, and tenant-isolated. No AI recommendation may depend on hidden state, unverifiable assumptions, cross-tenant data, or non-deterministic operational facts. Every recommendation must be traceable to a specific context snapshot, business rule version, formula version, and immutable audit record.*
 - **Enterprise Rule #126 (Business-First Progressive Disclosure):** *FuelPro Reports Platform must look and behave like a real fuel station control room—not a software engineering console. Every screen must prioritize operational decisions first, accounting details second, audit third, and developer diagnostics last. Developer metadata (Manifest, Registry, JSON, Engine, Formula Version, Component IDs, SHA-256, Query Time) must never appear in the default user interface and must be accessible only through a secured Developer Mode.*
+- **Enterprise Rule #127 (Single Source of Truth Operational Ingestion Law):** *Test Liters, Discounts, Shortages, Tank Dips, Stock In, and Price Changes shall never have independent duplicate CRUD entry forms inside Reports or Analytics modules. Every operational record must originate exclusively from its designated primary operational module (Test Liters ➔ Shift Operations, Discounts ➔ POS/Discounts Approval Center, Shortages ➔ Shift Closing, Tank Dips ➔ Inventory Control Center, Stock In ➔ Purchases/GRN, Price Changes ➔ Pricing Control Center). The Reports and Analytics modules shall consume these operational records in 100% read-only mode through the Enterprise Reporting Engine. Duplicate data entry across modules is strictly prohibited.*
 
 ---
 
@@ -1232,3 +1233,148 @@ Inventory is responsible for stock after successful GRN posting. Finance is resp
 
 10. **Final Document Lock (A.10)**: PRD v6.0 + Addendum v6.1 together constitute the complete and final Execution Contract. Any future gap is logged as a numbered addendum item (A.11, A.12, ...) appended to the v6.1 file — NEVER as a new competing document.
 
+
+---
+
+# ?? Rule #181 � Reports Workspace Read-Only Enforcement
+
+## Enterprise Law
+
+**Reports Module is strictly READ-ONLY.**
+Reports ??? ??? ??? ?? Business Data Create, Edit, Delete, Approve ?? Settle ???? ??? ???
+
+Reports ?? ???? ???:
+* View
+* Search
+* Filter
+* Analyze
+* Compare
+* Timeline
+* Audit
+* Export
+* Print
+* Drilldown
+
+?????
+
+---
+
+# ? ?? Buttons Reports ??? ???? ???? ??????
+
+?? Reports Workspace ?? Remove ????:
+* ? Add
+* ? New
+* ? Create
+* ? Edit
+* ?? Delete
+* ? Approve
+* ?? Recovery Payment
+* ?? Record Expense
+* ?? Bank Deposit
+* ?? Digital Payment
+* ?? Journal Entry
+* ?? Purchase Order
+* ?? GRN Entry
+* ? Tank Dip Entry
+* ?? Test Liter Entry
+* ?? Discount Entry
+* ?? Price Change
+* ?? Add Customer
+* ?? Add Supplier
+* ???? Add Employee
+
+---
+
+# ? ?? ?? ??? ??? ?????
+
+?????
+Customers Reports -> Open Customer Module
+Pricing Reports -> Open Pricing Module
+Supplier Reports -> Open Supplier Module
+Finance Reports -> Open Finance Module
+Inventory Reports -> Open Inventory Module
+Fuel Operations Reports -> Open Shift Wizard
+Discount Reports -> Open Shift Wizard
+Ledgers Reports -> Open Ledger Module
+Staff Reports -> Open Staff Module
+
+---
+
+# Universal Rule
+
+?? Reports Screen ?? ???:
+? View
+? Search
+? Filter
+? Sort
+? Timeline
+? Audit Trail
+? Documents
+? Reports
+? Export PDF
+? Export Excel
+? CSV
+? Print
+? Drilldown
+???? ??????
+
+---
+
+# ??? User Add Button ?? Click ????
+
+Add Button ?? ???? Remove ?????
+?? ??? UX ?? ??? ????? ????? ?? ??: Open Operational Module ??? ?????? Module ???? ????
+
+---
+
+# AI Developer ????? ??? ????? Rule
+
+> **Audit all 10 Reporting Workspaces and remove every operational CRUD action. Any button that creates, edits, approves, settles, posts, updates, or deletes business data must be removed from Reports. Replace it with navigation to the corresponding operational module. Reports must remain 100% read-only while preserving search, filters, drilldowns, exports, timelines, documents, audit trails, and analytics. Ensure there are zero write operations anywhere inside the Reports module.**
+
+---
+
+# ?? Rule #182 � The Enterprise SSOT Data Flow & Join Architecture
+
+## 1. Single Entry Point Law
+Data is saved **ONLY ONCE** in its primary Operational Module. Reports NEVER insert, update, or delete data.
+- **Shift Wizard** ? shifts
+- **Finance Module** ? expenses
+- **Customer Module** ? customer_payments
+- **Supplier Module** ? supplier_payments
+- **Pricing Module** ? uel_prices
+
+## 2. Report Read-Only Pipeline
+Reports must exclusively follow this read-only ingestion pipeline:
+Firestore ? Domain Engine ? Formula Engine ? Report Engine ? UI
+
+## 3. Strict Table Ownership
+No module may write directly to another module's table:
+- **Shift Wizard**: shifts
+- **Fuel Operations**: shifts + 
+ozzle_readings
+- **Inventory**: 	anks + dip_logs
+- **Finance**: expenses + cash_books + ank_accounts
+- **Customers**: customer_ledgers + customer_payments
+- **Suppliers**: supplier_ledgers + supplier_payments
+- **Staff**: ttendance + payroll
+- **Pricing**: uel_prices
+- **Ledgers**: journal_entries + general_ledger
+
+## 4. Cross-Module Joins for Reporting
+Reports generate their views by **joining** data dynamically, never by duplicating it.
+For example, the **Shift Closing Report** is a dynamic join of:
+Sales + Discounts + Test Liters + Expenses + Cash + Digital Cash + Bank + Recovery + Shortage + Tank Reading + Nozzle Reading + Meter Correction
+None of this aggregated data is saved back to a new eports collection.
+
+## 5. Absolutely NO Duplicate Collections
+Do NOT create duplicate tables like shift_discount, eports_discount, nalytics_discount.
+Correct approach: shift.discountEntries ? Reports ? Analytics.
+
+## 6. Formula Engine Reliance
+Reports NEVER calculate raw data. All aggregations must pass through their respective Business Engines.
+Example: discountEntries ? DiscountEngine (calculates Total Discount) ? Reports.
+
+## 7. The Master Transaction Object
+The Shift Wizard utilizes a **Master Transaction Object** so that every shift's snapshot exists in one place:
+{ openingMeters, closingMeters, sales, discounts, testLiters, expenses, cashCollections, digitalCollections, bankDeposits, recoveries, shortages, meterCorrections, dipReadings, notes }
+This guarantees that **one single transaction object** is read in realtime across Web ERP, Android, Windows, Reports, Analytics, and AI layers.

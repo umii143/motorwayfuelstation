@@ -24,19 +24,19 @@ export const StaffAnalyticsTab: React.FC<TabProps> = ({ branches, lang = 'en' })
         <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-4 shadow-sm">
           <div className="text-[10px] uppercase font-bold text-[var(--text-muted)]">Active Workforce Count</div>
           <div className="text-2xl font-black text-[var(--text-main)] font-mono mt-1">50 Employees</div>
-          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-bold mt-1">4 Station Branches</div>
+          <div className="text-xs text-primary dark:text-primary font-bold mt-1">4 Station Branches</div>
         </div>
 
         <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-4 shadow-sm">
           <div className="text-[10px] uppercase font-bold text-[var(--text-muted)]">Attendance Rate Today</div>
-          <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400 font-mono mt-1">96.0%</div>
-          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-bold mt-1">48 Present / 2 On Leave</div>
+          <div className="text-2xl font-black text-primary dark:text-primary font-mono mt-1">96.0%</div>
+          <div className="text-xs text-primary dark:text-primary font-bold mt-1">48 Present / 2 On Leave</div>
         </div>
 
         <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-4 shadow-sm">
           <div className="text-[10px] uppercase font-bold text-[var(--text-muted)]">Staff Cash Accuracy Score</div>
-          <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400 font-mono mt-1">99.8%</div>
-          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-bold mt-1">Zero Shift Shortage</div>
+          <div className="text-2xl font-black text-primary dark:text-primary font-mono mt-1">99.8%</div>
+          <div className="text-xs text-primary dark:text-primary font-bold mt-1">Zero Shift Shortage</div>
         </div>
       </div>
 
@@ -59,8 +59,8 @@ export const StaffAnalyticsTab: React.FC<TabProps> = ({ branches, lang = 'en' })
                 <span className="text-[10px] text-[var(--text-muted)]">{st.shift} • Accuracy: {st.accuracy}</span>
               </div>
               <div className="text-right">
-                <span className="font-bold text-emerald-700 dark:text-emerald-400 block">{st.sales}</span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-800">Top Performer</span>
+                <span className="font-bold text-primary dark:text-primary block">{st.sales}</span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary">Top Performer</span>
               </div>
             </div>
           ))}

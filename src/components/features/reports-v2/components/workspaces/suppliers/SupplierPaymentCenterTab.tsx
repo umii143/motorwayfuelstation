@@ -55,7 +55,7 @@ export const SupplierPaymentCenterTab: React.FC<SupplierPaymentCenterTabProps> =
       <div className="space-y-3">
         {payableSuppliers.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
-            <CheckCircle2 size={36} className="mx-auto text-emerald-500 mb-2" />
+            <CheckCircle2 size={36} className="mx-auto text-primary mb-2" />
             <h3 className="text-base font-black text-slate-900">Zero Open Payables!</h3>
             <p className="text-xs font-extrabold text-slate-500 mt-1">All OMC supplier invoices and bills are paid in full.</p>
           </div>
@@ -110,7 +110,7 @@ export const SupplierPaymentCenterTab: React.FC<SupplierPaymentCenterTabProps> =
 
                   <button
                     onClick={() => onOpenPaymentModal(supplier)}
-                    className="px-2.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1"
+                    className="px-2.5 py-2 bg-primary/10 hover:bg-primary/15 text-primary border border-primary/25 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1"
                     title="Cash Disbursement"
                   >
                     <DollarSign size={14} />

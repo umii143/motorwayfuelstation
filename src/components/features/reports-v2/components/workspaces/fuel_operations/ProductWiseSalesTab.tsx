@@ -16,6 +16,20 @@ function formatCurrency(v: number): string {
   return `Rs ${v.toLocaleString('en-PK')}`;
 }
 
+// Static class map — Tailwind JIT cannot generate `bg-blue-50/80` / `lg:grid-cols-4`
+// from template strings, so interpolated variants must be pre-declared here.
+// (Previously every card rendered with no background/border/accent and the grid
+// never expanded past 2 columns on desktop.)
+const PRODUCT_CARD_STYLE: Record<string, { card: string; label: string; value: string; sub: string }> = {
+  blue:    { card: 'bg-blue-50/80 border-blue-200/90',    label: 'text-blue-900', value: 'text-blue-900',    sub: 'text-blue-700' },
+  emerald: { card: 'bg-emerald-50/80 border-emerald-200/90', label: 'text-emerald-900', value: 'text-emerald-900', sub: 'text-emerald-700' },
+  amber:   { card: 'bg-amber-50/80 border-amber-200/90',  label: 'text-amber-900', value: 'text-amber-900',  sub: 'text-amber-700' },
+  purple:  { card: 'bg-purple-50/80 border-purple-200/90', label: 'text-purple-900', value: 'text-purple-900', sub: 'text-purple-700' },
+  rose:    { card: 'bg-rose-50/80 border-rose-200/90',    label: 'text-rose-900', value: 'text-rose-900',    sub: 'text-rose-700' },
+  sky:     { card: 'bg-sky-50/80 border-sky-200/90',      label: 'text-sky-900', value: 'text-sky-900',      sub: 'text-sky-700' },
+};
+const PRODUCT_COLORS = ['blue', 'emerald', 'amber', 'purple', 'rose', 'sky'];
+
 interface ProductWiseSalesTabProps {
   salesRows?: Record<string, any>[];
   lang: 'en' | 'ur';
@@ -61,8 +75,6 @@ export const ProductWiseSalesTab: React.FC<ProductWiseSalesTabProps> = ({
     })).sort((a, b) => b.percentageNum - a.percentageNum);
   }, [salesRows]);
 
-  const productColors = ['blue', 'emerald', 'amber', 'purple', 'rose', 'sky'];
-
   if (productRows.length === 0) {
     return (
       <WorkspaceEmptyState
@@ -75,14 +87,14 @@ export const ProductWiseSalesTab: React.FC<ProductWiseSalesTabProps> = ({
   return (
     <div className="space-y-4">
       {/* Product Share KPIs — computed from live data */}
-      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${Math.min(productRows.length, 4)} gap-3`}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {productRows.slice(0, 4).map((p, idx) => {
-          const color = productColors[idx % productColors.length];
+          const color = PRODUCT_CARD_STYLE[PRODUCT_COLORS[idx % PRODUCT_COLORS.length]];
           return (
-            <div key={p.id} className={`bg-${color}-50/80 border border-${color}-200/90 rounded-2xl p-4 flex flex-col justify-between shadow-xs`}>
-              <span className={`text-xs font-black text-${color}-900`}>{p.productName} Share</span>
-              <div className={`text-2xl font-black text-${color}-900 tracking-tight`}>{p.percentage}</div>
-              <span className={`text-[10px] font-extrabold text-${color}-700 mt-1`}>{p.liters} Dispensed</span>
+            <div key={p.id} className={`${color.card} border rounded-2xl p-4 flex flex-col justify-between shadow-xs min-w-0`}>
+              <span className={`text-xs font-black ${color.label} truncate`}>{p.productName} Share</span>
+              <div className={`text-2xl font-black ${color.value} tracking-tight`}>{p.percentage}</div>
+              <span className={`text-[10px] font-extrabold ${color.sub} mt-1`}>{p.liters} Dispensed</span>
             </div>
           );
         })}

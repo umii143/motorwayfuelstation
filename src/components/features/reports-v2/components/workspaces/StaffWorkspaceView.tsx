@@ -5,17 +5,20 @@
  * StaffWorkspaceView — Dedicated Workforce & HR Management Control Center
  *
  * Implements Enterprise Rules #130, #131, #135, #140, #143 & STRICT Rule #170
- * 3-Layer Component & Data Isolation delegating to 12 modular sub-workspace tabs.
- * Distinct Deep Teal & Indigo Workforce Theme.
+ * Upgraded to 10-Layer UX standard (Addendum A.12.1) + Phase A Part 10 Audit
+ * Staff & Workforce Management Control Center.
  */
 
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useReportExecution } from '../../../../../hooks/useReportExecution';
 import { RightInspectorPanel } from '../RightInspectorPanel';
+import { DateFilterState } from '../WorkspaceDateFilterMenu';
+import { UniversalWorkspaceLayout, WorkspaceLayer, enforceOperationalSSOT } from '../../framework/UniversalWorkspaceLayout';
 import { QueryContext } from '../../../../../lib/reports-v2/engines/types';
 import { useWorkspaceFirebaseData } from '../../hooks/useWorkspaceFirebaseData';
-import {
-  Users, Plus, Clock, Play, Square, DollarSign, FileText, Calendar, Megaphone, ShieldCheck
-} from 'lucide-react';
+import { DomainReportsCenterTab } from './reports-center/DomainReportsCenterTab';
+import toast from 'react-hot-toast';
 
 import { StaffOverviewTab } from './staff/StaffOverviewTab';
 import { EmployeeRegisterTab } from './staff/EmployeeRegisterTab';
@@ -30,250 +33,278 @@ import { StaffTrainingTab } from './staff/StaffTrainingTab';
 import { StaffDocumentsTab } from './staff/StaffDocumentsTab';
 import { StaffAuditTrailTab } from './staff/StaffAuditTrailTab';
 
-export type StaffTabId =
-  | 'overview'
-  | 'employees'
-  | 'attendance'
-  | 'shifts'
-  | 'performance'
-  | 'payroll'
-  | 'leaves'
-  | 'overtime'
-  | 'incentives'
-  | 'training'
-  | 'documents'
-  | 'audit';
+function formatCurrency(v: number | string): string {
+  const n = typeof v === 'number' ? v : Number(v) || 0;
+  return `₨ ${n.toLocaleString('en-PK')}`;
+}
 
 interface StaffWorkspaceViewProps {
-  reportId: string;
-  stationId: string;
-  orgId: string;
-  userId: string;
-  role: string;
-  lang: 'en' | 'ur';
+  reportId?: string;
+  stationId?: string;
+  orgId?: string;
+  userId?: string;
+  role?: string;
+  lang?: 'en' | 'ur';
   onSelectReport?: (reportId: string) => void;
   onDrilldown?: (nextReportId: string, filterContext?: Record<string, any>) => void;
 }
 
 export const StaffWorkspaceView: React.FC<StaffWorkspaceViewProps> = ({
-  reportId,
-  stationId,
-  orgId,
-  userId,
-  role,
-  lang,
+  stationId = 'st_default',
+  orgId = 'org_main',
+  userId = 'u_default',
+  role = 'owner',
+  lang = 'en',
   onSelectReport,
 }) => {
   const isEn = lang === 'en';
-  const [activeTab, setActiveTab] = useState<StaffTabId>('overview');
+  const isUr = lang === 'ur';
+  const navigate = useNavigate();
+
+  // Global Date Filter State
+  const [dateFilter, setDateFilter] = useState<DateFilterState>({
+    preset: 'today',
+    startDate: '2025-05-15',
+    endDate: '2025-05-15',
+    label: 'May 15, 2025',
+  });
+
+  const queryContext: QueryContext = useMemo(
+    () => ({ stationId, orgId, userId, role, dateRange: { startDate: dateFilter.startDate, endDate: dateFilter.endDate } }),
+    [stationId, orgId, userId, role, dateFilter]
+  );
+
   const [selectedRecord, setSelectedRecord] = useState<Record<string, any> | null>(null);
 
   // Fetch live staff, shifts, attendance, and finance records
-  const { data: staffList } = useWorkspaceFirebaseData('STAFF', { orgId, stationId });
-  const { data: shifts } = useWorkspaceFirebaseData('SHIFTS', { orgId, stationId });
-  const { data: attendance } = useWorkspaceFirebaseData('ATTENDANCE', { orgId, stationId });
-  const { data: staffFinance } = useWorkspaceFirebaseData('STAFF_FINANCE', { orgId, stationId });
+  const { data: staffList = [] } = useWorkspaceFirebaseData('STAFF', { orgId, stationId });
+  const { data: shifts = [] } = useWorkspaceFirebaseData('SHIFTS', { orgId, stationId });
+  const { data: attendance = [] } = useWorkspaceFirebaseData('ATTENDANCE', { orgId, stationId });
+  const { data: staffFinance = [] } = useWorkspaceFirebaseData('STAFF_FINANCE', { orgId, stationId });
 
-  return (
-    <div className={`space-y-4 font-sans text-slate-800 pb-8 ${lang === 'ur' ? 'rtl' : ''}`}>
-      {/* ── 1. WORKSPACE HEADER & HR-ONLY TOP CONTROLS (STRICT RULE #170) ── */}
-      <div className="bg-[#0D1F2D] text-white rounded-2xl border border-teal-900/60 p-4 sm:p-5 shadow-md">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-teal-900/40">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-teal-500/20 text-teal-400 flex items-center justify-center text-xl font-bold border border-teal-500/30 shrink-0">
-              👥
-            </div>
-            <div>
-              <h1 className="text-lg font-black text-white tracking-tight leading-tight flex items-center gap-2">
-                <span>Staff & Workforce Management Control Center</span>
-              </h1>
-              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-teal-400/20 text-teal-300 text-[10px] font-black border border-teal-400/30">
-                  <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
-                  {isEn ? 'Rule #170 HR & Workforce Engine' : 'ورک فورس اور ایچ آر انجن'}
-                </span>
-                <span className="text-[10px] font-extrabold text-slate-400">
-                  {isEn
-                    ? `SAP / NetSuite Standard • ${staffList.length || 12} Employees | ${shifts.length || 2} Shifts Active`
-                    : `${staffList.length || 12} کل ملازمین | لائیو ڈیوٹی`}
-                </span>
+  // Subtab State for Register, Analytics, Workflow, Reports
+  const [registerSubTab, setRegisterSubTab] = useState<'employees' | 'shifts'>('employees');
+  const [analyticsSubTab, setAnalyticsSubTab] = useState<'performance' | 'attendance'>('performance');
+  const [workflowSubTab, setWorkflowSubTab] = useState<'leave' | 'overtime' | 'incentives'>('leave');
+  const [reportsSubTab, setReportsSubTab] = useState<'payroll' | 'training'>('payroll');
+
+  // Render 10 Layers Functionally
+  const renderLayer = (layer: WorkspaceLayer) => {
+    switch (layer) {
+      case 'overview':
+        return (
+          <StaffOverviewTab
+            staffList={staffList}
+            shifts={shifts}
+            attendance={attendance}
+            staffFinance={staffFinance}
+            lang={lang}
+            onOpenInspector={(rec) => setSelectedRecord(rec)}
+            onSelectTab={(t) => {
+              if (t === 'employees') setRegisterSubTab('employees');
+              else if (t === 'payroll') setReportsSubTab('payroll');
+            }}
+          />
+        );
+
+      case 'kpis':
+        return (
+          <div className="space-y-4">
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-2xs space-y-4">
+              <h3 className="text-sm font-black text-foreground uppercase tracking-wider">
+                {isEn ? 'Workforce & HR Management Scorecard' : 'ورک فورس اسکور کارڈ'}
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs font-mono">
+                <div className="p-4 rounded-xl bg-muted/40 border border-border space-y-1">
+                  <span className="text-muted-foreground font-sans font-bold">Total Staff Registered</span>
+                  <div className="text-xl font-black text-foreground">{staffList.length}</div>
+                </div>
+                <div className="p-4 rounded-xl bg-muted/40 border border-border space-y-1">
+                  <span className="text-muted-foreground font-sans font-bold">Active Duty Shifts</span>
+                  <div className="text-xl font-black text-teal-600">{shifts.filter(s => s.status === 'open' || !s.closedAt).length}</div>
+                </div>
+                <div className="p-4 rounded-xl bg-muted/40 border border-border space-y-1">
+                  <span className="text-muted-foreground font-sans font-bold">Staff Present Today</span>
+                  <div className="text-xl font-black text-blue-600">{attendance.filter(a => a.status === 'PRESENT').length}</div>
+                </div>
+                <div className="p-4 rounded-xl bg-muted/40 border border-border space-y-1">
+                  <span className="text-muted-foreground font-sans font-bold">Monthly Payroll Budget</span>
+                  <div className="text-xl font-black text-amber-600">
+                    {formatCurrency(staffFinance.reduce((sum, f) => sum + (Number(f.salary || f.amount) || 0), 0))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+        );
 
-          {/* HR ONLY Quick Action Buttons (STRICT Rule #170: NO Tank Dip, NO Purchases, NO AR) */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => setActiveTab('employees')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-black transition-all shadow-2xs cursor-pointer"
-            >
-              <Plus size={14} />
-              <span>{isEn ? '+ Add Employee' : '+ نیا ملازم'}</span>
-            </button>
+      case 'register':
+        return (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-xl border border-border overflow-x-auto">
+              {[
+                { id: 'employees', label: 'Master Employees Register' },
+                { id: 'shifts', label: 'Shift Roster Management' }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setRegisterSubTab(tab.id as any)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    registerSubTab === tab.id 
+                      ? 'bg-teal-600 text-white shadow-2xs' 
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
 
-            <button
-              onClick={() => setActiveTab('shifts')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black transition-all shadow-2xs cursor-pointer"
-            >
-              <Play size={13} />
-              <span>{isEn ? '🟢 Open Shift' : '🟢 شفٹ کھولیں'}</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('shifts')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-black transition-all shadow-2xs cursor-pointer"
-            >
-              <Square size={13} />
-              <span>{isEn ? '🔴 Close Shift' : '🔴 شفٹ بند کریں'}</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('attendance')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black transition-all shadow-2xs cursor-pointer"
-            >
-              <Clock size={14} />
-              <span>{isEn ? 'Mark Attendance' : 'حاضری لگائیں'}</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('payroll')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-black transition-all shadow-2xs cursor-pointer"
-            >
-              <DollarSign size={14} />
-              <span>{isEn ? 'Process Payroll' : 'پے رول'}</span>
-            </button>
+            {registerSubTab === 'employees' && (
+              <EmployeeRegisterTab
+                staffList={staffList}
+                lang={lang}
+                onOpenInspector={(r) => setSelectedRecord(r)}
+                onOpenAddModal={() => enforceOperationalSSOT(navigate, 'Staff Module', '/staff', isEn)}
+              />
+            )}
+            {registerSubTab === 'shifts' && (
+              <ShiftManagementTab
+                shifts={shifts}
+                lang={lang}
+                onOpenInspector={(r) => setSelectedRecord(r)}
+              />
+            )}
           </div>
-        </div>
+        );
 
-        {/* ── 2. SUB-HEADER TABS BAR (12 DEDICATED WORKFORCE TABS) ── */}
-        <div className="flex items-center gap-1.5 pt-3 overflow-x-auto custom-horizontal-scrollbar pb-1.5" data-horizontal-scroll="true">
-          {[
-            { id: 'overview', label: 'Overview' },
-            { id: 'employees', label: 'Employees Register' },
-            { id: 'attendance', label: 'Attendance' },
-            { id: 'shifts', label: 'Shift Management' },
-            { id: 'performance', label: 'Performance' },
-            { id: 'payroll', label: 'Payroll' },
-            { id: 'leaves', label: 'Leave Management' },
-            { id: 'overtime', label: 'Overtime' },
-            { id: 'incentives', label: 'Incentives & Commission' },
-            { id: 'training', label: 'Training & Certifications' },
-            { id: 'documents', label: 'Documents' },
-            { id: 'audit', label: 'Audit Trail' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as StaffTabId)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
-                activeTab === tab.id
-                  ? 'bg-teal-500 text-slate-950 font-black shadow-2xs'
-                  : 'bg-slate-800/80 text-slate-300 hover:bg-slate-800 hover:text-white'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      case 'analytics':
+        return (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-xl border border-border overflow-x-auto">
+              {[
+                { id: 'performance', label: 'Staff Performance Scorecards' },
+                { id: 'attendance', label: 'Attendance Analytics' }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setAnalyticsSubTab(tab.id as any)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    analyticsSubTab === tab.id 
+                      ? 'bg-teal-600 text-white shadow-2xs' 
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
 
-      {/* ── 3. DYNAMIC SUB-WORKSPACE RENDERER (RULE #170 DELEGATED WORKFORCE TABS) ── */}
-      {activeTab === 'overview' && (
-        <StaffOverviewTab
-          staffList={staffList}
-          shifts={shifts}
-          attendance={attendance}
-          staffFinance={staffFinance}
-          lang={lang}
-          onOpenInspector={(rec) => setSelectedRecord(rec)}
-          onSelectTab={(t) => setActiveTab(t)}
-        />
-      )}
+            {analyticsSubTab === 'performance' && <StaffPerformanceTab staffList={staffList} lang={lang} onOpenInspector={(r) => setSelectedRecord(r)} />}
+            {analyticsSubTab === 'attendance' && <StaffAttendanceTab attendance={attendance} lang={lang} onOpenInspector={(r) => setSelectedRecord(r)} />}
+          </div>
+        );
 
-      {activeTab === 'employees' && (
-        <EmployeeRegisterTab
-          staffList={staffList}
-          lang={lang}
-          onOpenInspector={(rec) => setSelectedRecord(rec)}
-          onOpenAddModal={() => alert('New Employee Account Registration Modal')}
-        />
-      )}
+      case 'ai':
+        return (
+          <div className="bg-card border border-border rounded-2xl p-5 shadow-2xs space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-2xl font-bold">
+                🤖
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-foreground uppercase tracking-wider">
+                  {isEn ? 'AI Attendance Risk & Shift Coverage Advisor' : 'اے آئی ورک فورس مشیر'}
+                </h3>
+                <p className="text-xs font-bold text-muted-foreground mt-0.5">
+                  {isEn ? 'Automated shift coverage optimization & absenteeism risk forecasting.' : 'خودکار شفٹ مینجمنٹ'}
+                </p>
+              </div>
+            </div>
 
-      {activeTab === 'attendance' && (
-        <StaffAttendanceTab
-          attendance={attendance}
-          lang={lang}
-          onOpenInspector={(rec) => setSelectedRecord(rec)}
-        />
-      )}
+            <div className="p-4 rounded-xl bg-muted/40 border border-border text-xs font-bold text-foreground">
+              💡 {isEn ? `Recommendation: Shift coverage optimal with ${staffList.length} total staff available.` : 'مشورہ: شفٹ کوریج مکمل ہے۔'}
+            </div>
+          </div>
+        );
 
-      {activeTab === 'shifts' && (
-        <ShiftManagementTab
-          shifts={shifts}
-          lang={lang}
-          onOpenInspector={(rec) => setSelectedRecord(rec)}
-        />
-      )}
+      case 'workflow':
+        return (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-xl border border-border overflow-x-auto">
+              {[
+                { id: 'leave', label: 'Leave Management' },
+                { id: 'overtime', label: 'Overtime Register' },
+                { id: 'incentives', label: 'Sales Commissions' }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setWorkflowSubTab(tab.id as any)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    workflowSubTab === tab.id 
+                      ? 'bg-teal-600 text-white shadow-2xs' 
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
 
-      {activeTab === 'performance' && (
-        <StaffPerformanceTab
-          staffList={staffList}
-          lang={lang}
-          onOpenInspector={(rec) => setSelectedRecord(rec)}
-        />
-      )}
+            {workflowSubTab === 'leave' && <StaffLeaveTab lang={lang} onOpenInspector={(r) => setSelectedRecord(r)} />}
+            {workflowSubTab === 'overtime' && <StaffOvertimeTab lang={lang} onOpenInspector={(r) => setSelectedRecord(r)} />}
+            {workflowSubTab === 'incentives' && <StaffIncentivesTab lang={lang} onOpenInspector={(r) => setSelectedRecord(r)} />}
+          </div>
+        );
 
-      {activeTab === 'payroll' && (
-        <StaffPayrollTab
-          staffFinance={staffFinance}
-          lang={lang}
-          onOpenInspector={(rec) => setSelectedRecord(rec)}
-        />
-      )}
+      case 'audit':
+        return <StaffAuditTrailTab staffList={staffList} lang={lang} onOpenInspector={(r) => setSelectedRecord(r)} />;
 
-      {activeTab === 'leaves' && (
-        <StaffLeaveTab
-          lang={lang}
-          onOpenInspector={(rec) => setSelectedRecord(rec)}
-        />
-      )}
+      case 'documents':
+        return <StaffDocumentsTab staffList={staffList} lang={lang} />;
 
-      {activeTab === 'overtime' && (
-        <StaffOvertimeTab
-          lang={lang}
-          onOpenInspector={(rec) => setSelectedRecord(rec)}
-        />
-      )}
+      case 'reports':
+        return <DomainReportsCenterTab domainName="staff" lang={lang} />;
 
-      {activeTab === 'incentives' && (
-        <StaffIncentivesTab
-          lang={lang}
-          onOpenInspector={(rec) => setSelectedRecord(rec)}
-        />
-      )}
+      case 'settings':
+        return (
+          <div className="bg-card border border-border rounded-2xl p-5 shadow-2xs space-y-4">
+            <h3 className="text-sm font-black text-foreground uppercase tracking-wider">
+              {isEn ? 'Attendance Policy & Shift Roster Rules' : 'ورک فورس سیٹنگز'}
+            </h3>
+            <div className="space-y-3 text-xs font-bold">
+              <div className="flex justify-between items-center p-3 rounded-xl bg-muted/40 border border-border">
+                <span>{isEn ? 'Standard Shift Duration' : 'شفٹ کا دورانیہ'}</span>
+                <span className="font-mono text-teal-600 font-black">8 HOURS / SHIFT</span>
+              </div>
+              <div className="flex justify-between items-center p-3 rounded-xl bg-muted/40 border border-border">
+                <span>{isEn ? 'Overtime Pay Multiplier' : 'اوور ٹائم ملٹی پلائر'}</span>
+                <span className="font-mono text-indigo-600 font-black">1.5x BASE RATE</span>
+              </div>
+            </div>
+          </div>
+        );
 
-      {activeTab === 'training' && (
-        <StaffTrainingTab
-          lang={lang}
-          onOpenInspector={(rec) => setSelectedRecord(rec)}
-        />
-      )}
+      default:
+        return null;
+    }
+  };
 
-      {activeTab === 'documents' && (
-        <StaffDocumentsTab
-          staffList={staffList}
-          lang={lang}
-        />
-      )}
+  return (
+    <>
+      <UniversalWorkspaceLayout
+        lang={lang}
+        title="Staff & Workforce Management Control Center"
+        titleUr="ورک فورس و ایچ آر کنٹرول سینٹر"
+        icon="👥"
+        domainName="staff"
+        dateFilter={dateFilter}
+        onDateFilterChange={setDateFilter}
+        renderLayer={renderLayer}
+        onNavigateRelated={onSelectReport}
+      />
 
-      {activeTab === 'audit' && (
-        <StaffAuditTrailTab
-          staffList={staffList}
-          lang={lang}
-          onOpenInspector={(rec) => setSelectedRecord(rec)}
-        />
-      )}
-
-      {/* ── RIGHT INSPECTOR DRAWER ── */}
+      {/* 7-TAB RIGHT INSPECTOR DRAWER */}
       <RightInspectorPanel
         isOpen={!!selectedRecord}
         onClose={() => setSelectedRecord(null)}
@@ -281,6 +312,6 @@ export const StaffWorkspaceView: React.FC<StaffWorkspaceViewProps> = ({
         language={lang}
         onNavigateRelated={(repId) => onSelectReport?.(repId)}
       />
-    </div>
+    </>
   );
 };

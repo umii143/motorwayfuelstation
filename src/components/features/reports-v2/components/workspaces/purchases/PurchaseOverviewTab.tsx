@@ -4,299 +4,268 @@
  * FuelPro Enterprise Business Operating System v4.0
  * PurchaseOverviewTab — Purchases & Procurement Control Room Dashboard
  *
- * Pixel-for-pixel match with reference mockup design:
- * - 5 Top Stat KPI Cards
- * - Purchase Trend (This Month) Dual Line Chart
- * - Purchase by Product (Liters) Donut Breakdown Chart
- * - Recent Bowser Deliveries List with Status Badges
- * - Recent Purchase Invoices Table with Search & Status Chips
- * - Smart Alerts Panel with Direct Action Triggers
- * - Bottom Quick Action Launcher Strip
+ * Implements Enterprise Rules #130, #131, #135, #162 & #168
+ * 100% Realtime computed metrics with ZERO dummy arrays or fallback statistics.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
-  TrendingUp, TrendingDown, ShoppingCart, Truck, AlertTriangle, ArrowUpRight,
-  FileText, CheckCircle2, DollarSign, Plus, Search, Filter, ShieldCheck, Tag,
-  Clock, CreditCard, ExternalLink, Sparkles, ChevronRight, Layers
+  TrendingUp, TrendingDown, ShoppingCart, Truck, AlertTriangle,
+  FileText, DollarSign, Plus, Search, Filter, ShieldCheck, Tag,
+  Clock, CreditCard, Sparkles, ChevronRight, Layers
 } from 'lucide-react';
+import { useWorkspaceFirebaseData } from '../../../hooks/useWorkspaceFirebaseData';
+import toast from 'react-hot-toast';
+
+function formatCurrency(v: number | string): string {
+  const n = typeof v === 'number' ? v : Number(v) || 0;
+  return `Rs ${n.toLocaleString('en-PK')}`;
+}
+
+function formatLiters(v: number | string): string {
+  const n = typeof v === 'number' ? v : Number(v) || 0;
+  return `${n.toLocaleString('en-PK', { maximumFractionDigits: 1 })} L`;
+}
 
 interface PurchaseOverviewTabProps {
   lang: 'en' | 'ur';
+  orgId?: string;
+  stationId?: string;
   onSelectTab: (tabId: string) => void;
   onOpenInspector: (record: Record<string, any>) => void;
 }
 
 export const PurchaseOverviewTab: React.FC<PurchaseOverviewTabProps> = ({
   lang,
+  orgId,
+  stationId,
   onSelectTab,
   onOpenInspector,
 }) => {
   const isEn = lang === 'en';
   const [tableSearch, setTableSearch] = useState('');
 
-  // Mock / Realtime Purchases Data
-  const recentInvoices = [
-    { id: 'INV-2025-0515-001', date: '15 May 2025', supplier: 'PSO', logo: '⛽', product: 'Petrol', liters: '16,000.00', rate: '296.45', amount: '4,743,200', status: 'Verified', payment: 'Partial' },
-    { id: 'INV-2025-0515-002', date: '15 May 2025', supplier: 'Shell', logo: '🐚', product: 'Diesel', liters: '12,000.00', rate: '311.80', amount: '3,741,600', status: 'Verified', payment: 'Unpaid' },
-    { id: 'INV-2025-0514-003', date: '14 May 2025', supplier: 'Attock', logo: '🛢️', product: 'Petrol', liters: '14,000.00', rate: '296.45', amount: '4,150,300', status: 'Verified', payment: 'Unpaid' },
-    { id: 'INV-2025-0514-004', date: '14 May 2025', supplier: 'Total', logo: '⛽', product: 'Diesel', liters: '18,000.00', rate: '312.10', amount: '5,617,800', status: 'Verified', payment: 'Paid' },
-    { id: 'INV-2025-0513-005', date: '13 May 2025', supplier: 'PSO', logo: '⛽', product: 'Kerosene', liters: '2,500.00', rate: '192.00', amount: '480,000', status: 'Verified', payment: 'Paid' },
-  ];
+  // Fetch live purchases and suppliers from Firebase hook
+  const { data: purchases = [], loading } = useWorkspaceFirebaseData('FUEL_PURCHASES', { orgId, stationId });
 
-  const recentBowserDeliveries = [
-    { id: 'BW-2025-0515-001', supplier: 'PSO', product: 'Petrol', liters: '16,000 L', arrival: '09:24 AM', driver: 'Rashid Khan', status: 'Arrived', color: 'emerald' },
-    { id: 'BW-2025-0515-002', supplier: 'Shell', product: 'Diesel', liters: '12,000 L', arrival: 'ETA: 11:45 AM', driver: 'Imran Ali', status: 'In Transit', color: 'sky' },
-    { id: 'BW-2025-0515-003', supplier: 'Attock', product: 'Petrol', liters: '14,000 L', arrival: 'Departed: 08:10 AM', driver: 'Asif', status: 'Dispatched', color: 'amber' },
-    { id: 'BW-2025-0514-004', supplier: 'Total', product: 'Diesel', liters: '18,000 L', arrival: 'Completed: 06:30 AM', driver: 'Zahid', status: 'Completed', color: 'slate' },
-  ];
+  // Filtered invoices from live stream
+  const recentInvoices = useMemo(() => {
+    if (!purchases || purchases.length === 0) return [];
+    if (!tableSearch.trim()) return purchases.slice(0, 10);
+    const q = tableSearch.toLowerCase();
+    return purchases.filter(p =>
+      String(p.invoiceNo || p.id || '').toLowerCase().includes(q) ||
+      String(p.supplierName || p.supplier || '').toLowerCase().includes(q) ||
+      String(p.productName || p.product || '').toLowerCase().includes(q)
+    ).slice(0, 10);
+  }, [purchases, tableSearch]);
+
+  // Bowser deliveries in transit or recently arrived
+  const recentBowserDeliveries = useMemo(() => {
+    return purchases.filter(p => p.bowserNo || p.driverName || p.status === 'in_transit' || p.status === 'arrived').slice(0, 5);
+  }, [purchases]);
+
+  // Compute live KPIs
+  const totalPurchasesToday = useMemo(() => {
+    return purchases.reduce((sum, p) => sum + (Number(p.totalAmount || p.amount) || 0), 0);
+  }, [purchases]);
+
+  const totalLitersToday = useMemo(() => {
+    return purchases.reduce((sum, p) => sum + (Number(p.quantity || p.liters) || 0), 0);
+  }, [purchases]);
+
+  const avgCostPerLiter = useMemo(() => {
+    if (totalLitersToday === 0) return 0;
+    return totalPurchasesToday / totalLitersToday;
+  }, [totalPurchasesToday, totalLitersToday]);
+
+  const activePOCount = useMemo(() => {
+    return purchases.filter(p => p.status === 'PO' || p.status === 'approved' || p.orderStatus === 'pending').length;
+  }, [purchases]);
+
+  const pendingPayments = useMemo(() => {
+    return purchases
+      .filter(p => p.paymentStatus !== 'paid' && p.paymentStatus !== 'Paid')
+      .reduce((sum, p) => sum + (Number(p.totalAmount || p.amount || p.balance) || 0), 0);
+  }, [purchases]);
+
+  // Product Liters Breakdown
+  const productBreakdown = useMemo(() => {
+    const map: Record<string, number> = {};
+    purchases.forEach(p => {
+      const prod = p.productName || p.product || 'Fuel';
+      map[prod] = (map[prod] || 0) + (Number(p.quantity || p.liters) || 0);
+    });
+    return Object.entries(map).map(([name, liters]) => ({
+      name,
+      liters,
+      pct: totalLitersToday > 0 ? ((liters / totalLitersToday) * 100).toFixed(1) : '0',
+    }));
+  }, [purchases, totalLitersToday]);
 
   return (
     <div className="space-y-4 font-sans text-slate-800">
-      {/* ── 1. TOP 5 STAT KPI CARDS ── */}
+      {/* ── 1. TOP 5 STAT KPI CARDS (LIVE COMPUTED) ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        {/* Card 1: Total Purchases Today */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 flex flex-col justify-between shadow-xs hover:border-slate-300 transition-all">
+        <div className="bg-card rounded-2xl border border-border p-4 flex flex-col justify-between shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Total Purchases (Today)</span>
-            <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+            <span className="text-xs font-black text-muted-foreground uppercase tracking-wider">Total Purchases</span>
+            <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center font-bold">
               <ShoppingCart size={16} />
             </div>
           </div>
           <div className="mt-2">
-            <div className="text-2xl font-black text-slate-900 tracking-tight">Rs 8,450,000</div>
-            <div className="flex items-center gap-1 mt-1 text-[11px] font-bold text-emerald-600">
-              <TrendingUp size={13} />
-              <span>vs Yesterday +12.4%</span>
-            </div>
+            <div className="text-2xl font-black text-foreground tracking-tight">{formatCurrency(totalPurchasesToday)}</div>
+            <span className="text-[11px] font-extrabold text-muted-foreground mt-1 block">Live stream total</span>
           </div>
         </div>
 
-        {/* Card 2: Liters Purchased Today */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 flex flex-col justify-between shadow-xs hover:border-slate-300 transition-all">
+        <div className="bg-card rounded-2xl border border-border p-4 flex flex-col justify-between shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Liters Purchased (Today)</span>
-            <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <span className="text-xs font-black text-muted-foreground uppercase tracking-wider">Liters Purchased</span>
+            <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold">
               <Truck size={16} />
             </div>
           </div>
           <div className="mt-2">
-            <div className="text-2xl font-black text-slate-900 tracking-tight">28,500.00 L</div>
-            <div className="flex items-center gap-1 mt-1 text-[11px] font-bold text-emerald-600">
-              <TrendingUp size={13} />
-              <span>vs Yesterday +9.8%</span>
-            </div>
+            <div className="text-2xl font-black text-foreground tracking-tight">{formatLiters(totalLitersToday)}</div>
+            <span className="text-[11px] font-extrabold text-muted-foreground mt-1 block">Total volume received</span>
           </div>
         </div>
 
-        {/* Card 3: Avg Cost / Liter */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 flex flex-col justify-between shadow-xs hover:border-slate-300 transition-all">
+        <div className="bg-card rounded-2xl border border-border p-4 flex flex-col justify-between shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Avg. Cost / Liter</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <span className="text-xs font-black text-muted-foreground uppercase tracking-wider">Avg. Cost / Liter</span>
+            <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
               <TrendingUp size={16} />
             </div>
           </div>
           <div className="mt-2">
-            <div className="text-2xl font-black text-slate-900 tracking-tight">Rs 297.37</div>
-            <div className="flex items-center gap-1 mt-1 text-[11px] font-bold text-rose-600">
-              <TrendingDown size={13} />
-              <span>vs Yesterday -1.3%</span>
-            </div>
+            <div className="text-2xl font-black text-foreground tracking-tight">{avgCostPerLiter > 0 ? formatCurrency(avgCostPerLiter) : '—'}</div>
+            <span className="text-[11px] font-extrabold text-muted-foreground mt-1 block">Effective purchase rate</span>
           </div>
         </div>
 
-        {/* Card 4: Active Purchase Orders */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 flex flex-col justify-between shadow-xs hover:border-slate-300 transition-all">
+        <div className="bg-card rounded-2xl border border-border p-4 flex flex-col justify-between shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Active Purchase Orders</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <span className="text-xs font-black text-muted-foreground uppercase tracking-wider">Active POs</span>
+            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">
               <FileText size={16} />
             </div>
           </div>
           <div className="mt-2">
-            <div className="text-2xl font-black text-slate-900 tracking-tight">7</div>
-            <div className="flex items-center gap-1 mt-1 text-[11px] font-bold text-emerald-600">
-              <TrendingUp size={13} />
-              <span>vs Yesterday +2</span>
-            </div>
+            <div className="text-2xl font-black text-foreground tracking-tight">{activePOCount}</div>
+            <span className="text-[11px] font-extrabold text-muted-foreground mt-1 block">Pending fulfillment</span>
           </div>
         </div>
 
-        {/* Card 5: Pending Payments */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 flex flex-col justify-between shadow-xs hover:border-slate-300 transition-all">
+        <div className="bg-card rounded-2xl border border-border p-4 flex flex-col justify-between shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Pending Payments</span>
-            <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+            <span className="text-xs font-black text-muted-foreground uppercase tracking-wider">Pending Payments</span>
+            <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center font-bold">
               <CreditCard size={16} />
             </div>
           </div>
           <div className="mt-2">
-            <div className="text-2xl font-black text-slate-900 tracking-tight">Rs 12,680,000</div>
-            <div className="flex items-center gap-1 mt-1 text-[11px] font-bold text-rose-600">
-              <TrendingUp size={13} />
-              <span>vs Yesterday +8.7%</span>
-            </div>
+            <div className="text-2xl font-black text-foreground tracking-tight">{formatCurrency(pendingPayments)}</div>
+            <span className="text-[11px] font-extrabold text-muted-foreground mt-1 block">Supplier payables</span>
           </div>
         </div>
       </div>
 
-      {/* ── 2. MIDDLE 3-COLUMN SECTION ── */}
+      {/* ── 2. MIDDLE SECTION ── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Column 1: Purchase Trend (This Month) - Dual Line Chart */}
-        <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <div>
-              <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider">Purchase Trend (This Month)</h2>
-              <div className="flex items-center gap-4 mt-1 text-xs font-extrabold text-slate-500">
-                <span className="flex items-center gap-1.5"><span className="w-3 h-1 bg-[#0B5C3D] rounded-full"></span> Amount (Rs)</span>
-                <span className="flex items-center gap-1.5"><span className="w-3 h-1 bg-emerald-400 rounded-full"></span> Liters (L)</span>
-              </div>
-            </div>
-            <button onClick={() => onSelectTab('analytics')} className="text-xs font-bold text-[#0B5C3D] hover:underline flex items-center gap-1 cursor-pointer">
-              View Analytics →
-            </button>
-          </div>
-
-          {/* Dual Line SVG Mockup Graph */}
-          <div className="py-4">
-            <div className="h-44 w-full relative">
-              <svg className="w-full h-full overflow-visible" viewBox="0 0 400 150">
-                <defs>
-                  <linearGradient id="amountGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#0B5C3D" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#0B5C3D" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-                {/* Grid lines */}
-                <line x1="0" y1="30" x2="400" y2="30" stroke="#f1f5f9" strokeWidth="1" />
-                <line x1="0" y1="75" x2="400" y2="75" stroke="#f1f5f9" strokeWidth="1" />
-                <line x1="0" y1="120" x2="400" y2="120" stroke="#f1f5f9" strokeWidth="1" />
-                {/* Area under amount line */}
-                <path d="M 0 120 Q 80 80 150 100 T 300 40 T 400 60 L 400 140 L 0 140 Z" fill="url(#amountGrad)" />
-                {/* Amount Line */}
-                <path d="M 0 120 Q 80 80 150 100 T 300 40 T 400 60" fill="none" stroke="#0B5C3D" strokeWidth="3" strokeLinecap="round" />
-                {/* Liters Line */}
-                <path d="M 0 100 Q 80 110 150 70 T 300 80 T 400 30" fill="none" stroke="#34d399" strokeWidth="2.5" strokeDasharray="4 4" />
-                {/* Points */}
-                <circle cx="150" cy="100" r="4" fill="#0B5C3D" />
-                <circle cx="300" cy="40" r="4" fill="#0B5C3D" />
-                <circle cx="400" cy="60" r="4" fill="#0B5C3D" />
-              </svg>
-            </div>
-            <div className="flex justify-between text-[11px] font-bold text-slate-400 mt-2 px-1">
-              <span>1 May</span>
-              <span>5 May</span>
-              <span>10 May</span>
-              <span>15 May</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Column 2: Purchase by Product (Liters) Donut Chart */}
-        <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
-          <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider pb-3 border-b border-slate-100">
-            Purchase by Product (Liters)
+        {/* Purchase by Product Breakdown */}
+        <div className="lg:col-span-5 bg-card rounded-2xl border border-border p-4 sm:p-5 shadow-xs space-y-3">
+          <h2 className="text-sm font-black text-foreground uppercase tracking-wider pb-2 border-b border-border">
+            Purchase Volume Breakdown by Product
           </h2>
-
-          <div className="py-3 flex flex-col items-center justify-center">
-            {/* Donut CSS Circle */}
-            <div className="relative w-32 h-32 rounded-full border-12 border-emerald-500 flex items-center justify-center shadow-inner" style={{ borderTopColor: '#3b82f6', borderRightColor: '#f59e0b', borderBottomColor: '#94a3b8' }}>
-              <div className="text-center">
-                <span className="text-[10px] font-extrabold text-slate-400 block uppercase">Total</span>
-                <span className="text-xs font-black text-slate-900">28,500 L</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-1.5 text-xs font-extrabold">
-            <div className="flex items-center justify-between text-slate-700">
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Petrol</span>
-              <span>14,905.00 L (52.3%)</span>
-            </div>
-            <div className="flex items-center justify-between text-slate-700">
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Diesel</span>
-              <span>10,490.00 L (36.8%)</span>
-            </div>
-            <div className="flex items-center justify-between text-slate-700">
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Kerosene</span>
-              <span>2,055.00 L (7.2%)</span>
-            </div>
-            <div className="flex items-center justify-between text-slate-700">
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-slate-400"></span> Others</span>
-              <span>1,050.00 L (3.7%)</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Column 3: Recent Bowser Deliveries */}
-        <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs flex flex-col justify-between space-y-3">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-            <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider">Recent Bowser Deliveries</h2>
-            <button onClick={() => onSelectTab('deliveries')} className="text-xs font-bold text-[#0B5C3D] hover:underline cursor-pointer">
-              View All
-            </button>
-          </div>
-
-          <div className="space-y-2.5">
-            {recentBowserDeliveries.map((bw) => (
-              <div key={bw.id} className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-100 flex items-center justify-between hover:bg-slate-100/80 transition-all">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-100/70 text-[#0B5C3D] flex items-center justify-center">
-                    <Truck size={16} />
+          {productBreakdown.length === 0 ? (
+            <p className="text-xs font-bold text-muted-foreground py-6 text-center">
+              No procurement transactions recorded. Volume breakdown will populate dynamically from live GRNs and invoices.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {productBreakdown.map((p, idx) => (
+                <div key={idx} className="space-y-1">
+                  <div className="flex justify-between text-xs font-bold text-foreground">
+                    <span>{p.name}</span>
+                    <span className="font-black">{formatLiters(p.liters)} ({p.pct}%)</span>
                   </div>
-                  <div>
-                    <div className="text-xs font-black text-slate-900 flex items-center gap-1.5">
-                      <span>{bw.id}</span>
-                      <span className="text-[10px] font-bold text-slate-500">({bw.supplier} • {bw.liters})</span>
-                    </div>
-                    <div className="text-[11px] font-bold text-slate-500 mt-0.5">
-                      {bw.arrival} • Driver: {bw.driver}
-                    </div>
+                  <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                    <div className="bg-primary h-full rounded-full" style={{ width: `${p.pct}%` }} />
                   </div>
                 </div>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                  bw.status === 'Arrived' ? 'bg-emerald-100 text-emerald-800' :
-                  bw.status === 'In Transit' ? 'bg-sky-100 text-sky-800' :
-                  bw.status === 'Dispatched' ? 'bg-amber-100 text-amber-800' : 'bg-slate-200 text-slate-700'
-                }`}>
-                  {bw.status}
-                </span>
-              </div>
-            ))}
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Recent Bowser Deliveries */}
+        <div className="lg:col-span-7 bg-card rounded-2xl border border-border p-4 sm:p-5 shadow-xs space-y-3">
+          <div className="flex items-center justify-between pb-2 border-b border-border">
+            <h2 className="text-sm font-black text-foreground uppercase tracking-wider">Bowser Delivery Status</h2>
+            <button onClick={() => onSelectTab('deliveries')} className="text-xs font-bold text-primary hover:underline cursor-pointer">
+              View All ↗
+            </button>
           </div>
+
+          {recentBowserDeliveries.length === 0 ? (
+            <p className="text-xs font-bold text-muted-foreground py-6 text-center">
+              No bowser shipments in transit or recently logged.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {recentBowserDeliveries.map((bw, idx) => (
+                <div key={idx} className="p-3 rounded-xl bg-muted/40 border border-border flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <Truck size={16} className="text-primary" />
+                    <div>
+                      <div className="text-xs font-black text-foreground">{bw.bowserNo || bw.id || `Bowser #${idx + 1}`}</div>
+                      <div className="text-[11px] font-bold text-muted-foreground">
+                        {bw.supplierName || bw.supplier || 'OMC Supplier'} • {formatLiters(bw.quantity || bw.liters || 0)}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-primary/10 text-primary border border-primary/25">
+                    {bw.status || 'Received'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* ── 3. BOTTOM ROW 2-COLUMN SECTION ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Left Column: Recent Purchase Invoices Table */}
-        <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-            <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider">Recent Purchase Invoices</h2>
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search size={14} className="absolute left-2.5 top-2.5 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search invoice, supplier..."
-                  value={tableSearch}
-                  onChange={(e) => setTableSearch(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:border-[#0B5C3D]"
-                />
-              </div>
-              <button className="px-3 py-1.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl flex items-center gap-1.5 hover:bg-slate-200 cursor-pointer">
-                <Filter size={13} />
-                <span>Filters</span>
-              </button>
-            </div>
+      {/* ── 3. RECENT INVOICES & QUICK LAUNCHERS ── */}
+      <div className="bg-card rounded-2xl border border-border p-4 sm:p-5 shadow-xs space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border">
+          <h2 className="text-sm font-black text-foreground uppercase tracking-wider">Recent Purchase Invoices & GRNs</h2>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              placeholder="Search invoice, supplier..."
+              value={tableSearch}
+              onChange={(e) => setTableSearch(e.target.value)}
+              className="px-3.5 py-1.5 bg-card border border-border rounded-xl text-xs font-bold text-foreground focus:outline-none focus:border-primary placeholder:text-muted-foreground min-w-[220px]"
+            />
           </div>
+        </div>
 
+        {recentInvoices.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-12 bg-card rounded-2xl border border-dashed border-border text-center">
+            <span className="text-4xl mb-3">🛒</span>
+            <h4 className="text-sm font-black text-foreground">{isEn ? 'No Purchase Invoices Found' : 'کوئی خریداری انوائس نہیں ملی'}</h4>
+            <p className="text-xs font-bold text-muted-foreground max-w-sm mt-1">
+              {isEn ? 'Waiting for realtime procurement data. Create your first purchase order to begin.' : 'کوئی خریدی انوائس ریکارڈ نہیں ملا۔'}
+            </p>
+          </div>
+        ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-slate-100 text-slate-400 font-extrabold uppercase tracking-wider text-[10px] bg-slate-50/50">
-                  <th className="py-2.5 px-3">INV #</th>
+                <tr className="border-b border-border text-muted-foreground font-black uppercase text-[10px] bg-muted/30">
+                  <th className="py-2.5 px-3">INV / GRN #</th>
                   <th className="py-2.5 px-3">Date</th>
                   <th className="py-2.5 px-3">Supplier</th>
                   <th className="py-2.5 px-3">Product</th>
@@ -304,188 +273,82 @@ export const PurchaseOverviewTab: React.FC<PurchaseOverviewTabProps> = ({
                   <th className="py-2.5 px-3 text-right">Rate / L</th>
                   <th className="py-2.5 px-3 text-right">Amount (Rs)</th>
                   <th className="py-2.5 px-3 text-center">Status</th>
-                  <th className="py-2.5 px-3 text-center">Payment</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-bold">
-                {recentInvoices.map((inv) => (
+              <tbody className="divide-y divide-border font-bold text-foreground">
+                {recentInvoices.map((inv, idx) => (
                   <tr
-                    key={inv.id}
+                    key={inv.id || idx}
                     onClick={() => onOpenInspector(inv)}
-                    className="hover:bg-slate-50/80 transition-all cursor-pointer"
+                    className="hover:bg-muted/50 transition-all cursor-pointer"
                   >
-                    <td className="py-2.5 px-3 text-slate-900 font-black">{inv.id}</td>
-                    <td className="py-2.5 px-3 text-slate-500">{inv.date}</td>
-                    <td className="py-2.5 px-3 text-slate-900 flex items-center gap-1.5">
-                      <span>{inv.logo}</span>
-                      <span>{inv.supplier}</span>
-                    </td>
-                    <td className="py-2.5 px-3 text-slate-800">{inv.product}</td>
-                    <td className="py-2.5 px-3 text-right text-slate-900">{inv.liters}</td>
-                    <td className="py-2.5 px-3 text-right text-slate-600">{inv.rate}</td>
-                    <td className="py-2.5 px-3 text-right text-slate-900 font-black">{inv.amount}</td>
+                    <td className="py-2.5 px-3 font-black text-foreground">{inv.invoiceNo || inv.id || `INV-${idx + 1}`}</td>
+                    <td className="py-2.5 px-3 text-muted-foreground">{inv.date || 'Today'}</td>
+                    <td className="py-2.5 px-3 font-bold">{inv.supplierName || inv.supplier || '—'}</td>
+                    <td className="py-2.5 px-3">{inv.productName || inv.product || 'Fuel'}</td>
+                    <td className="py-2.5 px-3 text-right">{formatLiters(inv.quantity || inv.liters || 0)}</td>
+                    <td className="py-2.5 px-3 text-right">{inv.rate ? formatCurrency(inv.rate) : '—'}</td>
+                    <td className="py-2.5 px-3 text-right font-black text-primary">{formatCurrency(inv.totalAmount || inv.amount || 0)}</td>
                     <td className="py-2.5 px-3 text-center">
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black border border-emerald-200">
-                        {inv.status}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-3 text-center">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                        inv.payment === 'Paid' ? 'bg-emerald-100 text-emerald-800' :
-                        inv.payment === 'Partial' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'
-                      }`}>
-                        {inv.payment}
+                      <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-black border border-primary/25">
+                        {inv.status || 'Verified'}
                       </span>
                     </td>
                   </tr>
                 ))}
               </tbody>
-              <tfoot>
-                <tr className="bg-slate-50 font-black text-slate-900 border-t border-slate-200">
-                  <td colSpan={4} className="py-2.5 px-3">Total (5 Invoices)</td>
-                  <td className="py-2.5 px-3 text-right">62,500.00 L</td>
-                  <td className="py-2.5 px-3 text-right">—</td>
-                  <td className="py-2.5 px-3 text-right text-[#0B5C3D]">18,732,900</td>
-                  <td colSpan={2}></td>
-                </tr>
-              </tfoot>
             </table>
           </div>
-        </div>
-
-        {/* Right Column: Smart Alerts Panel */}
-        <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs space-y-3 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles size={15} className="text-amber-500" />
-                <span>Smart Alerts</span>
-              </h2>
-              <button className="text-xs font-bold text-[#0B5C3D] hover:underline cursor-pointer">
-                View All
-              </button>
-            </div>
-
-            <div className="space-y-2.5 mt-3">
-              {/* Alert 1: Low Fuel Stock */}
-              <div className="p-3 rounded-xl bg-amber-50/80 border border-amber-200/80 space-y-1">
-                <div className="flex items-center justify-between text-xs font-black text-amber-900">
-                  <span className="flex items-center gap-1.5">
-                    <AlertTriangle size={14} className="text-amber-600" />
-                    <span>Low Fuel Stock</span>
-                  </span>
-                  <span className="text-[10px] font-bold text-amber-700">2 min ago</span>
-                </div>
-                <p className="text-[11px] font-bold text-amber-800">
-                  Tank 'Petrol' stock is running low (2,000 L remaining).
-                </p>
-                <button onClick={() => onSelectTab('requisitions')} className="text-xs font-black text-[#0B5C3D] hover:underline pt-1 block cursor-pointer">
-                  Create Purchase Requisition →
-                </button>
-              </div>
-
-              {/* Alert 2: Rate Increased */}
-              <div className="p-3 rounded-xl bg-purple-50/80 border border-purple-200/80 space-y-1">
-                <div className="flex items-center justify-between text-xs font-black text-purple-900">
-                  <span className="flex items-center gap-1.5">
-                    <TrendingUp size={14} className="text-purple-600" />
-                    <span>Rate Increased</span>
-                  </span>
-                  <span className="text-[10px] font-bold text-purple-700">15 min ago</span>
-                </div>
-                <p className="text-[11px] font-bold text-purple-800">
-                  PSO Petrol rate increased by Rs 1.35 / L.
-                </p>
-                <button onClick={() => onSelectTab('quotations')} className="text-xs font-black text-purple-700 hover:underline pt-1 block cursor-pointer">
-                  View Rate Comparison →
-                </button>
-              </div>
-
-              {/* Alert 3: GRN Pending */}
-              <div className="p-3 rounded-xl bg-sky-50/80 border border-sky-200/80 space-y-1">
-                <div className="flex items-center justify-between text-xs font-black text-sky-900">
-                  <span className="flex items-center gap-1.5">
-                    <FileText size={14} className="text-sky-600" />
-                    <span>GRN Pending</span>
-                  </span>
-                  <span className="text-[10px] font-bold text-sky-700">25 min ago</span>
-                </div>
-                <p className="text-[11px] font-bold text-sky-800">
-                  2 GRN receipts are pending verification.
-                </p>
-                <button onClick={() => onSelectTab('grn')} className="text-xs font-black text-sky-700 hover:underline pt-1 block cursor-pointer">
-                  Verify Receipts →
-                </button>
-              </div>
-
-              {/* Alert 4: Invoice Mismatch */}
-              <div className="p-3 rounded-xl bg-rose-50/80 border border-rose-200/80 space-y-1">
-                <div className="flex items-center justify-between text-xs font-black text-rose-900">
-                  <span className="flex items-center gap-1.5">
-                    <AlertTriangle size={14} className="text-rose-600" />
-                    <span>Invoice Mismatch</span>
-                  </span>
-                  <span className="text-[10px] font-bold text-rose-700">1 hour ago</span>
-                </div>
-                <p className="text-[11px] font-bold text-rose-800">
-                  1 invoice has quantity variance.
-                </p>
-                <button onClick={() => onSelectTab('register')} className="text-xs font-black text-rose-700 hover:underline pt-1 block cursor-pointer">
-                  View Invoice Verification →
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* ── 4. BOTTOM QUICK LAUNCHER STRIP ── */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-3 shadow-xs grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-        <button onClick={() => onSelectTab('orders')} className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-100 flex items-center gap-2 text-left transition-all cursor-pointer">
-          <FileText size={16} className="text-[#0B5C3D]" />
+      <div className="bg-card rounded-2xl border border-border p-3 shadow-xs grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+        <button onClick={() => onSelectTab('orders')} className="p-3 rounded-xl bg-muted/40 hover:bg-muted border border-border flex items-center gap-2 text-left transition-all cursor-pointer">
+          <FileText size={16} className="text-primary" />
           <div>
-            <div className="text-xs font-black text-slate-900">New PO</div>
-            <div className="text-[10px] font-bold text-slate-400">Create new PO</div>
+            <div className="text-xs font-black text-foreground">New PO</div>
+            <div className="text-[10px] font-bold text-muted-foreground">Create purchase order</div>
           </div>
         </button>
 
-        <button onClick={() => onSelectTab('grn')} className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-100 flex items-center gap-2 text-left transition-all cursor-pointer">
+        <button onClick={() => onSelectTab('grn')} className="p-3 rounded-xl bg-muted/40 hover:bg-muted border border-border flex items-center gap-2 text-left transition-all cursor-pointer">
           <ShieldCheck size={16} className="text-blue-600" />
           <div>
-            <div className="text-xs font-black text-slate-900">Record GRN</div>
-            <div className="text-[10px] font-bold text-slate-400">Goods receipt note</div>
+            <div className="text-xs font-black text-foreground">Record GRN</div>
+            <div className="text-[10px] font-bold text-muted-foreground">Goods receipt note</div>
           </div>
         </button>
 
-        <button onClick={() => onSelectTab('quotations')} className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-100 flex items-center gap-2 text-left transition-all cursor-pointer">
+        <button onClick={() => onSelectTab('quotations')} className="p-3 rounded-xl bg-muted/40 hover:bg-muted border border-border flex items-center gap-2 text-left transition-all cursor-pointer">
           <Tag size={16} className="text-purple-600" />
           <div>
-            <div className="text-xs font-black text-slate-900">Compare Rates</div>
-            <div className="text-[10px] font-bold text-slate-400">Supplier comparison</div>
+            <div className="text-xs font-black text-foreground">Compare Rates</div>
+            <div className="text-[10px] font-bold text-muted-foreground">Rate matrix</div>
           </div>
         </button>
 
-        <button onClick={() => onSelectTab('suppliers')} className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-100 flex items-center gap-2 text-left transition-all cursor-pointer">
+        <button onClick={() => onSelectTab('performance')} className="p-3 rounded-xl bg-muted/40 hover:bg-muted border border-border flex items-center gap-2 text-left transition-all cursor-pointer">
           <Truck size={16} className="text-amber-600" />
           <div>
-            <div className="text-xs font-black text-slate-900">Supplier Ledger</div>
-            <div className="text-[10px] font-bold text-slate-400">View payables</div>
+            <div className="text-xs font-black text-foreground">Suppliers</div>
+            <div className="text-[10px] font-bold text-muted-foreground">Performance & ratings</div>
           </div>
         </button>
 
-        <button onClick={() => onSelectTab('payments')} className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-100 flex items-center gap-2 text-left transition-all cursor-pointer">
+        <button onClick={() => onSelectTab('payments')} className="p-3 rounded-xl bg-muted/40 hover:bg-muted border border-border flex items-center gap-2 text-left transition-all cursor-pointer">
           <CreditCard size={16} className="text-emerald-600" />
           <div>
-            <div className="text-xs font-black text-slate-900">Create Payment</div>
-            <div className="text-[10px] font-bold text-slate-400">Pay supplier</div>
+            <div className="text-xs font-black text-foreground">Payments</div>
+            <div className="text-[10px] font-bold text-muted-foreground">Pay supplier</div>
           </div>
         </button>
 
-        <button onClick={() => onSelectTab('documents')} className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-100 flex items-center gap-2 text-left transition-all cursor-pointer">
+        <button onClick={() => onSelectTab('documents')} className="p-3 rounded-xl bg-muted/40 hover:bg-muted border border-border flex items-center gap-2 text-left transition-all cursor-pointer">
           <Layers size={16} className="text-slate-600" />
           <div>
-            <div className="text-xs font-black text-slate-900">Documents</div>
-            <div className="text-[10px] font-bold text-slate-400">All documents</div>
+            <div className="text-xs font-black text-foreground">Documents</div>
+            <div className="text-[10px] font-bold text-muted-foreground">PO & GRN scans</div>
           </div>
         </button>
       </div>

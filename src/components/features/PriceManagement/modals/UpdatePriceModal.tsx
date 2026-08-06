@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, DollarSign, Calendar, Clock, FileText, CheckCircle2 } from 'lucide-react';
 import { Product } from '../../../../types';
+import toast from 'react-hot-toast';
 
 interface UpdatePriceModalProps {
   isOpen: boolean;
@@ -44,7 +45,7 @@ export const UpdatePriceModal: React.FC<UpdatePriceModalProps> = ({
     e.preventDefault();
     const newPrice = parseFloat(newRateStr);
     if (isNaN(newPrice) || newPrice <= 0) {
-      alert(t('Please enter a valid selling rate.', 'براہ کرم صحیح قیمت درج کریں۔'));
+      toast.error(t('Please enter a valid selling rate.', 'براہ کرم صحیح قیمت درج کریں۔'));
       return;
     }
 
