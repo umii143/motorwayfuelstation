@@ -1,6 +1,7 @@
 import React from 'react';
-import { Zap } from 'lucide-react';
+import { Zap, Database, CheckCircle2 } from 'lucide-react';
 import { Shift, Product, Nozzle } from '../../../types';
+import { usePricingStore } from '../../../stores/usePricingStore';
 
 interface ShiftNozzleReadingsProps {
  t: (en: string, ur: string) => string;
@@ -29,18 +30,57 @@ export function ShiftNozzleReadings({
  setSnapshotPin,
  handleCaptureSnapshot,
 }: ShiftNozzleReadingsProps) {
- if (!activeShift?.pendingPriceRevisions) return null;
+ const { snapshots } = usePricingStore();
+ const latestSSOTSnapshot = snapshots.length > 0 ? snapshots[0] : null;
+
+ const hasPendingRevisions = activeShift?.pendingPriceRevisions && activeShift.pendingPriceRevisions.length > 0;
+ const hasSSOTSnapshot = latestSSOTSnapshot !== null;
+
+ if (!hasPendingRevisions && !hasSSOTSnapshot) return null;
 
  return (
  <div className="space-y-4">
  <h3 className="font-sans text-sm font-bold text-foreground border-b border-border pb-2 mb-4 flex items-center justify-between">
  <span className="flex items-center gap-2">
- <Zap className="h-5 w-5 text-red-500" />
- {t("Mid-Shift Price Revision Snapshot","قیمت میں تبدیلی کا سنیپ شاٹ")}
+ <Database className="h-5 w-5 text-indigo-500 animate-pulse" />
+ {t("Price Revision Impact Engine (SSOT Snapshot)","پرائس ریویژن سنگل سورس آف ٹروتھ")}
+ </span>
+ <span className="text-xs font-mono bg-emerald-500/10 text-emerald-500 px-2.5 py-0.5 rounded-md border border-emerald-500/20 font-bold">
+   Next Shift New Price Active
  </span>
  </h3>
- 
- {activeShift.pendingPriceRevisions.map((rev) => {
+
+ {latestSSOTSnapshot && (
+   <div className="bg-gradient-to-r from-slate-900 to-indigo-950 border border-indigo-500/30 rounded-2xl p-5 text-white space-y-3">
+     <div className="flex items-center justify-between">
+       <div className="flex items-center gap-2">
+         <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+         <span className="font-black text-sm text-indigo-200">Active Snapshot #{latestSSOTSnapshot.versionLabel}</span>
+       </div>
+       <span className="text-xs text-indigo-300/80 font-mono">{latestSSOTSnapshot.circularNo}</span>
+     </div>
+     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-2 border-t border-indigo-500/20">
+       <div>
+         <div className="text-indigo-300">Product</div>
+         <div className="font-bold text-white mt-0.5">{latestSSOTSnapshot.productName}</div>
+       </div>
+       <div>
+         <div className="text-indigo-300">Rate Change</div>
+         <div className="font-mono font-bold text-emerald-400 mt-0.5">Rs. {latestSSOTSnapshot.oldRate} → Rs. {latestSSOTSnapshot.newRate}</div>
+       </div>
+       <div>
+         <div className="text-indigo-300">Sold Before Revision</div>
+         <div className="font-mono font-bold text-amber-400 mt-0.5">{latestSSOTSnapshot.soldBeforeRevisionLiters.toLocaleString()} L</div>
+       </div>
+       <div>
+         <div className="text-indigo-300">Stock Revaluation Gain</div>
+         <div className="font-mono font-bold text-emerald-400 mt-0.5">+Rs. {latestSSOTSnapshot.inventoryGainAmount.toLocaleString()}</div>
+       </div>
+     </div>
+   </div>
+ )}
+
+ {activeShift?.pendingPriceRevisions && activeShift.pendingPriceRevisions.map((rev) => {
  const prod = products.find((p) => p.id === rev.productId);
  const prodNozzles = nozzles.filter(
  (n) =>

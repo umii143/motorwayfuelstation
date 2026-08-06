@@ -22,6 +22,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { DomainReportsCenterTab } from './reports-center/DomainReportsCenterTab';
 
 // Sub-components
+import { PriceRevisionRegisterView } from '../../../PriceManagement/components/PriceRevisionRegisterView';
+import { PriceImpactEngineHub } from '../../../PriceManagement/PriceImpactEngineHub';
 import { PakistanOMCControlPanel } from '../../../PriceManagement/components/PakistanOMCControlPanel';
 import { InventoryRevaluationTab } from '../../../PriceManagement/components/InventoryRevaluationTab';
 import { VersionHistoryTab } from '../../../PriceManagement/components/VersionHistoryTab';
@@ -150,11 +152,9 @@ export const PricingWorkspaceView: React.FC<PricingWorkspaceViewProps> = ({
   );
 
   const renderOverviewLayer = () => {
-    if (!petrolProd && !dieselProd) {
-      return renderEmptyState('No fuel products configured to display overview.', 'اوور ویو دکھانے کیلئے کوئی فیول پروڈکٹ موجود نہیں۔');
-    }
     return (
       <div className="space-y-6">
+        <PriceRevisionRegisterView isUrdu={isUrdu} />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <TaxLevyBreakdownWidget isUrdu={isUrdu} petrolPrice={petrolRate} dieselPrice={dieselRate} />
           <PumpControllerSyncStatusWidget isUrdu={isUrdu} petrolRate={petrolRate} dieselRate={dieselRate} />

@@ -1,6 +1,7 @@
 import { firestoreDb } from '../../data/firestore';
 import { db } from '../../data/db';
 import { Product, TenantDocument } from '../../types';
+import { priceImpactEngine } from './priceImpactEngine';
 
 export interface FuelPriceMasterRecord extends TenantDocument {
   id: string;
@@ -191,6 +192,19 @@ export const pricingEngine = {
       await firestoreDb.saveDocument(orgId, stationId, 'fuel_station', 'products', existing.productId, updatedProduct);
     }
 
+    // Trigger Single Source of Truth (SSOT) Price Revision Snapshot
+    await priceImpactEngine.createPriceRevisionSnapshot(
+      orgId,
+      stationId,
+      existing.productId,
+      existing.productName,
+      existing.oldPrice,
+      existing.newPrice,
+      publisherName,
+      `OGRA-CIRCULAR-${existing.version || 1}/2026`,
+      existing.reason
+    );
+
     await pricingEngine.logAuditEvent(orgId, stationId, {
       userId: 'usr_owner',
       userName: publisherName,
@@ -199,7 +213,7 @@ export const pricingEngine = {
       productName: existing.productName,
       oldPrice: existing.oldPrice,
       newPrice: existing.newPrice,
-      details: `Published live price for ${existing.productName} (Rs. ${existing.newPrice}). Synced to POS & Dispenser controllers.`
+      details: `Published live price for ${existing.productName} (Rs. ${existing.newPrice}). Synced to POS & SSOT Impact Engine.`
     });
   },
 

@@ -11,6 +11,7 @@ import { motion } from 'motion/react';
 import { formatCurrency } from '../../../lib/currency';
 
 // Pricing Sub-Components
+import { PriceImpactEngineHub } from './PriceImpactEngineHub';
 import { PricingHeaderKPIs } from './components/PricingHeaderKPIs';
 import { HeroAIPricingBanner } from './components/HeroAIPricingBanner';
 import { PricingQuickActionsToolbar } from './components/PricingQuickActionsToolbar';
@@ -50,6 +51,7 @@ export default function AdvancedPriceManagement({
   const isUrdu = settings.language === 'ur';
   const t = (en: string, ur: string) => isUrdu ? ur : en;
   const [activeTab, setActiveTab] = useState<
+    | 'price_impact_engine'
     | 'overview'
     | 'price_board'
     | 'price_history'
@@ -69,7 +71,7 @@ export default function AdvancedPriceManagement({
     | 'versions'
     | 'approval'
     | 'notification'
-  >('overview');
+  >('price_impact_engine');
   const [selectedKPI, setSelectedKPI] = useState<string | null>(null);
 
   // Retrieve tanks from Zustand store
@@ -240,10 +242,11 @@ export default function AdvancedPriceManagement({
         onOpenRollback={() => setActiveTab('version_history')}
       />
 
-      {/* 15 ENTERPRISE WORKSPACE HEADER TABS */}
+      {/* 16 ENTERPRISE WORKSPACE HEADER TABS */}
       <div className="bg-[var(--bg-card)] border border-[var(--border-main)] rounded-2xl p-2 shadow-md overflow-x-auto no-scrollbar">
         <div className="flex items-center gap-1 min-w-max text-xs font-semibold">
           {[
+            { id: 'price_impact_engine', label: t('⚡ Price Impact Engine (SSOT)', 'پرائس امپیکٹ انجن SSOT'), icon: '🏛️' },
             { id: 'overview', label: t('Overview', 'خلاصہ'), icon: '📊' },
             { id: 'price_board', label: t('Current Price Board', 'پرائس بورڈ'), icon: '🏷️' },
             { id: 'price_history', label: t('Price History', 'تبدیلی ہسٹری'), icon: '📈' },
@@ -265,7 +268,7 @@ export default function AdvancedPriceManagement({
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all whitespace-nowrap ${
                 activeTab === tab.id
-                  ? 'bg-gradient-to-r from-amber-600 to-amber-700 dark:from-emerald-500 dark:to-teal-500 text-white font-black shadow-md'
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black shadow-md'
                   : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]'
               }`}
             >
@@ -277,6 +280,11 @@ export default function AdvancedPriceManagement({
       </div>
 
       {/* SUB-TAB PANELS */}
+
+      {/* FLAGSHIP TAB: PRICE IMPACT ENGINE (SSOT) */}
+      {activeTab === 'price_impact_engine' && (
+        <PriceImpactEngineHub />
+      )}
 
       {/* TAB 1: OVERVIEW */}
       {activeTab === 'overview' && (

@@ -1,9 +1,11 @@
 import { create } from 'zustand';
 import { FuelPriceMasterRecord, PricingAuditEventRecord, pricingEngine } from '../services/priceManagement/pricingEngine';
+import { priceImpactEngine, PriceRevisionSnapshot } from '../services/priceManagement/priceImpactEngine';
 
 interface PricingStoreState {
   fuelPrices: FuelPriceMasterRecord[];
   auditLogs: PricingAuditEventRecord[];
+  snapshots: PriceRevisionSnapshot[];
   isSubscribed: boolean;
   activeOrgId: string;
   activeStationId: string;
@@ -30,11 +32,19 @@ interface PricingStoreState {
     oldRate: number,
     newRate: number
   ) => Promise<void>;
+  publishQuickSnapshot: (
+    productId: string,
+    productName: string,
+    oldRate: number,
+    newRate: number,
+    publisherName?: string
+  ) => Promise<PriceRevisionSnapshot>;
 }
 
 export const usePricingStore = create<PricingStoreState>((set, get) => ({
   fuelPrices: [],
   auditLogs: [],
+  snapshots: [],
   isSubscribed: false,
   activeOrgId: '',
   activeStationId: '',
@@ -44,10 +54,12 @@ export const usePricingStore = create<PricingStoreState>((set, get) => ({
 
     const unsubPrices = pricingEngine.subscribeFuelPrices(orgId, stationId, (data) => set({ fuelPrices: data }));
     const unsubAudit = pricingEngine.subscribeAuditLogs(orgId, stationId, (data) => set({ auditLogs: data }));
+    const unsubSnapshots = priceImpactEngine.subscribeSnapshots(orgId, stationId, (data) => set({ snapshots: data }));
 
     return () => {
       unsubPrices();
       unsubAudit();
+      unsubSnapshots();
       set({ isSubscribed: false });
     };
   },
@@ -100,5 +112,26 @@ export const usePricingStore = create<PricingStoreState>((set, get) => ({
     const orgId = activeOrgId || 'org_main';
     const stationId = activeStationId || 'st_default';
     await pricingEngine.postRevaluationJournal(orgId, stationId, productName, gainLossAmount, stockQty, oldRate, newRate);
+  },
+
+  publishQuickSnapshot: async (
+    productId: string,
+    productName: string,
+    oldRate: number,
+    newRate: number,
+    publisherName = 'Station Owner'
+  ) => {
+    const { activeOrgId, activeStationId } = get();
+    const orgId = activeOrgId || 'org_main';
+    const stationId = activeStationId || 'st_default';
+    return await priceImpactEngine.createPriceRevisionSnapshot(
+      orgId,
+      stationId,
+      productId,
+      productName,
+      oldRate,
+      newRate,
+      publisherName
+    );
   }
 }));

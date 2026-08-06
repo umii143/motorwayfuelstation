@@ -283,6 +283,15 @@ const WetStockIntelligenceRoute = () => {
   }} />;
 };
 
+const AuditCenterRoute = () => {
+  return <AuditCenter />;
+};
+
+const SyncCenterRoute = () => {
+  const props = useProps();
+  return <SyncCenter settings={props.settings} />;
+};
+
 // Map routes
 export const router = createBrowserRouter([
  {
@@ -309,6 +318,8 @@ export const router = createBrowserRouter([
  { path: 'staff', element: <StaffRoute /> },
  { path: 'ai-analytics', element: <AIAnalyticsHubRoute /> },
  { path: 'dip-calculator', element: <DipCalculatorRoute /> }, 
+ { path: 'audit-center', element: <AuditCenterRoute /> },
+ { path: 'sync-center', element: <SyncCenterRoute /> },
  
  // Basic Protected settings
  { path: 'settings', element: <SettingsRoute /> },
@@ -316,6 +327,10 @@ export const router = createBrowserRouter([
  { path: 'security-hub', element: <SecurityHubRoute /> },
  { path: 'subscription-hub', element: <SubscriptionHubRoute /> },
  { path: 'price-management', element: <PriceManagementRoute /> },
+ { path: 'price-intelligence', element: <PriceManagementRoute /> },
+ { path: 'price-ledger', element: <PriceManagementRoute /> },
+ { path: 'price-revision', element: <PriceManagementRoute /> },
+ { path: 'price-revision-register', element: <PriceManagementRoute /> },
  { path: 'about-me', element: <AboutMe /> },
 
  // Super Admin Only
@@ -333,7 +348,18 @@ export const router = createBrowserRouter([
  { path: 'communication-center', element: <CommunicationDashboard /> },
  { path: 'bi-analytics', element: <BIDashboard /> },
  { path: 'executive-dashboard', element: <ExecutiveDashboard /> },
- { path: 'enterprise-hub', element: <EnterpriseHubRoute /> }
+ { path: 'enterprise-hub', element: <EnterpriseHubRoute /> },
+ { path: 'integrity-center', element: <EnterpriseHubRoute /> },
+ { path: 'demand-forecast', element: <EnterpriseHubRoute /> },
+ { path: 'fleet', element: <EnterpriseHubRoute /> },
+ { path: 'tanker-delivery', element: <EnterpriseHubRoute /> },
+ { path: 'erp-integration', element: <EnterpriseHubRoute /> },
+ { path: 'fuel-quality', element: <EnterpriseHubRoute /> },
+ { path: 'loss-prevention', element: <EnterpriseHubRoute /> },
+ { path: 'loyalty', element: <EnterpriseHubRoute /> },
+ { path: 'maintenance', element: <EnterpriseHubRoute /> },
+ { path: 'cctv', element: <EnterpriseHubRoute /> },
+ { path: 'api-gateway', element: <EnterpriseHubRoute /> }
  ]
  },
  
